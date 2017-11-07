@@ -15,9 +15,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 
 /**
  *
@@ -26,7 +25,7 @@ import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
  * @author Sylvain Vissiere-Guerinet
  *
  */
-public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, Long> {
+public interface IAIPDataBaseRepository extends JpaRepository<AIPEntity, Long> {
 
     /**
      * @param pState
@@ -34,7 +33,7 @@ public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, Long>
      * @return
      */
     @EntityGraph("graph.aip.tags")
-    Page<AIPDataBase> findAllByStateIn(AIPState pState, Pageable pPageable);
+    Page<AIPEntity> findAllByStateIn(AIPState pState, Pageable pPageable);
 
     /**
      * @param pState
@@ -44,7 +43,7 @@ public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, Long>
      * @return
      */
     @EntityGraph("graph.aip.tags")
-    Page<AIPDataBase> findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(AIPState pState, OffsetDateTime pFrom,
+    Page<AIPEntity> findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(AIPState pState, OffsetDateTime pFrom,
             OffsetDateTime pTo, Pageable pPageable);
 
     /**
@@ -54,7 +53,7 @@ public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, Long>
      * @return
      */
     @EntityGraph("graph.aip.tags")
-    Page<AIPDataBase> findAllByStateAndSubmissionDateAfter(AIPState pState, OffsetDateTime pFrom, Pageable pPageable);
+    Page<AIPEntity> findAllByStateAndSubmissionDateAfter(AIPState pState, OffsetDateTime pFrom, Pageable pPageable);
 
     /**
      * @param pState
@@ -63,7 +62,7 @@ public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, Long>
      * @return
      */
     @EntityGraph("graph.aip.tags")
-    Page<AIPDataBase> findAllByStateAndLastEventDateBefore(AIPState pState, OffsetDateTime pFrom, Pageable pPageable);
+    Page<AIPEntity> findAllByStateAndLastEventDateBefore(AIPState pState, OffsetDateTime pFrom, Pageable pPageable);
 
     /**
      * @param pFrom
@@ -72,7 +71,7 @@ public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, Long>
      * @return
      */
     @EntityGraph("graph.aip.tags")
-    Page<AIPDataBase> findAllBySubmissionDateAfterAndLastEventDateBefore(OffsetDateTime pFrom, OffsetDateTime pTo,
+    Page<AIPEntity> findAllBySubmissionDateAfterAndLastEventDateBefore(OffsetDateTime pFrom, OffsetDateTime pTo,
             Pageable pPageable);
 
     /**
@@ -81,7 +80,7 @@ public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, Long>
      * @return
      */
     @EntityGraph("graph.aip.tags")
-    Page<AIPDataBase> findAllBySubmissionDateAfter(OffsetDateTime pFrom, Pageable pPageable);
+    Page<AIPEntity> findAllBySubmissionDateAfter(OffsetDateTime pFrom, Pageable pPageable);
 
     /**
      * @param pTo
@@ -89,29 +88,29 @@ public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, Long>
      * @return
      */
     @EntityGraph("graph.aip.tags")
-    Page<AIPDataBase> findAllByLastEventDateBefore(OffsetDateTime pTo, Pageable pPageable);
+    Page<AIPEntity> findAllByLastEventDateBefore(OffsetDateTime pTo, Pageable pPageable);
 
-    //    @Query("from AIPDataBase aip left join fetch aip.dataObjects where aip.ipId=:ipId")
-    //    AIPDataBase findOneByIpIdWithDataObjects(@Param("ipId") String pIpId);
+    //    @Query("from AIPEntity aip left join fetch aip.dataObjects where aip.ipId=:ipId")
+    //    AIPEntity findOneByIpIdWithDataObjects(@Param("ipId") String pIpId);
 
-    @Query("from AIPDataBase aip where aip.ipId LIKE :urnWithoutVersion%")
-    Set<AIPDataBase> findAllByIpIdStartingWith(@Param("urnWithoutVersion") String pUrnWithoutVersion);
-
-    @EntityGraph("graph.aip.tags")
-    Set<AIPDataBase> findAllByStateIn(AIPState... states);
+    @Query("from AIPEntity aip where aip.ipId LIKE :urnWithoutVersion%")
+    Set<AIPEntity> findAllByIpIdStartingWith(@Param("urnWithoutVersion") String pUrnWithoutVersion);
 
     @EntityGraph("graph.aip.tags")
-    Optional<AIPDataBase> findOneByIpId(String ipId);
+    Set<AIPEntity> findAllByStateIn(AIPState... states);
 
     @EntityGraph("graph.aip.tags")
-    Set<AIPDataBase> findAllByIpIdIn(Collection<String> ipIds);
+    Optional<AIPEntity> findOneByIpId(String ipId);
 
     @EntityGraph("graph.aip.tags")
-    Set<AIPDataBase> findAllByTags(String tag);
+    Set<AIPEntity> findAllByIpIdIn(Collection<String> ipIds);
 
     @EntityGraph("graph.aip.tags")
-    Set<AIPDataBase> findAllBySipId(String sipIpId);
+    Set<AIPEntity> findAllByTags(String tag);
 
     @EntityGraph("graph.aip.tags")
-    Page<AIPDataBase> findAllBySipId(String sipId, Pageable pageable);
+    Set<AIPEntity> findAllBySipId(String sipIpId);
+
+    @EntityGraph("graph.aip.tags")
+    Page<AIPEntity> findAllBySipId(String sipId, Pageable pageable);
 }

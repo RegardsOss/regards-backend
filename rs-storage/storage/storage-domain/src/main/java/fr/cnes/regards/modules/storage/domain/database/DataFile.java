@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  */
 @Entity
 @Table(name = "t_data_file", indexes = { @Index(name = "idx_data_file_checksum", columnList = "checksum") })
-@NamedEntityGraph(name = "graph.datafile.full", attributeNodes = { @NamedAttributeNode("aipDataBase"),
+@NamedEntityGraph(name = "graph.datafile.full", attributeNodes = { @NamedAttributeNode("aipEntity"),
         @NamedAttributeNode(value = "dataStorageUsed", subgraph = "graph.datafile.dataStorageUsed") }, subgraphs = {
         @NamedSubgraph(name = "graph.datafile.dataStorageUsed", attributeNodes = {
                 @NamedAttributeNode(value = "parameters", subgraph = "graph.datafile.dataStorageUsed.parameters") }),
@@ -99,7 +99,7 @@ public class DataFile {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aip_ip_id", foreignKey = @ForeignKey(name = "fk_aip_data_file"))
     @GsonIgnore
-    private AIPDataBase aipDataBase;
+    private AIPEntity aipEntity;
 
     // serialization
     private DataFile() {
@@ -123,7 +123,7 @@ public class DataFile {
         this.dataType = type;
         this.fileSize = fileSize;
         this.mimeType = mimeType;
-        this.aipDataBase = new AIPDataBase(aip);
+        this.aipEntity = new AIPEntity(aip);
     }
 
     public String getName() {
@@ -206,20 +206,20 @@ public class DataFile {
         this.state = state;
     }
 
-    public void setAipDataBase(AIPDataBase aipDataBase) {
-        this.aipDataBase = aipDataBase;
+    public void setAipEntity(AIPEntity aipEntity) {
+        this.aipEntity = aipEntity;
     }
 
-    public AIPDataBase getAipDataBase() {
-        return this.aipDataBase;
+    public AIPEntity getAipEntity() {
+        return this.aipEntity;
     }
 
     public AIP getAip() {
-        return aipDataBase.getAip();
+        return aipEntity.getAip();
     }
 
     public void setAip(AIP aip) {
-        this.aipDataBase = new AIPDataBase(aip);
+        this.aipEntity = new AIPEntity(aip);
     }
 
     public static Set<DataFile> extractDataFiles(AIP aip) {
@@ -252,14 +252,14 @@ public class DataFile {
         if (algorithm != null ? !algorithm.equals(dataFile.algorithm) : dataFile.algorithm != null) {
             return false;
         }
-        return aipDataBase != null ? aipDataBase.equals(dataFile.aipDataBase) : dataFile.aipDataBase == null;
+        return aipEntity != null ? aipEntity.equals(dataFile.aipEntity) : dataFile.aipEntity == null;
     }
 
     @Override
     public int hashCode() {
         int result = checksum != null ? checksum.hashCode() : 0;
         result = (31 * result) + (algorithm != null ? algorithm.hashCode() : 0);
-        result = (31 * result) + (aipDataBase != null ? aipDataBase.hashCode() : 0);
+        result = (31 * result) + (aipEntity != null ? aipEntity.hashCode() : 0);
         return result;
     }
 }

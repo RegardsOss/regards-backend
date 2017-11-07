@@ -11,7 +11,7 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 
@@ -29,9 +29,9 @@ public class DataFileDao implements IDataFileDao {
 
     @Override
     public Set<DataFile> findAllByStateAndAip(DataFileState stored, AIP aip) {
-        Optional<AIPDataBase> aipDatabase = getAipDataBase(aip);
+        Optional<AIPEntity> aipDatabase = getAipDataBase(aip);
         if (aipDatabase.isPresent()) {
-            return repository.findAllByStateAndAipDataBase(stored, aipDatabase.get());
+            return repository.findAllByStateAndAipEntity(stored, aipDatabase.get());
         } else {
             return Sets.newHashSet();
         }
@@ -39,9 +39,9 @@ public class DataFileDao implements IDataFileDao {
 
     @Override
     public Set<DataFile> findAllByStateAndAipIn(DataFileState dataFileState, Collection<AIP> aips) {
-        Set<AIPDataBase> aipDataBases = Sets.newHashSet();
+        Set<AIPEntity> aipDataBases = Sets.newHashSet();
         for(AIP aip: aips) {
-            Optional<AIPDataBase> aipDatabase = getAipDataBase(aip);
+            Optional<AIPEntity> aipDatabase = getAipDataBase(aip);
             if (aipDatabase.isPresent()) {
                 aipDataBases.add(aipDatabase.get());
             }
@@ -49,15 +49,15 @@ public class DataFileDao implements IDataFileDao {
         if(aipDataBases.isEmpty()) {
             return Sets.newHashSet();
         } else {
-            return repository.findAllByStateAndAipDataBaseIn(dataFileState, aipDataBases);
+            return repository.findAllByStateAndAipEntityIn(dataFileState, aipDataBases);
         }
     }
 
     @Override
     public Set<DataFile> findAllByAip(AIP aip) {
-        Optional<AIPDataBase> aipDatabase = getAipDataBase(aip);
+        Optional<AIPEntity> aipDatabase = getAipDataBase(aip);
         if (aipDatabase.isPresent()) {
-            return repository.findAllByAipDataBase(aipDatabase.get());
+            return repository.findAllByAipEntity(aipDatabase.get());
         } else {
             return Sets.newHashSet();
         }
@@ -65,18 +65,18 @@ public class DataFileDao implements IDataFileDao {
 
     @Override
     public DataFile save(DataFile prepareFailed) {
-        Optional<AIPDataBase> aipDatabase = getAipDataBase(prepareFailed);
+        Optional<AIPEntity> aipDatabase = getAipDataBase(prepareFailed);
         if (aipDatabase.isPresent()) {
-            prepareFailed.setAipDataBase(aipDatabase.get());
+            prepareFailed.setAipEntity(aipDatabase.get());
         }
         return repository.save(prepareFailed);
     }
 
     @Override
     public Optional<DataFile> findByAipAndType(AIP aip, DataType dataType) {
-        Optional<AIPDataBase> aipDatabase = getAipDataBase(aip);
+        Optional<AIPEntity> aipDatabase = getAipDataBase(aip);
         if (aipDatabase.isPresent()) {
-            return repository.findByAipDataBaseAndDataType(aipDatabase.get(), dataType);
+            return repository.findByAipEntityAndDataType(aipDatabase.get(), dataType);
         } else {
             return Optional.empty();
         }
@@ -85,9 +85,9 @@ public class DataFileDao implements IDataFileDao {
     @Override
     public Collection<DataFile> save(Collection<DataFile> dataFiles) {
         for (DataFile dataFile : dataFiles) {
-            Optional<AIPDataBase> aipDatabase = getAipDataBase(dataFile);
+            Optional<AIPEntity> aipDatabase = getAipDataBase(dataFile);
             if (aipDatabase.isPresent()) {
-                dataFile.setAipDataBase(aipDatabase.get());
+                dataFile.setAipEntity(aipDatabase.get());
             }
         }
         return repository.save(dataFiles);
@@ -113,11 +113,11 @@ public class DataFileDao implements IDataFileDao {
         repository.delete(data.getId());
     }
 
-    private Optional<AIPDataBase> getAipDataBase(AIP aip) {
+    private Optional<AIPEntity> getAipDataBase(AIP aip) {
         return aipRepo.findOneByIpId(aip.getId().toString());
     }
 
-    public Optional<AIPDataBase> getAipDataBase(DataFile dataFile) {
-        return aipRepo.findOneByIpId(dataFile.getAipDataBase().getIpId());
+    public Optional<AIPEntity> getAipDataBase(DataFile dataFile) {
+        return aipRepo.findOneByIpId(dataFile.getAipEntity().getIpId());
     }
 }

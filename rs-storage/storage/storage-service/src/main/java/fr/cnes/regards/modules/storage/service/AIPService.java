@@ -79,7 +79,7 @@ import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
 import fr.cnes.regards.modules.storage.domain.FileCorruptedException;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
-import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
@@ -144,7 +144,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     private static final String AIP_ACCESS_FORBIDDEN = "You do not have suffisent access right to get this aip.";
 
     /**
-     * DAO to access {@link AIP} entities through the {@link AIPDataBase} entities stored in db.
+     * DAO to access {@link AIP} entities through the {@link AIPEntity} entities stored in db.
      */
     @Autowired
     private IAIPDao aipDao;
@@ -940,7 +940,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * AIPService is annotated @Service with default component scope which is "spring' SINGLETON
      */
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    @Scheduled(fixedDelayString = "${regards.storage.update.aip.metadata.delay:7200000}") // 2 hours, by default
+    @Scheduled(fixedDelayString = "${regards.storage.update.aip.metadata.delay:7200000}") // 2 hours
     @Override
     public void updateAlreadyStoredMetadata() {
         // Then lets get AIP that should be stored again after an update

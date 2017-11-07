@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
@@ -78,7 +78,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
     private IDataFileDao dataFileDao;
 
     /**
-     * DAO to access {@link AIP} entities through the {@link AIPDataBase} entities stored in db.
+     * DAO to access {@link AIP} entities through the {@link AIPEntity} entities stored in db.
      */
     @Autowired
     private IAIPDao aipDao;

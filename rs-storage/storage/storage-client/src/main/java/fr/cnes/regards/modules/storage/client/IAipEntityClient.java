@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -23,6 +23,6 @@ public interface IAipEntityClient {
     String BASE_PATH = "sips/{sip_id}/aips";
 
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<PagedResources<Resource<AIPDataBase>>> retrieveAIPEntities(@PathVariable("sip_id") String sipId,
+    ResponseEntity<PagedResources<Resource<AIPEntity>>> retrieveAIPEntities(@PathVariable("sip_id") String sipId,
             @RequestParam("page") int page, @RequestParam("size") int size);
 }

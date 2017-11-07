@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -28,21 +28,21 @@ public class AIPDao implements IAIPDao {
 
     @Override
     public AIP save(AIP toSave) {
-        AIPDataBase toSaveInDb = new AIPDataBase(toSave);
-        Optional<AIPDataBase> fromDb = repo.findOneByIpId(toSave.getId().toString());
+        AIPEntity toSaveInDb = new AIPEntity(toSave);
+        Optional<AIPEntity> fromDb = repo.findOneByIpId(toSave.getId().toString());
         if (fromDb.isPresent()) {
             toSaveInDb.setId(fromDb.get().getId());
         }
-        AIPDataBase saved = repo.save(toSaveInDb);
+        AIPEntity saved = repo.save(toSaveInDb);
         return buildAipFromAIPDataBase(saved);
     }
 
     /**
-     * Build the {@link AIP} as we are using it into the system from the {@link AIPDataBase} saved in db.
-     * @param fromDb {@link AIPDataBase}
+     * Build the {@link AIP} as we are using it into the system from the {@link AIPEntity} saved in db.
+     * @param fromDb {@link AIPEntity}
      * @return {@link AIP}
      */
-    private AIP buildAipFromAIPDataBase(AIPDataBase fromDb) {
+    private AIP buildAipFromAIPDataBase(AIPEntity fromDb) {
         AIP aip = fromDb.getAip();
         // as fromDb.getAip gives us the aip serialized, we have to restore ignored attributes as state
         aip.setState(fromDb.getState());
@@ -51,7 +51,7 @@ public class AIPDao implements IAIPDao {
 
     @Override
     public Page<AIP> findAllByState(AIPState state, Pageable pageable) {
-        Page<AIPDataBase> fromDb = repo.findAllByStateIn(state, pageable);
+        Page<AIPEntity> fromDb = repo.findAllByStateIn(state, pageable);
         return fromDb.map(this::buildAipFromAIPDataBase);
 
     }
@@ -109,7 +109,7 @@ public class AIPDao implements IAIPDao {
 
     @Override
     public Optional<AIP> findOneByIpId(String ipId) {
-        Optional<AIPDataBase> aipDatabase = repo.findOneByIpId(ipId);
+        Optional<AIPEntity> aipDatabase = repo.findOneByIpId(ipId);
         if (aipDatabase.isPresent()) {
             return Optional.of(buildAipFromAIPDataBase(aipDatabase.get()));
         } else {
@@ -129,7 +129,7 @@ public class AIPDao implements IAIPDao {
 
     @Override
     public void remove(AIP associatedAIP) {
-        Optional<AIPDataBase> opt = repo.findOneByIpId(associatedAIP.getId().toString());
+        Optional<AIPEntity> opt = repo.findOneByIpId(associatedAIP.getId().toString());
         if(opt.isPresent()) {
             repo.delete(opt.get());
         }

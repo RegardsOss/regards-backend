@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.assertj.core.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +58,7 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
-import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
+import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 
@@ -190,9 +191,26 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(method = RequestMethod.DELETE)
     @ResponseBody
     @ResourceAccess(description = "delete AIPs associated to the given SIP, given threw its ip id")
-    public ResponseEntity<Void> deleteAipFromSip(@RequestParam("sip_ip_id") String sipIpId) throws ModuleException {
-        aipService.deleteAipFromSip(sipIpId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<List<RejectedSip>> deleteAipFromSips(@RequestParam("sip_ip_id") Set<String> sipIpIds)
+            throws ModuleException {
+        List<RejectedSip> notHandledSips = Lists.newArrayList();
+        for (String sipIpId : sipIpIds) {
+            try {
+                aipService.deleteAipFromSip(sipIpId);
+            } catch (ModuleException e) {
+                LOG.error(e.getMessage(), e);
+                notHandledSips.add(new RejectedSip(sipIpId, e));
+            }
+        }
+        if (notHandledSips.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            if (notHandledSips.size() == sipIpIds.size()) {
+                return new ResponseEntity<>(notHandledSips, HttpStatus.UNPROCESSABLE_ENTITY);
+            } else {
+                return new ResponseEntity<>(notHandledSips, HttpStatus.PARTIAL_CONTENT);
+            }
+        }
     }
 
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
@@ -237,7 +255,8 @@ public class AIPController implements IResourceController<AIP> {
         return new ResponseEntity<>(aipService.retrieveAip(ipId), HttpStatus.OK);
     }
 
-    @RequestMapping(value = ID_PATH, method = RequestMethod.PUT, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
+    @RequestMapping(value = ID_PATH, method = RequestMethod.PUT,
+            consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     @ResourceAccess(description = "allows to update a given aip metadata")
     @ResponseBody
     public ResponseEntity<AIP> updateAip(@PathVariable(name = "ip_id") String ipId, @RequestBody @Valid AIP updated)
@@ -250,7 +269,7 @@ public class AIPController implements IResourceController<AIP> {
     @ResponseBody
     public ResponseEntity<Void> deleteAip(@PathVariable(name = "ip_id") String ipId) throws ModuleException {
         aipService.deleteAip(ipId);
-        return (ResponseEntity<Void>) ResponseEntity.noContent();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @RequestMapping(value = TAG, method = RequestMethod.GET)

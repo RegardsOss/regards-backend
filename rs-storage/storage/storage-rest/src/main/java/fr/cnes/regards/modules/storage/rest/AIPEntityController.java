@@ -18,14 +18,14 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.service.database.IAIPEntityService;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
 @RestController(value = AIPEntityController.BASE_PATH)
-public class AIPEntityController implements IResourceController<AIPDataBase> {
+public class AIPEntityController implements IResourceController<AIPEntity> {
 
     public static final String BASE_PATH = "sips/{sip_id}/aips";
 
@@ -38,16 +38,16 @@ public class AIPEntityController implements IResourceController<AIPDataBase> {
     @ResponseBody
     @ResourceAccess(description = "send pages of AIPEntity")
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<PagedResources<Resource<AIPDataBase>>> retrieveAIPEntities(
+    public ResponseEntity<PagedResources<Resource<AIPEntity>>> retrieveAIPEntities(
             @PathVariable("sip_id") String sipId, Pageable pageable,
-            PagedResourcesAssembler<AIPDataBase> pagedResourcesAssembler) {
+            PagedResourcesAssembler<AIPEntity> pagedResourcesAssembler) {
         return new ResponseEntity<>(toPagedResources(aipEntityService.retrieveBySip(sipId, pageable),
                                                      pagedResourcesAssembler), HttpStatus.OK);
     }
 
     @Override
-    public Resource<AIPDataBase> toResource(AIPDataBase pElement, Object... pExtras) {
-        Resource<AIPDataBase> resource = new Resource<>(pElement);
+    public Resource<AIPEntity> toResource(AIPEntity pElement, Object... pExtras) {
+        Resource<AIPEntity> resource = new Resource<>(pElement);
         resourceService.addLink(resource,
                                 this.getClass(),
                                 "retrieveAIPEntities",
