@@ -44,6 +44,7 @@ public interface ISIPService {
 
     /**
      * Retrieve all {@link SIPEntity}s matching the parameters. SIPs are ordered by {@link SIPEntity#getIngestDate()}
+     * @param sipId
      * @param sessionId
      * @param owner
      * @param from
@@ -51,7 +52,8 @@ public interface ISIPService {
      * @param page
      * @return
      */
-    Page<SIPEntity> getSIPEntities(String sessionId, String owner, OffsetDateTime from, SIPState state, Pageable page);
+    Page<SIPEntity> getSIPEntities(String sipId, String sessionId, String owner, OffsetDateTime from, SIPState state,
+            Pageable page);
 
     /**
      * Retrieve one {@link SIPEntity} for the given ipId
@@ -67,6 +69,13 @@ public interface ISIPService {
      * @throws EntityNotFoundException
      */
     void deleteSIPEntity(String ipId) throws ModuleException;
+
+    /**
+     * Delete all {@link SIPEntity} for the given sipId
+     * @param sipId
+     * @throws ModuleException
+     */
+    void deleteSIPEntities(String sipId) throws ModuleException;
 
     /**
      * Check if the SIP with the given ipId is deletable

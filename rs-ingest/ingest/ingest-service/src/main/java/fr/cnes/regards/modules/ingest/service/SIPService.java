@@ -21,23 +21,23 @@ package fr.cnes.regards.modules.ingest.service;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
-import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.storage.client.IAipClient;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
@@ -51,12 +51,12 @@ public class SIPService implements ISIPService {
     private ISIPRepository sipRepository;
 
     @Autowired
-    private IAIPRepository aipRepository;
+    private IAipClient aipClient;
 
     @Override
-    public Page<SIPEntity> getSIPEntities(String sessionId, String owner, OffsetDateTime from, SIPState state,
-            Pageable page) {
-        return sipRepository.findAll(SIPEntitySpecifications.search(sessionId, owner, from, state), page);
+    public Page<SIPEntity> getSIPEntities(String sipId, String sessionId, String owner, OffsetDateTime from,
+            SIPState state, Pageable page) {
+        return sipRepository.findAll(SIPEntitySpecifications.search(sipId, sessionId, owner, from, state), page);
     }
 
     @Override
@@ -76,18 +76,20 @@ public class SIPService implements ISIPService {
             throw new EntityNotFoundException(ipId, SIPEntity.class);
         } else {
             if (isDeletable(ipId)) {
-                SIPEntity sip = oSip.get();
                 // Do delete associated aips
-                Set<AIPEntity> aips = aipRepository.findBySip(sip);
-                aipRepository.delete(aips);
-                // Change SIP state to DELETING
-                sip.setState(SIPState.DELETED);
-                sip.setLastUpdateDate(OffsetDateTime.now());
-                sipRepository.save(sip);
+                aipClient.deleteAipFromSips(Sets.newHashSet(ipId));
             } else {
                 throw new EntityOperationForbiddenException(ipId, SIPEntity.class,
                         String.format("SIPEntity with state %s are not deletable", oSip.get().getState()));
             }
+        }
+    }
+
+    @Override
+    public void deleteSIPEntities(String sipId) throws ModuleException {
+        Collection<SIPEntity> sips = sipRepository.findAllBySipIdOrderByVersionAsc(sipId);
+        for (SIPEntity s : sips) {
+            this.deleteSIPEntity(s.getIpId());
         }
     }
 
@@ -108,6 +110,7 @@ public class SIPService implements ISIPService {
                 case REJECTED:
                 case STORED:
                 case STORE_ERROR:
+                case INCOMPLETE:
                     return true;
                 default:
                     return false;
@@ -124,8 +127,6 @@ public class SIPService implements ISIPService {
             switch (os.get().getState()) {
                 case INVALID:
                 case AIP_GEN_ERROR:
-                case REJECTED:
-                case DELETED:
                     return true;
                 default:
                     return false;

@@ -24,19 +24,24 @@ package fr.cnes.regards.modules.ingest.domain.entity;
  *
  * <pre>
  *
- * CREATED
- *   |_______ REJECTED
- *   |
- * QUEUED
- *   |_______ INVALID
- *   |
- * VALID
- *   |_______ AIP_GEN_ERROR
- *   |
- * AIP_CREATED
- *   |________STORE_ERROR
- *   |
- * STORED
+ *           CREATED
+ *    __________|_______ REJECTED
+ *   |          |
+ *   |       QUEUED
+ *   |          |_______ INVALID
+ *   |          |
+ *   |        VALID
+ * DELETED      |_______ AIP_GEN_ERROR
+ *   |          |
+ *   |      AIP_CREATED
+ *   |__________|________STORE_ERROR
+ *   |          |
+ *   |        STORED
+ *   |          |
+ *   |       INDEXED
+ *   |__________|
+ *   |          |
+ *   |_______INCOMPLETE
  *
  * </pre>
  *
@@ -81,6 +86,10 @@ public enum SIPState {
      * One or many AIP(s) failed to be stored by storage microservice
      */
     STORE_ERROR,
+    /**
+     * SIP is partially stored.
+     */
+    INCOMPLETE,
     /**
      * SIP deleted
      */

@@ -31,9 +31,12 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 @Event(target = Target.ALL)
 public class SIPEvent implements ISubscribable {
 
-    private final SIPState state;
+    private SIPState state;
 
-    private final String ipId;
+    private String ipId;
+
+    private SIPEvent() {
+    }
 
     public SIPEvent(SIPEntity sip) {
         this.state = sip.getState();

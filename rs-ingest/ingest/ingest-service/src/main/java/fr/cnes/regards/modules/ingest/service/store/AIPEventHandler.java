@@ -18,10 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.service.store;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -35,6 +42,8 @@ import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
+import fr.cnes.regards.modules.storage.client.IAipClient;
+import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 
 /**
@@ -43,6 +52,8 @@ import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
  */
 @Component
 public class AIPEventHandler implements IHandler<AIPEvent> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPEventHandler.class);
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -56,26 +67,32 @@ public class AIPEventHandler implements IHandler<AIPEvent> {
     @Autowired
     private IPublisher publisher;
 
+    @Autowired
+    private IAipClient aipClient;
+
     @Override
     public void handle(TenantWrapper<AIPEvent> pWrapper) {
         AIPEvent event = pWrapper.getContent();
-        switch (event.getAipState()) {
-            case STORAGE_ERROR:
-                handleStorageError(pWrapper.getTenant(), event.getIpId());
-                break;
-            case STORED:
-                handleStorageSuccess(pWrapper.getTenant(), event.getIpId());
-                break;
-            case DELETED:
-                handleDeleted(pWrapper.getTenant(), event.getIpId());
-                break;
-            case PENDING:
-            case STORING_METADATA:
-            case UPDATED:
-            case VALID:
-            default:
-                break;
-
+        if ((event != null) && (event.getAipState() != null)) {
+            LOGGER.debug("AIP Event received : {} - {} - {}", pWrapper.getTenant(), event.getIpId(),
+                         event.getAipState());
+            switch (event.getAipState()) {
+                case STORAGE_ERROR:
+                    handleStorageError(pWrapper.getTenant(), event.getIpId());
+                    break;
+                case STORED:
+                    handleStorageSuccess(pWrapper.getTenant(), event.getIpId());
+                    break;
+                case DELETED:
+                    handleDeleted(pWrapper.getTenant(), event.getIpId(), event.getSipId());
+                    break;
+                case PENDING:
+                case STORING_METADATA:
+                case UPDATED:
+                case VALID:
+                default:
+                    break;
+            }
         }
     }
 
@@ -98,7 +115,7 @@ public class AIPEventHandler implements IHandler<AIPEvent> {
         runtimeTenantResolver.clearTenant();
     }
 
-    private void handleDeleted(String tenant, String ipId) {
+    private void handleDeleted(String tenant, String ipId, String sipIpId) {
         // AIP Deleted
         runtimeTenantResolver.forceTenant(tenant);
         // Check if deleted AIP exists in internal database
@@ -107,6 +124,28 @@ public class AIPEventHandler implements IHandler<AIPEvent> {
             // Delete aip
             aipRepository.delete(oAip.get());
         }
+        // Retrieve all AIP associated to the SIP.
+        ResponseEntity<PagedResources<Resource<AIP>>> result = aipClient.retrieveAIPs(sipIpId, null, null, null, 0,
+                                                                                      100);
+        if (result.getStatusCode().equals(HttpStatus.OK) && (result.getBody() != null)) {
+            Optional<SIPEntity> oSip = sipRepository.findOneByIpId(sipIpId);
+            if (oSip.isPresent()) {
+                SIPEntity sip = oSip.get();
+                // If all AIPs are deleted, update sip to DELETED state
+                if (result.getBody().getContent().stream()
+                        .allMatch(resource -> fr.cnes.regards.modules.storage.domain.AIPState.DELETED
+                                .equals(resource.getContent().getState()))) {
+                    sip.setState(SIPState.DELETED);
+                } else {
+                    // Else update sip to incomplete
+                    sip.setState(SIPState.INCOMPLETE);
+                }
+                sip.setLastUpdateDate(OffsetDateTime.now());
+                sipRepository.save(sip);
+                publisher.publish(new SIPEvent(sip));
+            }
+        }
+
         runtimeTenantResolver.clearTenant();
     }
 

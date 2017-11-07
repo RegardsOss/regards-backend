@@ -104,12 +104,13 @@ public class IngestController implements IResourceController<SIPEntity> {
     @ResourceAccess(description = "Search for SIPEntities with optional criterion.")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<SIPEntity>>> search(
+            @PathVariable(name = "sipId", required = false) String sipId,
             @PathVariable(name = "owner", required = false) String owner,
             @PathVariable(name = "from", required = false) OffsetDateTime from,
             @PathVariable(name = "state", required = false) SIPState state,
             @PathVariable(name = "sessionId", required = false) String sessionId, Pageable pageable,
             PagedResourcesAssembler<SIPEntity> pAssembler) {
-        Page<SIPEntity> sipEntities = sipService.getSIPEntities(sessionId, owner, from, state, pageable);
+        Page<SIPEntity> sipEntities = sipService.getSIPEntities(sipId, sessionId, owner, from, state, pageable);
         PagedResources<Resource<SIPEntity>> resources = toPagedResources(sipEntities, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }

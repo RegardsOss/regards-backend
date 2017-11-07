@@ -34,6 +34,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
@@ -58,6 +59,9 @@ public class AIPStorageBulkRequestService
     @Autowired
     private ISubscriber subscriber;
 
+    @Autowired
+    private AIPEventHandler aipEventHandler;
+
     @Value("${regards.ingest.aips.bulk.request.limit:10000}")
     private Integer bulkRequestLimit;
 
@@ -67,7 +71,7 @@ public class AIPStorageBulkRequestService
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
-        subscriber.subscribeTo(AIPEvent.class, new AIPEventHandler());
+        subscriber.subscribeTo(AIPEvent.class, aipEventHandler);
     }
 
     @Override
@@ -82,7 +86,8 @@ public class AIPStorageBulkRequestService
         Set<Long> aipsInRequest = Sets.newHashSet();
         while ((aipsInRequest.size() < bulkRequestLimit) && it.hasNext()) {
             Long aipId = it.next();
-            aips.add(aipRepository.findOne(it.next()).getAip());
+            AIPEntity aip = aipRepository.findOne(aipId);
+            aips.add(aip.getAip());
             aipsInRequest.add(aipId);
         }
         aipClient.store(aips);

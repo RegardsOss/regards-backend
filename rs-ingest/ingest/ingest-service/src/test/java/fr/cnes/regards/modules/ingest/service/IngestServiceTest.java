@@ -106,7 +106,7 @@ public class IngestServiceTest extends AbstractRegardsServiceTransactionalIT {
         Assert.assertTrue(two.getVersion() == 2);
         Assert.assertTrue(SIPState.REJECTED.equals(two.getState()));
 
-        Page<SIPEntity> page = sipService.getSIPEntities(SESSION_ID, null, null, null, new PageRequest(0, 10));
+        Page<SIPEntity> page = sipService.getSIPEntities(null, SESSION_ID, null, null, null, new PageRequest(0, 10));
         Assert.assertTrue(page.getNumberOfElements() == 1);
     }
 
@@ -134,7 +134,7 @@ public class IngestServiceTest extends AbstractRegardsServiceTransactionalIT {
         Assert.assertNotNull(sips);
         Assert.assertTrue(sips.size() == sipNb);
 
-        Page<SIPEntity> page = sipService.getSIPEntities(null, null, null, null, new PageRequest(0, 10));
+        Page<SIPEntity> page = sipService.getSIPEntities(null, null, null, null, null, new PageRequest(0, 10));
         Assert.assertTrue(page.getNumberOfElements() == sipNb);
     }
 
