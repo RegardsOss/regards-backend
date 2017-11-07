@@ -1,6 +1,9 @@
 package fr.cnes.regards.modules.order.test;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -46,6 +49,8 @@ import fr.cnes.regards.modules.storage.domain.event.DataFileEventState;
 @PropertySource(value = { "classpath:test.properties", "classpath:test_${user.name}.properties" },
         ignoreResourceNotFound = true)
 public class ServiceConfiguration {
+    @Autowired
+    private IPublisher publisher;
 
     @Bean
     public ISearchClient mockSearchClient() {
@@ -59,57 +64,68 @@ public class ServiceConfiguration {
 
     @Bean
     public IAipClient mockAipClient() {
-        return new IAipClient() {
-
-            @Autowired
-            private IPublisher publisher;
+        final AipClientProxy aipClientProxy = new AipClientProxy(publisher);
+        InvocationHandler handler = new InvocationHandler() {
 
             @Override
-            public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(AIPState pState, OffsetDateTime pFrom,
-                    OffsetDateTime pTo, int pPage, int pSize) {
-                return null;
-            }
-
-            @Override
-            public ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(String s) {
-                return null;
-            }
-
-            @Override
-            public ResponseEntity<List<String>> retrieveAIPVersionHistory(UniformResourceName pIpId, int pPage,
-                    int pSize) {
-                return null;
-            }
-
-            @Override
-            public ResponseEntity<AvailabilityResponse> makeFilesAvailable(AvailabilityRequest availabilityRequest) {
-                for (String checksum : availabilityRequest.getChecksums()) {
-                    if ((int)(Math.random() * 10) % 2 == 0) {
-                        publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, checksum));
-                    } else {
-                        publisher.publish(new DataFileEvent(DataFileEventState.ERROR, checksum));
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                for (Method aipClientProxyMethod : aipClientProxy.getClass().getMethods()) {
+                    if (aipClientProxyMethod.getName().equals(method.getName())) {
+                        return aipClientProxyMethod.invoke(aipClientProxy, args);
                     }
                 }
-                return ResponseEntity.ok(new AvailabilityResponse(Collections.emptySet(), Collections.emptySet(),
-                                                                 Collections.emptySet()));
-            }
-
-            @Override
-            public Response downloadFile(String aipId, String checksum) {
-                Response mockResp = Mockito.mock(Response.class);
-                try {
-                    Mockito.when(mockResp.body().asInputStream()).thenReturn( getClass().getResourceAsStream("/files/" + checksum));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return mockResp;
-            }
-
-            @Override
-            public ResponseEntity<Set<UUID>> store(AIPCollection aips) {
                 return null;
             }
         };
+        return (IAipClient) Proxy.newProxyInstance(IAipClient.class.getClassLoader(), new Class<?>[] { IAipClient.class }, handler);
+    }
+
+    private class AipClientProxy {
+        private IPublisher publisher;
+
+        public AipClientProxy(IPublisher publisher) {
+            this.publisher = publisher;
+        }
+
+        public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(AIPState pState, OffsetDateTime pFrom,
+                OffsetDateTime pTo, int pPage, int pSize) {
+            return null;
+        }
+
+        public ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(String s) {
+            return null;
+        }
+
+        public ResponseEntity<List<String>> retrieveAIPVersionHistory(UniformResourceName pIpId, int pPage,
+                int pSize) {
+            return null;
+        }
+
+        public ResponseEntity<AvailabilityResponse> makeFilesAvailable(AvailabilityRequest availabilityRequest) {
+            for (String checksum : availabilityRequest.getChecksums()) {
+                if ((int)(Math.random() * 10) % 2 == 0) {
+                    publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, checksum));
+                } else {
+                    publisher.publish(new DataFileEvent(DataFileEventState.ERROR, checksum));
+                }
+            }
+            return ResponseEntity.ok(new AvailabilityResponse(Collections.emptySet(), Collections.emptySet(),
+                                                              Collections.emptySet()));
+        }
+
+        public Response downloadFile(String aipId, String checksum) {
+            Response mockResp = Mockito.mock(Response.class);
+            try {
+                Mockito.when(mockResp.body().asInputStream()).thenReturn( getClass().getResourceAsStream("/files/" + checksum));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return mockResp;
+        }
+
+        public ResponseEntity<Set<UUID>> store(AIPCollection aips) {
+            return null;
+        }
     }
 
     @Bean
