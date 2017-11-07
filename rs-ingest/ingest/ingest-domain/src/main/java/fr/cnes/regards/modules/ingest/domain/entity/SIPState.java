@@ -87,6 +87,10 @@ public enum SIPState {
      */
     STORE_ERROR,
     /**
+     * SIP has been indexed
+     */
+    INDEXED,
+    /**
      * SIP is partially stored.
      */
     INCOMPLETE,
