@@ -37,10 +37,13 @@
 package fr.cnes.regards.modules.project.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
@@ -79,13 +82,24 @@ public interface IProjectConnectionService {
      * @return Created ProjectConnection
      * @throws ModuleException
      *             <br/>
-     *             {@link fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException} Project connection already exists for couple (project name/
+     *             {@link fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException} Project
+     *             connection already exists for couple (project name/
      *             microservice name)<br/>
-     *             {@link EntityAlreadyExistsException} ModuleEntityNotFoundException The Project referenced doesn't exists
+     *             {@link EntityAlreadyExistsException} ModuleEntityNotFoundException The Project referenced doesn't
+     *             exists
      * @since 1.0-SNAPSHOT
      */
     ProjectConnection createProjectConnection(ProjectConnection pProjectConnection, boolean silent)
             throws ModuleException;
+
+    /**
+     * Create static project connection and activate it if and only if it doesn't exist! Else do nothing! Only useful
+     * for statically configured datasources.
+     * @param projectConnection the connection to eventually create
+     * @return {@link ProjectConnection}
+     * @throws ModuleException if error occurs!
+     */
+    ProjectConnection createStaticProjectConnection(ProjectConnection projectConnection) throws ModuleException;
 
     /**
      *
@@ -132,13 +146,21 @@ public interface IProjectConnectionService {
             throws EntityNotFoundException;
 
     /**
-     * Retrieve all tenant connections for a specified microservice
+     * Check is a connection already exists
+     * @param projectName project name
+     * @param microService microservice
+     * @return
+     */
+    boolean existsProjectConnection(final String projectName, String microService);
+
+    /**
+     * Retrieve all enabled tenant connections for a specified microservice
      *
      * @param microservice
      *            microservice name
      * @return all tenant connections
      */
-    List<ProjectConnection> retrieveProjectConnection(String microService) throws EntityNotFoundException;
+    List<ProjectConnection> retrieveProjectConnections(String microService);
 
     /**
      * Retrieve all project connections from database for a given project/tenant.
@@ -165,29 +187,14 @@ public interface IProjectConnectionService {
     ProjectConnection retrieveProjectConnectionById(Long pId) throws EntityNotFoundException;
 
     /**
-     * Enable a tenant connection
-     *
-     * @param pMicroService
-     *            related microservice
-     * @param pProjectName
-     *            related tenant
-     * @return related project connection
+     * Update project connection state
+     * @param microservice microservice
+     * @param projectName project name
+     * @param state state
+     * @param errorCause error cause if state equals to {@link TenantConnectionState#ERROR}
+     * @return {@link ProjectConnection}
      * @throws EntityNotFoundException
-     *             implementation exception
      */
-    ProjectConnection enableProjectConnection(String pMicroService, String pProjectName) throws EntityNotFoundException;
-
-    /**
-     * Disable a tenant connection
-     *
-     * @param pMicroService
-     *            related microservice
-     * @param pProjectName
-     *            related tenant
-     * @return related project connection
-     * @throws EntityNotFoundException
-     *             implementation exception
-     */
-    ProjectConnection disableProjectConnection(String pMicroService, String pProjectName)
-            throws EntityNotFoundException;
+    ProjectConnection updateState(String microservice, String projectName, TenantConnectionState state,
+            Optional<String> errorCause) throws EntityNotFoundException;
 }

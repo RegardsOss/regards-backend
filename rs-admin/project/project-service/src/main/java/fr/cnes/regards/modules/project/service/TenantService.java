@@ -25,6 +25,7 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -77,7 +78,7 @@ public class TenantService implements ITenantService {
         for (Project project : projects) {
             ProjectConnection pc = projectConnectionRepository.findOneByProjectNameAndMicroservice(project.getName(),
                                                                                                    microserviceName);
-            if ((pc != null) && pc.isEnabled()) {
+            if ((pc != null) && TenantConnectionState.ENABLED.equals(pc.getState())) {
                 tenants.add(project.getName());
             }
         }
