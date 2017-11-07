@@ -19,9 +19,11 @@
 package fr.cnes.regards.framework.jpa.multitenant.resolver;
 
 import java.util.List;
+import java.util.Optional;
 
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 
 /**
  *
@@ -39,47 +41,34 @@ public interface ITenantConnectionResolver {
      *
      * Retrieve all <b>enabled connection configuration</b> for each tenant of the specified microservice
      *
-     * @param microserviceName
+     * @param microservice
      *            related microservice
      * @return List of existing {@link TenantConnection}
      * @since 1.0-SNAPSHOT
      */
-    List<TenantConnection> getTenantConnections(String microserviceName) throws JpaMultitenantException;
+    List<TenantConnection> getTenantConnections(String microservice) throws JpaMultitenantException;
 
     /**
      *
      * Add a new tenant connection
      *
-     * @param microserviceName
+     * @param microservice
      *            related microservice
      * @param pTenantConnection
      *            tenant connection for specified microservice
      * @throws JpaMultitenantException
      *             implementation exception
      */
-    void addTenantConnection(String microserviceName, TenantConnection tenantConnection) throws JpaMultitenantException;
+    void addTenantConnection(String microservice, TenantConnection tenantConnection) throws JpaMultitenantException;
 
     /**
-     * Enable a tenant connection
-     *
-     * @param microserviceName
-     *            related microservice
-     * @param tenant
-     *            related tenant
-     * @throws JpaMultitenantException
-     *             implementation exception
+     * Update connection state giving optional error cause
+     * @param microservice target microservice
+     * @param tenant target tenant
+     * @param state new connection state
+     * @param errorCause optional error cause (useful when {@link TenantConnectionState#ERROR}!)
+     * @return updated connection
      */
-    void enableTenantConnection(String microserviceName, String tenant) throws JpaMultitenantException;
-
-    /**
-     * Disable a tenant connection
-     *
-     * @param microserviceName
-     *            related microservice
-     * @param tenant
-     *            related tenant
-     * @throws JpaMultitenantException
-     *             implementation exception
-     */
-    void disableTenantConnection(String microserviceName, String tenant) throws JpaMultitenantException;
+    void updateState(String microservice, String tenant, TenantConnectionState state, Optional<String> errorCause)
+            throws JpaMultitenantException;
 }

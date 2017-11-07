@@ -20,12 +20,14 @@ package fr.cnes.regards.framework.jpa.multitenant.resolver;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 
 /**
  *
@@ -34,6 +36,7 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
  * Default resolver. Return empty list
  *
  * @author Sébastien Binda
+ * @author Marc Sordi
  * @since 1.0-SNAPSHOT
  */
 public class DefaultTenantConnectionResolver implements ITenantConnectionResolver {
@@ -56,13 +59,9 @@ public class DefaultTenantConnectionResolver implements ITenantConnectionResolve
     }
 
     @Override
-    public void enableTenantConnection(String pMicroserviceName, String pTenant) throws JpaMultitenantException {
-        // Nothing to do
-    }
-
-    @Override
-    public void disableTenantConnection(String pMicroserviceName, String pTenant) throws JpaMultitenantException {
-        // Nothing to do
+    public void updateState(String microservice, String tenant, TenantConnectionState state,
+            Optional<String> errorCause) throws JpaMultitenantException {
+        LOGGER.warn("No Tenant connections resolver defined. Tenant connection is not updated.");
     }
 
 }

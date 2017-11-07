@@ -67,7 +67,7 @@ public class JpaMultitenantController {
     private Map<String, DataSource> dataSources;
 
     @RequestMapping(method = RequestMethod.GET, value = "/test")
-    @ResourceAccess(description = "Test the tenant connection", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Test the tenant connection", role = DefaultRole.ADMIN)
     public ResponseEntity<GenericResponseBody> testTenantConnection(@PathVariable String tenant) {
 
         DataSource dataSource = dataSources.get(tenant);
