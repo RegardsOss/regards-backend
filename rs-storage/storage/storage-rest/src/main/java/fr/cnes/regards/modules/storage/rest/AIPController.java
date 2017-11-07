@@ -57,6 +57,7 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
+import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 
@@ -236,7 +237,7 @@ public class AIPController implements IResourceController<AIP> {
         return new ResponseEntity<>(aipService.retrieveAip(ipId), HttpStatus.OK);
     }
 
-    @RequestMapping(value = ID_PATH, method = RequestMethod.PUT)
+    @RequestMapping(value = ID_PATH, method = RequestMethod.PUT, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     @ResourceAccess(description = "allows to update a given aip metadata")
     @ResponseBody
     public ResponseEntity<AIP> updateAip(@PathVariable(name = "ip_id") String ipId, @RequestBody @Valid AIP updated)
@@ -272,7 +273,7 @@ public class AIPController implements IResourceController<AIP> {
 
     @RequestMapping(value = VERSION_PATH, method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "send the list of files of a specified aip")
+    @ResourceAccess(description = "send the list of versions of an aip threw there ip ids")
     public ResponseEntity<List<String>> retrieveAIPVersionHistory(
             @PathVariable("ip_id") @Valid UniformResourceName pIpId, final Pageable pPageable,
             final PagedResourcesAssembler<AIP> pAssembler) throws EntityNotFoundException {

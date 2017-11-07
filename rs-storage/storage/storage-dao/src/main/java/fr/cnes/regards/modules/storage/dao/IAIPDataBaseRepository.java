@@ -111,4 +111,7 @@ public interface IAIPDataBaseRepository extends JpaRepository<AIPDataBase, Long>
 
     @EntityGraph("graph.aip.tags")
     Set<AIPDataBase> findAllBySipId(String sipIpId);
+
+    @EntityGraph("graph.aip.tags")
+    Page<AIPDataBase> findAllBySipId(String sipId, Pageable pageable);
 }
