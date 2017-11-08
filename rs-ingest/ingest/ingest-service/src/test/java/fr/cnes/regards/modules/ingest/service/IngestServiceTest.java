@@ -30,11 +30,8 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
@@ -48,10 +45,9 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * @author Marc Sordi
+ * @author Sébastien Binda
  */
-@TestPropertySource(locations = "classpath:test.properties")
-@ContextConfiguration(classes = { TestConfiguration.class })
-public class IngestServiceTest extends AbstractRegardsServiceTransactionalIT {
+public class IngestServiceTest extends AbstractSIPTest {
 
     @Autowired
     private ISIPRepository sipRepository;
@@ -66,6 +62,8 @@ public class IngestServiceTest extends AbstractRegardsServiceTransactionalIT {
     private ISIPService sipService;
 
     private final static String SESSION_ID = "sessionId";
+
+    private final static String PROCESSING = "processingChain";
 
     @Before
     public void init() {
@@ -84,7 +82,7 @@ public class IngestServiceTest extends AbstractRegardsServiceTransactionalIT {
     @Test
     public void ingestWithCollision() throws ModuleException {
 
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder("processingChain", SESSION_ID);
+        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(PROCESSING, SESSION_ID);
         SIPCollection collection = colBuilder.build();
 
         SIPBuilder builder = new SIPBuilder("SIP_001");
@@ -140,8 +138,102 @@ public class IngestServiceTest extends AbstractRegardsServiceTransactionalIT {
 
     @Purpose("Manage ingestion retry after error")
     @Test
-    public void retryIngest() {
-        // TODO : Check retry
+    public void retryIngest() throws NoSuchAlgorithmException, IOException, ModuleException {
+        // Simulate a SIP in CREATED state
+        SIPEntity sip = createSIP("RETY_SIP_001", SESSION_ID, PROCESSING, "admin", 1);
+        sip = sipRepository.save(sip);
+        try {
+            ingestService.retryIngest(sip.getIpId());
+            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");
+        } catch (ModuleException e) {
+            // Tothing to do
+        }
+        sip.setState(SIPState.QUEUED);
+        sip = sipRepository.save(sip);
+        try {
+            ingestService.retryIngest(sip.getIpId());
+            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");
+        } catch (ModuleException e) {
+            // Tothing to do
+        }
+
+        sip.setState(SIPState.INCOMPLETE);
+        sip = sipRepository.save(sip);
+        try {
+            ingestService.retryIngest(sip.getIpId());
+            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a incompletly stored ingest");
+        } catch (ModuleException e) {
+            // Tothing to do
+        }
+
+        sip.setState(SIPState.INDEXED);
+        sip = sipRepository.save(sip);
+        try {
+            ingestService.retryIngest(sip.getIpId());
+            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a indexed ingest");
+        } catch (ModuleException e) {
+            // Tothing to do
+        }
+
+        sip.setState(SIPState.AIP_CREATED);
+        sip = sipRepository.save(sip);
+        try {
+            ingestService.retryIngest(sip.getIpId());
+            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");
+        } catch (ModuleException e) {
+            // Tothing to do
+        }
+
+        sip.setState(SIPState.STORED);
+        sip = sipRepository.save(sip);
+        try {
+            ingestService.retryIngest(sip.getIpId());
+            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a stored ingest");
+        } catch (ModuleException e) {
+            // Tothing to do
+        }
+
+        sip.setState(SIPState.VALID);
+        sip = sipRepository.save(sip);
+        try {
+            ingestService.retryIngest(sip.getIpId());
+            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");
+        } catch (ModuleException e) {
+            // Tothing to do
+        }
+
+        sip.setState(SIPState.STORE_ERROR);
+        sip = sipRepository.save(sip);
+        try {
+            ingestService.retryIngest(sip.getIpId());
+            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a store error ingest");
+        } catch (ModuleException e) {
+            // Tothing to do
+        }
+
+        sip.setState(SIPState.REJECTED);
+        sip = sipRepository.save(sip);
+        try {
+            ingestService.retryIngest(sip.getIpId());
+            Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a rejected ingest");
+        } catch (ModuleException e) {
+            // Tothing to do
+        }
+
+        // Simulate a SIP in AIP_GEN_ERROR error
+        sip.setState(SIPState.AIP_GEN_ERROR);
+        sip = sipRepository.save(sip);
+        ingestService.retryIngest(sip.getIpId());
+        sip = sipRepository.findOne(sip.getId());
+        Assert.assertTrue("After retry SIP should be reset to state CREATED", SIPState.CREATED.equals(sip.getState()));
+
+        // Simulate a SIP in AIP_GEN_ERROR error
+        sip.setState(SIPState.INVALID);
+        sip = sipRepository.save(sip);
+        ingestService.retryIngest(sip.getIpId());
+        sip = sipRepository.findOne(sip.getId());
+        Assert.assertTrue("After retry SIP should be reset to state CREATED", SIPState.CREATED.equals(sip.getState()));
+
     }
 
     private void ingestNextVersion(String sipId, Integer version)
@@ -149,7 +241,7 @@ public class IngestServiceTest extends AbstractRegardsServiceTransactionalIT {
 
         String sipFilename = "sip" + version + ".xml";
 
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder("processingChain", "sessionId");
+        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(PROCESSING, SESSION_ID);
         SIPCollection collection = colBuilder.build();
 
         SIPBuilder builder = new SIPBuilder(sipId);
