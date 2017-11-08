@@ -30,6 +30,7 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.Point;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -76,7 +77,7 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
 
     @PluginParameter(name = SESSION_PARAM, optional = true)
     private String sessionId;
-    
+
     @PluginParameter(name = INGEST_PROCESSING_CHAIN_PARAM, optional = true)
     private String ingestProcessindChain;
 
@@ -183,12 +184,7 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     }
 
     private GeoAttribute createPointAttribute(String name, Double latitude, Double longitude) {
-
-        Point pp = new Point();
-        Double[] bb = { latitude, longitude };
-        pp.setBbox(bb);
-        pp.setCrs(Crs.EARTH.toString());
-
+        IGeometry pp = IGeometry.point(IGeometry.position(longitude, latitude));
         GeoAttribute attr = new GeoAttribute();
         attr.setMetaAttribute(new MetaAttribute(name, AttributeTypeEnum.TYPE_GEO_LOCATION));
         attr.addValue(pp);

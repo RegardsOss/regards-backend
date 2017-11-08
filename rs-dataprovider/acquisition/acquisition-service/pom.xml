@@ -73,13 +73,14 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.ingest</groupId>
 			<artifactId>ingest-client</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>fr.cnes.regards.framework</groupId>
+					<artifactId>feign-regards-starter</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>		
 		<!-- Test dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework.utils</groupId>
 			<artifactId>file-utils</artifactId>
@@ -87,6 +88,18 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.entities</groupId>
 			<artifactId>entities-client</artifactId>
+<!-- 			<exclusions>
+				<exclusion>
+					<groupId>fr.cnes.regards.framework</groupId>
+					<artifactId>feign-regards-starter</artifactId>
+				</exclusion>
+			</exclusions>
+ -->
+ 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

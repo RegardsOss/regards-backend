@@ -56,8 +56,6 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
     @Autowired
     private IMetaFileService metaFileService;
 
-    public static final String EXISTING_PRODUCT = "SMM_TUC_AXVCNE20081201_150235_19900101_000000_20380118_191407";
-
     private static final String DIR_DATA = "data";
 
     /**
@@ -79,34 +77,67 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
 
     @Override
     public Set<AcquisitionFile> getAcquisitionFiles() {
-
-        LOGGER.info("Start check for the chain <{}> ", chainLabel);
+        LOGGER.info("Start scan for the chain <{}> ", chainLabel);
 
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
-        acqFileList.add(createAcquisitionFile("data", "PAUB_MESURE_TC_20130701_091200.TXT"));
-        acqFileList.add(createAcquisitionFile("data", "PAUB_MESURE_TC_20130701_103715.TXT"));
-        acqFileList.add(createAcquisitionFile("data/income",
-                                              "CS_OPER_AUX_DORUSO_20100704T073447_20100705T010524_0001.DBL"));
-        acqFileList.add(createAcquisitionFile("data/income",
-                                              "CS_OPER_AUX_DORUSO_20100704T073447_20100705T010524_0001.HDR"));
+        acqFileList.add(createAcquisitionFileMandatory(DIR_DATA, "PAUB_MESURE_TC_20130701_091200.TXT"));
+        acqFileList.add(createAcquisitionFileMandatory(DIR_DATA, "PAUB_MESURE_TC_20130701_103715.TXT"));
+        acqFileList.add(createAcquisitionFileMandatory(DIR_DATA, "PAUB_MESURE_TC_20130701_105909.TXT"));
+        acqFileList
+                .add(createAcquisitionFileMandatory(DIR_DATA,
+                                                    "SMM_TUC_AXVCNE20081201_150235_19900101_000000_20380118_191407"));
+        acqFileList.add(createAcquisitionFileMandatory("data/income",
+                                                       "CS_OPER_AUX_DORUSO_20100704T073447_20100705T010524_0001.DBL"));
+        
+        AcquisitionFile optionalAcqFile = createAcquisitionFileOptional("data/income",
+                                                                        "CS_OPER_AUX_DORUSO_20100704T073447_20100705T010524_0001.HDR");
+        if (optionalAcqFile != null) {
+            acqFileList.add(optionalAcqFile);
+        }
 
-        acqFileList.add(createAcquisitionFile("data", "PAUB_MESURE_TC_20130701_105909.TXT"));
+        // Create an unknown acquisition file 
         acqFileList.add(createBadAcquisitionFile("data", "PAUB_MESURE_TC_20130701_091200.TXTXX"));
-        acqFileList.add(createAcquisitionFile("data", EXISTING_PRODUCT));
 
-        LOGGER.info("End check for the chain <{}> ", chainLabel);
+        LOGGER.info("End scan for the chain <{}> ", chainLabel);
 
         return acqFileList;
     }
 
-    private AcquisitionFile createAcquisitionFile(String dir, String name) {
-        MetaFileDto metaFileDto = metaFiles.getSetOfMetaFiles().iterator().next();
+    private AcquisitionFile createAcquisitionFileMandatory(String dir, String name) {
+        MetaFileDto metaFileDto = getMetaFileOptional(false);
         File file = new File(getClass().getClassLoader().getResource(dir + "/" + name).getFile());
         AcquisitionFile af = initAcquisitionFile(file, metaFileService.retrieve(metaFileDto.getId()), CHECKUM_ALGO);
         af.setAcqDate(OffsetDateTime.now());
 
         return af;
+    }
+
+    private AcquisitionFile createAcquisitionFileOptional(String dir, String name) {
+        MetaFileDto metaFileDto = getMetaFileOptional(true);
+
+        if (metaFileDto == null) {
+            return null;
+        }
+
+        File file = new File(getClass().getClassLoader().getResource(dir + "/" + name).getFile());
+        AcquisitionFile af = initAcquisitionFile(file, metaFileService.retrieve(metaFileDto.getId()), CHECKUM_ALGO);
+        af.setAcqDate(OffsetDateTime.now());
+
+        return af;
+    }
+
+    MetaFileDto getMetaFileOptional(boolean optional) {
+        MetaFileDto res = null;
+        for (MetaFileDto mf : metaFiles.getSetOfMetaFiles()) {
+            if (optional && !mf.getMandatory()) {
+                res = mf;
+            }
+            if (!optional && mf.getMandatory()) {
+                res = mf;
+            }
+        }
+        return res;
     }
 
     private AcquisitionFile createBadAcquisitionFile(String dir, String name) {
@@ -116,11 +147,10 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
         af.setSize(123456L);
         af.setAcqDate(OffsetDateTime.now());
         af.setChecksumAlgorithm(CHECKUM_ALGO);
-        af.setChecksum(null); // TODO CMZ setChecksum à compléter
+        af.setChecksum("unknown file");
         af.setStatus(AcquisitionFileStatus.IN_PROGRESS);
 
-        MetaFileDto metaFileDto = metaFiles.getSetOfMetaFiles().iterator().next();
-        af.setMetaFile(metaFileService.retrieve(metaFileDto.getId()));
+        af.setMetaFile(metaFileService.retrieve(getMetaFileOptional(false).getId()));
 
         return af;
     }

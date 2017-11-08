@@ -25,18 +25,17 @@ package fr.cnes.regards.modules.acquisition.domain;
  */
 public enum ProductStatus {
     /**
-     * The {@link Product} is scanned
+     * At least a mandatory file is missing
      */
-    FINISHED,
+    ACQUIRING,
     /**
-     * The {@link Product} check is OK
-     * TODO CMZ util ?
+     * All mandatory files is acquired
      */
     COMPLETED,
     /**
-     * The {@link Product} is currently acquiring
+     * Mandatory and optional files is acquired
      */
-    ACQUIRING,
+    FINISHED,
     /**
      * The {@link Product} is in error
      */

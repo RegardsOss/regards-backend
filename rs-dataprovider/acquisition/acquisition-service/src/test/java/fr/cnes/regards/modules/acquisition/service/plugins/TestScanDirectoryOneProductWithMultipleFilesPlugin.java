@@ -31,8 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformationsBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaFileDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
@@ -47,22 +45,20 @@ import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 @Plugin(id = "TestScanDirectoryOneProductWithMultipleFilesPlugin", version = "1.0.0-SNAPSHOT",
         description = "TestScanDirectoryOneProductWithMultipleFilesPlugin", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
-public class TestScanDirectoryOneProductWithMultipleFilesPlugin extends AbstractAcquisitionScanPlugin implements IAcquisitionScanDirectoryPlugin {
+public class TestScanDirectoryOneProductWithMultipleFilesPlugin extends AbstractAcquisitionScanPlugin
+        implements IAcquisitionScanDirectoryPlugin {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TestScanDirectoryOneProductWithMultipleFilesPlugin.class);
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(TestScanDirectoryOneProductWithMultipleFilesPlugin.class);
 
     @Autowired
     private IMetaFileService metaFileService;
-
-    public static final String EXISTING_PRODUCT = "SMM_TUC_AXVCNE20081201_150235_19900101_000000_20380118_191407";
-
-    private static final String DIR_DATA = "data";
 
     private static final String CHECKUM_ALGO = "SHA-256";
 
     @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
     private String chainLabel;
-    
+
     @PluginParameter(name = LAST_ACQ_DATE_PARAM, optional = true)
     private String lastDateActivation;
 
@@ -75,38 +71,47 @@ public class TestScanDirectoryOneProductWithMultipleFilesPlugin extends Abstract
     @Override
     public Set<AcquisitionFile> getAcquisitionFiles() {
         LOGGER.info("Start scan for the chain <{}> ", chainLabel);
+
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
-        acqFileList.add(createAcquisitionFile("data/income", "CS_OPER_STR1DAT_0__20100705T063000_20100705T064959_0001.DBL"));
-        acqFileList.add(createAcquisitionFile("data/income", "CS_OPER_STR1DAT_0__20100705T063000_20100705T064959_0001.HDR"));
-        acqFileList.add(createAcquisitionFile("data/income", "CS_OPER_STR1DAT_0__20100805T103000_20100805T110137_0001.DBL"));
-        acqFileList.add(createAcquisitionFile("data/income", "CS_OPER_STR1DAT_0__20100805T103000_20100805T110137_0001.HDR"));
-        acqFileList.add(createAcquisitionFile("data/income", "CS_OPER_TLM_DRTM___20100704T000000_20100704T235959_0001.HDR"));
-        acqFileList.add(createAcquisitionFile("data/income", "CS_OPER_TLM_DRTM___20100704T000000_20100704T235959_0001.DBL"));
+        acqFileList.add(createAcquisitionFileMandatory("data/income",
+                                                       "CS_OPER_STR1DAT_0__20100705T063000_20100705T064959_0001.DBL"));
+        acqFileList.add(createAcquisitionFileMandatory("data/income",
+                                                       "CS_OPER_STR1DAT_0__20100705T063000_20100705T064959_0001.HDR"));
+        acqFileList.add(createAcquisitionFileMandatory("data/income",
+                                                       "CS_OPER_STR1DAT_0__20100805T103000_20100805T110137_0001.DBL"));
+        acqFileList.add(createAcquisitionFileMandatory("data/income",
+                                                       "CS_OPER_STR1DAT_0__20100805T103000_20100805T110137_0001.HDR"));
+        acqFileList.add(createAcquisitionFileMandatory("data/income",
+                                                       "CS_OPER_TLM_DRTM___20100704T000000_20100704T235959_0001.HDR"));
+        acqFileList.add(createAcquisitionFileMandatory("data/income",
+                                                       "CS_OPER_TLM_DRTM___20100704T000000_20100704T235959_0001.DBL"));
 
-        
-        
         LOGGER.info("End scan for the chain <{}> ", chainLabel);
 
         return acqFileList;
     }
 
-    private AcquisitionFile createAcquisitionFile(String dir, String name) {
+    private AcquisitionFile createAcquisitionFileMandatory(String dir, String name) {
+        MetaFileDto metaFileDto = getMetaFileOptional(false);
         File file = new File(getClass().getClassLoader().getResource(dir + "/" + name).getFile());
-
-        AcquisitionFile af = new AcquisitionFile();
-        af.setAcquisitionInformations(FileAcquisitionInformationsBuilder.build(file.getParent().toString()).get());
-        af.setFileName(file.getName());
-        af.setSize(file.length());
+        AcquisitionFile af = initAcquisitionFile(file, metaFileService.retrieve(metaFileDto.getId()), CHECKUM_ALGO);
         af.setAcqDate(OffsetDateTime.now());
-        af.setChecksumAlgorithm(CHECKUM_ALGO);
-        af.setChecksum(null); // TODO CMZ setChecksum à compléter
-        af.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-
-        MetaFileDto metaFileDto = metaFiles.getSetOfMetaFiles().iterator().next();
-        af.setMetaFile(metaFileService.retrieve(metaFileDto.getId()));
 
         return af;
+    }
+
+    MetaFileDto getMetaFileOptional(boolean optional) {
+        MetaFileDto res = null;
+        for (MetaFileDto mf : metaFiles.getSetOfMetaFiles()) {
+            if (optional && !mf.getMandatory()) {
+                res = mf;
+            }
+            if (!optional && mf.getMandatory()) {
+                res = mf;
+            }
+        }
+        return res;
     }
 
     @Override

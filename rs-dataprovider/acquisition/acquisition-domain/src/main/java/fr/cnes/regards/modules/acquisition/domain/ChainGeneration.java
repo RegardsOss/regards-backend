@@ -63,7 +63,7 @@ public class ChainGeneration implements IIdentifiable<Long> {
     /**
      * A constant used to define a {@link String} constraint with length 128
      */
-    private static final int MAX_STRING_LENGTH = 128;
+    private static final int MAX_STRING_LENGTH = 256;
 
     /**
      * entity id for SGBD purpose mainly and REST request

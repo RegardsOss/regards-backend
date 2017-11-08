@@ -93,14 +93,14 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
     /**
      * The {@link List} of {@link AcquisitionFile} that should be check grouped by {@link Product} id
      */
-    private final Map<Long, List<AcquisitionFile>> afMap = new HashMap<Long, List<AcquisitionFile>>();
+    private Map<Long, List<AcquisitionFile>> afMap;
 
     @Override
     public void proceedStep() throws AcquisitionRuntimeException {
-        
+
         this.chainGeneration = process.getChainGeneration();
 
-        if (afMap.isEmpty()) {
+        if (this.afMap.isEmpty()) {
             LOGGER.info("Any file to process for the acquisition chain <{}>", this.chainGeneration.getLabel());
             return;
         }
@@ -129,7 +129,7 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
             // create MetaData for each Product
-            afMap.forEach((k, af) -> {
+            this.afMap.forEach((k, af) -> {
                 try {
                     this.sipCollection = generateSipPlugin.runPlugin(af, Optional.of(chainGeneration.getDataSet()));
                     processSipCollection();
@@ -165,6 +165,7 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
      */
     private void publishSipCollections() throws ModuleException {
         LOGGER.info("[{}] Start publish SIP Collections", chainGeneration.getSession());
+        LOGGER.info("CMZ - 2 : {}", ingestClient.getClass().toString());
 
         ResponseEntity<Collection<SIPEntity>> response = ingestClient.ingest(this.sipCollection);
 
@@ -229,6 +230,8 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
     @Override
     public void getResources() throws AcquisitionException {
+        this.afMap = new HashMap<Long, List<AcquisitionFile>>();
+        
         // Get the VALID AcquisitionFile
         List<AcquisitionFile> validFileList = new ArrayList<>();
         for (MetaFile metaFile : process.getChainGeneration().getMetaProduct().getMetaFiles()) {
@@ -245,14 +248,17 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
         // Get the AcquisitionFiles for each Product
         for (Product pr : products) {
-            List<AcquisitionFile> afs = new ArrayList<>();
-            validFileList.stream().filter(af -> af.getProduct().equals(pr)).forEach(af -> afs.add(af));
-            afMap.put(pr.getId(), afs);
+            if (pr.getStatus().equals(ProductStatus.COMPLETED) || pr.getStatus().equals(ProductStatus.FINISHED)) {
+                List<AcquisitionFile> afs = new ArrayList<>();
+                validFileList.stream().filter(af -> af.getProduct().equals(pr)).forEach(af -> afs.add(af));
+                this.afMap.put(pr.getId(), afs);
+            }
         }
     }
 
     @Override
     public void freeResources() throws AcquisitionException {
+        this.afMap = null;
     }
 
     @Override

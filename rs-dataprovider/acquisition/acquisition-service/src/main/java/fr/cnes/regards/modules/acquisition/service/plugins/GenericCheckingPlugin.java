@@ -20,10 +20,12 @@ package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.io.File;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
-import fr.cnes.regards.modules.acquisition.service.exception.ReadFileException;
 
 /**
  * plugin de verification des fichiers generic. Verifi uniquement la taille du nom du fichier
@@ -34,6 +36,8 @@ import fr.cnes.regards.modules.acquisition.service.exception.ReadFileException;
 @Plugin(description = "GenericCheckingPlugin", id = "GenericCheckingPlugin", version = "1.0.0", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class GenericCheckingPlugin implements ICheckFilePlugin {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicCheckFilePlugin.class);
 
     private static final int PRODUCT_NAME_MAX_SIZE = 128;
 
@@ -49,6 +53,32 @@ public class GenericCheckingPlugin implements ICheckFilePlugin {
 
     public GenericCheckingPlugin() {
         super();
+    }
+
+    @Override
+    public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
+        LOGGER.info("Start check file <{}>", fileToCheck.getAbsoluteFile());
+        boolean result = false;
+
+        // Check file exists
+        if (fileToCheck.exists() && fileToCheck.canRead()) {
+            String name = fileToCheck.getName();
+
+            if (name.length() > PRODUCT_NAME_MAX_SIZE) {
+                productName = name.substring(0, PRODUCT_NAME_MAX_SIZE);
+            } else {
+                productName = name;
+            }
+            nodeIdentifier = productName;
+            productVersion = 1;
+            fileVersion = 1;
+            logFilePath = null;
+            result = true;
+        } else {
+            LOGGER.error("Can't read file <{}>", fileToCheck.getAbsolutePath());
+        }
+
+        return result;
     }
 
     @Override
@@ -74,31 +104,5 @@ public class GenericCheckingPlugin implements ICheckFilePlugin {
     @Override
     public String getNodeIdentifier() {
         return nodeIdentifier;
-    }
-
-    @Override
-    public boolean runPlugin(File filetoCheck, String dataSetId) throws ModuleException {
-
-        boolean result = false;
-
-        // Check file exists
-        if (filetoCheck.exists() && filetoCheck.canRead()) {
-            String name = filetoCheck.getName();
-
-            if (name.length() > PRODUCT_NAME_MAX_SIZE) {
-                productName = name.substring(0, PRODUCT_NAME_MAX_SIZE);
-            } else {
-                productName = name;
-            }
-            nodeIdentifier = productName;
-            productVersion = 1;
-            fileVersion = 1;
-            logFilePath = null;
-            result = true;
-        } else {
-            throw new ReadFileException(filetoCheck.getAbsolutePath());
-        }
-
-        return result;
     }
 }

@@ -81,13 +81,13 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
     /**
      * {@link List} of {@link AcquisitionFile} that should be check
      */
-    private List<AcquisitionFile> inProgressFileList = new ArrayList<>();;
+    private List<AcquisitionFile> inProgressFileList;
 
     @Override
     public void proceedStep() throws AcquisitionRuntimeException {
         this.chainGeneration = process.getChainGeneration();
 
-        if (inProgressFileList.isEmpty()) {
+        if (inProgressFileList == null || inProgressFileList.isEmpty()) {
             LOGGER.info("Any file to process for the acquisition chain <{}>", this.chainGeneration.getLabel());
             return;
         }
@@ -114,23 +114,21 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
                     .getPlugin(this.chainGeneration.getCheckAcquisitionPluginConf().getId(),
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
-            if (inProgressFileList != null) {
-                // for each AcquisitionFile
-                for (AcquisitionFile acqFile : inProgressFileList) {
-                    File currentFile = acqFile.getFile();
+            // for each AcquisitionFile
+            for (AcquisitionFile acqFile : inProgressFileList) {
+                File currentFile = acqFile.getFile();
 
-                    // execute the check plugin
-                    if (checkPlugin.runPlugin(currentFile, chainGeneration.getDataSet())) {
-                        acqFile.setStatus(AcquisitionFileStatus.VALID);
-                    } else {
-                        acqFile.setStatus(AcquisitionFileStatus.INVALID);
-                    }
-
-                    // Check file status and link the AcquisitionFile to the Product
-                    Product product = checkFileStatus(acqFile, currentFile, checkPlugin.getProductName());
-
-                    synchronizedDatabase(acqFile, product);
+                // execute the check plugin
+                if (checkPlugin.runPlugin(currentFile, chainGeneration.getDataSet())) {
+                    acqFile.setStatus(AcquisitionFileStatus.VALID);
+                } else {
+                    acqFile.setStatus(AcquisitionFileStatus.INVALID);
                 }
+
+                // Check file status and link the AcquisitionFile to the Product
+                Product product = checkFileStatus(acqFile, currentFile, checkPlugin.getProductName());
+
+                synchronizedDatabase(acqFile, product);
             }
 
         } catch (ModuleException e) {
@@ -139,33 +137,11 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     }
 
-    private Product linkAcquisitionFileToProduct(AcquisitionFile acqFile, String productName) {
-        // Get the product if it exists
-        Product currentProduct = productService.retrieve(productName);
-
-        if (currentProduct == null) {
-            // It is a new Product,  create it
-            currentProduct = new Product();
-            currentProduct.setProductName(productName);
-            currentProduct.setStatus(ProductStatus.ACQUIRING);
-            currentProduct.setMetaProduct(process.getChainGeneration().getMetaProduct());
-
-        }
-
-        currentProduct.setSession(chainGeneration.getSession());
-        currentProduct.addAcquisitionFile(acqFile);
-        acqFile.setProduct(currentProduct);
-        //    currentProduct.setVersion(checkPlugin.getProductVersion()); TODO CMZ à virer 
-        //    acqFile.setNodeIdentifier(checkPlugin.getNodeIdentifier()); TODO CMZ à virer
-
-        return currentProduct;
-
-    }
-
     private Product checkFileStatus(AcquisitionFile acqFile, File currentFile, String productName)
             throws ModuleException {
         Product product = null;
         if (acqFile.getStatus().equals(AcquisitionFileStatus.VALID)) {
+
             LOGGER.info("Valid file {}", acqFile.getFileName());
 
             // Report status
@@ -176,6 +152,9 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
             product = linkAcquisitionFileToProduct(acqFile, productName);
 
         } else if (acqFile.getStatus().equals(AcquisitionFileStatus.INVALID)) {
+
+            // TODO CMZ à gérer le cas d'un fichier optionnel INVALID
+            // juste logger que le fichier est invalide, mais le produit peut quand même être bon
 
             LOGGER.info("Invalid file {}", acqFile.getFileName());
 
@@ -206,6 +185,65 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
         return product;
     }
 
+    private Product linkAcquisitionFileToProduct(AcquisitionFile acqFile, String productName) {
+        // Get the product if it exists
+        Product currentProduct = productService.retrieve(productName);
+
+        if (currentProduct == null) {
+            // It is a new Product,  create it
+            currentProduct = new Product();
+            currentProduct.setProductName(productName);
+            currentProduct.setMetaProduct(process.getChainGeneration().getMetaProduct());
+        }
+
+        currentProduct.setSession(chainGeneration.getSession());
+        currentProduct.addAcquisitionFile(acqFile);
+        calcProductStatus(currentProduct);
+
+        acqFile.setProduct(currentProduct);
+        //    currentProduct.setVersion(checkPlugin.getProductVersion()); TODO CMZ à virer 
+        //    acqFile.setNodeIdentifier(checkPlugin.getNodeIdentifier()); TODO CMZ à virer
+
+        return currentProduct;
+    }
+
+    private void calcProductStatus(Product product) {
+        int nbTotalMandatory = 0;
+        int nbTotalOptional = 0;
+        int nbActualMandatory = 0;
+        // At least one mandatory file is VALID
+        product.setStatus(ProductStatus.ACQUIRING);
+
+        for (MetaFile mf : process.getChainGeneration().getMetaProduct().getMetaFiles()) {
+            // Calculus the number of mandatory files
+            if (mf.isMandatory()) {
+                nbTotalMandatory++;
+            } else {
+                nbTotalOptional++;
+            }
+            for (AcquisitionFile af : product.getAcquisitionFile()) {
+                if (af.getMetaFile().equals(mf) && af.getStatus().equals(AcquisitionFileStatus.VALID)) {
+                    if (mf.isMandatory()) {
+                        // At least one mandatory file is VALID
+                        nbActualMandatory++;
+                    }
+                }
+            }
+        }
+
+        if (nbTotalMandatory == nbActualMandatory) {
+            if (process.getChainGeneration().getMetaProduct().getMetaFiles().size() == nbTotalMandatory
+                    + nbTotalOptional) {
+                // ProductStatus is FINISHED if mandatory and optional files is acquired
+                product.setStatus(ProductStatus.FINISHED);
+            } else {
+                // ProductStatus is COMPLETED if mandatory files is acquired
+                product.setStatus(ProductStatus.COMPLETED);
+            }
+        }
+
+    }
+
     private void moveInvalidFile(AcquisitionFile acqFile, File currentFile) throws ModuleException {
         // Create invalid folder (if necessary)
         final File invalidFolder = new File(
@@ -232,15 +270,18 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     @Override
     public void getResources() throws AcquisitionException {
+        
+        this.inProgressFileList = new ArrayList<>();
+        
         for (MetaFile metaFile : process.getChainGeneration().getMetaProduct().getMetaFiles()) {
-            inProgressFileList.addAll(acquisitionFileService.findByStatusAndMetaFile(AcquisitionFileStatus.IN_PROGRESS,
-                                                                                     metaFile));
+            this.inProgressFileList.addAll(acquisitionFileService
+                    .findByStatusAndMetaFile(AcquisitionFileStatus.IN_PROGRESS, metaFile));
         }
     }
 
     @Override
     public void freeResources() throws AcquisitionException {
-        inProgressFileList = null;
+        this.inProgressFileList = null;
         super.process = null;
     }
 

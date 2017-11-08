@@ -23,6 +23,7 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
@@ -53,8 +54,8 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
     protected String nodeIdentifier;
 
     @Override
-    public boolean runPlugin(File fileToCheck, String dataSetId) {
-        LOGGER.info("Start check file {} for the chain <{}> ", fileToCheck.getAbsoluteFile(), chainLabel);
+    public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
+        LOGGER.info("Start check file <{}> for the chain <{}>", fileToCheck.getAbsoluteFile(), chainLabel);
         boolean result = false;
 
         productName = fileToCheck.getName();
@@ -62,19 +63,21 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
 
         // Check file exists
         if (fileToCheck.exists() && fileToCheck.canRead()) {
-            nodeIdentifier = fileToCheck.getName();
             String name = fileToCheck.getName();
+
+            // Delete extension if any
             int indexExtension = name.lastIndexOf('.');
             if (indexExtension > 0) {
                 name = name.substring(0, indexExtension);
             }
             productName = name;
+            nodeIdentifier = fileToCheck.getName();
             result = true;
         } else {
-            LOGGER.info("Can't read file {}", fileToCheck.getAbsolutePath());
+            LOGGER.error("Can't read file <{}>", fileToCheck.getAbsolutePath());
         }
 
-        LOGGER.info("End check for the chain <{}> ", chainLabel);
+        LOGGER.info("End check file <{}> for the chain <{}>", fileToCheck.getAbsoluteFile(), chainLabel);
 
         return result;
     }
@@ -103,5 +106,4 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
     public String getNodeIdentifier() {
         return nodeIdentifier;
     }
-
 }

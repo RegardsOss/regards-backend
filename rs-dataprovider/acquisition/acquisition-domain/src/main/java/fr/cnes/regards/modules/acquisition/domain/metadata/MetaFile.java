@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.domain.metadata;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -64,7 +65,7 @@ public class MetaFile implements IIdentifiable<Long> {
      */
     @NotNull
     @Column(name = "mandatory")
-    private Boolean mandatory;
+    private Boolean mandatory = Boolean.FALSE;
 
     /**
      * Represents the data file name pattern 
@@ -151,6 +152,10 @@ public class MetaFile implements IIdentifiable<Long> {
         this.id = id;
     }
 
+    public Boolean isMandatory() {
+        return mandatory;
+    }
+    
     public Boolean getMandatory() {
         return mandatory;
     }
@@ -250,7 +255,7 @@ public class MetaFile implements IIdentifiable<Long> {
     }
 
     public String toString() {
-        return id + fileNamePattern;
+        return id + " - " + fileNamePattern + " - " + mandatory.toString();
     }
 
 }

@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
-import fr.cnes.regards.modules.acquisition.service.exception.ReadFileException;
 
 /**
  * This {@link Plugin} checks that the {@link File} exists and can be read.<br>
@@ -39,13 +38,13 @@ import fr.cnes.regards.modules.acquisition.service.exception.ReadFileException;
 @Plugin(description = "CheckInPlugin", id = "CheckInPlugin", version = "1.0.0", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class CheckInPlugin implements ICheckFilePlugin {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(CheckInPlugin.class);
-    
+
     public static final String CHAIN_GENERATION_PARAM = "chain-label";
 
     protected static final int PRODUCT_NAME_MAX_SIZE = 128;
-    
+
     @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
     private String chainLabel;
 
@@ -55,6 +54,38 @@ public class CheckInPlugin implements ICheckFilePlugin {
 
     public CheckInPlugin() {
         super();
+    }
+
+    @Override
+    public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
+        LOGGER.info("Start check file <{}> for the chain <{}>", fileToCheck.getAbsoluteFile(), chainLabel);
+        boolean result = false;
+
+        // Check file exists
+        if (fileToCheck.exists() && fileToCheck.canRead()) {
+            String name = fileToCheck.getName();
+
+            // Delete extension if any
+            int indexExtension = name.lastIndexOf('.');
+            if (indexExtension > 0) {
+                name = name.substring(0, indexExtension);
+            }
+
+            if (name.length() > PRODUCT_NAME_MAX_SIZE) {
+                productName = name.substring(0, PRODUCT_NAME_MAX_SIZE);
+            } else {
+                productName = name;
+            }
+
+            nodeIdentifier = fileToCheck.getName();
+            result = true;
+        } else {
+            LOGGER.error("Can't read file <{}>", fileToCheck.getAbsolutePath());
+        }
+
+        LOGGER.info("End check file <{}> for the chain <{}>", fileToCheck.getAbsoluteFile(), chainLabel);
+
+        return result;
     }
 
     @Override
@@ -80,38 +111,5 @@ public class CheckInPlugin implements ICheckFilePlugin {
     @Override
     public String getNodeIdentifier() {
         return nodeIdentifier;
-    }
-
-    @Override
-    public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
-        LOGGER.info("Start check file {} for the chain <{}> ", fileToCheck.getAbsoluteFile(), chainLabel);
-
-        boolean result = false;
-
-        // Check file exists
-        if (fileToCheck.exists() && fileToCheck.canRead()) {
-            String name = fileToCheck.getName();
-
-            // Delete extension if any
-            int indexExtension = name.lastIndexOf('.');
-            if (indexExtension > 0) {
-                name = name.substring(0, indexExtension);
-            }
-
-            if (name.length() > PRODUCT_NAME_MAX_SIZE) {
-                productName = name.substring(0, PRODUCT_NAME_MAX_SIZE);
-            } else {
-                productName = name;
-            }
-            
-            nodeIdentifier = fileToCheck.getName();
-            result = true;
-        } else {
-            throw new ReadFileException(fileToCheck.getAbsolutePath());
-        }
-        
-        LOGGER.info("End check for the chain <{}> ", chainLabel);
-
-        return result;
     }
 }

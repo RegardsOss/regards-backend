@@ -57,7 +57,7 @@ public class Product implements IIdentifiable<Long> {
     /**
      * A constant used to define a {@link String} constraint with length 64
      */
-    private static final int MAX_STRING_LENGTH = 64;
+    private static final int MAX_STRING_LENGTH = 128;
 
     /**
      * Maximum enum size constraint with length 16

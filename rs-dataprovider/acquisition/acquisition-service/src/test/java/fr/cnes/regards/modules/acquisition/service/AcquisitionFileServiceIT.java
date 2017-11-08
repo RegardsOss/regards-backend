@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.BeforeTransaction;
@@ -47,6 +48,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectoryBuilder;
+import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionServiceConfiguration;
 
 /**
  * 
@@ -56,6 +58,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectoryBuilder;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AcquisitionServiceConfiguration.class })
 @Transactional
+@DirtiesContext
 public class AcquisitionFileServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionFileServiceIT.class);
