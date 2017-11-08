@@ -47,7 +47,6 @@ public interface IOrderRepository extends JpaRepository<Order, Long> {
             OffsetDateTime date);
 
     @EntityGraph("graph.order.simple")
-    @Lock(LockModeType.PESSIMISTIC_READ)
     Optional<Order> findOneByExpirationDateLessThanAndStatusIn(OffsetDateTime date, OrderStatus... statuses);
 
     /**
