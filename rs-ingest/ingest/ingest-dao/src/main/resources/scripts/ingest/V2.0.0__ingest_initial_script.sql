@@ -21,13 +21,21 @@ CREATE
 			lastUpdateDate TIMESTAMP,
 			ipId VARCHAR(128),
 			processing VARCHAR(100),
-			sessionId VARCHAR(100),
+			session varchar(255),
 			owner VARCHAR(128),
 			rejection_reason VARCHAR(256),
 			rawsip jsonb,
 			sipId VARCHAR(100),
 			state VARCHAR(255),
 			version int4,
+			PRIMARY KEY(id)
+		);
+		
+CREATE
+	TABLE
+		t_sip_session(
+			id VARCHAR(100) NOT NULL,
+			lastActivationDate TIMESTAMP,
 			PRIMARY KEY(id)
 		);
 		
@@ -56,6 +64,12 @@ CREATE
 	);
 	
 CREATE
+	INDEX idx_sip_session ON
+	t_sip_session (
+		id
+	);
+	
+CREATE
 	INDEX idx_aip_id ON
 	t_aip (
 		id,
@@ -68,6 +82,9 @@ ALTER TABLE
 
 ALTER TABLE
 	t_sip ADD CONSTRAINT uk_sip_checksum UNIQUE(checksum);
+	
+ALTER TABLE
+	t_sip ADD CONSTRAINT fk_sip_session FOREIGN KEY (session) REFERENCES t_sip_session;
 
 CREATE
 	SEQUENCE seq_ingest_chain START 1 INCREMENT 50;

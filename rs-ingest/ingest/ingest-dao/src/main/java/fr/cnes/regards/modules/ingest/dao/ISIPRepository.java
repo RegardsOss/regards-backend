@@ -67,6 +67,20 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     Optional<SIPEntity> findOneByIpId(String ipId);
 
     /**
+     * Retrieve all {@link SIPEntity} for the given ipIds
+     * @param ipIds
+     * @return {@link SIPEntity}s
+     */
+    Collection<SIPEntity> findByIpIdIn(Collection<String> ipIds);
+
+    /**
+     * Retrieve all {@link SIPEntity} associated to the given session id.
+     * @param sessionId {@link String}
+     * @return {@link SIPEntity}s
+     */
+    Collection<SIPEntity> findBySessionId(String sessionId);
+
+    /**
      * Find all {@link SIPEntity}s by given {@link SIPState}.
      * Unlike findAllByState, the possibly huge parameter rawSip is not loaded.
      * @param state {@link SIPState}
@@ -75,9 +89,28 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     @Query("select s.id, s.processing from SIPEntity s where s.state = ?1")
     List<Object[]> findIdAndProcessingByState(SIPState state);
 
+    /**
+     * Update state of a {@link SIPEntity}
+     * @param state new {@link SIPState}
+     * @param id id of the {@link SIPEntity} to update
+     */
     @Modifying
     @Query("UPDATE SIPEntity s set s.state = ?1 where s.id = ?2")
-    int updateSIPEntityState(SIPState state, Long id);
+    void updateSIPEntityState(SIPState state, Long id);
+
+    /**
+     * Count number of {@link SIPEntity} associated to a given session
+     * @param sessionId
+     * @return number of {@link SIPEntity}
+     */
+    long countBySessionId(String sessionId);
+
+    /**
+     * Count number of {@link SIPEntity} associated to a given session and in a specific given {@link SIPState}
+     * @param sessionId
+     * @return number of {@link SIPEntity}
+     */
+    long countBySessionIdAndStateIn(String sessionId, Collection<SIPState> states);
 
     /**
      * Check if SIP already ingested

@@ -43,6 +43,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.service.ISIPService;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSingleAIPGeneration;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSipValidation;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -64,6 +65,9 @@ public class IngestProcessingService implements IIngestProcessingService {
 
     @Autowired
     private IAIPRepository aipRepository;
+
+    @Autowired
+    private ISIPService sipService;
 
     @Autowired
     private IJobInfoService jobInfoService;
@@ -92,7 +96,7 @@ public class IngestProcessingService implements IIngestProcessingService {
     public SIPEntity updateSIPEntityState(Long pId, SIPState pNewState) {
         SIPEntity sip = sipRepository.findOne(pId);
         sip.setState(pNewState);
-        return sipRepository.save(sip);
+        return sipService.saveSIPEntity(sip);
     }
 
     @Override

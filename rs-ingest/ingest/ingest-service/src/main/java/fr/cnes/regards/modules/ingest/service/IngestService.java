@@ -45,6 +45,7 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPEntityBuilder;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
@@ -70,6 +71,12 @@ public class IngestService implements IIngestService {
 
     @Autowired
     private ISIPRepository sipRepository;
+
+    @Autowired
+    private ISIPService sipService;
+
+    @Autowired
+    private ISIPSessionService sipSessionService;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -130,9 +137,12 @@ public class IngestService implements IIngestService {
         // Manage version
         Integer version = sipRepository.getNextVersion(sip.getId());
 
-        SIPEntity entity = SIPEntityBuilder.build(runtimeTenantResolver.getTenant(),
-                                                  metadata.getSessionId().orElse(null), sip, metadata.getProcessing(),
-                                                  authResolver.getUser(), version, SIPState.CREATED, EntityType.DATA);
+        // Manage session
+        SIPSession session = sipSessionService.getSession(metadata.getSessionId().orElse(null), true);
+
+        SIPEntity entity = SIPEntityBuilder.build(runtimeTenantResolver.getTenant(), session, sip,
+                                                  metadata.getProcessing(), authResolver.getUser(), version,
+                                                  SIPState.CREATED, EntityType.DATA);
         try {
             // Compute checksum
             String checksum = SIPEntityBuilder.calculateChecksum(gson, sip, MD5_ALGORITHM);
@@ -146,7 +156,7 @@ public class IngestService implements IIngestService {
             } else {
                 // Entity is persisted only if all properties properly set
                 // And SIP not already stored with a same checksum
-                sipRepository.save(entity);
+                sipService.saveSIPEntity(entity);
                 publisher.publish(new SIPEvent(entity));
                 LOGGER.info("SIP {} saved, ready for asynchronous processing", entity.getSipId());
             }

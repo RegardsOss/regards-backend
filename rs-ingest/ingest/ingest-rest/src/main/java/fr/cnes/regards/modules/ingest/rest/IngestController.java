@@ -39,6 +39,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -125,7 +127,7 @@ public class IngestController implements IResourceController<SIPEntity> {
     @ResourceAccess(description = "Delete one SIP by is ipId.")
     @RequestMapping(value = IPID_PATH, method = RequestMethod.DELETE)
     public ResponseEntity<Void> deleteSipEntity(@PathVariable("ipId") String ipId) throws ModuleException {
-        sipService.deleteSIPEntity(ipId);
+        sipService.deleteSIPEntitiesByIpIds(Sets.newHashSet(ipId));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

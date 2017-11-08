@@ -30,6 +30,8 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
+import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
+import fr.cnes.regards.modules.ingest.dao.ISIPSessionRepository;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPEntityBuilder;
@@ -46,6 +48,15 @@ public class AbstractSIPTest extends AbstractRegardsServiceTransactionalIT {
 
     @Autowired
     private Gson gson;
+
+    @Autowired
+    private ISIPSessionService sipSessionService;
+
+    @Autowired
+    private ISIPRepository sipRepository;
+
+    @Autowired
+    private ISIPSessionRepository sipSessionRepo;
 
     /**
      * Create a SIP for test initialization
@@ -64,10 +75,17 @@ public class AbstractSIPTest extends AbstractRegardsServiceTransactionalIT {
         InformationPackagePropertiesBuilder ippb = new InformationPackagePropertiesBuilder();
         ippb.addDescriptiveInformation("version", version.toString());
         SIP sip = b.build(ippb.build());
-        SIPEntity sipEntity = SIPEntityBuilder.build(DEFAULT_TENANT, sessionId, sip, processing, owner, version,
-                                                     SIPState.STORED, EntityType.DATA);
+        SIPEntity sipEntity = SIPEntityBuilder.build(DEFAULT_TENANT, sipSessionService.getSession(sessionId, true), sip,
+                                                     processing, owner, version, SIPState.STORED, EntityType.DATA);
         sipEntity.setChecksum(SIPEntityBuilder.calculateChecksum(gson, sip, IngestService.MD5_ALGORITHM));
-        return sipEntity;
+        return sipRepository.save(sipEntity);
+    }
+
+    protected SIPEntity createSIP(String sipId, String sessionId, String processing, String owner, Integer version,
+            SIPState state) throws NoSuchAlgorithmException, IOException {
+        SIPEntity sipEntity = createSIP(sipId, sessionId, processing, owner, version);
+        sipEntity.setState(state);
+        return sipRepository.save(sipEntity);
     }
 
 }

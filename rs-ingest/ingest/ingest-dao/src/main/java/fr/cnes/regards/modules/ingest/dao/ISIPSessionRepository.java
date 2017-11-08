@@ -18,16 +18,18 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import org.junit.Ignore;
+import java.util.Optional;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 
 /**
- * Generate DDL with HBM2DDL
- * @author Marc Sordi
- *
+ * JPA Repository to manage {@link SIPSession} entities.
+ * @author Sébastien Binda
  */
-@Ignore
-public class IngestSQLGenerator extends AbstractScriptGeneratorTest {
+public interface ISIPSessionRepository extends JpaRepository<SIPSession, String> {
+
+    Optional<SIPSession> findById(String id);
 
 }

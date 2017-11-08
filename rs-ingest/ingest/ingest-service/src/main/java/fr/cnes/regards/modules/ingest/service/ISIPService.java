@@ -66,16 +66,34 @@ public interface ISIPService {
     /**
      * Delete one {@link SIPEntity} for the given ipId
      * @param ipId
+     * @return rejected or undeletable {@link SIPEntity}s
      * @throws EntityNotFoundException
      */
-    void deleteSIPEntity(String ipId) throws ModuleException;
+    Collection<SIPEntity> deleteSIPEntitiesByIpIds(Collection<String> ipIds) throws ModuleException;
 
     /**
      * Delete all {@link SIPEntity} for the given sipId
      * @param sipId
+     * @return rejected or undeletable {@link SIPEntity}s
      * @throws ModuleException
      */
-    void deleteSIPEntities(String sipId) throws ModuleException;
+    Collection<SIPEntity> deleteSIPEntitiesForSipId(String sipId) throws ModuleException;
+
+    /**
+     * Delete all {@link SIPEntity}s associated to the given session.
+     * @param sessionId
+     * @return rejected or undeletable {@link SIPEntity}s
+     * @throws ModuleException
+     */
+    Collection<SIPEntity> deleteSIPEntitiesForSessionId(String sessionId) throws ModuleException;
+
+    /**
+     * Delete all {@link SIPEntity}s.
+     * @param sips
+     * @return rejected or undeletable {@link SIPEntity}s
+     * @throws ModuleException
+     */
+    Collection<SIPEntity> deleteSIPEntities(Collection<SIPEntity> sips) throws ModuleException;
 
     /**
      * Check if the SIP with the given ipId is deletable
@@ -90,5 +108,18 @@ public interface ISIPService {
      * @return
      */
     Boolean isRetryable(String ipId) throws EntityNotFoundException;
+
+    /**
+     * Save the given {@link SIPEntity} in DAO and update the associated session
+     * @param {@link SIPEntity} to update
+     * @return {@link SIPEntity} updated
+     */
+    SIPEntity saveSIPEntity(SIPEntity sip);
+
+    /**
+     * Set to SIPEntity to DELETED state and delete associated AIPs if there is.
+     * @param s{@link SIPEntity} to delete;
+     */
+    void deleteSIPEntity(SIPEntity sip);
 
 }

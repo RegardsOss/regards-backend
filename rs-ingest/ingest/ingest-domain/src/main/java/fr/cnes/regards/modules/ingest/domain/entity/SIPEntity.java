@@ -19,16 +19,18 @@
 package fr.cnes.regards.modules.ingest.domain.entity;
 
 import java.time.OffsetDateTime;
-import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -136,8 +138,10 @@ public class SIPEntity {
     /**
      * Session identifier from {@link IngestMetadata}
      */
-    @Column(length = 100)
-    private String sessionId;
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "session", foreignKey = @ForeignKey(name = "fk_sip_session"))
+    private SIPSession session;
 
     public String getIpId() {
         return ipId;
@@ -187,14 +191,6 @@ public class SIPEntity {
         this.processing = processing;
     }
 
-    public Optional<String> getSessionId() {
-        return Optional.ofNullable(sessionId);
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
-
     public String getSipId() {
         return sipId;
     }
@@ -237,6 +233,14 @@ public class SIPEntity {
 
     public void setLastUpdateDate(OffsetDateTime lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public SIPSession getSession() {
+        return session;
+    }
+
+    public void setSession(SIPSession session) {
+        this.session = session;
     }
 
 }

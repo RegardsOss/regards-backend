@@ -52,7 +52,7 @@ public final class SIPEntitySpecifications {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (sesssionId != null) {
-                predicates.add(cb.equal(root.get("sessionId"), sesssionId));
+                predicates.add(cb.equal(root.get("session").get("id"), sesssionId));
             }
             if (owner != null) {
                 predicates.add(cb.equal(root.get("owner"), owner));

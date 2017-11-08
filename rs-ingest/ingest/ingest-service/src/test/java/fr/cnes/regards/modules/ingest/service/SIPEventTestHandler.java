@@ -33,9 +33,9 @@ import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
  * Test handler to catch events on SIP entities
  * @author Sébastien Binda
  */
-public class SipEventTestHandler implements IHandler<SIPEvent> {
+public class SIPEventTestHandler implements IHandler<SIPEvent> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SipEventTestHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SIPEventTestHandler.class);
 
     private final Set<SIPEvent> receivedEvents = Sets.newHashSet();
 

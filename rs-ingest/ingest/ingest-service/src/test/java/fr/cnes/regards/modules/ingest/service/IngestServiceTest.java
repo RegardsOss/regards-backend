@@ -37,6 +37,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
+import fr.cnes.regards.modules.ingest.dao.ISIPSessionRepository;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
@@ -51,6 +52,9 @@ public class IngestServiceTest extends AbstractSIPTest {
 
     @Autowired
     private ISIPRepository sipRepository;
+
+    @Autowired
+    private ISIPSessionRepository sipSessionRepository;
 
     @Autowired
     private IAIPRepository aipRepository;
@@ -69,6 +73,7 @@ public class IngestServiceTest extends AbstractSIPTest {
     public void init() {
         aipRepository.deleteAll();
         sipRepository.deleteAll();
+        sipSessionRepository.deleteAll();
     }
 
     /**
@@ -141,7 +146,6 @@ public class IngestServiceTest extends AbstractSIPTest {
     public void retryIngest() throws NoSuchAlgorithmException, IOException, ModuleException {
         // Simulate a SIP in CREATED state
         SIPEntity sip = createSIP("RETY_SIP_001", SESSION_ID, PROCESSING, "admin", 1);
-        sip = sipRepository.save(sip);
         try {
             ingestService.retryIngest(sip.getIpId());
             Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");

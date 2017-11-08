@@ -16,18 +16,31 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dao;
+package fr.cnes.regards.modules.ingest.domain.builder;
 
-import org.junit.Ignore;
+import java.time.OffsetDateTime;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 
 /**
- * Generate DDL with HBM2DDL
- * @author Marc Sordi
- *
+ * Tool class to generate {@link SIPSession} entities
+ * @author Sébastien Binda
  */
-@Ignore
-public class IngestSQLGenerator extends AbstractScriptGeneratorTest {
+public final class SIPSessionBuilder {
+
+    private SIPSessionBuilder() {
+    }
+
+    /**
+     * Build a {@link SIPSession} entity for the given session id
+     * @param sessionId {@link String}
+     * @return {@link SIPSession}
+     */
+    public static SIPSession build(String sessionId) {
+        SIPSession session = new SIPSession();
+        session.setId(sessionId);
+        session.setLastActivationDate(OffsetDateTime.now());
+        return session;
+    }
 
 }

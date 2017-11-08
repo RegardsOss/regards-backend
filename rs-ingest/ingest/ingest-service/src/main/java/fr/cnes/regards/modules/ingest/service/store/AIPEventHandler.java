@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
+import fr.cnes.regards.modules.ingest.service.ISIPService;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
@@ -63,6 +64,9 @@ public class AIPEventHandler implements IHandler<AIPEvent> {
 
     @Autowired
     private ISIPRepository sipRepository;
+
+    @Autowired
+    private ISIPService sipService;
 
     @Autowired
     private IPublisher publisher;
@@ -141,7 +145,7 @@ public class AIPEventHandler implements IHandler<AIPEvent> {
                     sip.setState(SIPState.INCOMPLETE);
                 }
                 sip.setLastUpdateDate(OffsetDateTime.now());
-                sipRepository.save(sip);
+                sipService.saveSIPEntity(sip);
                 publisher.publish(new SIPEvent(sip));
             }
         }
