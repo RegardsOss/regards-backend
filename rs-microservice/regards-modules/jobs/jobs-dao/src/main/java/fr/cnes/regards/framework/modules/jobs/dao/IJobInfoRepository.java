@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.jobs.dao;
 
+import javax.persistence.LockModeType;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +26,7 @@ import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -46,6 +48,7 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     List<JobInfo> findAllByStatusStatus(JobStatus status);
 
     // Do not use entity graph it makes max computation into memory
+    @Lock(LockModeType.PESSIMISTIC_READ)
     JobInfo findFirstByStatusStatusOrderByPriorityDesc(JobStatus status);
 
     default JobInfo findHighestPriorityQueued() {
