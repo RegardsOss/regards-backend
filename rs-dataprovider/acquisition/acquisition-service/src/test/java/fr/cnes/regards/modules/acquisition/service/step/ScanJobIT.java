@@ -115,7 +115,6 @@ public class ScanJobIT extends AbstractAcquisitionIT {
 
         Assert.assertTrue(chainService.run(chain));
 
-//        waitJob(WAIT_TIME);
         waitJobEvent();
 
         Assert.assertFalse(runnings.isEmpty());
@@ -135,7 +134,7 @@ public class ScanJobIT extends AbstractAcquisitionIT {
         chain = chainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
     }
-    
+
     @Test
     public void runActiveChainGenerationAcquireSameFilesWithSameChecksum()
             throws ModuleException, InterruptedException {
@@ -167,20 +166,16 @@ public class ScanJobIT extends AbstractAcquisitionIT {
 
         Assert.assertTrue(chainService.run(chain));
 
-//        waitJob(WAIT_TIME);
         waitJobEvent();
 
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
         Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
-        
-//        resetJobQueue();
 
         // Repeat the activation of the same chain
         Assert.assertTrue(chainService.run(chain));
 
-//        waitJob(WAIT_TIME);
         waitJobEvent();
 
         Assert.assertFalse(runnings.isEmpty());
@@ -197,7 +192,7 @@ public class ScanJobIT extends AbstractAcquisitionIT {
         chain = chainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
     }
-    
+
     @Test
     public void runActiveChainGenerationOneProductWithThreeAcquisitionFiles()
             throws ModuleException, InterruptedException {
@@ -236,7 +231,6 @@ public class ScanJobIT extends AbstractAcquisitionIT {
 
         Assert.assertTrue(chainService.run(chain));
 
-//        waitJob(WAIT_TIME);
         waitJobEvent();
 
         Assert.assertFalse(runnings.isEmpty());
@@ -289,7 +283,6 @@ public class ScanJobIT extends AbstractAcquisitionIT {
 
         Assert.assertTrue(chainService.run(chain));
 
-//        waitJob(WAIT_TIME);
         waitJobEvent();
 
         Assert.assertFalse(runnings.isEmpty());
@@ -309,6 +302,7 @@ public class ScanJobIT extends AbstractAcquisitionIT {
         chain = chainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
     }
+
     @Test
     public void runActiveChainGenerationUnauthorized() throws ModuleException, InterruptedException {
         mockIngestClientResponseUnauthorized();
@@ -343,7 +337,6 @@ public class ScanJobIT extends AbstractAcquisitionIT {
 
         Assert.assertTrue(chainService.run(chain));
 
-        //        waitJob(WAIT_TIME);
         waitJobEvent();
 
         Assert.assertFalse(runnings.isEmpty());
@@ -362,12 +355,10 @@ public class ScanJobIT extends AbstractAcquisitionIT {
         Assert.assertNotNull(chain.getLastDateActivation());
     }
 
-    
     @Test
     public void runActiveChainGenerationWithoutScanPlugin() throws InterruptedException {
         Assert.assertTrue(chainService.run(chain));
 
-//        waitJob(WAIT_TIME);
         waitJobEvent();
 
         Assert.assertFalse(runnings.isEmpty());
@@ -389,7 +380,6 @@ public class ScanJobIT extends AbstractAcquisitionIT {
 
         Assert.assertTrue(chainService.run(chain));
 
-//        waitJob(WAIT_TIME);
         waitJobEvent();
 
         Assert.assertFalse(runnings.isEmpty());

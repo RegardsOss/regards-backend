@@ -158,9 +158,6 @@ public class AbstractAcquisitionIT {
     @Autowired
     private IDatasetClient datasetClient;
 
-//    @Autowired
-//    private JWTService jwtService;
-
     @Autowired
     private ISubscriber subscriber;
 
@@ -187,7 +184,6 @@ public class AbstractAcquisitionIT {
     public void setUp() throws Exception {
         LOGGER.info("Start the test : {}", name.getMethodName());
         tenantResolver.forceTenant(tenant);
-//        jwtService.injectMockToken(tenant, DEFAULT_ROLE);
 
         cleanDb();
 
@@ -242,7 +238,7 @@ public class AbstractAcquisitionIT {
         try {
             amqpAdmin.purgeQueue(JobEvent.class, ScanJobHandler.class, true);
         } catch (Exception e) {
-            // Nothing to do
+            LOGGER.error(e.getMessage());
         }
         rabbitVhostAdmin.unbind();
     }
@@ -265,10 +261,8 @@ public class AbstractAcquisitionIT {
     }
 
     protected void mockIngestClientResponseOK() {
-        Mockito.reset(ingestClient);
-        
-        LOGGER.info("CMZ - 1 : {}", ingestClient.getClass().toString());
-        
+//        Mockito.reset(ingestClient);
+//        
         Collection<SIPEntity> sips = new ArrayList<>();
         SIPEntity sipEntity = new SIPEntity();
         sipEntity.setState(SIPState.CREATED);
@@ -279,8 +273,8 @@ public class AbstractAcquisitionIT {
     }
 
     protected void mockIngestClientResponseUnauthorized() {
-        Mockito.reset(ingestClient);
-        
+//        Mockito.reset(ingestClient);
+//        
         Collection<SIPEntity> sips = new ArrayList<>();
         SIPEntity sipEntity = new SIPEntity();
         sipEntity.setState(SIPState.REJECTED);
@@ -291,8 +285,8 @@ public class AbstractAcquisitionIT {
     }
 
     protected void mockIngestClientResponsePartialContent() {
-        Mockito.reset(ingestClient);
-        
+//        Mockito.reset(ingestClient);
+//        
         Collection<SIPEntity> sips = new ArrayList<>();
         SIPEntity sipEntity = new SIPEntity();
         sipEntity.setReasonForRejection("bad SIP format");

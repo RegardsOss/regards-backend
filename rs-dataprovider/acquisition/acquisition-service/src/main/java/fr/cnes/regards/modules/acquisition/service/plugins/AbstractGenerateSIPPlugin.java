@@ -58,7 +58,7 @@ public abstract class AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
     @Autowired
     private IDatasetClient datasetClient;
 
-    SIPCollectionBuilder sipCollectionBuilder;
+    protected SIPCollectionBuilder sipCollectionBuilder;
 
     @Override
     public SIPCollection runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId)

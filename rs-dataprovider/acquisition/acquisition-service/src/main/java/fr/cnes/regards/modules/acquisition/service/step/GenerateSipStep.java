@@ -69,16 +69,13 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateSipStep.class);
 
     @Autowired
-    IPluginService pluginService;
+    private IPluginService pluginService;
 
     @Autowired
-    IChainGenerationService chainGenerationService;
+    private IAcquisitionFileService acquisitionFileService;
 
     @Autowired
-    IAcquisitionFileService acquisitionFileService;
-
-    @Autowired
-    IProductService productService;
+    private IProductService productService;
 
     @Autowired
     private IIngestClient ingestClient;
@@ -165,7 +162,6 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
      */
     private void publishSipCollections() throws ModuleException {
         LOGGER.info("[{}] Start publish SIP Collections", chainGeneration.getSession());
-        LOGGER.info("CMZ - 2 : {}", ingestClient.getClass().toString());
 
         ResponseEntity<Collection<SIPEntity>> response = ingestClient.ingest(this.sipCollection);
 

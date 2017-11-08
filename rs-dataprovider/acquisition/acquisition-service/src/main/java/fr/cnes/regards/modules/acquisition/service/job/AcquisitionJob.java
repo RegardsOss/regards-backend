@@ -79,10 +79,8 @@ public class AcquisitionJob extends AbstractJob<Void> {
         process.setCurrentStep(scanStep);
 
         // IAcquisitionCheckStep is optional
-        IStep checkStep;
-        if (chainGeneration.getCheckAcquisitionPluginConf() == null) {
-            checkStep = null;
-        } else {
+        IStep checkStep = null;
+        if (chainGeneration.getCheckAcquisitionPluginConf() != null) {
             checkStep = checkStepImpl;
             checkStep.setProcess(process);
             beanFactory.autowireBean(checkStep);
