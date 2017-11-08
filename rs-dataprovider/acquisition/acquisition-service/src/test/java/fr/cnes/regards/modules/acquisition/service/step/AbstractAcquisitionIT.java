@@ -53,7 +53,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginParameterRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
@@ -68,10 +67,11 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectoryBuilder;
-import fr.cnes.regards.modules.acquisition.service.AcquisitionFileServiceIT;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
+import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
 import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.entities.domain.Dataset;
@@ -85,7 +85,11 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  */
 public class AbstractAcquisitionIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionFileServiceIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAcquisitionIT.class);
+    
+    protected static final String FIRST_PRODUCT = "PAUB_MESURE_TC_20130701_103715";
+
+    protected static final String SECOND_PRODUCT = "PAUB_MESURE_TC_20130701_105909";
 
     @Value("${regards.tenant}")
     protected String tenant;
@@ -105,16 +109,22 @@ public class AbstractAcquisitionIT {
     protected static final String DEFAULT_ROLE = "ROLE_DEFAULT";
 
     @Autowired
-    private IChainGenerationService chainService;
+    protected IChainGenerationService chainService;
 
     @Autowired
-    private IMetaProductService metaProductService;
+    protected IMetaProductService metaProductService;
 
     @Autowired
-    private IMetaFileService metaFileService;
+    protected IMetaFileService metaFileService;
 
     @Autowired
-    private IScanDirectoryService scandirService;
+    protected IScanDirectoryService scandirService;
+
+    @Autowired
+    protected IAcquisitionFileService acquisitionFileService;
+    
+    @Autowired
+    protected IProductService productService;    
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -219,11 +229,11 @@ public class AbstractAcquisitionIT {
         ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input3").get());
 
         metaFileOptional = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
-                .comment("test scan directory comment").addScanDirectory(scanDir1).addScanDirectory(scanDir2).get());
+                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern optional")
+                .comment("it is optional").addScanDirectory(scanDir1).addScanDirectory(scanDir2).get());
         metaFileMandatory = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("one other file pattern")
-                .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir3).get());
+                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("one other file pattern mandatory")
+                .comment("it is mandatory").isMandatory().addScanDirectory(scanDir3).get());
 
         // Create a ChainGeneration and a MetaProduct
         metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).addMetaFile(metaFileOptional)
@@ -291,14 +301,14 @@ public class AbstractAcquisitionIT {
         SIPEntity sipEntity = new SIPEntity();
         sipEntity.setReasonForRejection("bad SIP format");
         sipEntity.setState(SIPState.REJECTED);
-        sipEntity.setSipId("PAUB_MESURE_TC_20130701_103715");
+        sipEntity.setSipId(FIRST_PRODUCT);
         sips.add(sipEntity);
 
-        sipEntity = new SIPEntity();
-        sipEntity.setReasonForRejection("access AIP error");
-        sipEntity.setState(SIPState.REJECTED);
-        sipEntity.setSipId("PAUB_MESURE_TC_20130701_105909");
-        sips.add(sipEntity);
+        SIPEntity sipEntity2 = new SIPEntity();
+        sipEntity2.setReasonForRejection("access AIP error");
+        sipEntity2.setState(SIPState.REJECTED);
+        sipEntity2.setSipId(SECOND_PRODUCT);
+        sips.add(sipEntity2);
 
         Mockito.when(ingestClient.ingest(Mockito.any()))
                 .thenReturn(new ResponseEntity<Collection<SIPEntity>>(sips, HttpStatus.PARTIAL_CONTENT));

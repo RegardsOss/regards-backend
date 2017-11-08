@@ -86,6 +86,13 @@ public class Product implements IIdentifiable<Long> {
     private ProductStatus status;
 
     /**
+     * <li><code>true</code> if the {@link Product} has been saved by ingest</br>
+     * <li><code>false</code> otherwise
+     */
+    @Column(name = "send")
+    private Boolean send = false;
+
+    /**
      * The product name
      */
     @NotBlank
@@ -207,12 +214,22 @@ public class Product implements IIdentifiable<Long> {
         this.session = session;
     }
 
+    public Boolean isSend() {
+        return send;
+    }
+
+    public void setSend(Boolean send) {
+        this.send = send;
+    }
+
     @Override
     public String toString() {
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append(id);
         strBuilder.append(" - ");
         strBuilder.append(productName);
+        strBuilder.append(" - ");
+        strBuilder.append(status);
         return strBuilder.toString();
     }
 

@@ -211,6 +211,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
         int nbTotalMandatory = 0;
         int nbTotalOptional = 0;
         int nbActualMandatory = 0;
+        int nbActualOptional = 0;
         // At least one mandatory file is VALID
         product.setStatus(ProductStatus.ACQUIRING);
 
@@ -226,19 +227,19 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
                     if (mf.isMandatory()) {
                         // At least one mandatory file is VALID
                         nbActualMandatory++;
+                    } else {
+                        nbActualOptional++;
                     }
                 }
             }
         }
 
         if (nbTotalMandatory == nbActualMandatory) {
-            if (process.getChainGeneration().getMetaProduct().getMetaFiles().size() == nbTotalMandatory
-                    + nbTotalOptional) {
+            // ProductStatus is COMPLETED if mandatory files is acquired
+            product.setStatus(ProductStatus.COMPLETED);
+            if (nbTotalOptional == nbActualOptional) {
                 // ProductStatus is FINISHED if mandatory and optional files is acquired
                 product.setStatus(ProductStatus.FINISHED);
-            } else {
-                // ProductStatus is COMPLETED if mandatory files is acquired
-                product.setStatus(ProductStatus.COMPLETED);
             }
         }
 
@@ -270,9 +271,9 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     @Override
     public void getResources() throws AcquisitionException {
-        
+
         this.inProgressFileList = new ArrayList<>();
-        
+
         for (MetaFile metaFile : process.getChainGeneration().getMetaProduct().getMetaFiles()) {
             this.inProgressFileList.addAll(acquisitionFileService
                     .findByStatusAndMetaFile(AcquisitionFileStatus.IN_PROGRESS, metaFile));

@@ -37,6 +37,10 @@ public enum ProductStatus {
      */
     FINISHED,
     /**
+     * Product send to Ingest
+     */
+    SENDED,
+    /**
      * The {@link Product} is in error
      */
     ERROR;

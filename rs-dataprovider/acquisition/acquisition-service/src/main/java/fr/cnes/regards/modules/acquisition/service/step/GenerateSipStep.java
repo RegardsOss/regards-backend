@@ -49,7 +49,6 @@ import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
-import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
@@ -167,9 +166,9 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
         // TODO CMZ en fonction du retour, il faudrait repercuter l'état sur le processing 
         if (response.getStatusCode().equals(HttpStatus.CREATED)) {
-            manageSipPublishCreated();
+            manageSipCreated();
         } else if (response.getStatusCode().equals(HttpStatus.PARTIAL_CONTENT)) {
-            manageSipPublishPartialContent(response.getBody());
+            manageSipNotCreated(response.getBody());
         } else if (response.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
             LOGGER.error("[{}] Unauthorized access to ingest microservice", chainGeneration.getSession());
 
@@ -182,15 +181,15 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
         LOGGER.info("[{}] End publish SIP Collections", chainGeneration.getSession());
     }
 
-    private void manageSipPublishCreated() throws ModuleException {
+    private void manageSipCreated() throws ModuleException {
         LOGGER.info("[{}] SIP collection has heen processed with success : {} ingested", chainGeneration.getSession(),
                     this.sipCollection.getFeatures().size());
         for (SIP sip : this.sipCollection.getFeatures()) {
-            updateProductStatus(sip.getId(), ProductStatus.FINISHED);
+            setSipProductCreate(sip.getId());
         }
     }
 
-    private void manageSipPublishPartialContent(Collection<SIPEntity> sipEntitys) throws ModuleException {
+    private void manageSipNotCreated(Collection<SIPEntity> sipEntitys) throws ModuleException {
         LOGGER.error("[{}] SIP collection has heen partially processed with success : {} ingested / {} rejected",
                      chainGeneration.getSession(), this.sipCollection.getFeatures().size() - sipEntitys.size(),
                      sipEntitys.size());
@@ -198,18 +197,17 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
         for (SIPEntity sipEntity : sipEntitys) {
             LOGGER.error("[{}] SIP in error : productName=<{}>, raeson=<{}>", chainGeneration.getSession(),
                          sipEntity.getSipId(), sipEntity.getReasonForRejection());
-            updateProductStatus(sipEntity.getSipId(), ProductStatus.ERROR);
             sipIdError.add(sipEntity.getSipId());
         }
 
         for (SIP sip : this.sipCollection.getFeatures()) {
             if (!sipIdError.contains(sip.getId())) {
-                updateProductStatus(sip.getId(), ProductStatus.FINISHED);
+                setSipProductCreate(sip.getId());
             }
         }
     }
 
-    private void updateProductStatus(String sipId, ProductStatus status) throws ModuleException {
+    private void setSipProductCreate(String sipId) throws ModuleException {
         Product product = productService.retrieve(sipId);
         if (product == null) {
             final StringBuffer strBuff = new StringBuffer();
@@ -220,14 +218,14 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
             LOGGER.error(ex.getMessage());
             throw ex;
         }
-        product.setStatus(status);
+        product.setSend(Boolean.TRUE);
         productService.save(product);
     }
 
     @Override
     public void getResources() throws AcquisitionException {
         this.afMap = new HashMap<Long, List<AcquisitionFile>>();
-        
+
         // Get the VALID AcquisitionFile
         List<AcquisitionFile> validFileList = new ArrayList<>();
         for (MetaFile metaFile : process.getChainGeneration().getMetaProduct().getMetaFiles()) {
