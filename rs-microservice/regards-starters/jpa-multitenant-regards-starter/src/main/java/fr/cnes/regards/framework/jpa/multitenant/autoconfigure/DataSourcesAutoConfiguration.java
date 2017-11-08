@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
 import java.beans.PropertyVetoException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -219,7 +220,7 @@ public class DataSourcesAutoConfiguration {
                     }
                     // Register data source
                     pExistingDataSources.put(tenantConnection.getTenant(), dataSource);
-                } catch (PropertyVetoException | JpaMultitenantException | JpaException e) {
+                } catch (PropertyVetoException | JpaMultitenantException | JpaException | SQLException e) {
                     // Do not block all tenants if for an inconsistent data source
                     LOGGER.error("Cannot create datasource for tenant {}", tenantConnection.getTenant());
                     LOGGER.error(e.getMessage(), e);

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcBuilderCustomizer;
 import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.http.HttpDocumentation;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.templates.TemplateFormats;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,7 @@ public class RegardsMockMvcBuilderCustomizer implements MockMvcBuilderCustomizer
     @Override
     public void customize(ConfigurableMockMvcBuilder<?> builder) {
         builder.apply(MockMvcRestDocumentation.documentationConfiguration(this.restDocumentation).snippets()
+                              .withDefaults(HttpDocumentation.httpRequest(), HttpDocumentation.httpResponse())
                               .withTemplateFormat(TemplateFormats.markdown()));
     }
 }

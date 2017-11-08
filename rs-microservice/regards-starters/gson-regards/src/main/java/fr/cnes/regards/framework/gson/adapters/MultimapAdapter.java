@@ -40,13 +40,15 @@ public class MultimapAdapter<K> implements JsonDeserializer<Multimap<K, ?>>, Jso
         return context.serialize(map);
     }
 
-    private <V> Type multimapTypeToMapType(Type type) {
+    private <KK,V> Type multimapTypeToMapType(Type type) {
         final Type[] typeArguments = ((ParameterizedType) type).getActualTypeArguments();
         assert typeArguments.length == 2;
         @SuppressWarnings("unchecked")
-        final TypeToken<Map<K, Collection<V>>> mapTypeToken = new TypeToken<Map<K, Collection<V>>>() {
+        final TypeToken<Map<KK, Collection<V>>> mapTypeToken = new TypeToken<Map<KK, Collection<V>>>() {
 
-        }.where(new TypeParameter<V>() {
+        }.where(new TypeParameter<KK>() {
+
+        }, (TypeToken<KK>) TypeToken.of(typeArguments[0])).where(new TypeParameter<V>() {
 
         }, (TypeToken<V>) TypeToken.of(typeArguments[1]));
         return mapTypeToken.getType();

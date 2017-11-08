@@ -79,7 +79,7 @@ public class JobControllerIT extends AbstractRegardsIT {
 
     @Test
     public void getAllJobs() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_STAR,
                                                         Matchers.hasSize(jobInfoService.retrieveJobs().size())));
@@ -91,7 +91,7 @@ public class JobControllerIT extends AbstractRegardsIT {
     @Test
     public void getOneJob() {
         final JobInfo aJob = jobInfoService.retrieveJobs().get(0);
-        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".id",
@@ -116,7 +116,7 @@ public class JobControllerIT extends AbstractRegardsIT {
 //    public void getJobResults() {
 //        final List<ResultMatcher> expectations = new ArrayList<>();
 //        final JobInfo aJob = jobInfoService.retrieveJobs().get(0);
-//        RequestBuilderCustomizer requestBuilderCustomizer = getRequestBuilderCustomizer();
+//        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
 //        requestBuilderCustomizer.addExpectation(status().isOk());
 //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, hasSize(aJob.getResults().size())));
 //        performGet(JobController.JOBS + "/{jobId}/results", token, requestBuilderCustomizer,

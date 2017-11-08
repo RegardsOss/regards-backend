@@ -36,5 +36,5 @@
 
 	<root level="INFO">
 		<appender-ref ref="STDOUT" />
-	</root>/logback.xml
+	</root>
 </configuration>

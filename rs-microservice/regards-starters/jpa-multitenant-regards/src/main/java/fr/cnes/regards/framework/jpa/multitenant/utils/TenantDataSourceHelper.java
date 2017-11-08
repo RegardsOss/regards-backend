@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.jpa.multitenant.utils;
 
 import java.beans.PropertyVetoException;
+import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
@@ -48,9 +49,10 @@ public final class TenantDataSourceHelper {
      * @return a {@link DataSource}
      * @throws PropertyVetoException
      *             if paramater not supported
+     * @throws SQLException if connection fails
      */
     public static DataSource initDataSource(MultitenantDaoProperties pDaoProperties, TenantConnection pTenantConnection)
-            throws PropertyVetoException {
+            throws PropertyVetoException, SQLException {
         DataSource dataSource;
         // Bypass configuration if embedded enabled
         if (pDaoProperties.getEmbedded()) {
@@ -64,6 +66,9 @@ public final class TenantDataSourceHelper {
                                             pTenantConnection.getDriverClassName(), pTenantConnection.getUserName(),
                                             pTenantConnection.getPassword(), pDaoProperties.getMinPoolSize(),
                                             pDaoProperties.getMaxPoolSize(), pDaoProperties.getPreferredTestQuery());
+
+            // Test connection for pooled datasource
+            DataSourceHelper.testConnection(dataSource, true);
         }
         return dataSource;
     }
