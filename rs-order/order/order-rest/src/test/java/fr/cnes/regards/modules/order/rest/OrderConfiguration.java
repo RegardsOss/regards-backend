@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -69,41 +72,26 @@ public class OrderConfiguration {
 
     @Bean
     public IAipClient aipClient() {
-        return new IAipClient() {
-
-            @Override
-            public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(AIPState pState, OffsetDateTime pFrom,
-                    OffsetDateTime pTo, int pPage, int pSize) {
-                return null;
+        AipClientProxy aipClientProxy = new AipClientProxy();
+        InvocationHandler handler = (proxy, method, args) -> {
+            for (Method aipClientProxyMethod : aipClientProxy.getClass().getMethods()) {
+                if (aipClientProxyMethod.getName().equals(method.getName())) {
+                    return aipClientProxyMethod.invoke(aipClientProxy, args);
+                }
             }
-
-            @Override
-            public ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(String s) {
-                return null;
-            }
-
-            @Override
-            public ResponseEntity<List<String>> retrieveAIPVersionHistory(UniformResourceName pIpId, int pPage,
-                    int pSize) {
-                return null;
-            }
-
-            @Override
-            public ResponseEntity<AvailabilityResponse> makeFilesAvailable(AvailabilityRequest availabilityRequest) {
-                return null;
-            }
-
-            @Override
-            public Response downloadFile(String aipId, String checksum) {
-                return Response.create(200, "ignore", Collections.emptyMap(),
-                                getClass().getResourceAsStream("/files/" + checksum), 1000);
-            }
-
-            @Override
-            public ResponseEntity<Set<UUID>> store(AIPCollection aips) {
-                return null;
-            }
+            return null;
         };
+        return (IAipClient) Proxy
+                .newProxyInstance(IAipClient.class.getClassLoader(), new Class<?>[] { IAipClient.class }, handler);
+    }
+
+    private class AipClientProxy {
+
+        @SuppressWarnings("deprecation")
+        public Response downloadFile(String aipId, String checksum) {
+            return Response.create(200, "ignore", Collections.emptyMap(),
+                                   getClass().getResourceAsStream("/files/" + checksum), 1000);
+        }
     }
 
     @Bean

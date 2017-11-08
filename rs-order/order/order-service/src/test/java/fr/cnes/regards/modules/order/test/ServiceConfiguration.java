@@ -65,17 +65,13 @@ public class ServiceConfiguration {
     @Bean
     public IAipClient mockAipClient() {
         final AipClientProxy aipClientProxy = new AipClientProxy(publisher);
-        InvocationHandler handler = new InvocationHandler() {
-
-            @Override
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                for (Method aipClientProxyMethod : aipClientProxy.getClass().getMethods()) {
-                    if (aipClientProxyMethod.getName().equals(method.getName())) {
-                        return aipClientProxyMethod.invoke(aipClientProxy, args);
-                    }
+        InvocationHandler handler = (proxy, method, args) -> {
+            for (Method aipClientProxyMethod : aipClientProxy.getClass().getMethods()) {
+                if (aipClientProxyMethod.getName().equals(method.getName())) {
+                    return aipClientProxyMethod.invoke(aipClientProxy, args);
                 }
-                return null;
             }
+            return null;
         };
         return (IAipClient) Proxy.newProxyInstance(IAipClient.class.getClassLoader(), new Class<?>[] { IAipClient.class }, handler);
     }
@@ -85,20 +81,6 @@ public class ServiceConfiguration {
 
         public AipClientProxy(IPublisher publisher) {
             this.publisher = publisher;
-        }
-
-        public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(AIPState pState, OffsetDateTime pFrom,
-                OffsetDateTime pTo, int pPage, int pSize) {
-            return null;
-        }
-
-        public ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(String s) {
-            return null;
-        }
-
-        public ResponseEntity<List<String>> retrieveAIPVersionHistory(UniformResourceName pIpId, int pPage,
-                int pSize) {
-            return null;
         }
 
         public ResponseEntity<AvailabilityResponse> makeFilesAvailable(AvailabilityRequest availabilityRequest) {
@@ -123,9 +105,6 @@ public class ServiceConfiguration {
             return mockResp;
         }
 
-        public ResponseEntity<Set<UUID>> store(AIPCollection aips) {
-            return null;
-        }
     }
 
     @Bean
