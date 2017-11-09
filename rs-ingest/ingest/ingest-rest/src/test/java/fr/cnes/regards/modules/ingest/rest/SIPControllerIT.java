@@ -19,21 +19,20 @@
 package fr.cnes.regards.modules.ingest.rest;
 
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
@@ -48,9 +47,9 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
  */
 @RegardsTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_it" })
-public class IngestControllerIT extends AbstractRegardsTransactionalIT {
+public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestControllerIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SIPControllerIT.class);
 
     @Override
     protected Logger getLogger() {
@@ -79,18 +78,25 @@ public class IngestControllerIT extends AbstractRegardsTransactionalIT {
         collectionBuilder.add(sipBuilder.build());
 
         // Define expectations
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isCreated());
-        // expectations.add(MockMvcResultMatchers.jsonPath(JSON_ID, Matchers.notNullValue()));
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE,
+                                                        GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        performDefaultPost(SIPController.TYPE_MAPPING, collectionBuilder.build(), requestBuilderCustomizer,
+                           "SIP collection should be submitted.");
 
-        performDefaultPostWithContentType(SIPController.TYPE_MAPPING, collectionBuilder.build(),
-                                          GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE, expectations,
-                                          "SIP collection should be submitted.");
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(2)));
+        performDefaultGet(SIPController.TYPE_MAPPING, requestBuilderCustomizer, "Error retrieving SIPs");
 
-        expectations.clear();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(2)));
-        performDefaultGet(SIPController.TYPE_MAPPING, expectations, "Error retrieving SIPs");
+        // Retrieve sessions
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(1)));
+        performDefaultGet(SIPSessionController.TYPE_MAPPING, requestBuilderCustomizer, "Error retrieving SIP sessions");
 
     }
 }
