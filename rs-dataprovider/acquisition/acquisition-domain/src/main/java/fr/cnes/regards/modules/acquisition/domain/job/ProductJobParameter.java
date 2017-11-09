@@ -4,7 +4,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 
 /**
- * JobParameter specific class to be used with AcquisitionProductJob
+ * {@link JobParameter} specific class to be used with AcquisitionGenerateSIPJob
  * 
  * @author Christophe Mertz
  */
@@ -16,6 +16,7 @@ public class ProductJobParameter extends JobParameter {
         super(NAME, value);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Product getValue() {
         return super.getValue();
@@ -24,12 +25,12 @@ public class ProductJobParameter extends JobParameter {
     public void setValue(Product value) {
         super.setValue(value);
     }
-    
+
     /**
-     * Check if given JobParameter is compatible with FilesJobParameter ie same name
+     * Check if given {@link JobParameter} is compatible with ProductJobParameter ie same name
      */
     public static boolean isCompatible(JobParameter param) {
         return param.getName().equals(NAME);
     }
-    
+
 }

@@ -47,12 +47,10 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceConfiguration;
 import fr.cnes.regards.modules.acquisition.service.conf.MockedFeignClientConf;
 import fr.cnes.regards.modules.acquisition.service.plugins.BasicCheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.CheckInPlugin;
-import fr.cnes.regards.modules.acquisition.service.plugins.TestGenerateSipPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.TestScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.TestScanProductsData;
 import fr.cnes.regards.modules.acquisition.service.plugins.TestScanProductsHeader;
@@ -66,7 +64,7 @@ import fr.cnes.regards.modules.acquisition.service.plugins.TestScanProductsWithM
 @ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class, MockedFeignClientConf.class })
 @ActiveProfiles({ "test" })
 @DirtiesContext
-public class ScanJobIT extends AbstractAcquisitionIT {
+public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
     @Autowired
     private IPluginService pluginService;
@@ -95,13 +93,6 @@ public class ScanJobIT extends AbstractAcquisitionIT {
         chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_PRODUCT_PARAM, metaProductJson);
         chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_FILE_PARAM, metaFilesJson);
         chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
-
-        chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
-                                                                            IGenerateSIPPlugin.class));
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.SESSION_PARAM, chain.getSession());
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.INGEST_PROCESSING_CHAIN_PARAM,
-                                      chain.getIngestProcessingChain());
 
         Assert.assertTrue(chainService.run(chain));
 
@@ -147,13 +138,6 @@ public class ScanJobIT extends AbstractAcquisitionIT {
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.LAST_ACQ_DATE_PARAM,
                                           OffsetDateTime.now().minusDays(10).toString());
-
-        chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
-                                                                            IGenerateSIPPlugin.class));
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.SESSION_PARAM, chain.getSession());
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.INGEST_PROCESSING_CHAIN_PARAM,
-                                      chain.getIngestProcessingChain());
 
         Assert.assertTrue(chainService.run(chain));
 
@@ -224,13 +208,6 @@ public class ScanJobIT extends AbstractAcquisitionIT {
                                                                                  ICheckFilePlugin.class));
         chain.addCheckAcquisitionParameter(CheckInPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
 
-        // Generate SIP plugin
-        chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
-                                                                            IGenerateSIPPlugin.class));
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.INGEST_PROCESSING_CHAIN_PARAM,
-                                      chain.getIngestProcessingChain());
-
         Assert.assertTrue(chainService.run(chain));
 
         waitJobEvent();
@@ -247,10 +224,6 @@ public class ScanJobIT extends AbstractAcquisitionIT {
         Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
         Assert.assertEquals(3, productService.retrieveAll().size());
         Assert.assertEquals(3, productService.findByStatus(ProductStatus.COMPLETED).size());
-
-        for (Product product : productService.retrieveAll()) {
-            Assert.assertTrue(product.isSend());
-        }
 
         chain = chainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
@@ -296,13 +269,6 @@ public class ScanJobIT extends AbstractAcquisitionIT {
                                                                                  ICheckFilePlugin.class));
         chain.addCheckAcquisitionParameter(CheckInPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
 
-        // Generate SIP plugin
-        chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
-                                                                            IGenerateSIPPlugin.class));
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.INGEST_PROCESSING_CHAIN_PARAM,
-                                      chain.getIngestProcessingChain());
-
         Assert.assertTrue(chainService.run(chain));
 
         waitJobEvent();
@@ -319,10 +285,6 @@ public class ScanJobIT extends AbstractAcquisitionIT {
         Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
         Assert.assertEquals(3, productService.retrieveAll().size());
         Assert.assertEquals(3, productService.findByStatus(ProductStatus.FINISHED).size());
-
-        for (Product product : productService.retrieveAll()) {
-            Assert.assertTrue(product.isSend());
-        }
 
         chain = chainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
@@ -360,13 +322,6 @@ public class ScanJobIT extends AbstractAcquisitionIT {
                                                                                  ICheckFilePlugin.class));
         chain.addCheckAcquisitionParameter(CheckInPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
 
-        // Generate SIP plugin
-        chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
-                                                                            IGenerateSIPPlugin.class));
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.INGEST_PROCESSING_CHAIN_PARAM,
-                                      chain.getIngestProcessingChain());
-
         Assert.assertTrue(chainService.run(chain));
 
         waitJobEvent();
@@ -388,7 +343,7 @@ public class ScanJobIT extends AbstractAcquisitionIT {
         Assert.assertEquals(3, productService.findByStatus(ProductStatus.ACQUIRING).size());
 
         for (Product product : productService.retrieveAll()) {
-            Assert.assertFalse(product.isSend());
+            Assert.assertFalse(product.isSaved());
         }
 
         ChainGeneration chainLastAcqDate = chainService.retrieve(chain.getId());
@@ -401,9 +356,9 @@ public class ScanJobIT extends AbstractAcquisitionIT {
                 .toJson(MetaProductDto.fromMetaProduct(metaProductService.retrieveComplete(metaProduct.getId())));
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanProductsHeader",
                                                                                 IAcquisitionScanDirectoryPlugin.class));
-        chain.addScanAcquisitionParameter(TestScanProductsData.META_PRODUCT_PARAM, metaProductJson);
-        chain.addScanAcquisitionParameter(TestScanProductsData.META_FILE_PARAM, metaFilesJson);
-        chain.addScanAcquisitionParameter(TestScanProductsData.CHAIN_GENERATION_PARAM, chain.getLabel());
+        chain.addScanAcquisitionParameter(TestScanProductsHeader.META_PRODUCT_PARAM, metaProductJson);
+        chain.addScanAcquisitionParameter(TestScanProductsHeader.META_FILE_PARAM, metaFilesJson);
+        chain.addScanAcquisitionParameter(TestScanProductsHeader.CHAIN_GENERATION_PARAM, chain.getLabel());
         chain.addScanAcquisitionParameter(TestScanProductsHeader.LAST_ACQ_DATE_PARAM,
                                           chainLastAcqDate.getLastDateActivation().toString());
 
@@ -426,128 +381,6 @@ public class ScanJobIT extends AbstractAcquisitionIT {
          * the 3 products are finished
          */
         Assert.assertEquals(3, productService.findByStatus(ProductStatus.FINISHED).size());
-
-        for (Product product : productService.retrieveAll()) {
-            Assert.assertTrue(product.isSend());
-        }
-    }
-
-    @Test
-    public void runActiveChainGenerationResponsePartialContent() throws ModuleException, InterruptedException {
-        mockIngestClientResponsePartialContent();
-
-        Set<MetaFile> metaFiles = new HashSet<>();
-        metaFiles.add(metaFileOptional);
-        metaFiles.add(metaFileMandatory);
-
-        String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
-        String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
-
-        chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
-                                                                                IAcquisitionScanDirectoryPlugin.class));
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.LAST_ACQ_DATE_PARAM,
-                                          OffsetDateTime.now().minusDays(10).toString());
-
-        chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("BasicCheckFilePlugin",
-                                                                                 ICheckFilePlugin.class));
-        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_FILE_PARAM, metaFilesJson);
-        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
-
-        chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
-                                                                            IGenerateSIPPlugin.class));
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.SESSION_PARAM, chain.getSession());
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.INGEST_PROCESSING_CHAIN_PARAM,
-                                      chain.getIngestProcessingChain());
-
-        Assert.assertTrue(chainService.run(chain));
-
-        waitJobEvent();
-
-        Assert.assertFalse(runnings.isEmpty());
-        Assert.assertFalse(succeededs.isEmpty());
-        Assert.assertTrue(faileds.isEmpty());
-        Assert.assertTrue(aborteds.isEmpty());
-
-        Assert.assertEquals(1, chainService.retrieveAll().size());
-        Assert.assertEquals(2, metaFileService.retrieveAll().size());
-        Assert.assertEquals(7, acquisitionFileService.retrieveAll().size());
-        Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
-        Assert.assertEquals(1, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
-        Assert.assertEquals(5, productService.retrieveAll().size());
-        Assert.assertEquals(1, productService.findByStatus(ProductStatus.FINISHED).size());
-        Assert.assertEquals(4, productService.findByStatus(ProductStatus.COMPLETED).size());
-
-        for (Product product : productService.findByStatus(ProductStatus.COMPLETED)) {
-            if (!product.getProductName().equals(FIRST_PRODUCT) && !product.getProductName().equals(SECOND_PRODUCT)) {
-                Assert.assertTrue(product.isSend());
-            } else {
-                Assert.assertFalse(product.isSend());
-            }
-        }
-
-        for (Product product : productService.findByStatus(ProductStatus.FINISHED)) {
-            Assert.assertTrue(product.isSend());
-        }
-
-        chain = chainService.retrieve(chain.getId());
-        Assert.assertNotNull(chain.getLastDateActivation());
-    }
-
-    @Test
-    public void runActiveChainGenerationUnauthorized() throws ModuleException, InterruptedException {
-        mockIngestClientResponseUnauthorized();
-
-        Set<MetaFile> metaFiles = new HashSet<>();
-        metaFiles.add(metaFileMandatory);
-        metaFiles.add(metaFileOptional);
-
-        String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
-        String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
-
-        chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
-                                                                                IAcquisitionScanDirectoryPlugin.class));
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.LAST_ACQ_DATE_PARAM,
-                                          OffsetDateTime.now().minusDays(10).toString());
-
-        chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("BasicCheckFilePlugin",
-                                                                                 ICheckFilePlugin.class));
-        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_FILE_PARAM, metaFilesJson);
-        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
-
-        chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
-                                                                            IGenerateSIPPlugin.class));
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.SESSION_PARAM, chain.getSession());
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.INGEST_PROCESSING_CHAIN_PARAM,
-                                      chain.getIngestProcessingChain());
-
-        Assert.assertTrue(chainService.run(chain));
-
-        waitJobEvent();
-
-        Assert.assertFalse(runnings.isEmpty());
-        Assert.assertFalse(succeededs.isEmpty());
-        Assert.assertTrue(faileds.isEmpty());
-        Assert.assertTrue(aborteds.isEmpty());
-
-        Assert.assertEquals(1, chainService.retrieveAll().size());
-        Assert.assertEquals(2, metaFileService.retrieveAll().size());
-        Assert.assertEquals(7, acquisitionFileService.retrieveAll().size());
-        Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
-        Assert.assertEquals(1, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
-        Assert.assertEquals(5, productService.retrieveAll().size());
-
-        chain = chainService.retrieve(chain.getId());
-        Assert.assertNotNull(chain.getLastDateActivation());
     }
 
     @Test

@@ -89,8 +89,8 @@ public class Product implements IIdentifiable<Long> {
      * <li><code>true</code> if the {@link Product} has been saved by ingest</br>
      * <li><code>false</code> otherwise
      */
-    @Column(name = "send")
-    private Boolean send = false;
+    @Column(name = "saved")
+    private Boolean saved = false;
 
     /**
      * The product name
@@ -140,7 +140,7 @@ public class Product implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((productName == null) ? 0 : productName.hashCode());  // NOSONAR
+        result = prime * result + ((productName == null) ? 0 : productName.hashCode()); // NOSONAR
         return result;
     }
 
@@ -214,12 +214,12 @@ public class Product implements IIdentifiable<Long> {
         this.session = session;
     }
 
-    public Boolean isSend() {
-        return send;
+    public Boolean isSaved() {
+        return saved;
     }
 
-    public void setSend(Boolean send) {
-        this.send = send;
+    public void setSaved(Boolean saved) {
+        this.saved = saved;
     }
 
     @Override

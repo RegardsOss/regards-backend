@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
 import fr.cnes.regards.modules.acquisition.service.step.IStep;
 
@@ -48,6 +49,8 @@ public class AcquisitionProcess {
     //    protected Thread processThread_;
 
     private ChainGeneration chainGeneration;
+
+    private Product product;
 
     /**
      * Etape courante
@@ -87,6 +90,11 @@ public class AcquisitionProcess {
 
     public AcquisitionProcess(ChainGeneration chain) {
         chainGeneration = chain;
+    }
+
+    public AcquisitionProcess(ChainGeneration chain, Product aProduct) {
+        chainGeneration = chain;
+        product = aProduct;
     }
 
     public void stopProcess() throws AcquisitionRuntimeException {
@@ -281,8 +289,8 @@ public class AcquisitionProcess {
         return chainGeneration;
     }
 
-    public void setChainGeneration(ChainGeneration chainGeneration) {
-        this.chainGeneration = chainGeneration;
+    public Product getProduct() {
+        return product;
     }
 
     public IStep getCurrentStep() {

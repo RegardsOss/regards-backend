@@ -25,6 +25,7 @@ import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
 /**
@@ -36,8 +37,11 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 public interface IAcquisitionFileRepository extends CrudRepository<AcquisitionFile, Long> {
 
     List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
-    
+
     List<AcquisitionFile> findByStatus(AcquisitionFileStatus status);
-    
+
     List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileStatus status, MetaFile metaFile);
+
+    List<AcquisitionFile> findByProduct(Product product);
+
 }

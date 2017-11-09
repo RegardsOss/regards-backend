@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
 /**
@@ -79,6 +80,11 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     @Override
     public List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileStatus status, MetaFile metaFile) {
         return acqfileRepository.findByStatusAndMetaFile(status, metaFile);
+    }
+
+    @Override
+    public List<AcquisitionFile> findByProduct(Product product) {
+        return acqfileRepository.findByProduct(product);
     }
 
 }

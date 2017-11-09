@@ -19,6 +19,8 @@
 
 package fr.cnes.regards.modules.acquisition.service.job;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -26,25 +28,38 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
+import fr.cnes.regards.modules.acquisition.domain.job.ProductJobParameter;
+import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
+import fr.cnes.regards.modules.acquisition.service.step.AcquisitionCheckStep;
+import fr.cnes.regards.modules.acquisition.service.step.AcquisitionScanStep;
 import fr.cnes.regards.modules.acquisition.service.step.IAcquisitionCheckStep;
 import fr.cnes.regards.modules.acquisition.service.step.IAcquisitionScanStep;
-import fr.cnes.regards.modules.acquisition.service.step.IGenerateSipStep;
 import fr.cnes.regards.modules.acquisition.service.step.IStep;
 
 /**
+ * This job runs a set of step :<br>
+ * <li>a step {@link AcquisitionScanStep} to scan and identify the files to acquired ie {@link AcquisitionFile}
+ * <li>a step {@link AcquisitionCheckStep} to check the acquired files and to determines the {@link Product} associated
+ *  
  * @author Christophe Mertz
  *
  */
-public class AcquisitionJob extends AbstractJob<Void> {
+public class AcquisitionProductsJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProductsJob.class);
 
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
@@ -54,9 +69,16 @@ public class AcquisitionJob extends AbstractJob<Void> {
 
     @Autowired
     private IAcquisitionCheckStep checkStepImpl;
+    
+    @Autowired
+    private IProductService productService;
 
     @Autowired
-    private IGenerateSipStep generateSIPStepImpl;
+    private IJobInfoService jobInfoService;
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
+    
 
     private ChainGeneration chainGeneration;
 
@@ -72,13 +94,13 @@ public class AcquisitionJob extends AbstractJob<Void> {
 
         AcquisitionProcess process = new AcquisitionProcess(chainGeneration);
 
-        // IAcquisitionScanStep is the first step, it is mandatory
+        // IAcquisitionScanStep is the first step
         IStep scanStep = scanStepImpl;
         scanStep.setProcess(process);
         beanFactory.autowireBean(scanStep);
         process.setCurrentStep(scanStep);
 
-        // IAcquisitionCheckStep is optional
+        // IAcquisitionCheckStep is second step
         IStep checkStep = null;
         if (chainGeneration.getCheckAcquisitionPluginConf() != null) {
             checkStep = checkStepImpl;
@@ -87,20 +109,14 @@ public class AcquisitionJob extends AbstractJob<Void> {
             scanStep.setNextStep(checkStep);
         }
 
-        // IGenerateSIPStep is mandatory
-        IStep generateSipStep = generateSIPStepImpl;
-        generateSipStep.setProcess(process);
-        beanFactory.autowireBean(generateSipStep);
-
-        if (checkStep == null) {
-            scanStep.setNextStep(generateSipStep);
-        } else {
-            checkStep.setNextStep(generateSipStep);
-        }
-
         process.run();
+        
+        
+        chainGeneration.getSession();
+        // récupérer tous les produits de la session
+        // puis appeler submitProducts()
 
-        LOGGER.info("End  acquisition job for the chain <{}>", chainGeneration.getLabel());
+        LOGGER.info("End acquisition job for the chain <{}>", chainGeneration.getLabel());
     }
 
     @Override
@@ -120,5 +136,30 @@ public class AcquisitionJob extends AbstractJob<Void> {
         }
 
         chainGeneration = param.getValue();
+    }
+    
+    private void submitProducts() {
+        List<Product> validFileList = new ArrayList<>();
+        validFileList.addAll(productService.findByStatus(ProductStatus.COMPLETED));
+        validFileList.addAll(productService.findByStatus(ProductStatus.FINISHED));
+
+        validFileList.stream().forEach(p -> {
+            if (!createJob(p)) {
+                LOGGER.error("error :{}", p.getProductName());
+            }
+        });
+    }
+
+    private boolean createJob(Product product) {
+        // Create a ScanJob
+        JobInfo acquisition = new JobInfo();
+        acquisition.setParameters(new ChainGenerationJobParameter(chainGeneration), new ProductJobParameter(product));
+        acquisition.setClassName(AcquisitionProductsJob.class.getName());
+        acquisition.setOwner(authResolver.getUser());
+        acquisition.setPriority(50);
+
+        acquisition = jobInfoService.createAsQueued(acquisition);
+
+        return acquisition != null;
     }
 }

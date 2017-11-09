@@ -4,7 +4,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 
 /**
- * JobParameter specific class to be used with ScanJob
+ * {@link JobParameter} specific class to be used with AcquisitionProductsJob
+ * 
  * @author Christophe Mertz
  */
 public class ChainGenerationJobParameter extends JobParameter {
@@ -26,7 +27,7 @@ public class ChainGenerationJobParameter extends JobParameter {
     }
 
     /**
-     * Check if given JobParameter is compatible with FilesJobParameter ie same name
+     * Check if given {@link JobParameter} is compatible with ChainGenerationJobParameter ie same name
      */
     public static boolean isCompatible(JobParameter param) {
         return param.getName().equals(NAME);

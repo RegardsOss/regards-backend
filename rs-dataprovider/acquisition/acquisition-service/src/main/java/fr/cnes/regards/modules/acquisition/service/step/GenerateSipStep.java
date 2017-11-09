@@ -19,7 +19,6 @@
 
 package fr.cnes.regards.modules.acquisition.service.step;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,11 +41,9 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
@@ -218,36 +215,44 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
             LOGGER.error(ex.getMessage());
             throw ex;
         }
-        product.setSend(Boolean.TRUE);
+        product.setSaved(Boolean.TRUE);
         productService.save(product);
     }
 
     @Override
     public void getResources() throws AcquisitionException {
+
         this.afMap = new HashMap<Long, List<AcquisitionFile>>();
 
-        // Get the VALID AcquisitionFile
-        List<AcquisitionFile> validFileList = new ArrayList<>();
-        for (MetaFile metaFile : process.getChainGeneration().getMetaProduct().getMetaFiles()) {
-            validFileList.addAll(acquisitionFileService.findByStatusAndMetaFile(AcquisitionFileStatus.VALID, metaFile));
+        if (!process.getProduct().getStatus().equals(ProductStatus.COMPLETED)
+                && !process.getProduct().getStatus().equals(ProductStatus.FINISHED)) {
+            return;
         }
 
-        // Get all the products from the VALID AcquisitionFile
-        Set<Product> products = new HashSet<Product>();
-        validFileList.forEach(af -> {
-            if (!products.contains(af.getProduct())) {
-                products.add(af.getProduct());
-            }
-        });
+        this.afMap.put(process.getProduct().getId(), acquisitionFileService.findByProduct(process.getProduct()));
+
+        //        // Get the VALID AcquisitionFile
+        //        List<AcquisitionFile> validFileList = new ArrayList<>();
+        //        for (MetaFile metaFile : process.getChainGeneration().getMetaProduct().getMetaFiles()) {
+        //            validFileList.addAll(acquisitionFileService.findByStatusAndMetaFile(AcquisitionFileStatus.VALID, metaFile));
+        //        }
+        //
+        //        // Get all the products from the VALID AcquisitionFile
+        //        Set<Product> products = new HashSet<Product>();
+        //        validFileList.forEach(af -> {
+        //            if (!products.contains(af.getProduct())) {
+        //                products.add(af.getProduct());
+        //            }
+        //        });
 
         // Get the AcquisitionFiles for each Product
-        for (Product pr : products) {
-            if (pr.getStatus().equals(ProductStatus.COMPLETED) || pr.getStatus().equals(ProductStatus.FINISHED)) {
-                List<AcquisitionFile> afs = new ArrayList<>();
-                validFileList.stream().filter(af -> af.getProduct().equals(pr)).forEach(af -> afs.add(af));
-                this.afMap.put(pr.getId(), afs);
-            }
-        }
+        //        for (Product pr : products) {
+        //            if (pr.getStatus().equals(ProductStatus.COMPLETED) || pr.getStatus().equals(ProductStatus.FINISHED)) {
+        //                List<AcquisitionFile> afs = new ArrayList<>();
+        //                validFileList.stream().filter(af -> af.getProduct().equals(pr)).forEach(af -> afs.add(af));
+        //                this.afMap.put(pr.getId(), afs);
+        //            }
+        //        }
     }
 
     @Override

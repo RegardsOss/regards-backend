@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
-import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJob;
+import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProductsJob;
 
 /**
  *
@@ -91,7 +91,7 @@ public class ChaineGenerationService implements IChainGenerationService {
 
     @Override
     public boolean run(ChainGeneration chain) {
-        // il ne faut pas lancer une chaine en cours d'exécution
+        // TODO CMZ : il ne faut pas lancer une chaine en cours d'exécution
         // non pas ici , c'est à gérér par celui qui appel
 
         // the ChainGeneration must be active
@@ -119,7 +119,7 @@ public class ChaineGenerationService implements IChainGenerationService {
         // Create a ScanJob
         JobInfo acquisition = new JobInfo();
         acquisition.setParameters(new ChainGenerationJobParameter(chain));
-        acquisition.setClassName(AcquisitionJob.class.getName());
+        acquisition.setClassName(AcquisitionProductsJob.class.getName());
         acquisition.setOwner(authResolver.getUser());
         acquisition.setPriority(50);
 
