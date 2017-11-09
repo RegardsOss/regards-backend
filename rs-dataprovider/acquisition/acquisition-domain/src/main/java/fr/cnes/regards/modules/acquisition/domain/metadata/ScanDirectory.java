@@ -41,7 +41,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
  *
  */
 @Entity
-@Table(name = "t_scan_directory")
+@Table(name = "t_dpv_scan_directory")
 public class ScanDirectory implements IIdentifiable<Long> {
 
     @Id
@@ -74,7 +74,7 @@ public class ScanDirectory implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((scanDir == null) ? 0 : scanDir.hashCode());
+        result = prime * result + ((scanDir == null) ? 0 : scanDir.hashCode()); // NOSONAR
         return result;
     }
 

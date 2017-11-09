@@ -55,7 +55,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
  *
  */
 @Entity
-@Table(name = "t_acquisition_file")
+@Table(name = "t_dpv_acquisition_file")
 public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
 
     /**
@@ -163,8 +163,8 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((checksum == null) ? 0 : checksum.hashCode());
-        result = prime * result + ((fileName == null) ? 0 : fileName.hashCode());
+        result = prime * result + ((checksum == null) ? 0 : checksum.hashCode()); //NOSONAR
+        result = prime * result + ((fileName == null) ? 0 : fileName.hashCode()); //NOSONAR
         return result;
     }
 

@@ -56,7 +56,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
  * @author Christophe Mertz
  */
 @Entity
-@Table(name = "t_generation_chain", indexes = { @Index(name = "idx_chain_label", columnList = "label") },
+@Table(name = "t_dpv_acquisition_chain", indexes = { @Index(name = "idx_chain_label", columnList = "label") },
         uniqueConstraints = @UniqueConstraint(name = "uk_chain_label", columnNames = { "label" }))
 public class ChainGeneration implements IIdentifiable<Long> {
 
@@ -166,8 +166,8 @@ public class ChainGeneration implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((dataSetIpId == null) ? 0 : dataSetIpId.hashCode());
-        result = prime * result + ((label == null) ? 0 : label.hashCode());
+        result = prime * result + ((dataSetIpId == null) ? 0 : dataSetIpId.hashCode()); // NOSONAR
+        result = prime * result + ((label == null) ? 0 : label.hashCode()); // NOSONAR
         return result;
     }
 

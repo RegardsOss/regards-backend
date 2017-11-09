@@ -34,13 +34,13 @@ import org.springframework.test.context.transaction.BeforeTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.acquisition.builder.ChainGenerationBuilder;
+import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
+import fr.cnes.regards.modules.acquisition.builder.ProductBuilder;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
-import fr.cnes.regards.modules.acquisition.domain.ChainGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductBuilder;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionServiceConfiguration;
 
 /**

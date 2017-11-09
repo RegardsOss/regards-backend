@@ -36,9 +36,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.acquisition.builder.FileAcquisitionInformationsBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformationsBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
 /**

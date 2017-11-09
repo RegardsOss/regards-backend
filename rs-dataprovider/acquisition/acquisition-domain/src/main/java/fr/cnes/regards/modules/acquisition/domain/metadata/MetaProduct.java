@@ -52,7 +52,7 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
  *
  */
 @Entity
-@Table(name = "t_meta_product", indexes = { @Index(name = "idx_meta_product_label", columnList = "label") },
+@Table(name = "t_dpv_meta_product", indexes = { @Index(name = "idx_meta_product_label", columnList = "label") },
         uniqueConstraints = @UniqueConstraint(name = "uk_meta_product_label", columnNames = { "label" }))
 @NamedEntityGraph(name = "graph.product.complete", attributeNodes = @NamedAttributeNode(value = "products"))
 public class MetaProduct implements IIdentifiable<Long> {
@@ -173,7 +173,7 @@ public class MetaProduct implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((label == null) ? 0 : label.hashCode());
+        result = prime * result + ((label == null) ? 0 : label.hashCode()); // NOSONAR
         return result;
     }
 

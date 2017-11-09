@@ -47,7 +47,7 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  *
  */
 @Entity
-@Table(name = "t_meta_file")
+@Table(name = "t_dpv_meta_file")
 public class MetaFile implements IIdentifiable<Long> {
 
     /**
@@ -212,9 +212,9 @@ public class MetaFile implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((fileNamePattern == null) ? 0 : fileNamePattern.hashCode());
-        result = prime * result + ((invalidFolder == null) ? 0 : invalidFolder.hashCode());
-        result = prime * result + ((mandatory == null) ? 0 : mandatory.hashCode());
+        result = prime * result + ((fileNamePattern == null) ? 0 : fileNamePattern.hashCode()); // NOSONAR
+        result = prime * result + ((invalidFolder == null) ? 0 : invalidFolder.hashCode()); // NOSONAR
+        result = prime * result + ((mandatory == null) ? 0 : mandatory.hashCode()); // NOSONAR
         return result;
     }
 

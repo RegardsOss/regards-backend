@@ -37,12 +37,12 @@ import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
 import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
@@ -382,6 +382,9 @@ public class ScanJobIT extends AbstractAcquisitionIT {
         Assert.assertEquals(3, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
         Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
         Assert.assertEquals(3, productService.retrieveAll().size());
+        /*
+         *  3 products are acquired but for each 1 mandatory file is missing 
+         */
         Assert.assertEquals(3, productService.findByStatus(ProductStatus.ACQUIRING).size());
 
         for (Product product : productService.retrieveAll()) {
@@ -393,7 +396,7 @@ public class ScanJobIT extends AbstractAcquisitionIT {
 
         Thread.sleep(5_000);
 
-        // Scan plugin
+        // Scan plugin : in this step we acquire the 3 mandatory missing files
         metaProductJson = new Gson()
                 .toJson(MetaProductDto.fromMetaProduct(metaProductService.retrieveComplete(metaProduct.getId())));
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanProductsHeader",
@@ -419,6 +422,9 @@ public class ScanJobIT extends AbstractAcquisitionIT {
         Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
         Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
         Assert.assertEquals(3, productService.retrieveAll().size());
+        /**
+         * the 3 products are finished
+         */
         Assert.assertEquals(3, productService.findByStatus(ProductStatus.FINISHED).size());
 
         for (Product product : productService.retrieveAll()) {
