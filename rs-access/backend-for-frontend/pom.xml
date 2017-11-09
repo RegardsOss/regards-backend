@@ -42,27 +42,7 @@
 			<!-- Module layers -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>backend-for-frontend-dao</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>backend-for-frontend-domain</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>backend-for-frontend-rest</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>backend-for-frontend-service</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>backend-for-frontend-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>

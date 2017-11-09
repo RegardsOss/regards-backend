@@ -16,5 +16,5 @@
  */
 @Library('regards/standardPipeline') _
 standardPipeline {
-	upstreamProjects = 'rs-dam-multi-branch/develop'
+	upstreamProjects = 'rs-catalog-multi-branch/develop'
 }
