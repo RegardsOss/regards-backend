@@ -1222,7 +1222,7 @@ public class STAFControllerTest {
      * @throws IOException
      * @throws STAFException
      */
-    @Ignore("test ignored for now, time to get the CI running with a real user not root which bypass permissions on directories") //FIXME
+//    @Ignore("test ignored for now, time to get the CI running with a real user not root which bypass permissions on directories") //FIXME
     @Test
     public void testRestoreWithAccessDeniedToRestoreDirectory() throws IOException, STAFException {
 
