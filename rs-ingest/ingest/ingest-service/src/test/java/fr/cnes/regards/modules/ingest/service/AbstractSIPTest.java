@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  */
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { TestConfiguration.class })
-public class AbstractSIPTest extends AbstractRegardsServiceTransactionalIT {
+public abstract class AbstractSIPTest extends AbstractRegardsServiceTransactionalIT {
 
     @Autowired
     private Gson gson;

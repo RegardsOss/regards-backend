@@ -60,9 +60,11 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 import fr.cnes.regards.modules.storage.client.IAipClient;
+import fr.cnes.regards.modules.storage.client.IAipEntityClient;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 
 /**
@@ -94,6 +96,9 @@ public class SIPServiceTest extends AbstractSIPTest {
 
     @Autowired
     private IAipClient aipClient;
+
+    @Autowired
+    private IAipEntityClient aipEntityClient;
 
     private SIPEntity sipWithManyAIPs = null;
 
@@ -169,14 +174,13 @@ public class SIPServiceTest extends AbstractSIPTest {
             simulatedStorageAips.add(a);
         }
         // Simulate AIPClient to return AIPs associated to SIP
-        Mockito.when(aipClient.retrieveAIPs(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any(),
-                                            Mockito.anyInt(), Mockito.anyInt()))
+        Mockito.when(aipEntityClient.retrieveAIPEntities(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenAnswer(invocation -> simulateRetrieveAIPResponseFromStorage((String) invocation
                         .getArguments()[0]));
 
         // Simulate AIPClient to return empty  rejected SIP from AIPs deletion
         Mockito.when(aipClient.deleteAipFromSips(Mockito.anySet()))
-                .thenReturn(simukateDeleteSIPAIPsREsponseFromStorage());
+                .thenReturn(simulateDeleteSIPAIPsREsponseFromStorage());
     }
 
     @Requirement("REGARDS_DSL_ING_PRO_535")
@@ -356,10 +360,17 @@ public class SIPServiceTest extends AbstractSIPTest {
      * @param sipId
      * @return
      */
-    private ResponseEntity<PagedResources<Resource<AIP>>> simulateRetrieveAIPResponseFromStorage(String sipId) {
-        Set<Resource<AIP>> resources = simulatedStorageAips.stream().filter(a -> a.getSipId().equals(sipId))
-                .map(a -> new Resource<AIP>(a)).collect(Collectors.toSet());
-        PagedResources<Resource<AIP>> pagedRes = new PagedResources<Resource<AIP>>(resources,
+    private ResponseEntity<PagedResources<Resource<AIPEntity>>> simulateRetrieveAIPResponseFromStorage(String sipId) {
+        Set<Resource<AIPEntity>> resources = simulatedStorageAips.stream().filter(a -> a.getSipId().equals(sipId))
+                .map(a -> {
+                    AIPEntity entity = new AIPEntity();
+                    entity.setAip(a);
+                    entity.setState(a.getState());
+                    entity.setIpId(a.getId().toString());
+                    entity.setSipId(a.getSipId());
+                    return new Resource<AIPEntity>(entity);
+                }).collect(Collectors.toSet());
+        PagedResources<Resource<AIPEntity>> pagedRes = new PagedResources<Resource<AIPEntity>>(resources,
                 new PageMetadata(resources.size(), resources.size(), resources.size()));
         return new ResponseEntity<>(pagedRes, HttpStatus.OK);
     }
@@ -368,7 +379,7 @@ public class SIPServiceTest extends AbstractSIPTest {
      * Simulate response from {@link IAipClient#deleteAipFromSips(Set)}
      * @return
      */
-    private ResponseEntity<List<RejectedSip>> simukateDeleteSIPAIPsREsponseFromStorage() {
+    private ResponseEntity<List<RejectedSip>> simulateDeleteSIPAIPsREsponseFromStorage() {
         List<RejectedSip> rejectedSips = Lists.newArrayList();
         return new ResponseEntity<>(rejectedSips, HttpStatus.OK);
     }

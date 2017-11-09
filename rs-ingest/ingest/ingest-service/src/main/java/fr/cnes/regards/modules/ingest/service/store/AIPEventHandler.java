@@ -43,8 +43,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
-import fr.cnes.regards.modules.storage.client.IAipClient;
-import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.client.IAipEntityClient;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 
 /**
@@ -72,7 +71,7 @@ public class AIPEventHandler implements IHandler<AIPEvent> {
     private IPublisher publisher;
 
     @Autowired
-    private IAipClient aipClient;
+    private IAipEntityClient aipEntityClient;
 
     @Override
     public void handle(TenantWrapper<AIPEvent> pWrapper) {
@@ -129,8 +128,8 @@ public class AIPEventHandler implements IHandler<AIPEvent> {
             aipRepository.delete(oAip.get());
         }
         // Retrieve all AIP associated to the SIP.
-        ResponseEntity<PagedResources<Resource<AIP>>> result = aipClient.retrieveAIPs(sipIpId, null, null, null, 0,
-                                                                                      100);
+        ResponseEntity<PagedResources<Resource<fr.cnes.regards.modules.storage.domain.database.AIPEntity>>> result = aipEntityClient
+                .retrieveAIPEntities(sipIpId, 0, 100);
         if (result.getStatusCode().equals(HttpStatus.OK) && (result.getBody() != null)) {
             Optional<SIPEntity> oSip = sipRepository.findOneByIpId(sipIpId);
             if (oSip.isPresent()) {
