@@ -107,7 +107,7 @@ public class AIPEventHandler implements IHandler<AIPEvent> {
         if (oAip.isPresent()) {
             // Update AIP State
             AIPEntity aip = oAip.get();
-            aipRepository.updateAIPEntityState(AIPState.STORE_ERROR, aip.getId());
+            aipRepository.updateAIPEntityState(AIPState.STORE_ERROR, ipId);
             // Update SIP associated State
             SIPEntity sip = aip.getSip();
             sip.setState(SIPState.STORE_ERROR);

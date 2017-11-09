@@ -19,12 +19,17 @@
 package fr.cnes.regards.modules.ingest.service.store;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +43,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
+import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 
 /**
@@ -49,6 +55,8 @@ import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 @MultitenantTransactional
 public class AIPStorageBulkRequestService
         implements IAIPStorageBulkRequestService, ApplicationListener<ApplicationReadyEvent> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPStorageBulkRequestService.class);
 
     @Autowired
     private IAIPRepository aipRepository;
@@ -83,17 +91,31 @@ public class AIPStorageBulkRequestService
         // 2. Use archival storage client to post the associated request
         AIPCollection aips = new AIPCollection();
         Iterator<Long> it = aipIds.iterator();
-        Set<Long> aipsInRequest = Sets.newHashSet();
+        Set<String> aipsInRequest = Sets.newHashSet();
         while ((aipsInRequest.size() < bulkRequestLimit) && it.hasNext()) {
             Long aipId = it.next();
             AIPEntity aip = aipRepository.findOne(aipId);
             aips.add(aip.getAip());
-            aipsInRequest.add(aipId);
+            aipsInRequest.add(aip.getIpId());
         }
-        aipClient.store(aips);
-        // TODO : Read rejected aips and set there status to AIP_REJECTED
-        // TODO : Set accepted aips to QUEUED
-        aipsInRequest.forEach(aipId -> aipRepository.updateAIPEntityState(AIPState.QUEUED, aipId));
+        if (!aipsInRequest.isEmpty()) {
+            ResponseEntity<List<RejectedAip>> response = aipClient.store(aips);
+            if ((response != null) && (response.getStatusCode().is2xxSuccessful())) {
+                List<RejectedAip> rejectedAips = response.getBody();
+                // If there is rejected aips, remove them from the list of AIPEntity to set to QUEUED status.
+                if ((rejectedAips != null) && !rejectedAips.isEmpty()) {
+                    Set<String> resjectAipIds = rejectedAips.stream().map(r -> {
+                        LOGGER.warn("Created AIP {}, has been rejected by archival storage microservice for store action",
+                                    r.getIpId());
+                        return r.getIpId();
+                    }).collect(Collectors.toSet());
+                    resjectAipIds.forEach(aipId -> aipRepository.updateAIPEntityState(AIPState.STORE_REJECTED, aipId));
+                    aipsInRequest.removeAll(resjectAipIds);
+                }
+                // Update all not rejected AIPState to QUEUED.
+                aipsInRequest.forEach(aipId -> aipRepository.updateAIPEntityState(AIPState.QUEUED, aipId));
+            }
+        }
     }
 
 }

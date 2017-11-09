@@ -19,12 +19,19 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
+import org.assertj.core.util.Lists;
+import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
@@ -43,18 +50,23 @@ import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSingleAIPGeneration;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSipValidation;
+import fr.cnes.regards.modules.storage.client.IAipClient;
+import fr.cnes.regards.modules.storage.domain.AIPCollection;
+import fr.cnes.regards.modules.storage.domain.RejectedAip;
 
 /**
  * Test class to check scheduled tasks to handle created SIP to be processed by processing chains.
  * @author Sébastien Binda
  */
-@TestPropertySource(properties = { "regards.ingest.process.new.sips.delay:3000" },
-        locations = "classpath:test.properties")
+@TestPropertySource(properties = { "regards.ingest.process.new.sips.delay:3000",
+        "regards.ingest.process.new.aips.storage.delay:6000" }, locations = "classpath:test.properties")
 @ContextConfiguration(classes = { TestConfiguration.class })
 public class ScheduledIngestTaskTest extends AbstractRegardsServiceTransactionalIT {
 
@@ -74,14 +86,22 @@ public class ScheduledIngestTaskTest extends AbstractRegardsServiceTransactional
     private IIngestService ingestService;
 
     @Autowired
+    private IAipClient aipClient;
+
+    @Autowired
     private IPluginConfigurationRepository pluginConfRepo;
 
     @Value("${regards.ingest.process.new.sips.delay}")
     private String scheduledTasksDelay;
 
+    @Value("${regards.ingest.process.new.aips.storage.delay}")
+    private String scheduledAipBulkRequestDelay;
+
     public static final String DEFAULT_PROCESSING_CHAIN_TEST = "defaultProcessingChain";
 
     public static final String SIP_ID_TEST = "SIP_001";
+
+    private final Set<String> rejectedAips = Sets.newHashSet();
 
     @Before
     public void init() throws ModuleException {
@@ -89,22 +109,11 @@ public class ScheduledIngestTaskTest extends AbstractRegardsServiceTransactional
         aipRepository.deleteAll();
         sipRepository.deleteAll();
         initDefaultProcessingChain();
-    }
 
-    private void initDefaultProcessingChain() throws ModuleException {
-        PluginMetaData defaultValidationPluginMeta = PluginUtils.createPluginMetaData(DefaultSipValidation.class);
-        PluginConfiguration defaultValidationPlugin = new PluginConfiguration(defaultValidationPluginMeta,
-                "defaultValidationPlugin");
-        pluginService.savePluginConfiguration(defaultValidationPlugin);
-
-        PluginMetaData defaultGenerationPluginMeta = PluginUtils.createPluginMetaData(DefaultSingleAIPGeneration.class);
-        PluginConfiguration defaultGenerationPlugin = new PluginConfiguration(defaultGenerationPluginMeta,
-                "defaultGenerationPlugin");
-        pluginService.savePluginConfiguration(defaultGenerationPlugin);
-
-        IngestProcessingChain defaultChain = new IngestProcessingChain(DEFAULT_PROCESSING_CHAIN_TEST,
-                "Default Ingestion processing chain", defaultValidationPlugin, defaultGenerationPlugin);
-        processingChainRepository.save(defaultChain);
+        this.rejectedAips.clear();
+        // Mock aipClient store request result
+        Mockito.when(aipClient.store(Mockito.any()))
+                .thenAnswer(invocation -> simulateRejectedAips((AIPCollection) invocation.getArguments()[0]));
     }
 
     @Requirement("REGARDS_DSL_ING_PRO_120")
@@ -129,6 +138,115 @@ public class ScheduledIngestTaskTest extends AbstractRegardsServiceTransactional
         sip = sipRepository.findOne(sipIdTest);
         Assert.assertTrue("SIP should have been handled by the scheduled task.",
                           SIPState.AIP_CREATED.equals(sip.getState()));
+
+        // 4. Check that the associated AIP is generated
+        Set<AIPEntity> aips = aipRepository.findBySip(sip);
+        Assert.assertEquals(1, aips.size());
+        AIPEntity aip = aips.iterator().next();
+        Assert.assertEquals(AIPState.CREATED, aip.getState());
+
+        // 5. Wait for AIPs bulk request is sent
+        Thread.sleep(Integer.parseInt(scheduledAipBulkRequestDelay) - Integer.parseInt(scheduledTasksDelay));
+
+        // 6. Check that AIPs has been handled by storage microservice
+        Mockito.verify(aipClient, Mockito.times(1)).store(Mockito.any());
+        aip = aipRepository.findOne(aip.getId());
+        Assert.assertEquals(AIPState.QUEUED, aip.getState());
+
+        sip = sipRepository.findOne(sipIdTest);
+        Assert.assertEquals(SIPState.AIP_CREATED, sip.getState());
+
+        // 7. Verify that a new storage request is not sent to archival storage during the time when aip is in queued state
+        Mockito.reset(aipClient);
+        Thread.sleep(Integer.parseInt(scheduledAipBulkRequestDelay));
+        Mockito.verify(aipClient, Mockito.times(0)).store(Mockito.any());
+    }
+
+    @Requirement("REGARDS_DSL_ING_PRO_120")
+    @Purpose("Manage scheduled ingestion tasks for all CREATED SIP with rejected AIPs from storage")
+    @Test
+    public void scheduleIngestJobTestWithStorageError() throws InterruptedException, ModuleException {
+
+        // 1. Add a new SIP with CREATED Status.
+        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(DEFAULT_PROCESSING_CHAIN_TEST, "sessionId");
+        SIPCollection collection = colBuilder.build();
+        SIPBuilder builder = new SIPBuilder(SIP_ID_TEST);
+        collection.add(builder.build());
+        Collection<SIPEntity> results = ingestService.ingest(collection);
+        Long sipIdTest = results.stream().findFirst().get().getId();
+        SIPEntity sip = sipRepository.findOne(sipIdTest);
+        Assert.assertTrue("Error creating new SIP", SIPState.CREATED.equals(sip.getState()));
+
+        // 2. Wait for scheduled task to be run and finished
+        Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1000);
+
+        // 3. Check that the SIP has been successully handled
+        sip = sipRepository.findOne(sipIdTest);
+        Assert.assertTrue("SIP should have been handled by the scheduled task.",
+                          SIPState.AIP_CREATED.equals(sip.getState()));
+
+        // 4. Check that the associated AIP is generated
+        Set<AIPEntity> aips = aipRepository.findBySip(sip);
+        Assert.assertEquals(1, aips.size());
+        AIPEntity aip = aips.iterator().next();
+        Assert.assertEquals(AIPState.CREATED, aip.getState());
+
+        // Simulate aip rejection from archival storage
+        this.rejectedAips.add(aip.getIpId());
+
+        // 5. Wait for AIPs bulk request is sent
+        Thread.sleep(Integer.parseInt(scheduledAipBulkRequestDelay) - Integer.parseInt(scheduledTasksDelay));
+
+        // 6. Check AIP Rejection from archival storage
+        Mockito.verify(aipClient, Mockito.times(1)).store(Mockito.any());
+        aip = aipRepository.findOne(aip.getId());
+        Assert.assertEquals(AIPState.STORE_REJECTED, aip.getState());
+
+        sip = sipRepository.findOne(sipIdTest);
+        Assert.assertEquals(SIPState.AIP_CREATED, sip.getState());
+
+        // 7. Verify that a new storage request is not sent to archival storage during the time when aip is in queued state
+        Mockito.reset(aipClient);
+        Thread.sleep(Integer.parseInt(scheduledAipBulkRequestDelay));
+        Mockito.verify(aipClient, Mockito.times(0)).store(Mockito.any());
+
+    }
+
+    /**
+     * Initialize {@link IngestProcessingChain} configuration for tests
+     * @throws ModuleException
+     */
+    private void initDefaultProcessingChain() throws ModuleException {
+        PluginMetaData defaultValidationPluginMeta = PluginUtils.createPluginMetaData(DefaultSipValidation.class);
+        PluginConfiguration defaultValidationPlugin = new PluginConfiguration(defaultValidationPluginMeta,
+                "defaultValidationPlugin");
+        pluginService.savePluginConfiguration(defaultValidationPlugin);
+
+        PluginMetaData defaultGenerationPluginMeta = PluginUtils.createPluginMetaData(DefaultSingleAIPGeneration.class);
+        PluginConfiguration defaultGenerationPlugin = new PluginConfiguration(defaultGenerationPluginMeta,
+                "defaultGenerationPlugin");
+        pluginService.savePluginConfiguration(defaultGenerationPlugin);
+
+        IngestProcessingChain defaultChain = new IngestProcessingChain(DEFAULT_PROCESSING_CHAIN_TEST,
+                "Default Ingestion processing chain", defaultValidationPlugin, defaultGenerationPlugin);
+        processingChainRepository.save(defaultChain);
+    }
+
+    /**
+     * Simulate a response from the archival storage microservice for the store request with no AIP rejected
+     * @param aipCollection
+     * @return
+     */
+    private ResponseEntity<List<RejectedAip>> simulateRejectedAips(AIPCollection aipCollection) {
+        List<RejectedAip> rejectedAips = Lists.newArrayList();
+        HttpStatus status = HttpStatus.CREATED;
+        if (!this.rejectedAips.isEmpty()) {
+            status = HttpStatus.PARTIAL_CONTENT;
+            this.rejectedAips.forEach(r -> {
+                rejectedAips.add(new RejectedAip(r, Lists.newArrayList("Simulated rejected AIP")));
+            });
+        }
+        return new ResponseEntity<>(rejectedAips, status);
     }
 
 }

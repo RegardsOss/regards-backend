@@ -63,8 +63,8 @@ public class ScheduledIngestTasks {
     @Scheduled(fixedRateString = "${regards.ingest.process.new.sips.delay:60000}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processNewSips() {
-        LOG.debug("Process new SIPs ingest for all active tenants");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
+            LOG.info("Scheduled task : Process new SIPs ingest for tenant {}", tenant);
             runtimeTenantResolver.forceTenant(tenant);
             ingestProcessingService.ingest();
             runtimeTenantResolver.clearTenant();
@@ -74,8 +74,8 @@ public class ScheduledIngestTasks {
     @Scheduled(fixedRateString = "${regards.ingest.process.new.aips.storage.delay:60000}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processNewAipsBulkRequest() {
-        LOG.debug("Process new AIP bulk request to archival storage for all active tenants");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
+            LOG.info("Scheduled task : Process new AIP bulk request to archival storage for tenant {}", tenant);
             runtimeTenantResolver.forceTenant(tenant);
             aipBulkRequestService.postAIPStorageBulkRequest();
             runtimeTenantResolver.clearTenant();

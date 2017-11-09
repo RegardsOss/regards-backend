@@ -138,11 +138,6 @@ public class IngestController implements IResourceController<SIPEntity> {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    public void getSessions() {
-        // TODO ...
-        // Return sessions DTO with number of sip and number sip completed.
-    }
-
     private HttpStatus computeStatus(Collection<SIPEntity> sipEntities) {
         Boolean hasCreated = Boolean.FALSE;
         Boolean hasRejected = Boolean.FALSE;
