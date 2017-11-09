@@ -23,7 +23,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -31,7 +30,6 @@ import org.mockito.Mockito;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.staf.domain.AbstractPhysicalFile;
 import fr.cnes.regards.framework.staf.domain.PhysicalFileStatusEnum;
 import fr.cnes.regards.framework.staf.domain.PhysicalTARFile;
@@ -1222,7 +1220,6 @@ public class STAFControllerTest {
      * @throws IOException
      * @throws STAFException
      */
-//    @Ignore("test ignored for now, time to get the CI running with a real user not root which bypass permissions on directories") //FIXME
     @Test
     public void testRestoreWithAccessDeniedToRestoreDirectory() throws IOException, STAFException {
 
