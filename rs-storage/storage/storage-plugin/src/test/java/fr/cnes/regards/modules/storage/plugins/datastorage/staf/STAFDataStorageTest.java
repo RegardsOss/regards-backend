@@ -21,7 +21,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -33,7 +32,6 @@ import org.springframework.util.MimeTypeUtils;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.oais.EventType;
@@ -215,8 +213,6 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
      * @throws IOException
      */
     @Test
-    @Ignore("test ignored for now, time to get the CI running with a real user not root which bypass permissions on directories")
-    //FIXME
     public void storeTestWorkspaceUnavailable() throws IOException {
 
         // Create workspace directory and set writes to simulate access denied.

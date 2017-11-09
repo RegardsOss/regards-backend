@@ -22,7 +22,6 @@ import java.util.UUID;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -230,8 +229,6 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     }
 
     @Test
-    @Ignore("test ignored for now, time to get the CI running with a real user not root which bypass permissions on directories")
-    //FIXME
     public void createFailOnMetadataTest() throws ModuleException, InterruptedException, IOException {
         // to make the process fail just on metadata storage, lets remove permissions from the workspace
         Path workspacePath = Paths.get(workspace, DEFAULT_TENANT);
