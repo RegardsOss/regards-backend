@@ -38,6 +38,7 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
@@ -52,8 +53,10 @@ import fr.cnes.regards.modules.acquisition.service.conf.MockedFeignClientConf;
 import fr.cnes.regards.modules.acquisition.service.plugins.BasicCheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.CheckInPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.TestGenerateSipPlugin;
-import fr.cnes.regards.modules.acquisition.service.plugins.TestScanDirectoryOneProductWithMultipleFilesPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.TestScanDirectoryPlugin;
+import fr.cnes.regards.modules.acquisition.service.plugins.TestScanProductsData;
+import fr.cnes.regards.modules.acquisition.service.plugins.TestScanProductsHeader;
+import fr.cnes.regards.modules.acquisition.service.plugins.TestScanProductsWithMultipleFilesPlugin;
 
 /**
  * @author Christophe Mertz
@@ -207,15 +210,13 @@ public class ScanJobIT extends AbstractAcquisitionIT {
 
         // Scan plugin
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration(
-                                                                                "TestScanDirectoryOneProductWithMultipleFilesPlugin",
+                                                                                "TestScanProductsWithMultipleFilesPlugin",
                                                                                 IAcquisitionScanDirectoryPlugin.class));
-        chain.addScanAcquisitionParameter(TestScanDirectoryOneProductWithMultipleFilesPlugin.META_PRODUCT_PARAM,
-                                          metaProductJson);
-        chain.addScanAcquisitionParameter(TestScanDirectoryOneProductWithMultipleFilesPlugin.META_FILE_PARAM,
-                                          metaFilesJson);
-        chain.addScanAcquisitionParameter(TestScanDirectoryOneProductWithMultipleFilesPlugin.CHAIN_GENERATION_PARAM,
+        chain.addScanAcquisitionParameter(TestScanProductsWithMultipleFilesPlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addScanAcquisitionParameter(TestScanProductsWithMultipleFilesPlugin.META_FILE_PARAM, metaFilesJson);
+        chain.addScanAcquisitionParameter(TestScanProductsWithMultipleFilesPlugin.CHAIN_GENERATION_PARAM,
                                           chain.getLabel());
-        chain.addScanAcquisitionParameter(TestScanDirectoryOneProductWithMultipleFilesPlugin.LAST_ACQ_DATE_PARAM,
+        chain.addScanAcquisitionParameter(TestScanProductsWithMultipleFilesPlugin.LAST_ACQ_DATE_PARAM,
                                           OffsetDateTime.now().minusDays(10).toString());
 
         // Check plugin
@@ -281,15 +282,13 @@ public class ScanJobIT extends AbstractAcquisitionIT {
 
         // Scan plugin
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration(
-                                                                                "TestScanDirectoryOneProductWithMultipleFilesPlugin",
+                                                                                "TestScanProductsWithMultipleFilesPlugin",
                                                                                 IAcquisitionScanDirectoryPlugin.class));
-        chain.addScanAcquisitionParameter(TestScanDirectoryOneProductWithMultipleFilesPlugin.META_PRODUCT_PARAM,
-                                          metaProductJson);
-        chain.addScanAcquisitionParameter(TestScanDirectoryOneProductWithMultipleFilesPlugin.META_FILE_PARAM,
-                                          metaFilesJson);
-        chain.addScanAcquisitionParameter(TestScanDirectoryOneProductWithMultipleFilesPlugin.CHAIN_GENERATION_PARAM,
+        chain.addScanAcquisitionParameter(TestScanProductsWithMultipleFilesPlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addScanAcquisitionParameter(TestScanProductsWithMultipleFilesPlugin.META_FILE_PARAM, metaFilesJson);
+        chain.addScanAcquisitionParameter(TestScanProductsWithMultipleFilesPlugin.CHAIN_GENERATION_PARAM,
                                           chain.getLabel());
-        chain.addScanAcquisitionParameter(TestScanDirectoryOneProductWithMultipleFilesPlugin.LAST_ACQ_DATE_PARAM,
+        chain.addScanAcquisitionParameter(TestScanProductsWithMultipleFilesPlugin.LAST_ACQ_DATE_PARAM,
                                           OffsetDateTime.now().minusDays(10).toString());
 
         // Check plugin
@@ -327,6 +326,104 @@ public class ScanJobIT extends AbstractAcquisitionIT {
 
         chain = chainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
+    }
+
+    @Test
+    public void runActiveChainGenerationProductsWithTwoAcquisitions() throws ModuleException, InterruptedException {
+        mockIngestClientResponseOK();
+
+        MetaFile secondMetaFileMandatory = metaFileService.save(MetaFileBuilder.build()
+                .withInvalidFolder("/var/regards/data/invalid").withFileType(MediaType.APPLICATION_JSON_VALUE)
+                .withFilePattern("file pattern for the header file").comment("it is mandatory second").isMandatory()
+                .get());
+        metaProduct.addMetaFile(secondMetaFileMandatory);
+        metaProduct.removeMetaFile(metaFileOptional);
+
+        Set<MetaFile> metaFiles = new HashSet<>();
+        metaFiles.add(metaFileMandatory);
+        metaFiles.add(secondMetaFileMandatory);
+
+        String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
+        String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
+
+        // Scan plugin
+        chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanProductsData",
+                                                                                IAcquisitionScanDirectoryPlugin.class));
+        chain.addScanAcquisitionParameter(TestScanProductsData.META_PRODUCT_PARAM, metaProductJson);
+        chain.addScanAcquisitionParameter(TestScanProductsData.META_FILE_PARAM, metaFilesJson);
+        chain.addScanAcquisitionParameter(TestScanProductsData.CHAIN_GENERATION_PARAM, chain.getLabel());
+        chain.addScanAcquisitionParameter(TestScanProductsData.LAST_ACQ_DATE_PARAM,
+                                          OffsetDateTime.now().minusDays(10).toString());
+
+        // Check plugin
+        chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("CheckInPlugin",
+                                                                                 ICheckFilePlugin.class));
+        chain.addCheckAcquisitionParameter(CheckInPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+
+        // Generate SIP plugin
+        chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
+                                                                            IGenerateSIPPlugin.class));
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addGenerateSIPParameter(TestGenerateSipPlugin.INGEST_PROCESSING_CHAIN_PARAM,
+                                      chain.getIngestProcessingChain());
+
+        Assert.assertTrue(chainService.run(chain));
+
+        waitJobEvent();
+
+        Assert.assertFalse(runnings.isEmpty());
+        Assert.assertFalse(succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
+
+        Assert.assertEquals(1, chainService.retrieveAll().size());
+        Assert.assertEquals(3, metaFileService.retrieveAll().size());
+        Assert.assertEquals(3, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(3, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
+        Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
+        Assert.assertEquals(3, productService.retrieveAll().size());
+        Assert.assertEquals(3, productService.findByStatus(ProductStatus.ACQUIRING).size());
+
+        for (Product product : productService.retrieveAll()) {
+            Assert.assertFalse(product.isSend());
+        }
+
+        ChainGeneration chainLastAcqDate = chainService.retrieve(chain.getId());
+        Assert.assertNotNull(chainLastAcqDate.getLastDateActivation());
+
+        Thread.sleep(5_000);
+
+        // Scan plugin
+        metaProductJson = new Gson()
+                .toJson(MetaProductDto.fromMetaProduct(metaProductService.retrieveComplete(metaProduct.getId())));
+        chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanProductsHeader",
+                                                                                IAcquisitionScanDirectoryPlugin.class));
+        chain.addScanAcquisitionParameter(TestScanProductsData.META_PRODUCT_PARAM, metaProductJson);
+        chain.addScanAcquisitionParameter(TestScanProductsData.META_FILE_PARAM, metaFilesJson);
+        chain.addScanAcquisitionParameter(TestScanProductsData.CHAIN_GENERATION_PARAM, chain.getLabel());
+        chain.addScanAcquisitionParameter(TestScanProductsHeader.LAST_ACQ_DATE_PARAM,
+                                          chainLastAcqDate.getLastDateActivation().toString());
+
+        Assert.assertTrue(chainService.run(chain));
+
+        waitJobEvent();
+
+        Assert.assertFalse(runnings.isEmpty());
+        Assert.assertFalse(succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
+
+        Assert.assertEquals(1, chainService.retrieveAll().size());
+        Assert.assertEquals(3, metaFileService.retrieveAll().size());
+        Assert.assertEquals(6, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
+        Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
+        Assert.assertEquals(3, productService.retrieveAll().size());
+        Assert.assertEquals(3, productService.findByStatus(ProductStatus.FINISHED).size());
+
+        for (Product product : productService.retrieveAll()) {
+            Assert.assertTrue(product.isSend());
+        }
     }
 
     @Test
@@ -382,11 +479,11 @@ public class ScanJobIT extends AbstractAcquisitionIT {
         for (Product product : productService.findByStatus(ProductStatus.COMPLETED)) {
             if (!product.getProductName().equals(FIRST_PRODUCT) && !product.getProductName().equals(SECOND_PRODUCT)) {
                 Assert.assertTrue(product.isSend());
-            }else {
+            } else {
                 Assert.assertFalse(product.isSend());
             }
         }
-        
+
         for (Product product : productService.findByStatus(ProductStatus.FINISHED)) {
             Assert.assertTrue(product.isSend());
         }

@@ -292,6 +292,10 @@ public class ChainGeneration implements IIdentifiable<Long> {
     public void addScanAcquisitionParameter(String name, String value) {
         this.scanAcquisitionParameter.put(name, value);
     }
+    
+    public void removeScanAcquisitionParameter(String name) {
+        this.scanAcquisitionParameter.remove(name);
+    }
 
     public Map<String, String> getCheckAcquisitionParameter() {
         return checkAcquisitionParameter;

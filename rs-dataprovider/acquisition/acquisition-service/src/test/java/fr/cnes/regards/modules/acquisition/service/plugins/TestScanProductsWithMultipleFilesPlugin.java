@@ -42,14 +42,14 @@ import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
  *
  * @author Christophe Mertz
  */
-@Plugin(id = "TestScanDirectoryOneProductWithMultipleFilesPlugin", version = "1.0.0-SNAPSHOT",
-        description = "TestScanDirectoryOneProductWithMultipleFilesPlugin", author = "REGARDS Team",
+@Plugin(id = "TestScanProductsWithMultipleFilesPlugin", version = "1.0.0-SNAPSHOT",
+        description = "TestScanProductsWithMultipleFilesPlugin", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
-public class TestScanDirectoryOneProductWithMultipleFilesPlugin extends AbstractAcquisitionScanPlugin
+public class TestScanProductsWithMultipleFilesPlugin extends AbstractAcquisitionScanPlugin
         implements IAcquisitionScanDirectoryPlugin {
 
     private static final Logger LOGGER = LoggerFactory
-            .getLogger(TestScanDirectoryOneProductWithMultipleFilesPlugin.class);
+            .getLogger(TestScanProductsWithMultipleFilesPlugin.class);
 
     @Autowired
     private IMetaFileService metaFileService;

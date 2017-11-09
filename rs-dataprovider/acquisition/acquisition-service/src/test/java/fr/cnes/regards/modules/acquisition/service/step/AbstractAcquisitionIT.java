@@ -239,7 +239,7 @@ public class AbstractAcquisitionIT {
         metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).addMetaFile(metaFileOptional)
                 .addMetaFile(metaFileMandatory).get());
         chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL + "-" + this.name.getMethodName()).isActive()
-                .withDataSet(DATASET_IP_ID).withMetaProduct(metaProduct)
+                .withDataSet(DATASET_IP_ID).withMetaProduct(metaProduct).periodicity(1L)
                 .withDataIngestProcessingChain("the-ingest-processing-to-used").get());
     }
 
