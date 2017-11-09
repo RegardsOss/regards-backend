@@ -67,7 +67,7 @@ public class SIPSessionService implements ISIPSessionService {
 
     @Override
     public Page<SIPSession> getSIPSessions(Pageable pageable) {
-        Page<SIPSession> pagedSessions = sipSessionRepository.findAll(pageable);
+        Page<SIPSession> pagedSessions = sipSessionRepository.findAllByOrderByLastActivationDateDesc(pageable);
         List<SIPSession> sessions = Lists.newArrayList();
         pagedSessions.forEach(s -> sessions.add(this.addSessionSipInformations(s)));
         return new PageImpl<>(sessions, pageable, pagedSessions.getTotalElements());

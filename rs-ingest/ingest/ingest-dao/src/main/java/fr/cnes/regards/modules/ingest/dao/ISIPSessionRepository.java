@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.ingest.dao;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
@@ -31,5 +33,9 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 public interface ISIPSessionRepository extends JpaRepository<SIPSession, String> {
 
     Optional<SIPSession> findById(String id);
+
+    Page<SIPSession> findAllByOrderByLastActivationDateDesc(Pageable pageable);
+
+    Page<SIPSession> findAllByOrderByLastActivationDateAsc(Pageable pageable);
 
 }

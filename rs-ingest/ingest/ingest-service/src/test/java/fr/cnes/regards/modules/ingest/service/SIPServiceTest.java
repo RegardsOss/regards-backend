@@ -318,6 +318,14 @@ public class SIPServiceTest extends AbstractSIPTest {
         // Check retrieve sessions
         Page<SIPSession> result = sipSessionService.getSIPSessions(new PageRequest(0, 100));
         Assert.assertTrue(result.getTotalElements() == 5);
+        SIPSession prevSession = null;
+        // Check order by last activation date.
+        for (SIPSession session : result.getContent()) {
+            if (prevSession != null) {
+                Assert.assertTrue(session.getLastActivationDate().compareTo(prevSession.getLastActivationDate()) <= 0);
+            }
+            prevSession = session;
+        }
         // Check session progress for complex simulated session
         SIPSession session = result.getContent().stream().filter(s -> COMPLEX_SESSION_ID.equals(s.getId())).findFirst()
                 .get();
