@@ -94,7 +94,7 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
 
     /**
      * Reject a job because <b>a parameter is invalid</b>
-     * @param parameter related parameter
+     * @param parameterName related parameter
      * @param reason reason for invalidity
      * @throws JobParameterInvalidException the related exception
      */
