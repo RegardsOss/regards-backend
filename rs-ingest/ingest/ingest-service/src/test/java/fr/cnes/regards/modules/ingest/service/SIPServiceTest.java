@@ -29,7 +29,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -41,7 +40,6 @@ import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -52,8 +50,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPSessionRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
@@ -70,23 +66,13 @@ import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 /**
  * @author Sébastien Binda
  */
-@ActiveProfiles("testAmqp")
 public class SIPServiceTest extends AbstractSIPTest {
-
-    @Autowired
-    private ISIPRepository sipRepository;
 
     @Autowired
     private ISIPSessionRepository sipSessionRepository;
 
     @Autowired
-    private IAIPRepository aipRepository;
-
-    @Autowired
     private ISIPService sipService;
-
-    @Autowired
-    private ISIPSessionService sipSessionService;
 
     @Autowired
     private ISubscriber subscriber;
@@ -114,13 +100,11 @@ public class SIPServiceTest extends AbstractSIPTest {
 
     private final Set<SIPEntity> complexSessionSips = Sets.newHashSet();
 
+    @Override
     @SuppressWarnings("unchecked")
-    @Before
-    public void init() throws NoSuchAlgorithmException, IOException, InterruptedException {
+    public void doInit() throws NoSuchAlgorithmException, IOException, InterruptedException, ModuleException {
         handler.clearEvents();
         subscriber.subscribeTo(SIPEvent.class, handler);
-        aipRepository.deleteAll();
-        sipRepository.deleteAll();
         sipSessionRepository.deleteAll();
         Mockito.reset(aipClient);
 
@@ -295,8 +279,8 @@ public class SIPServiceTest extends AbstractSIPTest {
     @Test
     public void searchSip() {
         // Check search by state
-        Page<SIPEntity> results = sipService.getSIPEntities(null, null, null, null, SIPState.AIP_GEN_ERROR,
-                                                            new PageRequest(0, 100));
+        Page<SIPEntity> results = sipService.search(null, null, null, null, SIPState.AIP_GEN_ERROR, null,
+                                                    new PageRequest(0, 100));
         Assert.assertTrue("There should be only two AIPs with AIP_GEN_ERROR state", results.getTotalElements() == 2);
     }
 
@@ -316,7 +300,7 @@ public class SIPServiceTest extends AbstractSIPTest {
     @Test
     public void checkSessions() {
         // Check retrieve sessions
-        Page<SIPSession> result = sipSessionService.getSIPSessions(new PageRequest(0, 100));
+        Page<SIPSession> result = sipSessionService.search(null, null, null, new PageRequest(0, 100));
         Assert.assertTrue(result.getTotalElements() == 5);
         SIPSession prevSession = null;
         // Check order by last activation date.
@@ -348,7 +332,7 @@ public class SIPServiceTest extends AbstractSIPTest {
         Collection<SIPEntity> rejectedSips = sipService.deleteSIPEntitiesForSessionId(COMPLEX_SESSION_ID);
         // 2 SIP per state in COMPLEX_SESSION_ID.
         // Undeletable are QUEUED, VALID, DELETED
-        Assert.assertTrue(rejectedSips.size() == 6);
+        Assert.assertEquals(6, rejectedSips.size());
         // Check call to storage client for deletion
         @SuppressWarnings("rawtypes")
         ArgumentCaptor<Set> argument = ArgumentCaptor.forClass(Set.class);
@@ -357,8 +341,8 @@ public class SIPServiceTest extends AbstractSIPTest {
         Assert.assertEquals(18, argument.getValue().size());
         // Check that not stored SIP are already is DELETED state
         // Not stored state are CREATED, AIP_CREATED, INVALID, AIP_GEN_ERROR, REJECTED, DELETED
-        Page<SIPEntity> results = sipService.getSIPEntities(null, COMPLEX_SESSION_ID, null, null, SIPState.DELETED,
-                                                            new PageRequest(0, 100));
+        Page<SIPEntity> results = sipService.search(null, COMPLEX_SESSION_ID, null, null, SIPState.DELETED, null,
+                                                    new PageRequest(0, 100));
         Assert.assertEquals(12, results.getTotalElements());
 
     }

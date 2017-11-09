@@ -73,9 +73,10 @@ public class SIPService implements ISIPService {
     private IAipClient aipClient;
 
     @Override
-    public Page<SIPEntity> getSIPEntities(String sipId, String sessionId, String owner, OffsetDateTime from,
-            SIPState state, Pageable page) {
-        return sipRepository.findAll(SIPEntitySpecifications.search(sipId, sessionId, owner, from, state), page);
+    public Page<SIPEntity> search(String sipId, String sessionId, String owner, OffsetDateTime from, SIPState state,
+            String processing, Pageable page) {
+        return sipRepository.findAll(SIPEntitySpecifications.search(sipId, sessionId, owner, from, state, processing),
+                                     page);
     }
 
     @Override

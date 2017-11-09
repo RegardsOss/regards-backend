@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.assertj.core.util.Lists;
 import org.assertj.core.util.Sets;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +37,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -66,7 +68,7 @@ import fr.cnes.regards.modules.storage.domain.RejectedAip;
  * @author Sébastien Binda
  */
 @TestPropertySource(properties = { "regards.ingest.process.new.sips.delay:3000",
-        "regards.ingest.process.new.aips.storage.delay:6000" }, locations = "classpath:test.properties")
+        "regards.ingest.process.new.aips.storage.delay:8000" }, locations = "classpath:test.properties")
 @ContextConfiguration(classes = { TestConfiguration.class })
 public class ScheduledIngestTaskTest extends AbstractRegardsServiceTransactionalIT {
 
@@ -91,6 +93,9 @@ public class ScheduledIngestTaskTest extends AbstractRegardsServiceTransactional
     @Autowired
     private IPluginConfigurationRepository pluginConfRepo;
 
+    @Autowired
+    private IJobInfoRepository jobInfoRepo;
+
     @Value("${regards.ingest.process.new.sips.delay}")
     private String scheduledTasksDelay;
 
@@ -108,12 +113,18 @@ public class ScheduledIngestTaskTest extends AbstractRegardsServiceTransactional
         pluginConfRepo.deleteAll();
         aipRepository.deleteAll();
         sipRepository.deleteAll();
+        jobInfoRepo.deleteAll();
         initDefaultProcessingChain();
 
         this.rejectedAips.clear();
         // Mock aipClient store request result
         Mockito.when(aipClient.store(Mockito.any()))
                 .thenAnswer(invocation -> simulateRejectedAips((AIPCollection) invocation.getArguments()[0]));
+    }
+
+    @After
+    public void cleanJobs() {
+        jobInfoRepo.deleteAll();
     }
 
     @Requirement("REGARDS_DSL_ING_PRO_120")
@@ -136,8 +147,7 @@ public class ScheduledIngestTaskTest extends AbstractRegardsServiceTransactional
 
         // 3. Check that the SIP has been successully handled
         sip = sipRepository.findOne(sipIdTest);
-        Assert.assertTrue("SIP should have been handled by the scheduled task.",
-                          SIPState.AIP_CREATED.equals(sip.getState()));
+        Assert.assertEquals(SIPState.AIP_CREATED, sip.getState());
 
         // 4. Check that the associated AIP is generated
         Set<AIPEntity> aips = aipRepository.findBySip(sip);
@@ -182,8 +192,7 @@ public class ScheduledIngestTaskTest extends AbstractRegardsServiceTransactional
 
         // 3. Check that the SIP has been successully handled
         sip = sipRepository.findOne(sipIdTest);
-        Assert.assertTrue("SIP should have been handled by the scheduled task.",
-                          SIPState.AIP_CREATED.equals(sip.getState()));
+        Assert.assertEquals(SIPState.AIP_CREATED, sip.getState());
 
         // 4. Check that the associated AIP is generated
         Set<AIPEntity> aips = aipRepository.findBySip(sip);

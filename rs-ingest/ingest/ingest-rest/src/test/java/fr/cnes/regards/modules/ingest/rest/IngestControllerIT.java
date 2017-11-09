@@ -83,14 +83,14 @@ public class IngestControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(MockMvcResultMatchers.status().isCreated());
         // expectations.add(MockMvcResultMatchers.jsonPath(JSON_ID, Matchers.notNullValue()));
 
-        performDefaultPostWithContentType(IngestController.TYPE_MAPPING, collectionBuilder.build(),
+        performDefaultPostWithContentType(SIPController.TYPE_MAPPING, collectionBuilder.build(),
                                           GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE, expectations,
                                           "SIP collection should be submitted.");
 
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(2)));
-        performDefaultGet(IngestController.TYPE_MAPPING, expectations, "Error retrieving SIPs");
+        performDefaultGet(SIPController.TYPE_MAPPING, expectations, "Error retrieving SIPs");
 
     }
 }

@@ -25,6 +25,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Set;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +39,7 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -108,6 +110,9 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
     @Autowired
     private ProcessingChainTestErrorSimulator stepErrorSimulator;
 
+    @Autowired
+    private IJobInfoRepository jobInfoRepo;
+
     private Long sipIdTest;
 
     private Long sipRefIdTest;
@@ -158,6 +163,11 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
                                               "1e2d4ab665784e43243b9b07724cd483"));
         results = ingestService.ingest(collection);
         sipRefIdTest = results.stream().findFirst().get().getId();
+    }
+
+    @After
+    public void cleanJobs() {
+        jobInfoRepo.deleteAll();
     }
 
     private void initFullPRocessingChain() throws ModuleException {

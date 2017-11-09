@@ -23,6 +23,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 
@@ -30,7 +31,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
  * JPA Repository to manage {@link SIPSession} entities.
  * @author Sébastien Binda
  */
-public interface ISIPSessionRepository extends JpaRepository<SIPSession, String> {
+public interface ISIPSessionRepository extends JpaRepository<SIPSession, String>, JpaSpecificationExecutor<SIPSession> {
 
     Optional<SIPSession> findById(String id);
 

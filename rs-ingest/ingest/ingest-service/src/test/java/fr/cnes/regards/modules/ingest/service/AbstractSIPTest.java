@@ -21,17 +21,22 @@ package fr.cnes.regards.modules.ingest.service;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
+import org.junit.After;
+import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
+import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
-import fr.cnes.regards.modules.ingest.dao.ISIPSessionRepository;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPEntityBuilder;
@@ -42,6 +47,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * Abstract test class to provide SIP Creation tool.
  * @author Sébastien Binda
  */
+@ActiveProfiles({ "testAmqp", "desable-scheduled-ingest" })
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { TestConfiguration.class })
 public abstract class AbstractSIPTest extends AbstractRegardsServiceTransactionalIT {
@@ -50,13 +56,30 @@ public abstract class AbstractSIPTest extends AbstractRegardsServiceTransactiona
     private Gson gson;
 
     @Autowired
-    private ISIPSessionService sipSessionService;
+    protected ISIPSessionService sipSessionService;
 
     @Autowired
-    private ISIPRepository sipRepository;
+    protected ISIPRepository sipRepository;
 
     @Autowired
-    private ISIPSessionRepository sipSessionRepo;
+    protected IAIPRepository aipRepository;
+
+    @Autowired
+    private IJobInfoRepository jobInfoRepo;
+
+    @Before
+    public void init() throws Exception {
+        aipRepository.deleteAll();
+        sipRepository.deleteAll();
+        jobInfoRepo.deleteAll();
+        doInit();
+    }
+
+    @After
+    public void clear() {
+        aipRepository.deleteAll();
+        sipRepository.deleteAll();
+    }
 
     /**
      * Create a SIP for test initialization
@@ -68,9 +91,10 @@ public abstract class AbstractSIPTest extends AbstractRegardsServiceTransactiona
      * @return
      * @throws NoSuchAlgorithmException
      * @throws IOException
+     * @throws ModuleException
      */
     protected SIPEntity createSIP(String sipId, String sessionId, String processing, String owner, Integer version)
-            throws NoSuchAlgorithmException, IOException {
+            throws NoSuchAlgorithmException, IOException, ModuleException {
         SIPBuilder b = new SIPBuilder(sipId);
         InformationPackagePropertiesBuilder ippb = new InformationPackagePropertiesBuilder();
         ippb.addDescriptiveInformation("version", version.toString());
@@ -82,10 +106,12 @@ public abstract class AbstractSIPTest extends AbstractRegardsServiceTransactiona
     }
 
     protected SIPEntity createSIP(String sipId, String sessionId, String processing, String owner, Integer version,
-            SIPState state) throws NoSuchAlgorithmException, IOException {
+            SIPState state) throws NoSuchAlgorithmException, IOException, ModuleException {
         SIPEntity sipEntity = createSIP(sipId, sessionId, processing, owner, version);
         sipEntity.setState(state);
         return sipRepository.save(sipEntity);
     }
+
+    public abstract void doInit() throws Exception;
 
 }

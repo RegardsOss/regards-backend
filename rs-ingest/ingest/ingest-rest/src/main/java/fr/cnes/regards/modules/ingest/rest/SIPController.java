@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.Sets;
@@ -64,11 +65,11 @@ import fr.cnes.regards.modules.ingest.service.ISIPService;
  */
 @RestController
 @ModuleInfo(name = "SIP management module", description = "SIP submission and management", version = "2.0.0-SNAPSHOT",
-        author = "CSSI", legalOwner = "CNES", documentation = "TODO")
-@RequestMapping(IngestController.TYPE_MAPPING)
-public class IngestController implements IResourceController<SIPEntity> {
+        author = "CSSI", legalOwner = "CNES", documentation = "https://github.com/RegardsOss")
+@RequestMapping(SIPController.TYPE_MAPPING)
+public class SIPController implements IResourceController<SIPEntity> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SIPController.class);
 
     public static final String TYPE_MAPPING = "/sips";
 
@@ -106,13 +107,14 @@ public class IngestController implements IResourceController<SIPEntity> {
     @ResourceAccess(description = "Search for SIPEntities with optional criterion.")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<SIPEntity>>> search(
-            @PathVariable(name = "sipId", required = false) String sipId,
-            @PathVariable(name = "owner", required = false) String owner,
-            @PathVariable(name = "from", required = false) OffsetDateTime from,
-            @PathVariable(name = "state", required = false) SIPState state,
-            @PathVariable(name = "sessionId", required = false) String sessionId, Pageable pageable,
+            @RequestParam(name = "sipId", required = false) String sipId,
+            @RequestParam(name = "owner", required = false) String owner,
+            @RequestParam(name = "from", required = false) OffsetDateTime from,
+            @RequestParam(name = "state", required = false) SIPState state,
+            @RequestParam(name = "processing", required = false) String processing,
+            @RequestParam(name = "sessionId", required = false) String sessionId, Pageable pageable,
             PagedResourcesAssembler<SIPEntity> pAssembler) {
-        Page<SIPEntity> sipEntities = sipService.getSIPEntities(sipId, sessionId, owner, from, state, pageable);
+        Page<SIPEntity> sipEntities = sipService.search(sipId, sessionId, owner, from, state, processing, pageable);
         PagedResources<Resource<SIPEntity>> resources = toPagedResources(sipEntities, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
@@ -124,15 +126,22 @@ public class IngestController implements IResourceController<SIPEntity> {
         return new ResponseEntity<>(toResource(sip), HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Delete one SIP by is ipId.")
+    @ResourceAccess(description = "Delete one SIP by is sipId.")
+    @RequestMapping(method = RequestMethod.DELETE)
+    public ResponseEntity<Void> deleteSipEntityBySipId(@RequestParam("sipId") String sipId) throws ModuleException {
+        sipService.deleteSIPEntitiesForSipId(sipId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ResourceAccess(description = "Delete one SIP by is sipId.")
     @RequestMapping(value = IPID_PATH, method = RequestMethod.DELETE)
-    public ResponseEntity<Void> deleteSipEntity(@PathVariable("ipId") String ipId) throws ModuleException {
-        sipService.deleteSIPEntitiesByIpIds(Sets.newHashSet(ipId));
+    public ResponseEntity<Void> deleteSipEntity(@PathVariable("ipId") String sipId) throws ModuleException {
+        sipService.deleteSIPEntitiesByIpIds(Sets.newHashSet(sipId));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Retry SIP ingestion by is ipId.")
-    @RequestMapping(value = IPID_PATH + RETRY_PATH, method = RequestMethod.GET)
+    @RequestMapping(value = IPID_PATH + RETRY_PATH, method = RequestMethod.POST)
     public ResponseEntity<Void> retrySipEntityIngest(@PathVariable("ipId") String ipId) throws ModuleException {
         ingestService.retryIngest(ipId);
         return new ResponseEntity<>(HttpStatus.OK);
