@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,9 +33,11 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPSessionRepository;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPSessionBuilder;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
@@ -46,6 +50,9 @@ public class SIPSessionService implements ISIPSessionService {
 
     @Autowired
     private ISIPSessionRepository sipSessionRepository;
+
+    @Autowired
+    private ISIPService sipService;
 
     public static final String DEFAULT_SESSION_ID = "default";
 
@@ -66,8 +73,8 @@ public class SIPSessionService implements ISIPSessionService {
     }
 
     @Override
-    public Page<SIPSession> getSIPSessions(Pageable pageable) {
-        Page<SIPSession> pagedSessions = sipSessionRepository.findAll(pageable);
+    public Page<SIPSession> search(String id, OffsetDateTime from, OffsetDateTime to, Pageable pageable) {
+        Page<SIPSession> pagedSessions = sipSessionRepository.findAllByOrderByLastActivationDateDesc(pageable);
         List<SIPSession> sessions = Lists.newArrayList();
         pagedSessions.forEach(s -> sessions.add(this.addSessionSipInformations(s)));
         return new PageImpl<>(sessions, pageable, pagedSessions.getTotalElements());
@@ -96,6 +103,11 @@ public class SIPSessionService implements ISIPSessionService {
         session.setStoredSipsCount(storedSipsCount);
         session.setSipsCount(sipsCount);
         return session;
+    }
+
+    @Override
+    public Collection<SIPEntity> deleteSIPSession(String id) throws ModuleException {
+        return sipService.deleteSIPEntitiesForSessionId(id);
     }
 
 }

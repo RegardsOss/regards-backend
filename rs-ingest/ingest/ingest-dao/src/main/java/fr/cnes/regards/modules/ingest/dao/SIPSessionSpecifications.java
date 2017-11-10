@@ -27,49 +27,41 @@ import org.springframework.data.jpa.domain.Specification;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 
 /**
- * JPA {@link Specification} to define {@link Predicate}s for criteria search for {@link SIPEntity} from repository.
+ * JPA {@link Specification} to define {@link Predicate}s for criteria search for {@link SIPSession} from repository.
  * @author Sébastien Binda
  */
-public final class SIPEntitySpecifications {
+public class SIPSessionSpecifications {
 
-    private SIPEntitySpecifications() {
+    private static final String SIPSessionLastActivationDate = "lastActivationDate";
+
+    private static final String LIKE_CHAR = "%";
+
+    private SIPSessionSpecifications() {
     }
 
     /**
      * Filter on the given attributes (sessionId, owner, ingestDate and state) and return result ordered by descending ingestDate
-     * @param sesssionId
-     * @param owner
-     * @param from
-     * @param state
+     * @param id {@link String}
+     * @param from {@link OffsetDateTime}
+     * @param to {@link OffsetDateTime}
      * @return
      */
-    public static Specification<SIPEntity> search(String sipId, String sesssionId, String owner, OffsetDateTime from,
-            SIPState state, String processing) {
+    public static Specification<SIPSession> search(String id, OffsetDateTime from, OffsetDateTime to) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
-            if (sesssionId != null) {
-                predicates.add(cb.equal(root.get("session").get("id"), sesssionId));
-            }
-            if (owner != null) {
-                predicates.add(cb.equal(root.get("owner"), owner));
+            if (id != null) {
+                predicates.add(cb.like(root.get("id"), LIKE_CHAR + id + LIKE_CHAR));
             }
             if (from != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("ingestDate"), from));
+                predicates.add(cb.greaterThanOrEqualTo(root.get(SIPSessionLastActivationDate), from));
             }
-            if (state != null) {
-                predicates.add(cb.equal(root.get("state"), state));
+            if (to != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get(SIPSessionLastActivationDate), to));
             }
-            if (sipId != null) {
-                predicates.add(cb.equal(root.get("sipId"), sipId));
-            }
-            if (processing != null) {
-                predicates.add(cb.equal(root.get("processing"), processing));
-            }
-            query.orderBy(cb.desc(root.get("ingestDate")));
+            query.orderBy(cb.desc(root.get(SIPSessionLastActivationDate)));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

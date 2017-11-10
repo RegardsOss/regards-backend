@@ -18,9 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import java.time.OffsetDateTime;
+import java.util.Collection;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 
 /**
@@ -42,6 +47,13 @@ public interface ISIPSessionService {
      * @param pageable pagination information
      * @return {@link SIPSession}s
      */
-    Page<SIPSession> getSIPSessions(Pageable pageable);
+    Page<SIPSession> search(String id, OffsetDateTime from, OffsetDateTime to, Pageable pageable);
+
+    /**
+     * Delete all {@link SIPEntity}s associated to the given SIPSession
+     * @param id
+     * @return Rejected {@link SIPEntity}s for deletion
+     */
+    Collection<SIPEntity> deleteSIPSession(String id) throws ModuleException;
 
 }

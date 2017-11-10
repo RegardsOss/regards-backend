@@ -52,8 +52,8 @@ public interface ISIPService {
      * @param page
      * @return
      */
-    Page<SIPEntity> getSIPEntities(String sipId, String sessionId, String owner, OffsetDateTime from, SIPState state,
-            Pageable page);
+    Page<SIPEntity> search(String sipId, String sessionId, String owner, OffsetDateTime from, SIPState state,
+            String processing, Pageable page);
 
     /**
      * Retrieve one {@link SIPEntity} for the given ipId

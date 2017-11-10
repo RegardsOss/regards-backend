@@ -25,7 +25,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -35,8 +34,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPSessionRepository;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
@@ -51,13 +48,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 public class IngestServiceTest extends AbstractSIPTest {
 
     @Autowired
-    private ISIPRepository sipRepository;
-
-    @Autowired
     private ISIPSessionRepository sipSessionRepository;
-
-    @Autowired
-    private IAIPRepository aipRepository;
 
     @Autowired
     private IIngestService ingestService;
@@ -69,10 +60,8 @@ public class IngestServiceTest extends AbstractSIPTest {
 
     private final static String PROCESSING = "processingChain";
 
-    @Before
-    public void init() {
-        aipRepository.deleteAll();
-        sipRepository.deleteAll();
+    @Override
+    public void doInit() {
         sipSessionRepository.deleteAll();
     }
 
@@ -109,8 +98,36 @@ public class IngestServiceTest extends AbstractSIPTest {
         Assert.assertTrue(two.getVersion() == 2);
         Assert.assertTrue(SIPState.REJECTED.equals(two.getState()));
 
-        Page<SIPEntity> page = sipService.getSIPEntities(null, SESSION_ID, null, null, null, new PageRequest(0, 10));
+        Page<SIPEntity> page = sipService.search(null, SESSION_ID, null, null, null, null, new PageRequest(0, 10));
         Assert.assertTrue(page.getNumberOfElements() == 1);
+    }
+
+    /**
+     * Store SIP without session and check that the SIP is added in the default session
+     * @throws ModuleException
+     */
+    @Purpose("Store SIP without session and check that the SIP is added in the default session")
+    @Test
+    public void ingestWithoutSession() throws ModuleException {
+
+        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(PROCESSING);
+        SIPCollection collection = colBuilder.build();
+
+        SIPBuilder builder = new SIPBuilder("SIP_001");
+        collection.add(builder.buildReference(Paths.get("sip1.xml"), "zaasfsdfsdlfkmsldgfml12df"));
+
+        // First ingestion
+        Collection<SIPEntity> results = ingestService.ingest(collection);
+        Assert.assertNotNull(results);
+        Assert.assertTrue(results.size() == 1);
+        SIPEntity one = results.iterator().next();
+        Assert.assertTrue(one.getVersion() == 1);
+        Assert.assertTrue(SIPState.CREATED.equals(one.getState()));
+
+        Page<SIPEntity> page = sipService.search(null, SIPSessionService.DEFAULT_SESSION_ID, null, null, null, null,
+                                                 new PageRequest(0, 10));
+        Assert.assertTrue(page.getNumberOfElements() == 1);
+
     }
 
     /**
@@ -137,7 +154,7 @@ public class IngestServiceTest extends AbstractSIPTest {
         Assert.assertNotNull(sips);
         Assert.assertTrue(sips.size() == sipNb);
 
-        Page<SIPEntity> page = sipService.getSIPEntities(null, null, null, null, null, new PageRequest(0, 10));
+        Page<SIPEntity> page = sipService.search(null, null, null, null, null, null, new PageRequest(0, 10));
         Assert.assertTrue(page.getNumberOfElements() == sipNb);
     }
 

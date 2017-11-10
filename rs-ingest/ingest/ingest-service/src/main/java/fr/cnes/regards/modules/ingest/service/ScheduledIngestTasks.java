@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -36,6 +37,7 @@ import fr.cnes.regards.modules.ingest.service.store.IAIPStorageBulkRequestServic
  * Scheduled actions to process new CREATED SIPS by applying the associated processing chain
  * @author Sébastien Binda
  */
+@Profile("!desable-scheduled-ingest")
 @Component
 @EnableScheduling
 public class ScheduledIngestTasks {
@@ -63,8 +65,8 @@ public class ScheduledIngestTasks {
     @Scheduled(fixedRateString = "${regards.ingest.process.new.sips.delay:60000}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processNewSips() {
-        LOG.debug("Process new SIPs ingest for all active tenants");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
+            LOG.info("Scheduled task : Process new SIPs ingest for tenant {}", tenant);
             runtimeTenantResolver.forceTenant(tenant);
             ingestProcessingService.ingest();
             runtimeTenantResolver.clearTenant();
@@ -74,8 +76,8 @@ public class ScheduledIngestTasks {
     @Scheduled(fixedRateString = "${regards.ingest.process.new.aips.storage.delay:60000}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processNewAipsBulkRequest() {
-        LOG.debug("Process new AIP bulk request to archival storage for all active tenants");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
+            LOG.info("Scheduled task : Process new AIP bulk request to archival storage for tenant {}", tenant);
             runtimeTenantResolver.forceTenant(tenant);
             aipBulkRequestService.postAIPStorageBulkRequest();
             runtimeTenantResolver.clearTenant();
