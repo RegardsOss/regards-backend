@@ -20,6 +20,7 @@
 package fr.cnes.regards.framework.modules.plugins.domain;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -228,6 +229,16 @@ public class PluginParameter implements IIdentifiable<Long> {
         strBuilder.append(" - ");
         strBuilder.append(dynamic.toString());
         return strBuilder.toString();
+    }
+
+    /**
+     * Return 0 if the current {@link PluginParameter} is exactly the same as the given one.
+     * @param parameter {@link PluginParameter}
+     * @return
+     */
+    public int compareTo(PluginParameter parameter) {
+        return Comparator.comparing(PluginParameter::getName).thenComparing(PluginParameter::getValue)
+                .thenComparing(PluginParameter::isDynamic).compare(this, parameter);
     }
 
 }
