@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.chain;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -26,21 +27,30 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
+import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
+import fr.cnes.regards.modules.ingest.dao.IngestProcessingChainSpecifications;
 import fr.cnes.regards.modules.ingest.domain.builder.AIPEntityBuilder;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
@@ -65,6 +75,9 @@ public class IngestProcessingService implements IIngestProcessingService {
 
     @Autowired
     private IAIPRepository aipRepository;
+
+    @Autowired
+    private IIngestProcessingChainRepository ingestChainRepository;
 
     @Autowired
     private ISIPService sipService;
@@ -107,8 +120,7 @@ public class IngestProcessingService implements IIngestProcessingService {
     @Override
     public AIPEntity createAIP(Long pSipEntityId, AIPState pAipState, AIP pAip) {
         SIPEntity sip = sipRepository.findOne(pSipEntityId);
-        AIPEntity aip = aipRepository.save(AIPEntityBuilder.build(sip, AIPState.CREATED, pAip));
-        return aip;
+        return aipRepository.save(AIPEntityBuilder.build(sip, AIPState.CREATED, pAip));
     }
 
     /**
@@ -126,4 +138,96 @@ public class IngestProcessingService implements IIngestProcessingService {
         sipRepository.updateSIPEntityState(SIPState.QUEUED, sipIdToProcess);
     }
 
+    @Override
+    public IngestProcessingChain createNewChain(IngestProcessingChain newChain) throws ModuleException {
+        Optional<IngestProcessingChain> oChain = ingestChainRepository.findOneByName(newChain.getName());
+        if (!oChain.isPresent()) {
+            this.createOrUpdatePluginConfigurations(newChain);
+            return ingestChainRepository.save(newChain);
+        } else {
+            throw new EntityAlreadyExistsException(String
+                    .format("%s for name %s aleady exists", IngestProcessingChain.class.getName(), newChain.getName()));
+        }
+    }
+
+    @Override
+    public IngestProcessingChain updateChain(IngestProcessingChain chainToUpdate) throws ModuleException {
+        Optional<IngestProcessingChain> oChain = ingestChainRepository.findOneByName(chainToUpdate.getName());
+        if (oChain.isPresent()) {
+            this.createOrUpdatePluginConfigurations(chainToUpdate);
+            return ingestChainRepository.save(chainToUpdate);
+        } else {
+            throw new EntityNotFoundException(chainToUpdate.getName(), IngestProcessingChain.class);
+        }
+    }
+
+    @Override
+    public void deleteChain(String name) throws ModuleException {
+        Optional<IngestProcessingChain> oChain = ingestChainRepository.findOneByName(name);
+        if (oChain.isPresent()) {
+            ingestChainRepository.delete(oChain.get());
+        } else {
+            throw new EntityNotFoundException(name, IngestProcessingChain.class);
+        }
+    }
+
+    @Override
+    public Page<IngestProcessingChain> searchChains(String name, Pageable pageable) {
+        return ingestChainRepository.findAll(IngestProcessingChainSpecifications.search(name), pageable);
+    }
+
+    @Override
+    public IngestProcessingChain getChain(String name) throws ModuleException {
+        Optional<IngestProcessingChain> oChain = ingestChainRepository.findOneByName(name);
+        if (oChain.isPresent()) {
+            return oChain.get();
+        } else {
+            throw new EntityNotFoundException(name, IngestProcessingChain.class);
+        }
+    }
+
+    /**
+     * Creates or updates {@link PluginConfiguration} of each step of the {@link IngestProcessingChain}.
+     * @param ingestChain {@link IngestProcessingChain}
+     * @throws ModuleException
+     */
+    private void createOrUpdatePluginConfigurations(IngestProcessingChain ingestChain) throws ModuleException {
+        // Save new plugins conf, and update existing ones if they changed
+        if (ingestChain.getPreProcessingPlugin().isPresent()) {
+            ingestChain.setPreProcessingPlugin(createOrUpdatePluginConfiguration(ingestChain.getPreProcessingPlugin()
+                    .get()));
+        }
+        if (ingestChain.getValidationPlugin() != null) {
+            ingestChain.setValidationPlugin(createOrUpdatePluginConfiguration(ingestChain.getValidationPlugin()));
+        }
+        if (ingestChain.getGenerationPlugin() != null) {
+            ingestChain.setGenerationPlugin(createOrUpdatePluginConfiguration(ingestChain.getGenerationPlugin()));
+        }
+        if (ingestChain.getTagPlugin().isPresent()) {
+            ingestChain.setTagPlugin(createOrUpdatePluginConfiguration(ingestChain.getTagPlugin().get()));
+        }
+        if (ingestChain.getPostProcessingPlugin().isPresent()) {
+            ingestChain.setPostProcessingPlugin(createOrUpdatePluginConfiguration(ingestChain.getPostProcessingPlugin()
+                    .get()));
+        }
+    }
+
+    /**
+     * Create or update the given {@link PluginConfiguration}
+     * @param pluginConfiguration {@link PluginConfiguration} to save or update
+     * @return saved or updated {@link PluginConfiguration}
+     * @throws ModuleException
+     */
+    public PluginConfiguration createOrUpdatePluginConfiguration(PluginConfiguration pluginConfiguration)
+            throws ModuleException {
+        if (pluginConfiguration.getId() == null) {
+            return pluginService.savePluginConfiguration(pluginConfiguration);
+        } else {
+            PluginConfiguration existingConf = pluginService.getPluginConfiguration(pluginConfiguration.getId());
+            if (pluginConfiguration.compareTo(existingConf)) {
+                return pluginService.savePluginConfiguration(pluginConfiguration);
+            }
+        }
+        return pluginConfiguration;
+    }
 }

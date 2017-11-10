@@ -27,19 +27,17 @@ import org.springframework.data.jpa.domain.Specification;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
 /**
- * JPA {@link Specification} to define {@link Predicate}s for criteria search for {@link SIPSession} from repository.
+ * JPA Repository to manage {@link IngestProcessingChain} entities.
  * @author Sébastien Binda
  */
-public final class SIPSessionSpecifications {
-
-    private static final String SIPSessionLastActivationDate = "lastActivationDate";
+public final class IngestProcessingChainSpecifications {
 
     private static final String LIKE_CHAR = "%";
 
-    private SIPSessionSpecifications() {
+    private IngestProcessingChainSpecifications() {
     }
 
     /**
@@ -49,19 +47,13 @@ public final class SIPSessionSpecifications {
      * @param to {@link OffsetDateTime}
      * @return
      */
-    public static Specification<SIPSession> search(String id, OffsetDateTime from, OffsetDateTime to) {
+    public static Specification<IngestProcessingChain> search(String name) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
-            if (id != null) {
-                predicates.add(cb.like(root.get("id"), LIKE_CHAR + id + LIKE_CHAR));
+            if (name != null) {
+                predicates.add(cb.like(root.get("name"), LIKE_CHAR + name + LIKE_CHAR));
             }
-            if (from != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get(SIPSessionLastActivationDate), from));
-            }
-            if (to != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get(SIPSessionLastActivationDate), to));
-            }
-            query.orderBy(cb.desc(root.get(SIPSessionLastActivationDate)));
+            query.orderBy(cb.desc(root.get("name")));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

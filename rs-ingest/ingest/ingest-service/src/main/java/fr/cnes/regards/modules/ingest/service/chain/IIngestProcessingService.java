@@ -18,8 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -60,4 +65,38 @@ public interface IIngestProcessingService {
      * @return
      */
     AIPEntity createAIP(Long sipEntityId, AIPState aipState, AIP aip);
+
+    /**
+     * Create a new {@link IngestProcessingChain}
+     * @param newChain {@link IngestProcessingChain}
+     * @return created {@link IngestProcessingChain}
+     */
+    IngestProcessingChain createNewChain(IngestProcessingChain newChain) throws ModuleException;
+
+    /**
+     * Update a {@link IngestProcessingChain}
+     * @param chainToUpdate {@link IngestProcessingChain}
+     * @return updated {@link IngestProcessingChain}
+     */
+    IngestProcessingChain updateChain(IngestProcessingChain chainToUpdate) throws ModuleException;
+
+    /**
+     * Delete a {@link IngestProcessingChain}
+     * @param name {@link String}
+     */
+    void deleteChain(String name) throws ModuleException;
+
+    /**
+     * Search for existing {@link IngestProcessingChain} with optional search criterion.
+     * @param pageable
+     * @return
+     */
+    Page<IngestProcessingChain> searchChains(String name, Pageable pageable);
+
+    /**
+     * Retrieve a {@link IngestProcessingChain} by name
+     * @param name {@link String}
+     * @return IngestProcessingChain
+     */
+    IngestProcessingChain getChain(String name) throws ModuleException;
 }

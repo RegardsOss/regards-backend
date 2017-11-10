@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.ingest.service.store.IAIPStorageBulkRequestServic
  * Scheduled actions to process new CREATED SIPS by applying the associated processing chain
  * @author Sébastien Binda
  */
-@Profile("!desable-scheduled-ingest")
+@Profile("!disable-scheduled-ingest")
 @Component
 @EnableScheduling
 public class ScheduledIngestTasks {

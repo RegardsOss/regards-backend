@@ -47,7 +47,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * Abstract test class to provide SIP Creation tool.
  * @author Sébastien Binda
  */
-@ActiveProfiles({ "testAmqp", "desable-scheduled-ingest" })
+@ActiveProfiles({ "testAmqp", "disable-scheduled-ingest" })
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { TestConfiguration.class })
 public abstract class AbstractSIPTest extends AbstractRegardsServiceTransactionalIT {

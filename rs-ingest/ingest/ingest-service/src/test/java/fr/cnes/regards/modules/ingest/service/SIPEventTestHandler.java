@@ -20,9 +20,6 @@ package fr.cnes.regards.modules.ingest.service;
 
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -34,8 +31,6 @@ import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
  * @author Sébastien Binda
  */
 public class SIPEventTestHandler implements IHandler<SIPEvent> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SIPEventTestHandler.class);
 
     private final Set<SIPEvent> receivedEvents = Sets.newHashSet();
 

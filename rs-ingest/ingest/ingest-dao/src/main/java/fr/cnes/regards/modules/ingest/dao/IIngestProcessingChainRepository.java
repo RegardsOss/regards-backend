@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.dao;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
@@ -30,7 +31,8 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
  * @author Marc Sordi
  *
  */
-public interface IIngestProcessingChainRepository extends JpaRepository<IngestProcessingChain, Long> {
+public interface IIngestProcessingChainRepository
+        extends JpaRepository<IngestProcessingChain, Long>, JpaSpecificationExecutor<IngestProcessingChain> {
 
     /**
      * Retrieve chain with specified name
