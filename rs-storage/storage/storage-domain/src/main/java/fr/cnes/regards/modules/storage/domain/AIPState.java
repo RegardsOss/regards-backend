@@ -48,7 +48,7 @@ public enum AIPState {
      */
     STORING_METADATA,
     /**
-     * Data and metadata storage has finish successfully
+     * Data and metadata storages have ended successfully
      */
     STORED,
     /**
