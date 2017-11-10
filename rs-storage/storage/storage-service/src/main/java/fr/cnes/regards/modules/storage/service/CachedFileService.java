@@ -225,13 +225,13 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         toRetrieve.addAll(queuedData);
 
         // Dispatch each Datafile by storage plugin.
-        Multimap<PluginConfiguration, DataFile> toRetrieveByStorage = HashMultimap.create();
+        Multimap<Long, DataFile> toRetrieveByStorage = HashMultimap.create();
         for (DataFile df : toRetrieve) {
-            toRetrieveByStorage.put(df.getDataStorageUsed(), df);
+            toRetrieveByStorage.put(df.getDataStorageUsed().getId(), df);
         }
         Set<DataFile> errors = Sets.newHashSet();
-        for (PluginConfiguration storageConf : toRetrieveByStorage.keySet()) {
-            scheduleDataFileRestoration(storageConf, toRetrieveByStorage.get(storageConf), cacheExpirationDate);
+        for (Long storageConfId : toRetrieveByStorage.keySet()) {
+            scheduleDataFileRestoration(storageConfId, toRetrieveByStorage.get(storageConfId), cacheExpirationDate);
         }
         return new CoupleAvailableError(alreadyAvailableData, errors);
     }
@@ -470,12 +470,12 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
 
     /**
      * Do schedule {@link DataFile}s restoration {@link PluginConfiguration} to restore files.
-     * @param pluginConf {@link PluginConfiguration} Plugin to use to restore files.
+     * @param pluginConfId {@link PluginConfiguration} Plugin to use to restore files.
      * @param dataFilesToRestore {@link DataFile}s to restore.
      * @param expirationDate {@link OffsetDateTime} Expiration date of the {@link CachedFile} to restore in cache.
      * @return {@link DataFile}s that can not be restored.
      */
-    private Set<DataFile> scheduleDataFileRestoration(PluginConfiguration pluginConf,
+    private Set<DataFile> scheduleDataFileRestoration(Long pluginConfId,
             Collection<DataFile> dataFilesToRestore, OffsetDateTime expirationDate) {
         LOG.debug("CachedFileService : Init restoration job for {} files.", dataFilesToRestore.size());
         Set<DataFile> restorabledataFiles = getRestorableDataFiles(dataFilesToRestore, expirationDate);
@@ -483,7 +483,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         Set<DataFile> nonRestoredFiles = Sets.newHashSet();
         if (!restorabledataFiles.isEmpty()) {
             try {
-                INearlineDataStorage<IWorkingSubset> storageToUse = pluginService.getPlugin(pluginConf.getId());
+                INearlineDataStorage<IWorkingSubset> storageToUse = pluginService.getPlugin(pluginConfId);
 
                 // Prepare files to restore
                 Set<IWorkingSubset> workingSubsets = storageToUse.prepare(restorabledataFiles,
@@ -491,7 +491,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                 // Check if the prepare step misses some files
                 nonRestoredFiles = checkPrepareResult(restorabledataFiles, workingSubsets);
                 // Scheduled restoration job
-                scheduleRestorationJob(workingSubsets, pluginConf);
+                scheduleRestorationJob(workingSubsets, pluginConfId);
             } catch (ModuleException e) {
                 LOG.error(e.getMessage(), e);
                 nonRestoredFiles.addAll(restorabledataFiles);
@@ -504,17 +504,17 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
      * Do schedule @{link RestorationJob}s for each {@link IWorkingSubset} (more specialy for
      * the associated {@link DataFile}s) using the given {@link PluginConfiguration} to restore files.
      * @param workingSubsets Subsets containing {@link DataFile}s to restore.
-     * @param storageConf {@link PluginConfiguration} Plugin to use to restore files.
+     * @param storageConfId {@link PluginConfiguration} Plugin to use to restore files.
      * @return {@link JobInfo}s of the scheduled jobs
      */
-    private Set<JobInfo> scheduleRestorationJob(Set<IWorkingSubset> workingSubsets, PluginConfiguration storageConf) {
+    private Set<JobInfo> scheduleRestorationJob(Set<IWorkingSubset> workingSubsets, Long storageConfId) {
         // lets instantiate every job for every DataStorage to use
         Set<JobInfo> jobs = Sets.newHashSet();
         for (IWorkingSubset workingSubset : workingSubsets) {
             // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets storeAndCreate a job for each
             // of them
             Set<JobParameter> parameters = Sets.newHashSet();
-            parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, storageConf));
+            parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, storageConfId));
             parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
             JobInfo jobInfo = jobService
                     .createAsPending(new JobInfo(0, parameters, getOwner(), RestorationJob.class.getName()));

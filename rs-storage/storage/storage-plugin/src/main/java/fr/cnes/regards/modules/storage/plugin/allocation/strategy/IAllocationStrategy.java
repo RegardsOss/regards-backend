@@ -1,14 +1,13 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.storage.plugin.datastorage;
+package fr.cnes.regards.modules.storage.plugin.allocation.strategy;
 
 import java.util.Collection;
 
 import com.google.common.collect.Multimap;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 
 /**
@@ -26,5 +25,5 @@ public interface IAllocationStrategy {
      * @param dataFilesToHandle
      * @return Multimap associating DataFiles to their respecting IDataStorage
      */
-    Multimap<PluginConfiguration, DataFile> dispatch(Collection<DataFile> dataFilesToHandle);
+    Multimap<Long, DataFile> dispatch(Collection<DataFile> dataFilesToHandle);
 }

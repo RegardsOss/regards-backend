@@ -86,7 +86,7 @@ import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageAccessModeEnum;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IAllocationStrategy;
+import fr.cnes.regards.modules.storage.plugin.allocation.strategy.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
@@ -275,7 +275,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // FIXME: should probably set the tenant into maintenance in case of module exception
 
         // 3. Now lets ask to the strategy to dispatch dataFiles between possible DataStorages
-        Multimap<PluginConfiguration, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToStore);
+        Multimap<Long, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToStore);
         LOG.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
                   dataFilesToStore.size(),
                   storageWorkingSetMap.keySet().size());
@@ -424,7 +424,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * @param storageWorkingSetMap {@link Multimap}<{@link PluginConfiguration}, {@link DataFile}>
      */
     private void checkDispatch(Set<DataFile> dataFilesToStore,
-            Multimap<PluginConfiguration, DataFile> storageWorkingSetMap) {
+            Multimap<Long, DataFile> storageWorkingSetMap) {
         Set<DataFile> dataFilesInSubSet = storageWorkingSetMap.entries().stream().map(entry -> entry.getValue())
                 .collect(Collectors.toSet());
         if (dataFilesToStore.size() != dataFilesInSubSet.size()) {
@@ -451,19 +451,19 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * @return List of {@link UUID} of jobs scheduled.
      * @throws ModuleException
      */
-    public Set<UUID> scheduleStorage(Multimap<PluginConfiguration, DataFile> storageWorkingSetMap, boolean storingData)
+    public Set<UUID> scheduleStorage(Multimap<Long, DataFile> storageWorkingSetMap, boolean storingData)
             throws ModuleException {
         Set<JobInfo> jobsToSchedule = Sets.newHashSet();
-        for (PluginConfiguration dataStorageConf : storageWorkingSetMap.keySet()) {
-            Set<IWorkingSubset> workingSubSets = getWorkingSubsets(storageWorkingSetMap.get(dataStorageConf),
-                                                                   dataStorageConf);
+        for (Long dataStorageConfId : storageWorkingSetMap.keySet()) {
+            Set<IWorkingSubset> workingSubSets = getWorkingSubsets(storageWorkingSetMap.get(dataStorageConfId),
+                                                                   dataStorageConfId);
             LOG.trace("Preparing a job for each working subsets");
             // lets instantiate every job for every DataStorage to use
             for (IWorkingSubset workingSubset : workingSubSets) {
                 // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets storeAndCreate a job for
                 // each of them
                 Set<JobParameter> parameters = Sets.newHashSet();
-                parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConf));
+                parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConfId));
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
                 if (storingData) {
                     jobsToSchedule
@@ -489,14 +489,14 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * {@link IWorkingSubset}
      * of {@link DataFile}s.
      * @param dataFilesToSubSet List of {@link DataFile} to prepare.
-     * @param dataStorageConf {@link PluginConfiguration}
+     * @param dataStorageConfId {@link PluginConfiguration}
      * @return {@link IWorkingSubset}s
      * @throws ModuleException
      */
     protected Set<IWorkingSubset> getWorkingSubsets(Collection<DataFile> dataFilesToSubSet,
-            PluginConfiguration dataStorageConf) throws ModuleException {
-        LOG.trace("Getting working subsets for data storage {}", dataStorageConf.getLabel());
-        IDataStorage<IWorkingSubset> storage = pluginService.getPlugin(dataStorageConf.getId());
+            Long dataStorageConfId) throws ModuleException {
+        IDataStorage<IWorkingSubset> storage = pluginService.getPlugin(dataStorageConfId);
+        LOG.trace("Getting working subsets for data storage of id {}", dataStorageConfId);
         Set<IWorkingSubset> workingSubSets = storage.prepare(dataFilesToSubSet, DataStorageAccessModeEnum.STORE_MODE);
         LOG.trace("{} data objects were dispatched into {} working subsets",
                   dataFilesToSubSet.size(),
@@ -565,7 +565,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             IAllocationStrategy allocationStrategy = getAllocationStrategy();
 
             // we need to listen to those jobs event to clean up the workspace
-            Multimap<PluginConfiguration, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(metadataToStore);
+            Multimap<Long, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(metadataToStore);
             checkDispatch(metadataToStore, storageWorkingSetMap);
             Set<UUID> jobsToMonitor = scheduleStorage(storageWorkingSetMap, false);
             // to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to
@@ -848,14 +848,14 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         IAllocationStrategy allocationStrategy = getAllocationStrategy();
         // FIXME: should probably set the tenant into maintenance in case of module exception
 
-        Multimap<PluginConfiguration, DataFile> deletionWorkingSetMap = allocationStrategy.dispatch(dataFilesToDelete);
+        Multimap<Long, DataFile> deletionWorkingSetMap = allocationStrategy.dispatch(dataFilesToDelete);
         LOG.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
                   dataFilesToDelete.size(),
                   deletionWorkingSetMap.keySet().size());
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
         checkDispatch(dataFilesToDelete, deletionWorkingSetMap);
         Set<JobInfo> jobsToSchedule = Sets.newHashSet();
-        for (PluginConfiguration dataStorageConf : deletionWorkingSetMap.keySet()) {
+        for (Long dataStorageConf : deletionWorkingSetMap.keySet()) {
             Set<IWorkingSubset> workingSubSets = getWorkingSubsets(deletionWorkingSetMap.get(dataStorageConf),
                                                                    dataStorageConf);
             LOG.trace("Preparing a job for each working subsets");
@@ -1045,21 +1045,21 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // This is an update so we don't use the allocation strategy and we directly use the PluginConf used to storeAndCreate
         // the file.
         // Lets construct the Multimap<PluginConf, DataFile> allowing us to then storeAndCreate IWorkingSubSets
-        Multimap<PluginConfiguration, DataFile> toPrepareMap = HashMultimap.create();
+        Multimap<Long, DataFile> toPrepareMap = HashMultimap.create();
         for (UpdatableMetadataFile oldNew : metadataToUpdate) {
-            toPrepareMap.put(oldNew.getOldOne().getDataStorageUsed(), oldNew.getNewOne());
+            toPrepareMap.put(oldNew.getOldOne().getDataStorageUsed().getId(), oldNew.getNewOne());
         }
         // now lets work with workingSubsets
         Set<JobInfo> jobsToSchedule = Sets.newHashSet();
-        for (PluginConfiguration dataStorageConf : toPrepareMap.keySet()) {
-            Set<IWorkingSubset> workingSubsets = getWorkingSubsets(toPrepareMap.get(dataStorageConf), dataStorageConf);
+        for (Long dataStorageConfId : toPrepareMap.keySet()) {
+            Set<IWorkingSubset> workingSubsets = getWorkingSubsets(toPrepareMap.get(dataStorageConfId), dataStorageConfId);
             for (IWorkingSubset workingSubset : workingSubsets) {
                 // for each workingSubset lets get the corresponding old metadata to remove
                 Set<DataFile> oldOneCorrespondingToWorkingSubset = metadataToUpdate.stream()
                         .filter(oldNew -> workingSubset.getDataFiles().contains(oldNew.getNewOne()))
                         .map(oldNew -> oldNew.getOldOne()).collect(Collectors.toSet());
                 Set<JobParameter> parameters = Sets.newHashSet();
-                parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConf));
+                parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConfId));
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
                 parameters.add(new JobParameter(UpdateDataFilesJob.OLD_DATA_FILES_PARAMETER_NAME,
                                                 oldOneCorrespondingToWorkingSubset

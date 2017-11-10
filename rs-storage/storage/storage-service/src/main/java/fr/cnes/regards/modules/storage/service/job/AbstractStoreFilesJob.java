@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.bouncycastle.math.raw.Mod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.storage.domain.StorageException;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
@@ -70,20 +72,29 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         // lets see if the plugin to use has been given through a plugin configuration.
         JobParameter pluginToUse;
         if (((pluginToUse = parameters.get(PLUGIN_TO_USE_PARAMETER_NAME)) == null)
-                || !(pluginToUse.getValue() instanceof PluginConfiguration)) {
+                || !(pluginToUse.getValue() instanceof Long)) {
             JobParameterMissingException e = new JobParameterMissingException(
-                    String.format(PARAMETER_MISSING, this.getClass().getName(), PluginConfiguration.class.getName(),
+                    String.format(PARAMETER_MISSING, this.getClass().getName(), Long.class.getName(),
                                   PLUGIN_TO_USE_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
+        // now lets check it is an id of a plugin configuration
+        Long confId = pluginToUse.getValue();
+        // rather than duplicating the code, lets just catch the exception
+        ModuleException noConfigurationExist = null;
+        PluginConfiguration confToUse = null;
+        try {
+            confToUse = pluginService.getPluginConfiguration(confId);
+        } catch (ModuleException e) {
+            noConfigurationExist = e;
+        }
         // now that we are sure there is a plugin configuration as parameter, lets check if its a plugin configuration
-        // of IDataStorage
-        PluginConfiguration confToUse = pluginToUse.getValue();
-        if (!confToUse.getInterfaceNames().contains(IDataStorage.class.getName())) {
+        // of IDataStorage. note: we cannot have a NullPointerException here because if confToUse is null so is noConfigurationExist
+        if (noConfigurationExist != null || !confToUse.getInterfaceNames().contains(IDataStorage.class.getName())) {
             JobParameterInvalidException e = new JobParameterInvalidException(
                     String.format(PARAMETER_INVALID, this.getClass().getName(),
-                                  IDataStorage.class.getName() + " configuration", confToUse.getId()));
+                                  IDataStorage.class.getName() + " configuration", confId));
             logger.error(e.getMessage(), e);
             throw e;
         }
@@ -156,17 +167,18 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     @SuppressWarnings("unchecked")
     protected void storeFile(Map<String, JobParameter> parameterMap, boolean replaceMode) {
         // lets instantiate the plugin to use
-        PluginConfiguration confToUse = parameterMap.get(PLUGIN_TO_USE_PARAMETER_NAME).getValue();
+        Long confIdToUse = parameterMap.get(PLUGIN_TO_USE_PARAMETER_NAME).getValue();
         try {
             @SuppressWarnings("rawtypes")
-            IDataStorage storagePlugin = pluginService.getPlugin(confToUse.getId());
+            IDataStorage storagePlugin = pluginService.getPlugin(confIdToUse);
             // now that we have the plugin instance, lets retrieve the aip from the job parameters and ask the plugin to
             // do the storage
             IWorkingSubset workingSubset = parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
             // before storage on file system, lets update the DataFiles by setting which data storage is used to storeAndCreate
             // them.
+            PluginConfiguration storagePluginConf = pluginService.getPluginConfiguration(confIdToUse);
             for (DataFile data : workingSubset.getDataFiles()) {
-                data.setDataStorageUsed(confToUse);
+                data.setDataStorageUsed(storagePluginConf);
             }
             storagePlugin.store(workingSubset, replaceMode, progressManager);
         } catch (ModuleException e) {
