@@ -48,6 +48,12 @@ public interface ISubscriberContract {
     <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver);
 
     /**
+     * Advance way to subscribe to an event. Grants access to {@link WorkerMode} and {@link Target}
+     */
+    <T> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver, WorkerMode pWorkerMode,
+            Target pTarget);
+
+    /**
      * Unsubscribe from this {@link ISubscribable} event.
      *
      * @param <T>
@@ -56,7 +62,4 @@ public interface ISubscriberContract {
      *            {@link ISubscribable} event
      */
     <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent);
-
-    <T> void subscribeTo(Class<T> pEvt, IHandler<T> pHandler, WorkerMode pWorkerMode,
-            Target pTarget);
 }
