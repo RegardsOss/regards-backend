@@ -56,9 +56,9 @@ public class RequestBuilderCustomizer {
 
     private boolean skipDocumentation = false;
 
-    private GsonBuilder gsonBuilder;
+    private final GsonBuilder gsonBuilder;
 
-    {
+    static {
         //lets initiate the default headers!
         DEFAULT_HEADERS.add(HttpConstants.CONTENT_TYPE, "application/json");
         DEFAULT_HEADERS.add(HttpConstants.ACCEPT, "application/json");
@@ -116,6 +116,21 @@ public class RequestBuilderCustomizer {
         MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken, method, urlTemplate, urlVariables);
         String jsonContent = gson(content);
         requestBuilder.content(jsonContent);
+        return requestBuilder;
+    }
+
+    /**
+     * @return {@link MockHttpServletRequestBuilder} customized with RequestBuilderCustomizer#headers or default ones if none has been specified
+     */
+    protected MockHttpServletRequestBuilder getRequestBuilder(String authToken, HttpMethod httpMethod,
+            String urlTemplate, Object... urlVars) {
+        checkCustomizationCoherence(httpMethod);
+        MockHttpServletRequestBuilder requestBuilder = RestDocumentationRequestBuilders
+                .request(httpMethod, urlTemplate, urlVars);
+        addSecurityHeader(requestBuilder, authToken);
+
+        requestBuilder.headers(getHeaders());
+
         return requestBuilder;
     }
 
@@ -258,20 +273,7 @@ public class RequestBuilderCustomizer {
         return multipartRequestBuilder;
     }
 
-    /**
-     * @return {@link MockHttpServletRequestBuilder} customized with RequestBuilderCustomizer#headers or default ones if none has been specified
-     */
-    protected MockHttpServletRequestBuilder getRequestBuilder(String authToken, HttpMethod httpMethod,
-            String urlTemplate, Object... urlVars) {
-        checkCustomizationCoherence(httpMethod);
-        MockHttpServletRequestBuilder requestBuilder = RestDocumentationRequestBuilders
-                .request(httpMethod, urlTemplate, urlVars);
-        addSecurityHeader(requestBuilder, authToken);
 
-        requestBuilder.headers(getHeaders());
-
-        return requestBuilder;
-    }
 
     protected void checkCustomizationCoherence(HttpMethod httpMethod) {
         // constaints are only on DELETE, PUT and POST, for now, as they cannot have request parameters

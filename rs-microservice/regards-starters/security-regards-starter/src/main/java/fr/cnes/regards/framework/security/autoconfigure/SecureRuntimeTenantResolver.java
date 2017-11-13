@@ -42,6 +42,8 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
     // Thread safe tenant holder for forced tenant
     private static final ThreadLocal<String> tenantHolder = new ThreadLocal<>();
 
+    private static final String TENANT = "tenant";
+
     /**
      * Name of the static and fixed name of instance virtual tenant.
      */
@@ -72,7 +74,7 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
     @Override
     public void forceTenant(final String pTenant) {
         // when we force the tenant for the application, we set it for logging too
-        MDC.put("tenant", pTenant);
+        MDC.put(TENANT, pTenant);
         tenantHolder.set(pTenant);
     }
 
@@ -83,10 +85,10 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
         JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
         // when we clear the tenant, system will act by getting it from the security context holder, so we do the same
         // for logging
-        if (authentication != null) {
-            MDC.put("tenant", authentication.getTenant());
+        if (authentication == null) {
+            MDC.put(TENANT, null);
         } else {
-            MDC.put("tenant", null);
+            MDC.put(TENANT, authentication.getTenant());
         }
     }
 

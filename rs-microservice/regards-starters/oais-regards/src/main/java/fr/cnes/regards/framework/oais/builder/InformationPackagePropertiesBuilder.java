@@ -41,11 +41,11 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     private final Set<ContentInformation> cis;
 
-    private ContentInformationBuilder contentInformationBuilder;
-
     private final PDIBuilder pdiBuilder;
 
     private final Map<String, Object> descriptiveInformation;
+
+    private ContentInformationBuilder contentInformationBuilder;
 
     public InformationPackagePropertiesBuilder() {
         this.ip = new InformationPackageProperties();
@@ -59,9 +59,11 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
         this.ip = properties;
         this.cis = properties.getContentInformations();
         this.pdiBuilder = new PDIBuilder(properties.getPdi());
-        this.descriptiveInformation = properties.getDescriptiveInformation() == null ?
-                Maps.newHashMap() :
-                properties.getDescriptiveInformation();
+        if (properties.getDescriptiveInformation() == null) {
+            this.descriptiveInformation = Maps.newHashMap();
+        } else {
+            this.descriptiveInformation = properties.getDescriptiveInformation();
+        }
     }
 
     @Override

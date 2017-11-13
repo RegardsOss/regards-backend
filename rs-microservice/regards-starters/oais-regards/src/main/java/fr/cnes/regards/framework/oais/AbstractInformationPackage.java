@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.framework.oais;
 
+import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
-
-import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -53,10 +52,10 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
      */
     public Event getLastEvent() {
         List<Event> history = getHistory();
-        if (!history.isEmpty()) {
-            return history.get(history.size() - 1);
-        } else {
+        if (history.isEmpty()) {
             return null;
+        } else {
+            return history.get(history.size() - 1);
         }
     }
 

@@ -12,9 +12,9 @@ import com.google.common.collect.Maps;
  */
 public class EnvironmentDescription {
 
-    private Map<String, Object> softwareEnvironment;
+    private final Map<String, Object> softwareEnvironment;
 
-    private Map<String, Object> hardwareEnvironment;
+    private final Map<String, Object> hardwareEnvironment;
 
     public EnvironmentDescription() {
         softwareEnvironment = Maps.newHashMap();

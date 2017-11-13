@@ -20,6 +20,8 @@ import com.google.common.io.ByteStreams;
  */
 public class DownloadUtils {
 
+    private DownloadUtils() {}
+
     /**
      * Get an InputStream on a source URL with no proxy used
      * @param source

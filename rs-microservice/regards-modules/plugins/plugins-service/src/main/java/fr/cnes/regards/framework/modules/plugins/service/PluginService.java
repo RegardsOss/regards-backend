@@ -291,12 +291,12 @@ public class PluginService implements IPluginService {
     public List<PluginConfiguration> getPluginConfigurationsByType(final Class<?> pInterfacePluginType) {
 
         final Iterable<PluginConfiguration> plgConfs = pluginConfRepository.findAll();
-        if (plgConfs != null) {
+        if (plgConfs == null) {
+            return Lists.newArrayList();
+        } else {
             return Lists.newArrayList(plgConfs).stream()
                     .filter(pc -> pc.getInterfaceNames().contains(pInterfacePluginType.getName()))
                     .collect(Collectors.toList());
-        } else {
-            return Lists.newArrayList();
         }
     }
 
