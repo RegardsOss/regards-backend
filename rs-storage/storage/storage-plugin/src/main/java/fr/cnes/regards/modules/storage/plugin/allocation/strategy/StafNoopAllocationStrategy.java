@@ -5,14 +5,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.staf.domain.STAFArchive;
 import fr.cnes.regards.framework.staf.protocol.STAFURLFactory;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
@@ -28,12 +32,18 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFDataStorage;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-@Plugin(author = "REGARDS Team", description = "Allocation Strategy plugin that analyse files url to determine which staf archive should be used",
+@Plugin(author = "REGARDS Team",
+        description = "Allocation Strategy plugin that analyse files url to determine which staf archive should be used",
         id = "StafNoopAllocationStrategy", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3",
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class StafNoopAllocationStrategy implements IAllocationStrategy {
 
-    private static final String DEFAULT_DATA_STORAGE_CONFIGURATION_ID = "Default_data_storage_configuration_id";
+    public static final String DEFAULT_DATA_STORAGE_CONFIGURATION_ID = "Default_data_storage_configuration_id";
+
+    private static final Logger LOG = LoggerFactory.getLogger(StafNoopAllocationStrategy.class);
+
+    @Autowired
+    private Gson gson;
 
     @Autowired
     private IPluginService pluginService;
@@ -51,8 +61,16 @@ public class StafNoopAllocationStrategy implements IAllocationStrategy {
                 .getPluginConfigurationsByType(INearlineDataStorage.class);
         // Now we extract the STAFDataStorage and map them to a map archiveName->id
         Map<String, Long> stafArchiveConfMap = nearlineDataStorages.stream()
-                .filter(conf -> conf.getPluginClassName().equals(STAFDataStorage.class.getName()))
-                .collect(Collectors.toMap(stafConf -> stafConf.getParameter(STAFDataStorage.STAF_ARCHIVE_PARAMETER_NAME).getValue(),stafConf -> stafConf.getId()));
+                .filter(conf -> conf.getPluginClassName().equals(STAFDataStorage.class.getName())).collect(Collectors
+                                                                                                                   .toMap(stafConf -> gson
+                                                                                                                                  .fromJson(
+                                                                                                                                          stafConf.getParameter(
+                                                                                                                                                  STAFDataStorage.STAF_ARCHIVE_PARAMETER_NAME)
+                                                                                                                                                  .getValue(),
+                                                                                                                                          STAFArchive.class)
+                                                                                                                                  .getArchiveName(),
+                                                                                                                          stafConf -> stafConf
+                                                                                                                                  .getId()));
         for (DataFile dataFile : dataFilesToHandle) {
             String urlProtocol = dataFile.getUrl().getProtocol();
             switch (urlProtocol) {
@@ -61,6 +79,10 @@ public class StafNoopAllocationStrategy implements IAllocationStrategy {
                     Long chosenOne = stafArchiveConfMap.get(archiveName);
                     if (chosenOne != null) {
                         dispatch.put(chosenOne, dataFile);
+                    } else {
+                        LOG.debug(String.format(
+                                "Allocation strategy for data file %s failed, no corresponding staf data storage found.",
+                                dataFile.getUrl()));
                     }
                     break;
                 default:

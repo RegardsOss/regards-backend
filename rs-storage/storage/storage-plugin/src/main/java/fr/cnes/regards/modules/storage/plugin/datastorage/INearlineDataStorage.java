@@ -5,9 +5,12 @@ package fr.cnes.regards.modules.storage.plugin.datastorage;
 
 import java.nio.file.Path;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
+@PluginInterface(description = "Contract to respect by any NEARLINE data storage plugin")
 public interface INearlineDataStorage<T extends IWorkingSubset> extends IDataStorage<T> {
 
     /**

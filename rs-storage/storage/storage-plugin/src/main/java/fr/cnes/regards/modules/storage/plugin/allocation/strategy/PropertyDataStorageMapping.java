@@ -1,5 +1,7 @@
 package fr.cnes.regards.modules.storage.plugin.allocation.strategy;
 
+import java.util.List;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 
@@ -22,6 +24,11 @@ public class PropertyDataStorageMapping {
     private Long dataStorageConfId;
 
     public PropertyDataStorageMapping() {
+    }
+
+    public PropertyDataStorageMapping(String propertyValue, Long dataStorageConfId) {
+        this.propertyValue = propertyValue;
+        this.dataStorageConfId = dataStorageConfId;
     }
 
     public String getPropertyValue() {
