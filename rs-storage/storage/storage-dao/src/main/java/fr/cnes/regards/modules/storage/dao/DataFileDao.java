@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
@@ -40,13 +39,13 @@ public class DataFileDao implements IDataFileDao {
     @Override
     public Set<DataFile> findAllByStateAndAipIn(DataFileState dataFileState, Collection<AIP> aips) {
         Set<AIPEntity> aipDataBases = Sets.newHashSet();
-        for(AIP aip: aips) {
+        for (AIP aip : aips) {
             Optional<AIPEntity> aipDatabase = getAipDataBase(aip);
             if (aipDatabase.isPresent()) {
                 aipDataBases.add(aipDatabase.get());
             }
         }
-        if(aipDataBases.isEmpty()) {
+        if (aipDataBases.isEmpty()) {
             return Sets.newHashSet();
         } else {
             return repository.findAllByStateAndAipEntityIn(dataFileState, aipDataBases);
@@ -73,16 +72,6 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
-    public Optional<DataFile> findByAipAndType(AIP aip, DataType dataType) {
-        Optional<AIPEntity> aipDatabase = getAipDataBase(aip);
-        if (aipDatabase.isPresent()) {
-            return repository.findByAipEntityAndDataType(aipDatabase.get(), dataType);
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    @Override
     public Collection<DataFile> save(Collection<DataFile> dataFiles) {
         for (DataFile dataFile : dataFiles) {
             Optional<AIPEntity> aipDatabase = getAipDataBase(dataFile);
@@ -91,6 +80,16 @@ public class DataFileDao implements IDataFileDao {
             }
         }
         return repository.save(dataFiles);
+    }
+
+    @Override
+    public Optional<DataFile> findByAipAndType(AIP aip, DataType dataType) {
+        Optional<AIPEntity> aipDatabase = getAipDataBase(aip);
+        if (aipDatabase.isPresent()) {
+            return repository.findByAipEntityAndDataType(aipDatabase.get(), dataType);
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override

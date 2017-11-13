@@ -35,6 +35,9 @@ public interface IAIPDataBaseRepository extends JpaRepository<AIPEntity, Long> {
     @EntityGraph("graph.aip.tags")
     Page<AIPEntity> findAllByStateIn(AIPState pState, Pageable pPageable);
 
+    @EntityGraph("graph.aip.tags")
+    Set<AIPEntity> findAllByStateIn(AIPState... states);
+
     /**
      * @param pState
      * @param pFrom
@@ -95,9 +98,6 @@ public interface IAIPDataBaseRepository extends JpaRepository<AIPEntity, Long> {
 
     @Query("from AIPEntity aip where aip.ipId LIKE :urnWithoutVersion%")
     Set<AIPEntity> findAllByIpIdStartingWith(@Param("urnWithoutVersion") String pUrnWithoutVersion);
-
-    @EntityGraph("graph.aip.tags")
-    Set<AIPEntity> findAllByStateIn(AIPState... states);
 
     @EntityGraph("graph.aip.tags")
     Optional<AIPEntity> findOneByIpId(String ipId);

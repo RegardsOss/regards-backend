@@ -112,7 +112,7 @@ public class DataFile {
             String[] pathParts = file.getUrl().getPath().split("/");
             name = pathParts[pathParts.length - 1];
         }
-        setName(name);
+        this.name = name;
     }
 
     public DataFile(URL url, String checksum, String algorithm, DataType type, Long fileSize, MimeType mimeType,

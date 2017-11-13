@@ -27,9 +27,9 @@ public interface IDataFileDao {
 
     DataFile save(DataFile prepareFailed);
 
-    Optional<DataFile> findByAipAndType(AIP aip, DataType dataType);
-
     Collection<DataFile> save(Collection<DataFile> dataFiles);
+
+    Optional<DataFile> findByAipAndType(AIP aip, DataType dataType);
 
     void deleteAll();
 
