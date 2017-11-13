@@ -20,14 +20,14 @@ import com.google.gson.JsonSerializer;
  * Multimap Gson adapter
  * @author oroussel
  */
-public class MultimapAdapter<K> implements JsonDeserializer<Multimap<K, ?>>, JsonSerializer<Multimap<K, ?>> {
+public class MultimapAdapter implements JsonDeserializer<Multimap<?, ?>>, JsonSerializer<Multimap<?, ?>> {
 
     @Override
-    public Multimap<K, ?> deserialize(JsonElement json, Type type, JsonDeserializationContext context)
+    public Multimap<?, ?> deserialize(JsonElement json, Type type, JsonDeserializationContext context)
             throws JsonParseException {
-        final HashMultimap<K, Object> result = HashMultimap.create();
-        final Map<K, Collection<?>> map = context.deserialize(json, multimapTypeToMapType(type));
-        for (final Map.Entry<K, ?> e : map.entrySet()) {
+        final HashMultimap<Object, Object> result = HashMultimap.create();
+        final Map<?, Collection<?>> map = context.deserialize(json, multimapTypeToMapType(type));
+        for (final Map.Entry<?, ?> e : map.entrySet()) {
             final Collection<?> value = (Collection<?>) e.getValue();
             result.putAll(e.getKey(), value);
         }
@@ -35,7 +35,7 @@ public class MultimapAdapter<K> implements JsonDeserializer<Multimap<K, ?>>, Jso
     }
 
     @Override
-    public JsonElement serialize(Multimap<K, ?> src, Type type, JsonSerializationContext context) {
+    public JsonElement serialize(Multimap<?, ?> src, Type type, JsonSerializationContext context) {
         final Map<?, ?> map = src.asMap();
         return context.serialize(map);
     }

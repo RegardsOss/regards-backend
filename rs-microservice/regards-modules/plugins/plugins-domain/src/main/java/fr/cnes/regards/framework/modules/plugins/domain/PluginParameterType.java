@@ -160,9 +160,9 @@ public class PluginParameterType {
      */
     public enum ParamType {
         /** 
-         * Object type with parameters 
+         * Parameter type {@link java.util.Collection}
          */ 
-        CONFIGURED_OBJECT, 
+        COLLECTION,
         /** 
          * Object type 
          */ 
@@ -174,6 +174,10 @@ public class PluginParameterType {
         /**
          * Parameter type plugin
          */
-        PLUGIN
+        PLUGIN,
+        /**
+         * Parameter type is undefined
+         */
+        UNDEFINED
     }
 }
