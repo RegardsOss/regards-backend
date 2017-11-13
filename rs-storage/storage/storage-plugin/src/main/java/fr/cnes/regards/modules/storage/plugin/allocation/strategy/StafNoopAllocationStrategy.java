@@ -73,7 +73,7 @@ public class StafNoopAllocationStrategy implements IAllocationStrategy {
                 case STAFURLFactory.STAF_URL_PROTOCOLE:
                     String archiveName = dataFile.getUrl().getHost();
                     Long chosenOne = stafArchiveConfMap.get(archiveName);
-                    if (chosenOne != null) {
+                    if (chosenOne == null) {
                         LOG.debug(String.format(
                                 "Allocation strategy for data file %s failed, no corresponding staf data storage found.",
                                 dataFile.getUrl()));
