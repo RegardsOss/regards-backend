@@ -36,6 +36,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
@@ -100,7 +101,8 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
-        Assert.assertTrue(faileds.isEmpty());
+        // 5 products are ready to be send to ingest
+        Assert.assertEquals(5,faileds.size());
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(1, chainService.retrieveAll().size());
@@ -214,7 +216,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
-        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertEquals(3,faileds.size());
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(1, chainService.retrieveAll().size());
@@ -275,7 +277,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
-        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertEquals(3,faileds.size());
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(1, chainService.retrieveAll().size());
@@ -368,7 +370,8 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
-        Assert.assertTrue(faileds.isEmpty());
+//        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertEquals(3,faileds.size());
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(1, chainService.retrieveAll().size());

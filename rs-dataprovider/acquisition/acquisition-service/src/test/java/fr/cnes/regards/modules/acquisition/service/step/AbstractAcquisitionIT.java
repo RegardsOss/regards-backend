@@ -48,6 +48,7 @@ import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -86,7 +87,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 public class AbstractAcquisitionIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAcquisitionIT.class);
-    
+
     protected static final String FIRST_PRODUCT = "PAUB_MESURE_TC_20130701_103715";
 
     protected static final String SECOND_PRODUCT = "PAUB_MESURE_TC_20130701_105909";
@@ -115,6 +116,9 @@ public class AbstractAcquisitionIT {
     protected IMetaProductService metaProductService;
 
     @Autowired
+    protected IJobInfoRepository jobInfoRepository;
+
+    @Autowired
     protected IMetaFileService metaFileService;
 
     @Autowired
@@ -122,9 +126,9 @@ public class AbstractAcquisitionIT {
 
     @Autowired
     protected IAcquisitionFileService acquisitionFileService;
-    
+
     @Autowired
-    protected IProductService productService;    
+    protected IProductService productService;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -238,8 +242,8 @@ public class AbstractAcquisitionIT {
         // Create a ChainGeneration and a MetaProduct
         metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).addMetaFile(metaFileOptional)
                 .addMetaFile(metaFileMandatory).get());
-        chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL + "-" + this.name.getMethodName()).isActive()
-                .withDataSet(DATASET_IP_ID).withMetaProduct(metaProduct).periodicity(1L)
+        chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL + "-" + this.name.getMethodName())
+                .isActive().withDataSet(DATASET_IP_ID).withMetaProduct(metaProduct).periodicity(1L)
                 .withDataIngestProcessingChain("the-ingest-processing-to-used").get());
     }
 
@@ -267,24 +271,23 @@ public class AbstractAcquisitionIT {
 
         pluginParameterRepository.deleteAll();
         pluginConfigurationRepository.deleteAll();
+
+        jobInfoRepository.deleteAll();
+
         LOGGER.info("Clean the DB : {}", name.getMethodName());
     }
 
     protected void mockIngestClientResponseOK() {
-//        Mockito.reset(ingestClient);
-//        
         Collection<SIPEntity> sips = new ArrayList<>();
         SIPEntity sipEntity = new SIPEntity();
         sipEntity.setState(SIPState.CREATED);
         sips.add(sipEntity);
-        
+
         Mockito.when(ingestClient.ingest(Mockito.any()))
                 .thenReturn(new ResponseEntity<Collection<SIPEntity>>(sips, HttpStatus.CREATED));
     }
 
     protected void mockIngestClientResponseUnauthorized() {
-//        Mockito.reset(ingestClient);
-//        
         Collection<SIPEntity> sips = new ArrayList<>();
         SIPEntity sipEntity = new SIPEntity();
         sipEntity.setState(SIPState.REJECTED);
@@ -295,8 +298,6 @@ public class AbstractAcquisitionIT {
     }
 
     protected void mockIngestClientResponsePartialContent() {
-//        Mockito.reset(ingestClient);
-//        
         Collection<SIPEntity> sips = new ArrayList<>();
         SIPEntity sipEntity = new SIPEntity();
         sipEntity.setReasonForRejection("bad SIP format");
@@ -332,7 +333,8 @@ public class AbstractAcquisitionIT {
             if (runnings.size() > 0) {
                 wait = false;
             }
-            LOGGER.info("wait first job running - r={}-s={}-a={}-f={} - {}", runnings.size(), succeededs.size(), aborteds.size(), faileds.size(), name.getMethodName());
+            LOGGER.info("wait first job running - r={}-s={}-a={}-f={} - {}", runnings.size(), succeededs.size(),
+                        aborteds.size(), faileds.size(), name.getMethodName());
         }
 
         // wait the end of the running job 
@@ -348,7 +350,8 @@ public class AbstractAcquisitionIT {
             if (runnings.size() == received) {
                 wait = false;
             }
-            LOGGER.info("wait end jobs - r={}-s={}-a={}-f={} - {}", runnings.size(), succeededs.size(), aborteds.size(), faileds.size(), name.getMethodName());
+            LOGGER.info("wait end jobs - r={}-s={}-a={}-f={} - {}", runnings.size(), succeededs.size(), aborteds.size(),
+                        faileds.size(), name.getMethodName());
         }
     }
 

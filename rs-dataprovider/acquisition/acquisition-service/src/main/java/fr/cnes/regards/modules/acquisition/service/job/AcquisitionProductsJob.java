@@ -69,7 +69,7 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
 
     @Autowired
     private IAcquisitionCheckStep checkStepImpl;
-    
+
     @Autowired
     private IProductService productService;
 
@@ -78,7 +78,6 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
 
     @Autowired
     private IAuthenticationResolver authResolver;
-    
 
     private ChainGeneration chainGeneration;
 
@@ -110,11 +109,8 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
         }
 
         process.run();
-        
-        
-        chainGeneration.getSession();
-        // récupérer tous les produits de la session
-        // puis appeler submitProducts()
+
+        submitProducts();
 
         LOGGER.info("End acquisition job for the chain <{}>", chainGeneration.getLabel());
     }
@@ -137,24 +133,26 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
 
         chainGeneration = param.getValue();
     }
-    
-    private void submitProducts() {
-        List<Product> validFileList = new ArrayList<>();
-        validFileList.addAll(productService.findByStatus(ProductStatus.COMPLETED));
-        validFileList.addAll(productService.findByStatus(ProductStatus.FINISHED));
 
-        validFileList.stream().forEach(p -> {
-            if (!createJob(p)) {
-                LOGGER.error("error :{}", p.getProductName());
+    private void submitProducts() {
+        List<Product> products = new ArrayList<>();
+        products.addAll(productService.findByStatus(ProductStatus.COMPLETED, Boolean.FALSE));
+        products.addAll(productService.findByStatus(ProductStatus.FINISHED, Boolean.FALSE));
+
+        for (Product apr : products) {
+            if (!createJob(apr)) {
+                LOGGER.error("error :{}", apr.getProductName());
             }
-        });
+        }
+
     }
 
     private boolean createJob(Product product) {
         // Create a ScanJob
         JobInfo acquisition = new JobInfo();
-        acquisition.setParameters(new ChainGenerationJobParameter(chainGeneration), new ProductJobParameter(product));
-        acquisition.setClassName(AcquisitionProductsJob.class.getName());
+        acquisition.setParameters(new ChainGenerationJobParameter(chainGeneration),
+                                  new ProductJobParameter(product.getProductName()));
+        acquisition.setClassName(AcquisitionGenerateSIPJob.class.getName());
         acquisition.setOwner(authResolver.getUser());
         acquisition.setPriority(50);
 

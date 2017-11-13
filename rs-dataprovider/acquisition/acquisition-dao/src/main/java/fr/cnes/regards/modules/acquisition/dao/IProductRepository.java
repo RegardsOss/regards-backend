@@ -39,5 +39,7 @@ public interface IProductRepository extends CrudRepository<Product, Long> {
     Product findCompleteByProductName(String productName);
 
     List<Product> findByStatus(ProductStatus status);
+    
+    List<Product> findByStatusAndSaved(ProductStatus status, Boolean saved);
 
 }

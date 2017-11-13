@@ -19,20 +19,14 @@
 
 package fr.cnes.regards.modules.acquisition.service.step;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -43,16 +37,13 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
-import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 
 /**
  * @author Christophe Mertz
@@ -78,30 +69,35 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
     private ChainGeneration chainGeneration;
 
+    private Product product;
+
     @Value("${regards.acquisition.sip.max.bulk.size:5000}")
     private int sipCollectionBulkMaxSize;
 
     private SIPCollection sipCollection;
 
     /**
-     * The {@link List} of {@link AcquisitionFile} that should be check grouped by {@link Product} id
+     * The List of {@link AcquisitionFile} for the current {@link Product}
      */
-    private Map<Long, List<AcquisitionFile>> afMap;
+    private List<AcquisitionFile> acqFiles;
 
     @Override
     public void proceedStep() throws AcquisitionRuntimeException {
 
-        this.chainGeneration = process.getChainGeneration();
+        LOGGER.info("Start generate SIP step for the product <{}> of the chain <{}>", product.getProductName(),
+                    chainGeneration.getLabel());
 
-        if (this.afMap.isEmpty()) {
+        if (this.acqFiles.isEmpty()) {
             LOGGER.info("Any file to process for the acquisition chain <{}>", this.chainGeneration.getLabel());
             return;
         }
 
         // A plugin for the generate SIP configuration is required
         if (this.chainGeneration.getGenerateSIPPluginConf() == null) {
-            throw new RuntimeException("The required IGenerateSipStep is missing for the ChainGeneration <"
-                    + this.chainGeneration.getLabel() + ">");
+            String msg = "The required IGenerateSipStep is missing for the ChainGeneration <"
+                    + this.chainGeneration.getLabel() + ">";
+            LOGGER.error(msg);
+            throw new RuntimeException(msg);
         }
 
         // Launch the generate plugin
@@ -122,142 +118,110 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
             // create MetaData for each Product
-            this.afMap.forEach((k, af) -> {
-                try {
-                    this.sipCollection = generateSipPlugin.runPlugin(af, Optional.of(chainGeneration.getDataSet()));
-                    processSipCollection();
-                } catch (ModuleException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    throw new AcquisitionRuntimeException(e.getMessage());
-                }
-            });
+            this.sipCollection = generateSipPlugin.runPlugin(this.acqFiles, Optional.of(chainGeneration.getDataSet()));
+            //            processSipCollection();
 
-            publishSipCollections();
+            //            publishSipCollections();
 
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             throw new AcquisitionRuntimeException(e.getMessage());
         }
 
+        LOGGER.info("Stop generate SIP step for the product <{}> of the chain <{}>", product.getProductName(),
+                    chainGeneration.getLabel());
     }
 
-    /**
-     * If the number of SIP in the {@link SIPCollection} is greater than {@link GenerateSipStep#sipCollectionBulkMaxSize},</br>
-     * the {@link SIPCollection} is publish to the ingest microservice 
-     * @throws ModuleException 
-     */
-    private void processSipCollection() throws ModuleException {
-        if (this.sipCollection.getFeatures().size() >= sipCollectionBulkMaxSize) {
-            publishSipCollections();
-        }
-    }
+    //    /**
+    //     * If the number of SIP in the {@link SIPCollection} is greater than {@link GenerateSipStep#sipCollectionBulkMaxSize},</br>
+    //     * the {@link SIPCollection} is publish to the ingest microservice 
+    //     * @throws ModuleException 
+    //     */
+    //    private void processSipCollection() throws ModuleException {
+    //        if (this.sipCollection.getFeatures().size() >= sipCollectionBulkMaxSize) {
+    //            publishSipCollections();
+    //        }
+    //    }
 
-    /**
-     * Send the {@link SIPCollection} to Ingest microservice 
-     * @throws ModuleException 
-     */
-    private void publishSipCollections() throws ModuleException {
-        LOGGER.info("[{}] Start publish SIP Collections", chainGeneration.getSession());
+    //    /**
+    //     * Send the {@link SIPCollection} to Ingest microservice 
+    //     * @throws ModuleException 
+    //     */
+    //    private void publishSipCollections() throws ModuleException {
+    //        LOGGER.info("[{}] Start publish SIP Collections", chainGeneration.getSession());
+    //
+    //        ResponseEntity<Collection<SIPEntity>> response = ingestClient.ingest(this.sipCollection);
+    //
+    //        // TODO CMZ en fonction du retour, il faudrait repercuter l'état sur le processing 
+    //        if (response.getStatusCode().equals(HttpStatus.CREATED)) {
+    //            manageSipCreated();
+    //        } else if (response.getStatusCode().equals(HttpStatus.PARTIAL_CONTENT)) {
+    //            manageSipNotCreated(response.getBody());
+    //        } else if (response.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
+    //            LOGGER.error("[{}] Unauthorized access to ingest microservice", chainGeneration.getSession());
+    //
+    //        } else if (response.getStatusCode().equals(HttpStatus.CONFLICT)) {
+    //            LOGGER.error("[{}] Unauthorized access to ingest microservice", chainGeneration.getSession());
+    //
+    //        }
+    //        this.sipCollection.getFeatures().clear();
+    //
+    //        LOGGER.info("[{}] End publish SIP Collections", chainGeneration.getSession());
+    //    }
 
-        ResponseEntity<Collection<SIPEntity>> response = ingestClient.ingest(this.sipCollection);
-
-        // TODO CMZ en fonction du retour, il faudrait repercuter l'état sur le processing 
-        if (response.getStatusCode().equals(HttpStatus.CREATED)) {
-            manageSipCreated();
-        } else if (response.getStatusCode().equals(HttpStatus.PARTIAL_CONTENT)) {
-            manageSipNotCreated(response.getBody());
-        } else if (response.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
-            LOGGER.error("[{}] Unauthorized access to ingest microservice", chainGeneration.getSession());
-
-        } else if (response.getStatusCode().equals(HttpStatus.CONFLICT)) {
-            LOGGER.error("[{}] Unauthorized access to ingest microservice", chainGeneration.getSession());
-
-        }
-        this.sipCollection.getFeatures().clear();
-
-        LOGGER.info("[{}] End publish SIP Collections", chainGeneration.getSession());
-    }
-
-    private void manageSipCreated() throws ModuleException {
-        LOGGER.info("[{}] SIP collection has heen processed with success : {} ingested", chainGeneration.getSession(),
-                    this.sipCollection.getFeatures().size());
-        for (SIP sip : this.sipCollection.getFeatures()) {
-            setSipProductCreate(sip.getId());
-        }
-    }
-
-    private void manageSipNotCreated(Collection<SIPEntity> sipEntitys) throws ModuleException {
-        LOGGER.error("[{}] SIP collection has heen partially processed with success : {} ingested / {} rejected",
-                     chainGeneration.getSession(), this.sipCollection.getFeatures().size() - sipEntitys.size(),
-                     sipEntitys.size());
-        Set<String> sipIdError = new HashSet<>();
-        for (SIPEntity sipEntity : sipEntitys) {
-            LOGGER.error("[{}] SIP in error : productName=<{}>, raeson=<{}>", chainGeneration.getSession(),
-                         sipEntity.getSipId(), sipEntity.getReasonForRejection());
-            sipIdError.add(sipEntity.getSipId());
-        }
-
-        for (SIP sip : this.sipCollection.getFeatures()) {
-            if (!sipIdError.contains(sip.getId())) {
-                setSipProductCreate(sip.getId());
-            }
-        }
-    }
-
-    private void setSipProductCreate(String sipId) throws ModuleException {
-        Product product = productService.retrieve(sipId);
-        if (product == null) {
-            final StringBuffer strBuff = new StringBuffer();
-            strBuff.append("The product name <");
-            strBuff.append(sipId);
-            strBuff.append("> does not exist");
-            ModuleException ex = new ModuleException(strBuff.toString());
-            LOGGER.error(ex.getMessage());
-            throw ex;
-        }
-        product.setSaved(Boolean.TRUE);
-        productService.save(product);
-    }
+    //    private void manageSipCreated() throws ModuleException {
+    //        LOGGER.info("[{}] SIP collection has heen processed with success : {} ingested", chainGeneration.getSession(),
+    //                    this.sipCollection.getFeatures().size());
+    //        for (SIP sip : this.sipCollection.getFeatures()) {
+    //            setSipProductCreate(sip.getId());
+    //        }
+    //    }
+    //
+    //    private void manageSipNotCreated(Collection<SIPEntity> sipEntitys) throws ModuleException {
+    //        LOGGER.error("[{}] SIP collection has heen partially processed with success : {} ingested / {} rejected",
+    //                     chainGeneration.getSession(), this.sipCollection.getFeatures().size() - sipEntitys.size(),
+    //                     sipEntitys.size());
+    //        Set<String> sipIdError = new HashSet<>();
+    //        for (SIPEntity sipEntity : sipEntitys) {
+    //            LOGGER.error("[{}] SIP in error : productName=<{}>, raeson=<{}>", chainGeneration.getSession(),
+    //                         sipEntity.getSipId(), sipEntity.getReasonForRejection());
+    //            sipIdError.add(sipEntity.getSipId());
+    //        }
+    //
+    //        for (SIP sip : this.sipCollection.getFeatures()) {
+    //            if (!sipIdError.contains(sip.getId())) {
+    //                setSipProductCreate(sip.getId());
+    //            }
+    //        }
+    //    }
+    //
+    //    private void setSipProductCreate(String sipId) throws ModuleException {
+    //        Product product = productService.retrieve(sipId);
+    //        if (product == null) {
+    //            final StringBuffer strBuff = new StringBuffer();
+    //            strBuff.append("The product name <");
+    //            strBuff.append(sipId);
+    //            strBuff.append("> does not exist");
+    //            ModuleException ex = new ModuleException(strBuff.toString());
+    //            LOGGER.error(ex.getMessage());
+    //            throw ex;
+    //        }
+    //        product.setSaved(Boolean.TRUE);
+    //        productService.save(product);
+    //    }
 
     @Override
     public void getResources() throws AcquisitionException {
-
-        this.afMap = new HashMap<Long, List<AcquisitionFile>>();
-
-        if (!process.getProduct().getStatus().equals(ProductStatus.COMPLETED)
-                && !process.getProduct().getStatus().equals(ProductStatus.FINISHED)) {
-            return;
-        }
-
-        this.afMap.put(process.getProduct().getId(), acquisitionFileService.findByProduct(process.getProduct()));
-
-        //        // Get the VALID AcquisitionFile
-        //        List<AcquisitionFile> validFileList = new ArrayList<>();
-        //        for (MetaFile metaFile : process.getChainGeneration().getMetaProduct().getMetaFiles()) {
-        //            validFileList.addAll(acquisitionFileService.findByStatusAndMetaFile(AcquisitionFileStatus.VALID, metaFile));
-        //        }
-        //
-        //        // Get all the products from the VALID AcquisitionFile
-        //        Set<Product> products = new HashSet<Product>();
-        //        validFileList.forEach(af -> {
-        //            if (!products.contains(af.getProduct())) {
-        //                products.add(af.getProduct());
-        //            }
-        //        });
-
-        // Get the AcquisitionFiles for each Product
-        //        for (Product pr : products) {
-        //            if (pr.getStatus().equals(ProductStatus.COMPLETED) || pr.getStatus().equals(ProductStatus.FINISHED)) {
-        //                List<AcquisitionFile> afs = new ArrayList<>();
-        //                validFileList.stream().filter(af -> af.getProduct().equals(pr)).forEach(af -> afs.add(af));
-        //                this.afMap.put(pr.getId(), afs);
-        //            }
-        //        }
+        this.chainGeneration = process.getChainGeneration();
+        this.product = process.getProduct();
+        this.acqFiles = acquisitionFileService.findByProduct(this.product);
     }
 
     @Override
     public void freeResources() throws AcquisitionException {
-        this.afMap = null;
+        this.acqFiles = null;
+        this.product = null;
+        this.chainGeneration = null;
     }
 
     @Override

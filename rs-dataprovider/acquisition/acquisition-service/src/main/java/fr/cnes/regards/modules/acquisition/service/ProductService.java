@@ -76,4 +76,9 @@ public class ProductService implements IProductService {
         return productRepository.findByStatus(status);
     }
 
+    @Override
+    public List<Product> findByStatus(ProductStatus status, Boolean saved) {
+        return productRepository.findByStatusAndSaved(status, saved);
+    }
+
 }

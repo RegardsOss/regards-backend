@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.acquisition.domain.job;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.modules.acquisition.domain.Product;
 
 /**
  * {@link JobParameter} specific class to be used with AcquisitionGenerateSIPJob
@@ -12,17 +11,17 @@ public class ProductJobParameter extends JobParameter {
 
     public static final String NAME = "product";
 
-    public ProductJobParameter(Product value) {
+    public ProductJobParameter(String value) {
         super(NAME, value);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Product getValue() {
+    public String getValue() {
         return super.getValue();
     }
 
-    public void setValue(Product value) {
+    public void setValue(String value) {
         super.setValue(value);
     }
 

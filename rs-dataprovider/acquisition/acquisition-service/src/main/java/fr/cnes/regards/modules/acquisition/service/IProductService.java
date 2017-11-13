@@ -48,4 +48,6 @@ public interface IProductService {
     Product retrieve(String productName);
 
     public List<Product> findByStatus(ProductStatus status);
+    
+    public List<Product> findByStatus(ProductStatus status, Boolean saved);
 }

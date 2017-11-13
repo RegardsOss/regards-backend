@@ -19,8 +19,6 @@
 
 package fr.cnes.regards.modules.acquisition.service.job;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -28,16 +26,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
 import fr.cnes.regards.modules.acquisition.domain.job.ProductJobParameter;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
@@ -63,18 +57,21 @@ public class AcquisitionGenerateSIPJob extends AbstractJob<Void> {
     private AutowireCapableBeanFactory beanFactory;
 
     @Autowired
+    private IProductService productService;
+
+    @Autowired
     private IGenerateSipStep generateSIPStepImpl;
 
     private ChainGeneration chainGeneration;
 
-    private Product product;
+    private String productName;
 
     @Override
     public void run() {
-        LOGGER.info("Start generate SIP job for the product <{}> of the chain <{}>", product.getProductName(),
+        LOGGER.info("Start generate SIP job for the product <{}> of the chain <{}>", productName,
                     chainGeneration.getLabel());
 
-        AcquisitionProcess process = new AcquisitionProcess(chainGeneration, product);
+        AcquisitionProcess process = new AcquisitionProcess(chainGeneration, productService.retrieve(productName));
 
         // IAcquisitionScanStep is the first step
         IStep generateSIPStep = generateSIPStepImpl;
@@ -85,8 +82,8 @@ public class AcquisitionGenerateSIPJob extends AbstractJob<Void> {
         // TODO CMZ preprocessing
 
         process.run();
-        
-        LOGGER.info("Start generate SIP job for the product <{}> of the chain <{}>", product.getProductName(),
+
+        LOGGER.info("Start generate SIP job for the product <{}> of the chain <{}>", productName,
                     chainGeneration.getLabel());
     }
 
@@ -96,17 +93,22 @@ public class AcquisitionGenerateSIPJob extends AbstractJob<Void> {
         if (parameters.isEmpty()) {
             throw new JobParameterMissingException("No parameter provided");
         }
-        if (parameters.size() != 1) {
+        if (parameters.size() != 2) {
             throw new JobParameterInvalidException("Two parameters are expected.");
         }
-        JobParameter param = parameters.values().iterator().next();
-        if (!ChainGenerationJobParameter.isCompatible(param)) {
-            throw new JobParameterInvalidException(
-                    "Please use ChainGenerationJobParameter in place of JobParameter (this "
-                            + "class is here to facilitate your life so please use it.");
-        }
 
-        chainGeneration = param.getValue();
+        for (JobParameter jp : parameters.values()) {
+            if (ChainGenerationJobParameter.isCompatible(jp)) {
+                chainGeneration = jp.getValue();
+            } else {
+                if (ProductJobParameter.isCompatible(jp)) {
+                    productName = jp.getValue();
+                } else {
+                    throw new JobParameterInvalidException(
+                            "Please use ChainGenerationJobParameter or ProductJobParameter in place of JobParameter");
+                }
+            }
+        }
     }
 
 }

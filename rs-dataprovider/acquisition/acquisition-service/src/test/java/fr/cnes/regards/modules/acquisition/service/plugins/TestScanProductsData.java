@@ -79,7 +79,7 @@ public class TestScanProductsData extends AbstractAcquisitionScanPlugin
         acqFileList.add(createAcquisitionFileMandatory("data/income",
                                                        "CS_OPER_STR1DAT_0__20100805T103000_20100805T110137_0001.DBL"));
         acqFileList.add(createAcquisitionFileMandatory("data/income",
-                                                       "CS_OPER_TLM_DRTM___20100704T000000_20100704T235959_0001.DBL"));
+                                                       "CS_OPER_TLM_DRTM___20100704T000000_20100704T231234_0005.DBL"));
 
         LOGGER.info("End scan for the chain <{}> ", chainLabel);
 
