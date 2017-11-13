@@ -53,6 +53,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSingleAIPGeneration;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSipValidation;
@@ -93,6 +94,7 @@ public class IngestProcessingService implements IIngestProcessingService {
 
     @PostConstruct
     public void initDefaultPluginPackages() {
+        pluginService.addPluginPackage(IAipGeneration.class.getPackage().getName());
         pluginService.addPluginPackage(DefaultSingleAIPGeneration.class.getPackage().getName());
         pluginService.addPluginPackage(DefaultSipValidation.class.getPackage().getName());
     }
