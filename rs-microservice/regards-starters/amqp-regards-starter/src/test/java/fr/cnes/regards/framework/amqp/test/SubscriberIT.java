@@ -152,7 +152,7 @@ public class SubscriberIT {
         Assume.assumeTrue(rabbitVirtualHostAdmin.brokerRunning());
         rabbitVirtualHostAdmin.addVhost(tenant);
         receiverOneToMany = new TestReceiver();
-        subscriberOneToManyExternal.subscribeTo(TestEvent.class, receiverOneToMany, WorkerMode.ALL, Target.ALL);
+        subscriberOneToManyExternal.subscribeTo(TestEvent.class, receiverOneToMany, WorkerMode.BROADCAST, Target.ALL);
     }
 
     @After
@@ -176,7 +176,7 @@ public class SubscriberIT {
             rabbitVirtualHostAdmin.bind(tenant);
             // CHECKSTYLE:OFF
             rabbitTemplate.convertAndSend(amqpConfiguration.getExchangeName(TestEvent.class.getName(), Target.ALL),
-                                          amqpConfiguration.getRoutingKey("", WorkerMode.ALL), sended, pMessage -> {
+                                          amqpConfiguration.getRoutingKey("", WorkerMode.BROADCAST), sended, pMessage -> {
                                               final MessageProperties propertiesWithPriority = pMessage
                                                       .getMessageProperties();
                                               propertiesWithPriority.setPriority(0);

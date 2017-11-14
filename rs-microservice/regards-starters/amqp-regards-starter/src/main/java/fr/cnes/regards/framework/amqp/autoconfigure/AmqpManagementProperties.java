@@ -20,6 +20,8 @@ package fr.cnes.regards.framework.amqp.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
+
 /**
  * class regrouping the properties about managment of the broker
  *
@@ -39,6 +41,8 @@ public class AmqpManagementProperties {
      */
     private Integer port = 15672;
 
+    private VirtualHostMode mode = VirtualHostMode.MULTI;
+
     public String getHost() {
         return host;
     }
@@ -53,5 +57,13 @@ public class AmqpManagementProperties {
 
     public void setPort(Integer pAmqpManagementPort) {
         port = pAmqpManagementPort;
+    }
+
+    public VirtualHostMode getMode() {
+        return mode;
+    }
+
+    public void setMode(VirtualHostMode mode) {
+        this.mode = mode;
     }
 }

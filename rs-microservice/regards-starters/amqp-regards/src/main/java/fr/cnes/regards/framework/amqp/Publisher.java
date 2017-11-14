@@ -22,8 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
@@ -49,14 +50,19 @@ public class Publisher extends AbstractPublisher implements IPublisher {
      */
     private final IRuntimeTenantResolver threadTenantResolver;
 
-    public Publisher(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate pRabbitTemplate,
-            final RegardsAmqpAdmin pRegardsAmqpAdmin, IRuntimeTenantResolver pThreadTenantResolver) {
-        super(pRabbitTemplate, pRegardsAmqpAdmin, pVirtualHostAdmin);
+    public Publisher(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate pRabbitTemplate, IAmqpAdmin amqpAdmin,
+            IRuntimeTenantResolver pThreadTenantResolver) {
+        super(pRabbitTemplate, amqpAdmin, pVirtualHostAdmin);
         this.threadTenantResolver = pThreadTenantResolver;
     }
 
     @Override
     protected String resolveTenant() {
         return threadTenantResolver.getTenant();
+    }
+
+    @Override
+    protected String resolveVirtualHost(String tenant) {
+        return RabbitVirtualHostAdmin.getVhostName(tenant);
     }
 }

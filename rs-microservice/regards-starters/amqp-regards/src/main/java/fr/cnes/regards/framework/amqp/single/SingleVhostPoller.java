@@ -16,35 +16,40 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp;
+package fr.cnes.regards.framework.amqp.single;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
+import fr.cnes.regards.framework.amqp.AbstractPoller;
+import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
- *
- * {@link InstancePublisher} uses a fixed tenant to publish instance events.
+ * Single virtual host publisher implementation
  *
  * @author Marc Sordi
  *
  */
-public class InstancePublisher extends AbstractPublisher implements IInstancePublisher {
+public class SingleVhostPoller extends AbstractPoller implements IPoller {
 
-    public InstancePublisher(RabbitTemplate pRabbitTemplate, IAmqpAdmin amqpAdmin,
-            IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
-        super(pRabbitTemplate, amqpAdmin, pRabbitVirtualHostAdmin);
+    private final IRuntimeTenantResolver threadTenantResolver;
+
+    public SingleVhostPoller(IRabbitVirtualHostAdmin virtualHostAdmin, RabbitTemplate rabbitTemplate,
+            IAmqpAdmin amqpAdmin, IRuntimeTenantResolver threadTenantResolver) {
+        super(virtualHostAdmin, rabbitTemplate, amqpAdmin);
+        this.threadTenantResolver = threadTenantResolver;
     }
 
     @Override
     protected String resolveTenant() {
-        return AmqpConstants.INSTANCE_TENANT;
+        return threadTenantResolver.getTenant();
     }
 
     @Override
     protected String resolveVirtualHost(String tenant) {
-        return AmqpConstants.AMQP_INSTANCE_MANAGER;
+        return AmqpConstants.AMQP_MULTITENANT_MANAGER;
     }
 }

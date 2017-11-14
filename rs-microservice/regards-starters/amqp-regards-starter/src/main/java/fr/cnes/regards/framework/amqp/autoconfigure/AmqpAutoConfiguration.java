@@ -49,11 +49,16 @@ import fr.cnes.regards.framework.amqp.InstanceSubscriber;
 import fr.cnes.regards.framework.amqp.Poller;
 import fr.cnes.regards.framework.amqp.Publisher;
 import fr.cnes.regards.framework.amqp.Subscriber;
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.MultitenantRabbitTransactionManager;
 import fr.cnes.regards.framework.amqp.configuration.MultitenantSimpleRoutingConnectionFactory;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
+import fr.cnes.regards.framework.amqp.single.SingleVhostPoller;
+import fr.cnes.regards.framework.amqp.single.SingleVhostPublisher;
+import fr.cnes.regards.framework.amqp.single.SingleVhostSubscriber;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantBootstrapProperties;
@@ -119,7 +124,7 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public RegardsAmqpAdmin regardsAmqpAdmin() {
+    public IAmqpAdmin regardsAmqpAdmin() {
         return new RegardsAmqpAdmin(amqpProperties.getTypeIdentifier(), amqpProperties.getInstanceIdentifier());
     }
 
@@ -144,44 +149,55 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public IPublisher publisher(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, RegardsAmqpAdmin pRegardsAmqpAdmin,
+    public IPublisher publisher(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
             IRuntimeTenantResolver pThreadTenantResolver) {
-        return new Publisher(pRabbitVirtualHostAdmin, transactionalRabbitTemplate(), pRegardsAmqpAdmin,
-                pThreadTenantResolver);
+        if (VirtualHostMode.MULTI.equals(amqpManagmentProperties.getMode())) {
+            return new Publisher(pRabbitVirtualHostAdmin, transactionalRabbitTemplate(), amqpAdmin,
+                    pThreadTenantResolver);
+        } else {
+            return new SingleVhostPublisher(transactionalRabbitTemplate(), amqpAdmin, pRabbitVirtualHostAdmin,
+                    pThreadTenantResolver);
+        }
     }
 
     @Bean
-    public ISubscriber subscriber(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
-            final RegardsAmqpAdmin pRegardsAmqpAdmin, final Jackson2JsonMessageConverter pJackson2JsonMessageConverter,
-            final ITenantResolver pTenantResolver) {
-        return new Subscriber(pRabbitVirtualHostAdmin, pRegardsAmqpAdmin, pJackson2JsonMessageConverter,
-                pTenantResolver);
+    public ISubscriber subscriber(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, final IAmqpAdmin amqpAdmin,
+            final Jackson2JsonMessageConverter pJackson2JsonMessageConverter, final ITenantResolver pTenantResolver) {
+        if (VirtualHostMode.MULTI.equals(amqpManagmentProperties.getMode())) {
+            return new Subscriber(pRabbitVirtualHostAdmin, amqpAdmin, pJackson2JsonMessageConverter, pTenantResolver);
+        } else {
+            return new SingleVhostSubscriber(pRabbitVirtualHostAdmin, amqpAdmin, pJackson2JsonMessageConverter,
+                    pTenantResolver);
+        }
     }
 
     @Bean
-    public IPoller poller(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, RegardsAmqpAdmin pRegardsAmqpAdmin,
+    public IPoller poller(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
             IRuntimeTenantResolver pThreadTenantResolver) {
-        return new Poller(pRabbitVirtualHostAdmin, transactionalRabbitTemplate(), pRegardsAmqpAdmin,
-                pThreadTenantResolver);
+        if (VirtualHostMode.MULTI.equals(amqpManagmentProperties.getMode())) {
+            return new Poller(pRabbitVirtualHostAdmin, transactionalRabbitTemplate(), amqpAdmin, pThreadTenantResolver);
+        } else {
+            return new SingleVhostPoller(pRabbitVirtualHostAdmin, transactionalRabbitTemplate(), amqpAdmin,
+                    pThreadTenantResolver);
+        }
     }
 
     @Bean
-    public IInstancePublisher instancePublisher(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
-            RegardsAmqpAdmin pRegardsAmqpAdmin, IRuntimeTenantResolver pThreadTenantResolver) {
-        return new InstancePublisher(transactionalRabbitTemplate(), pRegardsAmqpAdmin, pRabbitVirtualHostAdmin);
+    public IInstancePublisher instancePublisher(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
+            IRuntimeTenantResolver pThreadTenantResolver) {
+        return new InstancePublisher(transactionalRabbitTemplate(), amqpAdmin, pRabbitVirtualHostAdmin);
     }
 
     @Bean
-    public IInstanceSubscriber instanceSubscriber(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
-            final RegardsAmqpAdmin pRegardsAmqpAdmin, final Jackson2JsonMessageConverter pJackson2JsonMessageConverter,
-            final ITenantResolver pTenantResolver) {
-        return new InstanceSubscriber(pRabbitVirtualHostAdmin, pRegardsAmqpAdmin, pJackson2JsonMessageConverter);
+    public IInstanceSubscriber instanceSubscriber(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
+            final Jackson2JsonMessageConverter pJackson2JsonMessageConverter, final ITenantResolver pTenantResolver) {
+        return new InstanceSubscriber(pRabbitVirtualHostAdmin, amqpAdmin, pJackson2JsonMessageConverter);
     }
 
     @Bean
-    public IInstancePoller instancePoller(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin,
-            RegardsAmqpAdmin pRegardsAmqpAdmin, IRuntimeTenantResolver pThreadTenantResolver) {
-        return new InstancePoller(pRabbitVirtualHostAdmin, transactionalRabbitTemplate(), pRegardsAmqpAdmin);
+    public IInstancePoller instancePoller(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
+            IRuntimeTenantResolver pThreadTenantResolver) {
+        return new InstancePoller(pRabbitVirtualHostAdmin, transactionalRabbitTemplate(), amqpAdmin);
     }
 
     @Bean

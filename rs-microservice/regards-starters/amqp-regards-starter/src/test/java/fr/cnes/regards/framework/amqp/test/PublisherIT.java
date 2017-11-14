@@ -141,16 +141,16 @@ public class PublisherIT {
         try {
             rabbitVirtualHostAdmin.bind(tenant);
 
-            exchange = amqpConfiguration.declareExchange(tenant, TestEvent.class, WorkerMode.ALL, Target.ALL);
-            queue = amqpConfiguration.declareQueue(tenant, TestEvent.class, WorkerMode.ALL, Target.ALL);
-            binding = amqpConfiguration.declareBinding(tenant, queue, exchange, WorkerMode.ALL);
+            exchange = amqpConfiguration.declareExchange(tenant, TestEvent.class, WorkerMode.BROADCAST, Target.ALL);
+            queue = amqpConfiguration.declareUnicastQueue(tenant, TestEvent.class, WorkerMode.BROADCAST, Target.ALL);
+            binding = amqpConfiguration.declareBinding(tenant, queue, exchange, WorkerMode.BROADCAST);
 
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }
 
         final TestEvent sended = new TestEvent("test1");
-        publisher.publish(sended, WorkerMode.ALL, Target.ALL, 0);
+        publisher.publish(sended, WorkerMode.BROADCAST, Target.ALL, 0);
         LOGGER.info("SENDED " + sended);
 
         try {
@@ -158,7 +158,7 @@ public class PublisherIT {
             // CHECKSTYLE:OFF
             @SuppressWarnings("unchecked")
             final TenantWrapper<TestEvent> wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate
-                    .receiveAndConvert(amqpConfiguration.getQueueName(TestEvent.class, WorkerMode.ALL, Target.ALL));
+                    .receiveAndConvert(amqpConfiguration.getQueueName(TestEvent.class, WorkerMode.BROADCAST, Target.ALL));
             // CHECKSTYLE:ON
 
             final TestEvent received = wrappedMessage.getContent();
@@ -191,9 +191,9 @@ public class PublisherIT {
         try {
             rabbitVirtualHostAdmin.bind(tenant);
 
-            exchange = amqpConfiguration.declareExchange(tenant, TestEvent.class, WorkerMode.SINGLE, Target.ALL);
-            queue = amqpConfiguration.declareQueue(tenant, TestEvent.class, WorkerMode.SINGLE, Target.ALL);
-            binding = amqpConfiguration.declareBinding(tenant, queue, exchange, WorkerMode.SINGLE);
+            exchange = amqpConfiguration.declareExchange(tenant, TestEvent.class, WorkerMode.UNICAST, Target.ALL);
+            queue = amqpConfiguration.declareUnicastQueue(tenant, TestEvent.class, WorkerMode.UNICAST, Target.ALL);
+            binding = amqpConfiguration.declareBinding(tenant, queue, exchange, WorkerMode.UNICAST);
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }
@@ -201,23 +201,23 @@ public class PublisherIT {
         final TestEvent priority1 = new TestEvent("priority 1");
         final TestEvent priority02 = new TestEvent("priority 02");
 
-        publisher.publish(priority0, WorkerMode.SINGLE, Target.ALL, 0);
-        publisher.publish(priority1, WorkerMode.SINGLE, Target.ALL, 1);
-        publisher.publish(priority02, WorkerMode.SINGLE, Target.ALL, 0);
+        publisher.publish(priority0, WorkerMode.UNICAST, Target.ALL, 0);
+        publisher.publish(priority1, WorkerMode.UNICAST, Target.ALL, 1);
+        publisher.publish(priority02, WorkerMode.UNICAST, Target.ALL, 0);
 
         try {
             rabbitVirtualHostAdmin.bind(tenant);
 
             TenantWrapper<TestEvent> wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate
-                    .receiveAndConvert(amqpConfiguration.getQueueName(TestEvent.class, WorkerMode.SINGLE, Target.ALL));
+                    .receiveAndConvert(amqpConfiguration.getQueueName(TestEvent.class, WorkerMode.UNICAST, Target.ALL));
             Assert.assertEquals(priority1, wrappedMessage.getContent());
 
             wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate
-                    .receiveAndConvert(amqpConfiguration.getQueueName(TestEvent.class, WorkerMode.SINGLE, Target.ALL));
+                    .receiveAndConvert(amqpConfiguration.getQueueName(TestEvent.class, WorkerMode.UNICAST, Target.ALL));
             Assert.assertEquals(priority0, wrappedMessage.getContent());
 
             wrappedMessage = (TenantWrapper<TestEvent>) rabbitTemplate
-                    .receiveAndConvert(amqpConfiguration.getQueueName(TestEvent.class, WorkerMode.SINGLE, Target.ALL));
+                    .receiveAndConvert(amqpConfiguration.getQueueName(TestEvent.class, WorkerMode.UNICAST, Target.ALL));
             Assert.assertEquals(priority02, wrappedMessage.getContent());
 
         } finally {

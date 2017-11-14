@@ -81,18 +81,18 @@ public class MultitenantAmqpAdminTests {
 
         String expectedOneToOne = stringClass.getName();
         Assert.assertEquals(expectedOneToOne,
-                            regardsAmqpAdmin.getQueueName(stringClass, WorkerMode.SINGLE, Target.ALL));
+                            regardsAmqpAdmin.getQueueName(stringClass, WorkerMode.UNICAST, Target.ALL));
 
         expectedOneToOne = TYPE_IDENTIFIER + UNDERSCORE + stringClass.getName();
         Assert.assertEquals(expectedOneToOne,
-                            regardsAmqpAdmin.getQueueName(stringClass, WorkerMode.SINGLE, Target.MICROSERVICE));
+                            regardsAmqpAdmin.getQueueName(stringClass, WorkerMode.UNICAST, Target.MICROSERVICE));
 
         String expectedOneToMany = stringClass.getName() + UNDERSCORE + INSTANCE_IDENTIFIER;
-        Assert.assertEquals(expectedOneToMany, regardsAmqpAdmin.getQueueName(stringClass, WorkerMode.ALL, Target.ALL));
+        Assert.assertEquals(expectedOneToMany, regardsAmqpAdmin.getQueueName(stringClass, WorkerMode.BROADCAST, Target.ALL));
 
         expectedOneToMany = TYPE_IDENTIFIER + UNDERSCORE + stringClass.getName() + UNDERSCORE + INSTANCE_IDENTIFIER;
         Assert.assertEquals(expectedOneToMany,
-                            regardsAmqpAdmin.getQueueName(stringClass, WorkerMode.ALL, Target.MICROSERVICE));
+                            regardsAmqpAdmin.getQueueName(stringClass, WorkerMode.BROADCAST, Target.MICROSERVICE));
 
     }
 
@@ -102,7 +102,7 @@ public class MultitenantAmqpAdminTests {
     @Test
     public void testGetRoutingKey() {
         final String expected = "TOTO";
-        Assert.assertEquals(expected, regardsAmqpAdmin.getRoutingKey(expected, WorkerMode.SINGLE));
-        Assert.assertEquals("", regardsAmqpAdmin.getRoutingKey(expected, WorkerMode.ALL));
+        Assert.assertEquals(expected, regardsAmqpAdmin.getRoutingKey(expected, WorkerMode.UNICAST));
+        Assert.assertEquals("", regardsAmqpAdmin.getRoutingKey(expected, WorkerMode.BROADCAST));
     }
 }

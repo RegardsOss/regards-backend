@@ -131,10 +131,10 @@ public class PollerIT {
         try {
             rabbitVirtualHostAdmin.bind(TENANT);
 
-            final Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT, TestEvent.class, WorkerMode.ALL,
+            final Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT, TestEvent.class, WorkerMode.BROADCAST,
                                                                        Target.ALL);
-            final Queue queue = regardsAmqpAdmin.declareQueue(TENANT, TestEvent.class, WorkerMode.ALL, Target.ALL);
-            regardsAmqpAdmin.declareBinding(TENANT, queue, exchange, WorkerMode.ALL);
+            final Queue queue = regardsAmqpAdmin.declareUnicastQueue(TENANT, TestEvent.class, WorkerMode.BROADCAST, Target.ALL);
+            regardsAmqpAdmin.declareBinding(TENANT, queue, exchange, WorkerMode.BROADCAST);
 
             toSend = new TestEvent("test3");
             final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
@@ -146,7 +146,7 @@ public class PollerIT {
 
         final TenantWrapper<TestEvent> wrapperReceived;
         try {
-            wrapperReceived = poller.poll(TENANT, TestEvent.class, WorkerMode.ALL, Target.ALL);
+            wrapperReceived = poller.poll(TENANT, TestEvent.class, WorkerMode.BROADCAST, Target.ALL);
             LOGGER.info("=================RECEIVED " + wrapperReceived.getContent());
             final TestEvent received = wrapperReceived.getContent();
             Assert.assertEquals(toSend, received);
@@ -175,23 +175,23 @@ public class PollerIT {
             rabbitVirtualHostAdmin.bind(TENANT);
 
             final Exchange exchangeOneToOne = regardsAmqpAdmin.declareExchange(TENANT, TestEvent.class,
-                                                                               WorkerMode.SINGLE, Target.ALL);
-            final Queue queueOneToOne = regardsAmqpAdmin.declareQueue(TENANT, TestEvent.class, WorkerMode.SINGLE,
+                                                                               WorkerMode.UNICAST, Target.ALL);
+            final Queue queueOneToOne = regardsAmqpAdmin.declareUnicastQueue(TENANT, TestEvent.class, WorkerMode.UNICAST,
                                                                       Target.ALL);
-            regardsAmqpAdmin.declareBinding(TENANT, queueOneToOne, exchangeOneToOne, WorkerMode.SINGLE);
+            regardsAmqpAdmin.declareBinding(TENANT, queueOneToOne, exchangeOneToOne, WorkerMode.UNICAST);
 
             toSend = new TestEvent("test4");
             final TenantWrapper<TestEvent> sended = new TenantWrapper<TestEvent>(toSend, TENANT);
             LOGGER.info("SENDED :" + sended);
             // for one to one communication, exchange is named after the application and not what we are exchanging
-            rabbitTemplate.convertAndSend(RegardsAmqpAdmin.DEFAULT_EXCHANGE_NAME, TestEvent.class.getName(), sended);
+            rabbitTemplate.convertAndSend(RegardsAmqpAdmin.REGARDS_NAMESPACE, TestEvent.class.getName(), sended);
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }
 
         final TenantWrapper<TestEvent> wrapperReceived;
         try {
-            wrapperReceived = poller.poll(TENANT, TestEvent.class, WorkerMode.SINGLE, Target.ALL);
+            wrapperReceived = poller.poll(TENANT, TestEvent.class, WorkerMode.UNICAST, Target.ALL);
             LOGGER.info("=================RECEIVED :" + wrapperReceived.getContent());
             final TestEvent received = wrapperReceived.getContent();
             Assert.assertEquals(toSend, received);

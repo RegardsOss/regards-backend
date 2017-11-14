@@ -38,8 +38,8 @@ public class AmqpEnumsTests {
 
     @Test
     public void amqpCommunicationModeTest() {
-        Assert.assertEquals(WorkerMode.ALL, WorkerMode.valueOf(WorkerMode.ALL.toString()));
-        Assert.assertEquals(WorkerMode.SINGLE, WorkerMode.valueOf(WorkerMode.SINGLE.toString()));
+        Assert.assertEquals(WorkerMode.BROADCAST, WorkerMode.valueOf(WorkerMode.BROADCAST.toString()));
+        Assert.assertEquals(WorkerMode.UNICAST, WorkerMode.valueOf(WorkerMode.UNICAST.toString()));
     }
 
 }

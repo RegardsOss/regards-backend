@@ -20,8 +20,6 @@ package fr.cnes.regards.framework.amqp;
 
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
 /**
  *
@@ -38,25 +36,22 @@ public interface ISubscriberContract {
     /**
      * Subscribe to this {@link ISubscribable} event
      *
-     * @param <T>
+     * @param <E>
      *            {@link ISubscribable} event
-     * @param pEvent
+     * @param eventType
      *            {@link ISubscribable} event
-     * @param pReceiver
+     * @param receiver
      *            event {@link IHandler}
      */
-    <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver);
+    <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver);
 
     /**
      * Unsubscribe from this {@link ISubscribable} event.
      *
      * @param <T>
      *            {@link ISubscribable} event
-     * @param pEvent
+     * @param eventType
      *            {@link ISubscribable} event
      */
-    <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent);
-
-    <T> void subscribeTo(Class<T> pEvt, IHandler<T> pHandler, WorkerMode pWorkerMode,
-            Target pTarget);
+    <T extends ISubscribable> void unsubscribeFrom(Class<T> eventType);
 }

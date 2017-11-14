@@ -50,14 +50,9 @@ public class SubscriberMock implements ISubscriber {
         // Nothing to do
     }
 
-    @Override
-    public <T> void subscribeTo(Class<T> pEvt, IHandler<T> pHandler, WorkerMode pWorkerMode, Target pTarget) {
-        // Nothing to do
-    }
-
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see fr.cnes.regards.framework.amqp.ISubscriber#addTenant(java.lang.String)
      */
     @Override
@@ -68,12 +63,25 @@ public class SubscriberMock implements ISubscriber {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see fr.cnes.regards.framework.amqp.ISubscriber#removeTenant(java.lang.String)
      */
     @Override
     public void removeTenant(String pTenant) {
         // Nothing to do
 
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.framework.amqp.ISubscriberContract#subscribeTo(java.lang.Class,
+     * fr.cnes.regards.framework.amqp.domain.IHandler, fr.cnes.regards.framework.amqp.event.WorkerMode,
+     * fr.cnes.regards.framework.amqp.event.Target)
+     */
+    @Override
+    public <E extends ISubscribable, H extends IHandler<E>> void subscribeTo(Class<E> eventType, H handler,
+            WorkerMode workerMode, Target target) {
+        // Nothing to do
     }
 }

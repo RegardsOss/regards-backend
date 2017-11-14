@@ -97,63 +97,63 @@ public class MultitenantAmqpAdminIT {
 
     @Test
     public void testDeclareBindingOneToOneInternal() {
-        declareBinding(Target.MICROSERVICE, WorkerMode.SINGLE);
+        declareBinding(Target.MICROSERVICE, WorkerMode.UNICAST);
 
     }
 
     @Test
     public void testDeclareBindingOneToManyInternal() {
-        declareBinding(Target.MICROSERVICE, WorkerMode.ALL);
+        declareBinding(Target.MICROSERVICE, WorkerMode.BROADCAST);
     }
 
     @Test
     public void testDeclareBindingOneToOneExternal() {
-        declareBinding(Target.ALL, WorkerMode.SINGLE);
+        declareBinding(Target.ALL, WorkerMode.UNICAST);
     }
 
     @Test
     public void testDeclareBindingOneToManyExternal() {
-        declareBinding(Target.ALL, WorkerMode.ALL);
+        declareBinding(Target.ALL, WorkerMode.BROADCAST);
     }
 
     @Test
     public void testDeclareExchangeOneToOneInternal() {
-        declareExchange(Target.MICROSERVICE, WorkerMode.SINGLE);
+        declareExchange(Target.MICROSERVICE, WorkerMode.UNICAST);
     }
 
     @Test
     public void testDeclareExchangeOneToManyInternal() {
-        declareExchange(Target.MICROSERVICE, WorkerMode.ALL);
+        declareExchange(Target.MICROSERVICE, WorkerMode.BROADCAST);
     }
 
     @Test
     public void testDeclareExchangeOneToOneExternal() {
-        declareExchange(Target.ALL, WorkerMode.SINGLE);
+        declareExchange(Target.ALL, WorkerMode.UNICAST);
     }
 
     @Test
     public void testDeclareExchangeOneToManyExternal() {
-        declareExchange(Target.ALL, WorkerMode.ALL);
+        declareExchange(Target.ALL, WorkerMode.BROADCAST);
     }
 
     @Test
     public void testDeclareQueueOneToOneInternal() {
-        declareQueue(Target.MICROSERVICE, WorkerMode.SINGLE);
+        declareQueue(Target.MICROSERVICE, WorkerMode.UNICAST);
     }
 
     @Test
     public void testDeclareQueueOneToManyInternal() {
-        declareQueue(Target.ALL, WorkerMode.SINGLE);
+        declareQueue(Target.ALL, WorkerMode.UNICAST);
     }
 
     @Test
     public void testDeclareQueueOneToOneExternal() {
-        declareQueue(Target.MICROSERVICE, WorkerMode.SINGLE);
+        declareQueue(Target.MICROSERVICE, WorkerMode.UNICAST);
     }
 
     @Test
     public void testDeclareQueueOneToManyExternal() {
-        declareQueue(Target.ALL, WorkerMode.ALL);
+        declareQueue(Target.ALL, WorkerMode.BROADCAST);
     }
 
     private void declareBinding(Target pTarget, WorkerMode pWorkerMode) {
@@ -165,7 +165,7 @@ public class MultitenantAmqpAdminIT {
 
             retrieveBinding(TENANT1);
             Exchange exchange = regardsAmqpAdmin.declareExchange(TENANT1, TestEvent.class, pWorkerMode, pTarget);
-            Queue queue = regardsAmqpAdmin.declareQueue(TENANT1, TestEvent.class, pWorkerMode, pTarget);
+            Queue queue = regardsAmqpAdmin.declareUnicastQueue(TENANT1, TestEvent.class, pWorkerMode, pTarget);
             regardsAmqpAdmin.declareBinding(TENANT1, queue, exchange, pWorkerMode);
             List<RestBinding> declaredBindings = retrieveBinding(TENANT1);
             RestBinding restBinding = declaredBindings.get(0);
@@ -180,7 +180,7 @@ public class MultitenantAmqpAdminIT {
             rabbitVirtualHostAdmin.bind(TENANT2);
             retrieveBinding(TENANT2);
             exchange = regardsAmqpAdmin.declareExchange(TENANT2, TestEvent.class, pWorkerMode, pTarget);
-            queue = regardsAmqpAdmin.declareQueue(TENANT2, TestEvent.class, pWorkerMode, pTarget);
+            queue = regardsAmqpAdmin.declareUnicastQueue(TENANT2, TestEvent.class, pWorkerMode, pTarget);
             regardsAmqpAdmin.declareBinding(TENANT2, queue, exchange, pWorkerMode);
             declaredBindings = retrieveBinding(TENANT2);
             restBinding = declaredBindings.get(0);
@@ -308,7 +308,7 @@ public class MultitenantAmqpAdminIT {
             rabbitVirtualHostAdmin.addVhost(TENANT1);
 
             rabbitVirtualHostAdmin.bind(TENANT1);
-            regardsAmqpAdmin.declareQueue(TENANT1, TestEvent.class, pWorkerMode, pTarget);
+            regardsAmqpAdmin.declareUnicastQueue(TENANT1, TestEvent.class, pWorkerMode, pTarget);
             List<RestQueue> declaredQueues = retrieveQueues(TENANT1);
             RestQueue restQueue = declaredQueues.get(0);
             // Assert.assertEquals(1, declaredQueues.size());
@@ -320,7 +320,7 @@ public class MultitenantAmqpAdminIT {
             rabbitVirtualHostAdmin.addVhost(TENANT2);
 
             rabbitVirtualHostAdmin.bind(TENANT2);
-            regardsAmqpAdmin.declareQueue(TENANT2, TestEvent.class, pWorkerMode, pTarget);
+            regardsAmqpAdmin.declareUnicastQueue(TENANT2, TestEvent.class, pWorkerMode, pTarget);
             declaredQueues = retrieveQueues(TENANT2);
             restQueue = declaredQueues.get(0);
             // Assert.assertEquals(1, declaredQueues.size());
