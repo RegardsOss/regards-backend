@@ -50,6 +50,13 @@ public class IngestProcessingServiceTest extends AbstractRegardsServiceTransacti
     private IIngestProcessingService ingestProcessingService;
 
     @Test
+    public void checkDefaultProcessingChain() {
+        Page<IngestProcessingChain> results = ingestProcessingService
+                .searchChains(IngestProcessingService.DEFAULT_INGEST_CHAIN_LABEL, new PageRequest(0, 100));
+        Assert.assertEquals(1, results.getTotalElements());
+    }
+
+    @Test
     public void createProcessingChain() throws ModuleException {
 
         PluginConfiguration conf = PluginUtils

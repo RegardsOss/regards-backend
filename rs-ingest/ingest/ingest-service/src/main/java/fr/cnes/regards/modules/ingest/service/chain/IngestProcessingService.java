@@ -43,6 +43,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
@@ -69,7 +70,13 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 @MultitenantTransactional
 public class IngestProcessingService implements IIngestProcessingService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestProcessingJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestProcessingService.class);
+
+    public static final String DEFAULT_INGEST_CHAIN_LABEL = "DefaultProcessingChain";
+
+    public static final String DEFAULT_VALIDATION_PLUGIN_CONF_LABEL = "DefaultSIPValidation";
+
+    public static final String DEFAULT_GENERATION_PLUGIN_CONF_LABEL = "DefaultAIPGeneration";
 
     @Autowired
     private ISIPRepository sipRepository;
@@ -97,6 +104,39 @@ public class IngestProcessingService implements IIngestProcessingService {
         pluginService.addPluginPackage(IAipGeneration.class.getPackage().getName());
         pluginService.addPluginPackage(DefaultSingleAIPGeneration.class.getPackage().getName());
         pluginService.addPluginPackage(DefaultSipValidation.class.getPackage().getName());
+    }
+
+    @Override
+    public void initDefaultServiceConfiguration() throws ModuleException {
+
+        // Check if the default IngestProcessingChain is defined
+        if (!ingestChainRepository.findOneByName(DEFAULT_INGEST_CHAIN_LABEL).isPresent()) {
+            // Create the default chain
+            IngestProcessingChain defaultChain = new IngestProcessingChain();
+            defaultChain.setName(DEFAULT_INGEST_CHAIN_LABEL);
+            PluginConfiguration validationDefaultConf = pluginService.savePluginConfiguration(new PluginConfiguration(
+                    PluginUtils.createPluginMetaData(DefaultSipValidation.class),
+                    DEFAULT_VALIDATION_PLUGIN_CONF_LABEL));
+            PluginConfiguration generationDefaultConf = pluginService.savePluginConfiguration(new PluginConfiguration(
+                    PluginUtils.createPluginMetaData(DefaultSingleAIPGeneration.class),
+                    DEFAULT_GENERATION_PLUGIN_CONF_LABEL));
+
+            // Check if default plugin configurations are defined
+            Optional<PluginConfiguration> oConf = pluginService
+                    .findPluginConfigurationByLabel(DEFAULT_VALIDATION_PLUGIN_CONF_LABEL);
+            if (oConf.isPresent()) {
+                validationDefaultConf = oConf.get();
+            }
+            oConf = pluginService.findPluginConfigurationByLabel(DEFAULT_GENERATION_PLUGIN_CONF_LABEL);
+            if (oConf.isPresent()) {
+                generationDefaultConf = oConf.get();
+            }
+
+            defaultChain.setValidationPlugin(validationDefaultConf);
+            defaultChain.setGenerationPlugin(generationDefaultConf);
+            this.createNewChain(defaultChain);
+        }
+
     }
 
     @Override

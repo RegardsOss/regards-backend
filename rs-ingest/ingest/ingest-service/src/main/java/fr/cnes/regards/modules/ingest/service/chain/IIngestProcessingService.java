@@ -99,4 +99,9 @@ public interface IIngestProcessingService {
      * @return IngestProcessingChain
      */
     IngestProcessingChain getChain(String name) throws ModuleException;
+
+    /**
+     * Initialize default configuration
+     */
+    void initDefaultServiceConfiguration() throws ModuleException;
 }
