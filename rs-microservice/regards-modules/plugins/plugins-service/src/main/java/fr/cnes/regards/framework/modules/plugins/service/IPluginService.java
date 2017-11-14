@@ -20,6 +20,7 @@
 package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -219,6 +220,14 @@ public interface IPluginService {
      * @throws EntityNotFoundException
      */
     PluginConfiguration getPluginConfigurationByLabel(String configurationLabel) throws EntityNotFoundException;
+
+    /**
+     * Find an optional  PluginConfiguration according to its unique label
+     *
+     * @param configurationLabel the configuration label
+     * @return the plugin configuration
+     */
+    Optional<PluginConfiguration> findPluginConfigurationByLabel(String configurationLabel);
 
     /**
      * Add plugin instance to cache (resolving tenant internally)
