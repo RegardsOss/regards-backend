@@ -50,7 +50,6 @@ import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlug
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 
 /**
  * A default {@link Plugin} of type {@link IAcquisitionScanDirectoryPlugin}.
@@ -77,17 +76,15 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     @PluginParameter(name = SESSION_PARAM, optional = true)
     private String sessionId;
 
-    @PluginParameter(name = INGEST_PROCESSING_CHAIN_PARAM, optional = true)
-    private String ingestProcessindChain;
-
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
-    private MetaProductDto metaProductDto;
+    private MetaProductDto metaProductDto0;
 
     @PluginInit
     private void setUp() {
         LOGGER.info("setUp");
+
         // TODO CMZ mettre les 2 paramètres en param du Plugin
-        this.sipCollectionBuilder = new SIPCollectionBuilder(ingestProcessindChain, sessionId);
+        //        this.sipCollectionBuilder = new SIPCollectionBuilder(ingestProcessingChain, sessionId);
     }
 
     @Override
@@ -104,7 +101,6 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
                 throw new AcquisitionException(e.getMessage());
             }
         }
-
     }
 
     protected void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)

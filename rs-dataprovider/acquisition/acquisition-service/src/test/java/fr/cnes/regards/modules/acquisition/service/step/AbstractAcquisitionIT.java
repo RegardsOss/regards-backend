@@ -241,10 +241,9 @@ public class AbstractAcquisitionIT {
 
         // Create a ChainGeneration and a MetaProduct
         metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).addMetaFile(metaFileOptional)
-                .addMetaFile(metaFileMandatory).get());
+                .addMetaFile(metaFileMandatory).withIngestProcessingChain("ingest-processing-chain-id").get());
         chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL + "-" + this.name.getMethodName())
-                .isActive().withDataSet(DATASET_IP_ID).withMetaProduct(metaProduct).periodicity(1L)
-                .withDataIngestProcessingChain("the-ingest-processing-to-used").get());
+                .isActive().withDataSet(DATASET_IP_ID).withMetaProduct(metaProduct).periodicity(1L).get());
     }
 
     private void purgeAMQPqueues() {

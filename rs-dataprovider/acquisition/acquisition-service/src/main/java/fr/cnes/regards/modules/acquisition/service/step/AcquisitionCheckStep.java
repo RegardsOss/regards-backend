@@ -197,6 +197,8 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
         }
 
         currentProduct.setSession(chainGeneration.getSession());
+        currentProduct
+                .setIngestChain(process.getChainGeneration().getMetaProduct().getIngestChain());
         currentProduct.addAcquisitionFile(acqFile);
         calcProductStatus(currentProduct);
 

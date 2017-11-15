@@ -49,5 +49,7 @@ public interface IProductService {
 
     public List<Product> findByStatus(ProductStatus status);
     
-    public List<Product> findByStatus(ProductStatus status, Boolean saved);
+    public List<Product> findBySavedAndStatusIn( Boolean saved, ProductStatus ...status);
+    
+    void postSIPBulkRequest();
 }

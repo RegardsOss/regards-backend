@@ -30,6 +30,7 @@ import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
@@ -37,12 +38,18 @@ import javax.persistence.NamedEntityGraph;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.ingest.domain.SIP;
 
 /**
  * 
@@ -50,7 +57,12 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
  *
  */
 @Entity
-@Table(name = "t_dpv_product")
+@Table(name = "t_dpv_product",
+        indexes = { @Index(name = "idx_product_name", columnList = "product_name"),
+                @Index(name = "idx_ingest_chain", columnList = "ingest_chain"),
+                @Index(name = "idx_session", columnList = "session") },
+        uniqueConstraints = { @UniqueConstraint(name = "uk_product_name", columnNames = "product_name") })
+@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @NamedEntityGraph(name = "graph.acquisition.file.complete", attributeNodes = @NamedAttributeNode(value = "fileList"))
 public class Product implements IIdentifiable<Long> {
 
@@ -102,7 +114,7 @@ public class Product implements IIdentifiable<Long> {
     /**
      * The session identifier that create the current product 
      */
-    @Column(length = MAX_STRING_LENGTH)
+    @Column(name = "session", length = MAX_STRING_LENGTH)
     private String session;
 
     /**
@@ -130,6 +142,13 @@ public class Product implements IIdentifiable<Long> {
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "fk_product_id"))
     private Set<AcquisitionFile> fileList = new HashSet<AcquisitionFile>();
+
+    @Column(columnDefinition = "jsonb", name = "json_sip")
+    @Type(type = "jsonb")
+    private SIP sip;
+
+    @Column(name = "ingest_chain")
+    private String ingestChain;
 
     @Override
     public Long getId() {
@@ -220,6 +239,22 @@ public class Product implements IIdentifiable<Long> {
 
     public void setSaved(Boolean saved) {
         this.saved = saved;
+    }
+
+    public SIP getSip() {
+        return sip;
+    }
+
+    public void setSip(SIP sip) {
+        this.sip = sip;
+    }
+
+    public String getIngestChain() {
+        return ingestChain;
+    }
+
+    public void setIngestChain(String ingestProcessingChain) {
+        this.ingestChain = ingestProcessingChain;
     }
 
     @Override

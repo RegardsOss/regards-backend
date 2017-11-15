@@ -136,8 +136,8 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
 
     private void submitProducts() {
         List<Product> products = new ArrayList<>();
-        products.addAll(productService.findByStatus(ProductStatus.COMPLETED, Boolean.FALSE));
-        products.addAll(productService.findByStatus(ProductStatus.FINISHED, Boolean.FALSE));
+        products.addAll(productService.findBySavedAndStatusIn(Boolean.FALSE, ProductStatus.COMPLETED,
+                                                              ProductStatus.FINISHED));
 
         for (Product apr : products) {
             if (!createJob(apr)) {

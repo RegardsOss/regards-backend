@@ -42,8 +42,6 @@ import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
-import fr.cnes.regards.modules.ingest.client.IIngestClient;
-import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 
 /**
  * @author Christophe Mertz
@@ -64,9 +62,6 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
     @Autowired
     private IProductService productService;
 
-    @Autowired
-    private IIngestClient ingestClient;
-
     private ChainGeneration chainGeneration;
 
     private Product product;
@@ -74,7 +69,7 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
     @Value("${regards.acquisition.sip.max.bulk.size:5000}")
     private int sipCollectionBulkMaxSize;
 
-    private SIPCollection sipCollection;
+    //    private SIPCollection sipCollection;
 
     /**
      * The List of {@link AcquisitionFile} for the current {@link Product}
@@ -117,8 +112,13 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
                     .getPlugin(this.chainGeneration.getGenerateSIPPluginConf().getId(),
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
-            // create MetaData for each Product
-            this.sipCollection = generateSipPlugin.runPlugin(this.acqFiles, Optional.of(chainGeneration.getDataSet()));
+            // TODO CMZ attention à ne calculer le SIP que si c'est nécessaire
+            // si pas saved dans ingest, mais avec le SIP déjà calculé, il faut essayer de l'envoyer sans le recalculer
+            // Calc the SIP and save the Product
+            this.product.setSip(generateSipPlugin.runPlugin(this.acqFiles, Optional.of(chainGeneration.getDataSet())));
+
+            productService.save(this.product);
+
             //            processSipCollection();
 
             //            publishSipCollections();

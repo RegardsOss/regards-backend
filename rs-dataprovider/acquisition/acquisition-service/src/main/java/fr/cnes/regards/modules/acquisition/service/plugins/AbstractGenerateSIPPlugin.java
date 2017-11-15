@@ -36,9 +36,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 
 /**
  * 
@@ -50,19 +48,16 @@ public abstract class AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGenerateSIPPlugin.class);
 
     public static final String META_PRODUCT_PARAM = "meta-produt";
-    
-    public static final String INGEST_PROCESSING_CHAIN_PARAM = "ingest-processing-chain";
-    
+
     public static final String SESSION_PARAM = "sesssion-id";
 
     @Autowired
     private IDatasetClient datasetClient;
 
-    protected SIPCollectionBuilder sipCollectionBuilder;
-
+    //    protected SIPCollectionBuilder sipCollectionBuilder;
+    
     @Override
-    public SIPCollection runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId)
-            throws ModuleException {
+    public SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId) throws ModuleException {
         String productName = acqFiles.get(0).getProduct().getProductName();
 
         LOGGER.info("Start SIP generation for product <{}>", productName);
@@ -91,32 +86,28 @@ public abstract class AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
             Gson gson = new Gson();
             LOGGER.debug(gson.toJson(aSip));
         }
-        this.sipCollectionBuilder.add(aSip);
-
-        SIPCollection sipCollection = this.sipCollectionBuilder.build();
 
         // If a dataSet is defined, add a tag to the PreservationDescriptionInformation
-        addDatasetTag(sipCollection, datasetIpId);
+        addDatasetTag(aSip, datasetIpId);
 
         LOGGER.info("End SIP generation for product <{}>", productName);
 
-        return this.sipCollectionBuilder.build();
+        return aSip;
     }
 
-    protected void addDatasetTag(SIPCollection sipCollection, Optional<String> datasetIpId) {
+    protected void addDatasetTag(SIP aSip, Optional<String> datasetIpId) {
         // If a dataSet is defined, add a tag to the PreservationDescriptionInformation
         if (datasetIpId.isPresent()) {
-            sipCollection.getFeatures().forEach(sip -> {
-                PDIBuilder pdiBuilder = new PDIBuilder(sip.getProperties().getPdi());
-                pdiBuilder.addTags(datasetIpId.get());
-                sip.getProperties().setPdi(pdiBuilder.build());
 
-                if (LOGGER.isDebugEnabled()) {
-                    Gson gson = new Gson();
-                    LOGGER.debug(gson.toJson(sip));
-                }
+            PDIBuilder pdiBuilder = new PDIBuilder(aSip.getProperties().getPdi());
+            pdiBuilder.addTags(datasetIpId.get());
+            aSip.getProperties().setPdi(pdiBuilder.build());
 
-            });
+            if (LOGGER.isDebugEnabled()) {
+                Gson gson = new Gson();
+                LOGGER.debug(gson.toJson(aSip));
+            }
+
         }
     }
 

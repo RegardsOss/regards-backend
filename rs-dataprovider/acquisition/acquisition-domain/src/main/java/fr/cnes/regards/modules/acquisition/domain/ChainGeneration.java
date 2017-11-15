@@ -49,7 +49,6 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
 /**
  * 
@@ -118,12 +117,6 @@ public class ChainGeneration implements IIdentifiable<Long> {
      */
     @Column(length = MAX_STRING_LENGTH)
     private String session;
-
-    /**
-     * The name of {@link IngestProcessingChain} used to send the SIP to the ingest microservice
-     */
-    @Column(length = MAX_STRING_LENGTH)
-    private String ingestProcessingChain;
 
     /**
      * A comment
@@ -292,7 +285,7 @@ public class ChainGeneration implements IIdentifiable<Long> {
     public void addScanAcquisitionParameter(String name, String value) {
         this.scanAcquisitionParameter.put(name, value);
     }
-    
+
     public void removeScanAcquisitionParameter(String name) {
         this.scanAcquisitionParameter.remove(name);
     }
@@ -319,14 +312,6 @@ public class ChainGeneration implements IIdentifiable<Long> {
 
     public void setSession(String session) {
         this.session = session;
-    }
-
-    public String getIngestProcessingChain() {
-        return ingestProcessingChain;
-    }
-
-    public void setIngestProcessingChain(String ingestProcessingChain) {
-        this.ingestProcessingChain = ingestProcessingChain;
     }
 
     @Override

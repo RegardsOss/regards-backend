@@ -100,6 +100,9 @@ public class MetaProduct implements IIdentifiable<Long> {
     @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_meta_product_id"))
     private Set<MetaFile> metaFiles = new HashSet<MetaFile>();
 
+    @Column(name = "ingest_chain")
+    private String ingestChain;
+
     //    /**
     //     * Les informations d'acquisition pour ce type de produit
     //     */
@@ -245,6 +248,14 @@ public class MetaProduct implements IIdentifiable<Long> {
 
     public void removeMetaFile(MetaFile metaFile) {
         this.metaFiles.remove(metaFile);
+    }
+
+    public String getIngestChain() {
+        return ingestChain;
+    }
+
+    public void setIngestChain(String ingestProcessingChain) {
+        this.ingestChain = ingestProcessingChain;
     }
 
     public void setId(Long id) {

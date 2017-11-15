@@ -55,7 +55,7 @@ public final class MetaProductBuilder {
         metaProduct.addProduct(product);
         return this;
     }
-    
+
     public MetaProductBuilder addMetaFile(MetaFile metaFile) {
         metaProduct.addMetaFile(metaFile);
         return this;
@@ -68,6 +68,11 @@ public final class MetaProductBuilder {
 
     public MetaProductBuilder withCleanOriginalFile(Boolean clean) {
         metaProduct.setCleanOriginalFile(clean);
+        return this;
+    }
+
+    public MetaProductBuilder withIngestProcessingChain(String ingestChain) {
+        metaProduct.setIngestChain(ingestChain);
         return this;
     }
 

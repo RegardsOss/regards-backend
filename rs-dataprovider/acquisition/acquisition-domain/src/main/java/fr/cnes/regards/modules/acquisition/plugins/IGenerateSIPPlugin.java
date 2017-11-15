@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
-import fr.cnes.regards.modules.ingest.domain.SIPCollection;
+import fr.cnes.regards.modules.ingest.domain.SIP;
 
 /**
  * @author Christophe Mertz
@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 @PluginInterface(description = "Plugin to generate SIP with product and file metadata")
 public interface IGenerateSIPPlugin {
 
-    SIPCollection runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId) throws ModuleException;
+    SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId) throws ModuleException;
 
     SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetName)
             throws ModuleException;

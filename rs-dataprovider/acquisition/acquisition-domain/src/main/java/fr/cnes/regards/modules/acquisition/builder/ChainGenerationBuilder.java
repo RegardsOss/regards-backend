@@ -92,9 +92,4 @@ public final class ChainGenerationBuilder {
         return this;
     }
 
-    public ChainGenerationBuilder withDataIngestProcessingChain(String ingesProcessing) {
-        chain.setIngestProcessingChain(ingesProcessing);
-        return this;
-    }
-
 }

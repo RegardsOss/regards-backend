@@ -36,7 +36,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
@@ -63,7 +62,7 @@ import fr.cnes.regards.modules.acquisition.service.plugins.TestScanProductsWithM
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class, MockedFeignClientConf.class })
-@ActiveProfiles({ "test" })
+@ActiveProfiles({ "test", "disableDataProviderTask" })
 @DirtiesContext
 public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
@@ -72,8 +71,6 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
     @Test
     public void runActiveChainGeneration() throws ModuleException, InterruptedException {
-        mockIngestClientResponseOK();
-
         Set<MetaFile> metaFiles = new HashSet<>();
         metaFiles.add(metaFileMandatory);
         metaFiles.add(metaFileOptional);
@@ -102,7 +99,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
         // 5 products are ready to be send to ingest
-        Assert.assertEquals(5,faileds.size());
+        Assert.assertEquals(5, faileds.size());
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(1, chainService.retrieveAll().size());
@@ -122,8 +119,6 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
     @Test
     public void runActiveChainGenerationAcquireSameFilesWithSameChecksum()
             throws ModuleException, InterruptedException {
-        mockIngestClientResponseOK();
-
         this.chain.setPeriodicity(1L);
 
         Set<MetaFile> metaFiles = new HashSet<>();
@@ -178,8 +173,6 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
     @Test
     public void runActiveChainGenerationOneProductWithThreeAcquisitionFilesWithOptionalMissing()
             throws ModuleException, InterruptedException {
-        mockIngestClientResponseOK();
-
         MetaFile secondMetaFileMandatory = metaFileService.save(MetaFileBuilder.build()
                 .withInvalidFolder("/var/regards/data/invalid").withFileType(MediaType.APPLICATION_JSON_VALUE)
                 .withFilePattern("file pattern for the header file").comment("it is mandatory second").isMandatory()
@@ -216,7 +209,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
-        Assert.assertEquals(3,faileds.size());
+        Assert.assertEquals(3, faileds.size());
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(1, chainService.retrieveAll().size());
@@ -239,8 +232,6 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
     @Test
     public void runActiveChainGenerationOneProductWithThreeAcquisitionFiles()
             throws ModuleException, InterruptedException {
-        mockIngestClientResponseOK();
-
         MetaFile secondMetaFileMandatory = metaFileService.save(MetaFileBuilder.build()
                 .withInvalidFolder("/var/regards/data/invalid").withFileType(MediaType.APPLICATION_JSON_VALUE)
                 .withFilePattern("file pattern for the header file").comment("it is mandatory second").isMandatory()
@@ -277,7 +268,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
-        Assert.assertEquals(3,faileds.size());
+        Assert.assertEquals(3, faileds.size());
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(1, chainService.retrieveAll().size());
@@ -294,8 +285,6 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
     @Test
     public void runActiveChainGenerationProductsWithTwoAcquisitions() throws ModuleException, InterruptedException {
-        mockIngestClientResponseOK();
-
         MetaFile secondMetaFileMandatory = metaFileService.save(MetaFileBuilder.build()
                 .withInvalidFolder("/var/regards/data/invalid").withFileType(MediaType.APPLICATION_JSON_VALUE)
                 .withFilePattern("file pattern for the header file").comment("it is mandatory second").isMandatory()
@@ -370,8 +359,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
-//        Assert.assertTrue(faileds.isEmpty());
-        Assert.assertEquals(3,faileds.size());
+        Assert.assertEquals(3, faileds.size());
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(1, chainService.retrieveAll().size());

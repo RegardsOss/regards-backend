@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.finder.MultipleFileNameFinder;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataStorageObjectDescriptionElement;
+import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 
 public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
@@ -139,7 +140,7 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
     }
 
     @Override
-    public SIPCollection runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId)
+    public SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId)
             throws ModuleException {
         // TODO CMZ à compléter
         return null;

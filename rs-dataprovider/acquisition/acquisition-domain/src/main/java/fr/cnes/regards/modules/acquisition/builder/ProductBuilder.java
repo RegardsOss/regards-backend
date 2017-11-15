@@ -56,13 +56,28 @@ public final class ProductBuilder {
         return product;
     }
 
-    public ProductBuilder withStatus(String status) {
-        product.setStatus(ProductStatus.valueOf(status));
+    public ProductBuilder withStatus(ProductStatus status) {
+        product.setStatus(status);
         return this;
     }
 
     public ProductBuilder withMetaProduct(MetaProduct metaProduct) {
         product.setMetaProduct(metaProduct);
+        return this;
+    }
+
+    public ProductBuilder withSession(String session) {
+        product.setSession(session);
+        return this;
+    }
+
+    public ProductBuilder withIngestProcessingChain(String ingestChain) {
+        product.setIngestChain(ingestChain);
+        return this;
+    }
+
+    public ProductBuilder withSaved(boolean saved) {
+        product.setSaved(saved);
         return this;
     }
 

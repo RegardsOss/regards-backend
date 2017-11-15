@@ -19,9 +19,16 @@
 package fr.cnes.regards.modules.acquisition.dao;
 
 import java.util.List;
+import java.util.Set;
 
+import javax.persistence.LockModeType;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -33,13 +40,24 @@ import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
  * @author Christophe Mertz
  */
 @Repository
-public interface IProductRepository extends CrudRepository<Product, Long> {
+public interface IProductRepository extends JpaRepository<Product, Long> {
 
     @EntityGraph("graph.acquisition.file.complete")
     Product findCompleteByProductName(String productName);
 
     List<Product> findByStatus(ProductStatus status);
-    
-    List<Product> findByStatusAndSaved(ProductStatus status, Boolean saved);
+
+    List<Product> findBySavedAndStatusIn(Boolean saved, ProductStatus... status);
+
+    @Query("select distinct p.ingestChain from Product p where p.saved=?1 and p.status in ?2")
+    Set<String> findDistinctIngestChainBySavedAndStatusIn(Boolean saved, ProductStatus... status);
+
+    @Query("select distinct p.session from Product p where p.ingestChain=?1 and p.saved=?2 and p.status in ?3")
+    Set<String> findDistinctSessionByIngestChainAndSavedAndStatusIn(String ingestChain, Boolean saved,
+            ProductStatus... status);
+
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    Page<Product> findAllByIngestChainAndSessionAndSavedAndStatusIn(String ingestChain, String session, Boolean saved,
+            Pageable pageable, ProductStatus... status);
 
 }

@@ -48,6 +48,7 @@ import fr.cnes.regards.modules.acquisition.finder.AttributeFinder;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
+import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 
 /**
@@ -135,7 +136,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
     }
 
     @Override
-    public SIPCollection runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId)
+    public SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId)
             throws ModuleException {
         // TODO CMZ createMetaDataPlugin à compléter
 

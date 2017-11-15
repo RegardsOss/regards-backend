@@ -23,8 +23,6 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.annotation.DirtiesContext;
@@ -53,8 +51,6 @@ import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionServiceConfig
 @Transactional
 @DirtiesContext
 public class ChaineGenerationServiceIT {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChaineGenerationServiceIT.class);
 
     /**
      * Static default tenant
@@ -90,8 +86,8 @@ public class ChaineGenerationServiceIT {
     }
 
     private Product addProduct(MetaProduct metaProduct, String productName) {
-        Product product = productService.save(ProductBuilder.build(productName)
-                .withStatus(ProductStatus.ACQUIRING.toString()).withMetaProduct(metaProduct).get());
+        Product product = productService.save(ProductBuilder.build(productName).withStatus(ProductStatus.ACQUIRING)
+                .withMetaProduct(metaProduct).get());
         // Link Product <-> MetaProduct
         metaProduct.addProduct(product);
         metaProduct = metaProductService.save(metaProduct);
