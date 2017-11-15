@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
@@ -101,8 +102,11 @@ public class IngestProcessingChainController implements IResourceController<Inge
 
     @ResourceAccess(description = "Update an existing IngestProcessingChain.")
     @RequestMapping(value = NAME_PATH, method = RequestMethod.PUT)
-    public ResponseEntity<Resource<IngestProcessingChain>> update(
+    public ResponseEntity<Resource<IngestProcessingChain>> update(@PathVariable("name") String name,
             @Valid @RequestBody IngestProcessingChain processingChain) throws ModuleException {
+        if (!name.equals(processingChain.getName())) {
+            throw new EntityInvalidException("Name of entity to update does not match.");
+        }
         IngestProcessingChain chain = ingestProcessingService.updateChain(processingChain);
         return new ResponseEntity<>(toResource(chain), HttpStatus.OK);
     }
