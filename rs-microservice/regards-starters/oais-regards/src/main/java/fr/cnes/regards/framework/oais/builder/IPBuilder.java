@@ -18,10 +18,11 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
+import javax.annotation.Nullable;
+import java.net.URL;
+import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-
-import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,7 @@ import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 
 /**
@@ -163,6 +165,122 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
         ipPropertiesBuilder.addDescriptiveInformation(key, value);
     }
 
+    public void addTags(String... tags) {
+        ipPropertiesBuilder.addTags(tags);
+    }
+
+    public void addContextInformation(String key, Object value) {
+        ipPropertiesBuilder.addContextInformation(key, value);
+    }
+
+    public void addReferenceInformation(String key, String value) {
+        ipPropertiesBuilder.addReferenceInformation(key, value);
+    }
+
+    public void addAdditionalProvenanceInformation(String key, Object value) {
+        ipPropertiesBuilder.addAdditionalProvenanceInformation(key, value);
+    }
+
+    public void setFacility(String facility) {
+        ipPropertiesBuilder.setFacility(facility);
+    }
+
+    public void setInstrument(String instrument) {
+        ipPropertiesBuilder.setInstrument(instrument);
+    }
+
+    public void setFilter(String filter) {
+        ipPropertiesBuilder.setFilter(filter);
+    }
+
+    public void setDetector(String detector) {
+        ipPropertiesBuilder.setDetector(detector);
+    }
+
+    public void setProposal(String proposal) {
+        ipPropertiesBuilder.setProposal(proposal);
+    }
+
+    public void addProvenanceInformationEvents(Event... events) {
+        ipPropertiesBuilder.addProvenanceInformationEvents(events);
+    }
+
+    public void addProvenanceInformationEvent(@Nullable String type, String comment, OffsetDateTime date) {
+        ipPropertiesBuilder.addProvenanceInformationEvent(type, comment, date);
+    }
+
+    public void addProvenanceInformationEvent(String comment, OffsetDateTime date) {
+        ipPropertiesBuilder.addProvenanceInformationEvent(comment, date);
+    }
+
+    public void addProvenanceInformationEvent(String comment) {
+        ipPropertiesBuilder.addProvenanceInformationEvent(comment);
+    }
+
+    public void addFixityInformation(String key, Object value) {
+        ipPropertiesBuilder.addFixityInformation(key, value);
+    }
+
+    public void setAccessRightInformation(String licence, String dataRights,
+            @Nullable OffsetDateTime publicReleaseDate) {
+        ipPropertiesBuilder.setAccessRightInformation(licence, dataRights, publicReleaseDate);
+    }
+
+    public void setAccessRightInformation(String dataRights) {
+        ipPropertiesBuilder.setAccessRightInformation(dataRights);
+    }
+
+    public void setDataObject(DataType dataType, URL url, String filename, String algorithm, String checksum,
+            Long fileSize) {
+        ipPropertiesBuilder.setDataObject(dataType, url, filename, algorithm, checksum, fileSize);
+    }
+
+    public void setDataObject(DataType dataType, Path filePath, String filename, String algorithm, String checksum,
+            Long fileSize) {
+        ipPropertiesBuilder.setDataObject(dataType, filePath, filename, algorithm, checksum, fileSize);
+    }
+
+    public void setDataObject(DataType dataType, URL url, String filename, String checksum, Long fileSize) {
+        ipPropertiesBuilder.setDataObject(dataType, url, filename, checksum, fileSize);
+    }
+
+    public void setDataObject(DataType dataType, Path filePath, String filename, String checksum, Long fileSize) {
+        ipPropertiesBuilder.setDataObject(dataType, filePath, filename, checksum, fileSize);
+    }
+
+    public void setDataObject(DataType dataType, URL url, String algorithm, String checksum) {
+        ipPropertiesBuilder.setDataObject(dataType, url, algorithm, checksum);
+    }
+
+    public void setDataObject(DataType dataType, Path filePath, String algorithm, String checksum) {
+        ipPropertiesBuilder.setDataObject(dataType, filePath, algorithm, checksum);
+    }
+
+    public void setDataObject(DataType dataType, URL url, String checksum) {
+        ipPropertiesBuilder.setDataObject(dataType, url, checksum);
+    }
+
+    public void setDataObject(DataType dataType, Path filePath, String checksum) {
+        ipPropertiesBuilder.setDataObject(dataType, filePath, checksum);
+    }
+
+    public void setSyntax(String mimeName, String mimeDescription, String mimeType) {
+        ipPropertiesBuilder.setSyntax(mimeName, mimeDescription, mimeType);
+    }
+
+    public void setSyntaxAndSemantic(String mimeName, String mimeDescription, String mimeType,
+            String semanticDescription) {
+        ipPropertiesBuilder.setSyntaxAndSemantic(mimeName, mimeDescription, mimeType, semanticDescription);
+    }
+
+    public void addSoftwareEnvironmentProperty(String key, Object value) {
+        ipPropertiesBuilder.addSoftwareEnvironmentProperty(key, value);
+    }
+
+    public void addHardwareEnvironmentProperty(String key, Object value) {
+        ipPropertiesBuilder.addHardwareEnvironmentProperty(key, value);
+    }
+
     /**
      * Add IP events
      * @param events events to add
@@ -212,4 +330,7 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
         addEvent(null, comment, OffsetDateTime.now());
     }
 
+    public void removeTags(String... tags) {
+        ipPropertiesBuilder.removeTags(tags);
+    }
 }

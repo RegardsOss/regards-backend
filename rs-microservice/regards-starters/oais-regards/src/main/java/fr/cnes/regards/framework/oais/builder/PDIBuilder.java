@@ -123,6 +123,14 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
         }
     }
 
+    public void removeTags(String... tags) {
+        Collection<String> existingTags = (Collection<String>) pdi
+                .getContextInformation().get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
+        if(existingTags != null) {
+            existingTags.removeAll(Sets.newHashSet(tags));
+        }
+    }
+
     /**
      * Add an <b>optional</b> context information
      * @param key information key
