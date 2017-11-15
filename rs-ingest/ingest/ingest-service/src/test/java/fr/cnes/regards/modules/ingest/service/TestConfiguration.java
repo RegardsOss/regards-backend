@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import org.mockito.Mockito;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +29,7 @@ import fr.cnes.regards.modules.storage.client.IAipEntityClient;
 
 @Configuration
 @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
+@EnableAutoConfiguration
 public class TestConfiguration {
 
     @Bean

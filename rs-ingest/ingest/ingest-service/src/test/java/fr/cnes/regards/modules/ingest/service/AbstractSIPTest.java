@@ -32,6 +32,7 @@ import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
@@ -67,8 +68,12 @@ public abstract class AbstractSIPTest extends AbstractRegardsServiceTransactiona
     @Autowired
     private IJobInfoRepository jobInfoRepo;
 
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
+
     @Before
     public void init() throws Exception {
+        tenantResolver.forceTenant(DEFAULT_TENANT);
         aipRepository.deleteAll();
         sipRepository.deleteAll();
         jobInfoRepo.deleteAll();

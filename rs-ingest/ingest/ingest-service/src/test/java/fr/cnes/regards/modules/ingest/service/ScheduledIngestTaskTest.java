@@ -42,7 +42,8 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
@@ -70,7 +71,7 @@ import fr.cnes.regards.modules.storage.domain.RejectedAip;
 @TestPropertySource(properties = { "regards.ingest.process.new.sips.delay:3000",
         "regards.ingest.process.new.aips.storage.delay:8000" }, locations = "classpath:test.properties")
 @ContextConfiguration(classes = { TestConfiguration.class })
-public class ScheduledIngestTaskTest extends AbstractRegardsServiceTransactionalIT {
+public class ScheduledIngestTaskTest extends AbstractRegardsServiceIT {
 
     @Autowired
     private IIngestProcessingChainRepository processingChainRepository;
@@ -96,6 +97,9 @@ public class ScheduledIngestTaskTest extends AbstractRegardsServiceTransactional
     @Autowired
     private IJobInfoRepository jobInfoRepo;
 
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
+
     @Value("${regards.ingest.process.new.sips.delay}")
     private String scheduledTasksDelay;
 
@@ -110,6 +114,7 @@ public class ScheduledIngestTaskTest extends AbstractRegardsServiceTransactional
 
     @Before
     public void init() throws ModuleException {
+        tenantResolver.forceTenant(DEFAULT_TENANT);
         pluginConfRepo.deleteAll();
         aipRepository.deleteAll();
         sipRepository.deleteAll();

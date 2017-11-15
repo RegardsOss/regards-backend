@@ -223,7 +223,7 @@ public class SIPServiceTest extends AbstractSIPTest {
             simulateAipDeletionFromStorage(getSipSimulatedAIPs(sipWithOneAIP.getIpId()).get(0).getId());
             // 2.1 All AIP has been deleted, SIP should be in DELETED STATE
             SIPEntity deletedSip = sipRepository.findOne(sipWithOneAIP.getId());
-            Assert.assertTrue("SIP should be in DELETED state", SIPState.DELETED.equals(deletedSip.getState()));
+            Assert.assertEquals(SIPState.DELETED, deletedSip.getState());
             // 2.1 A SIPevent associated should have been sent
             Assert.assertTrue("A SIPEvent should had been sent with delete SIP IpId",
                               handler.getReceivedEvents().stream()

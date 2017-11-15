@@ -246,14 +246,14 @@ public class IngestServiceTest extends AbstractSIPTest {
         sip = sipRepository.save(sip);
         ingestService.retryIngest(sip.getIpId());
         sip = sipRepository.findOne(sip.getId());
-        Assert.assertTrue("After retry SIP should be reset to state CREATED", SIPState.CREATED.equals(sip.getState()));
+        Assert.assertEquals(SIPState.CREATED, sip.getState());
 
         // Simulate a SIP in AIP_GEN_ERROR error
         sip.setState(SIPState.INVALID);
         sip = sipRepository.save(sip);
         ingestService.retryIngest(sip.getIpId());
         sip = sipRepository.findOne(sip.getId());
-        Assert.assertTrue("After retry SIP should be reset to state CREATED", SIPState.CREATED.equals(sip.getState()));
+        Assert.assertEquals(SIPState.CREATED, sip.getState());
 
     }
 
