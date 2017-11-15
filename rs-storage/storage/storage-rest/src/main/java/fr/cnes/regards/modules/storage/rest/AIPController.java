@@ -249,10 +249,28 @@ public class AIPController implements IResourceController<AIP> {
     }
 
     @RequestMapping(value = ID_PATH, method = RequestMethod.GET)
-    @ResourceAccess(description = "allows to retrieve a given aip metadata thabnks to its ipId")
+    @ResourceAccess(description = "allows to retrieve a given aip metadata thanks to its ipId")
     @ResponseBody
     public ResponseEntity<AIP> retrieveAip(@PathVariable(name = "ip_id") String ipId) throws EntityNotFoundException {
         return new ResponseEntity<>(aipService.retrieveAip(ipId), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = TAG_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "allows to add multiple tags to a given aip" )
+    @ResponseBody
+    public ResponseEntity<Void> addTags(@PathVariable(name = "ip_id") String ipId, @RequestBody Set<String> tagsToAdd)
+            throws EntityNotFoundException, EntityOperationForbiddenException, EntityInconsistentIdentifierException {
+        aipService.addTags(ipId, tagsToAdd);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(value = TAG_PATH, method = RequestMethod.DELETE)
+    @ResourceAccess(description = "allows to remove multiple tags to a given aip" )
+    @ResponseBody
+    public ResponseEntity<Void> removeTags(@PathVariable(name = "ip_id") String ipId, @RequestBody Set<String> tagsToRemove)
+            throws EntityNotFoundException, EntityOperationForbiddenException, EntityInconsistentIdentifierException {
+        aipService.removeTags(ipId, tagsToRemove);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @RequestMapping(value = ID_PATH, method = RequestMethod.PUT,

@@ -844,6 +844,26 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         }
     }
 
+    @Override
+    public void addTags(String ipId, Set<String> tagsToAdd)
+            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException {
+        AIP toUpdate = retrieveAip(ipId);
+        AIPBuilder updateBuilder = new AIPBuilder(toUpdate);
+        updateBuilder.addTags(tagsToAdd.toArray(new String[tagsToAdd.size()]));
+        toUpdate = updateBuilder.build();
+        updateAip(ipId, toUpdate);
+    }
+
+    @Override
+    public void removeTags(String ipId, Set<String> tagsToRemove)
+            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException {
+        AIP toUpdate = retrieveAip(ipId);
+        AIPBuilder updateBuilder = new AIPBuilder(toUpdate);
+        updateBuilder.removeTags(tagsToRemove.toArray(new String[tagsToRemove.size()]));
+        toUpdate = updateBuilder.build();
+        updateAip(ipId, toUpdate);
+    }
+
     private Set<UUID> scheduleDeletion(Set<DataFile> dataFilesToDelete) throws ModuleException {
         IAllocationStrategy allocationStrategy = getAllocationStrategy();
         // FIXME: should probably set the tenant into maintenance in case of module exception

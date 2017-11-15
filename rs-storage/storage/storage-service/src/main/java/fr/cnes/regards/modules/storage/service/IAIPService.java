@@ -166,6 +166,22 @@ public interface IAIPService {
      */
     void deleteAipFromSip(String sipIpId) throws ModuleException;
 
+    /**
+     * Add tags to the specified aip, threw its ip id
+     * @param ipId
+     * @param tagsToAdd
+     */
+    void addTags(String ipId, Set<String> tagsToAdd)
+            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
+
+    /**
+     * Removes tads from a specified aip, threw its ip id
+     * @param ipId
+     * @param tagsToRemove
+     */
+    void removeTags(String ipId, Set<String> tagsToRemove) throws EntityNotFoundException,
+            EntityInconsistentIdentifierException, EntityOperationForbiddenException;
+
     ///////////////////////////////////////////////////////////////////////////////////////////
     ////////////////// These methods should only be called by IAIPServices
     ///////////////////////////////////////////////////////////////////////////////////////////
