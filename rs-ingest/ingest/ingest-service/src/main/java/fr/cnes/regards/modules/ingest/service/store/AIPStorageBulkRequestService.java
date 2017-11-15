@@ -86,7 +86,7 @@ public class AIPStorageBulkRequestService
     public void postAIPStorageBulkRequest() {
 
         // 1. Retrieve all aip ready to be stored
-        Set<Long> aipIds = aipRepository.findIdByState(AIPState.CREATED);
+        Set<Long> aipIds = aipRepository.findIdByStateAndLock(AIPState.CREATED);
 
         // 2. Use archival storage client to post the associated request
         AIPCollection aips = new AIPCollection();
@@ -98,6 +98,8 @@ public class AIPStorageBulkRequestService
             aips.add(aip.getAip());
             aipsInRequest.add(aip.getIpId());
         }
+        // Update all aip in request to  AIPState to QUEUED.
+        aipsInRequest.forEach(aipId -> aipRepository.updateAIPEntityState(AIPState.QUEUED, aipId));
         if (!aipsInRequest.isEmpty()) {
             ResponseEntity<List<RejectedAip>> response = aipClient.store(aips);
             if ((response != null) && (response.getStatusCode().is2xxSuccessful())) {
@@ -110,10 +112,10 @@ public class AIPStorageBulkRequestService
                         return r.getIpId();
                     }).collect(Collectors.toSet());
                     resjectAipIds.forEach(aipId -> aipRepository.updateAIPEntityState(AIPState.STORE_REJECTED, aipId));
-                    aipsInRequest.removeAll(resjectAipIds);
                 }
-                // Update all not rejected AIPState to QUEUED.
-                aipsInRequest.forEach(aipId -> aipRepository.updateAIPEntityState(AIPState.QUEUED, aipId));
+            } else {
+                // Response error. Microservice may be not available at the time. Update all AIPs to CREATE state to be handle next time
+                aipsInRequest.forEach(aipId -> aipRepository.updateAIPEntityState(AIPState.CREATED, aipId));
             }
         }
     }

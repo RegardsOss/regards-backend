@@ -21,7 +21,10 @@ package fr.cnes.regards.modules.ingest.dao;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.persistence.LockModeType;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
@@ -64,6 +67,15 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
      */
     @Query("select id from AIPEntity a where a.state= ?1")
     Set<Long> findIdByState(AIPState state);
+
+    /**
+     * Retrieve an {@link AIPEntity} by is {@link AIPEntity#getState()}
+     * @param state {@link AIPState}
+     * @return optional {@link AIPEntity}
+     */
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    @Query("select id from AIPEntity a where a.state= ?1")
+    Set<Long> findIdByStateAndLock(AIPState state);
 
     /**
      * Update state of the given {@link AIPEntity}
