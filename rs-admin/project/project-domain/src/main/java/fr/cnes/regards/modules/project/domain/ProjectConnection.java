@@ -18,8 +18,12 @@
  */
 package fr.cnes.regards.modules.project.domain;
 
+import java.util.Optional;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -33,6 +37,8 @@ import javax.validation.executable.ValidateOnExecution;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 
 /**
  *
@@ -104,10 +110,17 @@ public class ProjectConnection implements IIdentifiable<Long> {
     private String url;
 
     /**
-     * Mark connection as enabled so it can be populated
+     * Manage connection life cycle.
      */
-    @Column(name = "enabled", nullable = false)
-    private boolean enabled = false;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TenantConnectionState state = TenantConnectionState.DISABLED;
+
+    /**
+     * If {@link TenantConnectionState#ERROR}, explains the error cause
+     */
+    @Column(name = "cause", length = 255)
+    private String errorCause;
 
     /**
      *
@@ -239,12 +252,38 @@ public class ProjectConnection implements IIdentifiable<Long> {
         url = pUrl;
     }
 
-    public boolean isEnabled() {
-        return enabled;
+    public TenantConnectionState getState() {
+        return state;
     }
 
-    public void setEnabled(boolean pEnabled) {
-        enabled = pEnabled;
+    public void setState(TenantConnectionState state) {
+        this.state = state;
     }
 
+    public Optional<String> getErrorCause() {
+        return Optional.ofNullable(errorCause);
+    }
+
+    public void setErrorCause(String errorCause) {
+        this.errorCause = errorCause;
+    }
+
+    /**
+     * Transform a {@link ProjectConnection} in {@link TenantConnection}
+     *
+     * @param projectConnection
+     *            {@link ProjectConnection}
+     * @return {@link TenantConnection}
+     */
+    public TenantConnection toTenantConnection() {
+        TenantConnection tenantConnection = new TenantConnection();
+        tenantConnection.setDriverClassName(driverClassName);
+        tenantConnection.setTenant(project.getName());
+        tenantConnection.setPassword(password);
+        tenantConnection.setUrl(url);
+        tenantConnection.setUserName(userName);
+        tenantConnection.setState(state);
+        tenantConnection.setErrorCause(errorCause);
+        return tenantConnection;
+    }
 }

@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -50,7 +51,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -106,6 +106,12 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      */
     @Autowired
     private IRoleService roleService;
+
+    /**
+     * Retrieve authentication information
+     */
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s.
@@ -172,7 +178,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
             role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Resource<ProjectUser>> retrieveCurrentProjectUser()
             throws EntityNotFoundException, EntityOperationForbiddenException {
-        final String curentUserEmail = SecurityUtils.getActualUser();
+        final String curentUserEmail = authResolver.getUser();
         if ((curentUserEmail == null) || curentUserEmail.isEmpty()) {
             throw new EntityOperationForbiddenException("Unable to retrieve current authenticated user.");
 

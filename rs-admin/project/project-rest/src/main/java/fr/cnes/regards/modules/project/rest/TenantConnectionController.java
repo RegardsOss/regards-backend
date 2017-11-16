@@ -20,9 +20,12 @@ package fr.cnes.regards.modules.project.rest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,12 +43,16 @@ import fr.cnes.regards.modules.project.service.IProjectConnectionService;
 import fr.cnes.regards.modules.project.service.IProjectService;
 
 /**
+ * System API for managing tenant connection lifecycle
  * @author Marc Sordi
  *
  */
 @RestController
 @RequestMapping("/connections/{microservice}")
 public class TenantConnectionController {
+
+    @SuppressWarnings("unused")
+    private static final Logger LOGGER = LoggerFactory.getLogger(TenantConnectionController.class);
 
     /**
      * {@link ProjectConnection} service
@@ -62,7 +69,15 @@ public class TenantConnectionController {
         this.projectService = projectService;
     }
 
-    @ResourceAccess(description = "Add a tenant connection", role = DefaultRole.INSTANCE_ADMIN)
+    /**
+     * This endpoint is exclusively called by JPA multitenant starter to init first project (static configuration).
+     * Allows the system to register a tenant connection.
+     * @param microservice target microservice
+     * @param tenantConnection connection to register
+     * @return registered connection
+     * @throws ModuleException if error occurs!
+     */
+    @ResourceAccess(description = "Add a project (i.e. tenant) connection", role = DefaultRole.INSTANCE_ADMIN)
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<TenantConnection> addTenantConnection(@PathVariable String microservice,
             @Valid @RequestBody TenantConnection tenantConnection) throws ModuleException {
@@ -76,64 +91,43 @@ public class TenantConnectionController {
         projectConnection.setProject(project);
         projectConnection.setUrl(tenantConnection.getUrl());
         projectConnection.setUserName(tenantConnection.getUserName());
+        ProjectConnection connection = projectConnectionService.createStaticProjectConnection(projectConnection);
 
-        projectConnectionService.createProjectConnection(projectConnection, true);
-        ProjectConnection connection = projectConnectionService.enableProjectConnection(microservice,
-                                                                                        project.getName());
-        return ResponseEntity.ok(toTenantConnection(connection));
+        return ResponseEntity.ok(connection.toTenantConnection());
     }
 
-    @ResourceAccess(description = "Enable a tenant connection", role = DefaultRole.INSTANCE_ADMIN)
-    @RequestMapping(method = RequestMethod.PUT, value = "/{tenant}/enable")
-    public ResponseEntity<TenantConnection> enableTenantConnection(@PathVariable("microservice") String microservice,
-            @PathVariable("tenant") String tenant) throws ModuleException {
+    /**
+     * Allows the system to update connection state. Only tenant, state and errorCause are useful.
+     * @param microservice target microservice
+     * @param tenantConnection connection to update
+     * @return updated connection
+     * @throws ModuleException
+     */
+    @ResourceAccess(description = "Update a project (i.e. tenant) connection state")
+    @RequestMapping(method = RequestMethod.PUT)
+    public ResponseEntity<TenantConnection> updateState(@PathVariable String microservice,
+            @Valid @RequestBody TenantConnection tenantConnection) throws ModuleException {
 
-        ProjectConnection connection = projectConnectionService.enableProjectConnection(microservice, tenant);
-        return ResponseEntity.ok(toTenantConnection(connection));
+        ProjectConnection connection = projectConnectionService
+                .updateState(microservice, tenantConnection.getTenant(), tenantConnection.getState(),
+                             Optional.ofNullable(tenantConnection.getErrorCause()));
+        return ResponseEntity.ok(connection.toTenantConnection());
     }
 
-    @ResourceAccess(description = "Disable a tenant connection", role = DefaultRole.INSTANCE_ADMIN)
-    @RequestMapping(method = RequestMethod.PUT, value = "/{tenant}/disable")
-    public ResponseEntity<TenantConnection> disableTenantConnection(@PathVariable("microservice") String microservice,
-            @PathVariable("tenant") String tenant) throws ModuleException {
-
-        ProjectConnection connection = projectConnectionService.disableProjectConnection(microservice, tenant);
-        return ResponseEntity.ok(toTenantConnection(connection));
-    }
-
-    @ResourceAccess(description = "List all enabled tenant connections for a specified microservice",
+    @ResourceAccess(description = "List all enabled project (i.e. tenant) connections for a specified microservice",
             role = DefaultRole.INSTANCE_ADMIN)
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<TenantConnection>> getTenantConnections(@PathVariable String microservice)
             throws ModuleException {
-        List<ProjectConnection> projectConnections = projectConnectionService.retrieveProjectConnection(microservice);
+        List<ProjectConnection> projectConnections = projectConnectionService.retrieveProjectConnections(microservice);
         // Transform to tenant connection
         List<TenantConnection> tenantConnections = new ArrayList<>();
         if (projectConnections != null) {
             for (ProjectConnection projectConnection : projectConnections) {
-                if (projectConnection.isEnabled()) {
-                    tenantConnections.add(toTenantConnection(projectConnection));
-                }
+                tenantConnections.add(projectConnection.toTenantConnection());
             }
         }
 
         return ResponseEntity.ok(tenantConnections);
-    }
-
-    /**
-     * Transform a {@link ProjectConnection} in {@link TenantConnection}
-     *
-     * @param projectConnection
-     *            {@link ProjectConnection}
-     * @return {@link TenantConnection}
-     */
-    private TenantConnection toTenantConnection(ProjectConnection projectConnection) {
-        TenantConnection tenantConnection = new TenantConnection();
-        tenantConnection.setDriverClassName(projectConnection.getDriverClassName());
-        tenantConnection.setTenant(projectConnection.getProject().getName());
-        tenantConnection.setPassword(projectConnection.getPassword());
-        tenantConnection.setUrl(projectConnection.getUrl());
-        tenantConnection.setUserName(projectConnection.getUserName());
-        return tenantConnection;
     }
 }

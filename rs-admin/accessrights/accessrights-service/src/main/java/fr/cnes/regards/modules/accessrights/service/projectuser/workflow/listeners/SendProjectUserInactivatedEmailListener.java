@@ -53,7 +53,7 @@ public class SendProjectUserInactivatedEmailListener implements ApplicationListe
     /**
      * The email template
      */
-    private static final String TEMPLATE = TemplateServiceConfiguration.PROJECT_USER_INACTIVATED_TEMPLATE;
+    private static final String TEMPLATE = TemplateServiceConfiguration.PROJECT_USER_INACTIVATED_TEMPLATE_CODE;
 
     /**
      * Service handling CRUD operations on email templates

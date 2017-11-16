@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -46,6 +47,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class AcceptAccountIT extends AbstractRegardsIT {
 
     /**
@@ -97,7 +99,7 @@ public class AcceptAccountIT extends AbstractRegardsIT {
      */
     @Before
     public void setUp() {
-        //        publicRole = roleRepository.findOneByNameIgnoreCase(DefaultRole.PUBLIC.toString()).get();
+        // publicRole = roleRepository.findOneByNameIgnoreCase(DefaultRole.PUBLIC.toString()).get();
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         projectUser = projectUserRepository
                 .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));

@@ -47,6 +47,7 @@ import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionFailed;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -62,7 +63,6 @@ import fr.cnes.regards.framework.security.event.ResourceAccessInit;
 import fr.cnes.regards.framework.security.event.RoleEvent;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -134,6 +134,11 @@ public class RoleService implements IRoleService {
     private final IPublisher publisher;
 
     /**
+     * Authentication resolver
+     */
+    private final IAuthenticationResolver authResolver;
+
+    /**
      * Constructor
      *
      * @param pMicroserviceName
@@ -149,7 +154,7 @@ public class RoleService implements IRoleService {
             final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository,
             final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
             final IInstanceSubscriber pInstanceSubscriber, final IInstancePublisher instancePublisher,
-            final IPublisher pPublisher) {
+            final IPublisher pPublisher, final IAuthenticationResolver authResolver) {
         super();
         roleRepository = pRoleRepository;
         projectUserRepository = pProjectUserRepository;
@@ -159,6 +164,7 @@ public class RoleService implements IRoleService {
         instanceSubscriber = pInstanceSubscriber;
         this.instancePublisher = instancePublisher;
         publisher = pPublisher;
+        this.authResolver = authResolver;
     }
 
     /**
@@ -342,8 +348,9 @@ public class RoleService implements IRoleService {
         }
         Role updated = pUpdatedRole;
         if (!beforeUpdate.isNative() && !beforeUpdate.getParentRole().equals(pUpdatedRole.getParentRole())) {
-            //if this is a custom role and and the parent has changed: we set the resources of the custom role to the one of its new parent
-            //so lets get its parent with its permissions
+            // if this is a custom role and and the parent has changed: we set the resources of the custom role to the
+            // one of its new parent
+            // so lets get its parent with its permissions
             Role newParent = roleRepository.findOneById(pUpdatedRole.getParentRole().getId());
             updated = updateRoleResourcesAccess(beforeUpdate.getId(), newParent.getPermissions());
         }
@@ -429,7 +436,7 @@ public class RoleService implements IRoleService {
      */
     private void canManageRole(Role pRole) throws EntityOperationForbiddenException {
 
-        String securityRole = SecurityUtils.getActualRole();
+        String securityRole = authResolver.getRole();
 
         if (securityRole == null) {
             LOGGER.debug("No security role set. Internal call granted");
@@ -474,7 +481,7 @@ public class RoleService implements IRoleService {
      * @throws EntityOperationForbiddenException
      */
     private void canAddResourceAccesses(ResourcesAccess... pNewOnes) throws EntityOperationForbiddenException {
-        String securityRole = SecurityUtils.getActualRole();
+        String securityRole = authResolver.getRole();
 
         if (securityRole == null) {
             LOGGER.debug("No security role set. Internal call granted");
@@ -510,12 +517,12 @@ public class RoleService implements IRoleService {
     }
 
     /**
-    * Add a set of accesses to a role and its descendants(according to PM003)
-    *
-    * @param pRole role on which the modification has been made
-    * @param pNewOnes accesses to add
-    * @throws EntityOperationForbiddenException if error occurs!
-    */
+     * Add a set of accesses to a role and its descendants(according to PM003)
+     *
+     * @param pRole role on which the modification has been made
+     * @param pNewOnes accesses to add
+     * @throws EntityOperationForbiddenException if error occurs!
+     */
     private void addResourceAccesses(final Role pRole, final ResourcesAccess... pNewOnes)
             throws EntityOperationForbiddenException {
 
@@ -638,39 +645,45 @@ public class RoleService implements IRoleService {
      * Determines if first role is inferior to second role.
      * @param first role that should be inferior to second
      * @param second role that should not be inferior to first
-     * @return FALSE if: <br/><ul><li>second is null</li><li>first is project admin</li><li>first equals second</li><li>first has less privilege than second</li></ul>
+     * @return FALSE if: <br/>
+     *         <ul>
+     *         <li>second is null</li>
+     *         <li>first is project admin</li>
+     *         <li>first equals second</li>
+     *         <li>first has less privilege than second</li>
+     *         </ul>
      */
     @Override
     public boolean isHierarchicallyInferior(final Role first, final Role second) {
-        //we consider that null is hierarchically inferior to anyone
-        if(first==null) {
+        // we consider that null is hierarchically inferior to anyone
+        if (first == null) {
             return true;
         }
-        if(second==null) {
+        if (second == null) {
             return false;
         }
         // we treat project admin by hand as it doesn't really have a hierarchy
-        if(RoleAuthority.isProjectAdminRole(first.getName())) {
+        if (RoleAuthority.isProjectAdminRole(first.getName())) {
             return false;
         }
-        if(RoleAuthority.isProjectAdminRole(second.getName())) {
+        if (RoleAuthority.isProjectAdminRole(second.getName())) {
             return true;
         }
-        //case of myself: we are not strictly inferior to ourselves
-        if(Objects.equal(second, first)) {
+        // case of myself: we are not strictly inferior to ourselves
+        if (Objects.equal(second, first)) {
             return false;
         }
-        //now lets treat common cases
+        // now lets treat common cases
         final RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
         final List<Role> ancestors = roleLineageAssembler.of(second).get();
         try (Stream<Role> stream = ancestors.stream()) {
-            if(first.isNative()) {
-                //if the role is native, then it is into the lineage so we can look for it
-                String roleName=first.getName();
+            if (first.isNative()) {
+                // if the role is native, then it is into the lineage so we can look for it
+                String roleName = first.getName();
                 return stream.anyMatch(r -> r.getName().equals(roleName));
             } else {
                 // if the role is not a native one, then we need to look for its parent(which is native).
-                String parent=first.getParentRole().getName();
+                String parent = first.getParentRole().getName();
                 return stream.anyMatch(r -> r.getName().equals(parent));
             }
         }
@@ -812,7 +825,8 @@ public class RoleService implements IRoleService {
     }
 
     /**
-     * Found a consistent parent for the current role starting with {@link DefaultRole#ADMIN}, highest available inherited parent.
+     * Found a consistent parent for the current role starting with {@link DefaultRole#ADMIN}, highest available
+     * inherited parent.
      *
      * @param role role to consider
      * @throws EntityOperationForbiddenException if no parent role matches
@@ -835,7 +849,7 @@ public class RoleService implements IRoleService {
     private void manageParent(final Role role, final Role parentRole) throws EntityOperationForbiddenException {
 
         // role must not be null
-        Assert.notNull(role);
+        Assert.notNull(role, "Role cannot be null");
 
         // if parent role is null, even public role cannot be the parent of the role
         // throw exception
@@ -868,7 +882,7 @@ public class RoleService implements IRoleService {
 
         final Set<Role> borrowablesRoles = new TreeSet<>(new RoleComparator(this));
 
-        final String email = SecurityUtils.getActualUser();
+        final String email = authResolver.getUser();
         final Optional<ProjectUser> optionnalUser = projectUserRepository.findOneByEmail(email);
         if (!optionnalUser.isPresent()) {
             return borrowablesRoles;

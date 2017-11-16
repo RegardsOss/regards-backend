@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigura
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigurationDeleted;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigurationUpdated;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -105,34 +106,44 @@ public class ProjectConnectionService implements IProjectConnectionService {
     }
 
     @Override
-    public ProjectConnection retrieveProjectConnection(final String pProjectName, final String pMicroService)
+    public ProjectConnection retrieveProjectConnection(final String projectName, final String microservice)
             throws EntityNotFoundException {
         final ProjectConnection connection = projectConnectionRepository
-                .findOneByProjectNameAndMicroservice(pProjectName, pMicroService);
+                .findOneByProjectNameAndMicroservice(projectName, microservice);
         if (connection == null) {
-            throw new EntityNotFoundException(String.format("%s:%s", pProjectName, pMicroService),
-                    ProjectConnection.class);
+            String message = String.format("No connection found for project %s and microservice %s", projectName,
+                                           microservice);
+            LOGGER.error(message);
+            throw new EntityNotFoundException(message);
         }
         return connection;
     }
 
     @Override
-    public ProjectConnection createProjectConnection(final ProjectConnection pProjectConnection, final boolean silent)
+    public boolean existsProjectConnection(String projectName, String microservice) {
+        return projectConnectionRepository.existsProjectConnection(projectName, microservice);
+    }
+
+    @Override
+    public ProjectConnection createProjectConnection(final ProjectConnection projectConnection, final boolean silent)
             throws ModuleException {
         final ProjectConnection connection;
-        final Project project = pProjectConnection.getProject();
+        final Project project = projectConnection.getProject();
         // Check referenced project exists
-        if ((project.getId() != null) && projectRepository.exists(project.getId())) {
+        if ((project.getId() != null) && projectRepository.isActiveProject(project.getId())) {
             // Check project connection to create doesn't already exists
             if (projectConnectionRepository
                     .findOneByProjectNameAndMicroservice(project.getName(),
-                                                         pProjectConnection.getMicroservice()) == null) {
-                connection = projectConnectionRepository.save(pProjectConnection);
+                                                         projectConnection.getMicroservice()) == null) {
+                // Connection disabled
+                // Multitenant starter is responsible for enabling data source
+                projectConnection.setState(TenantConnectionState.DISABLED);
+                connection = projectConnectionRepository.save(projectConnection);
             } else {
                 throw new EntityAlreadyExistsException(project.getName());
             }
         } else {
-            throw new EntityNotFoundException(pProjectConnection.getId().toString(), ProjectConnection.class);
+            throw new EntityNotFoundException(projectConnection.getId().toString(), ProjectConnection.class);
         }
 
         // Send event to all microservices that a new connection is available for a new project
@@ -142,6 +153,22 @@ public class ProjectConnectionService implements IProjectConnectionService {
         }
 
         return connection;
+    }
+
+    @Override
+    public ProjectConnection createStaticProjectConnection(ProjectConnection projectConnection)
+            throws ModuleException {
+
+        // Only store connection if it's really does not exist
+        if (existsProjectConnection(projectConnection.getProject().getName(), projectConnection.getMicroservice())) {
+            LOGGER.warn("Project connection already exists for tenant {} and microservice {}",
+                        projectConnection.getProject().getName(), projectConnection.getMicroservice());
+            // Skipping silently
+            return projectConnection;
+        }
+
+        projectConnection.setState(TenantConnectionState.ENABLED);
+        return projectConnectionRepository.save(projectConnection);
     }
 
     /**
@@ -174,23 +201,23 @@ public class ProjectConnectionService implements IProjectConnectionService {
 
     @Override
     public ProjectConnection updateProjectConnection(final Long pProjectConnectionId,
-            final ProjectConnection pProjectConnection) throws EntityNotFoundException {
+            final ProjectConnection projectConnection) throws EntityNotFoundException {
         final ProjectConnection connection;
         // Check that entity to update exists
-        if ((pProjectConnection.getId() != null) && projectConnectionRepository.exists(pProjectConnection.getId())) {
-            final Project project = pProjectConnection.getProject();
+        if ((projectConnection.getId() != null) && projectConnectionRepository.exists(projectConnection.getId())) {
+            final Project project = projectConnection.getProject();
             // Check that the referenced project exists
-            if ((project.getId() != null) && projectRepository.exists(project.getId())) {
+            if ((project.getId() != null) && projectRepository.isActiveProject(project.getId())) {
                 // Disable connection : new configuration may be incorrect
                 // Multitenant starter is reponsible for enabling data source
-                pProjectConnection.setEnabled(false);
+                projectConnection.setState(TenantConnectionState.DISABLED);
                 // Update entity
-                connection = projectConnectionRepository.save(pProjectConnection);
+                connection = projectConnectionRepository.save(projectConnection);
             } else {
                 throw new EntityNotFoundException(project.getName(), Project.class);
             }
         } else {
-            throw new EntityNotFoundException(pProjectConnection.getId().toString(), ProjectConnection.class);
+            throw new EntityNotFoundException(projectConnection.getId().toString(), ProjectConnection.class);
         }
 
         // Publish configuration update
@@ -213,36 +240,16 @@ public class ProjectConnectionService implements IProjectConnectionService {
     }
 
     @Override
-    public List<ProjectConnection> retrieveProjectConnection(final String pMicroService)
-            throws EntityNotFoundException {
-        return projectConnectionRepository.findByMicroservice(pMicroService);
+    public List<ProjectConnection> retrieveProjectConnections(final String microservice) {
+        return projectConnectionRepository.getMicroserviceConnections(microservice);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.project.service.IProjectConnectionService#enableProjectConnection(java.lang.String,
-     * java.lang.String)
-     */
     @Override
-    public ProjectConnection enableProjectConnection(String pMicroService, String pProjectName)
-            throws EntityNotFoundException {
-        ProjectConnection connection = retrieveProjectConnection(pProjectName, pMicroService);
-        connection.setEnabled(true);
-        return projectConnectionRepository.save(connection);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.project.service.IProjectConnectionService#disableProjectConnection(java.lang.String,
-     * java.lang.String)
-     */
-    @Override
-    public ProjectConnection disableProjectConnection(String pMicroService, String pProjectName)
-            throws EntityNotFoundException {
-        ProjectConnection connection = retrieveProjectConnection(pProjectName, pMicroService);
-        connection.setEnabled(false);
+    public ProjectConnection updateState(String microservice, String projectName, TenantConnectionState state,
+            Optional<String> errorCause) throws EntityNotFoundException {
+        ProjectConnection connection = retrieveProjectConnection(projectName, microservice);
+        connection.setState(state);
+        connection.setErrorCause(errorCause.orElse(null));
         return projectConnectionRepository.save(connection);
     }
 }

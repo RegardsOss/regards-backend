@@ -35,13 +35,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
 
@@ -82,6 +82,12 @@ public class MicroserviceResourceController implements IResourceController<Resou
      */
     @Autowired
     private IResourceService hateoasService;
+
+    /**
+     * Retrieve authentication information
+     */
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     /**
      * Retrieve the resource accesses available to the user of the given microservice
@@ -139,7 +145,7 @@ public class MicroserviceResourceController implements IResourceController<Resou
     public ResponseEntity<List<String>> retrieveMicroserviceControllers(
             @PathVariable("microservicename") final String pMicroserviceName) {
         final List<String> controllers = resourceService.retrieveMicroserviceControllers(pMicroserviceName,
-                                                                                         SecurityUtils.getActualRole());
+                                                                                         authResolver.getRole());
         controllers.sort(null);
         return new ResponseEntity<>(controllers, HttpStatus.OK);
     }
@@ -160,8 +166,7 @@ public class MicroserviceResourceController implements IResourceController<Resou
             @PathVariable("microservicename") final String pMicroserviceName,
             @PathVariable("controllername") final String pControllerName) {
         final List<ResourcesAccess> resources = resourceService
-                .retrieveMicroserviceControllerEndpoints(pMicroserviceName, pControllerName,
-                                                         SecurityUtils.getActualRole());
+                .retrieveMicroserviceControllerEndpoints(pMicroserviceName, pControllerName, authResolver.getRole());
         return new ResponseEntity<>(toResources(resources), HttpStatus.OK);
     }
 

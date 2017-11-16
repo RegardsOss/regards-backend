@@ -25,6 +25,7 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -58,7 +59,7 @@ public class TenantService implements ITenantService {
     @Override
     public Set<String> getAllTenants() {
         Set<String> tenants = new HashSet<>();
-        List<Project> projects = projectRepository.findAll();
+        List<Project> projects = projectRepository.findByIsDeletedFalse();
         if (projects != null) {
             projects.forEach(project -> tenants.add(project.getName()));
         }
@@ -69,15 +70,15 @@ public class TenantService implements ITenantService {
      * Retrieve all tenants fully configured : i.e. tenants that have a database configuration
      */
     @Override
-    public Set<String> getAllActiveTenants(String pMicroserviceName) {
-        Assert.notNull(pMicroserviceName);
+    public Set<String> getAllActiveTenants(String microserviceName) {
+        Assert.notNull(microserviceName, "Microservice name is required");
         Set<String> tenants = new HashSet<>();
         // Retrieve all projects
         List<Project> projects = projectRepository.findByIsDeletedFalse();
         for (Project project : projects) {
             ProjectConnection pc = projectConnectionRepository.findOneByProjectNameAndMicroservice(project.getName(),
-                                                                                                   pMicroserviceName);
-            if ((pc != null) && pc.isEnabled()) {
+                                                                                                   microserviceName);
+            if ((pc != null) && TenantConnectionState.ENABLED.equals(pc.getState())) {
                 tenants.add(project.getName());
             }
         }

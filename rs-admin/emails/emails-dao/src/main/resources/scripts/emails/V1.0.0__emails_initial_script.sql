@@ -1,2 +1,20 @@
-create table t_email (id bigint not null, bcc bytea, cc bytea, _from varchar(255), replyTo varchar(255), sentDate timestamp, subject varchar(255), text text, _to bytea, primary key (id));
-create sequence seq_email start with 1 increment by 50;
+CREATE
+	TABLE
+		t_email(
+			id int8 NOT NULL,
+			att_name VARCHAR(100),
+			attachment bytea,
+			bcc_addrs VARCHAR(1000),
+			cc_addrs VARCHAR(1000),
+			from_addr VARCHAR(320),
+			reply_to_addr VARCHAR(320),
+			sent_date TIMESTAMP,
+			subject VARCHAR(78),
+			text text,
+			to_addrs VARCHAR(1000),
+			PRIMARY KEY(id)
+		);
+
+CREATE
+	SEQUENCE seq_email START 1 INCREMENT 50;
+

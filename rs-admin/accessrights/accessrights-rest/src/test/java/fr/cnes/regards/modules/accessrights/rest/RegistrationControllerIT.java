@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -51,6 +52,7 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
  * @since 1.0-SNAPSHOT
  */
 @MultitenantTransactional
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
 
     /**

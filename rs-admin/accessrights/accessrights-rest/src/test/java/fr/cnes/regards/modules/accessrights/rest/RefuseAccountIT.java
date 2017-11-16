@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -42,6 +43,7 @@ import fr.cnes.regards.modules.accessrights.service.registration.IRegistrationSe
  *
  * @author Xavier-Alexandre Brochard
  */
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class RefuseAccountIT extends AbstractRegardsIT {
 
     /**

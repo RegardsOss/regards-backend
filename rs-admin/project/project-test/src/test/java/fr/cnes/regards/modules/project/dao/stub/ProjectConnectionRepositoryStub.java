@@ -27,6 +27,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 import fr.cnes.regards.framework.test.repository.JpaRepositoryStub;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
@@ -69,8 +70,16 @@ public class ProjectConnectionRepositoryStub extends JpaRepositoryStub<ProjectCo
     }
 
     @Override
-    public List<ProjectConnection> findByMicroservice(String pMicroservice) {
-        List<ProjectConnection> list = entities.stream().filter(e -> e.getMicroservice().equals(pMicroservice))
+    public List<ProjectConnection> findByMicroserviceAndProjectIsDeletedFalse(String microservice) {
+        List<ProjectConnection> list = entities.stream().filter(e -> e.getMicroservice().equals(microservice))
+                .collect(Collectors.toList());
+        return list;
+    }
+
+    @Override
+    public List<ProjectConnection> findByMicroserviceAndStateAndProjectIsDeletedFalse(String microservice,
+            TenantConnectionState state) {
+        List<ProjectConnection> list = entities.stream().filter(e -> e.getMicroservice().equals(microservice))
                 .collect(Collectors.toList());
         return list;
     }

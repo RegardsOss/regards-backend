@@ -22,81 +22,86 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import org.slf4j.Logger;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
 /**
- *
  * Class AbstractEmailService
  *
  * Standard function of mail service to handle sending mails.
- *
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 public abstract class AbstractEmailService implements IEmailService {
 
     /**
-     *
      * Mail sender to use.
-     *
      * @return {@link JavaMailSender}
      * @since 1.0-SNASHOT
      */
     protected abstract JavaMailSender getMailSender();
 
     /**
-     *
      * Class logger
-     *
      * @return {@link Logger}
      * @since 1.0-SNAPSHOT
      */
     protected abstract Logger getLogger();
 
     /**
-     *
      * Send the given mail thanks to the java mail sender get by the static getMailSender method
-     *
-     * @param pMessage
-     *            {@link SimpleMailMessage} mail to send
+     * @param message {@link SimpleMailMessage} mail to send
      * @return {@link SimpleMailMessage} sent
      * @since 1.0-SNAPSHOT
      */
-    public SimpleMailMessage sendMailWithSender(final SimpleMailMessage pMessage) {
+    public SimpleMailMessage sendMailWithSender(final SimpleMailMessage message) {
+        return sendMailWithSender(message, null, null);
+    }
 
-        final MimeMessage message = getMailSender().createMimeMessage();
+    /**
+     * Send the given mail thanks to the java mail sender get by the static getMailSender method
+     * @param message {@link SimpleMailMessage} mail to send
+     * @return {@link SimpleMailMessage} sent
+     * @since 1.0-SNAPSHOT
+     */
+    public SimpleMailMessage sendMailWithSender(final SimpleMailMessage message, String attachmentName,
+            InputStreamSource attSource) {
+        final MimeMessage mimeMsg = getMailSender().createMimeMessage();
         try {
-            final MimeMessageHelper helper = new MimeMessageHelper(message, false);
-            helper.setText(pMessage.getText(), true);
-            helper.setTo(pMessage.getTo());
-            if (pMessage.getBcc() != null) {
-                helper.setBcc(pMessage.getBcc());
+            boolean withAttachment = (attachmentName != null) && (attSource != null);
+            final MimeMessageHelper helper = new MimeMessageHelper(mimeMsg, withAttachment);
+            helper.setText(message.getText(), true);
+            helper.setTo(message.getTo());
+            if (message.getBcc() != null) {
+                helper.setBcc(message.getBcc());
             }
-            if (pMessage.getCc() != null) {
-                helper.setCc(pMessage.getCc());
+            if (message.getCc() != null) {
+                helper.setCc(message.getCc());
             }
-            if (pMessage.getFrom() != null) {
-                helper.setFrom(pMessage.getFrom());
+            if (message.getFrom() != null) {
+                helper.setFrom(message.getFrom());
             }
-            if (pMessage.getReplyTo() != null) {
-                helper.setReplyTo(pMessage.getReplyTo());
+            if (message.getReplyTo() != null) {
+                helper.setReplyTo(message.getReplyTo());
             }
-            if (pMessage.getSentDate() != null) {
-                helper.setSentDate(pMessage.getSentDate());
+            if (message.getSentDate() != null) {
+                helper.setSentDate(message.getSentDate());
             }
-            if (pMessage.getSubject() != null) {
-                helper.setSubject(pMessage.getSubject());
+            if (message.getSubject() != null) {
+                helper.setSubject(message.getSubject());
+            }
+            if (withAttachment) {
+                helper.addAttachment(attachmentName, attSource);
             }
             // Send the mail
-            getMailSender().send(message);
+            getMailSender().send(mimeMsg);
         } catch (final MessagingException e) {
             getLogger().error("Error sending mail", e);
         }
 
-        return pMessage;
-
+        return message;
     }
 
 }

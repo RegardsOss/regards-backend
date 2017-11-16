@@ -119,13 +119,6 @@ public class RegistrationService implements IRegistrationService {
         eventPublisher = pEventPublisher;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.service.account.IAccountTransitions#requestAccount(fr.cnes.regards.modules.
-     * accessrights.domain.AccessRequestDTO)
-     */
     @Override
     public void requestAccess(final AccessRequestDto pDto) throws EntityException {
         // Create the account if needed
