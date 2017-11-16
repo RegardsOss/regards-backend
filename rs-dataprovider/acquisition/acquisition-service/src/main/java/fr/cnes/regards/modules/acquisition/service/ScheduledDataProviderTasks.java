@@ -55,7 +55,7 @@ public class ScheduledDataProviderTasks {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IProductService productService;
+    private IProductBulkRequestService productBulkRequestService;
 
     @Scheduled(fixedRateString = "${regards.acquisition.process.new.sip.ingest.delay:60000}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -63,7 +63,7 @@ public class ScheduledDataProviderTasks {
         LOG.debug("Process new SIP bulk request to ingest");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            productService.postSIPBulkRequest();
+            productBulkRequestService.postSIPBulkRequest();
             runtimeTenantResolver.clearTenant();
         }
     }
