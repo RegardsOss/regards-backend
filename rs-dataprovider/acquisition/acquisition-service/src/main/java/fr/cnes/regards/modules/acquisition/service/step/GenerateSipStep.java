@@ -219,9 +219,6 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
     @Override
     public void freeResources() throws AcquisitionException {
-        this.acqFiles = null;
-        this.product = null;
-        this.chainGeneration = null;
     }
 
     @Override

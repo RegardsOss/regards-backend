@@ -38,7 +38,7 @@ public class SetEnvisatSeparator implements ICalculationClass {
     public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
 
         String value = (String) pValue;
-        String version = new String("");
+        String version = "";
 
         version = value.substring(0, 1);
         version = version + "." + value.substring(1, 2);

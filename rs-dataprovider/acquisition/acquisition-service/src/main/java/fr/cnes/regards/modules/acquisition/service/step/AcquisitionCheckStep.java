@@ -284,8 +284,6 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     @Override
     public void freeResources() throws AcquisitionException {
-        this.inProgressFileList = null;
-        super.process = null;
     }
 
     @Override

@@ -35,7 +35,7 @@ public class SetLogvolDorisDGXXSeparator implements ICalculationClass {
     public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
 
         String value = (String) pValue;
-        String version = new String("");
+        String version = "";
 
         version = "DORIS=" + value.substring(0, 1) + "." + value.substring(1, 3) + " - DIODE=" + value.substring(4, 5)
                 + "." + value.substring(5, 7);

@@ -76,7 +76,7 @@ public class MetaProduct implements IIdentifiable<Long> {
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_meta_product_id"))
-    private Set<Product> products = new HashSet<Product>();
+    private final Set<Product> products = new HashSet<Product>();
 
     /**
      * Algorithm used to calculate the checksum
@@ -98,7 +98,7 @@ public class MetaProduct implements IIdentifiable<Long> {
      */
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_meta_product_id"))
-    private Set<MetaFile> metaFiles = new HashSet<MetaFile>();
+    private final Set<MetaFile> metaFiles = new HashSet<MetaFile>();
 
     @Column(name = "ingest_chain")
     private String ingestChain;

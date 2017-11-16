@@ -26,7 +26,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -56,21 +55,16 @@ public class ProductService implements IProductService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProductService.class);
 
-    @Autowired
-    private IProductRepository productRepository;
+    private final IProductRepository productRepository;
 
-    @Autowired
-    private IProductService productService;
-
-    @Autowired
-    private IIngestClient ingestClient;
+    private final IIngestClient ingestClient;
 
     @Value("${regards.acquisition.sip.bulk.request.limit:10000}")
     private Integer bulkRequestLimit;
 
-    public ProductService(IProductRepository repository) {
-        super();
+    public ProductService(IProductRepository repository, IIngestClient ingestClient) {
         this.productRepository = repository;
+        this.ingestClient = ingestClient;
     }
 
     @Override
@@ -165,6 +159,9 @@ public class ProductService implements IProductService {
         Page<Product> page = productRepository
                 .findAllByIngestChainAndSessionAndSavedAndStatusIn(ingestChain, session, false, pageable,
                                                                    ProductStatus.COMPLETED, ProductStatus.FINISHED);
+        if (page.getContent().size() == 0) {
+            return false;
+        }
         return postSipProducts(ingestChain, session, page.getContent());
     }
 
@@ -174,6 +171,9 @@ public class ProductService implements IProductService {
      * @param products the {@link List} of {@link Product} ready to send
      */
     private boolean postSipProducts(String ingestChain, String session, List<Product> products) {
+        if (products.size() == 0) {
+            return false;
+        }
         LOG.info("[{}] {} products found", session, products.size());
         SIPCollectionBuilder sipCollectionBuilder = new SIPCollectionBuilder(ingestChain, session);
         for (Product product : products) {
@@ -231,16 +231,17 @@ public class ProductService implements IProductService {
     /**
      * 
      * @param session
-     * @param sipEntitys
+     * @param rejectedSips
      * @param sipCollection
      * @return the number of {@link Product} that has been saved in Ingest
      */
-    private int responseSipPartiallyCreated(String session, Collection<SIPEntity> sipEntitys,
+    private int responseSipPartiallyCreated(String session, Collection<SIPEntity> rejectedSips,
             SIPCollection sipCollection) {
+        LOG.info("features size:{} - rejected size:{}", sipCollection.getFeatures().size(), rejectedSips.size());
         LOG.error("[{}] SIP collection has heen partially processed with success : {} ingested / {} rejected", session,
-                  sipCollection.getFeatures().size() - sipEntitys.size(), sipEntitys.size());
+                  sipCollection.getFeatures().size() - rejectedSips.size(), rejectedSips.size());
         Set<String> sipIdError = new HashSet<>();
-        for (SIPEntity sipEntity : sipEntitys) {
+        for (SIPEntity sipEntity : rejectedSips) {
             LOG.error("[{}] SIP in error : productName=<{}>, raeson=<{}>", session, sipEntity.getSipId(),
                       sipEntity.getReasonForRejection());
             sipIdError.add(sipEntity.getSipId());
@@ -257,7 +258,7 @@ public class ProductService implements IProductService {
     }
 
     private void setSipProductSaved(String sipId) {
-        Product product = productService.retrieve(sipId);
+        Product product = retrieve(sipId);
         if (product == null) {
             final StringBuffer strBuff = new StringBuffer();
             strBuff.append("The product name <");
@@ -266,7 +267,7 @@ public class ProductService implements IProductService {
             LOG.error(strBuff.toString());
         }
         product.setSaved(Boolean.TRUE);
-        productService.save(product);
+        save(product);
     }
 
 }

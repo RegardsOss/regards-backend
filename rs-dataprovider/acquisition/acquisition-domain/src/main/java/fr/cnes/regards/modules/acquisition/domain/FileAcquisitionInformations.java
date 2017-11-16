@@ -27,7 +27,7 @@ import javax.persistence.Embeddable;
  * 
  */
 @Embeddable
-public class FileAcquisitionInformations extends FileProcessInformations {
+public class FileAcquisitionInformations extends AbstractFileProcessInformations {
 
     /**
      * Repertoire d'acquisition du fichier

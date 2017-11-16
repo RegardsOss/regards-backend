@@ -30,7 +30,6 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 
 /**
  * TODO CMZ ProductMetadataPluginImpl à supprimer
@@ -132,8 +131,7 @@ public class ProductMetadataPluginImpl implements IGenerateSIPPlugin {
     //    }
 
     @Override
-    public SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId)
-            throws ModuleException {
+    public SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId) throws ModuleException {
         // TODO CMZ à compléter
         return null;
     }

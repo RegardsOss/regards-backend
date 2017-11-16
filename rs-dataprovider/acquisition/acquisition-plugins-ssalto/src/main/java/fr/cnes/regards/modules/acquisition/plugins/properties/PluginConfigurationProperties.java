@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.acquisition.plugins.properties;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.SortedMap;
@@ -152,7 +151,7 @@ public class PluginConfigurationProperties {
         if (finderList == null) {
             finderList = new TreeMap<>();
         }
-        finderList.put(new Integer(finder.getOrder()), finder);
+        finderList.put(Integer.valueOf(finder.getOrder()), finder);
     }
 
     public Collection<AttributeFinder> getFinderList() {

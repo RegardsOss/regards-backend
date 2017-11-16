@@ -46,7 +46,7 @@ public class SetEnvisatD1BPoeCddisCycleMin implements ICalculationClass {
             temp = numeroArc.intValue() / 5 + 6;
         }
 
-        Integer minCycle = new Integer(temp);
+        Integer minCycle = Integer.valueOf(temp);
         return minCycle;
     }
 }

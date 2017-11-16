@@ -55,12 +55,12 @@ public class XMLValidation extends DefaultHandler {
     /**
      * Le gestionnaire d'erreur
      */
-    private XMLErrorManager xmlErrorManager = null;
+    private final XMLErrorManager xmlErrorManager;
 
     /**
      * Le parser permettant d'analyser le document XML et de le valider vis a vis d'un Schema XML.
      */
-    private XMLReader parser = null;
+    private final XMLReader parser;
 
     /**
      * Constructeur - initialise le parser et fixe le mode de validation --> XML Schema

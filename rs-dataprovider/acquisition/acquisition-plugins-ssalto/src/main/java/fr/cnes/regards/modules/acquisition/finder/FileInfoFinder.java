@@ -71,9 +71,9 @@ public class FileInfoFinder extends AttributeFinder {
                 if (!valueList.isEmpty()) {
                     Long oldLong = (Long) valueList.get(0);
                     valueList = new ArrayList<>();
-                    valueList.add(new Long(oldLong.longValue() + originalFile.length()));
+                    valueList.add(Long.valueOf(oldLong.longValue() + originalFile.length()));
                 } else {
-                    valueList.add(new Long(originalFile.length()));
+                    valueList.add(Long.valueOf(originalFile.length()));
                 }
             }
         }

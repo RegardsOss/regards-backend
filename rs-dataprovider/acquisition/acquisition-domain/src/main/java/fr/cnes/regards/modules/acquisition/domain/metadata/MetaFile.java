@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.acquisition.domain.metadata;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -80,7 +79,7 @@ public class MetaFile implements IIdentifiable<Long> {
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "scan_directory_id", referencedColumnName = "ID",
             foreignKey = @ForeignKey(name = "fk_acq_directory"))
-    private Set<ScanDirectory> scanDirectories = new HashSet<ScanDirectory>();
+    private final Set<ScanDirectory> scanDirectories = new HashSet<ScanDirectory>();
 
     //    /**
     //     * The data file name found
@@ -155,7 +154,7 @@ public class MetaFile implements IIdentifiable<Long> {
     public Boolean isMandatory() {
         return mandatory;
     }
-    
+
     public Boolean getMandatory() {
         return mandatory;
     }

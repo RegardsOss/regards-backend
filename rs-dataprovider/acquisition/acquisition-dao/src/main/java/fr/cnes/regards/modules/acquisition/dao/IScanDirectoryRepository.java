@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.acquisition.dao;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 
 /**

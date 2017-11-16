@@ -141,7 +141,7 @@ public class Product implements IIdentifiable<Long> {
      */
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "fk_product_id"))
-    private Set<AcquisitionFile> fileList = new HashSet<AcquisitionFile>();
+    private final Set<AcquisitionFile> fileList = new HashSet<AcquisitionFile>();
 
     @Column(columnDefinition = "jsonb", name = "json_sip")
     @Type(type = "jsonb")

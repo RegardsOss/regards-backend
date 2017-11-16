@@ -49,7 +49,6 @@ import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 
 /**
  * PlugIn generic de creation de metadonnees d'un produit. Cette classe possède une specification pour chaque produit.
@@ -136,8 +135,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
     }
 
     @Override
-    public SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId)
-            throws ModuleException {
+    public SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId) throws ModuleException {
         // TODO CMZ createMetaDataPlugin à compléter
 
         return null;

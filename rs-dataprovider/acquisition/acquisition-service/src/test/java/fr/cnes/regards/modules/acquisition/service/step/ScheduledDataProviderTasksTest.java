@@ -31,7 +31,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.builder.AcquisitionFileBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.builder.ProductBuilder;
@@ -111,7 +110,7 @@ public class ScheduledDataProviderTasksTest extends AbstractAcquisitionIT {
     }
 
     @Test
-    public void nominalScheduleDataProviderTask() throws ModuleException, InterruptedException {
+    public void scheduleDataProviderTaskNominalAllSipCreated() throws InterruptedException {
         mockIngestClientResponseOK();
 
         Assert.assertEquals(14, productService
@@ -125,6 +124,46 @@ public class ScheduledDataProviderTasksTest extends AbstractAcquisitionIT {
         Assert.assertEquals(0, productService
                 .findBySavedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(16, productService
+                .findBySavedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySavedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+    }
+
+    @Test
+    public void scheduleDataProviderTaskUnauthorized() throws InterruptedException {
+        mockIngestClientResponseUnauthorized();
+
+        Assert.assertEquals(14, productService
+                .findBySavedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(2, productService
+                .findBySavedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySavedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+
+        Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
+
+        // Nothing should be change
+
+        Assert.assertEquals(14, productService
+                .findBySavedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(2, productService
+                .findBySavedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySavedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+    }
+
+    @Test
+    public void scheduleDataProviderTaskNominalPartialResponseContent() throws InterruptedException {
+        mockIngestClientResponsePartialContent("product-001","product-002","product-016");
+
+        Assert.assertEquals(14, productService
+                .findBySavedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(2, productService
+                .findBySavedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySavedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+
+        Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
+
+        Assert.assertEquals(3, productService
+                .findBySavedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(13, productService
                 .findBySavedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySavedAndStatusIn(false, ProductStatus.ACQUIRING).size());
     }

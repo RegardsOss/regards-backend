@@ -101,7 +101,7 @@ public class CNESJulianDate {
      * @return
      */
     public static Date toDate(Integer pJulianDays) {
-        return CNESJulianDate.toDate(pJulianDays, new Integer(0));
+        return CNESJulianDate.toDate(pJulianDays, 0);
     }
 
     /**

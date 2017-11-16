@@ -25,7 +25,7 @@ package fr.cnes.regards.modules.acquisition.tools;
  */
 public class FileInformationTypeEnum {
 
-    private String name;
+    private final String name;
 
     public static final FileInformationTypeEnum LAST_MODIFICATION_DATE = new FileInformationTypeEnum(
             "LAST_MODIFICATION_DATE");

@@ -52,7 +52,7 @@ import fr.cnes.regards.modules.acquisition.service.plugins.TestGenerateSipPlugin
 @ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class })
 @ActiveProfiles({ "test", "disableDataProviderTask" })
 @DirtiesContext
-public class GeneretaSIPStepTest extends AbstractAcquisitionIT {
+public class GenerateSIPStepTest extends AbstractAcquisitionIT {
 
     private static final String SESSION_ID = "session-identifier-999";
 
@@ -60,7 +60,7 @@ public class GeneretaSIPStepTest extends AbstractAcquisitionIT {
     private IPluginService pluginService;
 
     @Autowired
-    private IGenerateSipStep generateSIPStepImpl;
+    private IGenerateSipStep generateSipStep;
 
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
@@ -87,7 +87,7 @@ public class GeneretaSIPStepTest extends AbstractAcquisitionIT {
         productService.save(product);
 
         AcquisitionProcess process = new AcquisitionProcess(chain, product);
-        IStep generateSIPStep = generateSIPStepImpl;
+        IStep generateSIPStep = generateSipStep;
         generateSIPStep.setProcess(process);
         beanFactory.autowireBean(generateSIPStep);
         process.setCurrentStep(generateSIPStep);
@@ -112,7 +112,7 @@ public class GeneretaSIPStepTest extends AbstractAcquisitionIT {
         productService.save(product);
 
         AcquisitionProcess process = new AcquisitionProcess(chain, product);
-        IStep generateSIPStep = generateSIPStepImpl;
+        IStep generateSIPStep = generateSipStep;
         generateSIPStep.setProcess(process);
         beanFactory.autowireBean(generateSIPStep);
         process.setCurrentStep(generateSIPStep);

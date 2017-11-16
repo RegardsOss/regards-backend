@@ -33,12 +33,11 @@ import fr.cnes.regards.modules.acquisition.finder.MultipleFileNameFinder;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataStorageObjectDescriptionElement;
 import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 
 public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MultipleFileNameFinder.class);
-
+    
     // TODO CMZ à confirmer
     //    /**
     //     * Instancie le filePattern et permet de determiner le repertoire de depot dans l'archive.
@@ -92,9 +91,9 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
         dataStorageObject.setDataStorageObjectIdentifier(acquisitionFile.getName());
         // FILE_SIZE
         if (acquisitionFile.length() < 1024) {
-            dataStorageObject.setFileSize(new Long(1));
+            dataStorageObject.setFileSize(1L);
         } else {
-            dataStorageObject.setFileSize(new Long(acquisitionFile.length() / 1024));
+            dataStorageObject.setFileSize(Long.valueOf(acquisitionFile.length() / 1024));
         }
 
         // STORAGE > STORAGE_ON_LINE > ONLINE_PATH
@@ -140,8 +139,7 @@ public class MetaDataCreationPlugin implements IGenerateSIPPlugin {
     }
 
     @Override
-    public SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId)
-            throws ModuleException {
+    public SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId) throws ModuleException {
         // TODO CMZ à compléter
         return null;
     }

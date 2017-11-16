@@ -118,7 +118,7 @@ public class NetCdfFileHelper {
                 if (pValueType.equals(AttributeTypeEnum.TYPE_INTEGER)
                         || pValueType.equals(AttributeTypeEnum.TYPE_REAL)) {
                     int value = iter.getIntNext();
-                    valueList.add(new Double(value * scale));
+                    valueList.add(Double.valueOf(value * scale));
                 } else {
                     Object value = iter.getObjectNext();
                     valueList.add(value);

@@ -38,7 +38,7 @@ public class SetEnvisatLogvolDoris2GSeparator implements ICalculationClass {
     public Object calculateValue(Object newValue, AttributeTypeEnum type, PluginConfigurationProperties properties) {
 
         String value = (String) newValue;
-        String version = new String("");
+        String version = "";
 
         version = "DORIS=" + value.substring(0, 1) + "." + value.substring(1, 3) + " - DIODE=" + value.substring(3, 4)
                 + "." + value.substring(4, 5);

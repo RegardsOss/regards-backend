@@ -48,7 +48,7 @@ public class AcquisitionProcess {
     //     */
     //    protected Thread processThread_;
 
-    private ChainGeneration chainGeneration;
+    private final ChainGeneration chainGeneration;
 
     private Product product;
 

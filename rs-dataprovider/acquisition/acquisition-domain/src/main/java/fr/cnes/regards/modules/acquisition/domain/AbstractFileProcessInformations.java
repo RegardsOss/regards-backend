@@ -26,7 +26,7 @@ import java.time.OffsetDateTime;
  * @author Christophe Mertz
  * 
  */
-public abstract class FileProcessInformations {
+public abstract class AbstractFileProcessInformations {
 
     /**
      * Date a laquelle le process a traite le fichier

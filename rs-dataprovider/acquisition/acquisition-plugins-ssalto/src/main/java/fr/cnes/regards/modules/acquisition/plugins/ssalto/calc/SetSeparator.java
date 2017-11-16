@@ -38,7 +38,7 @@ public class SetSeparator implements ICalculationClass {
     public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
 
         String value = (String) pValue;
-        String version = new String("");
+        String version = "";
 
         version = value.substring(0, 2);
         version = version + "." + value.substring(2, 4);

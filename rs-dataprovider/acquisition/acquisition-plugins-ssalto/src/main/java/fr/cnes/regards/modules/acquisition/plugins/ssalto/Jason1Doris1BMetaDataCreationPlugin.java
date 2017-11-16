@@ -64,9 +64,9 @@ public class Jason1Doris1BMetaDataCreationPlugin extends MetaDataCreationPlugin 
         dataStorageObject.setDataStorageObjectIdentifier(dataObjectIdentifier);
         // FILE_SIZE
         if (acquisitionFile.length() < 1024) {
-            dataStorageObject.setFileSize(new Long(1));
+            dataStorageObject.setFileSize(1L);
         } else {
-            dataStorageObject.setFileSize(new Long(acquisitionFile.length() / 1024));
+            dataStorageObject.setFileSize(Long.valueOf(acquisitionFile.length() / 1024));
         }
         // STORAGE > STORAGE_ON_LINE > ONLINE_PATH
         // TODO CMZ à confirmer : suppression de setOnlinePath et setTransformer

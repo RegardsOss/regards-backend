@@ -296,19 +296,16 @@ public class AbstractAcquisitionIT {
                 .thenReturn(new ResponseEntity<Collection<SIPEntity>>(sips, HttpStatus.UNAUTHORIZED));
     }
 
-    protected void mockIngestClientResponsePartialContent() {
+    protected void mockIngestClientResponsePartialContent(String... sipIds) {
         Collection<SIPEntity> sips = new ArrayList<>();
-        SIPEntity sipEntity = new SIPEntity();
-        sipEntity.setReasonForRejection("bad SIP format");
-        sipEntity.setState(SIPState.REJECTED);
-        sipEntity.setSipId(FIRST_PRODUCT);
-        sips.add(sipEntity);
 
-        SIPEntity sipEntity2 = new SIPEntity();
-        sipEntity2.setReasonForRejection("access AIP error");
-        sipEntity2.setState(SIPState.REJECTED);
-        sipEntity2.setSipId(SECOND_PRODUCT);
-        sips.add(sipEntity2);
+        for (String sipId : sipIds) {
+            SIPEntity sipEntity = new SIPEntity();
+            sipEntity.setReasonForRejection("bad SIP format");
+            sipEntity.setState(SIPState.REJECTED);
+            sipEntity.setSipId(sipId);
+            sips.add(sipEntity);
+        }
 
         Mockito.when(ingestClient.ingest(Mockito.any()))
                 .thenReturn(new ResponseEntity<Collection<SIPEntity>>(sips, HttpStatus.PARTIAL_CONTENT));
