@@ -24,50 +24,57 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProcess;
 
 /**
+ * This interface defines a step to execute by an {@link AcquisitionProcess}.<br>
+ * A step runs treatments and used resources. 
  * 
  * @author Christophe Mertz
  */
 public interface IStep {
 
     /**
-     * methode dans laquelle l'etape initialise les ressources dont elle aura besoin lors de son execution, comme des
-     * connexion bd, des digester, des connections ftp etc...
+     * This method is used to initialize the resources required for the {@link IStep} 
      */
     public void getResources() throws AcquisitionException;
 
     /**
-     * permet de liberer les resources allouees dans getResources()
+     * This method aims to free reources used by the {@link IStep}
      */
     public void freeResources() throws AcquisitionException;
 
     /**
-     * permet d'arreter l'etape dans un etat correct
+     * This method aims to stop properly the {@link IStep} execution
      */
     public void stop();
 
     /**
-     * permet de reprendre l'execution de l'etape.
-     */
-    public void resume();
-
-    /**
-     * dans cette methode se trouve le code qui execute les instructions de l'etape
+     * This method aims to run the treatments for the {@link IStep}  
      */
     public void proceedStep() throws AcquisitionRuntimeException;
 
-    /**
-     * permet de mettre l'etape en veille pour pouvoir reprendre l'execution plus tard.
-     */
-    public void sleep();
-
     public String getName();
 
+    /**
+     * This method chains the methods getResources,  proceedStep and freeResources
+     * @throws ModuleException
+     */
     public void run() throws ModuleException;
 
+    /**
+     * Return the next {@link IStep} to execute after the current {@link IStep}
+     * @return the next {@link IStep}
+     */
     public IStep getNextStep();
 
+    /**
+     * Set the next {@link IStep} to execute after the current {@link IStep}
+     * @param step
+     */
     public void setNextStep(IStep step);
 
+    /**
+     * Set the {@link AcquisitionProcess} that shoul execute the current {@link IStep}
+     * @param process the {@link AcquisitionProcess}
+     */
     public void setProcess(AcquisitionProcess process);
 
 }

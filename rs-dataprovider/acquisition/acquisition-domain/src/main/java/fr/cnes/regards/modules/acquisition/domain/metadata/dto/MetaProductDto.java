@@ -36,7 +36,6 @@ public class MetaProductDto {
 
     private String checksumAlgorithm;
 
-    // TODO CMZ : cleanOriginalFile util ?
     private Boolean cleanOriginalFile;
 
     public Long getId() {

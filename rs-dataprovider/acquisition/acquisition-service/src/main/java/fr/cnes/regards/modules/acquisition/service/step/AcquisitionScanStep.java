@@ -158,14 +158,6 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
     }
 
     @Override
-    public void resume() {
-    }
-
-    @Override
-    public void sleep() {
-    }
-
-    @Override
     public String getName() {
         return this.getClass().getCanonicalName();
     }

@@ -76,12 +76,6 @@ public class Product implements IIdentifiable<Long> {
      */
     private static final int MAX_ENUM_LENGTH = 16;
 
-    //    /**
-    //     * TODO CMZ IDENT_PRODUCT_PREFIX à virer
-    //     * Prefixe d'identification des fichiers descripteurs de fichier
-    //     */
-    //    public static final String IDENT_PRODUCT_PREFIX = "PRODUCT_";
-
     /**
      * Unique id
      */
@@ -125,16 +119,6 @@ public class Product implements IIdentifiable<Long> {
     @JoinColumn(name = "meta_product_id", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "fk_product_id"),
             updatable = false)
     private MetaProduct metaProduct;
-
-    //    /**
-    //     * numero de version du produit
-    //     */
-    //    private int version;
-
-    //    /**
-    //     * nom du fichier de meta donnee du produit
-    //     */
-    //    private DescriptorFile metaDataFileName_;
 
     /**
      * Liste des fichiers composants les produits

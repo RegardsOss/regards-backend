@@ -24,13 +24,11 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProcess;
 
 /**
+ * This abstract class implements the interface {@link IStep} and defines the method {@link IStep#run()}.
  * 
  * @author Christophe Mertz
  */
 public abstract class AbstractStep implements IStep {
-
-    // TODO CMZ state à utiliser ?
-    protected int state;
 
     protected IStep nextStep;
 
@@ -40,6 +38,10 @@ public abstract class AbstractStep implements IStep {
         super();
     }
 
+    /**
+     * This method chains the methods getResources,  proceedStep and freeResources
+     * @throws ModuleException
+     */
     public void run() throws ModuleException {
         getResources();
         proceedStep();
@@ -47,70 +49,19 @@ public abstract class AbstractStep implements IStep {
     }
 
     /**
-     * methode dans laquelle l'etape initialise les ressources dont elle aura besoin lors de son execution, comme des
-     * connexion bd, des digester, des connections ftp etc...
+     * This method is used to initialize the resources required for the {@link IStep} 
      */
     public abstract void getResources() throws AcquisitionException;
 
     /**
-     * permet de liberer les resources allouees dans getResources()
+     * This method aims to free reources used by the {@link IStep}
      */
     public abstract void freeResources() throws AcquisitionException;
 
     /**
-     * permet d'arreter l'etape dans un etat correct
-     */
-    public abstract void stop();
-
-    /**
-     * permet de reprendre l'execution de l'etape.
-     */
-    public abstract void resume();
-
-    /**
-     * dans cette methode se trouve le code qui execute les instructions de l'etape
+     * This method aims to run the treatments for the {@link IStep}  
      */
     public abstract void proceedStep() throws AcquisitionRuntimeException;
-
-    //    /**
-    //     * met a jour l'attribut progress en base
-    //     * 
-    //     * @param pProgress
-    //     *            : l'indice de progression ( entre 0 et 100)
-    //     * @throws CommonRunException
-    //     *             en cas d'erreur lors de l'update en base
-    //     * @since 1.1
-    //     * @DM SIPNG-DM-0044-CN : creation
-    //     */
-    //    protected void updateProcessProgress(int pProgress) throws AcquisitionException {
-    //        try {
-    //            AbstractProcessInformations abstractProcessInformations = process_.getProcessInformations();
-    //            abstractProcessInformations.setProgress(new Integer(pProgress));
-    //            SsaltoControlers.getControler(abstractProcessInformations).update(abstractProcessInformations);
-    //        }
-    //        catch (SsaltoDomainException e) {
-    //            String exceptionMsg = CommonRunMessages.getInstance()
-    //                    .getMessage("ssalto.service.archiving.run.updating.progress.error");
-    //            process_.addErrorToReport(exceptionMsg, e);
-    //            throw new CommonRunException(exceptionMsg);
-    //        }
-    //    }
-
-    /**
-     * permet de mettre l'etape en veille pour pouvoir reprendre l'execution plus tard.
-     */
-    public abstract void sleep();
-
-    // TODO CMZ getName util ?
-    public abstract String getName();
-
-    public int getState() {
-        return state;
-    }
-
-    public void setState(int state) {
-        this.state = state;
-    }
 
     @Override
     public IStep getNextStep() {

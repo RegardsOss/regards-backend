@@ -32,28 +32,15 @@ public class FileAcquisitionInformations extends AbstractFileProcessInformations
     /**
      * Repertoire d'acquisition du fichier
      */
-    @Column(name="acquisition_directory")
+    @Column(name = "acquisition_directory")
     private String acquisitionDirectory = null;
-
-    //    /**
-    //     * ChainGeneration directory utilise pour acquerir le fichier. Cet attribut n'est utilise que pour l'acquisition de fichiers
-    //     * afin de mettre a jour le supply dir utilise pour l'acquisition du fichier. Afin de recuperer le repertoire
-    //     * d'acquisition du fichier, utiliser l'attribut acquisitionDirectory_.
-    //     * TODO CMZ ScanDirectory util ?
-    //     */
-    //    private ScanDirectory supplyDirectory = null;
 
     /**
      * Nom du repertoire de travail contenant le fichier associe<br>
      * Ce repertoire de travail est initialise lors de la detection d'un nouveau fichier.
      */
-    @Column(name="working_directory")
+    @Column(name = "working_directory")
     private String workingDirectory = null;
-
-    //    /**
-    //     * informations sur le processus qui a acquis le fichier
-    //     */
-    //    private AcquisitionProcessInformations processInformations_ = null;
 
     /**
      * Default constructor
@@ -70,14 +57,6 @@ public class FileAcquisitionInformations extends AbstractFileProcessInformations
     public void setAcquisitionDirectory(String acquisitionDirectory) {
         this.acquisitionDirectory = acquisitionDirectory;
     }
-
-    //    public ScanDirectory getSupplyDirectory() {
-    //        return supplyDirectory;
-    //    }
-    //
-    //    public void setSupplyDirectory(ScanDirectory supplyDirectory) {
-    //        this.supplyDirectory = supplyDirectory;
-    //    }
 
     public String getWorkingDirectory() {
         return workingDirectory;

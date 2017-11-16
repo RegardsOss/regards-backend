@@ -43,7 +43,11 @@ public enum ProductStatus {
     /**
      * The {@link Product} is in error
      */
-    ERROR;
+    ERROR,
+    /**
+     * The {@link Product} is saved
+     */
+    SAVED;
 
     @Override
     public String toString() {

@@ -82,9 +82,6 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     @PluginInit
     private void setUp() {
         LOGGER.info("setUp");
-
-        // TODO CMZ mettre les 2 paramètres en param du Plugin
-        //        this.sipCollectionBuilder = new SIPCollectionBuilder(ingestProcessingChain, sessionId);
     }
 
     @Override
@@ -92,7 +89,6 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
             throws AcquisitionException {
         for (AcquisitionFile af : acqFiles) {
             try {
-                // TODO CMZ à voir pas forcément des RAWDATA et peut-etre identique dans tous les cas
                 sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, af.getFile().toURI().toURL(),
                                                                         af.getChecksumAlgorithm(), af.getChecksum());
                 sipBuilder.addContentInformation();

@@ -91,30 +91,32 @@ public class ChaineGenerationService implements IChainGenerationService {
 
     @Override
     public boolean run(ChainGeneration chain) {
-        // TODO CMZ : il ne faut pas lancer une chaine en cours d'exécution
-        // non pas ici , c'est à gérér par celui qui appel
-
         // the ChainGeneration must be active
         if (!chain.isActive()) {
-            StringBuilder strBuilder = new StringBuilder("Unable to run the chain generation ");
-            strBuilder.append("<").append(chain.getLabel()).append("> : ").append("the chain is not active");
-            LOGGER.warn(strBuilder.toString());
+            LOGGER.warn("[{}] Unable to run a not active the chain generation ", chain.getLabel());
+            return false;
+        }
+
+        // the ChainGeneration must not be already running
+        if (chain.getRunning()) {
+            LOGGER.warn("[{}] Unable to run an already running chain generation ", chain.getLabel());
             return false;
         }
 
         // the difference between the previous activation date and current time must be greater than the periodicity
         if ((chain.getLastDateActivation() != null)
                 && chain.getLastDateActivation().plusSeconds(chain.getPeriodicity()).isAfter(OffsetDateTime.now())) {
-            StringBuilder strBuilder = new StringBuilder("Unable to run the chain generation ");
-            strBuilder.append("<").append(chain.getLabel()).append("> : ").append("the periodicity of ")
-                    .append(chain.getPeriodicity())
-                    .append(" seconds is not verified. The last activation date is to close from now.");
-            LOGGER.warn(strBuilder.toString());
+            LOGGER.warn("[{}] Unable to run the chain generation : the last activation date is to close from now with the periodicity {}. ",
+                        chain.getLabel(), chain.getPeriodicity());
             return false;
         }
 
+        chain.setRunning(true);
         chain.setSession(chain.getLabel() + ":" + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + ":"
                 + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
+        save(chain);
+
+        LOGGER.info("[{}] a new session is created", chain.getSession());
 
         // Create a ScanJob
         JobInfo acquisition = new JobInfo();

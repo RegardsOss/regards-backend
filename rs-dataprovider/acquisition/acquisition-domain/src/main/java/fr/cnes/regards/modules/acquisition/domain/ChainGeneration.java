@@ -86,6 +86,12 @@ public class ChainGeneration implements IIdentifiable<Long> {
     private Boolean active = false;
 
     /**
+     * <code>true</code> if the {@link ChainGeneration} is currently running, <code>false</code> otherwise
+     */
+    @Column
+    private Boolean running = false;
+
+    /**
      * The last activation date when an acquisition were running 
      */
     @Column(name = "last_date_activation")
@@ -212,6 +218,14 @@ public class ChainGeneration implements IIdentifiable<Long> {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public Boolean getRunning() {
+        return running;
+    }
+
+    public void setRunning(Boolean running) {
+        this.running = running;
     }
 
     public OffsetDateTime getLastDateActivation() {

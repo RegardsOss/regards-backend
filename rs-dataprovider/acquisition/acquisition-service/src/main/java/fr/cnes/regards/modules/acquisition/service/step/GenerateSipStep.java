@@ -119,10 +119,6 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
             productService.save(this.product);
 
-            //            processSipCollection();
-
-            //            publishSipCollections();
-
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             throw new AcquisitionRuntimeException(e.getMessage());
@@ -131,84 +127,6 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
         LOGGER.info("Stop generate SIP step for the product <{}> of the chain <{}>", product.getProductName(),
                     chainGeneration.getLabel());
     }
-
-    //    /**
-    //     * If the number of SIP in the {@link SIPCollection} is greater than {@link GenerateSipStep#sipCollectionBulkMaxSize},</br>
-    //     * the {@link SIPCollection} is publish to the ingest microservice 
-    //     * @throws ModuleException 
-    //     */
-    //    private void processSipCollection() throws ModuleException {
-    //        if (this.sipCollection.getFeatures().size() >= sipCollectionBulkMaxSize) {
-    //            publishSipCollections();
-    //        }
-    //    }
-
-    //    /**
-    //     * Send the {@link SIPCollection} to Ingest microservice 
-    //     * @throws ModuleException 
-    //     */
-    //    private void publishSipCollections() throws ModuleException {
-    //        LOGGER.info("[{}] Start publish SIP Collections", chainGeneration.getSession());
-    //
-    //        ResponseEntity<Collection<SIPEntity>> response = ingestClient.ingest(this.sipCollection);
-    //
-    //        // TODO CMZ en fonction du retour, il faudrait repercuter l'état sur le processing 
-    //        if (response.getStatusCode().equals(HttpStatus.CREATED)) {
-    //            manageSipCreated();
-    //        } else if (response.getStatusCode().equals(HttpStatus.PARTIAL_CONTENT)) {
-    //            manageSipNotCreated(response.getBody());
-    //        } else if (response.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
-    //            LOGGER.error("[{}] Unauthorized access to ingest microservice", chainGeneration.getSession());
-    //
-    //        } else if (response.getStatusCode().equals(HttpStatus.CONFLICT)) {
-    //            LOGGER.error("[{}] Unauthorized access to ingest microservice", chainGeneration.getSession());
-    //
-    //        }
-    //        this.sipCollection.getFeatures().clear();
-    //
-    //        LOGGER.info("[{}] End publish SIP Collections", chainGeneration.getSession());
-    //    }
-
-    //    private void manageSipCreated() throws ModuleException {
-    //        LOGGER.info("[{}] SIP collection has heen processed with success : {} ingested", chainGeneration.getSession(),
-    //                    this.sipCollection.getFeatures().size());
-    //        for (SIP sip : this.sipCollection.getFeatures()) {
-    //            setSipProductCreate(sip.getId());
-    //        }
-    //    }
-    //
-    //    private void manageSipNotCreated(Collection<SIPEntity> sipEntitys) throws ModuleException {
-    //        LOGGER.error("[{}] SIP collection has heen partially processed with success : {} ingested / {} rejected",
-    //                     chainGeneration.getSession(), this.sipCollection.getFeatures().size() - sipEntitys.size(),
-    //                     sipEntitys.size());
-    //        Set<String> sipIdError = new HashSet<>();
-    //        for (SIPEntity sipEntity : sipEntitys) {
-    //            LOGGER.error("[{}] SIP in error : productName=<{}>, raeson=<{}>", chainGeneration.getSession(),
-    //                         sipEntity.getSipId(), sipEntity.getReasonForRejection());
-    //            sipIdError.add(sipEntity.getSipId());
-    //        }
-    //
-    //        for (SIP sip : this.sipCollection.getFeatures()) {
-    //            if (!sipIdError.contains(sip.getId())) {
-    //                setSipProductCreate(sip.getId());
-    //            }
-    //        }
-    //    }
-    //
-    //    private void setSipProductCreate(String sipId) throws ModuleException {
-    //        Product product = productService.retrieve(sipId);
-    //        if (product == null) {
-    //            final StringBuffer strBuff = new StringBuffer();
-    //            strBuff.append("The product name <");
-    //            strBuff.append(sipId);
-    //            strBuff.append("> does not exist");
-    //            ModuleException ex = new ModuleException(strBuff.toString());
-    //            LOGGER.error(ex.getMessage());
-    //            throw ex;
-    //        }
-    //        product.setSaved(Boolean.TRUE);
-    //        productService.save(product);
-    //    }
 
     @Override
     public void getResources() throws AcquisitionException {
@@ -223,14 +141,6 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
     @Override
     public void stop() {
-    }
-
-    @Override
-    public void resume() {
-    }
-
-    @Override
-    public void sleep() {
     }
 
     @Override

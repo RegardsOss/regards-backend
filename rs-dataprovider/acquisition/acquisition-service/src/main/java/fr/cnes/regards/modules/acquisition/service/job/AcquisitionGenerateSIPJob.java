@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.acquisition.service.step.IStep;
 /**
  * This job runs a set of step :<br>
  * <li>a step {@link GenerateSipStep} to generate a SIP for a {@link Product}
- * <li>a step of preprocessing 
+ * <li>a step for post actions after the SIP has been generates and send to ingest 
  * 
  * This job runs for one {@link Product} 
  *  
@@ -78,8 +78,6 @@ public class AcquisitionGenerateSIPJob extends AbstractJob<Void> {
         generateSIPStep.setProcess(process);
         beanFactory.autowireBean(generateSIPStep);
         process.setCurrentStep(generateSIPStep);
-
-        // TODO CMZ preprocessing
 
         process.run();
 

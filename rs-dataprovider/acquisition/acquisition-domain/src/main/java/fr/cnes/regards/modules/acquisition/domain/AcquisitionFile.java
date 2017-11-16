@@ -83,12 +83,6 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
     @Column(name = "label", length = MAX_STRING_NAME_LENGTH, nullable = false)
     private String fileName;
 
-    //    /**
-    //     * identifiant dans le catalogue de diffusion
-    //     * TODO CMZ nodeIdentifier_ util ? pas utilisé
-    //     */
-    //    protected String nodeIdentifier_;
-
     /**
      * The data file's size in octets
      */
@@ -116,21 +110,11 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
             updatable = false)
     private MetaFile metaFile;
 
-    //    /**
-    //     * numero de version du fichier
-    //     */
-    //    protected int version_;
-
     /**
      * informations sur l'acquisition de ce fichier
      */
     @Embedded
     private FileAcquisitionInformations acquisitionInformations;
-
-    //    /**
-    //     * liste des processus de mise à jour du catalogue qui ont pris en compte ce fichier
-    //     */
-    //    protected int catalogueUpdateProcessList_;
 
     /**
      * Processing state of the data file
@@ -230,11 +214,6 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
         this.status = status;
     }
 
-    //    /**
-    //     * liste des processus de mise à jour du catalogue qui ont pris en compte ce fichier
-    //     */
-    //    protected int catalogueUpdateProcessList_;
-
     public MetaFile getMetaFile() {
         return metaFile;
     }
@@ -290,91 +269,6 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
     public void setAcquisitionInformations(FileAcquisitionInformations acquisitionInformations) {
         this.acquisitionInformations = acquisitionInformations;
     }
-
-    //    /**
-    //     * indique si le fichier est un doublon grace au status du fichier
-    //     */
-    //    public boolean isDuplicate() {
-    //        boolean result = false;
-    //        if (status.equals(AcquisitionFileStatus.DUPLICATE)) {
-    //            result = true;
-    //        }
-    //        return result;
-    //    }
-    //
-    //    /**
-    //     * Methode verifiant si le fichier passe en parametre et le fichier courant sont des doublons.<br>
-    //     * Un fichier ne peut etre un doublon que s'il est dans un etat stable : <li>TO_ARCHIVE <li>ARCHIVED <li>
-    //     * IN_CATALOGUE <li>TAR_CURRENT <li>ACQUIRED
-    //     * 
-    //     * @param pFile
-    //     *            le fichier doublon suppose
-    //     * @return
-    //     * @since 1.0
-    //     */
-    //
-    //    public boolean isADoublon(AcquisitionFile pFile) {
-    //        boolean isADoublon = false;
-    //        if (pFile.getStatus().equals(AcquisitionFileStatus.TO_ARCHIVE) || pFile.getStatus().equals(AcquisitionFileStatus.ARCHIVED)
-    //                || pFile.getStatus().equals(AcquisitionFileStatus.IN_CATALOGUE)
-    //                || pFile.getStatus().equals(AcquisitionFileStatus.TAR_CURRENT)
-    //                || pFile.getStatus().equals(AcquisitionFileStatus.ACQUIRED)) {
-    //            if (pFile.getFileName().equals(fileName) && (pFile.getVersion() == version_)
-    //                    && (!pFile.getStatus().equals(status))) {
-    //                isADoublon = true;
-    //            } else {
-    //                isADoublon = false;
-    //            }
-    //        } else {
-    //            isADoublon = false;
-    //        }
-    //        return isADoublon;
-    //    }
-    //
-    //    /**
-    //     * Methode comparant les nom
-    //     * 
-    //     * @param pFile
-    //     * @return
-    //     * @since 1.0
-    //     */
-    //    public boolean isSameFile(AcquisitionFile pFile) {
-    //        return (pFile.getFileName().equals(fileName));
-    //    }
-    //
-    //    /**
-    //     * Indique si le fichier doit etre supprime de l'archive locale.
-    //     */
-    //    public boolean isDeletedFromLocalArchive() {
-    //        return false;
-    //        //        return (ARCHIVE_TYPE_BOTH.equalsIgnoreCase(archiveType_))
-    //        //                || (ARCHIVE_TYPE_LOCAL.equalsIgnoreCase(archiveType_));
-    //    }
-    //
-    //    /**
-    //     * Indique si le fichier doit etre supprime du STAF
-    //     */
-    //    public boolean isDeletedFromStafArchive() {
-    //        return false;
-    //    }
-    //
-    //    /**
-    //     * Indique si le fichier est archive au STAF
-    //     */
-    //    public boolean isStoredInStafArchive() {
-    //        return false;
-    //    }
-    //
-    //    /**
-    //     * indique si le ssaltoFile se trouve dans un tar courant ou non.
-    //     */
-    //    public boolean isInCurrentTar() {
-    //        boolean result = false;
-    //        //        if (status.equals(AcquisitionFileStatus.TAR_CURRENT)) {
-    //        //            result = true;
-    //        //        }
-    //        return result;
-    //    }
 
     public File getFile() {
         File currentFile = null;

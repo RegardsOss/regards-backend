@@ -81,23 +81,11 @@ public class MetaFile implements IIdentifiable<Long> {
             foreignKey = @ForeignKey(name = "fk_acq_directory"))
     private final Set<ScanDirectory> scanDirectories = new HashSet<ScanDirectory>();
 
-    //    /**
-    //     * The data file name found
-    //     *  TODO CMZ util ? le nom du fichier est dans {@link AcquisitionFile}
-    //     */
-    //    @Column(name = "file_name", length = MAX_FILE_NAME_LENGTH)
-    //    private String fileName;
-
     /**
      * A folder used to move invalid data file
      */
     @Column(name = "invalid_folder_name", length = MAX_FILE_NAME_LENGTH)
     private String invalidFolder;
-
-    //    /**
-    //     * The {@link MetaProduct} 
-    //     */
-    //    private MetaProduct metaProduct;
 
     /**
      * A {@link String} corresponding to the data file mime-type
@@ -111,11 +99,6 @@ public class MetaFile implements IIdentifiable<Long> {
     @Column(name = "comment")
     @Type(type = "text")
     private String comment;
-
-    //    /**
-    //     * Version
-    //     */
-    //    private Integer version;
 
     /**
      * Default constructor

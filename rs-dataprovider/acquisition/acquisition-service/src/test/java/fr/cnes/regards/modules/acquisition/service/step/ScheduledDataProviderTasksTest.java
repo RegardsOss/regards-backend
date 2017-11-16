@@ -53,19 +53,8 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 @DirtiesContext
 public class ScheduledDataProviderTasksTest extends AbstractAcquisitionIT {
 
-    //    private static final Logger LOG = LoggerFactory.getLogger(ScheduledDataProviderTasks.class);
-
     @Value("${regards.acquisition.process.new.sip.ingest.delay}")
     private String scheduledTasksDelay;
-
-    //    @Autowired
-    //    private IPluginService pluginService;
-    //
-    //    @Autowired
-    //    private IGenerateSipStep generateSIPStepImpl;
-    //
-    //    @Autowired
-    //    private AutowireCapableBeanFactory beanFactory;
 
     @Before
     public void init() {
@@ -151,7 +140,7 @@ public class ScheduledDataProviderTasksTest extends AbstractAcquisitionIT {
 
     @Test
     public void scheduleDataProviderTaskNominalPartialResponseContent() throws InterruptedException {
-        mockIngestClientResponsePartialContent("product-001","product-002","product-016");
+        mockIngestClientResponsePartialContent("product-001", "product-002", "product-016");
 
         Assert.assertEquals(14, productService
                 .findBySavedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());

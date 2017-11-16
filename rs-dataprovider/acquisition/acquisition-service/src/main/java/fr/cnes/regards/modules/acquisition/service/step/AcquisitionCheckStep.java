@@ -158,28 +158,14 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
             LOGGER.info("Invalid file {}", acqFile.getFileName());
 
-            // Report status
-            //                process_.addEventToReport(AcquisitionMessages
-            //                        .getInstance()
-            //                        .getMessage("ssalto.service.acquisition.run.step.check.invalid.file", currentFile.getFileName()));
-
             // Set error
             acqFile.getAcquisitionInformations().setError(ErrorType.ERROR);
-
-            // Set process status
-            // process.setProcessWarningStatus();
 
             // Move invalid file in a dedicated directory
             moveInvalidFile(acqFile, currentFile);
 
         } else {
             LOGGER.error("Invalid status for file {}", acqFile.getFileName());
-
-            //                // Report error
-            //                // Do not throw error : check step must not be blocked
-            //                process_.addErrorToReport(AcquisitionMessages.getInstance()
-            //                        .getMessage("ssalto.service.acquisitionun.step..rcheck.unexpected.status",
-            //                                    currentFile.getFileName()));
         }
 
         return product;
@@ -203,8 +189,6 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
         calcProductStatus(currentProduct);
 
         acqFile.setProduct(currentProduct);
-        //    currentProduct.setVersion(checkPlugin.getProductVersion()); TODO CMZ à virer 
-        //    acqFile.setNodeIdentifier(checkPlugin.getNodeIdentifier()); TODO CMZ à virer
 
         return currentProduct;
     }
@@ -288,14 +272,6 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     @Override
     public void stop() {
-    }
-
-    @Override
-    public void resume() {
-    }
-
-    @Override
-    public void sleep() {
     }
 
     @Override

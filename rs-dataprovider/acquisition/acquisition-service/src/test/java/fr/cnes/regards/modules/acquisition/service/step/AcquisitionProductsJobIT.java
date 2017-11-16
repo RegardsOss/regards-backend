@@ -146,6 +146,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         Assert.assertTrue(aborteds.isEmpty());
 
         // Repeat the activation of the same chain
+        chain.setRunning(false);
         Assert.assertTrue(chainService.run(chain));
 
         waitJobEvent();
@@ -353,6 +354,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         chain.addScanAcquisitionParameter(TestScanProductsHeader.LAST_ACQ_DATE_PARAM,
                                           chainLastAcqDate.getLastDateActivation().toString());
 
+        chain.setRunning(false);
         Assert.assertTrue(chainService.run(chain));
 
         waitJobEvent();

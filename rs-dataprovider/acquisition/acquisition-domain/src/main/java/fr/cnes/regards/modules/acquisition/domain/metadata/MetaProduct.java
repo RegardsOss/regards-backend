@@ -46,7 +46,7 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 
 /**
- * This class reprensents a product type
+ * This class represents a product type
  * 
  * @author Christophe Mertz
  *
@@ -87,7 +87,7 @@ public class MetaProduct implements IIdentifiable<Long> {
 
     /**
      * <code>true</code> clean the original file
-     * TODO CMZ : cleanOriginalFile util ici ? non je ne pense pas
+     * TODO CMZ : cleanOriginalFile : à exploiter dans la tache asynchrone qui gère l'évènement SIP_STORED 
      */
     @NotNull
     @Column(name = "cleanOriginalFile")
@@ -103,69 +103,12 @@ public class MetaProduct implements IIdentifiable<Long> {
     @Column(name = "ingest_chain")
     private String ingestChain;
 
-    //    /**
-    //     * Les informations d'acquisition pour ce type de produit
-    //     */
-    //    private MetaProductAcquisitionInfos acquisitionInformations;
-
-    //        /**
-    //         * La fourniture a laquelle est rattache ce {@link MetaProduct}
-    //         */
-    //        private ChainGeneration supply_;
-
     /**
      * Default constructor
      */
     public MetaProduct() {
         super();
     }
-
-    //    public MetaProductAcquisitionInfos getAcquisitionInformations() {
-    //        return acquisitionInformations;
-    //    }
-    //
-    //    public List<MetaFile> getMetaFileList() {
-    //        return metaFileList;
-    //    }
-
-    //    public String getProductTypeName() {
-    //        return productTypeName;
-    //    }
-
-    //    public void setAcquisitionInformations(MetaProductAcquisitionInfos pAcquisitionInformations) {
-    //        acquisitionInformations = pAcquisitionInformations;
-    //        // FIXME etudier autre possibilite d'initialisation
-    //        if (acquisitionInformations.getMetaDataCreationPlugin() != null) {
-    //            acquisitionInformations.getMetaDataCreationPlugin().setMProduct(this);
-    //        }
-    //    }
-
-    //    public void setMetaFileList(List<MetaFile> pMetaFileList) {
-    //        metaFileList = pMetaFileList;
-    //        // for digester
-    //        updateMetafileMetaproduct();
-    //    }
-
-    //    public ChainGeneration getSupply() {
-    //        return supply_;
-    //    }
-    //
-    //    public void setSupply(ChainGeneration pSupply) {
-    //        supply_ = pSupply;
-    //    }
-
-    //    /**
-    //     * Utilise lors de la creation par le digester. Vu les references cyclique le digester ne peut pas initialise le
-    //     * metaproduct des metafiles.
-    //     * 
-    //     * @since 1.0
-    //     */
-    //    private void updateMetafileMetaproduct() {
-    //        for (MetaFile metafile : metaFileList) {
-    //            metafile.setMetaProduct(this);
-    //
-    //        }
-    //    }
 
     @Override
     public Long getId() {

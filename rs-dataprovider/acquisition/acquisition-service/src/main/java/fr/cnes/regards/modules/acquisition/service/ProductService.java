@@ -134,7 +134,7 @@ public class ProductService implements IProductService {
      * @param ingestChain an ingest processing chain
      */
     private void postSIPBulkRequest(String ingestChain) {
-        LOG.info("Send SIP for ingest chain [{}]", ingestChain);
+        LOG.info("[{}] Send SIP", ingestChain);
 
         // Get all the session
         Set<String> sessions = productRepository
@@ -242,7 +242,7 @@ public class ProductService implements IProductService {
                   sipCollection.getFeatures().size() - rejectedSips.size(), rejectedSips.size());
         Set<String> sipIdError = new HashSet<>();
         for (SIPEntity sipEntity : rejectedSips) {
-            LOG.error("[{}] SIP in error : productName=<{}>, raeson=<{}>", session, sipEntity.getSipId(),
+            LOG.error("[{}] SIP in error : productName=<{}>, reason=<{}>", session, sipEntity.getSipId(),
                       sipEntity.getReasonForRejection());
             sipIdError.add(sipEntity.getSipId());
         }
@@ -265,9 +265,10 @@ public class ProductService implements IProductService {
             strBuff.append(sipId);
             strBuff.append("> does not exist");
             LOG.error(strBuff.toString());
+        } else {
+            product.setSaved(Boolean.TRUE);
+            save(product);
         }
-        product.setSaved(Boolean.TRUE);
-        save(product);
     }
 
 }
