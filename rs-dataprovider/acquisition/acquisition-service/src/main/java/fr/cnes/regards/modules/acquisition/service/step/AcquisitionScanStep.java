@@ -67,12 +67,17 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
     @Override
     public void proceedStep() throws AcquisitionRuntimeException {
 
-        this.chainGeneration = process.getChainGeneration();
+        if (chainGeneration == null) {
+            String msg = "The chain generation is mandatory";
+            LOGGER.error(msg);
+            throw new AcquisitionRuntimeException(msg);
+        }
 
         // A plugin for the scan configuration is required
         if (this.chainGeneration.getScanAcquisitionPluginConf() == null) {
-            throw new RuntimeException("The required IAcquisitionScanPlugin is missing for the ChainGeneration <"
-                    + this.chainGeneration.getLabel() + ">");
+            String msg = "[" + this.chainGeneration.getLabel() + "] The required IAcquisitionScanPlugin is missing";
+            LOGGER.error(msg);
+            throw new RuntimeException(msg);
         }
 
         // Lunch the scan plugin
@@ -147,6 +152,7 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
 
     @Override
     public void getResources() throws AcquisitionException {
+        this.chainGeneration = process.getChainGeneration();
     }
 
     @Override

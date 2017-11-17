@@ -19,6 +19,7 @@
 
 package fr.cnes.regards.modules.acquisition.service.step;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,17 +54,24 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginParameterRepository;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.modules.acquisition.builder.AcquisitionFileBuilder;
 import fr.cnes.regards.modules.acquisition.builder.ChainGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
+import fr.cnes.regards.modules.acquisition.builder.ProductBuilder;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
@@ -77,6 +85,8 @@ import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
 import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
+import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
@@ -84,7 +94,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * @author Christophe Mertz
  *
  */
-public class AbstractAcquisitionIT {
+public abstract class AbstractAcquisitionIT extends AbstractRegardsServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAcquisitionIT.class);
 
@@ -103,7 +113,7 @@ public class AbstractAcquisitionIT {
 
     protected static final String DEFAULT_USER = "John Doe";
 
-    protected static final long WAIT_TIME = 60_000;
+    protected static final long WAIT_TIME = 5_000;
 
     protected static final String DEFAULT_TENANT = "PROJECT";
 
@@ -129,6 +139,9 @@ public class AbstractAcquisitionIT {
 
     @Autowired
     protected IProductService productService;
+
+    @Autowired
+    protected IPluginService pluginService;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -381,6 +394,28 @@ public class AbstractAcquisitionIT {
                     throw new IllegalArgumentException(type + " is not an handled type of JobEvent ");
             }
         }
+    }
+
+    protected Product createProduct(String productName, String session, MetaProduct metaProduct, boolean sended,
+            ProductStatus status, String... fileNames) {
+        Product product = ProductBuilder.build(productName).withStatus(status).withMetaProduct(metaProduct)
+                .isSended(sended).withSession(session).withIngestProcessingChain(metaProduct.getIngestChain()).get();
+
+        for (String acqf : fileNames) {
+            product.addAcquisitionFile(acquisitionFileService.save(AcquisitionFileBuilder.build(acqf)
+                    .withStatus(AcquisitionFileStatus.VALID.toString()).withMetaFile(metaFileMandatory).get()));
+        }
+
+        product.setSip(createSIP(productName));
+
+        return productService.save(product);
+    }
+
+    protected SIP createSIP(String productName) {
+        SIPBuilder sipBuilder = new SIPBuilder(productName);
+        sipBuilder.getPDIBuilder().addContextInformation("attribut-name",
+                                                         productName + "-" + LocalDateTime.now().toString());
+        return sipBuilder.build();
     }
 
 }

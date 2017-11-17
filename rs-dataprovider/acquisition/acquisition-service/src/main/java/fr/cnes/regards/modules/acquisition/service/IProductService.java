@@ -48,7 +48,7 @@ public interface IProductService {
     Product retrieve(String productName);
 
     public List<Product> findByStatus(ProductStatus status);
-    
-    public List<Product> findBySavedAndStatusIn( Boolean saved, ProductStatus ...status);
-    
+
+    public List<Product> findBySendedAndStatusIn(Boolean sended, ProductStatus... status);
+
 }

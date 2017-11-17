@@ -49,6 +49,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
 
 /**
  * 
@@ -150,7 +151,14 @@ public class ChainGeneration implements IIdentifiable<Long> {
      */
     @ManyToOne
     @JoinColumn(name = "generatesip_conf_id", foreignKey = @ForeignKey(name = "fk_generatesip_conf_id"))
-    private PluginConfiguration generateSIPPluginConf;
+    private PluginConfiguration generateSipPluginConf;
+
+    /**
+     * A {@link PluginConfiguration} of a {@link IPostProcessSipPlugin}
+     */
+    @ManyToOne
+    @JoinColumn(name = "postprocesssip_conf_id", foreignKey = @ForeignKey(name = "fk_postprocesssip_conf_id"))
+    private PluginConfiguration postProcessSipPluginConf;
 
     @Transient
     private final Map<String, String> scanAcquisitionParameter = new HashMap<>();
@@ -159,7 +167,7 @@ public class ChainGeneration implements IIdentifiable<Long> {
     private final Map<String, String> checkAcquisitionParameter = new HashMap<>();
 
     @Transient
-    private final Map<String, String> generateSIPParameter = new HashMap<>();
+    private final Map<String, String> generateSipParameter = new HashMap<>();
 
     @Override
     public int hashCode() {
@@ -284,12 +292,20 @@ public class ChainGeneration implements IIdentifiable<Long> {
         this.checkAcquisitionPluginConf = checkAcquisitionPluginConf;
     }
 
-    public PluginConfiguration getGenerateSIPPluginConf() {
-        return generateSIPPluginConf;
+    public PluginConfiguration getGenerateSipPluginConf() {
+        return generateSipPluginConf;
     }
 
-    public void setGenerateSIPPluginConf(PluginConfiguration generateSIPPluginConf) {
-        this.generateSIPPluginConf = generateSIPPluginConf;
+    public void setGenerateSipPluginConf(PluginConfiguration generateSIPPluginConf) {
+        this.generateSipPluginConf = generateSIPPluginConf;
+    }
+
+    public PluginConfiguration getPostProcessSipPluginConf() {
+        return postProcessSipPluginConf;
+    }
+
+    public void setPostProcessSipPluginConf(PluginConfiguration postProcessSipPluginConf) {
+        this.postProcessSipPluginConf = postProcessSipPluginConf;
     }
 
     public Map<String, String> getScanAcquisitionParameter() {
@@ -300,10 +316,6 @@ public class ChainGeneration implements IIdentifiable<Long> {
         this.scanAcquisitionParameter.put(name, value);
     }
 
-    public void removeScanAcquisitionParameter(String name) {
-        this.scanAcquisitionParameter.remove(name);
-    }
-
     public Map<String, String> getCheckAcquisitionParameter() {
         return checkAcquisitionParameter;
     }
@@ -312,12 +324,12 @@ public class ChainGeneration implements IIdentifiable<Long> {
         this.checkAcquisitionParameter.put(name, value);
     }
 
-    public Map<String, String> getGenerateSIPParameter() {
-        return generateSIPParameter;
+    public Map<String, String> getGenerateSipParameter() {
+        return generateSipParameter;
     }
 
-    public void addGenerateSIPParameter(String name, String value) {
-        this.generateSIPParameter.put(name, value);
+    public void addGenerateSipParameter(String name, String value) {
+        this.generateSipParameter.put(name, value);
     }
 
     public String getSession() {

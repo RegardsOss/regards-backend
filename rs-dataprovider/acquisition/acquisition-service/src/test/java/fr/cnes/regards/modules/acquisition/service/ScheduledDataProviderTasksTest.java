@@ -17,37 +17,27 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.cnes.regards.modules.acquisition.service.step;
-
-import java.time.LocalDateTime;
+package fr.cnes.regards.modules.acquisition.service;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.modules.acquisition.builder.AcquisitionFileBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
-import fr.cnes.regards.modules.acquisition.builder.ProductBuilder;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceConfiguration;
 import fr.cnes.regards.modules.acquisition.service.conf.MockedFeignClientConf;
-import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
+import fr.cnes.regards.modules.acquisition.service.step.AbstractAcquisitionIT;
 
 /**
  * @author Christophe Mertz
  *
  */
-@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class, MockedFeignClientConf.class })
 @ActiveProfiles({ "test" })
 @DirtiesContext
@@ -103,18 +93,18 @@ public class ScheduledDataProviderTasksTest extends AbstractAcquisitionIT {
         mockIngestClientResponseOK();
 
         Assert.assertEquals(14, productService
-                .findBySavedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+                .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(2, productService
-                .findBySavedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySavedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
 
         Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
 
         Assert.assertEquals(0, productService
-                .findBySavedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+                .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(16, productService
-                .findBySavedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySavedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
     }
 
     @Test
@@ -122,20 +112,20 @@ public class ScheduledDataProviderTasksTest extends AbstractAcquisitionIT {
         mockIngestClientResponseUnauthorized();
 
         Assert.assertEquals(14, productService
-                .findBySavedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+                .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(2, productService
-                .findBySavedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySavedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
 
         Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
 
         // Nothing should be change
 
         Assert.assertEquals(14, productService
-                .findBySavedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+                .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(2, productService
-                .findBySavedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySavedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
     }
 
     @Test
@@ -143,40 +133,18 @@ public class ScheduledDataProviderTasksTest extends AbstractAcquisitionIT {
         mockIngestClientResponsePartialContent("product-001", "product-002", "product-016");
 
         Assert.assertEquals(14, productService
-                .findBySavedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+                .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(2, productService
-                .findBySavedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySavedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
 
         Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
 
         Assert.assertEquals(3, productService
-                .findBySavedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+                .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(13, productService
-                .findBySavedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySavedAndStatusIn(false, ProductStatus.ACQUIRING).size());
-    }
-
-    private Product createProduct(String productName, String session, MetaProduct metaProduct, boolean saved,
-            ProductStatus status, String... fileNames) {
-        Product product = ProductBuilder.build(productName).withStatus(status).withMetaProduct(metaProduct)
-                .withSaved(saved).withSession(session).withIngestProcessingChain(metaProduct.getIngestChain()).get();
-
-        for (String acqf : fileNames) {
-            product.addAcquisitionFile(acquisitionFileService.save(AcquisitionFileBuilder.build(acqf)
-                    .withStatus(AcquisitionFileStatus.VALID.toString()).withMetaFile(metaFileMandatory).get()));
-        }
-
-        product.setSip(createSIP(productName));
-
-        return productService.save(product);
-    }
-
-    private SIP createSIP(String productName) {
-        SIPBuilder sipBuilder = new SIPBuilder(productName);
-        sipBuilder.getPDIBuilder().addContextInformation("attribut-name",
-                                                         productName + "-" + LocalDateTime.now().toString());
-        return sipBuilder.build();
+                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
     }
 
 }

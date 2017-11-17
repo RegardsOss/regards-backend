@@ -86,6 +86,11 @@ public final class ChainGenerationBuilder {
         chain.setDataSet(dataSet);
         return this;
     }
+    
+    public ChainGenerationBuilder withSession(String session) {
+        chain.setSession(session);
+        return this;
+    }
 
     public ChainGenerationBuilder withScanAcquisitionPluginConf(PluginConfiguration pluginconfId) {
         chain.setScanAcquisitionPluginConf(pluginconfId);

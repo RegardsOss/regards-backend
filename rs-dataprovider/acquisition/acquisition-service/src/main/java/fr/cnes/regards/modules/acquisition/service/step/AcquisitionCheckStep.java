@@ -85,7 +85,12 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     @Override
     public void proceedStep() throws AcquisitionRuntimeException {
-        this.chainGeneration = process.getChainGeneration();
+
+        if (chainGeneration == null) {
+            String msg = "The chain generation is mandatory";
+            LOGGER.error(msg);
+            throw new AcquisitionRuntimeException(msg);
+        }
 
         if (inProgressFileList == null || inProgressFileList.isEmpty()) {
             LOGGER.info("Any file to process for the acquisition chain <{}>", this.chainGeneration.getLabel());
@@ -94,8 +99,9 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
         // A plugin for the scan configuration is required
         if (this.chainGeneration.getCheckAcquisitionPluginConf() == null) {
-            throw new RuntimeException("The required IAcquisitionScanPlugin is missing for the ChainGeneration <"
-                    + this.chainGeneration.getLabel() + ">");
+            String msg = "[" + this.chainGeneration.getLabel() + "] The required ICheckFilePlugin is missing";
+            LOGGER.error(msg);
+            throw new RuntimeException(msg);
         }
 
         // Lunch the check plugin
@@ -183,8 +189,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
         }
 
         currentProduct.setSession(chainGeneration.getSession());
-        currentProduct
-                .setIngestChain(process.getChainGeneration().getMetaProduct().getIngestChain());
+        currentProduct.setIngestChain(process.getChainGeneration().getMetaProduct().getIngestChain());
         currentProduct.addAcquisitionFile(acqFile);
         calcProductStatus(currentProduct);
 
@@ -257,6 +262,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     @Override
     public void getResources() throws AcquisitionException {
+        this.chainGeneration = process.getChainGeneration();
 
         this.inProgressFileList = new ArrayList<>();
 

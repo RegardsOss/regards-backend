@@ -26,5 +26,4 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
  */
 @PluginInterface(description = "Plugin to detect file to acquire in some directories")
 public interface IAcquisitionScanDirectoryPlugin extends IAcquisitionScanPlugin {
-
 }

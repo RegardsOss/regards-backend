@@ -21,13 +21,11 @@ package fr.cnes.regards.modules.acquisition.service.step;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
 
@@ -48,11 +46,10 @@ import fr.cnes.regards.modules.acquisition.service.plugins.TestGenerateSipPlugin
  * @author Christophe Mertz
  *
  */
-@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class })
 @ActiveProfiles({ "test", "disableDataProviderTask" })
 @DirtiesContext
-public class GenerateSIPStepTest extends AbstractAcquisitionIT {
+public class GenerateSIPStepIT extends AbstractAcquisitionIT {
 
     private static final String SESSION_ID = "session-identifier-999";
 
@@ -70,10 +67,10 @@ public class GenerateSIPStepTest extends AbstractAcquisitionIT {
         String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
 
         // Configure a plugin IGenerateSIPPlugin
-        chain.setGenerateSIPPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
+        chain.setGenerateSipPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
                                                                             IGenerateSIPPlugin.class));
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addGenerateSIPParameter(TestGenerateSipPlugin.SESSION_PARAM, SESSION_ID);
+        chain.addGenerateSipParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addGenerateSipParameter(TestGenerateSipPlugin.SESSION_PARAM, SESSION_ID);
 
         // Create a Product
         Product product = productService.save(ProductBuilder.build(FIRST_PRODUCT).withStatus(ProductStatus.COMPLETED)

@@ -22,6 +22,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
  * {@link ChainGeneration} repository
@@ -30,5 +31,7 @@ import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
  */
 @Repository
 public interface IChainGenerationRepository extends CrudRepository<ChainGeneration, Long> {
+
+    ChainGeneration findByMetaProduct(MetaProduct metaProduct);
 
 }

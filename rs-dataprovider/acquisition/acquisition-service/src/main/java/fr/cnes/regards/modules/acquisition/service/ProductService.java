@@ -76,8 +76,8 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public List<Product> findBySavedAndStatusIn(Boolean saved, ProductStatus... status) {
-        return productRepository.findBySavedAndStatusIn(saved, status);
+    public List<Product> findBySendedAndStatusIn(Boolean sended, ProductStatus... status) {
+        return productRepository.findBySendedAndStatusIn(sended, status);
     }
 
 }

@@ -92,11 +92,11 @@ public class Product implements IIdentifiable<Long> {
     private ProductStatus status;
 
     /**
-     * <li><code>true</code> if the {@link Product} has been saved by ingest</br>
+     * <li><code>true</code> if the {@link Product} has been sended by ingest</br>
      * <li><code>false</code> otherwise
      */
-    @Column(name = "saved")
-    private Boolean saved = false;
+    @Column(name = "sended")
+    private Boolean sended = false;
 
     /**
      * The product name
@@ -217,12 +217,12 @@ public class Product implements IIdentifiable<Long> {
         this.session = session;
     }
 
-    public Boolean isSaved() {
-        return saved;
+    public Boolean isSended() {
+        return sended;
     }
 
-    public void setSaved(Boolean saved) {
-        this.saved = saved;
+    public void setSended(Boolean send) {
+        this.sended = send;
     }
 
     public SIP getSip() {

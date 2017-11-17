@@ -117,29 +117,10 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
         LOGGER.info("[{}] End acquisition job for the chain <{}>", chainGeneration.getSession());
     }
 
-    @Override
-    public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
-        if (parameters.isEmpty()) {
-            throw new JobParameterMissingException("No parameter provided");
-        }
-        if (parameters.size() != 1) {
-            throw new JobParameterInvalidException("Only one parameter is expected.");
-        }
-        JobParameter param = parameters.values().iterator().next();
-        if (!ChainGenerationJobParameter.isCompatible(param)) {
-            throw new JobParameterInvalidException(
-                    "Please use ChainGenerationJobParameter in place of JobParameter (this "
-                            + "class is here to facilitate your life so please use it.");
-        }
-
-        chainGeneration = param.getValue();
-    }
-
     private int submitProducts() {
         List<Product> products = new ArrayList<>();
-        products.addAll(productService.findBySavedAndStatusIn(Boolean.FALSE, ProductStatus.COMPLETED,
-                                                              ProductStatus.FINISHED));
+        products.addAll(productService.findBySendedAndStatusIn(Boolean.FALSE, ProductStatus.COMPLETED,
+                                                               ProductStatus.FINISHED));
         int nbJobQueued = 0;
         for (Product apr : products) {
             if (createJob(apr)) {
@@ -159,10 +140,29 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
                                   new ProductJobParameter(product.getProductName()));
         acquisition.setClassName(AcquisitionGenerateSIPJob.class.getName());
         acquisition.setOwner(authResolver.getUser());
-        acquisition.setPriority(50);
+        acquisition.setPriority(50); //TODO CMZ priority ?
 
         acquisition = jobInfoService.createAsQueued(acquisition);
 
         return acquisition != null;
+    }
+
+    @Override
+    public void setParameters(Map<String, JobParameter> parameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
+        if (parameters.isEmpty()) {
+            throw new JobParameterMissingException("No parameter provided");
+        }
+        if (parameters.size() != 1) {
+            throw new JobParameterInvalidException("Only one parameter is expected.");
+        }
+        JobParameter param = parameters.values().iterator().next();
+        if (!ChainGenerationJobParameter.isCompatible(param)) {
+            throw new JobParameterInvalidException(
+                    "Please use ChainGenerationJobParameter in place of JobParameter (this "
+                            + "class is here to facilitate your life so please use it.");
+        }
+
+        chainGeneration = param.getValue();
     }
 }

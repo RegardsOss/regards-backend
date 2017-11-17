@@ -47,17 +47,17 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByStatus(ProductStatus status);
 
-    List<Product> findBySavedAndStatusIn(Boolean saved, ProductStatus... status);
+    List<Product> findBySendedAndStatusIn(Boolean sended, ProductStatus... status);
 
-    @Query("select distinct p.ingestChain from Product p where p.saved=?1 and p.status in ?2")
-    Set<String> findDistinctIngestChainBySavedAndStatusIn(Boolean saved, ProductStatus... status);
+    @Query("select distinct p.ingestChain from Product p where p.sended=?1 and p.status in ?2")
+    Set<String> findDistinctIngestChainBySendedAndStatusIn(Boolean sended, ProductStatus... status);
 
-    @Query("select distinct p.session from Product p where p.ingestChain=?1 and p.saved=?2 and p.status in ?3")
-    Set<String> findDistinctSessionByIngestChainAndSavedAndStatusIn(String ingestChain, Boolean saved,
+    @Query("select distinct p.session from Product p where p.ingestChain=?1 and p.sended=?2 and p.status in ?3")
+    Set<String> findDistinctSessionByIngestChainAndSendedAndStatusIn(String ingestChain, Boolean sended,
             ProductStatus... status);
 
     @Lock(LockModeType.PESSIMISTIC_READ)
-    Page<Product> findAllByIngestChainAndSessionAndSavedAndStatusIn(String ingestChain, String session, Boolean saved,
+    Page<Product> findAllByIngestChainAndSessionAndSendedAndStatusIn(String ingestChain, String session, Boolean sended,
             Pageable pageable, ProductStatus... status);
 
 }

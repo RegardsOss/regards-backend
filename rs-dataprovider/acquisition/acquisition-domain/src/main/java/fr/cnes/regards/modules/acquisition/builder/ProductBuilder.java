@@ -76,8 +76,8 @@ public final class ProductBuilder {
         return this;
     }
 
-    public ProductBuilder withSaved(boolean saved) {
-        product.setSaved(saved);
+    public ProductBuilder isSended(boolean sended) {
+        product.setSended(sended);
         return this;
     }
 

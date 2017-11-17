@@ -76,7 +76,7 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
 
         // Get all the ingestChain for that at least one product is ready to be send to ingest
         Set<String> ingestChains = productRepository
-                .findDistinctIngestChainBySavedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED);
+                .findDistinctIngestChainBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED);
 
         if (ingestChains.size() == 0) {
             LOG.info("Any products ready for SIP creation");
@@ -101,8 +101,8 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
 
         // Get all the session
         Set<String> sessions = productRepository
-                .findDistinctSessionByIngestChainAndSavedAndStatusIn(ingestChain, false, ProductStatus.COMPLETED,
-                                                                     ProductStatus.FINISHED);
+                .findDistinctSessionByIngestChainAndSendedAndStatusIn(ingestChain, false, ProductStatus.COMPLETED,
+                                                                      ProductStatus.FINISHED);
         for (String session : sessions) {
             boolean stop = false;
             while (!stop) {
@@ -120,8 +120,8 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
      */
     private boolean postSIPOnePage(String ingestChain, String session, Pageable pageable) {
         Page<Product> page = productRepository
-                .findAllByIngestChainAndSessionAndSavedAndStatusIn(ingestChain, session, false, pageable,
-                                                                   ProductStatus.COMPLETED, ProductStatus.FINISHED);
+                .findAllByIngestChainAndSessionAndSendedAndStatusIn(ingestChain, session, false, pageable,
+                                                                    ProductStatus.COMPLETED, ProductStatus.FINISHED);
         if (page.getContent().size() == 0) {
             return false;
         }
@@ -151,7 +151,7 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
      * Send the {@link SIPCollection} to Ingest microservice
      * @param session
      * @param sipCollection
-     * @return the number of {@link Product} that has been saved in Ingest
+     * @return the number of {@link Product} that has been sended in Ingest
      */
     private int postSipCollection(String session, SIPCollection sipCollection) {
         LOG.info("[{}] Start publish SIP Collections", session);
@@ -177,10 +177,10 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
     }
 
     /**
-     * 
-     * @param session
-     * @param sipCollection
-     * @return the number of {@link Product} that has been saved in Ingest
+     * SIP bulk request has been processed with success, change the {@link Product} state.
+     * @param session the current session
+     * @param sipCollection the {@link SIPCollection} send to Ingest
+     * @return the number of {@link Product} that has been sended in Ingest
      */
     private int responseSipCreated(String session, SIPCollection sipCollection) {
         LOG.info("[{}] SIP collection has heen processed with success : {} SIP ingested", session,
@@ -192,11 +192,11 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
     }
 
     /**
-     * 
-     * @param session
-     * @param rejectedSips
-     * @param sipCollection
-     * @return the number of {@link Product} that has been saved in Ingest
+     * SIP bulk request has been processed and some SIP has been rejected, change the {@link Product} state.
+     * @param session the current session
+     * @param rejectedSips the {@link Collection} of {@link SIPEntity} that have been rejected
+     * @param sipCollection the {@link SIPCollection} send to Ingest
+     * @return the number of {@link Product} that has been sended in Ingest
      */
     private int responseSipPartiallyCreated(String session, Collection<SIPEntity> rejectedSips,
             SIPCollection sipCollection) {
@@ -220,6 +220,10 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
         return nbSipOK;
     }
 
+    /**
+     * Change the state of a {@link Product} and persists it.
+     * @param sipId the {@link Product} identifier
+     */
     private void setSipProductSaved(String sipId) {
         Product product = productService.retrieve(sipId);
         if (product == null) {
@@ -229,7 +233,7 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
             strBuff.append("> does not exist");
             LOG.error(strBuff.toString());
         } else {
-            product.setSaved(Boolean.TRUE);
+            product.setSended(Boolean.TRUE);
             productService.save(product);
         }
     }

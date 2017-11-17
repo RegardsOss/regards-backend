@@ -123,7 +123,7 @@ public class ChaineGenerationService implements IChainGenerationService {
         acquisition.setParameters(new ChainGenerationJobParameter(chain));
         acquisition.setClassName(AcquisitionProductsJob.class.getName());
         acquisition.setOwner(authResolver.getUser());
-        acquisition.setPriority(50);
+        acquisition.setPriority(50); //TODO CMZ priority ?
 
         acquisition = jobInfoService.createAsQueued(acquisition);
 

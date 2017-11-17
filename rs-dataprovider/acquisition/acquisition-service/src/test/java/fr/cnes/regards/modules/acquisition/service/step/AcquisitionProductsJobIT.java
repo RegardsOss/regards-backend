@@ -25,18 +25,14 @@ import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
@@ -60,14 +56,10 @@ import fr.cnes.regards.modules.acquisition.service.plugins.TestScanProductsWithM
  * @author Christophe Mertz
  *
  */
-@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class, MockedFeignClientConf.class })
-@ActiveProfiles({ "test", "disableDataProviderTask" })
+@ActiveProfiles({ "test", "disableDataProviderTask", "testAmqp" })
 @DirtiesContext
 public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
-
-    @Autowired
-    private IPluginService pluginService;
 
     @Test
     public void runActiveChainGeneration() throws ModuleException, InterruptedException {
@@ -99,7 +91,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
         // 5 products are ready to be send to ingest
-        Assert.assertEquals(5, faileds.size());
+        Assert.assertEquals(5, faileds.size()); // because there is no GenerateSIPPluginis defined for the chain
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(1, chainService.retrieveAll().size());
@@ -210,7 +202,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
-        Assert.assertEquals(3, faileds.size());
+        Assert.assertEquals(3, faileds.size()); // because there is no GenerateSIPPlugin defined for the chain
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(1, chainService.retrieveAll().size());
@@ -269,7 +261,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
-        Assert.assertEquals(3, faileds.size());
+        Assert.assertEquals(3, faileds.size()); // because there is no GenerateSIPPlugin defined for the chain
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(1, chainService.retrieveAll().size());
@@ -335,7 +327,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         Assert.assertEquals(3, productService.findByStatus(ProductStatus.ACQUIRING).size());
 
         for (Product product : productService.retrieveAll()) {
-            Assert.assertFalse(product.isSaved());
+            Assert.assertFalse(product.isSended());
         }
 
         ChainGeneration chainLastAcqDate = chainService.retrieve(chain.getId());

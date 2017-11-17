@@ -72,7 +72,7 @@ public class ChaineGenerationServiceIT {
     private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
-    private IChainGenerationService chainfoService;
+    private IChainGenerationService chainService;
 
     @Autowired
     private IMetaProductService metaProductService;
@@ -98,7 +98,7 @@ public class ChaineGenerationServiceIT {
     @Test
     public void createChaine() {
         // Create a first generation chain
-        ChainGeneration chain = chainfoService
+        ChainGeneration chain = chainService
                 .save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME).get());
         Assert.assertNotNull(chain);
         Assert.assertNotNull(chain.getId());
@@ -110,7 +110,7 @@ public class ChaineGenerationServiceIT {
 
         // Set the MetaProduct to the ChainGeneration
         chain.setMetaProduct(metaProduct);
-        chain = chainfoService.save(chain);
+        chain = chainService.save(chain);
         Assert.assertNotNull(chain.getId());
 
         // Create a Product for the uniq MetaProduct
@@ -118,7 +118,7 @@ public class ChaineGenerationServiceIT {
         Assert.assertNotNull(aProduct);
 
         // Get the ChainGeneration
-        List<ChainGeneration> chains = chainfoService.retrieveAll();
+        List<ChainGeneration> chains = chainService.retrieveAll();
         Assert.assertNotNull(chains);
         Assert.assertEquals(1, chains.size());
         Assert.assertEquals(CHAINE_LABEL, chains.get(0).getLabel());
@@ -128,7 +128,7 @@ public class ChaineGenerationServiceIT {
     @Test
     public void deleteAProduct() {
         // Create a first generation chain
-        ChainGeneration chain = chainfoService
+        ChainGeneration chain = chainService
                 .save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME).get());
         Assert.assertNotNull(chain);
         Assert.assertNotNull(chain.getId());
@@ -140,7 +140,7 @@ public class ChaineGenerationServiceIT {
 
         // Set the MetaProduct to the ChainGeneration
         chain.setMetaProduct(metaProduct);
-        chain = chainfoService.save(chain);
+        chain = chainService.save(chain);
         Assert.assertNotNull(chain.getId());
 
         // Create a Product for the uniq MetaProduct

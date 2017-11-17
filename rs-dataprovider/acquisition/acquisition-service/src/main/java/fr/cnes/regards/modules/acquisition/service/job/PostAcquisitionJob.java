@@ -30,28 +30,26 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
 import fr.cnes.regards.modules.acquisition.domain.job.ProductJobParameter;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
-import fr.cnes.regards.modules.acquisition.service.step.GenerateSipStep;
-import fr.cnes.regards.modules.acquisition.service.step.IGenerateSipStep;
+import fr.cnes.regards.modules.acquisition.service.step.IPostAcquisitionStep;
 import fr.cnes.regards.modules.acquisition.service.step.IStep;
 
 /**
  * This job runs a set of step :<br>
- * <li>a step {@link GenerateSipStep} to generate a SIP for a {@link Product}
- * <li>a step for post actions after the SIP has been generates and send to ingest 
+ * <li>a step {@link IPostAcquisitionStep}
  * 
  * This job runs for one {@link Product} 
  *  
  * @author Christophe Mertz
  *
  */
-public class AcquisitionGenerateSIPJob extends AbstractJob<Void> {
+public class PostAcquisitionJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionGenerateSIPJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostAcquisitionJob.class);
 
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
@@ -60,23 +58,27 @@ public class AcquisitionGenerateSIPJob extends AbstractJob<Void> {
     private IProductService productService;
 
     @Autowired
-    private IGenerateSipStep generateSipStep;
+    private IChainGenerationRepository chainGenerationRepository;
 
-    private ChainGeneration chainGeneration;
+    @Autowired
+    private IPostAcquisitionStep postAcquisitionStep;
 
     private String productName;
 
     @Override
     public void run() {
-        LOGGER.info("[{}] Start generate SIP job for the product <{}>", chainGeneration.getSession(), productName);
+        LOGGER.info("Start POST acquisition SIP job for the product <{}>", productName);
 
-        AcquisitionProcess process = new AcquisitionProcess(chainGeneration, productService.retrieve(productName));
+        Product product = productService.retrieve(productName);
+        ChainGeneration chainGeneration = chainGenerationRepository.findByMetaProduct(product.getMetaProduct());
 
-        // IAcquisitionScanStep is the first step
-        IStep genSipStep = generateSipStep;
-        genSipStep.setProcess(process);
-        beanFactory.autowireBean(genSipStep);
-        process.setCurrentStep(genSipStep);
+        AcquisitionProcess process = new AcquisitionProcess(chainGeneration, product);
+
+        // IPostAcquisitionStep is the first step
+        IStep postSipStep = postAcquisitionStep;
+        postSipStep.setProcess(process);
+        beanFactory.autowireBean(postSipStep);
+        process.setCurrentStep(postSipStep);
 
         process.run();
     }
@@ -87,20 +89,15 @@ public class AcquisitionGenerateSIPJob extends AbstractJob<Void> {
         if (parameters.isEmpty()) {
             throw new JobParameterMissingException("No parameter provided");
         }
-        if (parameters.size() != 2) {
-            throw new JobParameterInvalidException("Two parameters are expected.");
+        if (parameters.size() != 1) {
+            throw new JobParameterInvalidException("One parameter is expected");
         }
 
         for (JobParameter jp : parameters.values()) {
-            if (ChainGenerationJobParameter.isCompatible(jp)) {
-                chainGeneration = jp.getValue();
+            if (ProductJobParameter.isCompatible(jp)) {
+                productName = jp.getValue();
             } else {
-                if (ProductJobParameter.isCompatible(jp)) {
-                    productName = jp.getValue();
-                } else {
-                    throw new JobParameterInvalidException(
-                            "Please use ChainGenerationJobParameter or ProductJobParameter in place of JobParameter");
-                }
+                throw new JobParameterInvalidException("Please use ProductJobParameter in place of JobParameter");
             }
         }
     }

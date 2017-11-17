@@ -46,13 +46,12 @@ import fr.cnes.regards.modules.acquisition.domain.model.DateTimeAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.GeoAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.LongAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.StringAttribute;
-import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 
 /**
- * A default {@link Plugin} of type {@link IAcquisitionScanDirectoryPlugin}.
+ * A simple {@link Plugin} of type {@link IGenerateSIPPlugin}.
  *
  * @author Christophe Mertz
  */
@@ -77,7 +76,7 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     private String sessionId;
 
     @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
-    private MetaProductDto metaProductDto0;
+    private MetaProductDto metaProductDto;
 
     @PluginInit
     private void setUp() {

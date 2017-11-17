@@ -16,29 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.plugins.ssalto;
-
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSIP;
+package fr.cnes.regards.modules.acquisition.service.step;
 
 /**
  * 
  * @author Christophe Mertz
- *
+ * 
  */
-public class PostAcquisitionPlugin1Impl implements IPostProcessSIP {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(PostAcquisitionPlugin1Impl.class);
-
-    @Override
-    public void runPlugin(List<AcquisitionFile> acquiredFiles, String sipDirectory) throws ModuleException {
-        LOGGER.info("Execution of post acquisition plugin 1 OK");
-    }
+public interface IPostAcquisitionStep extends IStep {
 
 }

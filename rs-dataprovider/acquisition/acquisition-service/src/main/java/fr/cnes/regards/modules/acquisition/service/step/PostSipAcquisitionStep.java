@@ -19,26 +19,17 @@
 
 package fr.cnes.regards.modules.acquisition.service.step;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
-import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
+import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
@@ -49,15 +40,12 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
  */
 @MultitenantTransactional
 @Service
-public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
+public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisitionStep {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GenerateSipStep.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostSipAcquisitionStep.class);
 
     @Autowired
     private IPluginService pluginService;
-
-    @Autowired
-    private IAcquisitionFileService acquisitionFileService;
 
     @Autowired
     private IProductService productService;
@@ -65,16 +53,6 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
     private ChainGeneration chainGeneration;
 
     private Product product;
-
-    @Value("${regards.acquisition.sip.max.bulk.size:5000}")
-    private int sipCollectionBulkMaxSize;
-
-    //    private SIPCollection sipCollection;
-
-    /**
-     * The List of {@link AcquisitionFile} for the current {@link Product}
-     */
-    private List<AcquisitionFile> acqFiles;
 
     @Override
     public void proceedStep() throws AcquisitionRuntimeException {
@@ -85,45 +63,23 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
             throw new AcquisitionRuntimeException(msg);
         }
 
-        LOGGER.info("[{}] Start generate SIP step for the product <{}>", chainGeneration.getSession(),
+        LOGGER.info("[{}] Start POST acqusition SIP step for the product <{}>", chainGeneration.getSession(),
                     product.getProductName());
 
-        if (this.acqFiles.isEmpty()) {
-            LOGGER.info("Any file to process for the acquisition chain <{}>", this.chainGeneration.getLabel());
-            return;
-        }
-
         // A plugin for the generate SIP configuration is required
-        if (this.chainGeneration.getGenerateSipPluginConf() == null) {
-            String msg = "[" + this.chainGeneration.getLabel() + "] The required IGenerateSIPPlugin is missing";
+        if (this.chainGeneration.getPostProcessSipPluginConf() == null) {
+            String msg = "[" + this.chainGeneration.getLabel() + "] The required IPostProcessSipPlugin is missing";
             LOGGER.error(msg);
-            throw new RuntimeException(msg);
+            throw new AcquisitionRuntimeException(msg);
         }
 
         // Launch the generate plugin
         try {
-            // build the plugin parameters
-            PluginParametersFactory factory = PluginParametersFactory.build();
-            for (Map.Entry<String, String> entry : this.chainGeneration.getGenerateSipParameter().entrySet()) {
-                factory.addParameterDynamic(entry.getKey(), entry.getValue());
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("[{}] Add parameter <{}> with value : {}", chainGeneration.getSession(),
-                                 entry.getKey(), entry.getValue());
-                }
-            }
-
             // get an instance of the plugin
-            IGenerateSIPPlugin generateSipPlugin = pluginService
-                    .getPlugin(this.chainGeneration.getGenerateSipPluginConf().getId(),
-                               factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
-
-            // TODO CMZ attention à ne calculer le SIP que si c'est nécessaire
-            // si pas saved dans ingest, mais avec le SIP déjà calculé, il faut essayer de l'envoyer sans le recalculer
-            // Calc the SIP and save the Product
-            this.product.setSip(generateSipPlugin.runPlugin(this.acqFiles, Optional.of(chainGeneration.getDataSet())));
-
+            IPostProcessSipPlugin postProcessPlugin = pluginService
+                    .getPlugin(this.chainGeneration.getPostProcessSipPluginConf().getId());
+            postProcessPlugin.runPlugin(product, chainGeneration);
             productService.save(this.product);
-
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             throw new AcquisitionRuntimeException(e.getMessage());
@@ -136,9 +92,8 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
     @Override
     public void getResources() throws AcquisitionException {
-        this.chainGeneration = process.getChainGeneration();
         this.product = process.getProduct();
-        this.acqFiles = acquisitionFileService.findByProduct(this.product);
+        this.chainGeneration = process.getChainGeneration();
     }
 
     @Override

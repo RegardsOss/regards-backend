@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlug
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 
 /**
- * A default {@link Plugin} of type {@link IAcquisitionScanDirectoryPlugin}.
+ * A simple {@link Plugin} of type {@link IAcquisitionScanDirectoryPlugin}.
  *
  * @author Christophe Mertz
  * @since 1.0-SNAPSHOT
@@ -89,7 +89,7 @@ public class TestScanDirectoryPlugin extends AbstractAcquisitionScanPlugin imple
                                                     "SMM_TUC_AXVCNE20081201_150235_19900101_000000_20380118_191407"));
         acqFileList.add(createAcquisitionFileMandatory("data/income",
                                                        "CS_OPER_AUX_DORUSO_20100704T073447_20100705T010524_0001.DBL"));
-        
+
         AcquisitionFile optionalAcqFile = createAcquisitionFileOptional("data/income",
                                                                         "CS_OPER_AUX_DORUSO_20100704T073447_20100705T010524_0001.HDR");
         if (optionalAcqFile != null) {
