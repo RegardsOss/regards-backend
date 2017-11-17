@@ -40,8 +40,8 @@ public @interface Event {
     fr.cnes.regards.framework.amqp.event.Target target();
 
     /**
-     * This mode is only used for {@link ISubscribable} event. {@link WorkerMode#UNICAST can be used, so a single
-     * subscriber will receive the publish event. Otherwise, all subscribers will receive the published event.<br/>
+     * This mode is only used for {@link ISubscribable} event. {@link WorkerMode#UNICAST} can be used, so a single
+     * subscriber will receive the published event. Otherwise, all subscribers will receive the published event.<br/>
      *
      * @return event {@link WorkerMode}
      */

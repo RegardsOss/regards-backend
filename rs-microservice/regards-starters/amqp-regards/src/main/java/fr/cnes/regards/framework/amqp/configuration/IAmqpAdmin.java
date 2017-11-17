@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.amqp.configuration;
 
 import java.util.Optional;
+import java.util.Properties;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.Exchange;
@@ -77,4 +78,31 @@ public interface IAmqpAdmin {
      * @return routing key
      */
     public String getRoutingKey(Optional<Queue> queue, WorkerMode workerMode);
+
+    /**
+     * Purge the queue that manages the specified event
+     * @param eventType event type
+     * @param noWait true to not await completion of the purge
+     */
+    public void purgeQueue(String queueName, boolean noWait);
+
+    /**
+     * Get queue properties
+     * @param queueName queue name
+     * @return properties
+     */
+    public Properties getQueueProperties(String queueName);
+
+    /**
+     * @param queueName queue name
+     * @return true if the queued existed and was deleted
+     */
+    public boolean deleteQueue(String queueName);
+
+    /**
+     * @param queueName queue name
+     * @param unused true if the queue should be deleted only if not in use
+     * @param empty true if the queue should be deleted only if not in use
+     */
+    public void deleteQueue(String queueName, boolean unused, boolean empty);
 }

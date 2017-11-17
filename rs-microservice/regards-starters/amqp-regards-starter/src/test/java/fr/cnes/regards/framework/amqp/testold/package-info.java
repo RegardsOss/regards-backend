@@ -16,21 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp.test.event;
-
 /**
- * @author Marc Sordi
+ * @author svissier
  *
  */
-public abstract class AbstractEvent {
-
-    private String message = "Default message!";
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-}
+package fr.cnes.regards.framework.amqp.testold;

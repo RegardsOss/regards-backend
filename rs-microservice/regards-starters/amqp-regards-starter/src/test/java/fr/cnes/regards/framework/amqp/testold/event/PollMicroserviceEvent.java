@@ -16,21 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp.test.event;
+package fr.cnes.regards.framework.amqp.testold.event;
+
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.IPollable;
+import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
  * @author Marc Sordi
  *
  */
-public abstract class AbstractEvent {
+@Event(target = Target.MICROSERVICE)
+public class PollMicroserviceEvent extends AbstractEvent implements IPollable {
 
-    private String message = "Default message!";
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
 }

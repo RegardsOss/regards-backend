@@ -18,19 +18,22 @@
  */
 package fr.cnes.regards.framework.amqp.test.event;
 
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.Target;
+
 /**
+ * {@link ISubscribable} information event
+ *
  * @author Marc Sordi
  *
  */
-public abstract class AbstractEvent {
+@Event(target = Target.ALL)
+public class Info extends AbstractEvent implements ISubscribable {
 
-    private String message = "Default message!";
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
+    public static Info create(String message) {
+        Info info = new Info();
+        info.setMessage(message);
+        return info;
     }
 }

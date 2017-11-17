@@ -111,10 +111,11 @@ public class AmqpAutoConfiguration {
     public IRabbitVirtualHostAdmin rabbitVirtualHostAdmin(ITenantResolver pTenantResolver,
             final MultitenantSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory,
             final RestOperations restOperations) {
-        return new RabbitVirtualHostAdmin(pTenantResolver, amqpProperties.getRabbitmqUserName(),
-                amqpProperties.getRabbitmqPassword(), amqpProperties.getAmqpManagementHost(),
-                amqpProperties.getAmqpManagementPort(), restOperations, pSimpleRoutingConnectionFactory,
-                amqpProperties.getRabbitmqAddresses(), bootstrapProperties.getBootstrapTenants());
+        return new RabbitVirtualHostAdmin(amqpManagmentProperties.getMode(), pTenantResolver,
+                amqpProperties.getRabbitmqUserName(), amqpProperties.getRabbitmqPassword(),
+                amqpProperties.getAmqpManagementHost(), amqpProperties.getAmqpManagementPort(), restOperations,
+                pSimpleRoutingConnectionFactory, amqpProperties.getRabbitmqAddresses(),
+                bootstrapProperties.getBootstrapTenants());
     }
 
     @Bean

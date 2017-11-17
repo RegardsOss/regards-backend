@@ -130,9 +130,15 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     }
 
     @Override
-    public <T extends ISubscribable> void subscribeTo(Class<T> eventType, IHandler<T> pHandler) {
-        subscribeTo(eventType, pHandler, EventUtils.getWorkerMode(eventType),
-                    EventUtils.getTargetRestriction(eventType));
+    public <T extends ISubscribable> void subscribeTo(Class<T> eventType, IHandler<T> receiver) {
+        subscribeTo(eventType, receiver, EventUtils.getWorkerMode(eventType),
+                    EventUtils.getTargetRestriction(eventType), false);
+    }
+
+    @Override
+    public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue) {
+        subscribeTo(eventType, receiver, EventUtils.getWorkerMode(eventType),
+                    EventUtils.getTargetRestriction(eventType), purgeQueue);
     }
 
     /**
@@ -150,9 +156,10 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      *            {@link WorkerMode}
      * @param target
      *            communication scope
+     * @param purgeQueue true to purge queue if already exists
      */
     protected <E extends ISubscribable, H extends IHandler<E>> void subscribeTo(final Class<E> eventType, H handler,
-            final WorkerMode workerMode, final Target target) {
+            final WorkerMode workerMode, final Target target, boolean purgeQueue) {
 
         LOGGER.debug("Subscribing to event {} with target {} and mode {}", eventType.getName(), target, workerMode);
 
@@ -167,10 +174,9 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         Multimap<String, Queue> vhostQueues = ArrayListMultimap.create();
 
         for (final String tenant : tenants) {
-            // CHECKSTYLE:OFF
             String virtualHost = resolveVirtualHost(tenant);
             // Declare AMQP elements
-            Queue queue = declareElements(eventType, tenant, virtualHost, handler, workerMode, target);
+            Queue queue = declareElements(eventType, tenant, virtualHost, handler, workerMode, target, purgeQueue);
             vhostQueues.put(virtualHost, queue);
         }
 
@@ -199,14 +205,19 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      * @param handler event handler
      * @param workerMode worker mode
      * @param target target restriction
+     * @param purgeQueue true to purge queue if already exists
      */
     protected Queue declareElements(Class<? extends ISubscribable> eventType, final String tenant, String virtualHost,
-            IHandler<? extends ISubscribable> handler, final WorkerMode workerMode, final Target target) {
+            IHandler<? extends ISubscribable> handler, final WorkerMode workerMode, final Target target,
+            boolean purgeQueue) {
         Queue queue;
         try {
             virtualHostAdmin.bind(virtualHost);
             Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target);
             queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, Optional.ofNullable(handler));
+            if (purgeQueue) {
+                amqpAdmin.purgeQueue(queue.getName(), false);
+            }
             amqpAdmin.declareBinding(queue, exchange, workerMode);
         } finally {
             virtualHostAdmin.unbind();
@@ -286,7 +297,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                 Target target = EventUtils.getTargetRestriction(eventType);
 
                 // Declare AMQP elements
-                Queue queue = declareElements(eventType, tenant, virtualHost, handler, workerMode, target);
+                Queue queue = declareElements(eventType, tenant, virtualHost, handler, workerMode, target, false);
                 // Manage listeners
                 List<Queue> queues = new ArrayList<>();
                 queues.add(queue);
@@ -294,5 +305,4 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             }
         }
     }
-
 }

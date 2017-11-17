@@ -16,21 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp.test.event;
+package fr.cnes.regards.framework.amqp.test.handler;
+
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.test.event.Info;
 
 /**
  * @author Marc Sordi
  *
  */
-public abstract class AbstractEvent {
+public class AbstractInfoSubscriber extends AbstractSubscriber<Info> {
 
-    private String message = "Default message!";
+    private Info lastInfo;
 
-    public String getMessage() {
-        return message;
+    @Override
+    protected void doHandle(TenantWrapper<Info> wrapper) {
+        this.lastInfo = wrapper.getContent();
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public Info getLastInfo() {
+        return lastInfo;
+    }
+
+    public void setLastInfo(Info lastInfo) {
+        this.lastInfo = lastInfo;
     }
 }

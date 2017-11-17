@@ -115,7 +115,9 @@ public abstract class AbstractPublisher implements IPublisherContract {
         if (tenant != null) {
             publish(tenant, resolveVirtualHost(tenant), event, workerMode, target, priority);
         } else {
-            LOGGER.error("[AMQP Publisher] Unable to publish event {} because no tenant found.", event.getClass());
+            String errorMessage = String.format("Unable to publish event %s cause no tenant found.", event.getClass());
+            LOGGER.error(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
     }
 

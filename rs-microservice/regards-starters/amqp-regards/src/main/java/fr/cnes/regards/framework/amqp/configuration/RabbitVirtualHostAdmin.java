@@ -130,10 +130,13 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
      */
     private final String[] bootstrapTenants;
 
+    private final VirtualHostMode mode;
+
     /**
      *
      * Constructor used to initialize properties from AmqpProperties
      *
+     * @param mode {@link VirtualHostMode}
      * @param tenantResolver retrieve all tenants
      * @param rabbitmqUserName user name
      * @param rabbitmqPassword password
@@ -144,11 +147,12 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
      * @param rabbitAddresses server addresses
      * @param startupTenants tenant to manage at startup
      */
-    public RabbitVirtualHostAdmin(ITenantResolver tenantResolver, String rabbitmqUserName, String rabbitmqPassword,
-            String amqpManagementHost, Integer amqpManagementPort, RestOperations restOperations,
-            MultitenantSimpleRoutingConnectionFactory simpleRoutingConnectionFactory, String rabbitAddresses,
-            String[] startupTenants) {
+    public RabbitVirtualHostAdmin(VirtualHostMode mode, ITenantResolver tenantResolver, String rabbitmqUserName,
+            String rabbitmqPassword, String amqpManagementHost, Integer amqpManagementPort,
+            RestOperations restOperations, MultitenantSimpleRoutingConnectionFactory simpleRoutingConnectionFactory,
+            String rabbitAddresses, String[] startupTenants) {
         super();
+        this.mode = mode;
         this.tenantResolver = tenantResolver;
         this.restOperations = restOperations;
         this.simpleRoutingConnectionFactory = simpleRoutingConnectionFactory;
@@ -165,21 +169,27 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
      */
     @PostConstruct
     public void init() {
-        // Initialize AMQP manager VHOST
+
+        // Initialize AMQP instance manager VHOST
         addVhost(AmqpConstants.AMQP_INSTANCE_MANAGER);
 
-        // Check if we have startup tenant vhost to manage
-        if (bootstrapTenants != null) {
-            for (String tenant : bootstrapTenants) {
-                addVhost(tenant);
+        if (VirtualHostMode.SINGLE.equals(mode)) {
+            // Initialize AMQP multitenant manager VHOST
+            addVhost(AmqpConstants.AMQP_MULTITENANT_MANAGER);
+        } else {
+            // Check if we have startup tenant vhost to manage
+            if (bootstrapTenants != null) {
+                for (String tenant : bootstrapTenants) {
+                    addVhost(RabbitVirtualHostAdmin.getVhostName(tenant));
+                }
             }
-        }
 
-        // Retrieve already configured tenant
-        Set<String> tenants = tenantResolver.getAllTenants();
-        if (tenants != null) {
-            for (String tenant : tenants) {
-                addVhost(tenant);
+            // Retrieve already configured tenant
+            Set<String> tenants = tenantResolver.getAllTenants();
+            if (tenants != null) {
+                for (String tenant : tenants) {
+                    addVhost(RabbitVirtualHostAdmin.getVhostName(tenant));
+                }
             }
         }
     }

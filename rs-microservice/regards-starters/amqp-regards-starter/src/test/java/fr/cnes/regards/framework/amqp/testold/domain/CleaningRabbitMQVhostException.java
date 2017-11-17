@@ -16,21 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp.test.event;
+package fr.cnes.regards.framework.amqp.testold.domain;
 
 /**
- * @author Marc Sordi
+ * @author svissier
  *
  */
-public abstract class AbstractEvent {
+public class CleaningRabbitMQVhostException extends Exception {
 
-    private String message = "Default message!";
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
 
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
+    public CleaningRabbitMQVhostException(String pMsg) {
+        super(pMsg);
     }
 }

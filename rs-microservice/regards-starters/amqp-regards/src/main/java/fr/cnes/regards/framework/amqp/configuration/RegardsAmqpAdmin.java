@@ -126,7 +126,6 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     private String getUnicastExchangeName(Target target) {
         StringBuilder builder = new StringBuilder();
         builder.append(UNICAST_NAMESPACE);
-        builder.append(DOT);
         builder.append(manageExchangeTargetRestriction(target));
         return builder.toString();
     }
@@ -140,7 +139,6 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     private String getBroadcastExchangeName(String eventName, Target target) {
         StringBuilder builder = new StringBuilder();
         builder.append(BROADCAST_NAMESPACE);
-        builder.append(DOT);
         builder.append(manageExchangeTargetRestriction(target));
         builder.append(DOT);
         builder.append(eventName);
@@ -159,9 +157,11 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
                 // No prefix cause no target restriction
                 break;
             case MICROSERVICE:
+                builder.append(DOT);
                 builder.append(microserviceTypeId);
                 break;
             case INSTANCE:
+                builder.append(DOT);
                 builder.append(microserviceTypeId);
                 builder.append(DOT);
                 builder.append(microserviceInstanceId);
@@ -217,7 +217,6 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         builder.append(UNICAST_NAMESPACE);
         builder.append(DOT);
         builder.append(tenant);
-        builder.append(DOT);
         builder.append(manageExchangeTargetRestriction(target));
         builder.append(DOT);
         builder.append(eventType.getName());
@@ -283,37 +282,22 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         return routingKey;
     }
 
-    /**
-     * Purge the queue that manages the specified event
-     * @param eventType event type
-     * @param noWait true to not await completion of the purge
-     */
+    @Override
     public void purgeQueue(String queueName, boolean noWait) {
         rabbitAdmin.purgeQueue(queueName, noWait);
     }
 
-    /**
-     * Get queue properties
-     * @param queueName queue name
-     * @return properties
-     */
+    @Override
     public Properties getQueueProperties(String queueName) {
         return rabbitAdmin.getQueueProperties(queueName);
     }
 
-    /**
-     * @param queueName queue name
-     * @return true if the queued existed and was deleted
-     */
+    @Override
     public boolean deleteQueue(String queueName) {
         return rabbitAdmin.deleteQueue(queueName);
     }
 
-    /**
-     * @param queueName queue name
-     * @param unused true if the queue should be deleted only if not in use
-     * @param empty true if the queue should be deleted only if not in use
-     */
+    @Override
     public void deleteQueue(String queueName, boolean unused, boolean empty) {
         rabbitAdmin.deleteQueue(queueName, unused, empty);
     }

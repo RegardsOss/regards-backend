@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.framework.amqp.test.event;
 
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.WorkerMode;
+
 /**
+ * {@link ISubscribable} information event
+ *
  * @author Marc Sordi
  *
  */
-public abstract class AbstractEvent {
-
-    private String message = "Default message!";
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
+@Event(target = Target.ALL, mode = WorkerMode.UNICAST)
+public class UnicastInfo extends AbstractEvent implements ISubscribable {
 }

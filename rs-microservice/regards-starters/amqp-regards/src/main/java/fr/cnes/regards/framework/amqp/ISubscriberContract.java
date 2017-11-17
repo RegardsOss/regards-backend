@@ -36,22 +36,27 @@ public interface ISubscriberContract {
     /**
      * Subscribe to this {@link ISubscribable} event
      *
-     * @param <E>
-     *            {@link ISubscribable} event
-     * @param eventType
-     *            {@link ISubscribable} event
-     * @param receiver
-     *            event {@link IHandler}
+     * @param <E> {@link ISubscribable} event
+     * @param eventType {@link ISubscribable} event
+     * @param receiver event {@link IHandler}
      */
     <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver);
 
     /**
+     * Subscribe to this {@link ISubscribable} event
+     *
+     * @param <E> @link ISubscribable} event
+     * @param eventType {@link ISubscribable} event
+     * @param receiver event {@link IHandler}
+     * @param purgeQueue true to purge queue if already exists. Useful in tests.
+     */
+    <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue);
+
+    /**
      * Unsubscribe from this {@link ISubscribable} event.
      *
-     * @param <T>
-     *            {@link ISubscribable} event
-     * @param eventType
-     *            {@link ISubscribable} event
+     * @param <T> {@link ISubscribable} event
+     * @param eventType {@link ISubscribable} event
      */
     <T extends ISubscribable> void unsubscribeFrom(Class<T> eventType);
 }
