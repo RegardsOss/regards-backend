@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.notification.domain;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -34,6 +33,8 @@ import javax.persistence.ManyToMany;
 import javax.persistence.SequenceGenerator;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
+import java.util.List;
 
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -111,8 +112,14 @@ public class Notification implements IIdentifiable<Long> {
      * The status read or unread
      */
     @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private NotificationStatus status;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private NotificationType type;
 
     /**
      * The title
@@ -127,59 +134,17 @@ public class Notification implements IIdentifiable<Long> {
         return date;
     }
 
-    @Override
-    public Long getId() {
-        return id;
-    }
-
-    /**
-     * @return the message
-     */
-    public String getMessage() {
-        return message;
-    }
-
-    /**
-     * @return the projectUserRecipients
-     */
-    public List<ProjectUser> getProjectUserRecipients() {
-        return projectUserRecipients;
-    }
-
-    /**
-     * @return the roleRecipients
-     */
-    public List<Role> getRoleRecipients() {
-        return roleRecipients;
-    }
-
-    /**
-     * @return the sender
-     */
-    public String getSender() {
-        return sender;
-    }
-
-    /**
-     * @return the status
-     */
-    public NotificationStatus getStatus() {
-        return status;
-    }
-
-    /**
-     * @return the title
-     */
-    public String getTitle() {
-        return title;
-    }
-
     /**
      * @param pDate
      *            the date to set
      */
     public void setDate(final OffsetDateTime pDate) {
         date = pDate;
+    }
+
+    @Override
+    public Long getId() {
+        return id;
     }
 
     /**
@@ -191,11 +156,25 @@ public class Notification implements IIdentifiable<Long> {
     }
 
     /**
+     * @return the message
+     */
+    public String getMessage() {
+        return message;
+    }
+
+    /**
      * @param pMessage
      *            the message to set
      */
     public void setMessage(final String pMessage) {
         message = pMessage;
+    }
+
+    /**
+     * @return the projectUserRecipients
+     */
+    public List<ProjectUser> getProjectUserRecipients() {
+        return projectUserRecipients;
     }
 
     /**
@@ -207,11 +186,25 @@ public class Notification implements IIdentifiable<Long> {
     }
 
     /**
+     * @return the roleRecipients
+     */
+    public List<Role> getRoleRecipients() {
+        return roleRecipients;
+    }
+
+    /**
      * @param pRoleRecipients
      *            the roleRecipients to set
      */
     public void setRoleRecipients(final List<Role> pRoleRecipients) {
         roleRecipients = pRoleRecipients;
+    }
+
+    /**
+     * @return the sender
+     */
+    public String getSender() {
+        return sender;
     }
 
     /**
@@ -223,11 +216,25 @@ public class Notification implements IIdentifiable<Long> {
     }
 
     /**
+     * @return the status
+     */
+    public NotificationStatus getStatus() {
+        return status;
+    }
+
+    /**
      * @param pStatus
      *            the status to set
      */
     public void setStatus(final NotificationStatus pStatus) {
         status = pStatus;
+    }
+
+    /**
+     * @return the title
+     */
+    public String getTitle() {
+        return title;
     }
 
     /**
@@ -238,4 +245,11 @@ public class Notification implements IIdentifiable<Long> {
         title = pTitle;
     }
 
+    public NotificationType getType() {
+        return type;
+    }
+
+    public void setType(NotificationType type) {
+        this.type = type;
+    }
 }

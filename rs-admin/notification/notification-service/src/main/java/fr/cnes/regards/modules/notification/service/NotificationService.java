@@ -24,7 +24,9 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -45,6 +47,8 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserServ
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 
 /**
@@ -89,29 +93,32 @@ public class NotificationService implements INotificationService {
      */
     private final IProjectUsersClient projectUserClient;
 
+    private final ApplicationEventPublisher applicationEventPublisher;
+
     /**
      * Creates a {@link NotificationService} wired to the given {@link INotificationRepository}.
      *
-     * @param pProjectUserService
+     * @param projectUserService
      *            Autowired by Spring. Must not be {@literal null}.
-     * @param pNotificationRepository
+     * @param notificationRepository
      *            Autowired by Spring. Must not be {@literal null}.
-     * @param pProjectUserRepository
+     * @param projectUserRepository
      *            Autowired by Spring. Must not be {@literal null}.
-     * @param pRoleRepository
+     * @param roleRepository
      *            Autowired by Spring. Must not be {@literal null}.
-     * @param pRolesClient
+     * @param projectUserClient
      *            Autowired by Spring. Must not be {@literal null}.
      */
-    public NotificationService(final IProjectUserService pProjectUserService,
-            final INotificationRepository pNotificationRepository, final IProjectUserRepository pProjectUserRepository,
-            final IRoleRepository pRoleRepository, final IProjectUsersClient pRolesClient) {
+    public NotificationService(final IProjectUserService projectUserService,
+            final INotificationRepository notificationRepository, final IProjectUserRepository projectUserRepository,
+            final IRoleRepository roleRepository, final IProjectUsersClient projectUserClient, final ApplicationEventPublisher applicationEventPublisher) {
         super();
-        projectUserService = pProjectUserService;
-        notificationRepository = pNotificationRepository;
-        projectUserRepository = pProjectUserRepository;
-        roleRepository = pRoleRepository;
-        projectUserClient = pRolesClient;
+        this.projectUserService = projectUserService;
+        this.notificationRepository = notificationRepository;
+        this.projectUserRepository = projectUserRepository;
+        this.roleRepository = roleRepository;
+        this.projectUserClient = projectUserClient;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     /*
@@ -134,22 +141,28 @@ public class NotificationService implements INotificationService {
      */
     @Override
     public Notification createNotification(final NotificationDTO pDto) {
-        final Notification notification = new Notification();
+        Notification notification = new Notification();
         notification.setDate(OffsetDateTime.now());
         notification.setMessage(pDto.getMessage());
         notification.setTitle(pDto.getTitle());
         notification.setSender(pDto.getSender());
         notification.setStatus(NotificationStatus.UNREAD);
+        notification.setType(pDto.getType());
 
-        final List<ProjectUser> projectUserRecipients = projectUserRepository
-                .findByEmailIn(pDto.getProjectUserRecipients());
+        List<ProjectUser> projectUserRecipients = projectUserRepository.findByEmailIn(pDto.getProjectUserRecipients());
         notification.setProjectUserRecipients(projectUserRecipients);
 
-        final List<Role> roleRecipients = roleRepository.findByNameIn(pDto.getRoleRecipients());
+        List<Role> roleRecipients = roleRepository.findByNameIn(pDto.getRoleRecipients());
         notification.setRoleRecipients(roleRecipients);
 
+        // check the notification type and send it immediately if FATAL or ERROR
+        if (notification.getType() == NotificationType.FATAL || notification.getType() == NotificationType.ERROR) {
+            applicationEventPublisher.publishEvent(new NotificationToSendEvent(notification));
+        }
+
         // Save it in db
-        notificationRepository.save(notification);
+        notification = notificationRepository.save(notification);
+
 
         // TODO Trigger NOTIFICATION event on message broker
 
@@ -225,11 +238,10 @@ public class NotificationService implements INotificationService {
             return Stream.concat(usersStream,
                                  rolesStream.flatMap(// Define a function mapping each role to its project users by
                                                      // calling the roles client
-                                                     r -> HateoasUtils
-                                                             .retrieveAllPages(100,
-                                                                               pageable -> retrieveRoleProjectUserList(r,
-                                                                                                                       pageable))
-                                                             .stream())
+                                                     r -> HateoasUtils.retrieveAllPages(100,
+                                                                                        pageable -> retrieveRoleProjectUserList(
+                                                                                                r,
+                                                                                                pageable)).stream())
                                          .distinct());
         }
     }
@@ -240,7 +252,8 @@ public class NotificationService implements INotificationService {
                 .retrieveRoleProjectUserList(pRole.getId(), pPageable.getPageNumber(), pPageable.getPageSize());
 
         if (!response.getStatusCode().equals(HttpStatus.OK) || (response.getBody() == null)) {
-            LOG.warn("Error retrieving projet users for role {}. Remote administration response is {}", pRole.getName(),
+            LOG.warn("Error retrieving projet users for role {}. Remote administration response is {}",
+                     pRole.getName(),
                      response.getStatusCode());
         }
         return response;

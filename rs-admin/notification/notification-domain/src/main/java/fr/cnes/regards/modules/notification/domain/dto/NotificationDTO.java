@@ -22,6 +22,7 @@ import java.util.List;
 
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.notification.domain.Notification;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
 
 /**
  * DTO representing a {@link Notification}.
@@ -56,39 +57,26 @@ public class NotificationDTO {
      */
     private String title;
 
+    private NotificationType type;
+
+    public NotificationDTO() {
+    }
+
+    public NotificationDTO(String message, List<String> projectUserRecipients, List<String> roleRecipients,
+            String sender, String title, NotificationType type) {
+        this.message = message;
+        this.projectUserRecipients = projectUserRecipients;
+        this.roleRecipients = roleRecipients;
+        this.sender = sender;
+        this.title = title;
+        this.type = type;
+    }
+
     /**
      * @return the message
      */
     public String getMessage() {
         return message;
-    }
-
-    /**
-     * @return the projectUserRecipients
-     */
-    public List<String> getProjectUserRecipients() {
-        return projectUserRecipients;
-    }
-
-    /**
-     * @return the roleRecipients
-     */
-    public List<String> getRoleRecipients() {
-        return roleRecipients;
-    }
-
-    /**
-     * @return the sender
-     */
-    public String getSender() {
-        return sender;
-    }
-
-    /**
-     * @return the title
-     */
-    public String getTitle() {
-        return title;
     }
 
     /**
@@ -100,11 +88,25 @@ public class NotificationDTO {
     }
 
     /**
+     * @return the projectUserRecipients
+     */
+    public List<String> getProjectUserRecipients() {
+        return projectUserRecipients;
+    }
+
+    /**
      * @param pProjectUserRecipients
      *            the projectUserRecipients to set
      */
     public void setProjectUserRecipients(final List<String> pProjectUserRecipients) {
         projectUserRecipients = pProjectUserRecipients;
+    }
+
+    /**
+     * @return the roleRecipients
+     */
+    public List<String> getRoleRecipients() {
+        return roleRecipients;
     }
 
     /**
@@ -116,11 +118,25 @@ public class NotificationDTO {
     }
 
     /**
+     * @return the sender
+     */
+    public String getSender() {
+        return sender;
+    }
+
+    /**
      * @param pSender
      *            the sender to set
      */
     public void setSender(final String pSender) {
         sender = pSender;
+    }
+
+    /**
+     * @return the title
+     */
+    public String getTitle() {
+        return title;
     }
 
     /**
@@ -131,4 +147,11 @@ public class NotificationDTO {
         title = pTitle;
     }
 
+    public NotificationType getType() {
+        return type;
+    }
+
+    public void setType(NotificationType type) {
+        this.type = type;
+    }
 }

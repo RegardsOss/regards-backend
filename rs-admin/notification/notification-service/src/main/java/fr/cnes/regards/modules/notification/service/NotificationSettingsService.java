@@ -74,6 +74,11 @@ public class NotificationSettingsService implements INotificationSettingsService
     @Override
     public NotificationSettings retrieveNotificationSettings() throws EntityNotFoundException {
         final ProjectUser projectUser = projectUserService.retrieveCurrentUser();
+        return retrieveNotificationSettings(projectUser);
+    }
+
+    @Override
+    public NotificationSettings retrieveNotificationSettings(ProjectUser projectUser) {
         NotificationSettings result = notificationSettingsRepository.findOneByProjectUser(projectUser);
         if (result == null) {
             result = createNotificationSettings(projectUser);
