@@ -22,12 +22,14 @@ import java.io.File;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
- * plugin de verification des fichiers pour les fournitures de jason2 qui ne contiennent qu'un type de fichier. le nom
- * du produit renvoye est le meme que le nom du fichier on ne supprime pas les extensions.
+ * Manage Jason2 data prefixs.<br>
+ * This {@link Plugin} checks that the file exists and it's accessible.<br>
+ * The {@link Product} name is the file name truncate to 128 characters. 
  * 
  * @author Christophe Mertz
  *
@@ -40,62 +42,36 @@ public class Jason2CheckingPlugin implements ICheckFilePlugin {
 
     private String productName;
 
-    private int productVersion;
-
-    private int fileVersion;
-
-    private String logFilePath;
-
-    private String nodeIdentifier;
-
     public Jason2CheckingPlugin() {
         super();
     }
 
-    public int getFileVersion() {
-        return fileVersion;
-    }
-
-    public String getLogFile() {
-        return logFilePath;
-    }
-
-    public String getProductName() {
-        return productName;
-    }
-
-    public int getProductVersion() {
-        return productVersion;
-    }
-
-    public String getNodeIdentifier() {
-        return nodeIdentifier;
-    }
-
-    public boolean runPlugin(File filetoCheck, String dataSetId) throws ModuleException {
+    @Override
+    public boolean runPlugin(File fileToCheck, String datasetId) throws ModuleException {
 
         boolean result = false;
 
         // Check file exists
-        if (filetoCheck.exists() && filetoCheck.canRead()) {
+        if (fileToCheck.exists() && fileToCheck.canRead()) {
 
             // Delete extension if any
-            String name = filetoCheck.getName();
-            // pFiletoCheck
+            String name = fileToCheck.getName();
+
             if (name.length() > PRODUCT_NAME_MAX_SIZE) {
                 productName = name.substring(0, PRODUCT_NAME_MAX_SIZE);
             } else {
                 productName = name;
             }
-            nodeIdentifier = productName;
-            productVersion = 1;
-            fileVersion = 1;
-            logFilePath = null;
             result = true;
         } else {
-            throw new ReadFileException(filetoCheck.getAbsolutePath());
+            throw new ReadFileException(fileToCheck.getAbsolutePath());
         }
 
         return result;
+    }
+
+    @Override
+    public String getProductName() {
+        return productName;
     }
 }

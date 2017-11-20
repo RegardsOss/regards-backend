@@ -22,8 +22,8 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 
 /**
- * Plugin de validation des fichiers CRYOSAT2.<br>
- * L'identifiant du produit retourne correspond à l'identifiant du fichier sans l'extension.
+ * Manage Cryosat2 data prefixs.<br>
+ * This {@link Plugin} checks that the file exists and is accessible and that the extension file is authorized.
  * 
  * @author Christophe Mertz
  *
@@ -41,5 +41,4 @@ public class Cryosat2ExtCheckingFilePlugin extends AbstractCheckingFilePlugin {
         extensionList.add(EXTENSION_HDR);
         extensionList.add(EXTENSION_DBL);
     }
-
 }

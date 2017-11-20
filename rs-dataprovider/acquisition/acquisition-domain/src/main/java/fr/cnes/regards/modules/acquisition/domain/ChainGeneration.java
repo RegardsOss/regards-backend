@@ -228,7 +228,7 @@ public class ChainGeneration implements IIdentifiable<Long> {
         this.active = active;
     }
 
-    public Boolean getRunning() {
+    public Boolean isRunning() {
         return running;
     }
 

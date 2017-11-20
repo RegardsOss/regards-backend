@@ -51,9 +51,6 @@ public class CleanOriginalFilePostPlugin implements IPostProcessSipPlugin {
     public void runPlugin(Product product, ChainGeneration chain) throws ModuleException {
         LOGGER.info("[{}] Start post processing for the product : {}", chain.getSession(), product.getProductName());
 
-//        product.setStatus(ProductStatus.SAVED);
-//        productService.save(product);
-
         if (product.getMetaProduct().getCleanOriginalFile()) {
             for (AcquisitionFile acqFile : product.getAcquisitionFile()) {
                 acqFile.getFile().delete();

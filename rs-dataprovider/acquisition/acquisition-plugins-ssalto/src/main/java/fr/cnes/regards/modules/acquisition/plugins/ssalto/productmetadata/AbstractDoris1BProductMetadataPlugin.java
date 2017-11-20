@@ -34,7 +34,7 @@ public abstract class AbstractDoris1BProductMetadataPlugin extends AbstractProdu
     // TODO CMZ à gérer les préfixes MOE_CCDIS, ...
 
     /**
-     * Liste des correspondances DatasetName => Prexix
+     * {@link Map} of dataset name prefixs
      */
     protected Map<String, String> prefixMap = null;
 
@@ -72,7 +72,7 @@ public abstract class AbstractDoris1BProductMetadataPlugin extends AbstractProdu
     //                String prefix = prefixMap.get(pDataSetName);
     //                element.addDataStorageObjectIdentifier(prefix + file.getName());
     //            } else {
-    //                LOGGER.error("Prefix for " + pDataSetName + "does not exist!");
+    //                LOGGER.error("Prefix for " + pDataSetName + " does not exist!");
     //            }
     //        }
     //

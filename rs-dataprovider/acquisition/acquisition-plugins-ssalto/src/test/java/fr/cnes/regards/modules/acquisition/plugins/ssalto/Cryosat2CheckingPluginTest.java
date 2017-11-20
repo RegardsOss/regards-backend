@@ -43,10 +43,6 @@ public class Cryosat2CheckingPluginTest {
         Cryosat2ExtCheckingFilePlugin plugin = new Cryosat2ExtCheckingFilePlugin();
         Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
         Assert.assertEquals("CS_OPER_REP_MACP___20100711T145514_99999999T999999_0001", plugin.getProductName());
-        Assert.assertEquals("CS_OPER_REP_MACP___20100711T145514_99999999T999999_0001.DBL", plugin.getNodeIdentifier());
-        Assert.assertEquals(1, plugin.getFileVersion());
-        Assert.assertEquals(1, plugin.getProductVersion());
-        Assert.assertNull(plugin.getLogFile());
     }
 
     @Test
@@ -59,9 +55,5 @@ public class Cryosat2CheckingPluginTest {
         Cryosat2ExtCheckingFilePlugin plugin = new Cryosat2ExtCheckingFilePlugin();
         Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
         Assert.assertEquals("CS_OPER_REP_MACP___20100711T145514_99999999T999999_0001", plugin.getProductName());
-        Assert.assertEquals("CS_OPER_REP_MACP___20100711T145514_99999999T999999_0001.HDR", plugin.getNodeIdentifier());
-        Assert.assertEquals(1, plugin.getFileVersion());
-        Assert.assertEquals(1, plugin.getProductVersion());
-        Assert.assertNull(plugin.getLogFile());
     }
 }

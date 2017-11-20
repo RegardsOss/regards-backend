@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataStorage
 public abstract class AbstractDoris1BMetadataCreationPlugin extends MetaDataCreationPlugin implements IDoris1BPlugin {
 
     /**
-     * Liste des correspondances DatasetName => Prexix
+     * {@link Map} of dataset name prefixs
      */
     protected Map<String, String> prefixMap = null;
 
@@ -54,7 +54,7 @@ public abstract class AbstractDoris1BMetadataCreationPlugin extends MetaDataCrea
             String prefix = prefixMap.get(dataSetId);
             dataObjectIdentifier = prefix + dataObjectIdentifier;
         } else {
-            throw new ModuleException("Prefix for " + dataSetId + "does not exist!");
+            throw new ModuleException("Prefix for " + dataSetId + " does not exist!");
         }
 
         dataStorageObject.setDataStorageObjectIdentifier(dataObjectIdentifier);

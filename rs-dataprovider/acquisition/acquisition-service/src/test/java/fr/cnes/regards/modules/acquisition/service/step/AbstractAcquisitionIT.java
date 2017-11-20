@@ -70,6 +70,7 @@ import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
@@ -343,7 +344,7 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsServiceIT {
                 wait = false;
             }
             LOGGER.debug("wait first job running - r={}-s={}-a={}-f={} - {}", runnings.size(), succeededs.size(),
-                        aborteds.size(), faileds.size(), name.getMethodName());
+                         aborteds.size(), faileds.size(), name.getMethodName());
         }
 
         // wait the end of the running job 
@@ -359,8 +360,8 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsServiceIT {
             if (runnings.size() == received) {
                 wait = false;
             }
-            LOGGER.debug("wait end jobs - r={}-s={}-a={}-f={} - {}", runnings.size(), succeededs.size(), aborteds.size(),
-                        faileds.size(), name.getMethodName());
+            LOGGER.debug("wait end jobs - r={}-s={}-a={}-f={} - {}", runnings.size(), succeededs.size(),
+                         aborteds.size(), faileds.size(), name.getMethodName());
         }
     }
 
@@ -405,6 +406,20 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsServiceIT {
             product.addAcquisitionFile(acquisitionFileService.save(AcquisitionFileBuilder.build(acqf)
                     .withStatus(AcquisitionFileStatus.VALID.toString()).withMetaFile(metaFileMandatory).get()));
         }
+
+        product.setSip(createSIP(productName));
+
+        return productService.save(product);
+    }
+
+    protected Product createProduct(String productName, String session, MetaProduct metaProduct, boolean sended,
+            ProductStatus status, String fileName, FileAcquisitionInformations fileAcqInf) {
+        Product product = ProductBuilder.build(productName).withStatus(status).withMetaProduct(metaProduct)
+                .isSended(sended).withSession(session).withIngestProcessingChain(metaProduct.getIngestChain()).get();
+
+        product.addAcquisitionFile(acquisitionFileService
+                .save(AcquisitionFileBuilder.build(fileName).withStatus(AcquisitionFileStatus.VALID.toString())
+                        .withMetaFile(metaFileMandatory).withFileAcquisitionInformations(fileAcqInf).get()));
 
         product.setSip(createSIP(productName));
 

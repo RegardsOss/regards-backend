@@ -23,13 +23,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
- * Plugin de verification pour de fichiers.<br>
- * L'identifiant du produit retourne correspond a l'identifiant du fichier moins l'extention.
-
+ * This {@link Plugin} checks that the file exists and is accessible.<br>
+ * The {@link Product} name is the the file name less the extension file.
+ * 
  * @author Christophe Mertz
  *
  */
@@ -37,15 +39,9 @@ public abstract class AbstractCheckingFilePlugin implements ICheckFilePlugin {
 
     private String productName;
 
-    private int productVersion;
-
-    private int fileVersion;
-
-    private String logFilePath;
-
-    private String nodeIdentifier;
-
-    /** Liste des extensions a supprimer renseignee dans le constructeur de la classe */
+    /**
+     * {@link List} of extension file that should be removed from the file name
+     */
     protected final List<String> extensionList = new ArrayList<String>();
 
     public AbstractCheckingFilePlugin() {
@@ -56,62 +52,37 @@ public abstract class AbstractCheckingFilePlugin implements ICheckFilePlugin {
     protected abstract void initExtensionList();
 
     /**
-     * Cette methode supprime du nom du fichier l'extension _HDR ou _BIN si elle est presente dans le fichier. Sinon
-     * renvoie le nom du fichier
+     * This methods checks that the file exists and is accessible.<br>
+     * The {@link Product} name is the file name less the extension if the extension is presents in a {@link List}.
      */
     @Override
-    public boolean runPlugin(File pFileToCheck, String pDataSetId) throws ModuleException {
+    public boolean runPlugin(File fileToCheck, String datasetId) throws ModuleException {
         boolean result = false;
 
         // Check file exists
-        if (pFileToCheck.exists() && pFileToCheck.canRead()) {
+        if (fileToCheck.exists() && fileToCheck.canRead()) {
 
             // Delete extension if any
-            String name = pFileToCheck.getName();
-            nodeIdentifier = name;
+            String name = fileToCheck.getName();
             int indexExtension;
             for (String extension : extensionList) {
                 indexExtension = name.indexOf(extension);
                 if (indexExtension != -1) {
                     // Compute product name
                     name = name.substring(0, indexExtension);
-                    // Quit the iteration
                     break;
                 }
             }
             productName = name;
-            productVersion = 1;
-            fileVersion = 1;
-            logFilePath = null;
             result = true;
         } else {
-            throw new ReadFileException(pFileToCheck.getAbsolutePath());
+            throw new ReadFileException(fileToCheck.getAbsolutePath());
         }
         return result;
     }
 
     @Override
-    public int getFileVersion() {
-        return fileVersion;
-    }
-
-    @Override
-    public String getLogFile() {
-        return logFilePath;
-    }
-
-    @Override
     public String getProductName() {
         return productName;
-    }
-
-    @Override
-    public int getProductVersion() {
-        return productVersion;
-    }
-
-    @Override
-    public String getNodeIdentifier() {
-        return nodeIdentifier;
     }
 }

@@ -50,8 +50,6 @@ public class CheckInPlugin implements ICheckFilePlugin {
 
     protected String productName;
 
-    protected String nodeIdentifier;
-
     public CheckInPlugin() {
         super();
     }
@@ -77,7 +75,6 @@ public class CheckInPlugin implements ICheckFilePlugin {
                 productName = name;
             }
 
-            nodeIdentifier = fileToCheck.getName();
             result = true;
         } else {
             LOGGER.error("Can't read file <{}>", fileToCheck.getAbsolutePath());
@@ -89,27 +86,7 @@ public class CheckInPlugin implements ICheckFilePlugin {
     }
 
     @Override
-    public int getFileVersion() {
-        return 1;
-    }
-
-    @Override
-    public String getLogFile() {
-        return null;
-    }
-
-    @Override
     public String getProductName() {
         return productName;
-    }
-
-    @Override
-    public int getProductVersion() {
-        return 0;
-    }
-
-    @Override
-    public String getNodeIdentifier() {
-        return nodeIdentifier;
     }
 }

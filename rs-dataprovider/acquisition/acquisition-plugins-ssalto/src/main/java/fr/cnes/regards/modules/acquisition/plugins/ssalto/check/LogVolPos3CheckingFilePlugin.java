@@ -19,10 +19,11 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 
 /**
- * Plugin de verification pour les donnees LOG_VOL_POS3 de JASON2.<br>
- * L'identifiant du produit retourne correspond a l'identifiant du fichier moins l'extention _HDR ou _BIN.
+ * Manage LOG_VOL_POS3 de JASON2 data prefixs.<br>
+ * The {@link Product} name is the the file name less the extension file.
  * 
  * @author Christophe Mertz
  *
@@ -40,5 +41,4 @@ public class LogVolPos3CheckingFilePlugin extends AbstractCheckingFilePlugin {
         extensionList.add(EXTENSION_BIN);
         extensionList.add(EXTENSION_HDR);
     }
-
 }

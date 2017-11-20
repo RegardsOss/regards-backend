@@ -21,8 +21,8 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 
 /**
- * plugin de verification des fichiers. Ce plugin permet aussi d'indiquer le node_identifier qui doit etre utiliser pour
- * enregistrer le fichier dans le catalogue de diffusion. Ce plugin est utilise pour Jason1-Doris1B.
+ * Manage Jason1 - Doris1B data prefixs.<br>
+ * This {@link Plugin} checks that the file exists and is accessible and that the extension file is authorized.
  * 
  * @author Christophe Mertz
  *

@@ -30,19 +30,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 @PluginInterface(description = "Plugin to validate a product")
 public interface ICheckFilePlugin {
     
-    public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException;
+    boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException;
     
-    // TODO CMZ à voir mais je pense que c'est inutile
-    int getFileVersion();
-
-    // TODO CMZ getLogFile util ?
-    String getLogFile();
-
     String getProductName();
-
-    // TODO CMZ getProductVersion util ?
-    int getProductVersion();
-
-    // TODO CMZ getNodeIdentifier util ?
-    String getNodeIdentifier();
 }

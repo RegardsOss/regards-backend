@@ -21,8 +21,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 
 /**
- * Plugin de verification pour les donnees LOG_VOL_POS3 de JASON2.<br>
- * l'identifiant du produit retourne correspond a l'identifiant du fichier moins l'extention _HDR ou _DBL ou _TCH.
+ * Manage LOG_VOL_ALTIKA data prefixs.<br>
  * 
  * @author Christophe Mertz
  *
@@ -32,7 +31,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
         url = "https://github.com/RegardsOss")
 public class LogVolAltikaCheckingFilePlugin extends AbstractCheckingFilePlugin {
 
-    /** Valeurs des extensions */
     private static String EXTENSION_HDR = "_HDR";
 
     private static String EXTENSION_BIN = "_BIN";

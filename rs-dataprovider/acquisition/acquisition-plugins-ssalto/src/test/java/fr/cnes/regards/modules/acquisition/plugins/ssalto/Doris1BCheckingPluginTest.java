@@ -44,10 +44,6 @@ public class Doris1BCheckingPluginTest {
         Jason1Doris1BCheckingFilePlugin plugin = new Jason1Doris1BCheckingFilePlugin();
             Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
             Assert.assertEquals("MOE_CDDIS_DORDATA_090526.SP2", plugin.getProductName());
-            Assert.assertEquals("MOE_CDDIS_DORDATA_090526.SP2", plugin.getNodeIdentifier());
-            Assert.assertEquals(1, plugin.getFileVersion());
-            Assert.assertEquals(1, plugin.getProductVersion());
-            Assert.assertNull(plugin.getLogFile());
     }
 
 }

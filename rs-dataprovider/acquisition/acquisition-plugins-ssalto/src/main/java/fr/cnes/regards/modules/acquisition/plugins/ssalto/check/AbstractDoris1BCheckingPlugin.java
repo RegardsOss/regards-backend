@@ -23,13 +23,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.IDoris1BPlugin;
 
-
 /**
- * Gere les prefixes pour les donnees Doris1B
+ * Manage Doris1B data prefixs.<br>
+ * This {@link Plugin} checks that the file exists and is accessible and that the extension file is authorized.
  * 
  * @author Christophe Mertz
  *
@@ -38,38 +39,25 @@ public abstract class AbstractDoris1BCheckingPlugin implements ICheckFilePlugin,
 
     protected String productName;
 
-    protected int productVersion;
-
-    protected int fileVersion;
-
-    protected String logFilePath;
-
-    protected String nodeIdentifier;
-
     /**
-     * Liste des correspondances DatasetName => Prexix
+     * {@link Map} of dataset name prefixs
      */
     protected Map<String, String> prefixMap = null;
 
     @Override
-    public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
+    public boolean runPlugin(File fileToCheck, String datasetId) throws ModuleException {
         boolean result = false;
 
         initPrefixMap();
 
         // Check file exists
         if (fileToCheck.exists() && fileToCheck.canRead()) {
-            // DATA_STORAGE_OBJECT_IDENTIFIER
-            if ((prefixMap != null) && prefixMap.containsKey(dataSetId)) {
-                String prefix = prefixMap.get(dataSetId);
-                nodeIdentifier = prefix + fileToCheck.getName();
+            if ((prefixMap != null) && prefixMap.containsKey(datasetId)) {
+                String prefix = prefixMap.get(datasetId);
+                productName = prefix + fileToCheck.getName();
             } else {
-                throw new ModuleException("Prefix for " + dataSetId + "does not exist!");
+                throw new ModuleException("Prefix for " + datasetId + " does not exist!");
             }
-            productName = nodeIdentifier;
-            productVersion = 1;
-            fileVersion = 1;
-            logFilePath = null;
             result = true;
         } else {
             throw new ReadFileException(fileToCheck.getAbsolutePath());
@@ -78,28 +66,8 @@ public abstract class AbstractDoris1BCheckingPlugin implements ICheckFilePlugin,
     }
 
     @Override
-    public int getFileVersion() {
-        return fileVersion;
-    }
-
-    @Override
-    public String getLogFile() {
-        return logFilePath;
-    }
-
-    @Override
-    public String getNodeIdentifier() {
-        return nodeIdentifier;
-    }
-
-    @Override
     public String getProductName() {
         return productName;
-    }
-
-    @Override
-    public int getProductVersion() {
-        return productVersion;
     }
 
     protected void addDatasetNamePrexif(String datasetName, String prefix) {

@@ -30,5 +30,4 @@ public class Spot5Doris1BCheckingPlugin extends AbstractDoris1BCheckingPlugin {
         addDatasetNamePrexif("DA_TC_SPOT5_DORIS1B_MOE_CDDIS_COM", PREFIX_MOE_CDDIS_COM);
         addDatasetNamePrexif("DA_TC_SPOT5_DORIS1B_POE_CDDIS_COM", PREFIX_POE_CDDIS_COM);
     }
-
 }

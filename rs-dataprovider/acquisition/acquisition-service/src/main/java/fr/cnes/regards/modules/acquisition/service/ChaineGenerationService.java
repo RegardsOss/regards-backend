@@ -98,7 +98,7 @@ public class ChaineGenerationService implements IChainGenerationService {
         }
 
         // the ChainGeneration must not be already running
-        if (chain.getRunning()) {
+        if (chain.isRunning()) {
             LOGGER.warn("[{}] Unable to run an already running chain generation ", chain.getLabel());
             return false;
         }

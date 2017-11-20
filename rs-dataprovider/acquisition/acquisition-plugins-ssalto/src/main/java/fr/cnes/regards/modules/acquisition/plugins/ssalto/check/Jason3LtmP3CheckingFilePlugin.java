@@ -22,11 +22,13 @@ import java.io.File;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
- * Plugin JASON3 pour les produits LTM
+ * Manage Jason3 data prefixs for the {@link Product} LTM.<br>
+ * The {@link Product} name is the the file name less the extension file. 
  *
  * @author Christophe Mertz
  *
@@ -38,16 +40,8 @@ public class Jason3LtmP3CheckingFilePlugin implements ICheckFilePlugin {
 
     private String productName;
 
-    private int productVersion;
-
-    private int fileVersion;
-
-    private String logFilePath;
-
-    private String nodeIdentifier;
-
     @Override
-    public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
+    public boolean runPlugin(File fileToCheck, String datasetId) throws ModuleException {
         boolean result = false;
 
         // Check file exists
@@ -55,8 +49,7 @@ public class Jason3LtmP3CheckingFilePlugin implements ICheckFilePlugin {
 
             // Delete extension if any
             String name = fileToCheck.getName();
-            nodeIdentifier = name;
-            // pFiletoCheck
+
             if (name.length() > 5) {
                 String partOne = name.substring(0, 4);
                 String partTwo = name.substring(5, name.length());
@@ -64,10 +57,6 @@ public class Jason3LtmP3CheckingFilePlugin implements ICheckFilePlugin {
             } else {
                 throw new ModuleException("Invalid JSON3_LTM file " + name);
             }
-
-            productVersion = 1;
-            fileVersion = 1;
-            logFilePath = null;
 
             result = true;
         } else {
@@ -78,28 +67,7 @@ public class Jason3LtmP3CheckingFilePlugin implements ICheckFilePlugin {
     }
 
     @Override
-    public String getLogFile() {
-        return logFilePath;
-    }
-
-    @Override
     public String getProductName() {
         return productName;
     }
-
-    @Override
-    public String getNodeIdentifier() {
-        return nodeIdentifier;
-    }
-
-    @Override
-    public int getProductVersion() {
-        return productVersion;
-    }
-
-    @Override
-    public int getFileVersion() {
-        return fileVersion;
-    }
-
 }

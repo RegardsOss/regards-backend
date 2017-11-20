@@ -19,6 +19,9 @@
 
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +36,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.builder.ChainGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -78,8 +82,8 @@ public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
                 .addMetaFile(metaFileMandatory).withIngestProcessingChain("ingest-processing-chain-003").get());
 
         // Create a Product
-        createProduct("product-001", "session-001", metaProduct001, true, ProductStatus.COMPLETED, "file-001",
-                      "file-002");
+        createProduct("product-001", "session-001", metaProduct001, true, ProductStatus.COMPLETED, "file-001.dat",
+                      "file-002.dat");
         createProduct("product-002", "session-001", metaProduct001, true, ProductStatus.COMPLETED, "file-003",
                       "file-004");
         createProduct("product-003", "session-002", metaProduct001, true, ProductStatus.FINISHED, "file-005",
@@ -128,7 +132,18 @@ public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
                 .getPluginConfiguration("CleanOriginalFilePostPlugin", IPostProcessSipPlugin.class));
         chainService.save(chainForProcessing);
 
-        publishSipEvent("product-001", SIPState.STORED);
+        String productName = "product-033";
+        try {
+            File f1 = File.createTempFile("file-033", ".dat");
+            FileAcquisitionInformations fai1 = new FileAcquisitionInformations();
+            fai1.setAcquisitionDirectory("/tmp");
+            createProduct(productName, "session-001", metaProduct001, true, ProductStatus.COMPLETED, f1.getName(),
+                          fai1);
+        } catch (IOException e) {
+            Assert.fail();
+        }
+
+        publishSipEvent(productName, SIPState.STORED);
 
         waitJobEvent();
 
@@ -137,12 +152,50 @@ public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
         Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
-        Assert.assertEquals(15, productService
+        Assert.assertEquals(16, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(true, ProductStatus.SAVED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
     }
     
+    @Test
+    public void receivedOneSipStoreEventExistingFile() throws InterruptedException, ModuleException {
+        Assert.assertEquals(16, productService
+                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+
+        chainForProcessing.setPostProcessSipPluginConf(pluginService
+                .getPluginConfiguration("CleanOriginalFilePostPlugin", IPostProcessSipPlugin.class));
+        chainService.save(chainForProcessing);
+
+        String productName = "product-044";
+        try {
+            File f1 = File.createTempFile("file-044", ".dat");
+            FileAcquisitionInformations fai1 = new FileAcquisitionInformations();
+            fai1.setAcquisitionDirectory("/tmp");
+            createProduct(productName, "session-001", metaProduct001, true, ProductStatus.COMPLETED, f1.getName(),
+                          fai1);
+            Assert.assertTrue(f1.canRead());
+            Assert.assertTrue(f1.canWrite());
+        } catch (IOException e) {
+            Assert.fail();
+        }
+
+        publishSipEvent(productName, SIPState.STORED);
+
+        waitJobEvent();
+
+        Assert.assertEquals(1, runnings.size());
+        Assert.assertEquals(1, succeededs.size());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
+
+        Assert.assertEquals(16, productService
+                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(true, ProductStatus.SAVED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+    }
+
     @Test
     public void receivedSipStoreEvents() throws InterruptedException, ModuleException {
         Assert.assertEquals(16, productService
@@ -189,7 +242,7 @@ public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
     }
-    
+
     @Test
     public void receivedSipStoreEventFailedNoChainDefined() throws InterruptedException {
         Assert.assertEquals(16, productService

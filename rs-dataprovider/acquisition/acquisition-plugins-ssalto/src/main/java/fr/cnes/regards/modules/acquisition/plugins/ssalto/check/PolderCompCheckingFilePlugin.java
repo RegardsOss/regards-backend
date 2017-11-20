@@ -40,16 +40,8 @@ public class PolderCompCheckingFilePlugin implements ICheckFilePlugin {
 
     private String productName;
 
-    private int productVersion;
-
-    private int fileVersion;
-
-    private String logFilePath;
-
-    private String nodeIdentifier;
-
     @Override
-    public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
+    public boolean runPlugin(File fileToCheck, String datasetId) throws ModuleException {
         boolean result = false;
 
         // Check file exists
@@ -57,17 +49,12 @@ public class PolderCompCheckingFilePlugin implements ICheckFilePlugin {
 
             // Delete extension if any
             String name = fileToCheck.getName();
-            nodeIdentifier = name;
-            // pFiletoCheck
+
             if (name.length() > PRODUCT_NAME_MAX_SIZE) {
                 productName = name.substring(0, PRODUCT_NAME_MAX_SIZE);
             } else {
                 throw new ModuleException("Invalid POLDER file " + name);
             }
-
-            productVersion = 1;
-            fileVersion = 1;
-            logFilePath = null;
 
             result = true;
         } else {
@@ -78,28 +65,7 @@ public class PolderCompCheckingFilePlugin implements ICheckFilePlugin {
     }
 
     @Override
-    public String getLogFile() {
-        return logFilePath;
-    }
-
-    @Override
     public String getProductName() {
         return productName;
     }
-
-    @Override
-    public String getNodeIdentifier() {
-        return nodeIdentifier;
-    }
-
-    @Override
-    public int getProductVersion() {
-        return productVersion;
-    }
-
-    @Override
-    public int getFileVersion() {
-        return fileVersion;
-    }
-
 }

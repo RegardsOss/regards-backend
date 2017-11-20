@@ -24,53 +24,24 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
-@Plugin(description = "CheckInPluginFalse", id = "CheckInPluginFalse", version = "1.0.0",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+@Plugin(description = "CheckInPluginFalse", id = "CheckInPluginFalse", version = "1.0.0", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class CheckInPluginFalse implements ICheckFilePlugin {
 
-    private String productName_;
-
-    private int productVersion;
-
-    private int fileVersion;
-
-    private String logFilePath;
-
-    private String nodeIdentifier;
+    private String productName;
 
     public CheckInPluginFalse() {
         super();
     }
 
     @Override
-    public int getFileVersion() {
-        return fileVersion;
-    }
-
-    @Override
-    public String getLogFile() {
-        return logFilePath;
-    }
-
-    @Override
     public String getProductName() {
-        return productName_;
-    }
-
-    @Override
-    public int getProductVersion() {
-        return productVersion;
-    }
-
-    @Override
-    public String getNodeIdentifier() {
-        return nodeIdentifier;
+        return productName;
     }
 
     @Override
     public boolean runPlugin(File filetoCheck, String dataSetId) throws ModuleException {
-
         return false;
     }
+
 }

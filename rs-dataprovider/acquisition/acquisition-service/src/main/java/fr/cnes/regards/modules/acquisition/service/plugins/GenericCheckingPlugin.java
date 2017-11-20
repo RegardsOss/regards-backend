@@ -43,14 +43,6 @@ public class GenericCheckingPlugin implements ICheckFilePlugin {
 
     private String productName;
 
-    private int productVersion;
-
-    private int fileVersion;
-
-    private String logFilePath;
-
-    private String nodeIdentifier;
-
     public GenericCheckingPlugin() {
         super();
     }
@@ -69,10 +61,6 @@ public class GenericCheckingPlugin implements ICheckFilePlugin {
             } else {
                 productName = name;
             }
-            nodeIdentifier = productName;
-            productVersion = 1;
-            fileVersion = 1;
-            logFilePath = null;
             result = true;
         } else {
             LOGGER.error("Can't read file <{}>", fileToCheck.getAbsolutePath());
@@ -82,27 +70,7 @@ public class GenericCheckingPlugin implements ICheckFilePlugin {
     }
 
     @Override
-    public int getFileVersion() {
-        return fileVersion;
-    }
-
-    @Override
-    public String getLogFile() {
-        return logFilePath;
-    }
-
-    @Override
     public String getProductName() {
         return productName;
-    }
-
-    @Override
-    public int getProductVersion() {
-        return productVersion;
-    }
-
-    @Override
-    public String getNodeIdentifier() {
-        return nodeIdentifier;
     }
 }

@@ -43,11 +43,7 @@ public class Jason3LtmCheckingPluginTest {
 
         File testFile = new File("src/test/resources/income/data/JASON3/LTM", fileNameTest);
         Assert.assertTrue(plugin.runPlugin(testFile, "DA_TC_JASON3_LTM"));
-        Assert.assertEquals(fileNameTest, plugin.getNodeIdentifier());
         Assert.assertEquals(ProductNameTest, plugin.getProductName());
-        Assert.assertEquals(1, plugin.getFileVersion());
-        Assert.assertEquals(1, plugin.getProductVersion());
-        Assert.assertNull(plugin.getLogFile());
     }
 
 }
