@@ -83,7 +83,8 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.info("[{}] Start acquisition job", chainGeneration.getSession());
+        LOGGER.info("[{}] Start acquisition job for the chain <{}>", chainGeneration.getSession(),
+                    chainGeneration.getLabel());
 
         // The MetaProduct is required
         if (chainGeneration.getMetaProduct() == null) {
@@ -114,7 +115,8 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
 
         LOGGER.info("[{}] {} AcquisitionGenerateSIPJob queued", chainGeneration.getSession(), n);
 
-        LOGGER.info("[{}] End acquisition job for the chain <{}>", chainGeneration.getSession());
+        LOGGER.info("[{}] End  acquisition job for the chain <{}>", chainGeneration.getSession(),
+                    chainGeneration.getLabel());
     }
 
     private int submitProducts() {

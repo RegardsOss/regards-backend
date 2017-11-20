@@ -342,7 +342,7 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsServiceIT {
             if (runnings.size() > 0) {
                 wait = false;
             }
-            LOGGER.info("wait first job running - r={}-s={}-a={}-f={} - {}", runnings.size(), succeededs.size(),
+            LOGGER.debug("wait first job running - r={}-s={}-a={}-f={} - {}", runnings.size(), succeededs.size(),
                         aborteds.size(), faileds.size(), name.getMethodName());
         }
 
@@ -359,7 +359,7 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsServiceIT {
             if (runnings.size() == received) {
                 wait = false;
             }
-            LOGGER.info("wait end jobs - r={}-s={}-a={}-f={} - {}", runnings.size(), succeededs.size(), aborteds.size(),
+            LOGGER.debug("wait end jobs - r={}-s={}-a={}-f={} - {}", runnings.size(), succeededs.size(), aborteds.size(),
                         faileds.size(), name.getMethodName());
         }
     }

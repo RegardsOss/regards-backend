@@ -171,7 +171,7 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
 
         }
 
-        LOG.info("[{}] End publish SIP Collections", session);
+        LOG.info("[{}] End  publish SIP Collections", session);
 
         return nbSipOk;
     }

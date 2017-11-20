@@ -57,10 +57,11 @@ public class CleanOriginalFilePostPlugin implements IPostProcessSipPlugin {
         if (product.getMetaProduct().getCleanOriginalFile()) {
             for (AcquisitionFile acqFile : product.getAcquisitionFile()) {
                 acqFile.getFile().delete();
+                LOGGER.debug("[{}] The file {} has been deleted", chain.getSession(), acqFile.getFileName());
             }
         }
 
-        LOGGER.info("[{}] End post processing for the product : {}", chain.getSession(), product.getProductName());
-    }
+        LOGGER.info("[{}] End  post processing for the product : {}", chain.getSession(), product.getProductName());
+     }
 
 }

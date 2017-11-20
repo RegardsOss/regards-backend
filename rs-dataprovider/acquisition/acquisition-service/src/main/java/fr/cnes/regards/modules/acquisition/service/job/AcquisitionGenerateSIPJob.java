@@ -59,9 +59,6 @@ public class AcquisitionGenerateSIPJob extends AbstractJob<Void> {
     @Autowired
     private IProductService productService;
 
-    @Autowired
-    private IGenerateSipStep generateSipStep;
-
     private ChainGeneration chainGeneration;
 
     private String productName;
@@ -73,7 +70,7 @@ public class AcquisitionGenerateSIPJob extends AbstractJob<Void> {
         AcquisitionProcess process = new AcquisitionProcess(chainGeneration, productService.retrieve(productName));
 
         // IAcquisitionScanStep is the first step
-        IStep genSipStep = generateSipStep;
+        IStep genSipStep = new GenerateSipStep();
         genSipStep.setProcess(process);
         beanFactory.autowireBean(genSipStep);
         process.setCurrentStep(genSipStep);

@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.domain;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -121,7 +122,7 @@ public class Product implements IIdentifiable<Long> {
     private MetaProduct metaProduct;
 
     /**
-     * Liste des fichiers composants les produits
+     * {@link List} of file include in the {@link Product}
      */
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "fk_product_id"))

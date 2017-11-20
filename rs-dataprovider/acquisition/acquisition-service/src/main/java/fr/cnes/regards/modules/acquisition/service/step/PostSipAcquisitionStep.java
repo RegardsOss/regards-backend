@@ -85,7 +85,7 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
             throw new AcquisitionRuntimeException(e.getMessage());
         }
 
-        LOGGER.info("[{}] Stop generate SIP step for the product <{}>", chainGeneration.getSession(),
+        LOGGER.info("[{}] Stop  POST acqusition SIP step for the product <{}>", chainGeneration.getSession(),
                     product.getProductName());
 
     }

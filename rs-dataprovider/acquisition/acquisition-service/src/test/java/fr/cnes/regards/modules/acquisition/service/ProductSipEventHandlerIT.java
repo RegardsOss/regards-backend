@@ -114,6 +114,8 @@ public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
         // Set the MetaProduct to the ChainGeneration
         chainForProcessing.setMetaProduct(metaProduct001);
         chainForProcessing = chainService.save(chainForProcessing);
+
+        runtimeTenantResolver.forceTenant(tenant);
     }
 
     @Test
@@ -124,21 +126,47 @@ public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
 
         chainForProcessing.setPostProcessSipPluginConf(pluginService
                 .getPluginConfiguration("CleanOriginalFilePostPlugin", IPostProcessSipPlugin.class));
-
         chainService.save(chainForProcessing);
 
-        runtimeTenantResolver.forceTenant(tenant);
-        Product p1 = productService.retrieve("product-001");
-        SIPEntity sip = new SIPEntity();
-        sip.setIpId(p1.getProductName());
-        sip.setState(SIPState.STORED);
-        publisher.publish(new SIPEvent(sip));
+        publishSipEvent("product-001", SIPState.STORED);
 
         waitJobEvent();
+
+        Assert.assertEquals(1, runnings.size());
+        Assert.assertEquals(1, succeededs.size());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(15, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(true, ProductStatus.SAVED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+    }
+    
+    @Test
+    public void receivedSipStoreEvents() throws InterruptedException, ModuleException {
+        Assert.assertEquals(16, productService
+                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+
+        chainForProcessing.setPostProcessSipPluginConf(pluginService
+                .getPluginConfiguration("CleanOriginalFilePostPlugin", IPostProcessSipPlugin.class));
+        chainService.save(chainForProcessing);
+
+        publishSipEvent("product-001", SIPState.STORED);
+        publishSipEvent("product-002", SIPState.STORED);
+        publishSipEvent("product-003", SIPState.STORED);
+
+        waitJobEvent();
+
+        Assert.assertEquals(3, runnings.size());
+        Assert.assertEquals(3, succeededs.size());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
+
+        Assert.assertEquals(13, productService
+                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(3, productService.findBySendedAndStatusIn(true, ProductStatus.SAVED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
     }
 
@@ -148,13 +176,7 @@ public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
 
-        runtimeTenantResolver.forceTenant(tenant);
-
-        Product p1 = productService.retrieve("product-001");
-        SIPEntity sip = new SIPEntity();
-        sip.setIpId(p1.getProductName());
-        sip.setState(SIPState.STORED);
-        publisher.publish(new SIPEvent(sip));
+        publishSipEvent("product-001", SIPState.STORED);
 
         waitJobEvent();
 
@@ -166,6 +188,15 @@ public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
         Assert.assertEquals(16, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+    }
+
+    private void publishSipEvent(String productName, SIPState state) {
+        Product p1 = productService.retrieve(productName);
+        SIPEntity sip = new SIPEntity();
+        sip.setIpId(p1.getProductName());
+        sip.setState(state);
+        publisher.publish(new SIPEvent(sip));
+
     }
 
 }

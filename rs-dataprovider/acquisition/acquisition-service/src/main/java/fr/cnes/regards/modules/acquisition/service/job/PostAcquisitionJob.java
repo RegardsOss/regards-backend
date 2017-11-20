@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.acquisition.domain.job.ProductJobParameter;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.step.IPostAcquisitionStep;
 import fr.cnes.regards.modules.acquisition.service.step.IStep;
+import fr.cnes.regards.modules.acquisition.service.step.PostSipAcquisitionStep;
 
 /**
  * This job runs a set of step :<br>
@@ -60,9 +61,6 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
     @Autowired
     private IChainGenerationRepository chainGenerationRepository;
 
-    @Autowired
-    private IPostAcquisitionStep postAcquisitionStep;
-
     private String productName;
 
     @Override
@@ -75,7 +73,7 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
         AcquisitionProcess process = new AcquisitionProcess(chainGeneration, product);
 
         // IPostAcquisitionStep is the first step
-        IStep postSipStep = postAcquisitionStep;
+        IStep postSipStep = new PostSipAcquisitionStep();
         postSipStep.setProcess(process);
         beanFactory.autowireBean(postSipStep);
         process.setCurrentStep(postSipStep);
