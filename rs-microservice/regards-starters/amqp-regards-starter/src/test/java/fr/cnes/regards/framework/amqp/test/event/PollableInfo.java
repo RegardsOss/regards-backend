@@ -19,15 +19,16 @@
 package fr.cnes.regards.framework.amqp.test.event;
 
 import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
- * {@link Target#MICROSERVICE} restricted event
+ *
+ * {@link IPollable} information event
  * @author Marc Sordi
  *
  */
-@Event(target = Target.MICROSERVICE)
-public class MicroserviceInfo extends AbstractEvent implements ISubscribable {
+@Event(target = Target.ALL)
+public class PollableInfo extends AbstractEvent implements IPollable {
 
 }

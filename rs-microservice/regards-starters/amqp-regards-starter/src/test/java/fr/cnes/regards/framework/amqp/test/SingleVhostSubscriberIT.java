@@ -16,18 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp.test.event;
+package fr.cnes.regards.framework.amqp.test;
 
-import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.Target;
+import org.junit.runner.RunWith;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * {@link Target#MICROSERVICE} restricted event
+ * Single virtual host tests
+ *
  * @author Marc Sordi
  *
  */
-@Event(target = Target.MICROSERVICE)
-public class MicroserviceInfo extends AbstractEvent implements ISubscribable {
-
+@RunWith(SpringRunner.class)
+@EnableAutoConfiguration
+@TestPropertySource(
+        properties = { "regards.amqp.management.mode=SINGLE", "regards.tenants=PROJECT, PROJECT1",
+                "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true" },
+        locations = "classpath:amqp.properties")
+public class SingleVhostSubscriberIT extends AbstractSubscriberIT {
 }

@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
- * {@link ISubscribable} information event
+ * {@link ISubscribable} information event with no {@link Target} restriction
  *
  * @author Marc Sordi
  *

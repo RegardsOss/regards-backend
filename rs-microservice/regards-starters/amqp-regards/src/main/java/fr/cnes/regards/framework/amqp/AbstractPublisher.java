@@ -81,18 +81,29 @@ public abstract class AbstractPublisher implements IPublisherContract {
     @Override
     public void publish(ISubscribable event, int pPriority) {
         Class<?> eventClass = event.getClass();
-        publish(event, EventUtils.getWorkerMode(eventClass), EventUtils.getTargetRestriction(eventClass), pPriority);
+        publish(event, EventUtils.getWorkerMode(eventClass), EventUtils.getTargetRestriction(eventClass), pPriority,
+                false);
     }
 
     @Override
     public void publish(IPollable event) {
-        publish(event, 0);
+        publish(event, 0, false);
     }
 
     @Override
-    public void publish(IPollable event, int pPriority) {
+    public void publish(IPollable event, boolean purgeQueue) {
+        publish(event, 0, purgeQueue);
+    }
+
+    @Override
+    public void publish(IPollable event, int priority) {
+        publish(event, priority, false);
+    }
+
+    @Override
+    public void publish(IPollable event, int priority, boolean purgeQueue) {
         Class<?> eventClass = event.getClass();
-        publish(event, WorkerMode.UNICAST, EventUtils.getTargetRestriction(eventClass), pPriority);
+        publish(event, WorkerMode.UNICAST, EventUtils.getTargetRestriction(eventClass), priority, purgeQueue);
     }
 
     /**
@@ -106,14 +117,16 @@ public abstract class AbstractPublisher implements IPublisherContract {
      *            publishing mode
      * @param target
      *            publishing scope
+     * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
-    protected <T> void publish(final T event, final WorkerMode workerMode, final Target target, final int priority) {
+    protected <T> void publish(final T event, final WorkerMode workerMode, final Target target, final int priority,
+            boolean purgeQueue) {
 
         LOGGER.debug("Publishing event {} (Target : {}, WorkerMode : {} )", event.getClass(), target, workerMode);
 
         String tenant = resolveTenant();
         if (tenant != null) {
-            publish(tenant, resolveVirtualHost(tenant), event, workerMode, target, priority);
+            publish(tenant, resolveVirtualHost(tenant), event, workerMode, target, priority, purgeQueue);
         } else {
             String errorMessage = String.format("Unable to publish event %s cause no tenant found.", event.getClass());
             LOGGER.error(errorMessage);
@@ -146,9 +159,10 @@ public abstract class AbstractPublisher implements IPublisherContract {
      *            publishing mode
      * @param target
      *            publishing scope
+     * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
     protected final <T> void publish(String tenant, String virtualHost, T event, WorkerMode workerMode, Target target,
-            int priority) {
+            int priority, boolean purgeQueue) {
 
         final Class<?> eventType = event.getClass();
 
@@ -163,6 +177,9 @@ public abstract class AbstractPublisher implements IPublisherContract {
                 // Direct exchange needs a specific queue, a binding between this queue and exchange containing a
                 // specific routing key
                 Queue queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, Optional.empty());
+                if (purgeQueue) {
+                    amqpAdmin.purgeQueue(queue.getName(), false);
+                }
                 amqpAdmin.declareBinding(queue, exchange, workerMode);
                 publishMessageByTenant(tenant, exchange.getName(),
                                        amqpAdmin.getRoutingKey(Optional.of(queue), workerMode), event, priority);

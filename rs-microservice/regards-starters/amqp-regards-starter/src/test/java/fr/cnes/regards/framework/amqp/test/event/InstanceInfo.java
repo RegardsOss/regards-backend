@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
+ * {@link Target#INSTANCE} restricted event
  * @author Marc Sordi
  *
  */

@@ -16,18 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp.test.event;
+package fr.cnes.regards.framework.amqp.test.handler;
 
-import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.test.event.Info;
 
 /**
- * {@link Target#MICROSERVICE} restricted event
  * @author Marc Sordi
  *
  */
-@Event(target = Target.MICROSERVICE)
-public class MicroserviceInfo extends AbstractEvent implements ISubscribable {
+public class AbstractInfoReceiver extends AbstractReceiver<Info> {
 
+    private Info lastInfo;
+
+    @Override
+    protected void doHandle(TenantWrapper<Info> wrapper) {
+        this.lastInfo = wrapper.getContent();
+    }
+
+    public Info getLastInfo() {
+        return lastInfo;
+    }
+
+    public void setLastInfo(Info lastInfo) {
+        this.lastInfo = lastInfo;
+    }
 }

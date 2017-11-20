@@ -219,8 +219,8 @@ public class AmqpAutoConfiguration {
     @ConditionalOnProperty(prefix = "regards.amqp", name = "internal.transaction", matchIfMissing = false)
     public PlatformTransactionManager rabbitTransactionManager(IRuntimeTenantResolver pThreadTenantResolver,
             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
-        return new MultitenantRabbitTransactionManager(simpleRoutingConnectionFactory(), pThreadTenantResolver,
-                pRabbitVirtualHostAdmin);
+        return new MultitenantRabbitTransactionManager(amqpManagmentProperties.getMode(),
+                simpleRoutingConnectionFactory(), pThreadTenantResolver, pRabbitVirtualHostAdmin);
     }
 
     @Bean

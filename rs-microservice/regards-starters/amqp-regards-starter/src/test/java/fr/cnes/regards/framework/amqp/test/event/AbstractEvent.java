@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.amqp.test.event;
 
 /**
+ * Default event body
  * @author Marc Sordi
  *
  */

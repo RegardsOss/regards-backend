@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.amqp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -167,9 +168,11 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
         Map<String, SimpleMessageListenerContainer> vhostsContainers = new HashMap<>();
 
-        listeners.put(handler.getClass(), vhostsContainers);
-        handledEvents.put(handler.getClass(), eventType);
-        handlerInstances.put(handler.getClass(), handler);
+        if (!listeners.containsKey(handler.getClass())) {
+            listeners.put(handler.getClass(), vhostsContainers);
+            handledEvents.put(handler.getClass(), eventType);
+            handlerInstances.put(handler.getClass(), handler);
+        }
 
         Multimap<String, Queue> vhostQueues = ArrayListMultimap.create();
 
@@ -242,7 +245,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             // Add missing queues
             SimpleMessageListenerContainer container = vhostsContainers.get(virtualHost);
             String[] existingQueues = container.getQueueNames();
-            List<String> newQueues = new ArrayList<>();
+            Set<String> newQueueNames = new HashSet<>();
             boolean exists;
             for (Queue queue : queues) {
                 exists = false;
@@ -253,11 +256,13 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                     }
                 }
                 if (!exists) {
-                    newQueues.add(queue.getName());
+                    newQueueNames.add(queue.getName());
                 }
             }
             // Add new queues to the existing container
-            container.addQueueNames(newQueues.toArray(new String[newQueues.size()]));
+            if (!newQueueNames.isEmpty()) {
+                container.addQueueNames(newQueueNames.toArray(new String[newQueueNames.size()]));
+            }
             return;
         }
 
@@ -271,7 +276,11 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         final MessageListenerAdapter messageListener = new MessageListenerAdapter(handler, DEFAULT_HANDLING_METHOD);
         messageListener.setMessageConverter(jackson2JsonMessageConverter);
         container.setMessageListener(messageListener);
-        container.addQueues(queues.toArray(new Queue[queues.size()]));
+
+        // Prevent duplicate queue
+        Set<String> queueNames = new HashSet<>();
+        queues.forEach(q -> queueNames.add(q.getName()));
+        container.addQueueNames(queueNames.toArray(new String[queueNames.size()]));
 
         vhostsContainers.put(virtualHost, container);
 
@@ -304,5 +313,18 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                 declareListener(virtualHost, handler, queues);
             }
         }
+    }
+
+    /**
+     * Retrieve listeners for specified handler. For test purpose!
+     * @param handler event handler
+     * @return all listeners by virtual host or <code>null</code>
+     *
+     */
+    public Map<String, SimpleMessageListenerContainer> getListeners(IHandler<? extends ISubscribable> handler) {
+        if (listeners.containsKey(handler.getClass())) {
+            return listeners.get(handler.getClass());
+        }
+        return null;
     }
 }

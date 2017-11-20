@@ -16,18 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp.test.event;
+package fr.cnes.regards.framework.amqp.test.transactional;
 
-import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.Target;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * {@link Target#MICROSERVICE} restricted event
  * @author Marc Sordi
  *
  */
-@Event(target = Target.MICROSERVICE)
-public class MicroserviceInfo extends AbstractEvent implements ISubscribable {
+@Configuration
+@ComponentScan(basePackageClasses = { PollableService.class, PublishService.class })
+@EnableAutoConfiguration
+public class TransactionalTestConfiguration {
 
 }
