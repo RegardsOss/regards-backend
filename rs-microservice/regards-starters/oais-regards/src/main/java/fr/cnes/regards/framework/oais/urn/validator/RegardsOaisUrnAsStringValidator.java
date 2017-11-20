@@ -18,7 +18,7 @@ public class RegardsOaisUrnAsStringValidator implements ConstraintValidator<Rega
 
     @Override
     public void initialize(RegardsOaisUrnAsString constraintAnnotation) {
-
+        //nothing to initialize
     }
 
     @Override

@@ -24,6 +24,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
+
 /**
  *
  * Annotate a plugin parameter. Following field types are supported for injection :
@@ -60,6 +62,8 @@ public @interface PluginParameter {
      */
     String defaultValue() default "";
 
+    PluginParameterType.ParamType paramType() default PluginParameterType.ParamType.UNDEFINED;
+
     /**
      * Is the Plugin parameter is mandatory ?
      * 
@@ -75,4 +79,5 @@ public @interface PluginParameter {
      */
     String description() default "";
 
+    Class type() default void.class;
 }

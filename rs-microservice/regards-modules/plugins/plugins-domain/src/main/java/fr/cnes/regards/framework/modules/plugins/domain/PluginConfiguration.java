@@ -20,6 +20,8 @@
 package fr.cnes.regards.framework.modules.plugins.domain;
 
 import java.net.URL;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -449,6 +451,35 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return "PluginConfiguration [id=" + id + ", pluginId=" + pluginId + ", label=" + label + ", version=" + version
                 + ", priorityOrder=" + priorityOrder + ", active=" + active + ", pluginClassName=" + pluginClassName
                 + ", interfaceName=" + interfaceNames + "]";
+    }
+
+    /**
+     * Return TRUE if the current {@link PluginConfiguration} is exactly the same as the given one.
+     * @param pluginConfiguration {@link PluginConfiguration}
+     * @return [TRUE|FALSE]
+     */
+    public Boolean compareTo(PluginConfiguration pluginConfiguration) {
+        // @formatter:off
+        Boolean hasChanged = Comparator.comparing(PluginConfiguration::isActive)
+                .thenComparing(PluginConfiguration::getVersion)
+                .thenComparing(PluginConfiguration::getPriorityOrder)
+                .thenComparing(PluginConfiguration::getPluginId)
+                .compare(this, pluginConfiguration) != 0;
+        // @formatter:on
+        hasChanged = hasChanged || (pluginConfiguration.getParameters().size() != this.getParameters().size());
+        List<PluginParameter> existingParameters = this.getParameters();
+        Iterator<PluginParameter> it = pluginConfiguration.getParameters().iterator();
+        while (!hasChanged && it.hasNext()) {
+            PluginParameter parameter = it.next();
+            Optional<PluginParameter> existingParameter = existingParameters.stream()
+                    .filter(p -> p.getId().equals(parameter.getId())).findFirst();
+            if (existingParameter.isPresent()) {
+                hasChanged = existingParameter.get().compareTo(parameter) != 0;
+            } else {
+                hasChanged = true;
+            }
+        }
+        return hasChanged;
     }
 
 }

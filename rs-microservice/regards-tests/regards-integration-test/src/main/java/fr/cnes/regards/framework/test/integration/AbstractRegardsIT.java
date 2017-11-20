@@ -316,11 +316,6 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         return performFileUpload(urlTemplate, jwt, pFilePath, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
-    protected ResultActions performFileUpload(String urlTemplate, String jwt, Path pFilePath,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
-        return requestBuilderCustomizer.performFileUpload(mvc, urlTemplate, jwt, pFilePath, errorMsg, urlVariables);
-    }
-
     /**
      * Deprecated in favor of {@link AbstractRegardsIT#performDefaultFileUpload(String, List, RequestBuilderCustomizer, String, Object...)}
      */
@@ -333,15 +328,20 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         return performFileUpload(urlTemplate, jwt, pFileList, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
+    protected ResultActions performFileUpload(String urlTemplate, String jwt, List<MockMultipartFile> pFileList,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        return requestBuilderCustomizer.performFileUpload(mvc, urlTemplate, jwt, pFileList, errorMsg, urlVariables);
+    }
+
+    protected ResultActions performFileUpload(String urlTemplate, String jwt, Path pFilePath,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        return requestBuilderCustomizer.performFileUpload(mvc, urlTemplate, jwt, pFilePath, errorMsg, urlVariables);
+    }
+
     protected ResultActions performDefaultFileUpload(String urlTemplate, List<MockMultipartFile> pFileList,
             RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
         String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
         return performFileUpload(urlTemplate, jwt, pFileList, requestBuilderCustomizer, errorMsg, urlVariables);
-    }
-
-    protected ResultActions performFileUpload(String urlTemplate, String jwt, List<MockMultipartFile> pFileList,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
-        return requestBuilderCustomizer.performFileUpload(mvc, urlTemplate, jwt, pFileList, errorMsg, urlVariables);
     }
 
     /**

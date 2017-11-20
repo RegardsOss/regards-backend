@@ -11,11 +11,13 @@ import java.security.NoSuchAlgorithmException;
  */
 public class ChecksumUtils {
 
+    private ChecksumUtils() {}
+
     /**
      * transform a byte array to an hexadecimal string
      */
     public static String getHexChecksum(byte[] checksumByte) {
-        StringBuffer hexString = new StringBuffer();
+        StringBuilder hexString = new StringBuilder();
         for (byte element : checksumByte) {
             String hex = Integer.toHexString(0xff & element);
             if (hex.length() == 1) {

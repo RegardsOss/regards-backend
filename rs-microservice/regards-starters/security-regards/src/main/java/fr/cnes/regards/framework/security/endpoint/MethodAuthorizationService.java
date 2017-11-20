@@ -67,6 +67,17 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodAuthorizationService.class);
 
     /**
+     * Authorities cache that provide granted authorities per tenant and per resource.<br/>
+     * Map<Tenant, Map<Resource, List<GrantedAuthority>>>
+     */
+    private final Map<String, Map<String, ArrayList<GrantedAuthority>>> grantedAuthoritiesByTenant = new HashMap<>();
+
+    /**
+     * Roles allowed ip addresses cache
+     */
+    private final Map<String, List<RoleAuthority>> rolesByTenant = new HashMap<>();
+
+    /**
      * Plugin resource manager. To handle plugins endpoints specific resources.
      */
     private IPluginResourceManager pluginResourceManager;
@@ -86,17 +97,6 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
      */
     @Value("${spring.application.name}")
     private String microserviceName;
-
-    /**
-     * Authorities cache that provide granted authorities per tenant and per resource.<br/>
-     * Map<Tenant, Map<Resource, List<GrantedAuthority>>>
-     */
-    private final Map<String, Map<String, ArrayList<GrantedAuthority>>> grantedAuthoritiesByTenant = new HashMap<>();
-
-    /**
-     * Roles allowed ip addresses cache
-     */
-    private final Map<String, List<RoleAuthority>> rolesByTenant = new HashMap<>();
 
     /**
      * Spring application context
@@ -155,8 +155,7 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
                 }
             } catch (final ClassNotFoundException e) {
                 LOGGER.error(String.format("Error getting resources from RestController classe : %s",
-                                           def.getBeanClassName()),
-                             e);
+                                           def.getBeanClassName()), e);
             }
         }
         return resources;
@@ -187,28 +186,30 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
                     mappings.add(mapping);
                 }
             } else {
-                LOGGER.debug("Skipping resource management for  method {} as there is no @ResourceAccess annotation on it",
-                             pMethod.getName());
+                LOGGER.debug(
+                        "Skipping resource management for  method {} as there is no @ResourceAccess annotation on it",
+                        pMethod.getName());
             }
         } catch (final ResourceMappingException e) {
             // Skip inconsistent resource management
             LOGGER.warn(e.getMessage(), e);
-            LOGGER.warn("Skipping resource management for method \"{}\" on class \"{}\".", pMethod.getName(),
+            LOGGER.warn("Skipping resource management for method \"{}\" on class \"{}\".",
+                        pMethod.getName(),
                         pMethod.getDeclaringClass().getCanonicalName());
         }
         return mappings;
     }
 
     /**
-    *
-    * Retrieve all Role authorities of the given tenant from the administration service
-    *
-    * @param tenant
-    *            tenant
-    * @throws SecurityException
-    *             if error occurs
-    * @since 1.0-SNAPSHOT
-    */
+     *
+     * Retrieve all Role authorities of the given tenant from the administration service
+     *
+     * @param tenant
+     *            tenant
+     * @throws SecurityException
+     *             if error occurs
+     * @since 1.0-SNAPSHOT
+     */
     public void collectRolesAndAuthorities(String tenant) throws SecurityException {
 
         // Register authorized roles by tenant (so you can manage IP filtering)
@@ -262,8 +263,8 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
             ArrayList<GrantedAuthority> newAuthorities;
             if (grantedAuthoritiesByResource.containsKey(resourceId)) {
                 // we already have some authorities(roles) in the system, so lets get them and add the new ones
-                final Set<GrantedAuthority> grantedAuthorities = new LinkedHashSet<>(
-                        grantedAuthoritiesByResource.get(resourceId));
+                final Set<GrantedAuthority> grantedAuthorities = new LinkedHashSet<>(grantedAuthoritiesByResource
+                                                                                             .get(resourceId));
                 for (final GrantedAuthority granted : resourceMapping.getAutorizedRoles()) {
                     grantedAuthorities.add(granted);
                 }
@@ -275,25 +276,6 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
             }
             grantedAuthoritiesByResource.put(resourceId, newAuthorities);
         }
-    }
-
-    private void unsetAuthorities(String tenant, String roleName) {
-        RoleAuthority authority = new RoleAuthority(roleName);
-
-        // Get resource authority cache
-        Map<String, ArrayList<GrantedAuthority>> grantedAuthoritiesByResource = grantedAuthoritiesByTenant.get(tenant);
-        if (grantedAuthoritiesByResource != null) {
-            for (ArrayList<GrantedAuthority> resAuthorities : grantedAuthoritiesByResource.values()) {
-                resAuthorities.remove(authority);
-            }
-        }
-    }
-
-    public void updateAuthoritiesFor(String tenant, String roleName) {
-        unsetAuthorities(tenant, roleName);
-        Set<ResourceMapping> newMappings = getAuthoritiesProvider().getResourceMappings(microserviceName, tenant,
-                                                                                        roleName);
-        newMappings.forEach(mapping -> setAuthorities(tenant, mapping));
     }
 
     /**
@@ -329,6 +311,25 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
         resource.setAutorizedRoles(newAuthorities);
 
         setAuthorities(pTenant, resource);
+    }
+
+    private void unsetAuthorities(String tenant, String roleName) {
+        RoleAuthority authority = new RoleAuthority(roleName);
+
+        // Get resource authority cache
+        Map<String, ArrayList<GrantedAuthority>> grantedAuthoritiesByResource = grantedAuthoritiesByTenant.get(tenant);
+        if (grantedAuthoritiesByResource != null) {
+            for (ArrayList<GrantedAuthority> resAuthorities : grantedAuthoritiesByResource.values()) {
+                resAuthorities.remove(authority);
+            }
+        }
+    }
+
+    public void updateAuthoritiesFor(String tenant, String roleName) {
+        unsetAuthorities(tenant, roleName);
+        Set<ResourceMapping> newMappings = getAuthoritiesProvider()
+                .getResourceMappings(microserviceName, tenant, roleName);
+        newMappings.forEach(mapping -> setAuthorities(tenant, mapping));
     }
 
     /**
@@ -381,8 +382,10 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
                 // CHECKSTYLE:OFF
                 final String decision = access ? "granted" : "denied";
                 // CHECKSTYLE:ON
-                final String logMessage = String.format("Access %s to resource %s for user %s.", decision,
-                                                        mapping.getResourceMappingId(), pJWTAuthentication.getName());
+                final String logMessage = String.format("Access %s to resource %s for user %s.",
+                                                        decision,
+                                                        mapping.getResourceMappingId(),
+                                                        pJWTAuthentication.getName());
                 LOGGER.debug(logMessage);
 
             } catch (final ResourceMappingException e) {

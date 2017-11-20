@@ -42,6 +42,7 @@ import org.springframework.util.Assert;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -291,12 +292,12 @@ public class PluginService implements IPluginService {
     public List<PluginConfiguration> getPluginConfigurationsByType(final Class<?> pInterfacePluginType) {
 
         final Iterable<PluginConfiguration> plgConfs = pluginConfRepository.findAll();
-        if (plgConfs != null) {
+        if (plgConfs == null) {
+            return Lists.newArrayList();
+        } else {
             return Lists.newArrayList(plgConfs).stream()
                     .filter(pc -> pc.getInterfaceNames().contains(pInterfacePluginType.getName()))
                     .collect(Collectors.toList());
-        } else {
-            return Lists.newArrayList();
         }
     }
 
@@ -439,7 +440,7 @@ public class PluginService implements IPluginService {
      * @param methodInvoquing method that invoques logPluginServiceState
      */
     private void logPluginServiceState(String methodInvoquing) {
-        if(LOGGER.isDebugEnabled()) {
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("logPluginServiceState invoqued by : {}", methodInvoquing);
             LOGGER.debug("This identifier: {}", this.toString());
             StringJoiner sj = new StringJoiner(" ,");
@@ -460,7 +461,8 @@ public class PluginService implements IPluginService {
                 }
                 interfaceNamesBuilder.append("]");
 
-                LOGGER.debug("Available plugins metadata : {} -> {} / {} / {}", entry.getKey(), entry.getValue().getPluginId(), entry.getValue().getPluginClassName(),
+                LOGGER.debug("Available plugins metadata : {} -> {} / {} / {}", entry.getKey(),
+                             entry.getValue().getPluginId(), entry.getValue().getPluginClassName(),
                              interfaceNamesBuilder.toString());
             }
         }
@@ -531,6 +533,11 @@ public class PluginService implements IPluginService {
             throw new EntityNotFoundException(pConfigurationLabel, PluginConfiguration.class);
         }
         return conf;
+    }
+
+    @Override
+    public Optional<PluginConfiguration> findPluginConfigurationByLabel(String configurationLabel) {
+        return Optional.ofNullable(pluginConfRepository.findOneByLabel(configurationLabel));
     }
 
     /*
