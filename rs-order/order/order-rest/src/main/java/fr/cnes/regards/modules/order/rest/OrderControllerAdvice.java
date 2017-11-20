@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
+import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
@@ -42,28 +43,32 @@ import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
 public class OrderControllerAdvice extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(EmptyBasketException.class)
-    public ResponseEntity<ServerErrorResponse> handleEmptyBasketException(final EmptyBasketException ebe) {
+    public ResponseEntity<ServerErrorResponse> handleEmptyBasketException(EmptyBasketException ebe) {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ServerErrorResponse(ebe.getMessage()));
     }
 
     @ExceptionHandler(NotYetAvailableException.class)
-    public ResponseEntity<ServerErrorResponse> handleNotYetAvailableException(final NotYetAvailableException e) {
+    public ResponseEntity<ServerErrorResponse> handleNotYetAvailableException(NotYetAvailableException e) {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ServerErrorResponse(e.getMessage()));
     }
 
     @ExceptionHandler(CannotDeleteOrderException.class)
-    public ResponseEntity<ServerErrorResponse> handleCannotDeleteOrderException(final CannotDeleteOrderException e) {
+    public ResponseEntity<ServerErrorResponse> handleCannotDeleteOrderException(CannotDeleteOrderException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage()));
     }
 
     @ExceptionHandler(CannotResumeOrderException.class)
-    public ResponseEntity<ServerErrorResponse> handleCannotResumeOrderException(final CannotResumeOrderException e) {
+    public ResponseEntity<ServerErrorResponse> handleCannotResumeOrderException(CannotResumeOrderException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage()));
     }
 
     @ExceptionHandler(CannotRemoveOrderException.class)
-    public ResponseEntity<ServerErrorResponse> handleCannotRemoveOrderException(final CannotRemoveOrderException e) {
+    public ResponseEntity<ServerErrorResponse> handleCannotRemoveOrderException(CannotRemoveOrderException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage()));
     }
 
+    @ExceptionHandler(BadBasketSelectionRequest.class)
+    public ResponseEntity<ServerErrorResponse> handleBadBasketSelectionRequest(BadBasketSelectionRequest e) {
+        return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ServerErrorResponse(e.getMessage()));
+    }
 }

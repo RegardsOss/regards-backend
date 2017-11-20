@@ -42,6 +42,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.ISearchClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
@@ -59,15 +60,19 @@ import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 @EnableAutoConfiguration
 @PropertySource(value = "classpath:test.properties")
 public class OrderConfiguration {
+
     @Bean
     public IAuthenticationResolver authResolver() {
         return Mockito.mock(IAuthenticationResolver.class);
     }
 
-
     @Bean
     public ISearchClient searchClient() {
-        return Mockito.mock(ISearchClient.class);
+        ISearchClient searchClient = Mockito.mock(ISearchClient.class);
+        DocFilesSummary summary = new DocFilesSummary();
+        Mockito.when(searchClient.computeDatasetsSummary(Mockito.anyMap(), Mockito.anyString(), Mockito.anyVararg()))
+                .thenReturn(ResponseEntity.ok(summary));
+        return searchClient;
     }
 
     @Bean
@@ -89,8 +94,9 @@ public class OrderConfiguration {
 
         @SuppressWarnings("deprecation")
         public Response downloadFile(String aipId, String checksum) {
-            return Response.create(200, "ignore", Collections.emptyMap(),
-                                   getClass().getResourceAsStream("/files/" + checksum), 1000);
+            return Response
+                    .create(200, "ignore", Collections.emptyMap(), getClass().getResourceAsStream("/files/" + checksum),
+                            1000);
         }
     }
 
@@ -100,7 +106,7 @@ public class OrderConfiguration {
     }
 
     @Bean
-    public IEmailClient emailClient()  {
+    public IEmailClient emailClient() {
         return Mockito.mock(IEmailClient.class);
     }
 }

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -68,7 +69,7 @@ public class BasketService implements IBasketService {
     }
 
     @Override
-    public Basket addSelection(Long basketId, String datasetIpId, String openSearchRequest) {
+    public Basket addSelection(Long basketId, String datasetIpId, String inOpenSearchRequest) {
         Basket basket = repos.findOneById(basketId);
         if (basket == null) {
             throw new EntityNotFoundException("Basket with id " + basketId + " doesn't exist");
@@ -76,6 +77,7 @@ public class BasketService implements IBasketService {
         // Add current date on search request
         OffsetDateTime now = OffsetDateTime.now();
         String nowStr = OffsetDateTimeAdapter.format(now);
+        String openSearchRequest = Strings.nullToEmpty(inOpenSearchRequest);
         if (!openSearchRequest.isEmpty()) {
             openSearchRequest = "(" + openSearchRequest + ") AND ";
         }

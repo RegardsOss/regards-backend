@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.service.IBasketService;
 import fr.cnes.regards.modules.order.service.IOrderService;
@@ -48,8 +49,16 @@ import fr.cnes.regards.modules.order.service.IOrderService;
 @RestController
 @ModuleInfo(name = "order", version = "2.0.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping("/order/basket")
+@RequestMapping(BasketController.ORDER_BASKET)
 public class BasketController implements IResourceController<Basket> {
+
+    public static final String SELECTION = "/selection";
+
+    public static final String DATASET_DATASET_SELECTION_ID = "/dataset/{datasetSelectionId}";
+
+    public static final String DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE = "/dataset/{datasetSelectionId}/{itemsSelectionDate}";
+
+    public static final String ORDER_BASKET = "/order/basket";
 
     @Autowired
     private IResourceService resourceService;
@@ -69,8 +78,9 @@ public class BasketController implements IResourceController<Basket> {
      * @return updated or created basket
      */
     @ResourceAccess(description = "Add a selection to the basket")
-    @RequestMapping(method = RequestMethod.POST, value = "/selection")
-    public ResponseEntity<Resource<Basket>> addSelection(@RequestBody BasketSelectionRequest basketSelectionRequest) {
+    @RequestMapping(method = RequestMethod.POST, value = SELECTION)
+    public ResponseEntity<Resource<Basket>> addSelection(@RequestBody BasketSelectionRequest basketSelectionRequest)
+            throws BadBasketSelectionRequest {
         String user = authResolver.getUser();
         Basket basket = basketService.findOrCreate(user);
         String openSearchRequest = basketSelectionRequest.computeOpenSearchRequest();
@@ -84,7 +94,7 @@ public class BasketController implements IResourceController<Basket> {
      * @throws EmptyBasketException if no basket currently exists
      */
     @ResourceAccess(description = "Remove dataset selection from basket")
-    @RequestMapping(method = RequestMethod.DELETE, value = "/dataset/{datasetSelectionId}")
+    @RequestMapping(method = RequestMethod.DELETE, value = DATASET_DATASET_SELECTION_ID)
     public ResponseEntity<Resource<Basket>> removeDatasetSelection(
             @PathVariable("datasetSelectionId") Long dsSelectionId) throws EmptyBasketException {
         Basket basket = basketService.find(authResolver.getUser());
@@ -99,7 +109,7 @@ public class BasketController implements IResourceController<Basket> {
      * @throws EmptyBasketException if no basket currently exists
      */
     @ResourceAccess(description = "Remove dated item selection under dataset selection from basket")
-    @RequestMapping(method = RequestMethod.DELETE, value = "/dataset/{datasetSelectionId}/{itemsSelectionDate}")
+    @RequestMapping(method = RequestMethod.DELETE, value = DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE)
     public ResponseEntity<Resource<Basket>> removeDatedItemsSelection(
             @PathVariable("datasetSelectionId") Long dsSelectionId,
             @PathVariable("itemsSelectionDate") OffsetDateTime itemsSelectionDate) throws EmptyBasketException {

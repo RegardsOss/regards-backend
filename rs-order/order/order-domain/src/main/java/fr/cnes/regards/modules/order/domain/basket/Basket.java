@@ -17,6 +17,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import java.util.Collections;
 import java.util.SortedSet;
 
 import org.hibernate.annotations.SortNatural;
@@ -48,7 +49,7 @@ public class Basket implements IIdentifiable<Long> {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "basket_id", foreignKey = @ForeignKey(name = "fk_dataset_selection"))
     @SortNatural
-    private SortedSet<BasketDatasetSelection> datasetSelections;
+    private SortedSet<BasketDatasetSelection> datasetSelections = Collections.emptySortedSet();
 
     @Override
     public Long getId() {
