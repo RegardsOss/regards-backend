@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.notification.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -59,6 +61,7 @@ public class NotificationSettings implements IIdentifiable<Long> {
     /**
      * The frequency of the notification
      */
+    @Enumerated(EnumType.STRING)
     @Column(name = "frequency")
     private NotificationFrequency frequency;
 

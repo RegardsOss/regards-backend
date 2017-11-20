@@ -29,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -48,6 +49,7 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserServ
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 
 /**
@@ -97,6 +99,8 @@ public class NotificationServiceTest {
      * A title
      */
     private static final String TITLE = "Title";
+
+    private static final NotificationType TYPE = NotificationType.INFO;
 
     /**
      * A notification
@@ -213,6 +217,7 @@ public class NotificationServiceTest {
         notification.setSender(SENDER);
         notification.setStatus(NotificationStatus.UNREAD);
         notification.setTitle(TITLE);
+        notification.setType(TYPE);
         notification.setProjectUserRecipients(new ArrayList<>());
         notification.getProjectUserRecipients().add(projectUser1);
         notification.setRoleRecipients(new ArrayList<>());
@@ -227,7 +232,7 @@ public class NotificationServiceTest {
 
         // Instanciate the tested service
         notificationService = new NotificationService(projectUserService, notificationRepository, projectUserRepository,
-                roleRepository, projectUserClient);
+                roleRepository, projectUserClient, Mockito.mock(ApplicationEventPublisher.class));
     }
 
     /**
@@ -280,6 +285,7 @@ public class NotificationServiceTest {
         roleRecipientsAsString.add(ROLE_NAME_0);
         dto.setRoleRecipients(roleRecipientsAsString);
         dto.setSender(SENDER);
+        dto.setType(NotificationType.INFO);
 
         // Define expected
         final Notification expected = new Notification();
@@ -287,6 +293,7 @@ public class NotificationServiceTest {
         expected.setTitle(TITLE);
         expected.setSender(SENDER);
         expected.setStatus(NotificationStatus.UNREAD);
+        expected.setType(NotificationType.INFO);
         final List<ProjectUser> projectUserRecipients = new ArrayList<>();
         final ProjectUser projectUserRecipient0 = new ProjectUser();
         projectUserRecipient0.setEmail(RECIPIENT_0);
@@ -306,15 +313,11 @@ public class NotificationServiceTest {
         Mockito.when(roleRepository.findByNameIn(roleRecipientsAsString)).thenReturn(roleRecipients);
 
         // Call method
-        final Notification actual = notificationService.createNotification(dto);
-
-        // Make sur they have the same email, in order to throw the expected exception
-        checkFieldsEqual(actual, expected);
+        notificationService.createNotification(dto);
 
         // Check that the repository's method was called with right arguments
         Mockito.verify(projectUserRepository).findByEmailIn(projectUserRecipientsAsString);
         Mockito.verify(roleRepository).findByNameIn(roleRecipientsAsString);
-        Mockito.verify(notificationRepository).save(actual);
     }
 
     /**

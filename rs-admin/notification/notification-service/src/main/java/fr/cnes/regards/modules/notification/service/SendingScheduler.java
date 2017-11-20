@@ -18,20 +18,23 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import java.time.*;
+import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
+import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
 import fr.cnes.regards.modules.notification.service.utils.NotificationUserSetting;
 
 /**
@@ -45,12 +48,7 @@ import fr.cnes.regards.modules.notification.service.utils.NotificationUserSettin
 @Service
 @EnableScheduling
 @MultitenantTransactional
-public class SendingScheduler {
-
-    /**
-     * Notification sending strategy
-     */
-    private ISendingStrategy strategy;
+public class SendingScheduler implements ApplicationListener<NotificationToSendEvent> {
 
     /**
      * The service responsible for managing notifications
@@ -60,7 +58,12 @@ public class SendingScheduler {
     /**
      * The service responsible for managing notification settings
      */
-    private final INotificationSettingsRepository notificationSettingsRepository;
+    private final INotificationSettingsService notificationSettingsService;
+
+    /**
+     * Notification sending strategy
+     */
+    private ISendingStrategy strategy;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -68,16 +71,16 @@ public class SendingScheduler {
     /**
      * Create a new scheduler with passed services and repositories
      *
-     * @param pStrategy The notification sending strategy
-     * @param pNotificationService The notification service
-     * @param pNotificationSettingsRepository The notification settings repository
+     * @param strategy The notification sending strategy
+     * @param notificationService The notification service
+     * @param notificationSettingsService The notification settings repository
      */
-    public SendingScheduler(final ISendingStrategy pStrategy, final INotificationService pNotificationService,
-            final INotificationSettingsRepository pNotificationSettingsRepository) {
+    public SendingScheduler(final ISendingStrategy strategy, final INotificationService notificationService,
+            final INotificationSettingsService notificationSettingsService) {
         super();
-        strategy = pStrategy;
-        notificationService = pNotificationService;
-        notificationSettingsRepository = pNotificationSettingsRepository;
+        this.strategy = strategy;
+        this.notificationService = notificationService;
+        this.notificationSettingsService = notificationSettingsService;
     }
 
     /**
@@ -137,25 +140,31 @@ public class SendingScheduler {
      */
     private void filterAndSend(final Predicate<NotificationUserSetting> pFilter) {
         // With the stream of unsent notifications
-        String tenant= runtimeTenantResolver.getTenant();
+        String tenant = runtimeTenantResolver.getTenant();
         try (Stream<Notification> stream = notificationService.retrieveNotificationsToSend().parallelStream()) {
             stream.forEach(notification -> {
                 runtimeTenantResolver.forceTenant(tenant);
                 // Build the list of recipients
                 String[] recipients = notificationService.findRecipients(notification)
-                        .map(projectUser -> new NotificationUserSetting(notification, projectUser,
-                                                                        notificationSettingsRepository
-                                                                                .findOneByProjectUser(projectUser)))
-                        .filter(pFilter).map(n -> n.getProjectUser().getEmail()).distinct().toArray(s -> new String[s]);
+                        .map(projectUser -> new NotificationUserSetting(notification,
+                                                                        projectUser,
+                                                                        notificationSettingsService
+                                                                                .retrieveNotificationSettings(
+                                                                                        projectUser))).filter(pFilter)
+                        .map(n -> n.getProjectUser().getEmail()).distinct().toArray(s -> new String[s]);
 
                 // Send the notification to recipients
-                if (recipients.length > 0) {
-                    strategy.send(notification, recipients);
-                }
+                sendNotification(notification, recipients);
 
-                // Update sent date
-                notification.setDate(OffsetDateTime.now());
             });
+        }
+    }
+
+    private void sendNotification(Notification notification, String... recipients) {
+        if (recipients.length > 0) {
+            strategy.send(notification, recipients);
+            // Update sent date
+            notification.setDate(OffsetDateTime.now());
         }
     }
 
@@ -168,7 +177,7 @@ public class SendingScheduler {
      */
     private Predicate<NotificationUserSetting> createFrequencyFilter(final NotificationFrequency pFrequency) {
         return n -> pFrequency
-                .equals(notificationSettingsRepository.findOneByProjectUser(n.getProjectUser()).getFrequency());
+                .equals(notificationSettingsService.retrieveNotificationSettings(n.getProjectUser()).getFrequency());
     }
 
     /**
@@ -178,5 +187,16 @@ public class SendingScheduler {
      */
     public void changeStrategy(final ISendingStrategy pStrategy) {
         strategy = pStrategy;
+    }
+
+    /**
+     * Allows to trigger sending process before the frequency
+     */
+    @Override
+    public void onApplicationEvent(NotificationToSendEvent event) {
+        Notification notif = event.getNotification();
+        String[] recipients = notificationService.findRecipients(notif).distinct().map(ProjectUser::getEmail)
+                .toArray(n -> new String[n]);
+        sendNotification(notif, recipients);
     }
 }

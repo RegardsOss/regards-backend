@@ -70,6 +70,8 @@ public class NotificationTest {
      */
     private static final NotificationStatus STATUS = NotificationStatus.UNREAD;
 
+    private static final NotificationType TYPE = NotificationType.INFO;
+
     /**
      * Role recipients
      */
@@ -116,6 +118,7 @@ public class NotificationTest {
         notification.setMessage(MESSAGE);
         notification.setSender(SENDER);
         notification.setStatus(STATUS);
+        notification.setType(TYPE);
 
         roleRecipients = new ArrayList<>();
         roleRecipients.add(new Role(DefaultRole.PUBLIC.toString(), null));

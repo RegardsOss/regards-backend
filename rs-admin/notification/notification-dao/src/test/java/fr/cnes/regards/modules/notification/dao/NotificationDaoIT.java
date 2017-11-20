@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
 
 /**
  * @author Christophe Mertz
@@ -104,6 +105,7 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
         notif.setMessage(pMessage);
         notif.setSender(pSender);
         notif.setStatus(pStatus);
+        notif.setType(NotificationType.INFO);
         return notif;
     }
 
