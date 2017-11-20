@@ -142,11 +142,11 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
     }
 
     @Override
-    public void freeResources() throws AcquisitionException {
+    public void freeResources() throws AcquisitionException { // NOSONAR
     }
 
     @Override
-    public void stop() {
+    public void stop() { // NOSONAR
     }
 
     @Override

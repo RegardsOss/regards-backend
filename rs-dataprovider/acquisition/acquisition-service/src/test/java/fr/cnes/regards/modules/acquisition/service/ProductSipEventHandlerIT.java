@@ -189,6 +189,27 @@ public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
     }
+    
+    @Test
+    public void receivedSipStoreEventFailedNoChainDefined() throws InterruptedException {
+        Assert.assertEquals(16, productService
+                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+        chainGenerationRepository.deleteAll();
+
+        publishSipEvent("product-001", SIPState.STORED);
+
+        waitJobEvent();
+
+        Assert.assertFalse(runnings.isEmpty());
+        Assert.assertTrue(succeededs.isEmpty());
+        Assert.assertEquals(1, faileds.size());
+        Assert.assertTrue(aborteds.isEmpty());
+
+        Assert.assertEquals(16, productService
+                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+    }
 
     private void publishSipEvent(String productName, SIPState state) {
         Product p1 = productService.retrieve(productName);

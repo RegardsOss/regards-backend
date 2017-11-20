@@ -273,11 +273,11 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
     }
 
     @Override
-    public void freeResources() throws AcquisitionException {
+    public void freeResources() throws AcquisitionException { // NOSONAR
     }
 
     @Override
-    public void stop() {
+    public void stop() { // NOSONAR
     }
 
     @Override

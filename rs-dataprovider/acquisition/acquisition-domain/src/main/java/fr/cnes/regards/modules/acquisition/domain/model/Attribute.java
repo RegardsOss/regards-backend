@@ -142,11 +142,10 @@ public abstract class Attribute {
         if (compositeAttribute == null) {
             return metaAttribute.getName();
         } else {
-            // this is unique key as meta-attribut names doesn't contain space char
-            StringBuffer strBuff = new StringBuffer(metaAttribute.getName());
-            strBuff.append(" ");
-            strBuff.append(compositeAttribute.getCompAttId());
-            return strBuff.toString();
+            StringBuilder buff = new StringBuilder(metaAttribute.getName());
+            buff.append(" ");
+            buff.append(compositeAttribute.getCompAttId());
+            return buff.toString();
         }
     }
 

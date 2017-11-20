@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
@@ -79,7 +80,11 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
             IPostProcessSipPlugin postProcessPlugin = pluginService
                     .getPlugin(this.chainGeneration.getPostProcessSipPluginConf().getId());
             postProcessPlugin.runPlugin(product, chainGeneration);
+
+            // Update ProductStatus to SAVED
+            product.setStatus(ProductStatus.SAVED);
             productService.save(this.product);
+
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             throw new AcquisitionRuntimeException(e.getMessage());
@@ -97,11 +102,11 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
     }
 
     @Override
-    public void freeResources() throws AcquisitionException {
+    public void freeResources() throws AcquisitionException { // NOSONAR
     }
 
     @Override
-    public void stop() {
+    public void stop() { // NOSONAR
     }
 
     @Override

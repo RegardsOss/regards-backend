@@ -44,15 +44,15 @@ public class CleanOriginalFilePostPlugin implements IPostProcessSipPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CleanOriginalFilePostPlugin.class);
 
-    @Autowired
-    private IProductService productService;
+//    @Autowired
+//    private IProductService productService;
 
     @Override
     public void runPlugin(Product product, ChainGeneration chain) throws ModuleException {
         LOGGER.info("[{}] Start post processing for the product : {}", chain.getSession(), product.getProductName());
 
-        product.setStatus(ProductStatus.SAVED);
-        productService.save(product);
+//        product.setStatus(ProductStatus.SAVED);
+//        productService.save(product);
 
         if (product.getMetaProduct().getCleanOriginalFile()) {
             for (AcquisitionFile acqFile : product.getAcquisitionFile()) {

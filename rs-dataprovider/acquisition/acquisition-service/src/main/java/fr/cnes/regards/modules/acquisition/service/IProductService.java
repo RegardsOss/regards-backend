@@ -44,16 +44,16 @@ public interface IProductService {
     Product retrieve(Long id);
 
     /**
-     * Delete one specified {@link Product}
-     * @param id {@link Product}
-     */
-    void delete(Long id);
-
-    /**
      * Retrieve one specified {@link Product}
      * @param productName a product name
      */
     Product retrieve(String productName);
+
+    /**
+     * Delete one specified {@link Product}
+     * @param id {@link Product}
+     */
+    void delete(Long id);
 
     public List<Product> findByStatus(ProductStatus status);
 

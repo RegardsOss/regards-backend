@@ -54,6 +54,11 @@ public class ProductService implements IProductService {
     }
 
     @Override
+    public Product retrieve(String productName) {
+        return productRepository.findCompleteByProductName(productName);
+    }
+
+    @Override
     public List<Product> retrieveAll() {
         final List<Product> products = new ArrayList<>();
         productRepository.findAll().forEach(c -> products.add(c));
@@ -63,11 +68,6 @@ public class ProductService implements IProductService {
     @Override
     public void delete(Long id) {
         this.productRepository.delete(id);
-    }
-
-    @Override
-    public Product retrieve(String productName) {
-        return productRepository.findCompleteByProductName(productName);
     }
 
     @Override

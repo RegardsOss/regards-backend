@@ -156,28 +156,28 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsServiceIT {
     private RegardsAmqpAdmin amqpAdmin;
 
     @Autowired
-    private IMetaProductRepository metaProductRepository;
+    protected IMetaProductRepository metaProductRepository;
 
     @Autowired
-    private IProductRepository productRepository;
+    protected IProductRepository productRepository;
 
     @Autowired
-    private IScanDirectoryRepository scanDirectoryRepository;
+    protected IScanDirectoryRepository scanDirectoryRepository;
 
     @Autowired
-    private IChainGenerationRepository chainGenerationRepository;
+    protected IChainGenerationRepository chainGenerationRepository;
 
     @Autowired
-    private IAcquisitionFileRepository acquisitionFileRepository;
+    protected IAcquisitionFileRepository acquisitionFileRepository;
 
     @Autowired
-    private IMetaFileRepository metaFileRepository;
+    protected IMetaFileRepository metaFileRepository;
 
     @Autowired
-    private IPluginParameterRepository pluginParameterRepository;
+    protected IPluginParameterRepository pluginParameterRepository;
 
     @Autowired
-    private IPluginConfigurationRepository pluginConfigurationRepository;
+    protected IPluginConfigurationRepository pluginConfigurationRepository;
 
     @Autowired
     private IIngestClient ingestClient;
@@ -186,7 +186,7 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsServiceIT {
     private IDatasetClient datasetClient;
 
     @Autowired
-    private ISubscriber subscriber;
+    protected ISubscriber subscriber;
 
     protected ChainGeneration chain;
 

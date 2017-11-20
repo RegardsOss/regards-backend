@@ -78,7 +78,7 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
         Set<String> ingestChains = productRepository
                 .findDistinctIngestChainBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED);
 
-        if (ingestChains.size() == 0) {
+        if (ingestChains.isEmpty()) {
             LOG.info("Any products ready for SIP creation");
             return;
         }
@@ -93,8 +93,8 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
     }
 
     /**
-     * Send POST SIP bulk request for an ingest processing chain
-     * @param ingestChain an ingest processing chain
+     * Send POST SIP bulk request for an ingest processing chain.
+     * @param ingestChain an Ingest processing chain identifier
      */
     private void postSIPBulkRequest(String ingestChain) {
         LOG.info("[{}] Send SIP", ingestChain);
@@ -112,29 +112,31 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
     }
 
     /**
-     * Send one POST SIP request for an ingest processing chain for a sessions id
-     * @param ingestChain an ingest processing chain
-     * @param session a session
+     * Send one POST SIP request for an ingest processing chain for a sessions id.
+     * @param ingestChain an Ingest processing chain identifier
+     * @param session a current session identifier
      * @param pageable a {@link Pageable}
-     * @return the {@link Page} of {@link Product}
+     * @return true if at least one {@link Product} has been send to Ingest microservice
      */
     private boolean postSIPOnePage(String ingestChain, String session, Pageable pageable) {
         Page<Product> page = productRepository
                 .findAllByIngestChainAndSessionAndSendedAndStatusIn(ingestChain, session, false, pageable,
                                                                     ProductStatus.COMPLETED, ProductStatus.FINISHED);
-        if (page.getContent().size() == 0) {
+        if (page.getContent().isEmpty()) {
             return false;
         }
         return postSipProducts(ingestChain, session, page.getContent());
     }
 
     /**
-     * Generate a {@link SIPCollection} for this {@link Product}s and send it to the ingest microservice
-     * 
+     * Generate a {@link SIPCollection} for this {@link Product}s and send it to the Ingest microservice.
+     * @param ingestChain an Ingest processing chain identifier
+     * @param session a current session identifier
      * @param products the {@link List} of {@link Product} ready to send
+     * @return true if at least one {@link Product} has been send to Ingest microservice
      */
     private boolean postSipProducts(String ingestChain, String session, List<Product> products) {
-        if (products.size() == 0) {
+        if (products.isEmpty()) {
             return false;
         }
         LOG.info("[{}] {} products found", session, products.size());
@@ -144,14 +146,14 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
             sipCollectionBuilder.add(product.getSip());
         }
 
-        return postSipCollection(session, sipCollectionBuilder.build()) > 0;
+        return 0 < postSipCollection(session, sipCollectionBuilder.build());
     }
 
     /**
-     * Send the {@link SIPCollection} to Ingest microservice
-     * @param session
-     * @param sipCollection
-     * @return the number of {@link Product} that has been sended in Ingest
+     * Send the {@link SIPCollection} to Ingest microservice.
+     * @param session a current session identifier
+     * @param sipCollection the {@link SIPCollection} send to Ingest microservice
+     * @return the number of {@link Product} that has been sended to Ingest microservice
      */
     private int postSipCollection(String session, SIPCollection sipCollection) {
         LOG.info("[{}] Start publish SIP Collections", session);
@@ -178,9 +180,9 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
 
     /**
      * SIP bulk request has been processed with success, change the {@link Product} state.
-     * @param session the current session
-     * @param sipCollection the {@link SIPCollection} send to Ingest
-     * @return the number of {@link Product} that has been sended in Ingest
+     * @param session a current session identifier
+     * @param sipCollection the {@link SIPCollection} send to Ingest microservice
+     * @return the number of {@link Product} that has been sended in Ingest microservice
      */
     private int responseSipCreated(String session, SIPCollection sipCollection) {
         LOG.info("[{}] SIP collection has heen processed with success : {} SIP ingested", session,
@@ -193,10 +195,10 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
 
     /**
      * SIP bulk request has been processed and some SIP has been rejected, change the {@link Product} state.
-     * @param session the current session
+     * @param session a current session identifier
      * @param rejectedSips the {@link Collection} of {@link SIPEntity} that have been rejected
-     * @param sipCollection the {@link SIPCollection} send to Ingest
-     * @return the number of {@link Product} that has been sended in Ingest
+     * @param sipCollection the {@link SIPCollection} send to Ingest microservice
+     * @return the number of {@link Product} that has been sended to Ingest microservice
      */
     private int responseSipPartiallyCreated(String session, Collection<SIPEntity> rejectedSips,
             SIPCollection sipCollection) {
@@ -227,11 +229,11 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
     private void setSipProductSaved(String sipId) {
         Product product = productService.retrieve(sipId);
         if (product == null) {
-            final StringBuffer strBuff = new StringBuffer();
-            strBuff.append("The product name <");
-            strBuff.append(sipId);
-            strBuff.append("> does not exist");
-            LOG.error(strBuff.toString());
+            final StringBuilder buff = new StringBuilder();
+            buff.append("The product name <");
+            buff.append(sipId);
+            buff.append("> does not exist");
+            LOG.error(buff.toString());
         } else {
             product.setSended(Boolean.TRUE);
             productService.save(product);

@@ -36,7 +36,6 @@ import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParamete
 import fr.cnes.regards.modules.acquisition.domain.job.ProductJobParameter;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.step.GenerateSipStep;
-import fr.cnes.regards.modules.acquisition.service.step.IGenerateSipStep;
 import fr.cnes.regards.modules.acquisition.service.step.IStep;
 
 /**
