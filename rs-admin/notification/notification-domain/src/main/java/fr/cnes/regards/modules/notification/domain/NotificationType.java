@@ -1,6 +1,8 @@
 package fr.cnes.regards.modules.notification.domain;
 
 /**
+ * Describe the notification criticity.
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public enum NotificationType {
