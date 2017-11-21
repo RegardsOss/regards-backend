@@ -20,8 +20,6 @@ package fr.cnes.regards.framework.amqp;
 
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
 /**
  * {@link IPublisherContract} allows to publish {@link ISubscribable} or {@link IPollable} events. This interface
@@ -35,39 +33,58 @@ public interface IPublisherContract {
     /**
      * Publish an {@link ISubscribable} event
      *
-     * @param pEvent
+     * @param event
      *            {@link ISubscribable} event to publish
      */
-    void publish(ISubscribable pEvent);
+    void publish(ISubscribable event);
 
     /**
      * Publish an {@link ISubscribable} event
      *
-     * @param pEvent
+     * @param event
      *            {@link ISubscribable} event to publish
-     * @param pPriority
+     * @param priority
      *            event priority
      */
-    void publish(ISubscribable pEvent, int pPriority);
+    void publish(ISubscribable event, int priority);
 
     /**
      * Publish an {@link IPollable} event
      *
-     * @param pEvent
+     * @param event
      *            {@link IPollable} event to publish
      */
-    void publish(IPollable pEvent);
+    void publish(IPollable event);
 
     /**
      * Publish an {@link IPollable} event
      *
-     * @param pEvent
-     *            {@link IPollable} event to publish
-     * @param pPriority
-     *            event priority
+     * @param event {@link IPollable} event to publish
+     * @param purgeQueue true to purge queue before publishing event. Useful in tests.
      */
-    void publish(IPollable pEvent, int pPriority);
+    void publish(IPollable event, boolean purgeQueue);
 
-    <T> void publish(T pEvt, WorkerMode pWorkerMode, Target pTarget,
-            int pPriority);
+    /**
+     * Publish an {@link IPollable} event
+     *
+     * @param event {@link IPollable} event to publish
+     * @param priority event priority
+     */
+    void publish(IPollable event, int priority);
+
+    /**
+     * Publish an {@link IPollable} event
+     *
+     * @param event {@link IPollable} event to publish
+     * @param priority event priority
+     * @param purgeQueue true to purge queue before publishing event. Useful in tests.
+     */
+    void publish(IPollable event, int priority, boolean purgeQueue);
+
+    /**
+     * Purge related queue. Useful for testing purpose before publishing. Purge can be done as well with
+     * {@link #publish(IPollable, boolean)} or {@link #publish(IPollable, int, boolean)}
+     * @param eventType {@link IPollable} event type
+     */
+    void purgeQueue(Class<? extends IPollable> eventType);
 }

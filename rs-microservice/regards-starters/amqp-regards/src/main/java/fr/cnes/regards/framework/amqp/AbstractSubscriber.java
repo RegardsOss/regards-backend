@@ -18,8 +18,13 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -32,8 +37,11 @@ import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper.TypePrecedence;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
@@ -62,12 +70,12 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     /**
      * configuration allowing us to declare virtual host using http api and get a unique name for the instance
      */
-    private final RegardsAmqpAdmin regardsAmqpAdmin;
+    protected final IAmqpAdmin amqpAdmin;
 
     /**
      * Allows to retrieve {@link ConnectionFactory} per tenant
      */
-    private final IRabbitVirtualHostAdmin virtualHostAdmin;
+    protected final IRabbitVirtualHostAdmin virtualHostAdmin;
 
     /**
      * bean handling the conversion using {@link com.fasterxml.jackson} 2
@@ -75,38 +83,38 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     private final Jackson2JsonMessageConverter jackson2JsonMessageConverter;
 
     /**
-     * Reference to running listeners per handlers and tenants
+     * Reference to running listeners per handlers and virtual hosts
      */
-    private final Map<Class<?>, Map<String, SimpleMessageListenerContainer>> listeners;
+    protected final Map<Class<?>, Map<String, SimpleMessageListenerContainer>> listeners;
 
     /**
      * Reference to events managed by handlers
      */
-    private final Map<Class<?>, Class<?>> handledEvents;
+    protected final Map<Class<?>, Class<? extends ISubscribable>> handledEvents;
 
     /**
      * Reference to instances of handlers
      */
-    private final Map<Class<?>, IHandler<?>> handlerInstances;
+    protected final Map<Class<?>, IHandler<? extends ISubscribable>> handlerInstances;
 
-    public AbstractSubscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin, RegardsAmqpAdmin pRegardsAmqpAdmin,
-            Jackson2JsonMessageConverter pJackson2JsonMessageConverter) {
-        this.virtualHostAdmin = pVirtualHostAdmin;
-        this.regardsAmqpAdmin = pRegardsAmqpAdmin;
-        this.jackson2JsonMessageConverter = pJackson2JsonMessageConverter;
-        pJackson2JsonMessageConverter.setTypePrecedence(TypePrecedence.INFERRED);
+    public AbstractSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin, IAmqpAdmin amqpAdmin,
+            Jackson2JsonMessageConverter jackson2JsonMessageConverter) {
+        this.virtualHostAdmin = virtualHostAdmin;
+        this.amqpAdmin = amqpAdmin;
+        this.jackson2JsonMessageConverter = jackson2JsonMessageConverter;
+        jackson2JsonMessageConverter.setTypePrecedence(TypePrecedence.INFERRED);
         listeners = new HashMap<>();
         handledEvents = new HashMap<>();
         handlerInstances = new HashMap<>();
     }
 
     @Override
-    public <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent) {
+    public <T extends ISubscribable> void unsubscribeFrom(Class<T> eventType) {
 
-        LOGGER.debug("Stopping all listeners for event {}", pEvent.getName());
+        LOGGER.debug("Stopping all listeners for event {}", eventType.getName());
 
-        for (Map.Entry<Class<?>, Class<?>> handleEvent : handledEvents.entrySet()) {
-            if (handleEvent.getValue().equals(pEvent)) {
+        for (Map.Entry<Class<?>, Class<? extends ISubscribable>> handleEvent : handledEvents.entrySet()) {
+            if (handleEvent.getValue().equals(eventType)) {
                 // Retrieve handler managing event to unsubscribe
                 Class<?> handlerClass = handleEvent.getKey();
                 // Retrieve listeners for current handler
@@ -123,8 +131,33 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     }
 
     @Override
-    public <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pHandler) {
-        subscribeTo(pEvent, pHandler, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEvent));
+    public <T extends ISubscribable> void subscribeTo(Class<T> eventType, IHandler<T> receiver) {
+        subscribeTo(eventType, receiver, EventUtils.getWorkerMode(eventType),
+                    EventUtils.getTargetRestriction(eventType), false);
+    }
+
+    @Override
+    public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue) {
+        subscribeTo(eventType, receiver, EventUtils.getWorkerMode(eventType),
+                    EventUtils.getTargetRestriction(eventType), purgeQueue);
+    }
+
+    @Override
+    public <E extends ISubscribable> void purgeQueue(Class<E> eventType, Class<? extends IHandler<E>> handlerType) {
+
+        Set<String> tenants = resolveTenants();
+        for (final String tenant : tenants) {
+            String virtualHost = resolveVirtualHost(tenant);
+            try {
+                virtualHostAdmin.bind(virtualHost);
+                Queue queue = amqpAdmin.declareQueue(tenant, eventType, EventUtils.getWorkerMode(eventType),
+                                                     EventUtils.getTargetRestriction(eventType),
+                                                     Optional.of(handlerType));
+                amqpAdmin.purgeQueue(queue.getName(), false);
+            } finally {
+                virtualHostAdmin.unbind();
+            }
+        }
     }
 
     /**
@@ -134,86 +167,146 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      *
      * @param <T>
      *            event type to which we subscribe
-     * @param pEvt
+     * @param eventType
      *            the event class token you want to subscribe to
-     * @param pHandler
+     * @param handler
      *            the POJO defining the method handling the corresponding event connection factory from context
-     * @param pWorkerMode
+     * @param workerMode
      *            {@link WorkerMode}
-     * @param pTarget
+     * @param target
      *            communication scope
+     * @param purgeQueue true to purge queue if already exists
      */
-    @Override
-    public <T> void subscribeTo(final Class<T> pEvt, final IHandler<T> pHandler, final WorkerMode pWorkerMode,
-            final Target pTarget) {
+    protected <E extends ISubscribable, H extends IHandler<E>> void subscribeTo(final Class<E> eventType, H handler,
+            final WorkerMode workerMode, final Target target, boolean purgeQueue) {
 
-        LOGGER.debug("Subscribing to event {} with target {} and mode {}", pEvt.getName(), pTarget, pWorkerMode);
+        LOGGER.debug("Subscribing to event {} with target {} and mode {}", eventType.getName(), target, workerMode);
 
         Set<String> tenants = resolveTenants();
 
-        Map<String, SimpleMessageListenerContainer> tenantContainers = new HashMap<>();
+        Map<String, SimpleMessageListenerContainer> vhostsContainers = new HashMap<>();
 
-        listeners.put(pHandler.getClass(), tenantContainers);
-        handledEvents.put(pHandler.getClass(), pEvt);
-        handlerInstances.put(pHandler.getClass(), pHandler);
+        if (!listeners.containsKey(handler.getClass())) {
+            listeners.put(handler.getClass(), vhostsContainers);
+            handledEvents.put(handler.getClass(), eventType);
+            handlerInstances.put(handler.getClass(), handler);
+        }
+
+        Multimap<String, Queue> vhostQueues = ArrayListMultimap.create();
 
         for (final String tenant : tenants) {
-            // CHECKSTYLE:OFF
-            final SimpleMessageListenerContainer container = initializeSimpleMessageListenerContainer(pEvt, tenant,
-                                                                                                      pHandler,
-                                                                                                      pWorkerMode,
-                                                                                                      pTarget);
-            tenantContainers.put(tenant, container);
+            String virtualHost = resolveVirtualHost(tenant);
+            // Declare AMQP elements
+            Queue queue = declareElements(eventType, tenant, virtualHost, handler, workerMode, target, purgeQueue);
+            vhostQueues.put(virtualHost, queue);
+        }
 
-            // CHECKSTYLE:ON
-            container.start();
+        // Init listeners
+        for (Map.Entry<String, Collection<Queue>> entry : vhostQueues.asMap().entrySet()) {
+            declareListener(entry.getKey(), handler, entry.getValue());
         }
     }
 
     /**
-     * @return the tenants on which we have to subscribe to the event
+     * @return the tenant on which we have to subscribe to the event
      */
     protected abstract Set<String> resolveTenants();
 
     /**
-     *
-     * @param pEvt
-     *            event we want to listen to
-     * @param pTenant
-     *            Tenant to listen to
-     * @param pHandler
-     *            handler provided by user to handle the event reception
-     * @param pWorkerMode
-     *            communication Mode
-     * @param pTarget
-     *            communication scope
-     * @return a container fully parameterized to listen to the corresponding event for the specified tenant
+     * @param tenant current tenant
+     * @return the virtual host on which we have to publish the event according to the tenant
      */
-    public SimpleMessageListenerContainer initializeSimpleMessageListenerContainer(final Class<?> pEvt,
-            final String pTenant, final IHandler<?> pHandler, final WorkerMode pWorkerMode, final Target pTarget) {
+    protected abstract String resolveVirtualHost(String tenant);
 
-        // Retrieve tenant vhost connection factory
-        ConnectionFactory connectionFactory = virtualHostAdmin.getVhostConnectionFactory(pTenant);
-
+    /**
+     * Declare exchange, queue and binding on a virtual host
+     * @param eventType event to listen to
+     * @param tenant tenant
+     * @param virtualHost virtual host
+     * @param handler event handler
+     * @param workerMode worker mode
+     * @param target target restriction
+     * @param purgeQueue true to purge queue if already exists
+     */
+    protected Queue declareElements(Class<? extends ISubscribable> eventType, final String tenant, String virtualHost,
+            IHandler<? extends ISubscribable> handler, final WorkerMode workerMode, final Target target,
+            boolean purgeQueue) {
         Queue queue;
         try {
-            virtualHostAdmin.bind(pTenant);
-            Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, pEvt, pWorkerMode, pTarget);
-            queue = regardsAmqpAdmin.declareSubscribeQueue(pTenant, pEvt, pHandler.getType(), pWorkerMode, pTarget);
-            regardsAmqpAdmin.declareBinding(pTenant, queue, exchange, pWorkerMode);
+            virtualHostAdmin.bind(virtualHost);
+            Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target);
+            Optional<Class<? extends IHandler<?>>> handlerType = Optional.empty();
+            if (handler != null) {
+                handlerType = Optional.of(handler.getType());
+            }
+            queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, handlerType);
+            if (purgeQueue) {
+                amqpAdmin.purgeQueue(queue.getName(), false);
+            }
+            amqpAdmin.declareBinding(queue, exchange, workerMode);
         } finally {
             virtualHostAdmin.unbind();
         }
+        return queue;
+    }
+
+    /**
+     * Declare listener according to virtual host, handler and queue(s).
+     *
+     * @param virtualHost virtual host
+     * @param handler event handler
+     * @param queues queues to listen to
+     */
+    protected void declareListener(String virtualHost, IHandler<? extends ISubscribable> handler,
+            Collection<Queue> queues) {
+
+        // Prevent redundant listener
+        Map<String, SimpleMessageListenerContainer> vhostsContainers = listeners.get(handler.getClass());
+        // Virtual host already registered, just add queues to current container
+        if (vhostsContainers.containsKey(virtualHost)) {
+            // Add missing queues
+            SimpleMessageListenerContainer container = vhostsContainers.get(virtualHost);
+            String[] existingQueues = container.getQueueNames();
+            Set<String> newQueueNames = new HashSet<>();
+            boolean exists;
+            for (Queue queue : queues) {
+                exists = false;
+                for (String existingQueue : existingQueues) {
+                    if (queue.getName().equals(existingQueue)) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    newQueueNames.add(queue.getName());
+                }
+            }
+            // Add new queues to the existing container
+            if (!newQueueNames.isEmpty()) {
+                container.addQueueNames(newQueueNames.toArray(new String[newQueueNames.size()]));
+            }
+            return;
+        }
+
+        // Retrieve tenant vhost connection factory
+        ConnectionFactory connectionFactory = virtualHostAdmin.getVhostConnectionFactory(virtualHost);
 
         // Init container
         final SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
 
-        final MessageListenerAdapter messageListener = new MessageListenerAdapter(pHandler, DEFAULT_HANDLING_METHOD);
+        final MessageListenerAdapter messageListener = new MessageListenerAdapter(handler, DEFAULT_HANDLING_METHOD);
         messageListener.setMessageConverter(jackson2JsonMessageConverter);
         container.setMessageListener(messageListener);
-        container.addQueues(queue);
-        return container;
+
+        // Prevent duplicate queue
+        Set<String> queueNames = new HashSet<>();
+        queues.forEach(q -> queueNames.add(q.getName()));
+        container.addQueueNames(queueNames.toArray(new String[queueNames.size()]));
+
+        vhostsContainers.put(virtualHost, container);
+
+        container.start();
     }
 
     /**
@@ -226,33 +319,34 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         if (listeners != null) {
             for (Map.Entry<Class<?>, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
                 Class<?> handlerClass = entry.getKey();
-                Class<?> eventClass = handledEvents.get(handlerClass);
-                IHandler<?> handler = handlerInstances.get(handlerClass);
-                SimpleMessageListenerContainer container = initializeSimpleMessageListenerContainer(eventClass, tenant,
-                                                                                                    handler,
-                                                                                                    WorkerMode.ALL,
-                                                                                                    EventUtils
-                                                                                                            .getCommunicationTarget(eventClass));
-                entry.getValue().put(tenant, container);
-                container.start();
+                Class<? extends ISubscribable> eventType = handledEvents.get(handlerClass);
+                IHandler<? extends ISubscribable> handler = handlerInstances.get(handlerClass);
+                String virtualHost = resolveVirtualHost(tenant);
+
+                // Declare AMQP elements
+                WorkerMode workerMode = EventUtils.getWorkerMode(eventType);
+                Target target = EventUtils.getTargetRestriction(eventType);
+
+                // Declare AMQP elements
+                Queue queue = declareElements(eventType, tenant, virtualHost, handler, workerMode, target, false);
+                // Manage listeners
+                List<Queue> queues = new ArrayList<>();
+                queues.add(queue);
+                declareListener(virtualHost, handler, queues);
             }
         }
     }
 
     /**
-     * Remove tenant listener from existing subscribers
+     * Retrieve listeners for specified handler. For test purpose!
+     * @param handler event handler
+     * @return all listeners by virtual host or <code>null</code>
      *
-     * @param tenant
-     *            tenant to discard
      */
-    protected void removeTenantListeners(String tenant) {
-        if (listeners != null) {
-            for (Map.Entry<Class<?>, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
-                SimpleMessageListenerContainer container = entry.getValue().remove(tenant);
-                if (container != null) {
-                    container.stop();
-                }
-            }
+    public Map<String, SimpleMessageListenerContainer> getListeners(IHandler<? extends ISubscribable> handler) {
+        if (listeners.containsKey(handler.getClass())) {
+            return listeners.get(handler.getClass());
         }
+        return null;
     }
 }

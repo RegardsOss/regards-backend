@@ -16,14 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp.event;
+package fr.cnes.regards.framework.amqp.test;
+
+import org.junit.runner.RunWith;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- *
- * Qualify an event you can poll and acknowledge
+ * Single virtual host tests
  *
  * @author Marc Sordi
  *
  */
-public interface IPollable {
+@RunWith(SpringRunner.class)
+@EnableAutoConfiguration
+@TestPropertySource(
+        properties = { "regards.amqp.management.mode=MULTI", "regards.tenants=PROJECT, PROJECT1",
+                "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true" },
+        locations = "classpath:amqp.properties")
+public class MultiVhostPollerIT extends AbstractPollerIT {
+
 }

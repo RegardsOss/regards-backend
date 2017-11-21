@@ -16,14 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp.event;
+package fr.cnes.regards.framework.amqp.test.event;
+
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
- *
- * Qualify an event you can poll and acknowledge
- *
+ * {@link Target#INSTANCE} restricted event
  * @author Marc Sordi
  *
  */
-public interface IPollable {
+@Event(target = Target.INSTANCE)
+public class InstanceInfo extends AbstractEvent implements ISubscribable {
+
 }

@@ -35,6 +35,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.authentication.autoconfigure.AuthenticationAutoConfiguration;
 import fr.cnes.regards.framework.logbackappender.domain.LogEvent;
@@ -93,8 +94,8 @@ public class LogbackAppenderTest {
         // initialize the runtime tenant for the message to publish
         runtimeTenantResolver.forceTenant(defaultTenant);
 
-        rabbitVirtualHostAdmin.addVhost(defaultTenant);
-        rabbitVirtualHostAdmin.addVhost(otherTenant);
+        rabbitVirtualHostAdmin.addVhost(RabbitVirtualHostAdmin.getVhostName(defaultTenant));
+        rabbitVirtualHostAdmin.addVhost(RabbitVirtualHostAdmin.getVhostName(otherTenant));
 
         // before each test, reset the LogEvent received
         receiverLogEvent.reset();

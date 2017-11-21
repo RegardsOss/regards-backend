@@ -35,7 +35,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.SpringJob;
 import fr.cnes.regards.framework.modules.jobs.domain.WaiterJob;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
-import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 import fr.cnes.regards.framework.modules.jobs.test.JobMultitenantConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
@@ -92,35 +91,35 @@ public class MultitenantJobTest {
     @Before
     public void setUp() throws Exception {
         GsonUtil.setGson(gson);
-        tenantResolver.forceTenant(TENANT1);
-
-        rabbitVhostAdmin.bind(tenantResolver.getTenant());
-
-        try {
-            amqpAdmin.purgeQueue(StopJobEvent.class,
-                                 (Class<IHandler<StopJobEvent>>) Class
-                                         .forName("fr.cnes.regards.framework.modules.jobs.service.JobService$StopJobHandler"),
-                                 false);
-            amqpAdmin.purgeQueue(JobEvent.class, jobHandler.getClass(), false);
-        } catch (Exception e) {
-            // In case queues don't exist
-        }
-        rabbitVhostAdmin.unbind();
-
-        tenantResolver.forceTenant(TENANT2);
-
-        rabbitVhostAdmin.bind(tenantResolver.getTenant());
-
-        try {
-            amqpAdmin.purgeQueue(StopJobEvent.class,
-                                 (Class<IHandler<StopJobEvent>>) Class
-                                         .forName("fr.cnes.regards.framework.modules.jobs.service.JobService$StopJobHandler"),
-                                 false);
-            amqpAdmin.purgeQueue(JobEvent.class, jobHandler.getClass(), false);
-        } catch (Exception e) {
-            // In case queues don't exist
-        }
-        rabbitVhostAdmin.unbind();
+        // tenantResolver.forceTenant(TENANT1);
+        //
+        // rabbitVhostAdmin.bind(tenantResolver.getTenant());
+        //
+        // try {
+        // amqpAdmin.purgeQueue(StopJobEvent.class,
+        // (Class<IHandler<StopJobEvent>>) Class
+        // .forName("fr.cnes.regards.framework.modules.jobs.service.JobService$StopJobHandler"),
+        // false);
+        // amqpAdmin.purgeQueue(JobEvent.class, jobHandler.getClass(), false);
+        // } catch (Exception e) {
+        // // In case queues don't exist
+        // }
+        // rabbitVhostAdmin.unbind();
+        //
+        // tenantResolver.forceTenant(TENANT2);
+        //
+        // rabbitVhostAdmin.bind(tenantResolver.getTenant());
+        //
+        // try {
+        // amqpAdmin.purgeQueue(StopJobEvent.class,
+        // (Class<IHandler<StopJobEvent>>) Class
+        // .forName("fr.cnes.regards.framework.modules.jobs.service.JobService$StopJobHandler"),
+        // false);
+        // amqpAdmin.purgeQueue(JobEvent.class, jobHandler.getClass(), false);
+        // } catch (Exception e) {
+        // // In case queues don't exist
+        // }
+        // rabbitVhostAdmin.unbind();
 
         if (!subscriptionsDone) {
             subscriber.subscribeTo(JobEvent.class, jobHandler);
@@ -332,7 +331,7 @@ public class MultitenantJobTest {
                                       new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 2));
         }
         tenantResolver.forceTenant(TENANT1);
-        for (int i = 0; i < jobInfos.length / 2; i++) {
+        for (int i = 0; i < (jobInfos.length / 2); i++) {
             jobInfos[i] = jobInfoService.createAsQueued(jobInfos[i]);
         }
         tenantResolver.forceTenant(TENANT2);
