@@ -46,10 +46,9 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -239,7 +238,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         // Subscribe to events on {@link DataFile} changes.
-        subscriber.subscribeTo(DataStorageEvent.class, dataStorageEventHandler, WorkerMode.SINGLE, Target.MICROSERVICE);
+        subscriber.subscribeTo(DataStorageEvent.class, dataStorageEventHandler);
 
         pluginService.addPluginPackage(IAllocationStrategy.class.getPackage().getName());
         pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
@@ -294,8 +293,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // 3. Now lets ask to the strategy to dispatch dataFiles between possible DataStorages
         Multimap<Long, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToStore);
         LOG.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
-                  dataFilesToStore.size(),
-                  storageWorkingSetMap.keySet().size());
+                  dataFilesToStore.size(), storageWorkingSetMap.keySet().size());
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
         checkDispatch(dataFilesToStore, storageWorkingSetMap);
         Set<UUID> jobIds = scheduleStorage(storageWorkingSetMap, true);
@@ -328,7 +326,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Set<DataFile> dataFilesWithAccess = checkLoadFilesAccessRights(dataFiles);
 
         errors.addAll(Sets.difference(dataFiles, dataFilesWithAccess).stream().map(df -> df.getChecksum())
-                              .collect(Collectors.toSet()));
+                .collect(Collectors.toSet()));
 
         Set<DataFile> onlineFiles = Sets.newHashSet();
         Set<DataFile> nearlineFiles = Sets.newHashSet();
@@ -376,10 +374,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         if (pState != null) {
             if (pFrom != null) {
                 if (pTo != null) {
-                    return aipDao.findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(pState,
-                                                                                             pFrom.minusNanos(1),
-                                                                                             pTo.plusSeconds(1),
-                                                                                             pPageable);
+                    return aipDao
+                            .findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(pState, pFrom.minusNanos(1),
+                                                                                        pTo.plusSeconds(1), pPageable);
                 }
                 return aipDao.findAllByStateAndSubmissionDateAfter(pState, pFrom.minusNanos(1), pPageable);
             }
@@ -391,8 +388,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         if (pFrom != null) {
             if (pTo != null) {
                 return aipDao.findAllBySubmissionDateAfterAndLastEventDateBefore(pFrom.minusNanos(1),
-                                                                                 pTo.plusSeconds(1),
-                                                                                 pPageable);
+                                                                                 pTo.plusSeconds(1), pPageable);
             }
             return aipDao.findAllBySubmissionDateAfter(pFrom.minusNanos(1), pPageable);
         }
@@ -501,7 +497,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             LOG.trace("Preparing a job for each working subsets");
             // lets instantiate every job for every DataStorage to use
             for (IWorkingSubset workingSubset : workingSubSets) {
-                // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets storeAndCreate a job for
+                // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets storeAndCreate a
+                // job for
                 // each of them
                 Set<JobParameter> parameters = Sets.newHashSet();
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConfId));
@@ -510,10 +507,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     jobsToSchedule
                             .add(new JobInfo(0, parameters, authResolver.getUser(), StoreDataFilesJob.class.getName()));
                 } else {
-                    jobsToSchedule.add(new JobInfo(0,
-                                                   parameters,
-                                                   authResolver.getUser(),
-                                                   StoreMetadataFilesJob.class.getName()));
+                    jobsToSchedule.add(new JobInfo(0, parameters, authResolver.getUser(),
+                            StoreMetadataFilesJob.class.getName()));
                 }
 
             }
@@ -539,8 +534,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         IDataStorage<IWorkingSubset> storage = pluginService.getPlugin(dataStorageConfId);
         LOG.trace("Getting working subsets for data storage of id {}", dataStorageConfId);
         Set<IWorkingSubset> workingSubSets = storage.prepare(dataFilesToSubSet, DataStorageAccessModeEnum.STORE_MODE);
-        LOG.trace("{} data objects were dispatched into {} working subsets",
-                  dataFilesToSubSet.size(),
+        LOG.trace("{} data objects were dispatched into {} working subsets", dataFilesToSubSet.size(),
                   workingSubSets.size());
         // as we are trusty people, we check that the prepare gave us back all DataFiles into the WorkingSubSets
         Set<DataFile> subSetDataFiles = workingSubSets.stream().flatMap(wss -> wss.getDataFiles().stream())
@@ -591,8 +585,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // System can only handle one active configuration of IAllocationStrategy
         if (activeAllocationStrategies.size() != 1) {
             IllegalStateException e = new IllegalStateException(
-                    "The application needs one and only one active configuration of " + IAllocationStrategy.class
-                            .getName());
+                    "The application needs one and only one active configuration of "
+                            + IAllocationStrategy.class.getName());
             LOG.error(e.getMessage(), e);
             throw e;
         }
@@ -608,8 +602,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // System can only handle one active configuration of IAllocationStrategy
         if (activeSecurityDelegations.size() != 1) {
             IllegalStateException e = new IllegalStateException(
-                    "The application needs one and only one active configuration of " + ISecurityDelegation.class
-                            .getName());
+                    "The application needs one and only one active configuration of "
+                            + ISecurityDelegation.class.getName());
             LOG.error(e.getMessage(), e);
             throw e;
         }
@@ -807,9 +801,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Map<String, Object> additionalProvenanceInfoMap;
         if ((additionalProvenanceInfoMap = updatedPdi.getProvenanceInformation().getAdditional()) != null) {
             for (Map.Entry<String, Object> additionalProvenanceEntry : additionalProvenanceInfoMap.entrySet()) {
-                updatingBuilder.getPDIBuilder().addAdditionalProvenanceInformation(additionalProvenanceEntry.getKey(),
-                                                                                   additionalProvenanceEntry
-                                                                                           .getValue());
+                updatingBuilder.getPDIBuilder()
+                        .addAdditionalProvenanceInformation(additionalProvenanceEntry.getKey(),
+                                                            additionalProvenanceEntry.getValue());
             }
         }
         // third lets handle those "special" provenance information
@@ -827,8 +821,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             for (Map.Entry<String, Object> contextEntry : contextInformationMap.entrySet()) {
                 // tags have their specific handling
                 if (!contextEntry.getKey().equals(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY)) {
-                    updatingBuilder.getPDIBuilder()
-                            .addContextInformation(contextEntry.getKey(), contextEntry.getValue());
+                    updatingBuilder.getPDIBuilder().addContextInformation(contextEntry.getKey(),
+                                                                          contextEntry.getValue());
                 }
             }
         }
@@ -849,11 +843,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             }
         }
         // Access Right information
-        updatingBuilder.getPDIBuilder().setAccessRightInformation(updatedPdi.getAccessRightInformation().getLicence(),
-                                                                  updatedPdi.getAccessRightInformation()
-                                                                          .getDataRights(),
-                                                                  updatedPdi.getAccessRightInformation()
-                                                                          .getPublicReleaseDate());
+        updatingBuilder.getPDIBuilder()
+                .setAccessRightInformation(updatedPdi.getAccessRightInformation().getLicence(),
+                                           updatedPdi.getAccessRightInformation().getDataRights(),
+                                           updatedPdi.getAccessRightInformation().getPublicReleaseDate());
         // descriptive information
         Map<String, Object> descriptiveInformationMap;
         if ((descriptiveInformationMap = updated.getProperties().getDescriptiveInformation()) != null) {
@@ -932,8 +925,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
         Multimap<Long, DataFile> deletionWorkingSetMap = allocationStrategy.dispatch(dataFilesToDelete);
         LOG.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
-                  dataFilesToDelete.size(),
-                  deletionWorkingSetMap.keySet().size());
+                  dataFilesToDelete.size(), deletionWorkingSetMap.keySet().size());
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
         checkDispatch(dataFilesToDelete, deletionWorkingSetMap);
         Set<JobInfo> jobsToSchedule = Sets.newHashSet();
@@ -943,7 +935,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             LOG.trace("Preparing a job for each working subsets");
             // lets instantiate every job for every DataStorage to use
             for (IWorkingSubset workingSubset : workingSubSets) {
-                // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets storeAndCreate a job for
+                // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets storeAndCreate a
+                // job for
                 // each of them
                 Set<JobParameter> parameters = Sets.newHashSet();
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConf));
@@ -988,23 +981,16 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             String fileChecksum = ChecksumUtils.computeHexChecksum(is, checksumAlgorithm);
             if (fileChecksum.equals(checksum)) {
                 URL urlToMetadata = new URL("file", "localhost", metadataLocation.toString());
-                metadataAipFile = new DataFile(urlToMetadata,
-                                               checksum,
-                                               checksumAlgorithm,
-                                               DataType.AIP,
-                                               urlToMetadata.openConnection().getContentLengthLong(),
-                                               new MimeType("application", "json"),
-                                               aip,
-                                               aip.getId().toString() + JSON_FILE_EXT);
+                metadataAipFile = new DataFile(urlToMetadata, checksum, checksumAlgorithm, DataType.AIP,
+                        urlToMetadata.openConnection().getContentLengthLong(), new MimeType("application", "json"), aip,
+                        aip.getId().toString() + JSON_FILE_EXT);
             } else {
-                LOG.error(String.format(
-                        "Storage of AIP metadata(%s) to the workspace(%s) failed. Its checksum once stored do not match with expected",
-                        aip.getId().toString(),
-                        tenantWorkspace));
-                throw new FileCorruptedException(String.format(
-                        "File got corrupted while storing it into the workspace. Checksum before(%s) and after (%s) are different",
-                        checksum,
-                        fileChecksum));
+                LOG.error(String
+                        .format("Storage of AIP metadata(%s) to the workspace(%s) failed. Its checksum once stored do not match with expected",
+                                aip.getId().toString(), tenantWorkspace));
+                throw new FileCorruptedException(String
+                        .format("File got corrupted while storing it into the workspace. Checksum before(%s) and after (%s) are different",
+                                checksum, fileChecksum));
             }
         } catch (Exception e) {
             // Delete written file
@@ -1050,7 +1036,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     /**
-     * Prepare all AIP in UPDATED state in order to storeAndCreate and storeAndCreate the new AIP metadata file (descriptor file)
+     * Prepare all AIP in UPDATED state in order to storeAndCreate and storeAndCreate the new AIP metadata file
+     * (descriptor file)
      * asscoiated.<br/>
      * After an AIP is updated in database, this method write the new {@link DataFile} of the AIP metadata on disk
      * and return the list of created {@link DataFile} mapped to the old {@link DataFile} of the updated AIPs.
@@ -1127,7 +1114,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      */
     private Set<UUID> doScheduleStorageMetadataUpdate(Set<UpdatableMetadataFile> metadataToUpdate)
             throws ModuleException {
-        // This is an update so we don't use the allocation strategy and we directly use the PluginConf used to storeAndCreate
+        // This is an update so we don't use the allocation strategy and we directly use the PluginConf used to
+        // storeAndCreate
         // the file.
         // Lets construct the Multimap<PluginConf, DataFile> allowing us to then storeAndCreate IWorkingSubSets
         Multimap<Long, DataFile> toPrepareMap = HashMultimap.create();
@@ -1148,9 +1136,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConfId));
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
                 parameters.add(new JobParameter(UpdateDataFilesJob.OLD_DATA_FILES_PARAMETER_NAME,
-                                                oldOneCorrespondingToWorkingSubset
-                                                        .toArray(new DataFile[oldOneCorrespondingToWorkingSubset
-                                                                .size()])));
+                        oldOneCorrespondingToWorkingSubset
+                                .toArray(new DataFile[oldOneCorrespondingToWorkingSubset.size()])));
                 jobsToSchedule
                         .add(new JobInfo(0, parameters, authResolver.getUser(), UpdateDataFilesJob.class.getName()));
             }

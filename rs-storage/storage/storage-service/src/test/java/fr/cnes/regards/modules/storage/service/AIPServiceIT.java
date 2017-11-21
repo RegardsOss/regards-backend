@@ -34,9 +34,8 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
@@ -121,18 +120,12 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     private URL baseStorageLocation;
 
     @Autowired
-    private IRabbitVirtualHostAdmin vHost;
-
-    @Autowired
-    private RegardsAmqpAdmin amqpAdmin;
-
-    @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
         tenantResolver.forceTenant(DEFAULT_TENANT);
-        //         this.cleanUp(); //comment if you are not interrupting tests during their execution
+        // this.cleanUp(); //comment if you are not interrupting tests during their execution
         subscriber.subscribeTo(JobEvent.class, handler);
         initDb();
     }
@@ -142,9 +135,9 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // first of all, lets get an AIP with accessible dataObjects and real checksums
         aip = getAIP();
         // second, lets storeAndCreate a plugin configuration for IAllocationStrategy
-        PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class,
-                                                                         DefaultAllocationStrategyPlugin.class
-                                                                                 .getPackage().getName());
+        PluginMetaData allocationMeta = PluginUtils
+                .createPluginMetaData(DefaultAllocationStrategyPlugin.class,
+                                      DefaultAllocationStrategyPlugin.class.getPackage().getName());
         PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, ALLOCATION_CONF_LABEL);
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
@@ -200,10 +193,8 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // first lets change the data location to be sure it fails
         aip.getProperties().getContentInformations()
                 .toArray(new ContentInformation[aip.getProperties().getContentInformations().size()])[0].getDataObject()
-                .setUrl(new URL("file",
-                                "",
-                                Paths.get("src/test/resources/data_that_does_not_exists.txt").toFile()
-                                        .getAbsolutePath()));
+                        .setUrl(new URL("file", "", Paths.get("src/test/resources/data_that_does_not_exists.txt")
+                                .toFile().getAbsolutePath()));
         Set<UUID> jobIds = aipService.storeAndCreate(Sets.newHashSet(aip));
         int wait = 0;
         LOG.info("Waiting for jobs end ...");
@@ -304,12 +295,12 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     public void testDeleteAip() throws InterruptedException, ModuleException, URISyntaxException {
         createSuccessTest();
         String aipIpId = aip.getId().toString();
-        //lets get all the dataFile before deleting them for further verification
+        // lets get all the dataFile before deleting them for further verification
         Set<DataFile> aipFiles = dataFileDao.findAllByAip(aip);
         Set<UUID> jobIds = aipService.deleteAip(aipIpId);
         aip = aipDao.findOneByIpId(aipIpId).get();
         Assert.assertEquals("AIP state should be DELETED now", AIPState.DELETED, aip.getState());
-        //now lets wait for the deletion job to be finished
+        // now lets wait for the deletion job to be finished
         jobIds.forEach(job -> LOG.info("Waiting for job {} end", job.toString()));
         int wait = 0;
         while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < MAX_WAIT_TEST)) {
@@ -337,34 +328,21 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     private AIP getAIP() throws MalformedURLException {
 
-        AIPBuilder aipBuilder = new AIPBuilder(new UniformResourceName(OAISIdentifier.AIP,
-                                                                       EntityType.DATA,
-                                                                       DEFAULT_TENANT,
-                                                                       UUID.randomUUID(),
-                                                                       1), null, EntityType.DATA);
+        AIPBuilder aipBuilder = new AIPBuilder(
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
+                null, EntityType.DATA);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder()
-                .setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5", "de89a907d33a9716d11765582102b2e0");
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
+                                                                "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", "text/plain");
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
-        aipBuilder.getPDIBuilder()
-                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event", OffsetDateTime.now());
+        aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
+                                                                 OffsetDateTime.now());
 
         return aipBuilder.build();
-    }
-
-    private void purgeAMQPqueues() {
-        vHost.bind(DEFAULT_TENANT);
-        try {
-            amqpAdmin.purgeQueue(JobEvent.class, RestoreJobEventHandler.class, true);
-            amqpAdmin.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class, true);
-        } catch (Exception e) {
-            // Nothing to do
-        }
-        vHost.unbind();
     }
 
     private void unsubscribeAMQPEvents() {
@@ -379,7 +357,8 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     @After
     public void cleanUp() throws URISyntaxException, IOException {
-        purgeAMQPqueues();
+        subscriber.purgeQueue(JobEvent.class, RestoreJobEventHandler.class);
+        subscriber.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class);
         unsubscribeAMQPEvents();
         jobInfoRepo.deleteAll();
         dataFileDao.deleteAll();

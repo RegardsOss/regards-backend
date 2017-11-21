@@ -6,15 +6,17 @@ import java.nio.file.Path;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 
 /**
- * This is a subscribable event but not on a full broadcast mode: full broadcast means that it will be sent to EVERY instance of microservices.
+ * This is a subscribable event but not on a full broadcast mode: full broadcast means that it will be sent to EVERY
+ * instance of microservices.
  * Here we need this event to be handled by only ONE instance of microservice.
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-@Event(target = Target.MICROSERVICE)
+@Event(target = Target.MICROSERVICE, mode = WorkerMode.UNICAST)
 public class DataStorageEvent implements ISubscribable {
 
     private Long fileSize;
@@ -115,7 +117,7 @@ public class DataStorageEvent implements ISubscribable {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 
@@ -133,8 +135,8 @@ public class DataStorageEvent implements ISubscribable {
     @Override
     public int hashCode() {
         int result = dataFileId != null ? dataFileId.hashCode() : 0;
-        result = 31 * result + (storageAction != null ? storageAction.hashCode() : 0);
-        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = (31 * result) + (storageAction != null ? storageAction.hashCode() : 0);
+        result = (31 * result) + (type != null ? type.hashCode() : 0);
         return result;
     }
 }
