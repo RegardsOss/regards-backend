@@ -158,7 +158,7 @@ public class OrderController implements IResourceController<OrderDto> {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Find all specified user orders")
+    @ResourceAccess(description = "Find all specified user orders", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH)
     public ResponseEntity<PagedResources<Resource<OrderDto>>> findAll(
             @RequestParam(value = "user", required = false) String user, Pageable pageRequest) {
@@ -168,7 +168,7 @@ public class OrderController implements IResourceController<OrderDto> {
         return ResponseEntity.ok(toPagedResources(orderPage.map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
     }
 
-    @ResourceAccess(description = "Generate a CSV file with all orders")
+    @ResourceAccess(description = "Generate a CSV file with all orders", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH, produces = "text/csv")
     public void generateCsv(HttpServletResponse response) throws IOException {
         orderService.writeAllOrdersInCsv(new BufferedWriter(response.getWriter()));

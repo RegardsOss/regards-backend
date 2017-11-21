@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -84,35 +85,41 @@ public class BasketService implements IBasketService {
         openSearchRequest += "creationDate:[* TO " + nowStr + "]";
         // Compute summary for this selection
         Map<String, String> queryMap = new ImmutableMap.Builder<String, String>().put("q", openSearchRequest).build();
-        DocFilesSummary summary = searchClient
-                .computeDatasetsSummary(queryMap, datasetIpId, DataTypeSelection.ALL.getFileTypes()).getBody();
-        // Create a map to find more easiely a basket dataset selection from dataset IpId
-        Map<String, BasketDatasetSelection> basketDsSelectionMap = basket.getDatasetSelections().stream()
-                .collect(Collectors.toMap(BasketDatasetSelection::getDatasetIpid, Function.identity()));
-        // Parsing results
-        for (Map.Entry<String, DocFilesSubSummary> entry : summary.getSubSummariesMap().entrySet()) {
-            BasketDatasetSelection datasetSelection = basketDsSelectionMap.get(entry.getKey());
-            // Manage basket dataset selection
-            if (datasetSelection == null) {
-                Dataset dataset = searchClient.getDataset(UniformResourceName.fromString(entry.getKey())).getBody()
-                        .getContent();
-                datasetSelection = new BasketDatasetSelection();
-                datasetSelection.setDatasetIpid(entry.getKey());
-                datasetSelection.setDatasetLabel(dataset.getLabel());
-                datasetSelection.setOpenSearchRequest("(" + openSearchRequest + ")");
-                basket.getDatasetSelections().add(datasetSelection);
-            } else { // update dataset opensearch request
-                datasetSelection.setOpenSearchRequest(
-                        "(" + datasetSelection.getOpenSearchRequest() + " OR (" + openSearchRequest + "))");
+        try {
+            // computeDatasetsSummary() is set with INSTANCE_ADMIN role because it doesn't need to be called externally
+            FeignSecurityManager.asSystem();
+            DocFilesSummary summary = searchClient
+                    .computeDatasetsSummary(queryMap, datasetIpId, DataTypeSelection.ALL.getFileTypes()).getBody();
+            // Create a map to find more easiely a basket dataset selection from dataset IpId
+            Map<String, BasketDatasetSelection> basketDsSelectionMap = basket.getDatasetSelections().stream()
+                    .collect(Collectors.toMap(BasketDatasetSelection::getDatasetIpid, Function.identity()));
+            // Parsing results
+            for (Map.Entry<String, DocFilesSubSummary> entry : summary.getSubSummariesMap().entrySet()) {
+                BasketDatasetSelection datasetSelection = basketDsSelectionMap.get(entry.getKey());
+                // Manage basket dataset selection
+                if (datasetSelection == null) {
+                    Dataset dataset = searchClient.getDataset(UniformResourceName.fromString(entry.getKey())).getBody()
+                            .getContent();
+                    datasetSelection = new BasketDatasetSelection();
+                    datasetSelection.setDatasetIpid(entry.getKey());
+                    datasetSelection.setDatasetLabel(dataset.getLabel());
+                    datasetSelection.setOpenSearchRequest("(" + openSearchRequest + ")");
+                    basket.getDatasetSelections().add(datasetSelection);
+                } else { // update dataset opensearch request
+                    datasetSelection.setOpenSearchRequest(
+                            "(" + datasetSelection.getOpenSearchRequest() + " OR (" + openSearchRequest + "))");
+                }
+                // Create dated items selection
+                BasketDatedItemsSelection itemsSelection = createItemsSelection(openSearchRequest, now, entry.getValue());
+
+                // Add items selection to dataset selection
+                datasetSelection.getItemsSelections().add(itemsSelection);
+                // Update DatasetSelection (summary)
+                computeSummaryAndUpdateDatasetSelection(datasetSelection);
+
             }
-            // Create dated items selection
-            BasketDatedItemsSelection itemsSelection = createItemsSelection(openSearchRequest, now, entry.getValue());
-
-            // Add items selection to dataset selection
-            datasetSelection.getItemsSelections().add(itemsSelection);
-            // Update DatasetSelection (summary)
-            computeSummaryAndUpdateDatasetSelection(datasetSelection);
-
+        } finally {
+            FeignSecurityManager.reset();
         }
         return repos.save(basket);
     }

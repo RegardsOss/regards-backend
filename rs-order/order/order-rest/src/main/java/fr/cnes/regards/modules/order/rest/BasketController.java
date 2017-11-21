@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequest;
@@ -43,7 +44,6 @@ import fr.cnes.regards.modules.order.service.IOrderService;
 
 /**
  * Basket controller
- *
  * @author oroussel
  */
 @RestController
@@ -77,7 +77,7 @@ public class BasketController implements IResourceController<Basket> {
      * @param basketSelectionRequest selection request
      * @return updated or created basket
      */
-    @ResourceAccess(description = "Add a selection to the basket")
+    @ResourceAccess(description = "Add a selection to the basket", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, value = SELECTION)
     public ResponseEntity<Resource<Basket>> addSelection(@RequestBody BasketSelectionRequest basketSelectionRequest)
             throws BadBasketSelectionRequest {
@@ -93,7 +93,7 @@ public class BasketController implements IResourceController<Basket> {
      * @return updated basket
      * @throws EmptyBasketException if no basket currently exists
      */
-    @ResourceAccess(description = "Remove dataset selection from basket")
+    @ResourceAccess(description = "Remove dataset selection from basket", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.DELETE, value = DATASET_DATASET_SELECTION_ID)
     public ResponseEntity<Resource<Basket>> removeDatasetSelection(
             @PathVariable("datasetSelectionId") Long dsSelectionId) throws EmptyBasketException {
@@ -108,7 +108,8 @@ public class BasketController implements IResourceController<Basket> {
      * @return updated basket
      * @throws EmptyBasketException if no basket currently exists
      */
-    @ResourceAccess(description = "Remove dated item selection under dataset selection from basket")
+    @ResourceAccess(description = "Remove dated item selection under dataset selection from basket",
+            role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.DELETE, value = DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE)
     public ResponseEntity<Resource<Basket>> removeDatedItemsSelection(
             @PathVariable("datasetSelectionId") Long dsSelectionId,
@@ -123,7 +124,7 @@ public class BasketController implements IResourceController<Basket> {
      * @return basket
      * @throws EmptyBasketException if basket doesn't exist
      */
-    @ResourceAccess(description = "Get the basket")
+    @ResourceAccess(description = "Get the basket", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<Resource<Basket>> get() throws EmptyBasketException {
         Basket basket = basketService.find(authResolver.getUser());
@@ -134,11 +135,11 @@ public class BasketController implements IResourceController<Basket> {
      * Empty current basket
      * @return nothing
      */
-    @ResourceAccess(description = "Empty the basket")
+    @ResourceAccess(description = "Empty the basket", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.DELETE)
     public ResponseEntity<Void> empty() {
         basketService.deleteIfExists(authResolver.getUser());
-        return ResponseEntity.<Void> noContent().build();
+        return ResponseEntity.<Void>noContent().build();
     }
 
     @Override
