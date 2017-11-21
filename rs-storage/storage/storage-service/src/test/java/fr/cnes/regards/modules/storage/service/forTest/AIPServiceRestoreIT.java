@@ -39,6 +39,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
@@ -174,15 +175,11 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     public void init() throws Exception {
         tenantResolver.forceTenant(DEFAULT_TENANT);
         initCacheDir();
-        //         this.cleanUp(); //comment if you are not interrupting tests during their execution
+        // this.cleanUp(); //comment if you are not interrupting tests during their execution
         // as we are checking rights, lets mock the response from catalog: always ok for anything
-        Mockito.when(searchClient.getEntity(Mockito.any())).thenReturn(
-                                                                        new ResponseEntity<>(
-                                                                                new Resource<>(new Collection(
-                                                                                        Model.build("name", "desc",
-                                                                                                    EntityType.COLLECTION),
-                                                                                        DEFAULT_TENANT, "CatalogOK")),
-                                                                                HttpStatus.OK));
+        Mockito.when(searchClient.getEntity(Mockito.any())).thenReturn(new ResponseEntity<>(new Resource<>(
+                new Collection(Model.build("name", "desc", EntityType.COLLECTION), DEFAULT_TENANT, "CatalogOK")),
+                HttpStatus.OK));
 
         subscriber.subscribeTo(JobEvent.class, handler);
         subscriber.subscribeTo(DataFileEvent.class, dataHandler);
@@ -268,8 +265,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      * Expected results :
      * <ul>
      * <li>The {@link AvailabilityResponse} is empty. No error, no file available</li>
-     * <li> One restoration job is scheduled and run </li>
-     * <li> After job execution ended, one event per available file is sent</li>
+     * <li>One restoration job is scheduled and run</li>
+     * <li>After job execution ended, one event per available file is sent</li>
      * </ul>
      *
      * @throws MalformedURLException
@@ -338,8 +335,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      * Expected results :
      * <ul>
      * <li>The {@link AvailabilityResponse} is empty. No error, no file available</li>
-     * <li> One restoration job is scheduled and run </li>
-     * <li> After job execution ended, one event per available file is sent</li>
+     * <li>One restoration job is scheduled and run</li>
+     * <li>After job execution ended, one event per available file is sent</li>
      * </ul>
      *
      * @throws MalformedURLException
@@ -425,8 +422,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      * Expected results :
      * <ul>
      * <li>The {@link AvailabilityResponse} is empty. No error, no file available</li>
-     * <li> One restoration job is scheduled and run </li>
-     * <li> After job execution ended, one event per available file is sent</li>
+     * <li>One restoration job is scheduled and run</li>
+     * <li>After job execution ended, one event per available file is sent</li>
      * </ul>
      *
      * @throws MalformedURLException
@@ -557,10 +554,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         Thread.sleep(cleanCacheRate);
         Thread.sleep(2000);
         int size = cachedFileRepository.findByState(CachedFileState.AVAILABLE).size();
-        Assert.assertTrue(String.format(
-                                        "After the cache clean process ran, there should be only one AVAILABLE file remaining not %s.",
-                                        size),
-                          size == 1);
+        Assert.assertTrue(String
+                .format("After the cache clean process ran, there should be only one AVAILABLE file remaining not %s.",
+                        size), size == 1);
 
         Assert.assertFalse("File should be deleted", file1.toFile().exists());
         Assert.assertFalse("File should be deleted", file2.toFile().exists());
@@ -730,7 +726,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     }
 
     /**
-     * Test method to simulate ceration of 3 new {@link DataFile} in Db as there where stored with a online storage plugin.
+     * Test method to simulate ceration of 3 new {@link DataFile} in Db as there where stored with a online storage
+     * plugin.
      * @param fileSize
      * @throws MalformedURLException
      */
@@ -757,7 +754,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     }
 
     /**
-     * Test method to simulate ceration of 3 new {@link DataFile} in Db as there where stored with a nearline storage plugin.
+     * Test method to simulate ceration of 3 new {@link DataFile} in Db as there where stored with a nearline storage
+     * plugin.
      * @param fileSize
      * @throws MalformedURLException
      */
@@ -809,21 +807,6 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         return aip;
     }
 
-    /**
-     * Remove all events from the using AMQP queues.
-     */
-    private void purgeAMQPqueues() {
-        vHost.bind(DEFAULT_TENANT);
-        try {
-            amqpAdmin.purgeQueue(JobEvent.class, RestoreJobEventHandler.class, true);
-            amqpAdmin.purgeQueue(DataFileEvent.class, TestDataStorageEventHandler.class, true);
-            amqpAdmin.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class, true);
-        } catch (Exception e) {
-            // Nothing to do
-        }
-        vHost.unbind();
-    }
-
     private void unsubscribeAMQPEvents() {
         try {
             subscriber.unsubscribeFrom(JobEvent.class);
@@ -837,7 +820,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
     @After
     public void cleanUp() throws URISyntaxException, IOException {
-        purgeAMQPqueues();
+        subscriber.purgeQueue(JobEvent.class, RestoreJobEventHandler.class);
+        subscriber.purgeQueue(DataFileEvent.class, TestDataStorageEventHandler.class);
+        subscriber.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class);
         unsubscribeAMQPEvents();
         jobInfoRepo.deleteAll();
         dataFileDao.deleteAll();

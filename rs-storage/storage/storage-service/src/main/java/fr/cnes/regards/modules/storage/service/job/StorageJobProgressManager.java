@@ -9,9 +9,8 @@ import java.util.Collection;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
@@ -65,11 +64,11 @@ public class StorageJobProgressManager implements IProgressManager {
         dataFile.setUrl(storedUrl);
         dataFile.setFileSize(storedFileSize);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
-                                                                 StorageEventType.SUCCESSFULL);
+                StorageEventType.SUCCESSFULL);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
-        //hell yeah this is not the usual publish method, but i know what i'm doing so trust me!
-        publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
+        // hell yeah this is not the usual publish method, but i know what i'm doing so trust me!
+        publisher.publish(dataStorageEvent);
     }
 
     @Override
@@ -78,10 +77,10 @@ public class StorageJobProgressManager implements IProgressManager {
         errorStatus = true;
         failedDataFile.add(dataFile);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
-                                                                 StorageEventType.FAILED);
+                StorageEventType.FAILED);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
-        publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
+        publisher.publish(dataStorageEvent);
     }
 
     public Boolean isProcessError() {
@@ -91,42 +90,42 @@ public class StorageJobProgressManager implements IProgressManager {
     @Override
     public void deletionFailed(DataFile dataFile, String failureCause) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.DELETION,
-                                                                 StorageEventType.FAILED);
+                StorageEventType.FAILED);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
         failureCauses.add(failureCause);
         errorStatus = true;
-        publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
+        publisher.publish(dataStorageEvent);
     }
 
     @Override
     public void deletionSucceed(DataFile dataFile) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.DELETION,
-                                                                 StorageEventType.SUCCESSFULL);
+                StorageEventType.SUCCESSFULL);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
-        publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
+        publisher.publish(dataStorageEvent);
     }
 
     @Override
     public void restoreSucceed(DataFile dataFile, Path restoredFilePath) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION,
-                                                                 StorageEventType.SUCCESSFULL);
+                StorageEventType.SUCCESSFULL);
         dataStorageEvent.setRestorationPath(restoredFilePath);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
-        publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
+        publisher.publish(dataStorageEvent);
     }
 
     @Override
     public void restoreFailed(DataFile dataFile, String failureCause) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION,
-                                                                 StorageEventType.FAILED);
+                StorageEventType.FAILED);
         failureCauses.add(failureCause);
         errorStatus = true;
         handledDataFile.add(dataFile);
         job.advanceCompletion();
-        publisher.publish(dataStorageEvent, WorkerMode.SINGLE, Target.MICROSERVICE, 0);
+        publisher.publish(dataStorageEvent);
     }
 
     public Set<String> getFailureCauses() {
