@@ -56,13 +56,13 @@ public abstract class AbstractSubscriberIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSubscriberIT.class);
 
     @Autowired
-    private IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
+    protected IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
     @Autowired
-    private IPublisher publisher;
+    protected IPublisher publisher;
 
     @Autowired
-    private ISubscriber subscriber;
+    protected ISubscriber subscriber;
 
     @Before
     public void init() throws RabbitMQVhostException {
@@ -170,7 +170,7 @@ public abstract class AbstractSubscriberIT {
 
         // First subscription
         Receiver receiver = new Receiver();
-        subscriber.subscribeTo(Info.class, receiver);
+        subscriber.subscribeTo(Info.class, receiver, true);
 
         // Retrieve listener
         Map<String, SimpleMessageListenerContainer> listeners = abstractSubscriber.getListeners(receiver);

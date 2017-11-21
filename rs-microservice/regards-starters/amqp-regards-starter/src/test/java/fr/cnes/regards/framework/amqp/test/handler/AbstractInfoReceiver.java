@@ -27,10 +27,13 @@ import fr.cnes.regards.framework.amqp.test.event.Info;
  */
 public class AbstractInfoReceiver extends AbstractReceiver<Info> {
 
+    private TenantWrapper<Info> lastWrapper;
+
     private Info lastInfo;
 
     @Override
     protected void doHandle(TenantWrapper<Info> wrapper) {
+        this.lastWrapper = wrapper;
         this.lastInfo = wrapper.getContent();
     }
 
@@ -38,7 +41,7 @@ public class AbstractInfoReceiver extends AbstractReceiver<Info> {
         return lastInfo;
     }
 
-    public void setLastInfo(Info lastInfo) {
-        this.lastInfo = lastInfo;
+    public TenantWrapper<Info> getLastWrapper() {
+        return lastWrapper;
     }
 }

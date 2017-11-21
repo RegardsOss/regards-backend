@@ -39,12 +39,12 @@ public abstract class AbstractReceiver<T> implements IHandler<T> {
 
     @Override
     public void handle(TenantWrapper<T> wrapper) {
+        doHandle(wrapper);
         count++;
         LOGGER.debug("Info count {}", count);
         LOGGER.debug("Tenant : {}", wrapper.getTenant());
         LOGGER.debug("Content type : {}", wrapper.getContent().getClass());
         LOGGER.debug("Handler type : {}", this.getClass());
-        doHandle(wrapper);
     }
 
     /**

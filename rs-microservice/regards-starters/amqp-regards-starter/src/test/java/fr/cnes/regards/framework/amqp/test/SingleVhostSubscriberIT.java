@@ -18,10 +18,20 @@
  */
 package fr.cnes.regards.framework.amqp.test;
 
+import org.junit.Assert;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.test.event.Info;
+import fr.cnes.regards.framework.amqp.test.handler.AbstractInfoReceiver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
  * Single virtual host tests
@@ -36,4 +46,43 @@ import org.springframework.test.context.junit4.SpringRunner;
                 "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true" },
         locations = "classpath:amqp.properties")
 public class SingleVhostSubscriberIT extends AbstractSubscriberIT {
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Requirement("REGARDS_DSL_CMP_ARC_030")
+    @Purpose("Publish one event by tenant and receive them on same handler using same queue.")
+    @Test
+    public void fromMultipleTenants() {
+
+        MultipleReceiver receiver = new MultipleReceiver();
+        subscriber.subscribeTo(Info.class, receiver, true);
+        String message = "Default tenant message!";
+        publisher.publish(Info.create(message));
+        receiver.assertCount(1);
+
+        TenantWrapper<Info> wrapper = receiver.getLastWrapper();
+        Assert.assertNotNull(wrapper);
+        Assert.assertEquals("PROJECT", wrapper.getTenant());
+        Assert.assertEquals(message, wrapper.getContent().getMessage());
+
+        // Change tenant
+        String tenant = "PROJECT1";
+        runtimeTenantResolver.forceTenant(tenant);
+
+        message = "Forced tenant message!";
+        publisher.publish(Info.create(message));
+        // Same receiver so count is incremented
+        receiver.assertCount(2);
+
+        wrapper = receiver.getLastWrapper();
+        Assert.assertNotNull(wrapper);
+        Assert.assertEquals(tenant, wrapper.getTenant());
+        Assert.assertEquals(message, wrapper.getContent().getMessage());
+
+    }
+
+    private class MultipleReceiver extends AbstractInfoReceiver {
+    }
+
 }
