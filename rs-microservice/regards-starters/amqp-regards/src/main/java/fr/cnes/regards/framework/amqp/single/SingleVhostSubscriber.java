@@ -82,8 +82,9 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
 
                 // Only useful for UNICAST tenant dependent queues
                 if (WorkerMode.UNICAST.equals(workerMode)) {
-                    Queue queueToRemove = amqpAdmin.declareQueue(tenant, eventType, workerMode, target,
-                                                                 Optional.of(handler));
+                    Optional<Class<? extends IHandler<?>>> handlerType = handler == null ? Optional.empty()
+                            : Optional.of(handler.getType());
+                    Queue queueToRemove = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, handlerType);
                     String virtualHost = resolveVirtualHost(tenant);
 
                     Map<String, SimpleMessageListenerContainer> vhostsContainers = entry.getValue();

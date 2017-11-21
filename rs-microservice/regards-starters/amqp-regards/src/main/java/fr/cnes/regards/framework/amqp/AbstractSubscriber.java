@@ -142,6 +142,24 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                     EventUtils.getTargetRestriction(eventType), purgeQueue);
     }
 
+    @Override
+    public <E extends ISubscribable> void purgeQueue(Class<E> eventType, Class<? extends IHandler<E>> handlerType) {
+
+        Set<String> tenants = resolveTenants();
+        for (final String tenant : tenants) {
+            String virtualHost = resolveVirtualHost(tenant);
+            try {
+                virtualHostAdmin.bind(virtualHost);
+                Queue queue = amqpAdmin.declareQueue(tenant, eventType, EventUtils.getWorkerMode(eventType),
+                                                     EventUtils.getTargetRestriction(eventType),
+                                                     Optional.of(handlerType));
+                amqpAdmin.purgeQueue(queue.getName(), false);
+            } finally {
+                virtualHostAdmin.unbind();
+            }
+        }
+    }
+
     /**
      *
      * Initialize any necessary container to listen to specified event using
@@ -217,7 +235,11 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         try {
             virtualHostAdmin.bind(virtualHost);
             Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target);
-            queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, Optional.ofNullable(handler));
+            Optional<Class<? extends IHandler<?>>> handlerType = Optional.empty();
+            if (handler != null) {
+                handlerType = Optional.of(handler.getType());
+            }
+            queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, handlerType);
             if (purgeQueue) {
                 amqpAdmin.purgeQueue(queue.getName(), false);
             }

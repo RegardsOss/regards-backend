@@ -106,6 +106,21 @@ public abstract class AbstractPublisher implements IPublisherContract {
         publish(event, WorkerMode.UNICAST, EventUtils.getTargetRestriction(eventClass), priority, purgeQueue);
     }
 
+    @Override
+    public void purgeQueue(Class<? extends IPollable> eventType) {
+        String tenant = resolveTenant();
+        String virtualHost = resolveVirtualHost(tenant);
+
+        try {
+            rabbitVirtualHostAdmin.bind(virtualHost);
+            Queue queue = amqpAdmin.declareQueue(tenant, eventType, WorkerMode.UNICAST,
+                                                 EventUtils.getTargetRestriction(eventType), Optional.empty());
+            amqpAdmin.purgeQueue(queue.getName(), false);
+        } finally {
+            rabbitVirtualHostAdmin.unbind();
+        }
+    }
+
     /**
      * @param <T>
      *            event to be published

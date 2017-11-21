@@ -80,4 +80,11 @@ public interface IPublisherContract {
      * @param purgeQueue true to purge queue before publishing event. Useful in tests.
      */
     void publish(IPollable event, int priority, boolean purgeQueue);
+
+    /**
+     * Purge related queue. Useful for testing purpose before publishing. Purge can be done as well with
+     * {@link #publish(IPollable, boolean)} or {@link #publish(IPollable, int, boolean)}
+     * @param eventType {@link IPollable} event type
+     */
+    void purgeQueue(Class<? extends IPollable> eventType);
 }

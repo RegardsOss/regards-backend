@@ -58,4 +58,9 @@ public class SubscriberMock implements ISubscriber {
     public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue) {
         /// Nothing to do
     }
+
+    @Override
+    public <E extends ISubscribable> void purgeQueue(Class<E> eventType, Class<? extends IHandler<E>> handlerType) {
+        // Nothing to do
+    }
 }

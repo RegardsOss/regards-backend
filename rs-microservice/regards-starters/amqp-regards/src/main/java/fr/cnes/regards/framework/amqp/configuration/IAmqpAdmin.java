@@ -54,11 +54,11 @@ public interface IAmqpAdmin {
      * @param eventType event type inheriting {@link IPollable} or {@link ISubscribable}
      * @param workerMode worker mode
      * @param target targer
-     * @param handler optional event handler extending {@link IHandler}
+     * @param handlerType optional event handler type
      * @return declared {@link Queue}
      */
     public Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
-            Optional<? extends IHandler<?>> handler);
+            Optional<Class<? extends IHandler<?>>> handlerType);
 
     /**
      * Declare binding to link {@link Queue} and {@link Exchange} with an optional routing key

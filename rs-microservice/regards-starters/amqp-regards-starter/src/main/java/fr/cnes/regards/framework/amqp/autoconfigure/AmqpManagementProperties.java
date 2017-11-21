@@ -41,7 +41,7 @@ public class AmqpManagementProperties {
      */
     private Integer port = 15672;
 
-    private VirtualHostMode mode = VirtualHostMode.MULTI;
+    private VirtualHostMode mode = VirtualHostMode.SINGLE;
 
     public String getHost() {
         return host;

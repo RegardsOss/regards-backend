@@ -174,7 +174,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
 
     @Override
     public Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
-            Optional<? extends IHandler<?>> handler) {
+            Optional<Class<? extends IHandler<?>>> handlerType) {
 
         Map<String, Object> args = new HashMap<>();
         args.put("x-max-priority", MAX_PRIORITY);
@@ -187,8 +187,8 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
                 break;
             case BROADCAST:
                 // Allows to subscribe to a broadcast exchange
-                if (handler.isPresent()) {
-                    queue = new Queue(getSubscriptionQueueName(handler.get().getType()), true, false, false, args);
+                if (handlerType.isPresent()) {
+                    queue = new Queue(getSubscriptionQueueName(handlerType.get()), true, false, false, args);
                 } else {
                     throw new IllegalArgumentException("Missing event handler for broadcasted event");
                 }
