@@ -20,8 +20,9 @@ package fr.cnes.regards.framework.amqp;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
@@ -39,9 +40,9 @@ public class Poller extends AbstractPoller implements IPoller {
      */
     private final IRuntimeTenantResolver threadTenantResolver;
 
-    public Poller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate pRabbitTemplate,
-            RegardsAmqpAdmin pRegardsAmqpAdmin, IRuntimeTenantResolver pThreadTenantResolver) {
-        super(pVirtualHostAdmin, pRabbitTemplate, pRegardsAmqpAdmin);
+    public Poller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate pRabbitTemplate, IAmqpAdmin amqpAdmin,
+            IRuntimeTenantResolver pThreadTenantResolver) {
+        super(pVirtualHostAdmin, pRabbitTemplate, amqpAdmin);
         this.threadTenantResolver = pThreadTenantResolver;
     }
 
@@ -50,4 +51,8 @@ public class Poller extends AbstractPoller implements IPoller {
         return threadTenantResolver.getTenant();
     }
 
+    @Override
+    protected String resolveVirtualHost(String tenant) {
+        return RabbitVirtualHostAdmin.getVhostName(tenant);
+    }
 }

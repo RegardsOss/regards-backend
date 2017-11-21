@@ -1,6 +1,12 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -16,6 +22,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
@@ -23,10 +30,14 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.jobs.domain.*;
+import fr.cnes.regards.framework.modules.jobs.domain.FailedAfter1sJob;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.domain.SpringJob;
+import fr.cnes.regards.framework.modules.jobs.domain.WaiterJob;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
-import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 import fr.cnes.regards.framework.modules.jobs.test.JobConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
@@ -72,7 +83,7 @@ public class JobServiceTest {
     @Value("${regards.jobs.pool.size:10}")
     private int poolSize;
 
-    private JobHandler jobHandler = new JobHandler();
+    private final JobHandler jobHandler = new JobHandler();
 
     private boolean subscriptionsDone = false;
 
@@ -87,13 +98,14 @@ public class JobServiceTest {
 
         rabbitVhostAdmin.bind(tenantResolver.getTenant());
 
-        try {
-            amqpAdmin.purgeQueue(StopJobEvent.class, (Class<IHandler<StopJobEvent>>) Class
-                    .forName("fr.cnes.regards.framework.modules.jobs.service.JobService$StopJobHandler"), false);
-            amqpAdmin.purgeQueue(JobEvent.class, jobHandler.getClass(), false);
-        } catch (Exception e) {
-            // In case queues don't exist
-        }
+        // FIXME deprecated. use subscriber.subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue)
+        // try {
+        // amqpAdmin.purgeQueue(StopJobEvent.class, (Class<IHandler<StopJobEvent>>) Class
+        // .forName("fr.cnes.regards.framework.modules.jobs.service.JobService$StopJobHandler"), false);
+        // amqpAdmin.purgeQueue(JobEvent.class, jobHandler.getClass(), false);
+        // } catch (Exception e) {
+        // // In case queues don't exist
+        // }
         rabbitVhostAdmin.unbind();
 
         if (!subscriptionsDone) {
@@ -133,9 +145,8 @@ public class JobServiceTest {
                     LOGGER.info("FAILED for " + wrapper.getContent().getJobId());
                     break;
                 default:
-                    throw new IllegalArgumentException(
-                            type + " is not an handled type of JobEvent for this test: " + JobServiceTest.class
-                                    .getSimpleName());
+                    throw new IllegalArgumentException(type + " is not an handled type of JobEvent for this test: "
+                            + JobServiceTest.class.getSimpleName());
             }
         }
     }

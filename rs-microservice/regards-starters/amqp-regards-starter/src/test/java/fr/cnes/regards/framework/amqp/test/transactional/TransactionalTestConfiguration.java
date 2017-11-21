@@ -16,14 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp.event;
+package fr.cnes.regards.framework.amqp.test.transactional;
+
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
 /**
- *
- * Qualify an event you can poll and acknowledge
- *
  * @author Marc Sordi
  *
  */
-public interface IPollable {
+@Configuration
+@ComponentScan(basePackageClasses = { PollableService.class, PublishService.class })
+@EnableAutoConfiguration
+public class TransactionalTestConfiguration {
+
 }

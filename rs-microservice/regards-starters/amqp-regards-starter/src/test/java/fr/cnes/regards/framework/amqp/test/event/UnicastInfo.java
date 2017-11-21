@@ -16,14 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp.event;
+package fr.cnes.regards.framework.amqp.test.event;
+
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
 /**
- *
- * Qualify an event you can poll and acknowledge
+ * {@link ISubscribable} information event
  *
  * @author Marc Sordi
  *
  */
-public interface IPollable {
+@Event(target = Target.ALL, mode = WorkerMode.UNICAST)
+public class UnicastInfo extends AbstractEvent implements ISubscribable {
 }

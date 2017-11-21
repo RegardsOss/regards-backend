@@ -20,8 +20,6 @@ package fr.cnes.regards.framework.amqp;
 
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
 /**
  *
@@ -38,28 +36,35 @@ public interface ISubscriberContract {
     /**
      * Subscribe to this {@link ISubscribable} event
      *
-     * @param <T>
-     *            {@link ISubscribable} event
-     * @param pEvent
-     *            {@link ISubscribable} event
-     * @param pReceiver
-     *            event {@link IHandler}
+     * @param <E> {@link ISubscribable} event
+     * @param eventType {@link ISubscribable} event
+     * @param receiver event {@link IHandler}
      */
-    <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver);
+    <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver);
 
     /**
-     * Advance way to subscribe to an event. Grants access to {@link WorkerMode} and {@link Target}
+     * Subscribe to this {@link ISubscribable} event
+     *
+     * @param <E> @link ISubscribable} event
+     * @param eventType {@link ISubscribable} event
+     * @param receiver event {@link IHandler}
+     * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
-    <T> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver, WorkerMode pWorkerMode,
-            Target pTarget);
+    <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue);
 
     /**
      * Unsubscribe from this {@link ISubscribable} event.
      *
-     * @param <T>
-     *            {@link ISubscribable} event
-     * @param pEvent
-     *            {@link ISubscribable} event
+     * @param <T> {@link ISubscribable} event
+     * @param eventType {@link ISubscribable} event
      */
-    <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent);
+    <T extends ISubscribable> void unsubscribeFrom(Class<T> eventType);
+
+    /**
+     * Purge related queues (for all tenant virtual hosts). Useful for testing purpose before publishing events. Purge
+     * can be done as well using {@link #subscribeTo(Class, IHandler, boolean)}
+     * @param eventType {@link ISubscribable} event type
+     * @param handlerType {@link IHandler} type
+     */
+    <E extends ISubscribable> void purgeQueue(Class<E> eventType, Class<? extends IHandler<E>> handlerType);
 }

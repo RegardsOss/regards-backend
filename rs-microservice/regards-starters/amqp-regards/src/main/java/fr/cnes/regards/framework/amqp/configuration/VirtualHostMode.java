@@ -16,14 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp.event;
+package fr.cnes.regards.framework.amqp.configuration;
 
 /**
- *
- * Qualify an event you can poll and acknowledge
+ * Virtual host mode allows to choose between a single virtual host for all tenants or a virtual host for each tenant.
  *
  * @author Marc Sordi
  *
  */
-public interface IPollable {
+public enum VirtualHostMode {
+
+    SINGLE,
+    MULTI;
 }

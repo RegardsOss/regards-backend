@@ -18,14 +18,16 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.IPollable;
@@ -54,7 +56,7 @@ public abstract class AbstractPoller implements IPollerContract {
     /**
      * bean assisting us to declare elements
      */
-    private final RegardsAmqpAdmin regardsAmqpAdmin;
+    private final IAmqpAdmin amqpAdmin;
 
     /**
      * Virtual host admin
@@ -62,54 +64,63 @@ public abstract class AbstractPoller implements IPollerContract {
     private final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
     public AbstractPoller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate pRabbitTemplate,
-            RegardsAmqpAdmin pRegardsAmqpAdmin) {
+            IAmqpAdmin amqpAdmin) {
         super();
         this.rabbitVirtualHostAdmin = pVirtualHostAdmin;
         rabbitTemplate = pRabbitTemplate;
-        regardsAmqpAdmin = pRegardsAmqpAdmin;
+        this.amqpAdmin = amqpAdmin;
     }
 
     @Override
     public <T extends IPollable> TenantWrapper<T> poll(Class<T> pEvent) {
-        return poll(resolveTenant(), pEvent, WorkerMode.SINGLE, EventUtils.getCommunicationTarget(pEvent));
+        String tenant = resolveTenant();
+        return poll(tenant, resolveVirtualHost(tenant), pEvent, WorkerMode.UNICAST,
+                    EventUtils.getTargetRestriction(pEvent));
     }
 
     /**
-     * @return the tenant on which we have to poll the event
+     * @return current tenant
      */
     protected abstract String resolveTenant();
+
+    /**
+     * @param tenant current tenant
+     * @return the virtual host on which we have to poll the event according to the tenant
+     */
+    protected abstract String resolveVirtualHost(String tenant);
 
     /**
      * Poll an event
      *
      * @param <T>
      *            event object
-     * @param pTenant
+     * @param tenant
      *            tenant
-     * @param pEvt
+     * @param virtualHost virtual host
+     * @param eventType
      *            event to poll
-     * @param pWorkerMode
+     * @param workerMode
      *            {@link WorkerMode}
-     * @param pTarget
+     * @param target
      *            {@link Target}
      * @return event in a {@link TenantWrapper}
      */
     @SuppressWarnings("unchecked")
-    public <T> TenantWrapper<T> poll(String pTenant, Class<T> pEvt, WorkerMode pWorkerMode, Target pTarget) {
+    protected <T> TenantWrapper<T> poll(String tenant, String virtualHost, Class<T> eventType, WorkerMode workerMode,
+            Target target) {
 
-        LOGGER.debug("Polling event {} for tenant {} (Target : {}, WorkerMode : {} )", pEvt.getName(), pTenant, pTarget,
-                     pWorkerMode);
+        LOGGER.debug("Polling event {} for tenant {} (Target : {}, WorkerMode : {} )", eventType.getName(), tenant,
+                     target, workerMode);
 
         try {
             // Bind the connection to the right vHost (i.e. tenant to publish the message)
-            rabbitVirtualHostAdmin.bind(pTenant);
+            rabbitVirtualHostAdmin.bind(virtualHost);
 
-            final Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, pEvt, pWorkerMode, pTarget);
-            final Queue queue = regardsAmqpAdmin.declareQueue(pTenant, pEvt, pWorkerMode, pTarget);
-            regardsAmqpAdmin.declareBinding(pTenant, queue, exchange, pWorkerMode);
+            Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target);
+            Queue queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, Optional.empty());
+            amqpAdmin.declareBinding(queue, exchange, workerMode);
 
-            return (TenantWrapper<T>) rabbitTemplate
-                    .receiveAndConvert(regardsAmqpAdmin.getQueueName(pEvt, pWorkerMode, pTarget), 0);
+            return (TenantWrapper<T>) rabbitTemplate.receiveAndConvert(queue.getName(), 0);
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }
