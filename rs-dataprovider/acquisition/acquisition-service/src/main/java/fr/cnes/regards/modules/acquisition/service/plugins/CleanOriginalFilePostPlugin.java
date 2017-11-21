@@ -21,16 +21,13 @@ package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
-import fr.cnes.regards.modules.acquisition.service.IProductService;
 
 /**
  * A default {@link Plugin} of type {@link IPostProcessSipPlugin}.
@@ -44,9 +41,6 @@ public class CleanOriginalFilePostPlugin implements IPostProcessSipPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CleanOriginalFilePostPlugin.class);
 
-//    @Autowired
-//    private IProductService productService;
-
     @Override
     public void runPlugin(Product product, ChainGeneration chain) throws ModuleException {
         LOGGER.info("[{}] Start post processing for the product : {}", chain.getSession(), product.getProductName());
@@ -59,6 +53,6 @@ public class CleanOriginalFilePostPlugin implements IPostProcessSipPlugin {
         }
 
         LOGGER.info("[{}] End  post processing for the product : {}", chain.getSession(), product.getProductName());
-     }
+    }
 
 }

@@ -55,6 +55,7 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginParameterRepository;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.modules.acquisition.builder.AcquisitionFileBuilder;
 import fr.cnes.regards.modules.acquisition.builder.ChainGenerationBuilder;
@@ -94,7 +95,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * @author Christophe Mertz
  *
  */
-public abstract class AbstractAcquisitionIT extends AbstractRegardsServiceIT {
+public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAcquisitionIT.class);
 

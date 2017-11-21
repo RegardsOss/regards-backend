@@ -35,10 +35,8 @@ import fr.cnes.regards.framework.geojson.geometry.Point;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
 import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
@@ -71,12 +69,6 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     private static final String GEO_POINT_ATTRIBUTE = "point coord";
 
     private static final Random random = new Random();
-
-    @PluginParameter(name = SESSION_PARAM, optional = true)
-    private String sessionId;
-
-    @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
-    private MetaProductDto metaProductDto;
 
     @PluginInit
     private void setUp() {
@@ -126,14 +118,11 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     @Override
     public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles,
             Optional<String> datasetName) throws ModuleException {
-
-        LOGGER.info("Start create MetaData for the session <{}> ", sessionId);
-
+        int n = 0;
         String productName = acqFiles.get(0).getProduct().getProductName();
 
-        LOGGER.info("product name <{}> ", productName);
+        LOGGER.info("Start create MetaData for the product <{}> ", productName);
 
-        int n = 0;
         SortedMap<Integer, Attribute> attributeMap = new TreeMap<>();
         attributeMap.put(n++, createLongAttribute("orbit", 100));
         attributeMap.put(n++, createLongAttribute("order", 133));
@@ -147,7 +136,7 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
                 .put(n++,
                      createPointAttribute(GEO_POINT_ATTRIBUTE, -90 * random.nextDouble(), 90 * random.nextDouble()));
 
-        LOGGER.info("End create Metata for the session <{}>", sessionId);
+        LOGGER.info("End  create MetaData for the product <{}> ", productName);
 
         return attributeMap;
     }

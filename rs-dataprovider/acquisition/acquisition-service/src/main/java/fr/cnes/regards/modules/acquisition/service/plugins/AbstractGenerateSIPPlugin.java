@@ -47,15 +47,9 @@ public abstract class AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGenerateSIPPlugin.class);
 
-    public static final String META_PRODUCT_PARAM = "meta-produt";
-
-    public static final String SESSION_PARAM = "sesssion-id";
-
     @Autowired
     private IDatasetClient datasetClient;
 
-    //    protected SIPCollectionBuilder sipCollectionBuilder;
-    
     @Override
     public SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId) throws ModuleException {
         String productName = acqFiles.get(0).getProduct().getProductName();

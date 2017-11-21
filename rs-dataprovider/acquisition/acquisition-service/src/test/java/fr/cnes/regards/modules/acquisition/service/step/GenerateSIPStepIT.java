@@ -64,13 +64,10 @@ public class GenerateSIPStepIT extends AbstractAcquisitionIT {
 
     @Test
     public void proceedStep() throws ModuleException {
-        String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
 
         // Configure a plugin IGenerateSIPPlugin
         chain.setGenerateSipPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
                                                                             IGenerateSIPPlugin.class));
-        chain.addGenerateSipParameter(TestGenerateSipPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addGenerateSipParameter(TestGenerateSipPlugin.SESSION_PARAM, SESSION_ID);
 
         // Create a Product
         Product product = productService.save(ProductBuilder.build(FIRST_PRODUCT).withStatus(ProductStatus.COMPLETED)

@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.acquisition.service.step.AbstractAcquisitionIT;
 @ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class, MockedFeignClientConf.class })
 @ActiveProfiles({ "test" })
 @DirtiesContext
-public class ScheduledDataProviderTasksTest extends AbstractAcquisitionIT {
+public class ScheduledDataProviderTasksIT extends AbstractAcquisitionIT {
 
     @Value("${regards.acquisition.process.new.sip.ingest.delay}")
     private String scheduledTasksDelay;
