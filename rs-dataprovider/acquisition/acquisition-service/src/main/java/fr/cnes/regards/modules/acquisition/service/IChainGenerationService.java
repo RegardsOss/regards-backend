@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.util.List;
 
+import javax.persistence.FetchType;
+
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 
 /**
@@ -34,17 +36,25 @@ public interface IChainGenerationService {
     /**
      * Retrieve one specified {@link ChainGeneration}
      * @param id {@link ChainGeneration}
+     * @return a {@link ChainGeneration}
      */
     ChainGeneration retrieve(Long id);
+
+    /**
+     * Retrieve one specified {@link ChainGeneration} and load all the properties with a {@link FetchType#LAZY}.
+     * @param id {@link ChainGeneration}
+     * @return a {@link ChainGeneration}
+     */
+    ChainGeneration retrieveComplete(Long id);
 
     /**
      * @return all {@link ChainGeneration}
      */
     List<ChainGeneration> retrieveAll();
-    
+
     void delete(Long id);
-    
-    boolean run(Long id) ;
-    
+
+    boolean run(Long id);
+
     boolean run(ChainGeneration chain);
 }

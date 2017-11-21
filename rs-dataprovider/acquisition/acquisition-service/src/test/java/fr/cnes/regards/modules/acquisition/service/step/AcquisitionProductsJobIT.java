@@ -138,7 +138,13 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         Assert.assertTrue(aborteds.isEmpty());
 
         // Repeat the activation of the same chain
-        chain.setRunning(false);
+        chain = chainService.retrieveComplete(chain.getId());
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.LAST_ACQ_DATE_PARAM,
+                                          OffsetDateTime.now().minusDays(10).toString());
+
         Assert.assertTrue(chainService.run(chain));
 
         waitJobEvent();
@@ -333,7 +339,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         ChainGeneration chainLastAcqDate = chainService.retrieve(chain.getId());
         Assert.assertNotNull(chainLastAcqDate.getLastDateActivation());
 
-        Thread.sleep(5_000);
+        Thread.sleep(WAIT_TIME);
 
         // Scan plugin : in this step we acquire the 3 mandatory missing files
         metaProductJson = new Gson()
@@ -346,6 +352,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         chain.addScanAcquisitionParameter(TestScanProductsHeader.LAST_ACQ_DATE_PARAM,
                                           chainLastAcqDate.getLastDateActivation().toString());
 
+        // Repeat the activation of the same chain
         chain.setRunning(false);
         Assert.assertTrue(chainService.run(chain));
 

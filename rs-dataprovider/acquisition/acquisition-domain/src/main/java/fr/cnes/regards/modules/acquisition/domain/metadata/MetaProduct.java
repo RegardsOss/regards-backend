@@ -42,6 +42,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
 
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 
@@ -54,7 +55,8 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 @Entity
 @Table(name = "t_dpv_meta_product", indexes = { @Index(name = "idx_meta_product_label", columnList = "label") },
         uniqueConstraints = @UniqueConstraint(name = "uk_meta_product_label", columnNames = { "label" }))
-@NamedEntityGraph(name = "graph.product.complete", attributeNodes = @NamedAttributeNode(value = "products"))
+@NamedEntityGraph(name = "graph.product.complete",
+        attributeNodes = { @NamedAttributeNode(value = "products"), @NamedAttributeNode(value = "metaFiles") })
 public class MetaProduct implements IIdentifiable<Long> {
 
     /**
@@ -76,6 +78,7 @@ public class MetaProduct implements IIdentifiable<Long> {
 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_meta_product_id"))
+    @GsonIgnore
     private final Set<Product> products = new HashSet<Product>();
 
     /**
@@ -211,6 +214,10 @@ public class MetaProduct implements IIdentifiable<Long> {
         strBuilder.append(id);
         strBuilder.append(" - ");
         strBuilder.append(label);
+        strBuilder.append(" - ingest chain");
+        strBuilder.append(ingestChain);
+        strBuilder.append(" - clean original:");
+        strBuilder.append(cleanOriginalFile);
         return strBuilder.toString();
     }
 

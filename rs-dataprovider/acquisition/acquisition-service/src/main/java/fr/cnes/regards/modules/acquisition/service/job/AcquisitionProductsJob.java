@@ -41,6 +41,7 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
 import fr.cnes.regards.modules.acquisition.domain.job.ProductJobParameter;
+import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
 import fr.cnes.regards.modules.acquisition.service.step.AcquisitionCheckStep;
@@ -50,9 +51,11 @@ import fr.cnes.regards.modules.acquisition.service.step.IAcquisitionScanStep;
 import fr.cnes.regards.modules.acquisition.service.step.IStep;
 
 /**
- * This job runs a set of step :<br>
- * <li>a step {@link AcquisitionScanStep} to scan and identify the files to acquired ie {@link AcquisitionFile}
- * <li>a step {@link AcquisitionCheckStep} to check the acquired files and to determines the {@link Product} associated
+ * This class runs a set of step :<br>
+ * <li>a step {@link AcquisitionScanStep} to scan and identify the {@link AcquisitionFile} to acquired
+ * <li>a step {@link AcquisitionCheckStep} to check the {@link AcquisitionFile} and to determines the {@link Product} associated<br>
+ * And for each scanned {@link Product} not already send to Ingest microservice, and with his status equals to {@link ProductStatus#COMPLETED} or {@link ProductStatus#FINISHED},
+ * a new {@link JobInfo} of class {@link AcquisitionGenerateSIPJob} is create and queued. 
  *  
  * @author Christophe Mertz
  *
@@ -75,6 +78,9 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
 
     @Autowired
     private IJobInfoService jobInfoService;
+    
+    @Autowired
+    private IChainGenerationService chainGenerationService;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -111,7 +117,12 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
 
         process.run();
 
+        // for each Product, create and queued a Job to generate SIP and send it to Ingest microservice
         final int n = submitProducts();
+        
+        // the ChainGeneration is not running, it is available for a new scan
+        chainGeneration.setRunning(false);
+        chainGenerationService.save(chainGeneration);
 
         LOGGER.info("[{}] {} AcquisitionGenerateSIPJob queued", chainGeneration.getSession(), n);
 
@@ -119,6 +130,11 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
                     chainGeneration.getLabel());
     }
 
+    /**
+     * Create and queued a {@link JobInfo} of class {@link AcquisitionGenerateSIPJob} for each {@link Product} not already send to Ingest microservice,<br>
+     * and with his status equals to {@link ProductStatus#COMPLETED} or {@link ProductStatus#FINISHED}.
+     * @return the number of {@link JobInfo} create and queued
+     */
     private int submitProducts() {
         List<Product> products = new ArrayList<>();
         products.addAll(productService.findBySendedAndStatusIn(Boolean.FALSE, ProductStatus.COMPLETED,
@@ -135,6 +151,11 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
         return nbJobQueued;
     }
 
+    /**
+     * Create and queued a {@link JobInfo} of class {@link AcquisitionGenerateSIPJob} for a {@link Product}.
+     * @param product the {@link Product} to process
+     * @return true if the {@link JobInfo} is create and queued
+     */
     private boolean createJob(Product product) {
         // Create a ScanJob
         JobInfo acquisition = new JobInfo();

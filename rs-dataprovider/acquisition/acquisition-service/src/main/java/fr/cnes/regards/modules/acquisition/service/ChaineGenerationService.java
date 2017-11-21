@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
@@ -53,6 +54,12 @@ public class ChaineGenerationService implements IChainGenerationService {
 
     @Autowired
     private IJobInfoService jobInfoService;
+
+    @Autowired
+    private IMetaProductService metaProductService;
+
+    @Autowired
+    private IPluginService pluginService;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -77,6 +84,34 @@ public class ChaineGenerationService implements IChainGenerationService {
     @Override
     public ChainGeneration retrieve(Long id) {
         return chainRepository.findOne(id);
+    }
+
+    public ChainGeneration retrieveComplete(Long id) {
+        ChainGeneration chain = this.retrieve(id);
+        
+        chain.setMetaProduct(metaProductService.retrieveComplete(chain.getMetaProduct().getId()));
+        
+        if (chain.getScanAcquisitionPluginConf() != null) {
+            chain.setScanAcquisitionPluginConf(pluginService
+                    .loadPluginConfiguration(chain.getScanAcquisitionPluginConf().getId()));
+        }
+        
+        if (chain.getCheckAcquisitionPluginConf() != null) {
+            chain.setCheckAcquisitionPluginConf(pluginService
+                    .loadPluginConfiguration(chain.getCheckAcquisitionPluginConf().getId()));
+        }
+        
+        if (chain.getGenerateSipPluginConf() != null) {
+            chain.setGenerateSipPluginConf(pluginService
+                    .loadPluginConfiguration(chain.getGenerateSipPluginConf().getId()));
+        }
+        
+        if (chain.getPostProcessSipPluginConf() != null) {
+            chain.setPostProcessSipPluginConf(pluginService
+                    .loadPluginConfiguration(chain.getPostProcessSipPluginConf().getId()));
+        }
+
+        return chain;
     }
 
     @Override
@@ -114,6 +149,7 @@ public class ChaineGenerationService implements IChainGenerationService {
         chain.setRunning(true);
         chain.setSession(chain.getLabel() + ":" + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + ":"
                 + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
+
         save(chain);
 
         LOGGER.info("[{}] a new session is created", chain.getSession());
