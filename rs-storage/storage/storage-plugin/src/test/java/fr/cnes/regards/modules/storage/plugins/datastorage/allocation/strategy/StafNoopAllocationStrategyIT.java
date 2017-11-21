@@ -155,13 +155,13 @@ public class StafNoopAllocationStrategyIT extends AbstractRegardsTransactionalIT
         List<PluginParameter> stafDataStorageParams = PluginParametersFactory.build()
                 .addParameter("workspaceDirectory", WORKSPACE.toString())
                 .addParameter("archiveParameters", gson(archive))
-                .addParameter(STAFDataStorage.STAF_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90").getParameters();
+                .addParameter(STAFDataStorage.STAF_STORAGE_TOTAL_SPACE, "9000000000000").getParameters();
         stafDataStorage = new PluginConfiguration(stafDataStorageMeta, STAF_NOOP_CONF_LABEL, stafDataStorageParams);
         stafDataStorage = pluginService.savePluginConfiguration(stafDataStorage);
         // lets get a local data storage conf as default
         List<PluginParameter> defaultParam = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, gson.toJson(WORKSPACE))
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90").getParameters();
+                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "900000000000").getParameters();
         // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
         PluginMetaData defaultMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
                                                                       LocalDataStorage.class.getPackage().getName(),

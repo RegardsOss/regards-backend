@@ -171,7 +171,6 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                     // IDataStorage plugin used to delete the file is not able to delete the file right now.
                     // Maybe the file can be deleted later. So do nothing and just notify administrator.
                     LOG.error("Error deleting file {}", event.getDataFileId());
-                    // TODO : Notofy deletion error.
                     break;
             }
         } else {
@@ -279,7 +278,6 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
             LOG.error(
                     "You should not have this issue here! That means that the plugin used to storeAndCreate the dataFile just has been removed from the application",
                     e);
-            // TODO : notify admin for invalid configuration.
             return;
         }
         storedDataFile.setChecksum(storedFileChecksum);

@@ -20,9 +20,9 @@ import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 @Component
 public class AIPDao implements IAIPDao {
 
-    private final IAIPDataBaseRepository repo;
+    private final IAIPEntityRepository repo;
 
-    public AIPDao(IAIPDataBaseRepository repo) {
+    public AIPDao(IAIPEntityRepository repo) {
         this.repo = repo;
     }
 

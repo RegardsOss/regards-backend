@@ -55,13 +55,8 @@ public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWo
     }
 
     @Override
-    public Set<DataStorageInfo> getMonitoringInfos() {
-        return null;
-    }
-
-    @Override
-    public Integer getDiskUsageThreshold() {
-        return 90;
+    public Long getTotalSpace() {
+        return 900000000000L;
     }
 
     @Override

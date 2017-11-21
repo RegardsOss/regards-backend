@@ -105,8 +105,8 @@ public class DataFile {
     private DataFile() {
     }
 
-    public DataFile(OAISDataObject file, String algorithm, String checksum, Long fileSize, MimeType mimeType, AIP aip) {
-        this(file.getUrl(), checksum, algorithm, file.getRegardsDataType(), fileSize, mimeType, aip, null);
+    public DataFile(OAISDataObject file, MimeType mimeType, AIP aip) {
+        this(file.getUrl(), file.getChecksum(), file.getAlgorithm(), file.getRegardsDataType(), file.getFileSize(), mimeType, aip, null);
         String name = file.getFilename();
         if (Strings.isNullOrEmpty(name)) {
             String[] pathParts = file.getUrl().getPath().split("/");
@@ -227,10 +227,7 @@ public class DataFile {
         for (ContentInformation ci : aip.getProperties().getContentInformations()) {
             OAISDataObject file = ci.getDataObject();
             MimeType mimeType = MimeType.valueOf(ci.getRepresentationInformation().getSyntax().getMimeType());
-            String algorithm = ci.getDataObject().getAlgorithm();
-            String checksum = ci.getDataObject().getChecksum();
-            Long fileSize = ci.getDataObject().getFileSize();
-            dataFiles.add(new DataFile(file, algorithm, checksum, fileSize, mimeType, aip));
+            dataFiles.add(new DataFile(file, mimeType, aip));
         }
         return dataFiles;
     }

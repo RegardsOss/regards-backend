@@ -56,14 +56,5 @@ public interface IDataStorage<T extends IWorkingSubset> {
      */
     void store(T workingSubset, Boolean replaceMode, IProgressManager progressManager);
 
-    /**
-     * Retreive informations about any storage system it handles.
-     * @return {@link Set} of {@link DataStorageInfo} containing storage informations
-     */
-    Set<DataStorageInfo> getMonitoringInfos() throws IOException;
-
-    /**
-     * @return the threshold, in percent, above which users should be notified that this data storage starts to be full and the project should be set in maintenance.
-     */
-    Integer getDiskUsageThreshold();
+    Long getTotalSpace();
 }

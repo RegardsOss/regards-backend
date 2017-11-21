@@ -13,6 +13,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
+import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -24,7 +25,12 @@ public class DataFileDao implements IDataFileDao {
     private IDataFileRepository repository;
 
     @Autowired
-    private IAIPDataBaseRepository aipRepo;
+    private IAIPEntityRepository aipRepo;
+
+    public DataFileDao(IDataFileRepository repository, IAIPEntityRepository aipRepo) {
+        this.repository = repository;
+        this.aipRepo = aipRepo;
+    }
 
     @Override
     public Set<DataFile> findAllByStateAndAip(DataFileState stored, AIP aip) {
@@ -110,6 +116,11 @@ public class DataFileDao implements IDataFileDao {
     @Override
     public void remove(DataFile data) {
         repository.delete(data.getId());
+    }
+
+    @Override
+    public Collection<MonitoringAggregation> getMonitoringAggregation() {
+        return repository.getMonitoringAggregation();
     }
 
     private Optional<AIPEntity> getAipDataBase(AIP aip) {

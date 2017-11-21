@@ -91,7 +91,7 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                               gson.toJson(baseStorageLocation))
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90")
+                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "9000000000")
                 .getParameters();
         // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
         PluginMetaData localStorageMeta = PluginUtils

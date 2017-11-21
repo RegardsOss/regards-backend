@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import javax.persistence.UniqueConstraint;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
@@ -40,13 +39,13 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=projectdb", "spring.application.name=storage" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=projectdb", "spring.application.name=storage", "spring.jmx.enabled=false" })
 public class DaoIT extends AbstractDaoTransactionalTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(DaoIT.class);
 
     @Autowired
-    private IAIPDataBaseRepository repo;
+    private IAIPEntityRepository repo;
 
     private IAIPDao dao;
 
