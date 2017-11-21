@@ -45,7 +45,6 @@ import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -154,9 +153,6 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsServiceIT {
     private IRabbitVirtualHostAdmin rabbitVhostAdmin;
 
     @Autowired
-    private RegardsAmqpAdmin amqpAdmin;
-
-    @Autowired
     protected IMetaProductRepository metaProductRepository;
 
     @Autowired
@@ -260,19 +256,9 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsServiceIT {
                 .isActive().withDataSet(DATASET_IP_ID).withMetaProduct(metaProduct).periodicity(1L).get());
     }
 
-    private void purgeAMQPqueues() {
-        rabbitVhostAdmin.bind(DEFAULT_TENANT);
-        try {
-            amqpAdmin.purgeQueue(JobEvent.class, ScanJobHandler.class, true);
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage());
-        }
-        rabbitVhostAdmin.unbind();
-    }
-
     @After
     public void cleanDb() {
-        purgeAMQPqueues();
+        subscriber.purgeQueue(JobEvent.class, ScanJobHandler.class);
         subscriber.unsubscribeFrom(JobEvent.class);
 
         scanDirectoryRepository.deleteAll();
@@ -347,7 +333,7 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsServiceIT {
                          aborteds.size(), faileds.size(), name.getMethodName());
         }
 
-        // wait the end of the running job 
+        // wait the end of the running job
         wait = true;
         while (wait) {
             Thread.sleep(1_000);
