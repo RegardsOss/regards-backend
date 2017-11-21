@@ -7,7 +7,6 @@ import javax.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -21,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import feign.Response;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -28,6 +28,8 @@ import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.RejectedAip;
+import fr.cnes.regards.modules.storage.domain.RejectedSip;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -40,9 +42,13 @@ public interface IAipClient {
 
     String AIP_PATH = "/aips";
 
+    String RETRY_STORE_PATH = "/retry";
+
     String PREPARE_DATA_FILES = "/dataFiles";
 
     String ID_PATH = "/{ip_id}";
+
+    String IP_ID_RETRY_STORE_PATH = ID_PATH + RETRY_STORE_PATH;
 
     String OBJECT_LINK_PATH = ID_PATH + "/objectlinks";
 
@@ -68,29 +74,38 @@ public interface IAipClient {
 
     String DOWLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
 
-    @RequestMapping(value = AIP_PATH, method = RequestMethod.GET)
-    public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
+    @RequestMapping(method = RequestMethod.GET)
+    ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState pState,
             @RequestParam(name = "from", required = false) OffsetDateTime pFrom,
             @RequestParam(name = "to", required = false) OffsetDateTime pTo, @RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
-    @RequestMapping(value = AIP_PATH, method = RequestMethod.POST)
-    public ResponseEntity<Set<UUID>> store(@RequestBody @Valid AIPCollection aips);
+    @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
+    ResponseEntity<List<RejectedAip>> store(@RequestBody @Valid AIPCollection aips);
+
+    @RequestMapping(method = RequestMethod.POST, value = RETRY_STORE_PATH)
+    ResponseEntity<List<RejectedAip>> storeRetry(@RequestBody @Valid Set<String> aipIpIds);
+
+    @RequestMapping(method = RequestMethod.POST, value = IP_ID_RETRY_STORE_PATH)
+    ResponseEntity<RejectedAip> storeRetryUnit(@PathVariable("ip_id") String ipId);
+
+    @RequestMapping(method = RequestMethod.DELETE)
+    public ResponseEntity<List<RejectedSip>> deleteAipFromSips(@RequestParam("sip_ip_id") Set<String> sipIpIds);
 
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
-    public ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId);
+    ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId);
 
     @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
-    public ResponseEntity<List<String>> retrieveAIPVersionHistory(
+    ResponseEntity<List<String>> retrieveAIPVersionHistory(
             @PathVariable("ip_id") @Valid UniformResourceName pIpId, @RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
     @RequestMapping(path = PREPARE_DATA_FILES, method = RequestMethod.POST)
-    public ResponseEntity<AvailabilityResponse> makeFilesAvailable(
+    ResponseEntity<AvailabilityResponse> makeFilesAvailable(
             @RequestBody AvailabilityRequest availabilityRequest);
 
     @RequestMapping(path = DOWLOAD_AIP_FILE, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public Response downloadFile(@PathVariable("ip_id") String aipId, @PathVariable("checksum") String checksum);
+    Response downloadFile(@PathVariable("ip_id") String aipId, @PathVariable("checksum") String checksum);
 }

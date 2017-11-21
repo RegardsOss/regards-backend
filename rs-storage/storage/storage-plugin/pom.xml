@@ -50,12 +50,15 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>authentication-regards-starter</artifactId>
         </dependency>
-        <!-- TEST dependencies -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>microservice-regards</artifactId>
+        </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>plugins-regards-starter</artifactId>
-            <scope>test</scope>
         </dependency>
+        <!-- TEST dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-integration-test</artifactId>

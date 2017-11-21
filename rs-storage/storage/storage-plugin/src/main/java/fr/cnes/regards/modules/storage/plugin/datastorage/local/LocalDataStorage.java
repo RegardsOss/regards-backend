@@ -63,7 +63,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     @PluginInit
     public void init() {
         baseStorageLocation = gson.fromJson(baseStorageLocationAsString, URL.class);
-        // Lets check that occupation threshold given represent a threshold
+        // Lets check that disk usage threshold given represent a threshold
         if (occupiedSpaceThreshold < 0 || occupiedSpaceThreshold > 100) {
             throw new IllegalArgumentException(String.format("Parameter %s should be an integer between 0 and 100",
                                                              LOCAL_STORAGE_OCCUPIED_SPACE_THRESHOLD));
@@ -190,7 +190,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     }
 
     @Override
-    public Integer getOccupationThreshold() {
+    public Integer getDiskUsageThreshold() {
         return occupiedSpaceThreshold;
     }
 

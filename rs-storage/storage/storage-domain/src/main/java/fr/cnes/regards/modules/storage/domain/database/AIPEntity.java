@@ -45,12 +45,7 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
         uniqueConstraints = { @UniqueConstraint(name = "uk_aip_ipId", columnNames = "ip_id") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @NamedEntityGraph(name = "graph.aip.tags", attributeNodes = { @NamedAttributeNode("tags") })
-public class AIPDataBase {
-
-    /**
-     * length used as the checksum column definition. Why 128? it allows to use sha-512. That should limit issues with checksum length for a few years
-     */
-    public static final int CHECKSUM_MAX_LENGTH = 128;
+public class AIPEntity {
 
     private static final int MAX_URN_SIZE = 128;
 
@@ -97,10 +92,10 @@ public class AIPDataBase {
     @Type(type = "jsonb")
     private AIP aip;
 
-    public AIPDataBase() {
+    public AIPEntity() {
     }
 
-    public AIPDataBase(AIP aip) {
+    public AIPEntity(AIP aip) {
         this.ipId = aip.getId().toString();
         this.sipId = aip.getSipId();
         this.tags = Sets.newHashSet(aip.getTags());
@@ -183,7 +178,7 @@ public class AIPDataBase {
             return false;
         }
 
-        AIPDataBase that = (AIPDataBase) o;
+        AIPEntity that = (AIPEntity) o;
 
         return ipId != null ? ipId.equals(that.ipId) : that.ipId == null;
     }

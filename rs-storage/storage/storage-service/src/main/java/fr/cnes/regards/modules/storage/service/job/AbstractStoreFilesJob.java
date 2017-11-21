@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -32,7 +31,7 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.IWorkingSubset;
  */
 public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
 
-    public static final String PLUGIN_TO_USE_PARAMETER_NAME = "pluginToUse";
+    public static final String PLUGIN_TO_USE_PARAMETER_NAME = "pluginToUseId";
 
     public static final String WORKING_SUB_SET_PARAMETER_NAME = "workingSubSet";
 
@@ -68,31 +67,50 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
             throws JobParameterMissingException, JobParameterInvalidException {
 
         // lets see if the plugin to use has been given through a plugin configuration.
-        JobParameter pluginToUse;
-        if (((pluginToUse = parameters.get(PLUGIN_TO_USE_PARAMETER_NAME)) == null)
-                || !(pluginToUse.getValue() instanceof PluginConfiguration)) {
-            JobParameterMissingException e = new JobParameterMissingException(
-                    String.format(PARAMETER_MISSING, this.getClass().getName(), PluginConfiguration.class.getName(),
-                                  PLUGIN_TO_USE_PARAMETER_NAME));
+        JobParameter pluginToUseId;
+        if (((pluginToUseId = parameters.get(PLUGIN_TO_USE_PARAMETER_NAME)) == null) || !(pluginToUseId
+                .getValue() instanceof Long)) {
+            JobParameterMissingException e = new JobParameterMissingException(String.format(PARAMETER_MISSING,
+                                                                                            this.getClass().getName(),
+                                                                                            Long.class.getName(),
+                                                                                            PLUGIN_TO_USE_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
+        // now lets check it is an id of a plugin configuration
+        Long confId = pluginToUseId.getValue();
+        // rather than duplicating the code, lets just catch the exception
+        ModuleException noConfigurationExist = null;
+        PluginConfiguration confToUse = null;
+        try {
+            confToUse = pluginService.getPluginConfiguration(confId);
+        } catch (ModuleException e) {
+            JobParameterInvalidException invalid = new JobParameterInvalidException(String.format(
+                    "Job %s: There is no plugin configuration with id: %s",
+                    this.getClass(),
+                    confId));
+            logger.error(invalid.getMessage(), invalid);
+            throw invalid;
+        }
         // now that we are sure there is a plugin configuration as parameter, lets check if its a plugin configuration
-        // of IDataStorage
-        PluginConfiguration confToUse = pluginToUse.getValue();
+        // of IDataStorage.
         if (!confToUse.getInterfaceNames().contains(IDataStorage.class.getName())) {
-            JobParameterInvalidException e = new JobParameterInvalidException(
-                    String.format(PARAMETER_INVALID, this.getClass().getName(),
-                                  IDataStorage.class.getName() + " configuration", confToUse.getId()));
+            JobParameterInvalidException e = new JobParameterInvalidException(String.format(PARAMETER_INVALID,
+                                                                                            this.getClass().getName(),
+                                                                                            IDataStorage.class.getName()
+                                                                                                    + " configuration",
+                                                                                            confId));
             logger.error(e.getMessage(), e);
             throw e;
         }
         JobParameter workingSubSet;
-        if (((workingSubSet = parameters.get(WORKING_SUB_SET_PARAMETER_NAME)) == null)
-                || !(workingSubSet.getValue() instanceof IWorkingSubset)) {
-            JobParameterMissingException e = new JobParameterMissingException(
-                    String.format(PARAMETER_MISSING, this.getClass().getName(), IWorkingSubset.class.getName(),
-                                  WORKING_SUB_SET_PARAMETER_NAME));
+        if (((workingSubSet = parameters.get(WORKING_SUB_SET_PARAMETER_NAME)) == null) || !(workingSubSet
+                .getValue() instanceof IWorkingSubset)) {
+            JobParameterMissingException e = new JobParameterMissingException(String.format(PARAMETER_MISSING,
+                                                                                            this.getClass().getName(),
+                                                                                            IWorkingSubset.class
+                                                                                                    .getName(),
+                                                                                            WORKING_SUB_SET_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
@@ -133,17 +151,17 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         IWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
         if (!handled.containsAll(workingSubset.getDataFiles())) {
             // not all data files have been handled, lets get the difference and make the not handled fail
-            Sets.SetView<DataFile> notHandledFiles = Sets.difference(workingSubset.getDataFiles(),
-                                                                     Sets.newHashSet(handled));
+            Sets.SetView<DataFile> notHandledFiles = Sets
+                    .difference(workingSubset.getDataFiles(), Sets.newHashSet(handled));
             for (DataFile notHandled : notHandledFiles) {
                 handleNotHandledDataFile(notHandled);
             }
         }
         if (progressManager.isProcessError()) {
             // RuntimeException allows us to make the job fail and respect Runnable interface
-            throw new StorageException(String
-                    .format(FAILURE_CAUSES,
-                            progressManager.getFailureCauses().stream().collect(Collectors.joining(", ", "[", " ]"))));
+            throw new StorageException(String.format(FAILURE_CAUSES,
+                                                     progressManager.getFailureCauses().stream()
+                                                             .collect(Collectors.joining(", ", "[", " ]"))));
         }
     }
 
@@ -156,17 +174,17 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     @SuppressWarnings("unchecked")
     protected void storeFile(Map<String, JobParameter> parameterMap, boolean replaceMode) {
         // lets instantiate the plugin to use
-        PluginConfiguration confToUse = parameterMap.get(PLUGIN_TO_USE_PARAMETER_NAME).getValue();
+        Long confIdToUse = parameterMap.get(PLUGIN_TO_USE_PARAMETER_NAME).getValue();
         try {
-            @SuppressWarnings("rawtypes")
-            IDataStorage storagePlugin = pluginService.getPlugin(confToUse.getId());
+            @SuppressWarnings("rawtypes") IDataStorage storagePlugin = pluginService.getPlugin(confIdToUse);
             // now that we have the plugin instance, lets retrieve the aip from the job parameters and ask the plugin to
             // do the storage
             IWorkingSubset workingSubset = parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
-            // before storage on file system, lets update the DataFiles by setting which data storage is used to store
+            // before storage on file system, lets update the DataFiles by setting which data storage is used to storeAndCreate
             // them.
+            PluginConfiguration storagePluginConf = pluginService.getPluginConfiguration(confIdToUse);
             for (DataFile data : workingSubset.getDataFiles()) {
-                data.setDataStorageUsed(confToUse);
+                data.setDataStorageUsed(storagePluginConf);
             }
             storagePlugin.store(workingSubset, replaceMode, progressManager);
         } catch (ModuleException e) {

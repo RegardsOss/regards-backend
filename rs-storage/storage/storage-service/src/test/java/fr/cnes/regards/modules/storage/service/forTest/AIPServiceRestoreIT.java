@@ -197,7 +197,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         baseStorageLocation = new URL("file", "", Paths.get("target/AIPServiceIT").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
 
-        // second, lets store a plugin configuration for IAllocationStrategy
+        // second, lets storeAndCreate a plugin configuration for IAllocationStrategy
         pluginService.addPluginPackage(SimpleNearLineStoragePlugin.class.getPackage().getName());
         PluginMetaData catalogSecuDelegMeta = PluginUtils
                 .createPluginMetaData(CatalogSecurityDelegation.class,
@@ -677,12 +677,12 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         Assert.assertTrue("All expired AVAILABLE files should be deleted now",
                           cachedFileRepository.findByState(CachedFileState.AVAILABLE).isEmpty());
 
-        // Wait for store queued files process run
+        // Wait for storeAndCreate queued files process run
         LOG.info("Waiting for restore queued files rate ...");
         Thread.sleep(restoreQueuedRate - cleanCacheRate);
         Thread.sleep(10000);
 
-        // Files should be store successfully.
+        // Files should be storeAndCreate successfully.
         Assert.assertTrue("The new 3 loaded files should be AVAILABLE",
                           cachedFileRepository.findByState(CachedFileState.AVAILABLE).size() == 3);
         Assert.assertTrue("There should not be QUEUED files remaining",

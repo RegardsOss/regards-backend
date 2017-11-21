@@ -223,7 +223,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     }
 
     @Override
-    public Integer getOccupationThreshold() {
+    public Integer getDiskUsageThreshold() {
         return occupiedSpaceThreshold;
     }
 

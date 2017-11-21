@@ -10,11 +10,11 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AIPDataBase;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 
 /**
- * DAO to access {@link AIP} entities by requesting {@link AIPDataBase}.
- * The {@link AIP} are built from the {@link AIPDataBase} with json deserialization.
+ * DAO to access {@link AIP} entities by requesting {@link AIPEntity}.
+ * The {@link AIP} are built from the {@link AIPEntity} with json deserialization.
  *
  * @author Sylvain VISSIERE-GUERINET
  * @author Sébastien Binda
@@ -122,4 +122,6 @@ public interface IAIPDao {
     Set<AIP> findAllByIpIdIn(Collection<String> ipIds);
 
     Set<AIP> findAllByTags(String tag);
+
+    Set<AIP> findAllBySipId(String sipIpId);
 }

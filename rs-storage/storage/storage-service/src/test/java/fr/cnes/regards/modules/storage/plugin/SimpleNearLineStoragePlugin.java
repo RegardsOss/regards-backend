@@ -60,7 +60,7 @@ public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWo
     }
 
     @Override
-    public Integer getOccupationThreshold() {
+    public Integer getDiskUsageThreshold() {
         return 90;
     }
 

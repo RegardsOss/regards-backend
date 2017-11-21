@@ -22,7 +22,6 @@ import java.util.UUID;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +65,7 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
+import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
@@ -141,14 +141,14 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
         // first of all, lets get an AIP with accessible dataObjects and real checksums
         aip = getAIP();
-        // second, lets store a plugin configuration for IAllocationStrategy
+        // second, lets storeAndCreate a plugin configuration for IAllocationStrategy
         PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class,
                                                                          DefaultAllocationStrategyPlugin.class
                                                                                  .getPackage().getName());
         PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, ALLOCATION_CONF_LABEL);
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
-        // third, lets store a plugin configuration of IDataStorage with the highest priority
+        // third, lets storeAndCreate a plugin configuration of IDataStorage with the highest priority
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
                                                                       IDataStorage.class.getPackage().getName(),
                                                                       IOnlineDataStorage.class.getPackage().getName());
@@ -169,7 +169,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_010") })
     public void createSuccessTest() throws ModuleException, InterruptedException {
-        Set<UUID> jobIds = aipService.store(Sets.newHashSet(aip));
+        Set<UUID> jobIds = aipService.storeAndCreate(Sets.newHashSet(aip));
         jobIds.forEach(job -> LOG.info("Waiting for job {} end", job.toString()));
         int wait = 0;
         while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < 10000)) {
@@ -204,7 +204,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                                 "",
                                 Paths.get("src/test/resources/data_that_does_not_exists.txt").toFile()
                                         .getAbsolutePath()));
-        Set<UUID> jobIds = aipService.store(Sets.newHashSet(aip));
+        Set<UUID> jobIds = aipService.storeAndCreate(Sets.newHashSet(aip));
         int wait = 0;
         LOG.info("Waiting for jobs end ...");
         while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < MAX_WAIT_TEST)) {
@@ -229,15 +229,13 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     }
 
     @Test
-    @Ignore("test ignored for now, time to get the CI running with a real user not root which bypass permissions on directories")
-    //FIXME
     public void createFailOnMetadataTest() throws ModuleException, InterruptedException, IOException {
         // to make the process fail just on metadata storage, lets remove permissions from the workspace
         Path workspacePath = Paths.get(workspace, DEFAULT_TENANT);
         Set<PosixFilePermission> oldPermissions = Files.getPosixFilePermissions(workspacePath);
         Files.setPosixFilePermissions(workspacePath, Sets.newHashSet());
         try {
-            Set<UUID> jobIds = aipService.store(Sets.newHashSet(aip));
+            Set<UUID> jobIds = aipService.storeAndCreate(Sets.newHashSet(aip));
             int wait = 0;
             while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < MAX_WAIT_TEST)) {
                 // lets wait for 1 sec before checking again if all our jobs has been done or not
@@ -265,7 +263,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_030"), @Requirement("REGARDS_DSL_STO_AIP_040") })
     public void testUpdate() throws InterruptedException, ModuleException, URISyntaxException {
-        // first lets store the aip
+        // first lets storeAndCreate the aip
         createSuccessTest();
         // now that it is correctly created, lets say it has been updated and add a tag
         aip = aipDao.findOneByIpId(aip.getId().toString()).get();

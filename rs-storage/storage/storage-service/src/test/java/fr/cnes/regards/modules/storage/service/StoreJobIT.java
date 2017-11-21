@@ -135,9 +135,9 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         df = new DataFile(source, "de89a907d33a9716d11765582102b2e0", "MD5", DataType.OTHER, 0L,
                 new MimeType("text", "plain"), aip, "data.txt");
         workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
-        // now that we have some parameters, lets store the job
+        // now that we have some parameters, lets storeAndCreate the job
         parameters = Sets.newHashSet();
-        parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, localStorageConf));
+        parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, localStorageConf.getId()));
         parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
     }
 

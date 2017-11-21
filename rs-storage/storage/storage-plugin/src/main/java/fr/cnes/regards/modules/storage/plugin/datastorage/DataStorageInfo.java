@@ -36,7 +36,7 @@ public class DataStorageInfo {
     private String usedSize;
 
     /**
-     * Occupation ratio in percent
+     * Disk usage ratio in percent
      */
     private Double ratio;
 
@@ -52,7 +52,7 @@ public class DataStorageInfo {
         this.storagePhysicalId = storagePhysicalId;
         this.totalSize = totalSize + BYTES_UNIT;
         this.usedSize = usedSize + BYTES_UNIT;
-        this.ratio = (new Double(usedSize) / totalSize) * 100;
+        this.ratio = (Double.valueOf(usedSize) / totalSize) * 100;
     }
 
     public String getStoragePhysicalId() {
@@ -98,7 +98,9 @@ public class DataStorageInfo {
 
         DataStorageInfo that = (DataStorageInfo) o;
 
-        return storagePhysicalId != null ? storagePhysicalId.equals(that.storagePhysicalId) : that.storagePhysicalId == null;
+        return storagePhysicalId != null ?
+                storagePhysicalId.equals(that.storagePhysicalId) :
+                that.storagePhysicalId == null;
     }
 
     @Override

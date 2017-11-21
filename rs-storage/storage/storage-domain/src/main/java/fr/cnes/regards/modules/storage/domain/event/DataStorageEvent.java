@@ -38,7 +38,7 @@ public class DataStorageEvent implements ISubscribable {
 
     public DataStorageEvent(DataFile dataFile, StorageAction storageAction, StorageEventType type) {
         this.dataFileId = dataFile.getId();
-        this.newUrl=dataFile.getUrl();
+        this.newUrl = dataFile.getUrl();
         this.storageAction = storageAction;
         this.type = type;
         this.storageConfId = dataFile.getDataStorageUsed().getId();
@@ -112,17 +112,21 @@ public class DataStorageEvent implements ISubscribable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
 
         DataStorageEvent that = (DataStorageEvent) o;
 
-        if (dataFileId != null ? !dataFileId.equals(that.dataFileId) : that.dataFileId != null)
+        if (dataFileId != null ? !dataFileId.equals(that.dataFileId) : that.dataFileId != null) {
             return false;
-        if (storageAction != that.storageAction)
+        }
+        if (storageAction != that.storageAction) {
             return false;
+        }
         return type == that.type;
     }
 
