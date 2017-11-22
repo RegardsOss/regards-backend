@@ -98,7 +98,9 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
                                                                   dataStorageTotalSpace,
                                                                   monitoringAggregationMap
                                                                           .get(activeDataStorageConfId));
-            monitoringInfo.getStorageInfo().add(dataStorageInfo);
+            monitoringInfo.setTotalSize(dataStorageInfo.getTotalSize());
+            monitoringInfo.setUsedSize(dataStorageInfo.getUsedSize());
+            monitoringInfo.setRatio(dataStorageInfo.getRatio());
 
             monitoringInfos.add(monitoringInfo);
         }
