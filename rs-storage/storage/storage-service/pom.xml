@@ -49,14 +49,14 @@
             <groupId>fr.cnes.regards.modules.storage</groupId>
             <artifactId>storage-plugin</artifactId>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>fr.cnes.regards.modules.notification</groupId>-->
-            <!--<artifactId>notification-client</artifactId>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>fr.cnes.regards.modules.templates</groupId>-->
-            <!--<artifactId>templates-service</artifactId>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>fr.cnes.regards.modules.notification</groupId>
+            <artifactId>notification-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.templates</groupId>
+            <artifactId>templates-service</artifactId>
+        </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>module-regards</artifactId>

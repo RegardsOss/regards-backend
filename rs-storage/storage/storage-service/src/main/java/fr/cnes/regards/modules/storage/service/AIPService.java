@@ -32,6 +32,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -45,6 +46,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -66,7 +68,11 @@ import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -99,6 +105,8 @@ import fr.cnes.regards.modules.storage.service.job.DeleteDataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
+import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
  * Service to handle {@link AIP} and associated {@link DataFile}s entities from all data straoge systems.<br/>
@@ -217,11 +225,11 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     @Autowired
     private Validator validator;
 
-    //    @Autowired
-    //    private ITemplateService templateService;
-    //
-    //    @Autowired
-    //    private INotificationClient notificationClient;
+    @Autowired
+    private ITemplateService templateService;
+
+    @Autowired
+    private INotificationClient notificationClient;
 
     @Value("${spring.application.name}")
     private String applicationName;
@@ -285,8 +293,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // 3. Now lets ask to the strategy to dispatch dataFiles between possible DataStorages
         Multimap<Long, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToStore);
         LOG.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
-                  dataFilesToStore.size(),
-                  storageWorkingSetMap.keySet().size());
+                  dataFilesToStore.size(), storageWorkingSetMap.keySet().size());
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
         checkDispatch(dataFilesToStore, storageWorkingSetMap);
         Set<UUID> jobIds = scheduleStorage(storageWorkingSetMap, true);
@@ -319,7 +326,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Set<DataFile> dataFilesWithAccess = checkLoadFilesAccessRights(dataFiles);
 
         errors.addAll(Sets.difference(dataFiles, dataFilesWithAccess).stream().map(df -> df.getChecksum())
-                              .collect(Collectors.toSet()));
+                .collect(Collectors.toSet()));
 
         Set<DataFile> onlineFiles = Sets.newHashSet();
         Set<DataFile> nearlineFiles = Sets.newHashSet();
@@ -367,10 +374,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         if (pState != null) {
             if (pFrom != null) {
                 if (pTo != null) {
-                    return aipDao.findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(pState,
-                                                                                             pFrom.minusNanos(1),
-                                                                                             pTo.plusSeconds(1),
-                                                                                             pPageable);
+                    return aipDao
+                            .findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(pState, pFrom.minusNanos(1),
+                                                                                        pTo.plusSeconds(1), pPageable);
                 }
                 return aipDao.findAllByStateAndSubmissionDateAfter(pState, pFrom.minusNanos(1), pPageable);
             }
@@ -382,8 +388,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         if (pFrom != null) {
             if (pTo != null) {
                 return aipDao.findAllBySubmissionDateAfterAndLastEventDateBefore(pFrom.minusNanos(1),
-                                                                                 pTo.plusSeconds(1),
-                                                                                 pPageable);
+                                                                                 pTo.plusSeconds(1), pPageable);
             }
             return aipDao.findAllBySubmissionDateAfter(pFrom.minusNanos(1), pPageable);
         }
@@ -450,29 +455,29 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             dataMap.put("dataFiles", notSubSetDataFiles);
             dataMap.put("allocationStrategy", getAllocationStrategyConfiguration());
             // lets use the template service to get our message
-            //            SimpleMailMessage email;
-            //            try {
-            //                email = templateService
-            //                        .writeToEmail(TemplateServiceConfiguration.NOT_DISPATCHED_DATA_FILES_CODE, dataMap);
-            //            } catch (EntityNotFoundException e) {
-            //                throw new RuntimeException(e);
-            //            }
-            //            notifyAdmins("Some file were not associated to a data storage", email.getText(), NotificationType.ERROR);
+            SimpleMailMessage email;
+            try {
+                email = templateService
+                        .writeToEmail(TemplateServiceConfiguration.NOT_DISPATCHED_DATA_FILES_CODE, dataMap);
+            } catch (EntityNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            notifyAdmins("Some file were not associated to a data storage", email.getText(), NotificationType.ERROR);
         }
     }
 
-    //    /**
-    //     * Use the notification module in admin to create a notification for admins
-    //     */
-    //    private void notifyAdmins(String title, String message, NotificationType type) {
-    //        NotificationDTO notif = new NotificationDTO(message,
-    //                                                    Lists.newArrayList(),
-    //                                                    Lists.newArrayList(DefaultRole.ADMIN.name()),
-    //                                                    applicationName,
-    //                                                    title,
-    //                                                    type);
-    //        notificationClient.createNotification(notif);
-    //    }
+    /**
+     * Use the notification module in admin to create a notification for admins
+     */
+    private void notifyAdmins(String title, String message, NotificationType type) {
+        NotificationDTO notif = new NotificationDTO(message,
+                                                    Lists.newArrayList(),
+                                                    Lists.newArrayList(DefaultRole.ADMIN.name()),
+                                                    applicationName,
+                                                    title,
+                                                    type);
+        notificationClient.createNotification(notif);
+    }
 
     /**
      * This method schedules {@link StoreDataFilesJob} or {@link StoreMetadataFilesJob} to storeAndCreate given
@@ -502,10 +507,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     jobsToSchedule
                             .add(new JobInfo(0, parameters, authResolver.getUser(), StoreDataFilesJob.class.getName()));
                 } else {
-                    jobsToSchedule.add(new JobInfo(0,
-                                                   parameters,
-                                                   authResolver.getUser(),
-                                                   StoreMetadataFilesJob.class.getName()));
+                    jobsToSchedule.add(new JobInfo(0, parameters, authResolver.getUser(),
+                            StoreMetadataFilesJob.class.getName()));
                 }
 
             }
@@ -531,8 +534,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         IDataStorage<IWorkingSubset> storage = pluginService.getPlugin(dataStorageConfId);
         LOG.trace("Getting working subsets for data storage of id {}", dataStorageConfId);
         Set<IWorkingSubset> workingSubSets = storage.prepare(dataFilesToSubSet, DataStorageAccessModeEnum.STORE_MODE);
-        LOG.trace("{} data objects were dispatched into {} working subsets",
-                  dataFilesToSubSet.size(),
+        LOG.trace("{} data objects were dispatched into {} working subsets", dataFilesToSubSet.size(),
                   workingSubSets.size());
         // as we are trusty people, we check that the prepare gave us back all DataFiles into the WorkingSubSets
         Set<DataFile> subSetDataFiles = workingSubSets.stream().flatMap(wss -> wss.getDataFiles().stream())
@@ -552,14 +554,14 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             Map<String, Object> dataMap = new HashMap<>();
             dataMap.put("dataFiles", notSubSetDataFiles);
             // lets use the template service to get our message
-            //            SimpleMailMessage email;
-            //            try {
-            //                email = templateService
-            //                        .writeToEmail(TemplateServiceConfiguration.NOT_SUBSETTED_DATA_FILES_CODE, dataMap);
-            //            } catch (EntityNotFoundException e) {
-            //                throw new RuntimeException(e);
-            //            }
-            //            notifyAdmins("Some file were not handled by a data storage", email.getText(), NotificationType.ERROR);
+            SimpleMailMessage email;
+            try {
+                email = templateService
+                        .writeToEmail(TemplateServiceConfiguration.NOT_SUBSETTED_DATA_FILES_CODE, dataMap);
+            } catch (EntityNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            notifyAdmins("Some file were not handled by a data storage", email.getText(), NotificationType.ERROR);
         }
         return workingSubSets;
     }
@@ -583,8 +585,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // System can only handle one active configuration of IAllocationStrategy
         if (activeAllocationStrategies.size() != 1) {
             IllegalStateException e = new IllegalStateException(
-                    "The application needs one and only one active configuration of " + IAllocationStrategy.class
-                            .getName());
+                    "The application needs one and only one active configuration of "
+                            + IAllocationStrategy.class.getName());
             LOG.error(e.getMessage(), e);
             throw e;
         }
@@ -600,8 +602,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // System can only handle one active configuration of IAllocationStrategy
         if (activeSecurityDelegations.size() != 1) {
             IllegalStateException e = new IllegalStateException(
-                    "The application needs one and only one active configuration of " + ISecurityDelegation.class
-                            .getName());
+                    "The application needs one and only one active configuration of "
+                            + ISecurityDelegation.class.getName());
             LOG.error(e.getMessage(), e);
             throw e;
         }
@@ -627,9 +629,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             }
         } catch (ModuleException e) {
             LOG.error(e.getMessage(), e);
-            //            notifyAdmins("Could not schedule metadata storage",
-            //                         "Metadata storage could not be realized because an error occured. Please check the logs",
-            //                         NotificationType.ERROR);
+            notifyAdmins("Could not schedule metadata storage",
+                         "Metadata storage could not be realized because an error occured. Please check the logs",
+                         NotificationType.ERROR);
         }
     }
 
@@ -650,10 +652,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     Files.createDirectories(tenantWorkspace);
                 } catch (IOException e) {
                     LOG.error(e.getMessage(), e);
-                    //                    notifyAdmins("Could not create workspace directoty",
-                    //                                 "The following directory and/or its parent could not be created: " + tenantWorkspace
-                    //                                         .toString(),
-                    //                                 NotificationType.FATAL);
+                    notifyAdmins("Could not create workspace directoty",
+                                 "The following directory and/or its parent could not be created: " + tenantWorkspace
+                                         .toString(),
+                                 NotificationType.FATAL);
                 }
             }
             Set<DataFile> metadataToStore = Sets.newHashSet();
@@ -799,9 +801,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Map<String, Object> additionalProvenanceInfoMap;
         if ((additionalProvenanceInfoMap = updatedPdi.getProvenanceInformation().getAdditional()) != null) {
             for (Map.Entry<String, Object> additionalProvenanceEntry : additionalProvenanceInfoMap.entrySet()) {
-                updatingBuilder.getPDIBuilder().addAdditionalProvenanceInformation(additionalProvenanceEntry.getKey(),
-                                                                                   additionalProvenanceEntry
-                                                                                           .getValue());
+                updatingBuilder.getPDIBuilder()
+                        .addAdditionalProvenanceInformation(additionalProvenanceEntry.getKey(),
+                                                            additionalProvenanceEntry.getValue());
             }
         }
         // third lets handle those "special" provenance information
@@ -819,8 +821,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             for (Map.Entry<String, Object> contextEntry : contextInformationMap.entrySet()) {
                 // tags have their specific handling
                 if (!contextEntry.getKey().equals(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY)) {
-                    updatingBuilder.getPDIBuilder()
-                            .addContextInformation(contextEntry.getKey(), contextEntry.getValue());
+                    updatingBuilder.getPDIBuilder().addContextInformation(contextEntry.getKey(),
+                                                                          contextEntry.getValue());
                 }
             }
         }
@@ -841,11 +843,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             }
         }
         // Access Right information
-        updatingBuilder.getPDIBuilder().setAccessRightInformation(updatedPdi.getAccessRightInformation().getLicence(),
-                                                                  updatedPdi.getAccessRightInformation()
-                                                                          .getDataRights(),
-                                                                  updatedPdi.getAccessRightInformation()
-                                                                          .getPublicReleaseDate());
+        updatingBuilder.getPDIBuilder()
+                .setAccessRightInformation(updatedPdi.getAccessRightInformation().getLicence(),
+                                           updatedPdi.getAccessRightInformation().getDataRights(),
+                                           updatedPdi.getAccessRightInformation().getPublicReleaseDate());
         // descriptive information
         Map<String, Object> descriptiveInformationMap;
         if ((descriptiveInformationMap = updated.getProperties().getDescriptiveInformation()) != null) {
@@ -924,8 +925,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
         Multimap<Long, DataFile> deletionWorkingSetMap = allocationStrategy.dispatch(dataFilesToDelete);
         LOG.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
-                  dataFilesToDelete.size(),
-                  deletionWorkingSetMap.keySet().size());
+                  dataFilesToDelete.size(), deletionWorkingSetMap.keySet().size());
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
         checkDispatch(dataFilesToDelete, deletionWorkingSetMap);
         Set<JobInfo> jobsToSchedule = Sets.newHashSet();
@@ -981,23 +981,16 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             String fileChecksum = ChecksumUtils.computeHexChecksum(is, checksumAlgorithm);
             if (fileChecksum.equals(checksum)) {
                 URL urlToMetadata = new URL("file", "localhost", metadataLocation.toString());
-                metadataAipFile = new DataFile(urlToMetadata,
-                                               checksum,
-                                               checksumAlgorithm,
-                                               DataType.AIP,
-                                               urlToMetadata.openConnection().getContentLengthLong(),
-                                               new MimeType("application", "json"),
-                                               aip,
-                                               aip.getId().toString() + JSON_FILE_EXT);
+                metadataAipFile = new DataFile(urlToMetadata, checksum, checksumAlgorithm, DataType.AIP,
+                        urlToMetadata.openConnection().getContentLengthLong(), new MimeType("application", "json"), aip,
+                        aip.getId().toString() + JSON_FILE_EXT);
             } else {
-                LOG.error(String.format(
-                        "Storage of AIP metadata(%s) to the workspace(%s) failed. Its checksum once stored do not match with expected",
-                        aip.getId().toString(),
-                        tenantWorkspace));
-                throw new FileCorruptedException(String.format(
-                        "File got corrupted while storing it into the workspace. Checksum before(%s) and after (%s) are different",
-                        checksum,
-                        fileChecksum));
+                LOG.error(String
+                        .format("Storage of AIP metadata(%s) to the workspace(%s) failed. Its checksum once stored do not match with expected",
+                                aip.getId().toString(), tenantWorkspace));
+                throw new FileCorruptedException(String
+                        .format("File got corrupted while storing it into the workspace. Checksum before(%s) and after (%s) are different",
+                                checksum, fileChecksum));
             }
         } catch (Exception e) {
             // Delete written file
@@ -1027,10 +1020,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     Files.createDirectories(tenantWorkspace);
                 } catch (IOException e) {
                     LOG.error(e.getMessage(), e);
-                    //                    notifyAdmins("Could not create workspace directoty",
-                    //                                 "The following directory and/or its parent could not be created: " + tenantWorkspace
-                    //                                         .toString(),
-                    //                                 NotificationType.FATAL);
+                    notifyAdmins("Could not create workspace directoty",
+                                 "The following directory and/or its parent could not be created: " + tenantWorkspace
+                                         .toString(),
+                                 NotificationType.FATAL);
                 }
             }
             LOG.debug(String.format("[METADATA UPDATE DAEMON] Starting to prepare update jobs for tenant %s", tenant));
@@ -1078,10 +1071,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     publisher.publish(new AIPEvent(updatedAip));
                 }
             } else {
-                String message = String.format("Unable to update AIP metadata for AIP %s as there no existing one",
-                                               updatedAip.getId());
+                String message = String.format("Unable to update AIP metadata for AIP %s as there no existing one", updatedAip.getId());
                 LOG.warn(message);
-                //                notifyAdmins("AIP metadata could not be updated", message, NotificationType.INFO);
+                notifyAdmins("AIP metadata could not be updated", message, NotificationType.INFO);
             }
         }
         return result;
@@ -1144,9 +1136,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConfId));
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
                 parameters.add(new JobParameter(UpdateDataFilesJob.OLD_DATA_FILES_PARAMETER_NAME,
-                                                oldOneCorrespondingToWorkingSubset
-                                                        .toArray(new DataFile[oldOneCorrespondingToWorkingSubset
-                                                                .size()])));
+                        oldOneCorrespondingToWorkingSubset
+                                .toArray(new DataFile[oldOneCorrespondingToWorkingSubset.size()])));
                 jobsToSchedule
                         .add(new JobInfo(0, parameters, authResolver.getUser(), UpdateDataFilesJob.class.getName()));
             }
