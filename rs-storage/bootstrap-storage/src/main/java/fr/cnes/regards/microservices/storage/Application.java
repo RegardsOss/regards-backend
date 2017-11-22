@@ -5,15 +5,13 @@ package fr.cnes.regards.microservices.storage;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 
 import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
-import fr.cnes.regards.framework.security.utils.endpoint.IProjectAdminAccessVoter;
 
 /**
  *
  * Start microservice storage
- * 
+ *
  * @author Sylvain Vissiere-Guerinet
  *
  */
