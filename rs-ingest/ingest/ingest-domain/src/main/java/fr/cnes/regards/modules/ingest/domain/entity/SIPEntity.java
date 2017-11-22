@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.ingest.domain.entity;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -33,6 +35,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -82,7 +85,8 @@ public class SIPEntity {
     private String sipId;
 
     /**
-     * The SIP internal identifier (generated URN). If two SIP are ingested with same id, this idIp will distinguish them as 2 different
+     * The SIP internal identifier (generated URN). If two SIP are ingested with same id, this idIp will distinguish
+     * them as 2 different
      * versions
      */
     @NotBlank
@@ -108,8 +112,8 @@ public class SIPEntity {
     /**
      * Optional message when SIP is rejected
      */
-    @Column(name = "rejection_reason", length = 256)
-    private String reasonForRejection;
+    @Transient
+    private List<String> reasonsForRejection;
 
     /**
      * Real SIP content checksum
@@ -211,12 +215,11 @@ public class SIPEntity {
         this.version = version;
     }
 
-    public String getReasonForRejection() {
-        return reasonForRejection;
-    }
-
-    public void setReasonForRejection(String reasonForRejection) {
-        this.reasonForRejection = reasonForRejection;
+    public List<String> getReasonsForRejection() {
+        if (reasonsForRejection == null) {
+            reasonsForRejection = new ArrayList<>();
+        }
+        return reasonsForRejection;
     }
 
     public String getOwner() {

@@ -19,31 +19,42 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
 
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPEntityBuilder;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
@@ -62,6 +73,8 @@ public class IngestService implements IIngestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestService.class);
 
     public static final String MD5_ALGORITHM = "MD5";
+
+    public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -84,14 +97,69 @@ public class IngestService implements IIngestService {
     @Autowired
     private IPublisher publisher;
 
+    @Autowired
+    private IIngestProcessingChainRepository ingestChainRepository;
+
+    @Autowired
+    private Validator validator;
+
     @Override
     public Collection<SIPEntity> ingest(SIPCollection sips) throws ModuleException {
         Collection<SIPEntity> entities = new ArrayList<>();
+
+        // Validate metadata
         IngestMetadata metadata = sips.getMetadata();
+        validateIngestMetadata(metadata);
+
+        // Process SIPs
         for (SIP sip : sips.getFeatures()) {
             entities.add(store(sip, metadata));
         }
+
         return entities;
+    }
+
+    /**
+     * Validate {@link IngestMetadata}
+     * @param metadata {@link IngestMetadata}
+     * @throws EntityInvalidException if invalid!
+     */
+    private void validateIngestMetadata(IngestMetadata metadata) throws EntityInvalidException {
+        // Check metadata not null
+        if (metadata == null) {
+            String message = "Ingest metadata is required in SIP submission request.";
+            LOGGER.error(message);
+            // HTTP 422 in GlobalControllerAdvice
+            throw new EntityInvalidException(message);
+        }
+        // Check metadata processing chain name not null
+        if (metadata.getProcessing() == null) {
+            String message = "Ingest processing chain name is required in SIP submission request.";
+            LOGGER.error(message);
+            // HTTP 422 in GlobalControllerAdvice
+            throw new EntityInvalidException(message);
+        }
+        // Check metadata processing chain name exists
+        Optional<IngestProcessingChain> ipc = ingestChainRepository.findOneByName(metadata.getProcessing());
+        if (!ipc.isPresent()) {
+            String message = "Ingest processing chain must exists. Please, configure the chain before SIP submission.";
+            LOGGER.error(message);
+            // HTTP 422 in GlobalControllerAdvice
+            throw new EntityInvalidException(message);
+        }
+
+    }
+
+    @Override
+    public Collection<SIPEntity> ingest(InputStream input) throws ModuleException {
+        Reader json = new InputStreamReader(input, DEFAULT_CHARSET);
+        try {
+            SIPCollection sips = gson.fromJson(json, SIPCollection.class);
+            return ingest(sips);
+        } catch (Exception e) {
+            LOGGER.error("Cannot read JSON file containing SIP collection", e);
+            throw new EntityInvalidException(e.getMessage());
+        }
     }
 
     @Override
@@ -143,6 +211,21 @@ public class IngestService implements IIngestService {
         SIPEntity entity = SIPEntityBuilder.build(runtimeTenantResolver.getTenant(), session, sip,
                                                   metadata.getProcessing(), authResolver.getUser(), version,
                                                   SIPState.CREATED, EntityType.DATA);
+
+        // Validate SIP
+        Errors errors = new MapBindingResult(new HashMap<>(), "sip");
+        validator.validate(sip, errors);
+        if (errors.hasErrors()) {
+            // Invalid SIP
+            entity.setState(SIPState.REJECTED);
+            errors.getAllErrors().forEach(error -> {
+                entity.getReasonsForRejection().add(error.getDefaultMessage());
+                LOGGER.warn("SIP {} error : {}", entity.getSipId(), error.toString());
+            });
+            LOGGER.warn("SIP {} rejected cause invalid", entity.getSipId());
+            return entity;
+        }
+
         try {
             // Compute checksum
             String checksum = SIPEntityBuilder.calculateChecksum(gson, sip, MD5_ALGORITHM);
@@ -151,7 +234,7 @@ public class IngestService implements IIngestService {
             // Prevent SIP from being ingested twice
             if (sipRepository.isAlreadyIngested(checksum)) {
                 entity.setState(SIPState.REJECTED);
-                entity.setReasonForRejection("SIP already submitted");
+                entity.getReasonsForRejection().add("SIP already submitted");
                 LOGGER.warn("SIP {} rejected cause already submitted", entity.getSipId());
             } else {
                 // Entity is persisted only if all properties properly set
@@ -162,10 +245,10 @@ public class IngestService implements IIngestService {
             }
 
         } catch (NoSuchAlgorithmException | IOException e) {
-            LOGGER.error("Cannot compute checksum for sip identified by {}", sip.getId());
+            LOGGER.error("Cannot compute checksum for SIP identified by {}", sip.getId());
             LOGGER.error("Exception occurs!", e);
             entity.setState(SIPState.REJECTED);
-            entity.setReasonForRejection("Not able to generate internal SIP checksum");
+            entity.getReasonsForRejection().add("Not able to generate internal SIP checksum");
         }
 
         return entity;

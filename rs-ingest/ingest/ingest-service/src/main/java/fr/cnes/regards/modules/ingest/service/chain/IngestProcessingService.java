@@ -142,7 +142,8 @@ public class IngestProcessingService implements IIngestProcessingService {
     @Override
     public void ingest() {
         // Retrieve all created sips
-        // In order to avoid loading all rawSip in memory (can be huge), retrieve only the needed id and processing parameters of SIPEntity
+        // In order to avoid loading all rawSip in memory (can be huge), retrieve only the needed id and processing
+        // parameters of SIPEntity
         List<Object[]> sips = sipRepository.findIdAndProcessingByState(SIPState.CREATED);
         sips.forEach(sip -> this.scheduleIngestProcessingJob((Long) sip[0], (String) sip[1]));
     }
@@ -226,6 +227,12 @@ public class IngestProcessingService implements IIngestProcessingService {
         } else {
             throw new EntityNotFoundException(name, IngestProcessingChain.class);
         }
+    }
+
+    @Override
+    public boolean existsChain(String name) {
+        Optional<IngestProcessingChain> oChain = ingestChainRepository.findOneByName(name);
+        return oChain.isPresent();
     }
 
     /**

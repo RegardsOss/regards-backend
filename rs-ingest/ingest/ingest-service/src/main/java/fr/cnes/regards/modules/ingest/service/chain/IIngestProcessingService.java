@@ -101,6 +101,13 @@ public interface IIngestProcessingService {
     IngestProcessingChain getChain(String name) throws ModuleException;
 
     /**
+     * Check chain with specified name exists
+     * @param name chain name
+     * @return true is exists
+     */
+    boolean existsChain(String name);
+
+    /**
      * Initialize default configuration
      */
     void initDefaultServiceConfiguration() throws ModuleException;

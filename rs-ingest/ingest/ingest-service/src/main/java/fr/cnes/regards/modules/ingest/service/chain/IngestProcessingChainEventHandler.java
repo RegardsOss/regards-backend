@@ -39,12 +39,12 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
  * @author Sébastien Binda
  */
 @Component
-public class IngestPorcessingChainEventHandler implements ApplicationListener<ApplicationReadyEvent> {
+public class IngestProcessingChainEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(IngestPorcessingChainEventHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestProcessingChainEventHandler.class);
 
     @Autowired
     private IIngestProcessingService ingestProcessingService;
@@ -66,7 +66,7 @@ public class IngestPorcessingChainEventHandler implements ApplicationListener<Ap
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
-        LOG.info("IngestPorcessingChainEventHandler subscribing to new TenantConnectionReady events.");
+        LOGGER.info("IngestPorcessingChainEventHandler subscribing to new TenantConnectionReady events.");
         instanceSubscriber.subscribeTo(TenantConnectionReady.class, new IngestPorcessingChainReadyEventHandler());
 
         // Multitenant version of the microservice.
@@ -75,7 +75,7 @@ public class IngestPorcessingChainEventHandler implements ApplicationListener<Ap
             try {
                 ingestProcessingService.initDefaultServiceConfiguration();
             } catch (ModuleException e) {
-                LOG.error("Error initializing ingest configuration for tenant {}. Error : {}", tenant, e.getMessage(),
+                LOGGER.error("Error initializing ingest configuration for tenant {}. Error : {}", tenant, e.getMessage(),
                           e);
             } finally {
                 runtimeTenantResolver.clearTenant();
@@ -93,14 +93,14 @@ public class IngestPorcessingChainEventHandler implements ApplicationListener<Ap
         @Override
         public void handle(TenantWrapper<TenantConnectionReady> wrapper) {
             try {
-                LOG.info("New tenant ready, initializing ingest processing configuration.",
+                LOGGER.info("New tenant ready, initializing ingest processing configuration.",
                          wrapper.getContent().getTenant());
                 String tenant = wrapper.getContent().getTenant();
                 runtimeTenantResolver.forceTenant(tenant);
                 ingestProcessingService.initDefaultServiceConfiguration();
-                LOG.info("New tenant ready, ingest processing configuration initialized successfully");
+                LOGGER.info("New tenant ready, ingest processing configuration initialized successfully");
             } catch (ModuleException e) {
-                LOG.error("Error during default ingest chain initialization for tenant {}. error : {}",
+                LOGGER.error("Error during default ingest chain initialization for tenant {}. error : {}",
                           wrapper.getContent().getTenant(), e.getMessage(), e);
             } finally {
                 runtimeTenantResolver.clearTenant();

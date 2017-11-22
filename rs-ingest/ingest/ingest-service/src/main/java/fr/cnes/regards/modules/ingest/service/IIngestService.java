@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import java.io.InputStream;
 import java.util.Collection;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -39,6 +40,14 @@ public interface IIngestService {
      * @throws ModuleException if error occurs!
      */
     Collection<SIPEntity> ingest(SIPCollection sips) throws ModuleException;
+
+    /**
+     * Store SIP for further asynchronous processing
+     * @param input JSON file containing a SIP collection
+     * @return internal storage of SIP
+     * @throws ModuleException if error occurs!
+     */
+    Collection<SIPEntity> ingest(InputStream input) throws ModuleException;
 
     /**
      * Retry to store a SIP already submitted previously.

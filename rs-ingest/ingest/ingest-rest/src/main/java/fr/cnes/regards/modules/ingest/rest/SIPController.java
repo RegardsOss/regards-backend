@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-
-import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.collect.Sets;
 
@@ -77,6 +77,8 @@ public class SIPController implements IResourceController<SIPEntity> {
 
     public static final String RETRY_PATH = "/retry";
 
+    public static final String IMPORT_PATH = "/import";
+
     @Autowired
     private IIngestService ingestService;
 
@@ -96,12 +98,38 @@ public class SIPController implements IResourceController<SIPEntity> {
      * @return {@link SIPEntity} collection
      * @throws ModuleException if error occurs!
      */
+    // TODO change response
     @ResourceAccess(description = "SIP collections submission (bulk request)")
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
-    public ResponseEntity<Collection<SIPEntity>> ingest(@Valid @RequestBody SIPCollection sips) throws ModuleException {
+    public ResponseEntity<Collection<SIPEntity>> ingest(@RequestBody SIPCollection sips) throws ModuleException {
         Collection<SIPEntity> sipEntities = ingestService.ingest(sips);
         HttpStatus status = computeStatus(sipEntities);
         return ResponseEntity.status(status).body(sipEntities);
+    }
+
+    /**
+     * Import a SIP collection by file
+     *
+     * @param file
+     *            model to import
+     * @return nothing
+     * @throws ModuleException
+     *             if error occurs!
+     */
+    // TODO change response
+    @ResourceAccess(description = "SIP collection submission using multipart request")
+    @RequestMapping(method = RequestMethod.POST, value = IMPORT_PATH)
+    public ResponseEntity<Collection<SIPEntity>> ingestFile(@RequestParam("file") MultipartFile file)
+            throws ModuleException {
+        try {
+            Collection<SIPEntity> sipEntities = ingestService.ingest(file.getInputStream());
+            HttpStatus status = computeStatus(sipEntities);
+            return ResponseEntity.status(status).body(sipEntities);
+        } catch (IOException e) {
+            final String message = "Error with file stream while importing model.";
+            LOGGER.error(message, e);
+            throw new ModuleException(e);
+        }
     }
 
     @ResourceAccess(description = "Search for SIPEntities with optional criterion.")
@@ -167,7 +195,7 @@ public class SIPController implements IResourceController<SIPEntity> {
         if (hasCreated && hasRejected) {
             status = HttpStatus.PARTIAL_CONTENT; // 206
         } else if (hasRejected) {
-            status = HttpStatus.CONFLICT; // 409
+            status = HttpStatus.UNPROCESSABLE_ENTITY; // 422
         } else {
             status = HttpStatus.CREATED; // 201
         }

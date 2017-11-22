@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.domain;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
@@ -34,6 +35,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 public class SIPCollection extends AbstractFeatureCollection<SIP> {
 
     @Valid
+    @NotNull
     private final IngestMetadata metadata;
 
     public SIPCollection() {

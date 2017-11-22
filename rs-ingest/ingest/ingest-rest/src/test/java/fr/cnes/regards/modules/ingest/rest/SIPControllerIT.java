@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.hamcrest.Matchers;
@@ -37,6 +38,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
+import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingService;
 
 /**
  *
@@ -58,10 +60,11 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     @Requirement("REGARDS_DSL_ING_PRO_110")
-    @Purpose("Ingest SIP")
+    @Purpose("Ingest valid SIPs")
     public void ingestSips() {
 
-        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder("processingChain", "sessionId");
+        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
+                IngestProcessingService.DEFAULT_INGEST_CHAIN_LABEL, "sessionId");
 
         // SIP 1
         SIPBuilder sipBuilder = new SIPBuilder("SIP_001");
@@ -97,6 +100,79 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(1)));
         performDefaultGet(SIPSessionController.TYPE_MAPPING, requestBuilderCustomizer, "Error retrieving SIP sessions");
-
     }
+
+    @Test
+    @Requirement("REGARDS_DSL_ING_PRO_110")
+    @Purpose("Ingest valid and invalid SIPs")
+    public void ingestInvalidSips() {
+
+        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
+                IngestProcessingService.DEFAULT_INGEST_CHAIN_LABEL, "sessionId");
+
+        // SIP 1
+        SIPBuilder sipBuilder = new SIPBuilder("SIP_001");
+        sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "FAKE_ALGO",
+                                                                "sdsdfm1211vd");
+        sipBuilder.addContentInformation();
+        collectionBuilder.add(sipBuilder.build());
+
+        // SIP 2
+        sipBuilder = new SIPBuilder("SIP_002");
+        sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data2.fits"),
+                                                                "sdsdfm1211vsdfdsfd");
+        sipBuilder.addContentInformation();
+        collectionBuilder.add(sipBuilder.build());
+
+        // Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isPartialContent());
+        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE,
+                                                        GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        performDefaultPost(SIPController.TYPE_MAPPING, collectionBuilder.build(), requestBuilderCustomizer,
+                           "Partial valid collection should be submitted.");
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ING_PRO_110")
+    @Purpose("Ingest valid SIPs with multipart request")
+    public void importValidSips() {
+        final Path filePath = Paths.get("src", "test", "resources", "sipCollection.json");
+
+        // Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+
+        performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH, filePath,
+                                 requestBuilderCustomizer, "Should be able to import valid SIP collection");
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ING_PRO_110")
+    @Purpose("Ingest valid and invalid SIPs with multipart request")
+    public void importPartialInvalidSips() {
+        final Path filePath = Paths.get("src", "test", "resources", "invalidSipCollection.json");
+
+        // Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isPartialContent());
+
+        performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH, filePath,
+                                 requestBuilderCustomizer, "Should be able to import a partial valid SIP collection");
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ING_PRO_110")
+    @Purpose("Ingest invalid SIPs with multipart request")
+    public void importAllInvalidSips() {
+        final Path filePath = Paths.get("src", "test", "resources", "allInvalidSipCollection.json");
+
+        // Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
+
+        performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH, filePath,
+                                 requestBuilderCustomizer, "Should be able to import a partial valid SIP collection");
+    }
+
 }

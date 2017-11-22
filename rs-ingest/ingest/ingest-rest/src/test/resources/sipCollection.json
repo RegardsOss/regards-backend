@@ -1,0 +1,34 @@
+{
+    "type": "FeatureCollection",
+    "metadata": {
+        "processing": "DefaultProcessingChain",
+        "session": "sampleSession"
+    },
+    "features": [
+        {
+            "type": "Feature",
+            "id": "sipId1",
+            "ipType": "DATA",
+            "geometry": null,
+            "properties": {
+                "contentInformations": [
+                    {
+                        "dataObject": {
+                            "regardsDataType": "RAWDATA",
+                            "url": "file:/home/test.xml",
+                            "checksum": "sdfsd455sdfdsgdfg4dgdfg",
+                            "algorithm": "MD5"
+                        }
+                    }
+                ],
+                "pdi": {
+                    "provenanceInformation": {
+                        "history": []
+                    },
+                    "accessRightInformation": {}
+                },
+                "descriptiveInformation": {}
+            }
+        }
+    ]
+}

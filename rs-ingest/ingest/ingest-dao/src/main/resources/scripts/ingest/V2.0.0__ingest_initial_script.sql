@@ -23,7 +23,6 @@ CREATE
 			processing VARCHAR(100),
 			session varchar(255),
 			owner VARCHAR(128),
-			rejection_reason VARCHAR(256),
 			rawsip jsonb,
 			sipId VARCHAR(100),
 			state VARCHAR(255),
