@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.modules.templates.service;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,8 +111,8 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Autowired
-    private Template emailAccountValidationTemplate;
+//    @Autowired
+//    private Template emailAccountValidationTemplate;
 
     @Autowired
     private Template passwordResetTemplate;
@@ -123,29 +123,33 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private Template accountRefusedTemplate;
 
-    @Autowired
-    private Template projectUserActivatedTemplate;
+//    @Autowired
+//    private Template projectUserActivatedTemplate;
+//
+//    @Autowired
+//    private Template projectUserInactivatedTemplate;
+//
+//    @Autowired
+//    private Template orderCreatedTemplate;
+//
+//    @Autowired
+//    private Template asideOrdersNotificationTemplate;
 
     @Autowired
-    private Template projectUserInactivatedTemplate;
-
-    @Autowired
-    private Template orderCreatedTemplate;
-
-    @Autowired
-    private Template asideOrdersNotificationTemplate;
-
-    @Value("${spring.mail.sender.no.reply:regards@noreply.fr}")
-    private String noReplyAdress;
-
-    @Value("${spring.application.name}")
-    private String microserviceName;
+    @Resource(name = TemplateServiceConfiguration.TEMPLATES)
+    private List<Template> templates;
 
     /**
      * AMQP instance message subscriber
      */
     @Autowired
     private IInstanceSubscriber instanceSubscriber;
+
+    @Value("${spring.mail.sender.no.reply:regards@noreply.fr}")
+    private String noReplyAdress;
+
+    @Value("${spring.application.name}")
+    private String microserviceName;
 
     public TemplateService() throws IOException {
         configureTemplateLoader();
@@ -171,14 +175,18 @@ public class TemplateService implements ITemplateService {
     private void initDefaultTemplates() {
         // Look into classpath (via TemplateServiceConfiguration) if some templates are present. If yes, check if they
         // exist into Database, if not, create them
-        checkAndSaveIfNecessary(passwordResetTemplate);
-        checkAndSaveIfNecessary(accountUnlockTemplate);
-        checkAndSaveIfNecessary(emailAccountValidationTemplate);
-        checkAndSaveIfNecessary(accountRefusedTemplate);
-        checkAndSaveIfNecessary(projectUserActivatedTemplate);
-        checkAndSaveIfNecessary(projectUserInactivatedTemplate);
-        checkAndSaveIfNecessary(orderCreatedTemplate);
-        checkAndSaveIfNecessary(asideOrdersNotificationTemplate);
+//        checkAndSaveIfNecessary(passwordResetTemplate);
+//        checkAndSaveIfNecessary(accountUnlockTemplate);
+//        checkAndSaveIfNecessary(emailAccountValidationTemplate);
+//        checkAndSaveIfNecessary(accountRefusedTemplate);
+//        checkAndSaveIfNecessary(projectUserActivatedTemplate);
+//        checkAndSaveIfNecessary(projectUserInactivatedTemplate);
+//        checkAndSaveIfNecessary(orderCreatedTemplate);
+//        checkAndSaveIfNecessary(asideOrdersNotificationTemplate);
+        for(Template template: templates) {
+            checkAndSaveIfNecessary(template);
+        }
+
     }
 
     private void checkAndSaveIfNecessary(Template template) {

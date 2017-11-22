@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.templates.service;
 
+import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,13 +26,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import fr.cnes.regards.modules.templates.domain.Template;
+import fr.cnes.regards.modules.templates.domain.TemplatePathSubsject;
 
 /**
  * @author Xavier-Alexandre Brochard
@@ -81,6 +86,15 @@ public class TemplateServiceConfiguration {
     public static final String ASIDE_ORDERS_NOTIFICATION_TEMPLATE_CODE = "ASIDE_ORDERS_NOTIFICATION_TEMPLATE";
 
     /**
+     * The not subsetted data files template code
+     */
+    public static final String NOT_DISPATCHED_DATA_FILES_CODE = "NOT_DISPATCHED_DATA_FILES";
+
+    public static final String NOT_SUBSETTED_DATA_FILES_CODE = "NOT_SUBSETTED_DATA_FILES";
+
+    public static final String TEMPLATES = "templates";
+
+    /**
      * The verification email template as html
      */
     private static final String EMAIL_ACCOUNT_VALIDATION_TEMPLATE = "template/email-account-validation-template.html";
@@ -121,20 +135,34 @@ public class TemplateServiceConfiguration {
      */
     private static final String ASIDE_ORDERS_NOTIFICATION_TEMPLATE = "template/aside-orders-notification-template.html";
 
-    /**
-     * Declare the template as bean
-     * @return the template
-     */
-    @Bean
-    public Template emailAccountValidationTemplate() throws IOException {
-        ClassPathResource resource = new ClassPathResource(EMAIL_ACCOUNT_VALIDATION_TEMPLATE);
-        try (InputStream is = resource.getInputStream()) {
-            final String text = inputStreamToString(is);
-            final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(EMAIL_ACCOUNT_VALIDATION_TEMPLATE_CODE, text, dataStructure, "Account Confirmation");
-        } catch (FileNotFoundException fnfe) {
-            return null;
-        }
+    private static final String NOT_DISPATCHED_DATA_FILES_TEMPLATE = "template/not_dispatched_data_files_template.html";
+
+    private static final String NOT_SUBSETTED_DATA_FILES_TEMPLATE = "template/not_subsetted_data_files_template.html";
+
+    private static final Map<String, TemplatePathSubsject> templateCodePathMap = Maps.newHashMap();
+
+    private static void addTemplate(String templateCode, String templatePath, String emailSubject) {
+        templateCodePathMap.put(templateCode, new TemplatePathSubsject(templatePath, emailSubject));
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        templateCodePathMap.put(EMAIL_ACCOUNT_VALIDATION_TEMPLATE_CODE,
+                                new TemplatePathSubsject(EMAIL_ACCOUNT_VALIDATION_TEMPLATE, "Account Confirmation"));
+        templateCodePathMap.put(PROJECT_USER_ACTIVATED_TEMPLATE_CODE,
+                                new TemplatePathSubsject(PROJECT_USER_ACTIVATED_TEMPLATE, "Access re-activated"));
+        templateCodePathMap.put(PROJECT_USER_INACTIVATED_TEMPLATE_CODE,
+                                new TemplatePathSubsject(PROJECT_USER_INACTIVATED_TEMPLATE, "Access deactivated"));
+        templateCodePathMap
+                .put(ORDER_CREATED_TEMPLATE_CODE, new TemplatePathSubsject(ORDER_CREATED_TEMPLATE, "Order created"));
+        templateCodePathMap.put(ASIDE_ORDERS_NOTIFICATION_TEMPLATE_CODE,
+                                new TemplatePathSubsject(ASIDE_ORDERS_NOTIFICATION_TEMPLATE, "Orders waiting"));
+        templateCodePathMap.put(NOT_DISPATCHED_DATA_FILES_CODE,
+                                new TemplatePathSubsject(NOT_DISPATCHED_DATA_FILES_TEMPLATE,
+                                                         "Files not associated to any data storages"));
+        templateCodePathMap.put(NOT_SUBSETTED_DATA_FILES_CODE,
+                                new TemplatePathSubsject(NOT_SUBSETTED_DATA_FILES_TEMPLATE,
+                                                         "Files could not be handled by their data storage"));
     }
 
     /**
@@ -185,60 +213,23 @@ public class TemplateServiceConfiguration {
         }
     }
 
-    /**
-     * Declare the template as bean
-     * @return the template
-     */
-    @Bean
-    public Template projectUserActivatedTemplate() throws IOException {
-        ClassPathResource resource = new ClassPathResource(PROJECT_USER_ACTIVATED_TEMPLATE);
-        try (InputStream is = resource.getInputStream()) {
-            final String text = inputStreamToString(is);
-            final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(PROJECT_USER_ACTIVATED_TEMPLATE_CODE, text, dataStructure, "Access re-activated");
-        } catch (FileNotFoundException fnfe) {
-            return null;
+    @Bean(name = TEMPLATES)
+    public List<Template> templates() throws IOException {
+        List<Template> templates = Lists.newArrayList();
+        for (Map.Entry<String, TemplatePathSubsject> templateCodePathEntry : templateCodePathMap.entrySet()) {
+            ClassPathResource resource = new ClassPathResource(templateCodePathEntry.getValue().getTemplatePath());
+            try (InputStream is = resource.getInputStream()) {
+                final String text = inputStreamToString(is);
+                final Map<String, String> dataStructure = new HashMap<>();
+                templates.add(new Template(templateCodePathEntry.getKey(),
+                                           text,
+                                           dataStructure,
+                                           templateCodePathEntry.getValue().getEmailSubject()));
+            } catch (FileNotFoundException fnfe) {
+                // due to code construction, it happens and it is not an error or an issue
+            }
         }
-    }
-
-    /**
-     * Declare the template as bean
-     * @return the template
-     */
-    @Bean
-    public Template projectUserInactivatedTemplate() throws IOException {
-        ClassPathResource resource = new ClassPathResource(PROJECT_USER_INACTIVATED_TEMPLATE);
-        try (InputStream is = resource.getInputStream()) {
-            final String text = inputStreamToString(is);
-            final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(PROJECT_USER_INACTIVATED_TEMPLATE_CODE, text, dataStructure, "Access deactivated");
-        } catch (FileNotFoundException fnfe) {
-            return null;
-        }
-    }
-
-    @Bean
-    public Template orderCreatedTemplate() throws IOException {
-        ClassPathResource resource = new ClassPathResource(ORDER_CREATED_TEMPLATE);
-        try (InputStream is = resource.getInputStream()) {
-            final String text = inputStreamToString(is);
-            final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(ORDER_CREATED_TEMPLATE_CODE, text, dataStructure, "Order created");
-        } catch (FileNotFoundException fnfe) {
-            return null;
-        }
-    }
-
-    @Bean
-    public Template asideOrdersNotificationTemplate() throws IOException {
-        ClassPathResource resource = new ClassPathResource(ASIDE_ORDERS_NOTIFICATION_TEMPLATE);
-        try (InputStream is = resource.getInputStream()) {
-            final String text = inputStreamToString(is);
-            final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(ASIDE_ORDERS_NOTIFICATION_TEMPLATE_CODE, text, dataStructure, "Orders waiting");
-        } catch (FileNotFoundException fnfe) {
-            return null;
-        }
+        return templates;
     }
 
     /**
