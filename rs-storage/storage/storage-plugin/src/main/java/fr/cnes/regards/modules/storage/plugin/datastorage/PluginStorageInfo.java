@@ -17,7 +17,11 @@ public class PluginStorageInfo {
 
     private String label;
 
-    private final Set<DataStorageInfo> storageInfo = Sets.newHashSet();
+    private String totalSize;
+
+    private String usedSize;
+
+    private Double ratio;
 
     public PluginStorageInfo(Long confId, String description, String label) {
         this.confId = confId;
@@ -49,7 +53,27 @@ public class PluginStorageInfo {
         this.label = label;
     }
 
-    public Set<DataStorageInfo> getStorageInfo() {
-        return storageInfo;
+    public String getTotalSize() {
+        return totalSize;
+    }
+
+    public void setTotalSize(String totalSize) {
+        this.totalSize = totalSize;
+    }
+
+    public String getUsedSize() {
+        return usedSize;
+    }
+
+    public void setUsedSize(String usedSize) {
+        this.usedSize = usedSize;
+    }
+
+    public Double getRatio() {
+        return ratio;
+    }
+
+    public void setRatio(Double ratio) {
+        this.ratio = ratio;
     }
 }

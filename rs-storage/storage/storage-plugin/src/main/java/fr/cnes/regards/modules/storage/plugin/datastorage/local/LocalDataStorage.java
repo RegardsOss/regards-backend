@@ -42,9 +42,9 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
 
     public static final String BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME = "Storage_URL";
 
-    public static final String LOCAL_STORAGE_OCCUPIED_SPACE_THRESHOLD = "Local_Occupied_Space_Threshold";
+    public static final String LOCAL_STORAGE_DELETE_OPTION = "Local_Delete_Option";
 
-    private static final String LOCAL_STORAGE_DELETE_OPTION = "Local_Delete_Option";
+    public static final String LOCAL_STORAGE_TOTAL_SPACE = "Local_Total_Space";
 
     @Autowired
     private Gson gson;
@@ -55,19 +55,14 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     @PluginParameter(name = LOCAL_STORAGE_DELETE_OPTION, defaultValue = "true")
     private Boolean canDelete;
 
-    @PluginParameter(name = LOCAL_STORAGE_OCCUPIED_SPACE_THRESHOLD)
-    private Integer occupiedSpaceThreshold;
+    @PluginParameter(name = LOCAL_STORAGE_TOTAL_SPACE, description = "total space, in byte, this data storage is allowed to use")
+    private Long totalSpace;
 
     private URL baseStorageLocation;
 
     @PluginInit
     public void init() {
         baseStorageLocation = gson.fromJson(baseStorageLocationAsString, URL.class);
-        // Lets check that disk usage threshold given represent a threshold
-        if (occupiedSpaceThreshold < 0 || occupiedSpaceThreshold > 100) {
-            throw new IllegalArgumentException(String.format("Parameter %s should be an integer between 0 and 100",
-                                                             LOCAL_STORAGE_OCCUPIED_SPACE_THRESHOLD));
-        }
     }
 
     @Override
@@ -84,6 +79,11 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     @Override
     public void store(LocalWorkingSubset workingSubset, Boolean replaceMode, IProgressManager progressManager) {
         workingSubset.getDataFiles().parallelStream().forEach(data -> doStore(progressManager, data, replaceMode));
+    }
+
+    @Override
+    public Long getTotalSpace() {
+        return totalSpace;
     }
 
     private void doStore(IProgressManager progressManager, DataFile data, Boolean replaceMode) {
@@ -178,20 +178,6 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                 progressManager.deletionFailed(data, failureCause);
             }
         }
-    }
-
-    @Override
-    public Set<DataStorageInfo> getMonitoringInfos() throws IOException {
-        FileStore fileStore = Files.getFileStore(Paths.get(baseStorageLocationAsString));
-        long totalSpace = fileStore.getTotalSpace();
-        long usableSpace = fileStore.getUsableSpace();
-        DataStorageInfo info = new DataStorageInfo(fileStore.name(), totalSpace, totalSpace - usableSpace);
-        return Sets.newHashSet(info);
-    }
-
-    @Override
-    public Integer getDiskUsageThreshold() {
-        return occupiedSpaceThreshold;
     }
 
     @Override

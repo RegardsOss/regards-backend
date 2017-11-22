@@ -130,12 +130,13 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         baseStorageLocation = new URL("file", "", Paths.get("target/AIPControllerIT").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_OCCUPIED_SPACE_THRESHOLD, "90")
-                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              gson.toJson(baseStorageLocation))
-                .getParameters();
-        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, DATA_STORAGE_CONF_LABEL, parameters,
-                0);
+                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "9000000000000000").addParameter(
+                        LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                        gson.toJson(baseStorageLocation)).getParameters();
+        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta,
+                                                                      DATA_STORAGE_CONF_LABEL,
+                                                                      parameters,
+                                                                      0);
         dataStorageConf.setIsActive(true);
         pluginService.savePluginConfiguration(dataStorageConf);
         // forth, lets configure a plugin for security checks

@@ -3,13 +3,16 @@ package fr.cnes.regards.modules.storage.service;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.assertj.core.util.Lists;
 import org.assertj.core.util.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,6 +28,12 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
+import fr.cnes.regards.modules.storage.dao.IDataFileDao;
+import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
 import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageInfo;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.PluginStorageInfo;
@@ -42,10 +51,22 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
     private IPluginService pluginService;
 
     @Autowired
+    private IDataFileDao dataFileDao;
+
+    @Autowired
     private ITenantResolver tenantResolver;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private INotificationClient notificationClient;
+
+    @Value("${spring.application.name}")
+    private String applicationName;
+
+    @Value("${regards.storage.data.storage.threshold.percent:90}")
+    private Integer threshold;
 
     @Override
     public Collection<PluginStorageInfo> getMonitoringInfos() throws ModuleException, IOException {
@@ -56,17 +77,30 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
         Set<PluginConfiguration> activeDataStorageConfs = dataStorageConfigurations.stream().filter(pc -> pc.isActive())
                 .collect(Collectors.toSet());
         //for each active conf, lets get their DataStorageInfo
+        // lets ask the data base to calculate the used space per data storage
+        Collection<MonitoringAggregation> monitoringAggregations = dataFileDao.getMonitoringAggregation();
+        // now lets transform it into Map<Long, Long>, it is easier to use
+        Map<Long, Long> monitoringAggregationMap = monitoringAggregations.stream().collect(Collectors.toMap(
+                MonitoringAggregation::getDataStorageUsedId,
+                MonitoringAggregation::getUsedSize));
         for (PluginConfiguration activeDataStorageConf : activeDataStorageConfs) {
             //lets initialize the monitoring information for this data storage configuration by getting plugin informations
+            Long activeDataStorageConfId = activeDataStorageConf.getId();
             PluginMetaData activeDataStorageMeta = pluginService
                     .getPluginMetaDataById(activeDataStorageConf.getPluginId());
-            PluginStorageInfo monitoringInfo = new PluginStorageInfo(activeDataStorageConf.getId(),
+            PluginStorageInfo monitoringInfo = new PluginStorageInfo(activeDataStorageConfId,
                                                                      activeDataStorageMeta.getDescription(),
                                                                      activeDataStorageConf.getLabel());
             //now lets get the data storage monitoring information from the plugin
-            monitoringInfo.getStorageInfo()
-                    .addAll(((IDataStorage) pluginService.getPlugin(activeDataStorageConf.getId()))
-                                    .getMonitoringInfos());
+            Long dataStorageTotalSpace = ((IDataStorage) pluginService.getPlugin(activeDataStorageConfId))
+                    .getTotalSpace();
+            DataStorageInfo dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(),
+                                                                  dataStorageTotalSpace,
+                                                                  monitoringAggregationMap
+                                                                          .get(activeDataStorageConfId));
+            monitoringInfo.setTotalSize(dataStorageInfo.getTotalSize());
+            monitoringInfo.setUsedSize(dataStorageInfo.getUsedSize());
+            monitoringInfo.setRatio(dataStorageInfo.getRatio());
 
             monitoringInfos.add(monitoringInfo);
         }
@@ -84,32 +118,40 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
             //lets take only the activated ones
             Set<PluginConfiguration> activeDataStorageConfs = dataStorageConfigurations.stream()
                     .filter(pc -> pc.isActive()).collect(Collectors.toSet());
-            // lets instantiate those data storage and check if their disk usage is above their configured threshold
+            // lets ask the data base to calculate the used space per data storage
+            Collection<MonitoringAggregation> monitoringAggregations = dataFileDao.getMonitoringAggregation();
+            // now lets transform it into Map<Long, Long>, it is easier to use
+            Map<Long, Long> monitoringAggregationMap = monitoringAggregations.stream().collect(Collectors.toMap(
+                    MonitoringAggregation::getDataStorageUsedId,
+                    MonitoringAggregation::getUsedSize));
+            // lets instantiate those data storage and get their total space
             for (PluginConfiguration activeDataStorageConf : activeDataStorageConfs) {
                 //lets initialize the monitoring information for this data storage configuration by getting plugin informations
                 try {
                     IDataStorage<?> activeDataStorage = pluginService.getPlugin(activeDataStorageConf.getId());
 
-                    Set<DataStorageInfo> dataStorageInfos = activeDataStorage.getMonitoringInfos();
-                    for (DataStorageInfo dataStorageInfo : dataStorageInfos) {
-                        Double ratio = dataStorageInfo.getRatio();
-                        Integer threshold = activeDataStorage.getDiskUsageThreshold();
-                        if (ratio >= threshold) {
-                            //TODO: notify
-                            LOG.error(
-                                    "Data storage(configuration id: {}, configuration label: {}) has reach its disk usage threshold. Actual occupation: {}, threshold: {}",
-                                    activeDataStorageConf.getId().toString(), activeDataStorageConf.getLabel(), ratio,
-                                    threshold);
-                            MaintenanceManager.setMaintenance(tenant);
-                        }
+                    Long activeDataStorageConfId = activeDataStorageConf.getId();
+                    Long dataStorageTotalSpace = activeDataStorage.getTotalSpace();
+                    DataStorageInfo dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(),
+                                                                          dataStorageTotalSpace,
+                                                                          monitoringAggregationMap
+                                                                                  .get(activeDataStorageConfId));
+                    Double ratio = dataStorageInfo.getRatio();
+                    if (ratio >= threshold) {
+                        String message = String.format(
+                                "Data storage(configuration id: %s, configuration label: %s) has reach its disk usage threshold. Actual occupation: %s, threshold: %s",
+                                activeDataStorageConf.getId().toString(),
+                                activeDataStorageConf.getLabel(),
+                                ratio,
+                                threshold);
+                        LOG.error(message);
+                        notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full", message, NotificationType.ERROR);
+                        MaintenanceManager.setMaintenance(tenant);
                     }
+
                 } catch (ModuleException e) {
                     //should never happens, currently it is an exception that cannot be thrown in this code(issues with dynamic parameters)
                     LOG.error(e.getMessage(), e);
-                } catch (IOException e) {
-                    //we could not get monitoring information from the plugin
-                    LOG.error(e.getMessage(), e);
-                    //TODO notify. maintenance mode or desactivate the plugin??
                 }
             }
             runtimeTenantResolver.clearTenant();
@@ -120,5 +162,18 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onApplicationEvent(ApplicationReadyEvent event) {
         pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
+    }
+
+    /**
+     * Use the notification module in admin to create a notification for admins
+     */
+    private void notifyAdmins(String title, String message, NotificationType type) {
+        NotificationDTO notif = new NotificationDTO(message,
+                                                    Lists.newArrayList(),
+                                                    Lists.newArrayList(DefaultRole.ADMIN.name()),
+                                                    applicationName,
+                                                    title,
+                                                    type);
+        notificationClient.createNotification(notif);
     }
 }

@@ -15,6 +15,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,6 +32,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -66,7 +68,11 @@ import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -99,6 +105,8 @@ import fr.cnes.regards.modules.storage.service.job.DeleteDataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
+import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
  * Service to handle {@link AIP} and associated {@link DataFile}s entities from all data straoge systems.<br/>
@@ -217,6 +225,15 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     @Autowired
     private Validator validator;
 
+    @Autowired
+    private ITemplateService templateService;
+
+    @Autowired
+    private INotificationClient notificationClient;
+
+    @Value("${spring.application.name}")
+    private String applicationName;
+
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -266,7 +283,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     /**
      * Actually run the storage logic: dispatching data files between data storages and scheduling the storage jobs.
      * @param dataFilesToStore
-     * @return TODO
+     * @return job ids scheduled for the storage
      * @throws ModuleException
      */
     protected Set<UUID> store(Set<DataFile> dataFilesToStore) throws ModuleException {
@@ -432,9 +449,34 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 dataFileDao.save(prepareFailed);
                 aipDao.save(aip);
                 publisher.publish(new AIPEvent(aip));
-                // TODO: notify
             }
+            //lets prepare the notification message
+            Map<String, Object> dataMap = new HashMap<>();
+            dataMap.put("dataFiles", notSubSetDataFiles);
+            dataMap.put("allocationStrategy", getAllocationStrategyConfiguration());
+            // lets use the template service to get our message
+            SimpleMailMessage email;
+            try {
+                email = templateService
+                        .writeToEmail(TemplateServiceConfiguration.NOT_DISPATCHED_DATA_FILES_CODE, dataMap);
+            } catch (EntityNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            notifyAdmins("Some file were not associated to a data storage", email.getText(), NotificationType.ERROR);
         }
+    }
+
+    /**
+     * Use the notification module in admin to create a notification for admins
+     */
+    private void notifyAdmins(String title, String message, NotificationType type) {
+        NotificationDTO notif = new NotificationDTO(message,
+                                                    Lists.newArrayList(),
+                                                    Lists.newArrayList(DefaultRole.ADMIN.name()),
+                                                    applicationName,
+                                                    title,
+                                                    type);
+        notificationClient.createNotification(notif);
     }
 
     /**
@@ -507,8 +549,19 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 dataFileDao.save(prepareFailed);
                 aipDao.save(aip);
                 publisher.publish(new AIPEvent(aip));
-                // TODO: notify
             }
+            //lets prepare the notification message
+            Map<String, Object> dataMap = new HashMap<>();
+            dataMap.put("dataFiles", notSubSetDataFiles);
+            // lets use the template service to get our message
+            SimpleMailMessage email;
+            try {
+                email = templateService
+                        .writeToEmail(TemplateServiceConfiguration.NOT_SUBSETTED_DATA_FILES_CODE, dataMap);
+            } catch (EntityNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            notifyAdmins("Some file were not handled by a data storage", email.getText(), NotificationType.ERROR);
         }
         return workingSubSets;
     }
@@ -519,6 +572,11 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * @throws ModuleException if many {@link IAllocationStrategy} are active.
      */
     private IAllocationStrategy getAllocationStrategy() throws ModuleException {
+        PluginConfiguration activeAllocationStrategy = getAllocationStrategyConfiguration();
+        return pluginService.getPlugin(activeAllocationStrategy.getId());
+    }
+
+    private PluginConfiguration getAllocationStrategyConfiguration() {
         // Lets retrieve active configurations of IAllocationStrategy
         List<PluginConfiguration> allocationStrategies = pluginService
                 .getPluginConfigurationsByType(IAllocationStrategy.class);
@@ -532,7 +590,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             LOG.error(e.getMessage(), e);
             throw e;
         }
-        return pluginService.getPlugin(activeAllocationStrategies.get(0).getId());
+        return activeAllocationStrategies.get(0);
     }
 
     private ISecurityDelegation getSecurityDelegationPlugin() throws ModuleException {
@@ -560,7 +618,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             // we need to listen to those jobs event to clean up the workspace
             Multimap<Long, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(metadataToStore);
             checkDispatch(metadataToStore, storageWorkingSetMap);
-            Set<UUID> jobsToMonitor = scheduleStorage(storageWorkingSetMap, false);
+            scheduleStorage(storageWorkingSetMap, false);
             // to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to
             // STORING_METADATA
             for (DataFile dataFile : metadataToStore) {
@@ -571,7 +629,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             }
         } catch (ModuleException e) {
             LOG.error(e.getMessage(), e);
-            // TODO: notify, probably should set the system into maintenance mode...
+            notifyAdmins("Could not schedule metadata storage",
+                         "Metadata storage could not be realized because an error occured. Please check the logs",
+                         NotificationType.ERROR);
         }
     }
 
@@ -592,7 +652,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     Files.createDirectories(tenantWorkspace);
                 } catch (IOException e) {
                     LOG.error(e.getMessage(), e);
-                    // TODO: notify, probably should set the system into maintenance mode...
+                    notifyAdmins("Could not create workspace directoty",
+                                 "The following directory and/or its parent could not be created: " + tenantWorkspace
+                                         .toString(),
+                                 NotificationType.FATAL);
                 }
             }
             Set<DataFile> metadataToStore = Sets.newHashSet();
@@ -957,7 +1020,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     Files.createDirectories(tenantWorkspace);
                 } catch (IOException e) {
                     LOG.error(e.getMessage(), e);
-                    // TODO: notify, probably should set the system into maintenance mode...
+                    notifyAdmins("Could not create workspace directoty",
+                                 "The following directory and/or its parent could not be created: " + tenantWorkspace
+                                         .toString(),
+                                 NotificationType.FATAL);
                 }
             }
             LOG.debug(String.format("[METADATA UPDATE DAEMON] Starting to prepare update jobs for tenant %s", tenant));
@@ -1005,8 +1071,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     publisher.publish(new AIPEvent(updatedAip));
                 }
             } else {
-                LOG.warn("Unable to update AIP metadata for AIP {} as there no existing one");
-                // TODO : Notify ?
+                String message = String.format("Unable to update AIP metadata for AIP %s as there no existing one", updatedAip.getId());
+                LOG.warn(message);
+                notifyAdmins("AIP metadata could not be updated", message, NotificationType.INFO);
             }
         }
         return result;
@@ -1029,7 +1096,6 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             }
         } catch (ModuleException e) {
             LOG.error(e.getMessage(), e);
-            // TODO: notify, probably should set the system into maintenance mode...
         }
     }
 

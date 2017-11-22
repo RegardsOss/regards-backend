@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.modules.storage.dao.IAIPDataBaseRepository;
+import fr.cnes.regards.modules.storage.dao.IAIPEntityRepository;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 
 /**
@@ -18,7 +18,7 @@ import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 public class AIPEntityService implements IAIPEntityService {
 
     @Autowired
-    private IAIPDataBaseRepository aipDataBaseRepository;
+    private IAIPEntityRepository aipDataBaseRepository;
 
     @Override
     public Page<AIPEntity> retrieveBySip(String sipId, Pageable pageable) {

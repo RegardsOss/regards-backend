@@ -25,7 +25,7 @@ import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
  * @author Sylvain Vissiere-Guerinet
  *
  */
-public interface IAIPDataBaseRepository extends JpaRepository<AIPEntity, Long> {
+public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
 
     /**
      * @param pState

@@ -1,0 +1,9 @@
+<#setting datetime_format='yyyy-MM-dd HH:mm:ss z'>
+    <h1>REGARDS - Some file were not handled by a data storage</h1>
+    <div>
+        One or more files could not be handled by their data storage:
+        <#list dataFiles as dataFile>
+            - File ${dataFile.url} associated to aip ${dataFile.aipDataBase.id} could not be handled by its data
+            storage ${dataFile.dataStorageUsed.label}.<br/>
+        </#list>
+    </div>
