@@ -79,10 +79,11 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
 
         // Init required index in the ElasticSearch repository
-        if (esRepository.indexExists(DEFAULT_TENANT)) {
-            esRepository.deleteIndex(DEFAULT_TENANT);
+        if (!esRepository.indexExists(DEFAULT_TENANT)) {
+            esRepository.createIndex(DEFAULT_TENANT);
+        } else {
+            esRepository.deleteAll(DEFAULT_TENANT);
         }
-        esRepository.createIndex(DEFAULT_TENANT);
 
         FeignSecurityManager.asSystem();
     }

@@ -44,7 +44,7 @@ public class ISearchDatasetsClientIT extends AbstractSearchClientIT<IJsonSearchC
      * Check that the Feign Client responds with a 200
      */
     @Test
-    public void searchCollections() {
+    public void searchDatasets() {
         ResponseEntity<JsonObject> result = client.searchDatasets(Maps.newHashMap());
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
     }
