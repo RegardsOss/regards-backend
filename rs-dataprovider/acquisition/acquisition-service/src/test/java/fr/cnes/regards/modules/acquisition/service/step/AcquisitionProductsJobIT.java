@@ -48,9 +48,6 @@ import fr.cnes.regards.modules.acquisition.service.conf.MockedFeignClientConf;
 import fr.cnes.regards.modules.acquisition.service.plugins.BasicCheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.CheckInPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.TestScanDirectoryPlugin;
-import fr.cnes.regards.modules.acquisition.service.plugins.TestScanProductsData;
-import fr.cnes.regards.modules.acquisition.service.plugins.TestScanProductsHeader;
-import fr.cnes.regards.modules.acquisition.service.plugins.TestScanProductsWithMultipleFilesPlugin;
 
 /**
  * @author Christophe Mertz
@@ -70,13 +67,12 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
         String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
 
+        chain.setLastDateActivation(OffsetDateTime.now().minusDays(10));
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
                                                                                 IAcquisitionScanDirectoryPlugin.class));
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.LAST_ACQ_DATE_PARAM,
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.PARAM_1_NAME,
                                           OffsetDateTime.now().minusDays(10).toString());
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.PARAM_2_NAME, chain.getLabel());
 
         chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("BasicCheckFilePlugin",
                                                                                  ICheckFilePlugin.class));
@@ -117,16 +113,10 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         metaFiles.add(metaFileMandatory);
         metaFiles.add(metaFileOptional);
 
-        String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
-        String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
-
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
                                                                                 IAcquisitionScanDirectoryPlugin.class));
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.LAST_ACQ_DATE_PARAM,
-                                          OffsetDateTime.now().minusDays(10).toString());
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.PARAM_1_NAME, "Hello param one");
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.PARAM_2_NAME, "Hello param 2");
 
         Assert.assertTrue(chainService.run(chain));
 
@@ -139,11 +129,9 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
         // Repeat the activation of the same chain
         chain = chainService.retrieveComplete(chain.getId());
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.META_FILE_PARAM, metaFilesJson);
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.LAST_ACQ_DATE_PARAM,
-                                          OffsetDateTime.now().minusDays(10).toString());
+
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.PARAM_1_NAME, "Hello param one");
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.PARAM_2_NAME, "Hello param two");
 
         Assert.assertTrue(chainService.run(chain));
 
@@ -183,19 +171,10 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         metaFiles.add(secondMetaFileMandatory);
         metaFiles.add(metaFileOptional);
 
-        String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
-        String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
-
         // Scan plugin
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration(
                                                                                 "TestScanProductsWithMultipleFilesPlugin",
                                                                                 IAcquisitionScanDirectoryPlugin.class));
-        chain.addScanAcquisitionParameter(TestScanProductsWithMultipleFilesPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addScanAcquisitionParameter(TestScanProductsWithMultipleFilesPlugin.META_FILE_PARAM, metaFilesJson);
-        chain.addScanAcquisitionParameter(TestScanProductsWithMultipleFilesPlugin.CHAIN_GENERATION_PARAM,
-                                          chain.getLabel());
-        chain.addScanAcquisitionParameter(TestScanProductsWithMultipleFilesPlugin.LAST_ACQ_DATE_PARAM,
-                                          OffsetDateTime.now().minusDays(10).toString());
 
         // Check plugin
         chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("CheckInPlugin",
@@ -242,19 +221,10 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         metaFiles.add(metaFileMandatory);
         metaFiles.add(secondMetaFileMandatory);
 
-        String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
-        String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
-
         // Scan plugin
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration(
                                                                                 "TestScanProductsWithMultipleFilesPlugin",
                                                                                 IAcquisitionScanDirectoryPlugin.class));
-        chain.addScanAcquisitionParameter(TestScanProductsWithMultipleFilesPlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addScanAcquisitionParameter(TestScanProductsWithMultipleFilesPlugin.META_FILE_PARAM, metaFilesJson);
-        chain.addScanAcquisitionParameter(TestScanProductsWithMultipleFilesPlugin.CHAIN_GENERATION_PARAM,
-                                          chain.getLabel());
-        chain.addScanAcquisitionParameter(TestScanProductsWithMultipleFilesPlugin.LAST_ACQ_DATE_PARAM,
-                                          OffsetDateTime.now().minusDays(10).toString());
 
         // Check plugin
         chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("CheckInPlugin",
@@ -295,17 +265,9 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         metaFiles.add(metaFileMandatory);
         metaFiles.add(secondMetaFileMandatory);
 
-        String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
-        String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
-
         // Scan plugin
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanProductsData",
                                                                                 IAcquisitionScanDirectoryPlugin.class));
-        chain.addScanAcquisitionParameter(TestScanProductsData.META_PRODUCT_PARAM, metaProductJson);
-        chain.addScanAcquisitionParameter(TestScanProductsData.META_FILE_PARAM, metaFilesJson);
-        chain.addScanAcquisitionParameter(TestScanProductsData.CHAIN_GENERATION_PARAM, chain.getLabel());
-        chain.addScanAcquisitionParameter(TestScanProductsData.LAST_ACQ_DATE_PARAM,
-                                          OffsetDateTime.now().minusDays(10).toString());
 
         // Check plugin
         chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("CheckInPlugin",
@@ -342,15 +304,8 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         Thread.sleep(WAIT_TIME);
 
         // Scan plugin : in this step we acquire the 3 mandatory missing files
-        metaProductJson = new Gson()
-                .toJson(MetaProductDto.fromMetaProduct(metaProductService.retrieveComplete(metaProduct.getId())));
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanProductsHeader",
                                                                                 IAcquisitionScanDirectoryPlugin.class));
-        chain.addScanAcquisitionParameter(TestScanProductsHeader.META_PRODUCT_PARAM, metaProductJson);
-        chain.addScanAcquisitionParameter(TestScanProductsHeader.META_FILE_PARAM, metaFilesJson);
-        chain.addScanAcquisitionParameter(TestScanProductsHeader.CHAIN_GENERATION_PARAM, chain.getLabel());
-        chain.addScanAcquisitionParameter(TestScanProductsHeader.LAST_ACQ_DATE_PARAM,
-                                          chainLastAcqDate.getLastDateActivation().toString());
 
         // Repeat the activation of the same chain
         chain.setRunning(false);

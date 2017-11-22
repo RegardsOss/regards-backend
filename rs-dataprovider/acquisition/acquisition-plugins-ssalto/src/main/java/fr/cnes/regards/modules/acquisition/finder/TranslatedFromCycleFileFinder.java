@@ -408,7 +408,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
 
                 // cas du dernier cycle
                 if ("-".equals(stopDateString)) {
-                    cycleOccurence = new Integer(matcher.group(CYCLE_GROUP));
+                    cycleOccurence = Integer.valueOf(matcher.group(CYCLE_GROUP));
                 } else if (stopDateString.equals(stringpStartDate)) {
                     // Les dates sont egales sans la precision des heures
                     // il faut regarder le 2eme fichier
@@ -422,7 +422,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                         // La date est entre la stopDate de la ligne precedente =
                         // startDate de la ligne courante
                         // et la stopDate de la ligne courante
-                        cycleOccurence = new Integer(matcher.group(CYCLE_GROUP));
+                        cycleOccurence = Integer.valueOf(matcher.group(CYCLE_GROUP));
                     }
                 }
             }
@@ -464,13 +464,13 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
 
                 if (OffsetDateTime.of(cycleDateTime, ZoneOffset.UTC).isBefore(startDate)) {
                     // sauvegarde l'occurence
-                    cycleOccurence = new Integer(matcher.group(ORF_CYCLE_GROUP));
+                    cycleOccurence = Integer.valueOf(matcher.group(ORF_CYCLE_GROUP));
                 } else {
                     // dans le cas ou la pStartDate est anterieure a la premiere
                     // occurrence d'ORF
                     // on prend la 1ere
                     if (cycleOccurence == null) {
-                        cycleOccurence = new Integer(matcher.group(ORF_CYCLE_GROUP));
+                        cycleOccurence = Integer.valueOf(matcher.group(ORF_CYCLE_GROUP));
                     }
                     cycleFound = true;
 
@@ -505,7 +505,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
 
             // Decode the file into a char buffer
             cb = decoder.decode(bb);
-            
+
             fc.close();
         } catch (FileNotFoundException e) {
             LOGGER.error(e.getMessage());

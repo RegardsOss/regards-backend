@@ -280,9 +280,4 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
     public void stop() { // NOSONAR
     }
 
-    @Override
-    public String getName() {
-        return this.getClass().getCanonicalName();
-    }
-
 }

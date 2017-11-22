@@ -56,43 +56,34 @@ public class AttributeFactory {
         Attribute attribute = null;
         // According to the type, create either a real, string, date or integer attribute
         switch (pType) {
-            case TYPE_REAL: {
+            case TYPE_REAL:
                 attribute = new RealAttribute();
                 break;
-            }
-            case TYPE_INTEGER: {
+            case TYPE_INTEGER:
                 attribute = new LongAttribute();
                 break;
-            }
-            case TYPE_DATE_TIME: {
+            case TYPE_DATE_TIME:
                 attribute = new DateTimeAttribute();
                 break;
-            }
-            case TYPE_DATE: {
+            case TYPE_DATE:
                 attribute = new DateAttribute();
                 break;
-            }
-            case TYPE_STRING: {
+            case TYPE_STRING:
                 attribute = new StringAttribute();
                 break;
-            }
-            case TYPE_URL: {
+            case TYPE_URL:
                 attribute = new UrlAttribute();
                 break;
-            }
             case TYPE_LONG_STRING:
-            case TYPE_CLOB: {
+            case TYPE_CLOB:
                 attribute = new ClobAttribute();
                 break;
-            }
-            case TYPE_GEO_LOCATION: {
+            case TYPE_GEO_LOCATION:
                 attribute = new GeoAttribute();
                 break;
-            }
-            default: {
+            default:
                 LOGGER.error("Type inconnu : " + pType.getTypeName());
                 return null;
-            }
         }
 
         MetaAttribute meta = new MetaAttribute();

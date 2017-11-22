@@ -50,14 +50,6 @@ public abstract class AbstractAcquisitionScanPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAcquisitionScanPlugin.class);
 
-    public static final String META_PRODUCT_PARAM = "meta-produt";
-
-    public static final String META_FILE_PARAM = "meta-file";
-
-    public static final String CHAIN_GENERATION_PARAM = "chain-label";
-
-    public static final String LAST_ACQ_DATE_PARAM = "last-acquisition-date";
-
     /**
      * Process the checksum of the {@link File} inside the {@link AcquisitionFile}.
      *  

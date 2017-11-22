@@ -28,20 +28,13 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.common.base.Strings;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
-import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaFileDto;
-import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
-import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
-import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 
 /**
  * A default {@link Plugin} of type {@link IAcquisitionScanDirectoryPlugin}.
@@ -55,32 +48,17 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ScanDirectoryPlugin.class);
 
-    @Autowired
-    private IMetaFileService metaFileService;
-
-    @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
-    private String chainLabel;
-
-    @PluginParameter(name = LAST_ACQ_DATE_PARAM, optional = true)
-    private String lastDateActivation;
-
-    @PluginParameter(name = META_PRODUCT_PARAM, optional = true)
-    private MetaProductDto metaProductDto;
-
-    @PluginParameter(name = META_FILE_PARAM, optional = true)
-    private SetOfMetaFileDto metaFiles;
-
     @Override
-    public Set<AcquisitionFile> getAcquisitionFiles() {
+    public Set<AcquisitionFile> getAcquisitionFiles(String chainLabel, MetaProduct metaProduct,
+            OffsetDateTime lastDateActivation) {
         LOGGER.info("Start scan for the chain <{}> ", chainLabel);
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
-        for (MetaFileDto metaFileDto : metaFiles.getSetOfMetaFiles()) {
+        for (MetaFile metaFile : metaProduct.getMetaFiles()) {
 
-            LOGGER.info("Scan Metafile <{}>", metaFileDto.getFileNamePattern());
+            LOGGER.info("Scan Metafile <{}>", metaFile.getFileNamePattern());
 
-            MetaFile metaFile = metaFileService.retrieve(metaFileDto.getId());
-            scanDirectories(metaFile, acqFileList);
+            scanDirectories(metaProduct, metaFile, acqFileList, lastDateActivation);
         }
 
         LOGGER.info("End scan for the chain <{}> ", chainLabel);
@@ -88,7 +66,8 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
         return acqFileList;
     }
 
-    private void scanDirectories(MetaFile metaFile, Set<AcquisitionFile> acqFileList) {
+    private void scanDirectories(MetaProduct metaProduct, MetaFile metaFile, Set<AcquisitionFile> acqFileList,
+            OffsetDateTime lastDateActivation) {
 
         String filePattern = metaFile.getFileNamePattern();
         String adaptedPattern = getAdaptedPattern(filePattern);
@@ -101,20 +80,20 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
             File dirFile = new File(dirPath);
             // Check if directory exists and is readable
             if (dirFile.exists() && dirFile.isDirectory() && dirFile.canRead()) {
-                addMatchedFile(dirFile, scanDir, filter, metaFile, acqFileList);
+                addMatchedFile(dirFile, scanDir, filter, metaProduct, metaFile, acqFileList, lastDateActivation);
             }
         }
 
     }
 
-    private void addMatchedFile(File dirFile, ScanDirectory scanDir, RegexFilenameFilter filter, MetaFile metaFile,
-            Set<AcquisitionFile> acqFileList) {
+    private void addMatchedFile(File dirFile, ScanDirectory scanDir, RegexFilenameFilter filter,
+            MetaProduct metaProduct, MetaFile metaFile, Set<AcquisitionFile> acqFileList,
+            OffsetDateTime lastDateActivation) {
 
-        List<File> filteredFileList = filteredFileList(dirFile, filter, Strings.isNullOrEmpty(lastDateActivation) ? null
-                : OffsetDateTime.parse(lastDateActivation));
+        List<File> filteredFileList = filteredFileList(dirFile, filter, lastDateActivation);
 
         for (File baseFile : filteredFileList) {
-            AcquisitionFile acqFile = initAcquisitionFile(baseFile, metaFile, metaProductDto.getChecksumAlgorithm());
+            AcquisitionFile acqFile = initAcquisitionFile(baseFile, metaFile, metaProduct.getChecksumAlgorithm());
             acqFile.setAcqDate(OffsetDateTime.ofInstant(Instant.ofEpochMilli(baseFile.lastModified()),
                                                         ZoneId.of("UTC")));
             acqFileList.add(acqFile);
@@ -125,19 +104,18 @@ public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implement
     }
 
     @Override
-    public Set<File> getBadFiles() {
+    public Set<File> getBadFiles(String chainLabel, Set<MetaFile> metaFiles) {
 
         Set<File> badFiles = new HashSet<>();
 
-        for (MetaFileDto metaFileDto : metaFiles.getSetOfMetaFiles()) {
-            MetaFile metaFile = metaFileService.retrieve(metaFileDto.getId());
-            badFiles.addAll(reportBadFile(metaFile));
+        for (MetaFile metaFile : metaFiles) {
+            badFiles.addAll(reportBadFile(chainLabel, metaFile));
         }
 
         return badFiles;
     }
 
-    private Set<File> reportBadFile(MetaFile metaFile) {
+    private Set<File> reportBadFile(String chainLabel, MetaFile metaFile) {
         LOGGER.info("Start report bad files for the chain <{}> ", chainLabel);
         Set<File> badFiles = new HashSet<>();
 

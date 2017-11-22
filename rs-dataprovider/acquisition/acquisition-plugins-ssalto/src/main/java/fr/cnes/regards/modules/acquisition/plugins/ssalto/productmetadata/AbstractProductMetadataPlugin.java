@@ -218,8 +218,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
      *            l'attribut a enregistrer.
      */
     protected void registerAttribute(String attrName, Map<Integer, Attribute> attributeMap, Attribute attribute) {
-
-        attributeMap.put(new Integer(attributeOrderProperties.getProperty(attrName)), attribute);
+        attributeMap.put(Integer.valueOf(attributeOrderProperties.getProperty(attrName)), attribute);
     }
 
     /**
@@ -228,8 +227,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
      * @param attributeMap
      */
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
-            throws PluginAcquisitionException {
-        // DO NOTHING
+            throws PluginAcquisitionException { // NOSONAR
     }
 
     /**
@@ -238,8 +236,7 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
      * @param attributeMap
      */
     protected void doCreateDependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
-            throws ModuleException {
-        // DO NOTHING
+            throws ModuleException { // NOSONAR
     }
 
     protected Properties getAttributeOrderProperties() {

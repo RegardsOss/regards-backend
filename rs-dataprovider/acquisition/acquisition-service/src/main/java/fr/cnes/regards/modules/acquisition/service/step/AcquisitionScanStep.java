@@ -99,11 +99,14 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
             // launch the plugin to get the AcquisitionFile
             // c'est le plugin qui met la Date d'acquisition du fichier
             // c'est plugin qui calcule le checksum si c'est configuré dans la chaine   
-            Set<AcquisitionFile> acquisitionFiles = scanPlugin.getAcquisitionFiles();
+            Set<AcquisitionFile> acquisitionFiles = scanPlugin
+                    .getAcquisitionFiles(this.chainGeneration.getLabel(), this.chainGeneration.getMetaProduct(),
+                                         this.chainGeneration.getLastDateActivation());
 
             synchronizedDatabase(acquisitionFiles);
 
-            reportBadFiles(scanPlugin.getBadFiles());
+            reportBadFiles(scanPlugin.getBadFiles(this.chainGeneration.getLabel(),
+                                                  this.chainGeneration.getMetaProduct().getMetaFiles()));
 
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
@@ -161,11 +164,6 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
 
     @Override
     public void stop() { // NOSONAR
-    }
-
-    @Override
-    public String getName() {
-        return this.getClass().getCanonicalName();
     }
 
 }

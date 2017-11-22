@@ -86,26 +86,27 @@ public class ChaineGenerationService implements IChainGenerationService {
         return chainRepository.findOne(id);
     }
 
+    @Override
     public ChainGeneration retrieveComplete(Long id) {
         ChainGeneration chain = this.retrieve(id);
-        
+
         chain.setMetaProduct(metaProductService.retrieveComplete(chain.getMetaProduct().getId()));
-        
+
         if (chain.getScanAcquisitionPluginConf() != null) {
             chain.setScanAcquisitionPluginConf(pluginService
                     .loadPluginConfiguration(chain.getScanAcquisitionPluginConf().getId()));
         }
-        
+
         if (chain.getCheckAcquisitionPluginConf() != null) {
             chain.setCheckAcquisitionPluginConf(pluginService
                     .loadPluginConfiguration(chain.getCheckAcquisitionPluginConf().getId()));
         }
-        
+
         if (chain.getGenerateSipPluginConf() != null) {
             chain.setGenerateSipPluginConf(pluginService
                     .loadPluginConfiguration(chain.getGenerateSipPluginConf().getId()));
         }
-        
+
         if (chain.getPostProcessSipPluginConf() != null) {
             chain.setPostProcessSipPluginConf(pluginService
                     .loadPluginConfiguration(chain.getPostProcessSipPluginConf().getId()));

@@ -118,7 +118,7 @@ public class FileNameFinder extends AttributeFinder {
         if (groupNumberList == null) {
             groupNumberList = new ArrayList<>();
         }
-        groupNumberList.add(new Integer(newGroupNumber));
+        groupNumberList.add(Integer.valueOf(newGroupNumber));
     }
 
     @Override

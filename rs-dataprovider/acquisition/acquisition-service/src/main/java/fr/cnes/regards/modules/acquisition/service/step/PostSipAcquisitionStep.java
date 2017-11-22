@@ -109,9 +109,4 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
     public void stop() { // NOSONAR
     }
 
-    @Override
-    public String getName() {
-        return this.getClass().getCanonicalName();
-    }
-
 }

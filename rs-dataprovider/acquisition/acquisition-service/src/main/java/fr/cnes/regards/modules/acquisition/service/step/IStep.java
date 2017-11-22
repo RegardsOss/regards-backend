@@ -25,7 +25,7 @@ import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProcess;
 
 /**
  * This interface defines a step to execute by an {@link AcquisitionProcess}.<br>
- * A step runs treatments and used resources. 
+ * A step runs treatments and used resources.
  * 
  * @author Christophe Mertz
  */
@@ -37,7 +37,7 @@ public interface IStep {
     public void getResources() throws AcquisitionException;
 
     /**
-     * This method aims to free reources used by the {@link IStep}
+     * This method aims to free resources used by the {@link IStep}
      */
     public void freeResources() throws AcquisitionException;
 
@@ -50,8 +50,6 @@ public interface IStep {
      * This method aims to run the treatments for the {@link IStep}  
      */
     public void proceedStep() throws AcquisitionRuntimeException;
-
-    public String getName();
 
     /**
      * This method chains the methods getResources,  proceedStep and freeResources

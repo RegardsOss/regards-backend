@@ -38,13 +38,13 @@ import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlug
  *
  * @author Christophe Mertz
  */
-@Plugin(id = "TestScanProductsWithMultipleFilesPlugin", version = "1.0.0-SNAPSHOT",
-        description = "TestScanProductsWithMultipleFilesPlugin", author = "REGARDS Team", contact = "regards@c-s.fr",
-        licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
-public class TestScanProductsWithMultipleFilesPlugin extends TestAcquisitionScanUtility
+@Plugin(id = "TestScanProductsHeader", version = "1.0.0-SNAPSHOT", description = "TestScanProductsHeader",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
+public class TestScanProductsHeaderPlugin extends TestAcquisitionScanUtility
         implements IAcquisitionScanDirectoryPlugin {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TestScanProductsWithMultipleFilesPlugin.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestScanProductsHeaderPlugin.class);
 
     @Override
     public Set<AcquisitionFile> getAcquisitionFiles(String chainLabel, MetaProduct metaProduct,
@@ -54,17 +54,11 @@ public class TestScanProductsWithMultipleFilesPlugin extends TestAcquisitionScan
         Set<AcquisitionFile> acqFileList = new HashSet<>();
 
         acqFileList.add(createAcquisitionFileMandatory(metaProduct.getMetaFiles(), "data/income",
-                                                       "CS_OPER_STR1DAT_0__20100705T063000_20100705T064959_0001.DBL"));
-        acqFileList.add(createAcquisitionFileMandatory(metaProduct.getMetaFiles(), "data/income",
                                                        "CS_OPER_STR1DAT_0__20100705T063000_20100705T064959_0001.HDR"));
-        acqFileList.add(createAcquisitionFileMandatory(metaProduct.getMetaFiles(), "data/income",
-                                                       "CS_OPER_STR1DAT_0__20100805T103000_20100805T110137_0001.DBL"));
         acqFileList.add(createAcquisitionFileMandatory(metaProduct.getMetaFiles(), "data/income",
                                                        "CS_OPER_STR1DAT_0__20100805T103000_20100805T110137_0001.HDR"));
         acqFileList.add(createAcquisitionFileMandatory(metaProduct.getMetaFiles(), "data/income",
                                                        "CS_OPER_TLM_DRTM___20100704T000000_20100704T231234_0005.HDR"));
-        acqFileList.add(createAcquisitionFileMandatory(metaProduct.getMetaFiles(), "data/income",
-                                                       "CS_OPER_TLM_DRTM___20100704T000000_20100704T231234_0005.DBL"));
 
         LOGGER.info("End scan for the chain <{}> ", chainLabel);
 

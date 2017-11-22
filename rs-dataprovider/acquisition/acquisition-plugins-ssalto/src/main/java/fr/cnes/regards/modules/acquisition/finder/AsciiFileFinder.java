@@ -118,7 +118,7 @@ public class AsciiFileFinder extends DataFileFinder {
     }
 
     public void addGroupNumber(String groupNumber) {
-        groupNumberList.add(new Integer(groupNumber));
+        groupNumberList.add(Integer.valueOf(groupNumber));
     }
 
     public void setFilterPattern(String newFilterPattern) {

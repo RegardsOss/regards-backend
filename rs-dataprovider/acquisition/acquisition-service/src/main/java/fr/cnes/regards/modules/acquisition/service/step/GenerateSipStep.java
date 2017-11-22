@@ -69,8 +69,6 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
     @Value("${regards.acquisition.sip.max.bulk.size:5000}")
     private int sipCollectionBulkMaxSize;
 
-    //    private SIPCollection sipCollection;
-
     /**
      * The List of {@link AcquisitionFile} for the current {@link Product}
      */
@@ -147,11 +145,6 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
     @Override
     public void stop() { // NOSONAR
-    }
-
-    @Override
-    public String getName() {
-        return this.getClass().getCanonicalName();
     }
 
 }

@@ -352,38 +352,6 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
         }
     }
 
-    protected class ScanJobHandler implements IHandler<JobEvent> {
-
-        @Override
-        public void handle(TenantWrapper<JobEvent> wrapper) {
-            JobEvent event = wrapper.getContent();
-            JobEventType type = event.getJobEventType();
-
-            LOGGER.info(this.toString());
-
-            switch (type) {
-                case RUNNING:
-                    runnings.add(wrapper.getContent().getJobId());
-                    LOGGER.info("RUNNING for {}", wrapper.getContent().getJobId());
-                    break;
-                case SUCCEEDED:
-                    succeededs.add(wrapper.getContent().getJobId());
-                    LOGGER.info("SUCCEEDED for {}", wrapper.getContent().getJobId());
-                    break;
-                case ABORTED:
-                    aborteds.add(wrapper.getContent().getJobId());
-                    LOGGER.info("ABORTED for {}", wrapper.getContent().getJobId());
-                    break;
-                case FAILED:
-                    faileds.add(wrapper.getContent().getJobId());
-                    LOGGER.info("FAILED for {}", wrapper.getContent().getJobId());
-                    break;
-                default:
-                    throw new IllegalArgumentException(type + " is not an handled type of JobEvent ");
-            }
-        }
-    }
-
     protected Product createProduct(String productName, String session, MetaProduct metaProduct, boolean sended,
             ProductStatus status, String... fileNames) {
         Product product = ProductBuilder.build(productName).withStatus(status).withMetaProduct(metaProduct)
@@ -418,6 +386,38 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
         sipBuilder.getPDIBuilder().addContextInformation("attribut-name",
                                                          productName + "-" + LocalDateTime.now().toString());
         return sipBuilder.build();
+    }
+
+    protected class ScanJobHandler implements IHandler<JobEvent> {
+    
+        @Override
+        public void handle(TenantWrapper<JobEvent> wrapper) {
+            JobEvent event = wrapper.getContent();
+            JobEventType type = event.getJobEventType();
+    
+            LOGGER.info(this.toString());
+    
+            switch (type) {
+                case RUNNING:
+                    runnings.add(wrapper.getContent().getJobId());
+                    LOGGER.info("RUNNING for {}", wrapper.getContent().getJobId());
+                    break;
+                case SUCCEEDED:
+                    succeededs.add(wrapper.getContent().getJobId());
+                    LOGGER.info("SUCCEEDED for {}", wrapper.getContent().getJobId());
+                    break;
+                case ABORTED:
+                    aborteds.add(wrapper.getContent().getJobId());
+                    LOGGER.info("ABORTED for {}", wrapper.getContent().getJobId());
+                    break;
+                case FAILED:
+                    faileds.add(wrapper.getContent().getJobId());
+                    LOGGER.info("FAILED for {}", wrapper.getContent().getJobId());
+                    break;
+                default:
+                    throw new IllegalArgumentException(type + " is not an handled type of JobEvent ");
+            }
+        }
     }
 
 }
