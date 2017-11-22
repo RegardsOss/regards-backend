@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.assertj.core.util.Lists;
 import org.assertj.core.util.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,10 +27,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
-import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
 import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageInfo;
@@ -59,8 +54,8 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Autowired
-    private INotificationClient notificationClient;
+    //    @Autowired
+    //    private INotificationClient notificationClient;
 
     @Value("${spring.application.name}")
     private String applicationName;
@@ -145,7 +140,7 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
                                 ratio,
                                 threshold);
                         LOG.error(message);
-                        notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full", message, NotificationType.ERROR);
+                        //                        notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full", message, NotificationType.ERROR);
                         MaintenanceManager.setMaintenance(tenant);
                     }
 
@@ -164,16 +159,16 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
         pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
     }
 
-    /**
-     * Use the notification module in admin to create a notification for admins
-     */
-    private void notifyAdmins(String title, String message, NotificationType type) {
-        NotificationDTO notif = new NotificationDTO(message,
-                                                    Lists.newArrayList(),
-                                                    Lists.newArrayList(DefaultRole.ADMIN.name()),
-                                                    applicationName,
-                                                    title,
-                                                    type);
-        notificationClient.createNotification(notif);
-    }
+    //    /**
+    //     * Use the notification module in admin to create a notification for admins
+    //     */
+    //    private void notifyAdmins(String title, String message, NotificationType type) {
+    //        NotificationDTO notif = new NotificationDTO(message,
+    //                                                    Lists.newArrayList(),
+    //                                                    Lists.newArrayList(DefaultRole.ADMIN.name()),
+    //                                                    applicationName,
+    //                                                    title,
+    //                                                    type);
+    //        notificationClient.createNotification(notif);
+    //    }
 }
