@@ -52,6 +52,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
+import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
@@ -101,10 +102,10 @@ public class SIPController implements IResourceController<SIPEntity> {
     // TODO change response
     @ResourceAccess(description = "SIP collections submission (bulk request)")
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
-    public ResponseEntity<Collection<SIPEntity>> ingest(@RequestBody SIPCollection sips) throws ModuleException {
-        Collection<SIPEntity> sipEntities = ingestService.ingest(sips);
-        HttpStatus status = computeStatus(sipEntities);
-        return ResponseEntity.status(status).body(sipEntities);
+    public ResponseEntity<Collection<SIPDto>> ingest(@RequestBody SIPCollection sips) throws ModuleException {
+        Collection<SIPDto> dtos = ingestService.ingest(sips);
+        HttpStatus status = computeStatus(dtos);
+        return ResponseEntity.status(status).body(dtos);
     }
 
     /**
@@ -119,12 +120,12 @@ public class SIPController implements IResourceController<SIPEntity> {
     // TODO change response
     @ResourceAccess(description = "SIP collection submission using multipart request")
     @RequestMapping(method = RequestMethod.POST, value = IMPORT_PATH)
-    public ResponseEntity<Collection<SIPEntity>> ingestFile(@RequestParam("file") MultipartFile file)
+    public ResponseEntity<Collection<SIPDto>> ingestFile(@RequestParam("file") MultipartFile file)
             throws ModuleException {
         try {
-            Collection<SIPEntity> sipEntities = ingestService.ingest(file.getInputStream());
-            HttpStatus status = computeStatus(sipEntities);
-            return ResponseEntity.status(status).body(sipEntities);
+            Collection<SIPDto> dtos = ingestService.ingest(file.getInputStream());
+            HttpStatus status = computeStatus(dtos);
+            return ResponseEntity.status(status).body(dtos);
         } catch (IOException e) {
             final String message = "Error with file stream while importing model.";
             LOGGER.error(message, e);
@@ -175,10 +176,10 @@ public class SIPController implements IResourceController<SIPEntity> {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    private HttpStatus computeStatus(Collection<SIPEntity> sipEntities) {
+    private HttpStatus computeStatus(Collection<SIPDto> dtos) {
         Boolean hasCreated = Boolean.FALSE;
         Boolean hasRejected = Boolean.FALSE;
-        for (SIPEntity sipEntity : sipEntities) {
+        for (SIPDto sipEntity : dtos) {
             switch (sipEntity.getState()) {
                 case CREATED:
                     hasCreated = Boolean.TRUE;

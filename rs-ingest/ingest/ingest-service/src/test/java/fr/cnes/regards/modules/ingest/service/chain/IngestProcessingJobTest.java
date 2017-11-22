@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.After;
@@ -50,6 +51,7 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -60,6 +62,7 @@ import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
+import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
@@ -144,27 +147,42 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         // Init a SIP in database with state CREATED and managed with default chain
         SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(DEFAULT_PROCESSING_CHAIN_TEST, "sessionId");
         SIPCollection collection = colBuilder.build();
+
         SIPBuilder builder = new SIPBuilder(SIP_DEFAULT_CHAIN_ID_TEST);
+        builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "sdsdfm1211vd");
+        builder.addContentInformation();
         collection.add(builder.build());
-        Collection<SIPEntity> results = ingestService.ingest(collection);
-        sipIdDefaultChainTest = results.stream().findFirst().get().getId();
+
+        Collection<SIPDto> results = ingestService.ingest(collection);
+        String ipId = results.stream().findFirst().get().getIpId();
+        Optional<SIPEntity> resultSip = sipRepository.findOneByIpId(ipId);
+        sipIdDefaultChainTest = resultSip.get().getId();
 
         // Init a SIP in database with state CREATED
         colBuilder = new SIPCollectionBuilder(PROCESSING_CHAIN_TEST, "sessionId");
         collection = colBuilder.build();
+
         builder = new SIPBuilder(SIP_ID_TEST);
+        builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vd");
+        builder.addContentInformation();
         collection.add(builder.build());
+
         results = ingestService.ingest(collection);
-        sipIdTest = results.stream().findFirst().get().getId();
+        ipId = results.stream().findFirst().get().getIpId();
+        resultSip = sipRepository.findOneByIpId(ipId);
+        sipIdTest = resultSip.get().getId();
 
         // Init a SIP with reference in database with state CREATED
         colBuilder = new SIPCollectionBuilder(PROCESSING_CHAIN_TEST, "sessionId");
         collection = colBuilder.build();
+
         builder = new SIPBuilder(SIP_REF_ID_TEST);
         collection.add(builder.buildReference(Paths.get("src/test/resources/file_ref.xml"),
                                               "1e2d4ab665784e43243b9b07724cd483"));
         results = ingestService.ingest(collection);
-        sipRefIdTest = results.stream().findFirst().get().getId();
+        ipId = results.stream().findFirst().get().getIpId();
+        resultSip = sipRepository.findOneByIpId(ipId);
+        sipRefIdTest = resultSip.get().getId();
     }
 
     @After

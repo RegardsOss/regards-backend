@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 
 /**
  * Ingest client API
@@ -45,5 +45,5 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 public interface IIngestClient {
 
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
-    public ResponseEntity<Collection<SIPEntity>> ingest(@Valid @RequestBody SIPCollection sips);
+    public ResponseEntity<Collection<SIPDto>> ingest(@Valid @RequestBody SIPCollection sips);
 }

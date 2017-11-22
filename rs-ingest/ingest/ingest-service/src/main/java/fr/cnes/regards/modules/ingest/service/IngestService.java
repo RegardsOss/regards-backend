@@ -54,6 +54,7 @@ import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPEntityBuilder;
+import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
@@ -104,8 +105,8 @@ public class IngestService implements IIngestService {
     private Validator validator;
 
     @Override
-    public Collection<SIPEntity> ingest(SIPCollection sips) throws ModuleException {
-        Collection<SIPEntity> entities = new ArrayList<>();
+    public Collection<SIPDto> ingest(SIPCollection sips) throws ModuleException {
+        Collection<SIPDto> dtos = new ArrayList<>();
 
         // Validate metadata
         IngestMetadata metadata = sips.getMetadata();
@@ -113,10 +114,10 @@ public class IngestService implements IIngestService {
 
         // Process SIPs
         for (SIP sip : sips.getFeatures()) {
-            entities.add(store(sip, metadata));
+            dtos.add(store(sip, metadata));
         }
 
-        return entities;
+        return dtos;
     }
 
     /**
@@ -151,7 +152,7 @@ public class IngestService implements IIngestService {
     }
 
     @Override
-    public Collection<SIPEntity> ingest(InputStream input) throws ModuleException {
+    public Collection<SIPDto> ingest(InputStream input) throws ModuleException {
         Reader json = new InputStreamReader(input, DEFAULT_CHARSET);
         try {
             SIPCollection sips = gson.fromJson(json, SIPCollection.class);
@@ -163,7 +164,7 @@ public class IngestService implements IIngestService {
     }
 
     @Override
-    public SIPEntity retryIngest(String ipId) throws ModuleException {
+    public SIPDto retryIngest(String ipId) throws ModuleException {
         Optional<SIPEntity> oSip = sipRepository.findOneByIpId(ipId);
         if (oSip.isPresent()) {
             SIPEntity sip = oSip.get();
@@ -188,7 +189,7 @@ public class IngestService implements IIngestService {
                     throw new EntityOperationForbiddenException(ipId, SIPEntity.class,
                             "SIP is in undefined state for ingest retry");
             }
-            return sipRepository.findOne(sip.getId());
+            return sipRepository.findOne(sip.getId()).toDto();
         } else {
             throw new EntityNotFoundException(ipId, SIPEntity.class);
         }
@@ -200,7 +201,7 @@ public class IngestService implements IIngestService {
      * @param metadata bulk ingest metadata
      * @return a {@link SIPEntity} ready to be processed saved in database or a rejected one not saved in database
      */
-    private SIPEntity store(SIP sip, IngestMetadata metadata) {
+    private SIPDto store(SIP sip, IngestMetadata metadata) {
 
         // Manage version
         Integer version = sipRepository.getNextVersion(sip.getId());
@@ -219,11 +220,11 @@ public class IngestService implements IIngestService {
             // Invalid SIP
             entity.setState(SIPState.REJECTED);
             errors.getAllErrors().forEach(error -> {
-                entity.getReasonsForRejection().add(error.getDefaultMessage());
+                entity.getRejectionCauses().add(error.getDefaultMessage());
                 LOGGER.warn("SIP {} error : {}", entity.getSipId(), error.toString());
             });
             LOGGER.warn("SIP {} rejected cause invalid", entity.getSipId());
-            return entity;
+            return entity.toDto();
         }
 
         try {
@@ -234,7 +235,7 @@ public class IngestService implements IIngestService {
             // Prevent SIP from being ingested twice
             if (sipRepository.isAlreadyIngested(checksum)) {
                 entity.setState(SIPState.REJECTED);
-                entity.getReasonsForRejection().add("SIP already submitted");
+                entity.getRejectionCauses().add("SIP already submitted");
                 LOGGER.warn("SIP {} rejected cause already submitted", entity.getSipId());
             } else {
                 // Entity is persisted only if all properties properly set
@@ -248,9 +249,9 @@ public class IngestService implements IIngestService {
             LOGGER.error("Cannot compute checksum for SIP identified by {}", sip.getId());
             LOGGER.error("Exception occurs!", e);
             entity.setState(SIPState.REJECTED);
-            entity.getReasonsForRejection().add("Not able to generate internal SIP checksum");
+            entity.getRejectionCauses().add("Not able to generate internal SIP checksum");
         }
 
-        return entity;
+        return entity.toDto();
     }
 }

@@ -42,7 +42,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
+import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingService;
 
 /**
  * Test Ingest API through its client
@@ -84,14 +85,15 @@ public class IngestClientIT extends AbstractRegardsWebIT {
 
     @Test
     public void ingestSIP() {
-        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder("processingChain");
+        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
+                IngestProcessingService.DEFAULT_INGEST_CHAIN_LABEL);
 
         SIPBuilder sipBuilder = new SIPBuilder("CLIENT_SIP_001");
         String filename = OffsetDateTime.now().toString();
 
         collectionBuilder.add(sipBuilder.buildReference(Paths.get(filename), "sdflksdlkfjlsd45fg46sdfgdf"));
 
-        ResponseEntity<Collection<SIPEntity>> entities = client.ingest(collectionBuilder.build());
+        ResponseEntity<Collection<SIPDto>> entities = client.ingest(collectionBuilder.build());
         Assert.assertEquals(HttpStatus.CREATED, entities.getStatusCode());
     }
 }

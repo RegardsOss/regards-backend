@@ -38,8 +38,10 @@ import fr.cnes.regards.modules.ingest.dao.ISIPSessionRepository;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
+import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingService;
 
 /**
  * @author Marc Sordi
@@ -76,17 +78,18 @@ public class IngestServiceTest extends AbstractSIPTest {
     @Test
     public void ingestWithCollision() throws ModuleException {
 
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(PROCESSING, SESSION_ID);
+        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(IngestProcessingService.DEFAULT_INGEST_CHAIN_LABEL,
+                SESSION_ID);
         SIPCollection collection = colBuilder.build();
 
         SIPBuilder builder = new SIPBuilder("SIP_001");
         collection.add(builder.buildReference(Paths.get("sip1.xml"), "zaasfsdfsdlfkmsldgfml12df"));
 
         // First ingestion
-        Collection<SIPEntity> results = ingestService.ingest(collection);
+        Collection<SIPDto> results = ingestService.ingest(collection);
         Assert.assertNotNull(results);
         Assert.assertTrue(results.size() == 1);
-        SIPEntity one = results.iterator().next();
+        SIPDto one = results.iterator().next();
         Assert.assertTrue(one.getVersion() == 1);
         Assert.assertTrue(SIPState.CREATED.equals(one.getState()));
 
@@ -94,7 +97,7 @@ public class IngestServiceTest extends AbstractSIPTest {
         results = ingestService.ingest(collection);
         Assert.assertNotNull(results);
         Assert.assertTrue(results.size() == 1);
-        SIPEntity two = results.iterator().next();
+        SIPDto two = results.iterator().next();
         Assert.assertTrue(two.getVersion() == 2);
         Assert.assertTrue(SIPState.REJECTED.equals(two.getState()));
 
@@ -110,17 +113,17 @@ public class IngestServiceTest extends AbstractSIPTest {
     @Test
     public void ingestWithoutSession() throws ModuleException {
 
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(PROCESSING);
+        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(IngestProcessingService.DEFAULT_INGEST_CHAIN_LABEL);
         SIPCollection collection = colBuilder.build();
 
         SIPBuilder builder = new SIPBuilder("SIP_001");
         collection.add(builder.buildReference(Paths.get("sip1.xml"), "zaasfsdfsdlfkmsldgfml12df"));
 
         // First ingestion
-        Collection<SIPEntity> results = ingestService.ingest(collection);
+        Collection<SIPDto> results = ingestService.ingest(collection);
         Assert.assertNotNull(results);
         Assert.assertTrue(results.size() == 1);
-        SIPEntity one = results.iterator().next();
+        SIPDto one = results.iterator().next();
         Assert.assertTrue(one.getVersion() == 1);
         Assert.assertTrue(SIPState.CREATED.equals(one.getState()));
 
@@ -262,17 +265,18 @@ public class IngestServiceTest extends AbstractSIPTest {
 
         String sipFilename = "sip" + version + ".xml";
 
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(PROCESSING, SESSION_ID);
+        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(IngestProcessingService.DEFAULT_INGEST_CHAIN_LABEL,
+                SESSION_ID);
         SIPCollection collection = colBuilder.build();
 
         SIPBuilder builder = new SIPBuilder(sipId);
         collection.add(builder.buildReference(Paths.get(sipFilename), ChecksumUtils
                 .computeHexChecksum(new ByteArrayInputStream(sipFilename.getBytes()), IngestService.MD5_ALGORITHM)));
 
-        Collection<SIPEntity> results = ingestService.ingest(collection);
+        Collection<SIPDto> results = ingestService.ingest(collection);
         Assert.assertNotNull(results);
         Assert.assertTrue(results.size() == 1);
-        SIPEntity one = results.iterator().next();
+        SIPDto one = results.iterator().next();
         Assert.assertTrue(one.getVersion() == version);
         Assert.assertTrue(SIPState.CREATED.equals(one.getState()));
     }

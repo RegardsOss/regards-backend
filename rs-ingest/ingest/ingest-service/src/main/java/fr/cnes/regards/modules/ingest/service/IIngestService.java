@@ -23,7 +23,7 @@ import java.util.Collection;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 
 /**
  * Ingest service interface
@@ -36,24 +36,24 @@ public interface IIngestService {
     /**
      * Store SIP for further asynchronous processing
      * @param sips raw {@link SIPCollection}
-     * @return internal storage of SIP
+     * @return SIP DTO
      * @throws ModuleException if error occurs!
      */
-    Collection<SIPEntity> ingest(SIPCollection sips) throws ModuleException;
+    Collection<SIPDto> ingest(SIPCollection sips) throws ModuleException;
 
     /**
      * Store SIP for further asynchronous processing
      * @param input JSON file containing a SIP collection
-     * @return internal storage of SIP
+     * @return SIP DTO
      * @throws ModuleException if error occurs!
      */
-    Collection<SIPEntity> ingest(InputStream input) throws ModuleException;
+    Collection<SIPDto> ingest(InputStream input) throws ModuleException;
 
     /**
      * Retry to store a SIP already submitted previously.
      * @param ipId {@link String} ipId of the SIP to retry
-     * @return updated {@link SIPEntity}
+     * @return SIP DTO
      * @throws ModuleException
      */
-    SIPEntity retryIngest(String ipId) throws ModuleException;
+    SIPDto retryIngest(String ipId) throws ModuleException;
 }

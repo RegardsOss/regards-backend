@@ -49,6 +49,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 
 /**
  * System POJO for storing SIP.
@@ -110,10 +111,10 @@ public class SIPEntity {
     private SIPState state;
 
     /**
-     * Optional message when SIP is rejected
+     * Optional message(s) when SIP is rejected
      */
     @Transient
-    private List<String> reasonsForRejection;
+    private List<String> rejectionCauses;
 
     /**
      * Real SIP content checksum
@@ -215,11 +216,11 @@ public class SIPEntity {
         this.version = version;
     }
 
-    public List<String> getReasonsForRejection() {
-        if (reasonsForRejection == null) {
-            reasonsForRejection = new ArrayList<>();
+    public List<String> getRejectionCauses() {
+        if (rejectionCauses == null) {
+            rejectionCauses = new ArrayList<>();
         }
-        return reasonsForRejection;
+        return rejectionCauses;
     }
 
     public String getOwner() {
@@ -244,6 +245,20 @@ public class SIPEntity {
 
     public void setSession(SIPSession session) {
         this.session = session;
+    }
+
+    /**
+     * Programmatic mapper between {@link SIPEntity} to {@link SIPDto}
+     * @return {@link SIPDto}
+     */
+    public SIPDto toDto() {
+        SIPDto dto = new SIPDto();
+        dto.setId(sipId);
+        dto.setIpId(ipId);
+        dto.setRejectionCauses(rejectionCauses);
+        dto.setState(state);
+        dto.setVersion(version);
+        return dto;
     }
 
 }

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +44,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -53,6 +55,7 @@ import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
+import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
@@ -140,18 +143,23 @@ public class ScheduledIngestTaskTest extends AbstractRegardsServiceIT {
         // 1. Add a new SIP with CREATED Status.
         SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(DEFAULT_PROCESSING_CHAIN_TEST, "sessionId");
         SIPCollection collection = colBuilder.build();
+
         SIPBuilder builder = new SIPBuilder(SIP_ID_TEST);
+        builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("testing.json"),
+                                                             "2323DFgfdgdfgfdgfdgdfgesd");
+        builder.addContentInformation();
         collection.add(builder.build());
-        Collection<SIPEntity> results = ingestService.ingest(collection);
-        Long sipIdTest = results.stream().findFirst().get().getId();
-        SIPEntity sip = sipRepository.findOne(sipIdTest);
+
+        Collection<SIPDto> results = ingestService.ingest(collection);
+        String ipId = results.stream().findFirst().get().getIpId();
+        SIPEntity sip = sipRepository.findOneByIpId(ipId).get();
         Assert.assertTrue("Error creating new SIP", SIPState.CREATED.equals(sip.getState()));
 
         // 2. Wait for scheduled task to be run and finished
         Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1000);
 
         // 3. Check that the SIP has been successully handled
-        sip = sipRepository.findOne(sipIdTest);
+        sip = sipRepository.findOneByIpId(ipId).get();
         Assert.assertEquals(SIPState.AIP_CREATED, sip.getState());
 
         // 4. Check that the associated AIP is generated
@@ -168,10 +176,11 @@ public class ScheduledIngestTaskTest extends AbstractRegardsServiceIT {
         aip = aipRepository.findOne(aip.getId());
         Assert.assertEquals(AIPState.QUEUED, aip.getState());
 
-        sip = sipRepository.findOne(sipIdTest);
+        sip = sipRepository.findOneByIpId(ipId).get();
         Assert.assertEquals(SIPState.AIP_CREATED, sip.getState());
 
-        // 7. Verify that a new storage request is not sent to archival storage during the time when aip is in queued state
+        // 7. Verify that a new storage request is not sent to archival storage during the time when aip is in queued
+        // state
         Mockito.reset(aipClient);
         Thread.sleep(Integer.parseInt(scheduledAipBulkRequestDelay));
         Mockito.verify(aipClient, Mockito.times(0)).store(Mockito.any());
@@ -185,18 +194,23 @@ public class ScheduledIngestTaskTest extends AbstractRegardsServiceIT {
         // 1. Add a new SIP with CREATED Status.
         SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(DEFAULT_PROCESSING_CHAIN_TEST, "sessionId");
         SIPCollection collection = colBuilder.build();
+
         SIPBuilder builder = new SIPBuilder(SIP_ID_TEST);
+        builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("test.xml"),
+                                                             "sdsdfm1211vsdfdsfddsffdsd");
+        builder.addContentInformation();
         collection.add(builder.build());
-        Collection<SIPEntity> results = ingestService.ingest(collection);
-        Long sipIdTest = results.stream().findFirst().get().getId();
-        SIPEntity sip = sipRepository.findOne(sipIdTest);
+
+        Collection<SIPDto> results = ingestService.ingest(collection);
+        String ipId = results.stream().findFirst().get().getIpId();
+        SIPEntity sip = sipRepository.findOneByIpId(ipId).get();
         Assert.assertTrue("Error creating new SIP", SIPState.CREATED.equals(sip.getState()));
 
         // 2. Wait for scheduled task to be run and finished
         Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1000);
 
         // 3. Check that the SIP has been successully handled
-        sip = sipRepository.findOne(sipIdTest);
+        sip = sipRepository.findOneByIpId(ipId).get();
         Assert.assertEquals(SIPState.AIP_CREATED, sip.getState());
 
         // 4. Check that the associated AIP is generated
@@ -216,10 +230,11 @@ public class ScheduledIngestTaskTest extends AbstractRegardsServiceIT {
         aip = aipRepository.findOne(aip.getId());
         Assert.assertEquals(AIPState.STORE_REJECTED, aip.getState());
 
-        sip = sipRepository.findOne(sipIdTest);
+        sip = sipRepository.findOneByIpId(ipId).get();
         Assert.assertEquals(SIPState.AIP_CREATED, sip.getState());
 
-        // 7. Verify that a new storage request is not sent to archival storage during the time when aip is in queued state
+        // 7. Verify that a new storage request is not sent to archival storage during the time when aip is in queued
+        // state
         Mockito.reset(aipClient);
         Thread.sleep(Integer.parseInt(scheduledAipBulkRequestDelay));
         Mockito.verify(aipClient, Mockito.times(0)).store(Mockito.any());
