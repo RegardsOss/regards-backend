@@ -99,7 +99,6 @@ public class SIPController implements IResourceController<SIPEntity> {
      * @return {@link SIPEntity} collection
      * @throws ModuleException if error occurs!
      */
-    // TODO change response
     @ResourceAccess(description = "SIP collections submission (bulk request)")
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     public ResponseEntity<Collection<SIPDto>> ingest(@RequestBody SIPCollection sips) throws ModuleException {
@@ -117,7 +116,6 @@ public class SIPController implements IResourceController<SIPEntity> {
      * @throws ModuleException
      *             if error occurs!
      */
-    // TODO change response
     @ResourceAccess(description = "SIP collection submission using multipart request")
     @RequestMapping(method = RequestMethod.POST, value = IMPORT_PATH)
     public ResponseEntity<Collection<SIPDto>> ingestFile(@RequestParam("file") MultipartFile file)
