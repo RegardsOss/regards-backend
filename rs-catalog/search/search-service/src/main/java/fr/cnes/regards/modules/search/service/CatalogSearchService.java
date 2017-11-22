@@ -228,30 +228,31 @@ public class CatalogSearchService implements ICatalogSearchService {
             // on which user has right
             final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
 
-            // Retrieve all datasets that permit data objects retrieval (ie groups with FULL_ACCESS privilege)
-            Page<Dataset> page = searchService
-                    .search(Searches.onSingleEntity(searchKey.getSearchIndex(), EntityType.DATASET), Integer.MAX_VALUE,
-                            ICriterion.in("metadata.dataObjectsGroups",
-                                          accessGroups.toArray(new String[accessGroups.size()])));
-            Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId)
-                    .map(UniformResourceName::toString).collect(Collectors.toSet());
-            // If summary is restricted to a specified datasetIpId, it must be taken into account
-            if (datasetIpId != null) {
-                if (datasetIpids.contains(datasetIpId)) {
-                    datasetIpids = Collections.singleton(datasetIpId);
-                } else { // no dataset => summary contains normaly only 0 values as total
-                    // we just need to clear map of sub summaries
-                    summary.getSubSummariesMap().clear();
+            // If accessGropups is null, user is admin
+            if (accessGroups != null) {
+                // Retrieve all datasets that permit data objects retrieval (ie groups with FULL_ACCESS privilege)
+                Page<Dataset> page = searchService
+                        .search(Searches.onSingleEntity(searchKey.getSearchIndex(), EntityType.DATASET), Integer.MAX_VALUE,
+                                ICriterion.in("metadata.dataObjectsGroups", accessGroups.toArray(new String[accessGroups.size()])));
+                Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId)
+                        .map(UniformResourceName::toString).collect(Collectors.toSet());
+                // If summary is restricted to a specified datasetIpId, it must be taken into account
+                if (datasetIpId != null) {
+                    if (datasetIpids.contains(datasetIpId)) {
+                        datasetIpids = Collections.singleton(datasetIpId);
+                    } else { // no dataset => summary contains normaly only 0 values as total
+                        // we just need to clear map of sub summaries
+                        summary.getSubSummariesMap().clear();
+                    }
                 }
-            }
-
-            for (Iterator<Entry<String, DocFilesSubSummary>> i = summary.getSubSummariesMap().entrySet().iterator(); i
-                    .hasNext();) {
-                Entry<String, DocFilesSubSummary> entry = i.next();
-                // Remove it if subSummary discriminant isn't a dataset or isn't a dataset on which data can be
-                // retrieved for current user
-                if (!datasetIpids.contains(entry.getKey())) {
-                    i.remove();
+                for (Iterator<Entry<String, DocFilesSubSummary>> i = summary.getSubSummariesMap().entrySet()
+                        .iterator(); i.hasNext(); ) {
+                    Entry<String, DocFilesSubSummary> entry = i.next();
+                    // Remove it if subSummary discriminant isn't a dataset or isn't a dataset on which data can be
+                    // retrieved for current user
+                    if (!datasetIpids.contains(entry.getKey())) {
+                        i.remove();
+                    }
                 }
             }
             return summary;
