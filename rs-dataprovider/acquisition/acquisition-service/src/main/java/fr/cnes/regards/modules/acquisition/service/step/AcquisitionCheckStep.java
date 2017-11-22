@@ -125,7 +125,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
                 File currentFile = acqFile.getFile();
 
                 // execute the check plugin
-                if (checkPlugin.runPlugin(currentFile, chainGeneration.getDataSet())) {
+                if (checkPlugin.runPlugin(chainGeneration.getLabel(), currentFile, chainGeneration.getDataSet())) {
                     acqFile.setStatus(AcquisitionFileStatus.VALID);
                 } else {
                     acqFile.setStatus(AcquisitionFileStatus.INVALID);

@@ -41,7 +41,7 @@ public class Cryosat2CheckingPluginTest {
 
         // Launch plugin
         Cryosat2ExtCheckingFilePlugin plugin = new Cryosat2ExtCheckingFilePlugin();
-        Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
+        Assert.assertTrue(plugin.runPlugin("chain label", new File(fileName), dataSetId));
         Assert.assertEquals("CS_OPER_REP_MACP___20100711T145514_99999999T999999_0001", plugin.getProductName());
     }
 
@@ -53,7 +53,7 @@ public class Cryosat2CheckingPluginTest {
 
         // Launch plugin
         Cryosat2ExtCheckingFilePlugin plugin = new Cryosat2ExtCheckingFilePlugin();
-        Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
+        Assert.assertTrue(plugin.runPlugin("chain label", new File(fileName), dataSetId));
         Assert.assertEquals("CS_OPER_REP_MACP___20100711T145514_99999999T999999_0001", plugin.getProductName());
     }
 }

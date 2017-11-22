@@ -42,7 +42,7 @@ public class Jason3LtmCheckingPluginTest {
         String ProductNameTest = "PJ3_I1_AXXCNE20081202_110021_20080615_115927_20081201_120000";
 
         File testFile = new File("src/test/resources/income/data/JASON3/LTM", fileNameTest);
-        Assert.assertTrue(plugin.runPlugin(testFile, "DA_TC_JASON3_LTM"));
+        Assert.assertTrue(plugin.runPlugin("chain label", testFile, "DA_TC_JASON3_LTM"));
         Assert.assertEquals(ProductNameTest, plugin.getProductName());
     }
 

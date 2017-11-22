@@ -47,7 +47,7 @@ public class Jason2CheckingPlugin implements ICheckFilePlugin {
     }
 
     @Override
-    public boolean runPlugin(File fileToCheck, String datasetId) throws ModuleException {
+    public boolean runPlugin(String chainLabel, File fileToCheck, String datasetId) throws ModuleException {
 
         boolean result = false;
 

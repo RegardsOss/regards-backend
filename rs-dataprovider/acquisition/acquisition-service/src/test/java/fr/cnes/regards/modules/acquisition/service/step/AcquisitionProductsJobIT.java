@@ -30,8 +30,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
-import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
@@ -39,14 +37,10 @@ import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
-import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
-import fr.cnes.regards.modules.acquisition.domain.metadata.dto.SetOfMetaFileDto;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceConfiguration;
 import fr.cnes.regards.modules.acquisition.service.conf.MockedFeignClientConf;
-import fr.cnes.regards.modules.acquisition.service.plugins.BasicCheckFilePlugin;
-import fr.cnes.regards.modules.acquisition.service.plugins.CheckInPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.TestScanDirectoryPlugin;
 
 /**
@@ -64,9 +58,6 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         metaFiles.add(metaFileMandatory);
         metaFiles.add(metaFileOptional);
 
-        String metaFilesJson = new Gson().toJson(SetOfMetaFileDto.fromSetOfMetaFile(metaFiles));
-        String metaProductJson = new Gson().toJson(MetaProductDto.fromMetaProduct(metaProduct));
-
         chain.setLastDateActivation(OffsetDateTime.now().minusDays(10));
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
                                                                                 IAcquisitionScanDirectoryPlugin.class));
@@ -76,9 +67,6 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
         chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("BasicCheckFilePlugin",
                                                                                  ICheckFilePlugin.class));
-        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_PRODUCT_PARAM, metaProductJson);
-        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.META_FILE_PARAM, metaFilesJson);
-        chain.addCheckAcquisitionParameter(BasicCheckFilePlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
 
         Assert.assertTrue(chainService.run(chain));
 
@@ -179,7 +167,6 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         // Check plugin
         chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("CheckInPlugin",
                                                                                  ICheckFilePlugin.class));
-        chain.addCheckAcquisitionParameter(CheckInPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
 
         Assert.assertTrue(chainService.run(chain));
 
@@ -229,7 +216,6 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         // Check plugin
         chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("CheckInPlugin",
                                                                                  ICheckFilePlugin.class));
-        chain.addCheckAcquisitionParameter(CheckInPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
 
         Assert.assertTrue(chainService.run(chain));
 
@@ -272,7 +258,6 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         // Check plugin
         chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("CheckInPlugin",
                                                                                  ICheckFilePlugin.class));
-        chain.addCheckAcquisitionParameter(CheckInPlugin.CHAIN_GENERATION_PARAM, chain.getLabel());
 
         Assert.assertTrue(chainService.run(chain));
 

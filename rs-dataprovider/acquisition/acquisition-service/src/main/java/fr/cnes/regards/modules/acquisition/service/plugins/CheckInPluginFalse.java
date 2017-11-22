@@ -40,7 +40,7 @@ public class CheckInPluginFalse implements ICheckFilePlugin {
     }
 
     @Override
-    public boolean runPlugin(File filetoCheck, String dataSetId) throws ModuleException {
+    public boolean runPlugin(String chainLabel, File filetoCheck, String dataSetId) throws ModuleException {
         return false;
     }
 

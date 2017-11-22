@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
@@ -40,21 +39,12 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicCheckFilePlugin.class);
 
-    public static final String META_PRODUCT_PARAM = "meta-produt";
-
-    public static final String META_FILE_PARAM = "meta-file";
-
-    public static final String CHAIN_GENERATION_PARAM = "chain-label";
-
-    @PluginParameter(name = CHAIN_GENERATION_PARAM, optional = true)
-    private String chainLabel;
-
     protected String productName;
 
     protected String nodeIdentifier;
 
     @Override
-    public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
+    public boolean runPlugin(String chainLabel, File fileToCheck, String dataSetId) throws ModuleException {
         LOGGER.info("Start check file <{}> for the chain <{}>", fileToCheck.getAbsoluteFile(), chainLabel);
         boolean result = false;
 

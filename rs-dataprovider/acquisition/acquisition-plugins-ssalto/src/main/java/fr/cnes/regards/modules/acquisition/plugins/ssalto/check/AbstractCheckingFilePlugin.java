@@ -56,7 +56,7 @@ public abstract class AbstractCheckingFilePlugin implements ICheckFilePlugin {
      * The {@link Product} name is the file name less the extension if the extension is presents in a {@link List}.
      */
     @Override
-    public boolean runPlugin(File fileToCheck, String datasetId) throws ModuleException {
+    public boolean runPlugin(String chainLabel, File fileToCheck, String datasetId) throws ModuleException {
         boolean result = false;
 
         // Check file exists
