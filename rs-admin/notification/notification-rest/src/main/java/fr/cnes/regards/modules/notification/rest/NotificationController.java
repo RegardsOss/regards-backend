@@ -18,13 +18,19 @@
  */
 package fr.cnes.regards.modules.notification.rest;
 
-import javax.validation.Valid;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -177,7 +183,7 @@ public class NotificationController {
     @RequestMapping(value = NOTIFICATION_SETTINGS, method = RequestMethod.PUT)
     @ResourceAccess(description = "Define the endpoint for updating the notification status")
     public ResponseEntity<NotificationSettings> updateNotificationSettings(
-            final NotificationSettingsDTO pNotificationSettings) throws EntityNotFoundException {
+            @RequestBody NotificationSettingsDTO pNotificationSettings) throws EntityNotFoundException {
         final NotificationSettings settings = notificationSettingsService
                 .updateNotificationSettings(pNotificationSettings);
         return new ResponseEntity<>(settings, HttpStatus.OK);
