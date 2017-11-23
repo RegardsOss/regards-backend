@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.service.step;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -88,6 +89,7 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
+import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
@@ -278,38 +280,38 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
     }
 
     protected void mockIngestClientResponseOK() {
-        Collection<SIPEntity> sips = new ArrayList<>();
-        SIPEntity sipEntity = new SIPEntity();
+        Collection<SIPDto> sips = new ArrayList<>();
+        SIPDto sipEntity = new SIPDto();
         sipEntity.setState(SIPState.CREATED);
         sips.add(sipEntity);
 
         Mockito.when(ingestClient.ingest(Mockito.any()))
-                .thenReturn(new ResponseEntity<Collection<SIPEntity>>(sips, HttpStatus.CREATED));
+                .thenReturn(new ResponseEntity<Collection<SIPDto>>(sips, HttpStatus.CREATED));
     }
 
     protected void mockIngestClientResponseUnauthorized() {
-        Collection<SIPEntity> sips = new ArrayList<>();
-        SIPEntity sipEntity = new SIPEntity();
+        Collection<SIPDto> sips = new ArrayList<>();
+        SIPDto sipEntity = new SIPDto();
         sipEntity.setState(SIPState.REJECTED);
         sips.add(sipEntity);
 
         Mockito.when(ingestClient.ingest(Mockito.any()))
-                .thenReturn(new ResponseEntity<Collection<SIPEntity>>(sips, HttpStatus.UNAUTHORIZED));
+                .thenReturn(new ResponseEntity<Collection<SIPDto>>(sips, HttpStatus.UNAUTHORIZED));
     }
 
     protected void mockIngestClientResponsePartialContent(String... sipIds) {
-        Collection<SIPEntity> sips = new ArrayList<>();
+        Collection<SIPDto> sips = new ArrayList<>();
 
         for (String sipId : sipIds) {
-            SIPEntity sipEntity = new SIPEntity();
-            sipEntity.setReasonForRejection("bad SIP format");
+            SIPDto sipEntity = new SIPDto();
+            sipEntity.setRejectionCauses(Arrays.asList("bad SIP format"));
             sipEntity.setState(SIPState.REJECTED);
-            sipEntity.setSipId(sipId);
+            sipEntity.setIpId(sipId);
             sips.add(sipEntity);
         }
 
         Mockito.when(ingestClient.ingest(Mockito.any()))
-                .thenReturn(new ResponseEntity<Collection<SIPEntity>>(sips, HttpStatus.PARTIAL_CONTENT));
+                .thenReturn(new ResponseEntity<Collection<SIPDto>>(sips, HttpStatus.PARTIAL_CONTENT));
     }
 
     protected void waitJob(long millSecs) {

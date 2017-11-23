@@ -41,6 +41,7 @@ import fr.cnes.regards.modules.ingest.client.IIngestClient;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
+import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 
 /**
@@ -159,7 +160,7 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
         LOG.info("[{}] Start publish SIP Collections", session);
         int nbSipOk = 0;
 
-        ResponseEntity<Collection<SIPEntity>> response = ingestClient.ingest(sipCollection);
+        ResponseEntity<Collection<SIPDto>> response = ingestClient.ingest(sipCollection);
 
         if (response.getStatusCode().equals(HttpStatus.CREATED)) {
             nbSipOk = responseSipCreated(session, sipCollection);
@@ -200,16 +201,16 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
      * @param sipCollection the {@link SIPCollection} send to Ingest microservice
      * @return the number of {@link Product} that has been sended to Ingest microservice
      */
-    private int responseSipPartiallyCreated(String session, Collection<SIPEntity> rejectedSips,
+    private int responseSipPartiallyCreated(String session, Collection<SIPDto> rejectedSips,
             SIPCollection sipCollection) {
         LOG.info("features size:{} - rejected size:{}", sipCollection.getFeatures().size(), rejectedSips.size());
         LOG.error("[{}] SIP collection has heen partially processed with success : {} ingested / {} rejected", session,
                   sipCollection.getFeatures().size() - rejectedSips.size(), rejectedSips.size());
         Set<String> sipIdError = new HashSet<>();
-        for (SIPEntity sipEntity : rejectedSips) {
-            LOG.error("[{}] SIP in error : productName=<{}>, reason=<{}>", session, sipEntity.getSipId(),
-                      sipEntity.getReasonForRejection());
-            sipIdError.add(sipEntity.getSipId());
+        for (SIPDto sipEntity : rejectedSips) {
+            LOG.error("[{}] SIP in error : productName=<{}>, reason=<{}>", session, sipEntity.getIpId(),
+                      sipEntity.getRejectionCauses());
+            sipIdError.add(sipEntity.getIpId());
         }
 
         int nbSipOK = 0;

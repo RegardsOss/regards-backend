@@ -130,9 +130,9 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
         return attributeMap;
     }
 
-    public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
-        return new TreeMap<>();
-    }
+//    public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
+//        return new TreeMap<>();
+//    }
 
     @Override
     public SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId) throws ModuleException {
