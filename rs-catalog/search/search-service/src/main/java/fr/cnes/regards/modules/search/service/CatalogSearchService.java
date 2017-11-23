@@ -228,11 +228,12 @@ public class CatalogSearchService implements ICatalogSearchService {
             // on which user has right
             final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
 
-            // If accessGropups is null, user is admin
+            // If accessGroups is null, user is admin
             if (accessGroups != null) {
-                // Retrieve all datasets that permit data objects retrieval (ie groups with FULL_ACCESS privilege)
+                // Retrieve all datasets that permit data objects retrieval (ie groups with FULL_ACCESS privilege), set
+                // page size to max value because datasets count isn't too large...
                 Page<Dataset> page = searchService
-                        .search(Searches.onSingleEntity(searchKey.getSearchIndex(), EntityType.DATASET), Integer.MAX_VALUE,
+                        .search(Searches.onSingleEntity(searchKey.getSearchIndex(), EntityType.DATASET), ISearchService.MAX_PAGE_SIZE,
                                 ICriterion.in("metadata.dataObjectsGroups", accessGroups.toArray(new String[accessGroups.size()])));
                 Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId)
                         .map(UniformResourceName::toString).collect(Collectors.toSet());
