@@ -137,7 +137,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
         BasketSelectionRequest request = new BasketSelectionRequest();
         request.setIpIds(Collections.singleton("URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
 
-        Assert.assertEquals("ipId:(URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1)",
+        Assert.assertEquals("ipId:\"URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1\"",
                             request.computeOpenSearchRequest());
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
@@ -154,7 +154,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
         request.setIpIds(Collections.singleton("URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
         request.setSelectAllOpenSearchRequest("");
 
-        Assert.assertEquals("NOT(ipId:(URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1))",
+        Assert.assertEquals("NOT(ipId:\"URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1\")",
                             request.computeOpenSearchRequest());
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
@@ -171,7 +171,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
         request.setIpIds(Collections.singleton("URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
         request.setSelectAllOpenSearchRequest("MACHIN: BIDULE AND PATATIPATAT: POUET");
 
-        Assert.assertEquals("(MACHIN: BIDULE AND PATATIPATAT: POUET) AND NOT(ipId:(URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1))",
+        Assert.assertEquals("(MACHIN: BIDULE AND PATATIPATAT: POUET) AND NOT(ipId:\"URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1\")",
                             request.computeOpenSearchRequest());
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();

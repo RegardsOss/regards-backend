@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.order.domain.basket;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
@@ -52,7 +53,7 @@ public class BasketSelectionRequest {
         String ipIdsOpenSearch = null;
         // ipIds specified
         if ((ipIds != null) && !ipIds.isEmpty()) {
-            ipIdsOpenSearch = "ipId:(" + Joiner.on(" OR ").join(ipIds) + ")";
+            ipIdsOpenSearch = ipIds.stream().map(ipId -> "ipId:\"" + ipId + "\"").collect(Collectors.joining(" OR "));
         } else if (selectAllOpenSearchRequest == null) {
             throw new BadBasketSelectionRequest("If opensearch request is null, at least on IP_ID must be provided");
         } else { // no IpIds specified => selectAll
