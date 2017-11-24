@@ -75,7 +75,7 @@ public class ProcessGeneration implements IIdentifiable<Long> {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime startDate;
 
-    @Column(name = "stoop_date")
+    @Column(name = "stop_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime stopDate;
 
@@ -159,6 +159,43 @@ public class ProcessGeneration implements IIdentifiable<Long> {
 
     public void sipStoredIncrease() {
         this.nbSipStored++;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((chainGeneration == null) ? 0 : chainGeneration.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result + ((session == null) ? 0 : session.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ProcessGeneration other = (ProcessGeneration) obj;
+        if (chainGeneration == null) {
+            if (other.chainGeneration != null)
+                return false;
+        } else if (!chainGeneration.equals(other.chainGeneration))
+            return false;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        if (session == null) {
+            if (other.session != null)
+                return false;
+        } else if (!session.equals(other.session))
+            return false;
+        return true;
     }
 
 }

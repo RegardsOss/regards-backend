@@ -21,9 +21,9 @@ public class ProductJobParameter extends JobParameter {
         return super.getValue();
     }
 
-    public void setValue(String value) {
-        super.setValue(value);
-    }
+//    public void setValue(String value) {
+//        super.setValue(value);
+//    }
 
     /**
      * Check if given {@link JobParameter} is compatible with ProductJobParameter ie same name

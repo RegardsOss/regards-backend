@@ -42,9 +42,9 @@ public final class ProductBuilder {
     }
 
     /**
-     * Create a {@link Product}
-     * @param name
-     * @return
+     * Create a {@link ProductBuilder}
+     * @param name the {@link Product} {@link String} value
+     * @return the current {@link ProductBuilder}
      */
     public static ProductBuilder build(String name) {
         final Product pr = new Product();
@@ -52,30 +52,59 @@ public final class ProductBuilder {
         return new ProductBuilder(pr);
     }
 
+    /**
+     * Get the current {@link Product}
+     * @return the current {@link Product}
+     */
     public Product get() {
         return product;
     }
 
+    /**
+     * Set the status property to the current {@link Product}
+     * @param status the status {@link String} value
+     * @return the current {@link ProductBuilder}
+     */
     public ProductBuilder withStatus(ProductStatus status) {
         product.setStatus(status);
         return this;
     }
 
+    /**
+     * Set the {@link MetaProduct} property to the current {@link Product}
+     * @param metaProduct
+     * @return the current {@link ProductBuilder}
+     */
     public ProductBuilder withMetaProduct(MetaProduct metaProduct) {
         product.setMetaProduct(metaProduct);
         return this;
     }
 
+    /**
+     * Set the session property to the current {@link Product}
+     * @param session the session {@link String} value
+     * @return the current {@link ProductBuilder}
+     */
     public ProductBuilder withSession(String session) {
         product.setSession(session);
         return this;
     }
 
+    /**
+     * Set the ingest processing chain property to the current {@link Product}
+     * @param ingestChain the ingest processing chain {@link String} value
+     * @return the current {@link ProductBuilder}
+     */
     public ProductBuilder withIngestProcessingChain(String ingestChain) {
         product.setIngestChain(ingestChain);
         return this;
     }
 
+    /**
+     * Set the sended property to the current {@link Product}
+     * @param sended
+     * @return the current {@link ProductBuilder}
+     */
     public ProductBuilder isSended(boolean sended) {
         product.setSended(sended);
         return this;

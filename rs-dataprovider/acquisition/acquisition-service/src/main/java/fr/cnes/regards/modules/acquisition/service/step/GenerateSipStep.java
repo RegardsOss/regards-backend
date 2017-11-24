@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -143,7 +142,6 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
     private void updateProcessGeneration() {
         ProcessGeneration processGeneration = processService.findBySession(chainGeneration.getSession());
         if (processGeneration != null) {
-            processGeneration.sipCreatedIncrease();
             processService.save(processGeneration);
         }
     }

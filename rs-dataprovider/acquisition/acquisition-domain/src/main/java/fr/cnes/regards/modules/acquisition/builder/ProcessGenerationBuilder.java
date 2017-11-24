@@ -44,7 +44,7 @@ public final class ProcessGenerationBuilder {
     /**
      * Create a {@link ProcessGeneration}
      * @param session
-     * @return
+     * @return the current {@link ProcessGenerationBuilder}
      */
     public static ProcessGenerationBuilder build(String session) {
         final ProcessGeneration processGeneration = new ProcessGeneration();
@@ -52,20 +52,39 @@ public final class ProcessGenerationBuilder {
         return new ProcessGenerationBuilder(processGeneration);
     }
 
+    /**
+     * Get the current {@link ProcessGeneration}
+     * @return the current {@link ProcessGeneration}
+     */
     public ProcessGeneration get() {
         return process;
     }
 
+    /**
+     * Set the start date property to the current {@link ProcessGeneration}
+     * @param date
+     * @return the current {@link ProcessGenerationBuilder}
+     */
     public ProcessGenerationBuilder withStartDate(OffsetDateTime date) {
         process.setStartDate(date);
         return this;
     }
 
+    /**
+     * Set the stop date property to the current {@link ProcessGeneration}
+     * @param date
+     * @return
+     */
     public ProcessGenerationBuilder withStopDate(OffsetDateTime date) {
         process.setStopDate(date);
         return this;
     }
 
+    /**
+     * Set the {@link ChainGeneration} property to the current {@link ProcessGeneration}
+     * @param chainGeneration
+     * @return the current {@link ProcessGenerationBuilder}
+     */
     public ProcessGenerationBuilder withChain(ChainGeneration chainGeneration) {
         process.setChainGeneration(chainGeneration);
         return this;

@@ -22,9 +22,9 @@ public class ChainGenerationJobParameter extends JobParameter {
         return super.getValue();
     }
 
-    public void setValue(ChainGeneration value) {
-        super.setValue(value);
-    }
+//    public void setValue(ChainGeneration value) {
+//        super.setValue(value);
+//    }
 
     /**
      * Check if given {@link JobParameter} is compatible with ChainGenerationJobParameter ie same name

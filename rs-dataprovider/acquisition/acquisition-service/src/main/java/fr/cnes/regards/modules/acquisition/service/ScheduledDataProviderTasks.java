@@ -63,7 +63,7 @@ public class ScheduledDataProviderTasks {
         LOG.debug("Process new SIP bulk request to ingest");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            productBulkRequestService.postSIPBulkRequest();
+            productBulkRequestService.runBulkRequest();
             runtimeTenantResolver.clearTenant();
         }
     }

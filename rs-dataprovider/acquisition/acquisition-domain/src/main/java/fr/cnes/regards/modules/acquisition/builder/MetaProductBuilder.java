@@ -41,9 +41,9 @@ public final class MetaProductBuilder {
     }
 
     /**
-     * Create a {@link MetaProduct}
-     * @param label 
-     * @return
+     * Create a {@link MetaProductBuilder}
+     * @param label the label {@link String} value
+     * @return the current {@link MetaProductBuilder}
      */
     public static MetaProductBuilder build(String label) {
         final MetaProduct mp = new MetaProduct();
@@ -51,31 +51,60 @@ public final class MetaProductBuilder {
         return new MetaProductBuilder(mp);
     }
 
+    /**
+     * Set the {@link Product} property to the current {@link MetaProduct}
+     * @param product the {@link MetaProduct}
+     * @return the current {@link MetaProductBuilder}
+     */
     public MetaProductBuilder addProduct(Product product) {
         metaProduct.addProduct(product);
         return this;
     }
 
+    /**
+     * Set the {@link MetaFile} property to the current {@link MetaProduct}
+     * @param metaFile the {@link MetaFile}
+     * @return the current {@link MetaProductBuilder}
+     */
     public MetaProductBuilder addMetaFile(MetaFile metaFile) {
         metaProduct.addMetaFile(metaFile);
         return this;
     }
 
+    /**
+     * Set the checksumAlgorithm property to the current {@link MetaProduct}
+     * @param algo the checksum algorithm used to calculated the checksum
+     * @return the current {@link MetaProductBuilder}
+     */
     public MetaProductBuilder withChecksumAlgorithm(String algo) {
         metaProduct.setChecksumAlgorithm(algo);
         return this;
     }
 
+    /**
+     * Set the cleanOriginalFile property to the current {@link MetaProduct}
+     * @param clean the cleanOriginalFile value
+     * @return the current {@link MetaProductBuilder}
+     */
     public MetaProductBuilder withCleanOriginalFile(Boolean clean) {
         metaProduct.setCleanOriginalFile(clean);
         return this;
     }
 
+    /**
+     * Set the ingest processing chain property to the current {@link MetaProduct}
+     * @param ingestChain the ingest processing chain {@link String} value
+     * @return the current {@link MetaProductBuilder}
+     */
     public MetaProductBuilder withIngestProcessingChain(String ingestChain) {
         metaProduct.setIngestChain(ingestChain);
         return this;
     }
 
+    /**
+     * Get the current {@link MetaProduct}
+     * @return the current {@link MetaProduct}
+     */
     public MetaProduct get() {
         return metaProduct;
     }

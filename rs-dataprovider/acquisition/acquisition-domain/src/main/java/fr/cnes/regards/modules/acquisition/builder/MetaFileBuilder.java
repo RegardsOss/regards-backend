@@ -48,35 +48,68 @@ public final class MetaFileBuilder {
         return new MetaFileBuilder(mf);
     }
 
+    /**
+     * Get the current {@link MetaFile}
+     * @return the current {@link MetaFileBuilder}
+     */
     public MetaFile get() {
         return metaFile;
     }
 
+    /**
+     * Set the mandatory property to the current {@link MetaFile}
+     * @return the current {@link MetaFileBuilder}
+     */
     public MetaFileBuilder isMandatory() {
         metaFile.setMandatory(Boolean.TRUE);
         return this;
     }
 
+    /**
+     * Set the file name pattern property to the current {@link MetaFile}
+     * @param pattern the file name pattern
+     * @return the current {@link MetaFileBuilder}
+     */
     public MetaFileBuilder withFilePattern(String pattern) {
         metaFile.setFileNamePattern(pattern);
         return this;
     }
 
+    /**
+     * Set the {@link ScanDirectory} property to the current {@link MetaFile}
+     * @param scanDirectory the {@link ScanDirectory}
+     * @return the current {@link MetaFileBuilder}
+     */
     public MetaFileBuilder addScanDirectory(ScanDirectory scanDirectory) {
         metaFile.addScanDirectory(scanDirectory);
         return this;
     }
 
+    /**
+     * Set the invalid folder property to the current {@link MetaFile}
+     * @param folder the invalid folder
+     * @return the current {@link MetaFileBuilder}
+     */
     public MetaFileBuilder withInvalidFolder(String folder) {
         metaFile.setInvalidFolder(folder);
         return this;
     }
 
+    /**
+     * Set the mandatory property to the current {@link MetaFile}
+     * @param type the file type {@link String} value
+     * @return the current {@link MetaFileBuilder}
+     */
     public MetaFileBuilder withFileType(String type) {
         metaFile.setFileType(type);
         return this;
     }
 
+    /**
+     * Set the comment property to the current {@link MetaFile}
+     * @param comment the comment {@link String} value
+     * @return the current {@link MetaFileBuilder}
+     */
     public MetaFileBuilder comment(String comment) {
         metaFile.setComment(comment);
         return this;

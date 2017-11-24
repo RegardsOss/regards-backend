@@ -82,6 +82,7 @@ import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
+import fr.cnes.regards.modules.acquisition.service.IProcessGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
 import fr.cnes.regards.modules.entities.client.IDatasetClient;
@@ -144,6 +145,9 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
 
     @Autowired
     protected IPluginService pluginService;
+    
+    @Autowired
+    protected IProcessGenerationService processGenerationService;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;

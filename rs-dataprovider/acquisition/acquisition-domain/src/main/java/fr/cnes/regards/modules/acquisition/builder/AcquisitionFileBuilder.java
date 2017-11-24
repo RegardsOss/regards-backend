@@ -45,9 +45,9 @@ public final class AcquisitionFileBuilder {
     }
 
     /**
-     * Create a {@link AcquisitionFile}
-     * @param name the file name
-     * @return
+     * Create a {@link AcquisitionFileBuilder}
+     * @param name the file name {@link String} value
+     * @return the current {@link AcquisitionFileBuilder}
      */
     public static AcquisitionFileBuilder build(String name) {
         final AcquisitionFile af = new AcquisitionFile();
@@ -55,40 +55,80 @@ public final class AcquisitionFileBuilder {
         return new AcquisitionFileBuilder(af);
     }
 
+    /**
+     * Get the current {@link AcquisitionFile}
+     * @return the current {@link AcquisitionFile}
+     */
     public AcquisitionFile get() {
         return acqFile;
     }
 
+    /**
+     * Set the size property to the current {@link AcquisitionFile}
+     * @param size the size value
+     * @return the current {@link AcquisitionFileBuilder}
+     */
     public AcquisitionFileBuilder withSize(Long size) {
         acqFile.setSize(size);
         return this;
     }
 
+    /**
+     * Set the {@link AcquisitionFileStatus} property to the current {@link AcquisitionFile}
+     * @param status the {@link AcquisitionFileStatus} {@link String} value
+     * @return the current {@link AcquisitionFileBuilder}
+     */
     public AcquisitionFileBuilder withStatus(String status) {
         acqFile.setStatus(AcquisitionFileStatus.valueOf(status));
         return this;
     }
 
+    /**
+     * Set the {@link MetaFile} property to the current {@link AcquisitionFile}
+     * @param metaFile the {@link MetaFile}
+     * @return the current {@link AcquisitionFileBuilder}
+     */
     public AcquisitionFileBuilder withMetaFile(MetaFile metaFile) {
         acqFile.setMetaFile(metaFile);
         return this;
     }
 
+    /**
+     * Set the {@link FileAcquisitionInformations} property to the current {@link AcquisitionFile}
+     * @param fileAcqInformations the {@link FileAcquisitionInformations}
+     * @return the current {@link AcquisitionFileBuilder}
+     */
     public AcquisitionFileBuilder withFileAcquisitionInformations(FileAcquisitionInformations fileAcqInformations) {
         acqFile.setAcquisitionInformations(fileAcqInformations);
         return this;
     }
 
+    /**
+     * Set the {@link ErrorType} property to the current {@link AcquisitionFile}
+     * @param error the {@link ErrorType} {@link String} value
+     * @return the current {@link AcquisitionFileBuilder}
+     */
     public AcquisitionFileBuilder withErrorType(String error) {
         acqFile.setError((ErrorType.valueOf(error)));
         return this;
     }
 
+    /**
+     * Set the acquisition date property to the current {@link AcquisitionFile}
+     * @param date the date value
+     * @return the current {@link AcquisitionFileBuilder}
+     */
     public AcquisitionFileBuilder withActivationDate(OffsetDateTime date) {
         acqFile.setAcqDate(date);
         return this;
     }
 
+    /**
+     * Set the checksum and checksumAlgorithm properties to the current {@link AcquisitionFile}
+     * @param checksum the checksum value
+     * @param algo the checksum algorithm used to calculated the checksum
+     * @return the current {@link AcquisitionFileBuilder}
+     */
     public AcquisitionFileBuilder withChecksum(String checksum, String algo) {
         acqFile.setChecksum(checksum);
         acqFile.setChecksumAlgorithm(algo);

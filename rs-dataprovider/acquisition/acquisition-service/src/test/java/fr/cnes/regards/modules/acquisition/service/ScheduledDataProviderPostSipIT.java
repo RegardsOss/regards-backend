@@ -19,6 +19,8 @@
 
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.time.OffsetDateTime;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +30,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
+import fr.cnes.regards.modules.acquisition.builder.ProcessGenerationBuilder;
+import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceConfiguration;
@@ -41,10 +45,12 @@ import fr.cnes.regards.modules.acquisition.service.step.AbstractAcquisitionIT;
 @ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class, MockedFeignClientConf.class })
 @ActiveProfiles({ "test" })
 @DirtiesContext
-public class ScheduledDataProviderTasksIT extends AbstractAcquisitionIT {
+public class ScheduledDataProviderPostSipIT extends AbstractAcquisitionIT {
 
     @Value("${regards.acquisition.process.new.sip.ingest.delay}")
     private String scheduledTasksDelay;
+    
+    private ProcessGeneration process;
 
     @Before
     public void init() {
@@ -86,6 +92,10 @@ public class ScheduledDataProviderTasksIT extends AbstractAcquisitionIT {
         createProduct("product-016", "session-002", metaProduct002, false, ProductStatus.COMPLETED, "file-025");
 
         createProduct("product-099", "session-002", metaProduct003, false, ProductStatus.ACQUIRING, "file-099");
+        
+        chain.setSession("session-001");
+        chainService.save(chain);
+        process = processGenerationService.save(ProcessGenerationBuilder.build(chain.getSession()).withChain(chain).withStartDate(OffsetDateTime.now()).get());
     }
 
     @Test
@@ -97,6 +107,8 @@ public class ScheduledDataProviderTasksIT extends AbstractAcquisitionIT {
         Assert.assertEquals(2, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+        Assert.assertNotNull(processGenerationService.findBySession(chain.getSession()));
+        Assert.assertEquals(process, processGenerationService.findBySession(chain.getSession()));
 
         Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
 
@@ -105,6 +117,11 @@ public class ScheduledDataProviderTasksIT extends AbstractAcquisitionIT {
         Assert.assertEquals(16, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+        
+        ProcessGeneration processLoad = processGenerationService.findBySession(chain.getSession());
+        Assert.assertEquals(5,processLoad.getNbSipCreated()); // 5 product for session-001
+        Assert.assertEquals(0,processLoad.getNbSipError());
+        Assert.assertEquals(0,processLoad.getNbSipStored());
     }
 
     @Test
@@ -120,12 +137,12 @@ public class ScheduledDataProviderTasksIT extends AbstractAcquisitionIT {
         Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
 
         // Nothing should be change
-
         Assert.assertEquals(14, productService
                 .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(2, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+        
     }
 
     @Test
@@ -145,6 +162,11 @@ public class ScheduledDataProviderTasksIT extends AbstractAcquisitionIT {
         Assert.assertEquals(13, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+        
+        ProcessGeneration processLoad = processGenerationService.findBySession(chain.getSession());
+        Assert.assertEquals(3,processLoad.getNbSipCreated()); // 3 product for session-001
+//        Assert.assertEquals(2,processLoad.getNbSipError());
+        Assert.assertEquals(0,processLoad.getNbSipStored());
     }
 
 }

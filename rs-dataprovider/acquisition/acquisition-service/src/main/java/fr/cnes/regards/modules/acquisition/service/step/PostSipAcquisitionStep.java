@@ -60,13 +60,11 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
 
     private Product product;
 
-    private SIPEvent sipEvent;
+    private final SIPEvent sipEvent;
 
-    /**
-     * @param sipEvent2
-     */
-    public PostSipAcquisitionStep(SIPEvent sipEvent2) {
-        this.sipEvent = sipEvent2;
+    public PostSipAcquisitionStep(SIPEvent sipEvent) {
+        super();
+        this.sipEvent = sipEvent;
     }
 
     @Override

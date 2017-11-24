@@ -184,6 +184,8 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
         Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, productService.findByStatus(ProductStatus.COMPLETED).size());
+        
+        Assert.assertEquals(1, processGenerationService.retrieveAll(new PageRequest(0, 10)).getNumberOfElements());
 
         chain = chainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());

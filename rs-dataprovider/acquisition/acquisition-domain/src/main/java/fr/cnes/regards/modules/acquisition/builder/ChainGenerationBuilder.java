@@ -43,9 +43,9 @@ public final class ChainGenerationBuilder {
     }
 
     /**
-     * Create a {@link ChainGeneration}
-     * @param label
-     * @return
+     * Create a {@link ChainGenerationBuilder}
+     * @param label the label {@link String} value
+     * @return the current {@link ChainGenerationBuilder}
      */
     public static ChainGenerationBuilder build(String label) {
         final ChainGeneration cg = new ChainGeneration();
@@ -53,45 +53,88 @@ public final class ChainGenerationBuilder {
         return new ChainGenerationBuilder(cg);
     }
 
+    /**
+     * Get the current {@link ChainGeneration}
+     * @return the current {@link ChainGeneration}
+     */
     public ChainGeneration get() {
         return chain;
     }
 
+    /**
+     * Set the comment property to the current {@link ChainGeneration}
+     * @param comment
+     * @return the current {@link ChainGenerationBuilder}
+     */
     public ChainGenerationBuilder comment(String comment) {
         chain.setComment(comment);
         return this;
     }
 
+    /**
+     * Set the active property to the current {@link ChainGeneration}
+     * @return the current {@link ChainGenerationBuilder}
+     */
     public ChainGenerationBuilder isActive() {
         chain.setActive(Boolean.TRUE);
         return this;
     }
 
+    /**
+     * Set the last acquition date property to the current {@link ChainGeneration}
+     * @param date
+     * @return the current {@link ChainGenerationBuilder}
+     */
     public ChainGenerationBuilder lastActivation(OffsetDateTime date) {
         chain.setLastDateActivation(date);
         return this;
     }
 
+    /**
+     * Set the periodicity property to the current {@link ChainGeneration}
+     * @param periodicity
+     * @return the current {@link ChainGenerationBuilder}
+     */
     public ChainGenerationBuilder periodicity(Long periodicity) {
         chain.setPeriodicity(periodicity);
         return this;
     }
 
+    /**
+     * Set the {@link MetaProduct} property to the current {@link ChainGeneration}
+     * @param metaProduct
+     * @return the current {@link ChainGenerationBuilder}
+     */
     public ChainGenerationBuilder withMetaProduct(MetaProduct metaProduct) {
         chain.setMetaProduct(metaProduct);
         return this;
     }
 
+    /**
+     * Set the dataset property to the current {@link ChainGeneration}
+     * @param dataSet the dataset {@link String} value
+     * @return the current {@link ChainGenerationBuilder}
+     */
     public ChainGenerationBuilder withDataSet(String dataSet) {
         chain.setDataSet(dataSet);
         return this;
     }
-    
+
+    /**
+     * Set the session property to the current {@link ChainGeneration}
+     * @param session the session {@link String} value
+     * @return the current {@link ChainGenerationBuilder}
+     */
     public ChainGenerationBuilder withSession(String session) {
         chain.setSession(session);
         return this;
     }
 
+    /**
+     * Set the scan {@link PluginConfiguration} id property to the current {@link ChainGeneration}
+     * @param pluginconfId
+     * @return the current {@link ChainGenerationBuilder} 
+     */
     public ChainGenerationBuilder withScanAcquisitionPluginConf(PluginConfiguration pluginconfId) {
         chain.setScanAcquisitionPluginConf(pluginconfId);
         return this;

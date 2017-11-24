@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.builder;
 
+import org.omg.CORBA.Current;
+
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 
@@ -40,9 +42,9 @@ public final class FileAcquisitionInformationsBuilder {
     }
 
     /**
-     * Create a {@link FileAcquisitionInformations}
-     * @param directory the directory to scan
-     * @return
+     * Create a {@link FileAcquisitionInformationsBuilder}
+     * @param directory the directory to scan {@link String} value
+     * @return the current {@link FileAcquisitionInformationsBuilder}
      */
     public static FileAcquisitionInformationsBuilder build(String directory) {
         final FileAcquisitionInformations fai = new FileAcquisitionInformations();
@@ -50,10 +52,19 @@ public final class FileAcquisitionInformationsBuilder {
         return new FileAcquisitionInformationsBuilder(fai);
     }
 
+    /**
+     * Get the current {@link FileAcquisitionInformations}
+     * @return the current {@link FileAcquisitionInformations}
+     */
     public FileAcquisitionInformations get() {
         return fileAcqInfos;
     }
 
+    /**
+     * Set the working directory property to the {@link Current} {@link FileAcquisitionInformations}
+     * @param directory the directory {@link String} value
+     * @return the current {@link FileAcquisitionInformationsBuilder}
+     */
     public FileAcquisitionInformationsBuilder withWorkingDirectory(String directory) {
         fileAcqInfos.setWorkingDirectory(directory);
         return this;

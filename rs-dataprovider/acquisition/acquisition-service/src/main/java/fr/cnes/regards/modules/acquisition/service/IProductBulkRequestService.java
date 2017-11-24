@@ -25,7 +25,7 @@ package fr.cnes.regards.modules.acquisition.service;
  */
 public interface IProductBulkRequestService {
 
-    void postSIPBulkRequest();
+    void runBulkRequest();
     
     void runActiveChains();
 }

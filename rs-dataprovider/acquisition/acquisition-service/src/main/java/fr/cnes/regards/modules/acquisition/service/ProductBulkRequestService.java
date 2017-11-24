@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -78,7 +79,7 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
     }
 
     @Override
-    public void postSIPBulkRequest() {
+    public void runBulkRequest() {
         LOG.debug("Start bulk request SIP creation");
 
         // Get all the ingestChain for that at least one product is ready to be send to ingest
@@ -269,6 +270,10 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
         if (processGeneration != null) {
             processGeneration.setNbSipCreated(processGeneration.getNbSipCreated() + nbSipCreated);
             processGeneration.setNbSipError(processGeneration.getNbSipError() + nbSipError);
+            if (processGeneration.getNbSipCreated() == processGeneration.getNbSipStored()
+                    + processGeneration.getNbSipError()) {
+                processGeneration.setStopDate(OffsetDateTime.now());
+            }
             processService.save(processGeneration);
         }
 
