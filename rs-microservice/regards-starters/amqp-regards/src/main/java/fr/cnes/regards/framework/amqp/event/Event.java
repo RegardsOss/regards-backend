@@ -21,27 +21,51 @@ package fr.cnes.regards.framework.amqp.event;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
 /**
  *
- * An event must be annotated with {@link Event} to identify its {@link fr.cnes.regards.framework.amqp.event.Target}.
+ * This annotation is required for all AMQP events.
+ *
+ * <h1>For {@link ISubscribable} events:</h1>
+ * <br/>
+ * <ul>
+ * <li>{@link WorkerMode#BROADCAST} / {@link Target#MICROSERVICE} (default behaviour) : event will
+ * be received by ALL handlers of a SINGLE microservice instance PER microservice type.</li>
+ * <li>{@link WorkerMode#BROADCAST} / {@link Target#ALL} : event will
+ * be received by ALL handlers of ALL microservice instances.</li>
+ * <li>{@link WorkerMode#UNICAST} / {@link Target#MICROSERVICE} : event will
+ * be received by a SINGLE handler of a SINGLE microservice instance which type is the same as the PUBLISHING
+ * one.</li>
+ * <li>{@link WorkerMode#UNICAST} / {@link Target#ALL} : event will
+ * be received by a SINGLE handler of a SINGLE microservice instance WHATEVER the microservice type.</li>
+ * </ul>
+ *
+ * <h1>For {@link IPollable} events:</h1>
+ * <br/>
+ * <ul>
+ * <li>{@link WorkerMode#UNICAST} / {@link Target#MICROSERVICE} (default behaviour) : event can be polled ONCE by
+ * the FIRST microservice instance which type is the same as the PUBLISHING
+ * one.</li>
+ * <li>{@link WorkerMode#UNICAST} / {@link Target#MICROSERVICE} : event can be polled ONCE by
+ * the FIRST microservice instance WHATEVER the microservice type.</li>
+ * </ul>
  *
  * @author Marc Sordi
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@java.lang.annotation.Target(ElementType.TYPE)
 public @interface Event {
 
     /**
-     * @return event {@link fr.cnes.regards.framework.amqp.event.Target}
+     *
+     * @return event {@link Target}
+     *
      */
-    fr.cnes.regards.framework.amqp.event.Target target();
+    Target target() default Target.MICROSERVICE;
 
     /**
-     * This mode is only used for {@link ISubscribable} event. {@link WorkerMode#UNICAST} can be used, so a single
-     * subscriber will receive the published event. Otherwise, all subscribers will receive the published event.<br/>
+     * This mode is only used for {@link ISubscribable} event.
      *
      * @return event {@link WorkerMode}
      */
