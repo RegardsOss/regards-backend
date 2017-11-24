@@ -114,6 +114,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
                                 MethodParamFactory.build(String.class, ingestChain.getName()));
         resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
                                 MethodParamFactory.build(String.class, ingestChain.getName()));
+        // FIXME bad signature
         resourceService.addLink(resource, this.getClass(), "update", LinkRels.UPDATE,
                                 MethodParamFactory.build(String.class, ingestChain.getName()));
         return resource;

@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import javax.persistence.Column;
@@ -164,5 +166,24 @@ public class IngestProcessingChain {
 
     public void setPostProcessingPlugin(PluginConfiguration postProcessingPlugin) {
         this.postProcessingPlugin = postProcessingPlugin;
+    }
+
+    /**
+     * @return list of the really configured plugins for the current chain
+     */
+    public List<PluginConfiguration> getChainPlugins() {
+        List<PluginConfiguration> confs = new ArrayList<>();
+        if (preProcessingPlugin != null) {
+            confs.add(preProcessingPlugin);
+        }
+        confs.add(validationPlugin);
+        confs.add(generationPlugin);
+        if (tagPlugin != null) {
+            confs.add(tagPlugin);
+        }
+        if (postProcessingPlugin != null) {
+            confs.add(postProcessingPlugin);
+        }
+        return confs;
     }
 }
