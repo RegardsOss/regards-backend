@@ -106,6 +106,8 @@ public class OrderService implements IOrderService {
 
     private static final String METALINK_XML_SCHEMA_NAME = "metalink.xsd";
 
+    public static final int MAX_PAGE_SIZE = 10_000;
+
     @Autowired
     private IOrderRepository repos;
 
@@ -309,7 +311,7 @@ public class OrderService implements IOrderService {
         Map<String, String> requestMap = Collections.singletonMap("q", openSearchRequest);
 
         ResponseEntity<PagedResources<Resource<DataObject>>> pagedResourcesResponseEntity = searchClient
-                .searchDataobjects(requestMap, new PageRequest(page, 10_000));
+                .searchDataobjects(requestMap, new PageRequest(page, MAX_PAGE_SIZE));
         return pagedResourcesResponseEntity.getBody().getContent().stream().map(r -> r.getContent())
                 .collect(Collectors.toList());
     }

@@ -4,11 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.time.OffsetDateTime;
 import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,23 +13,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import feign.Response;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.entities.gson.IAttributeHelper;
+import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.ISearchClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
-import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.AIPCollection;
-import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
@@ -60,6 +51,11 @@ public class ServiceConfiguration {
     @Bean
     public IProjectsClient mockProjectsClient() {
         return Mockito.mock(IProjectsClient.class);
+    }
+
+    @Bean
+    public IAttributeModelClient attributeModelClient() {
+        return Mockito.mock(IAttributeModelClient.class);
     }
 
     @Bean
