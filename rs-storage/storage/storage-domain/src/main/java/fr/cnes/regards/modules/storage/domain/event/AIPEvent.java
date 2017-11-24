@@ -5,16 +5,16 @@ package fr.cnes.regards.modules.storage.domain.event;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 
 /**
- * Biggest granularity information event on what's happening on an AIP. If you need ionformations on each DataFile, {@link DataFileEvent}.
+ * Biggest granularity information event on what's happening on an AIP. If you need ionformations on each DataFile,
+ * {@link DataFileEvent}.
  *
  * @author Sylvain Vissiere-Guerinet
  */
-@Event(target = Target.ALL)
+@Event
 public class AIPEvent implements ISubscribable {
 
     private static final String FAILURE_CAUSE_TEMPLATE = "File %s could not be stored by IDataStorage( plugin configuration id: %s)";

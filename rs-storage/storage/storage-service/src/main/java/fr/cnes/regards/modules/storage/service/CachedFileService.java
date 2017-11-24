@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -32,12 +33,9 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -72,14 +70,14 @@ import fr.cnes.regards.modules.storage.service.job.RestorationJob;
  *
  * Files in cache are purged when :
  * <ul>
- * <li> Files are outdated in cache ({@link CachedFile#getExpiration()} date is past.</li>
- * <li> Cache is full and no outdated files are in cache, then the older {@link CachedFile}s are deleted. </li>
+ * <li>Files are outdated in cache ({@link CachedFile#getExpiration()} date is past.</li>
+ * <li>Cache is full and no outdated files are in cache, then the older {@link CachedFile}s are deleted.</li>
  * </ul>
  *
  * This service run two scheduled and periodilcy executed methods :
  * <ul>
- * <li> Cache purge : {@link #cleanCache()}</li>
- * <li> Handle queued file requests : {@link #hanleQueuedFiles()}</li>
+ * <li>Cache purge : {@link #cleanCache()}</li>
+ * <li>Handle queued file requests : {@link #hanleQueuedFiles()}</li>
  * </ul>
  *
  * @author Sylvain VISSIERE-GUERINET
@@ -145,16 +143,17 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     @Autowired
     private IPublisher publisher;
 
-    @Autowired
-    private IInstanceSubscriber instanceSubscriber;
-
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             initCacheFileSystem(tenant);
         }
-        instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyHandler());
+    }
+
+    @EventListener
+    public void processEvent(TenantConnectionReady event) {
+        initCacheFileSystem(event.getTenant());
     }
 
     protected void initCacheFileSystem(String tenant) {
@@ -341,7 +340,8 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
 
     /**
      * Delete older {@link CachedFile}s if the {link {@link #cacheSizePurgeUpperThreshold}} is reached.<br/>
-     * This method method deletes as many {@link CachedFile}s as needed to set the cache size under the {@link #cacheSizePurgeLowerThreshold}.
+     * This method method deletes as many {@link CachedFile}s as needed to set the cache size under the
+     * {@link #cacheSizePurgeLowerThreshold}.
      */
     private void purgeOlderCachedFiles() {
         // Calculate chache size
@@ -373,8 +373,8 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     /**
      * Delete all given {@link CachedFile}s.<br/>
      * <ul>
-     * <li> 1. Disk deletion of the physical files</li>
-     * <li> 2. Database deletion of the {@link CachedFile}s
+     * <li>1. Disk deletion of the physical files</li>
+     * <li>2. Database deletion of the {@link CachedFile}s
      * </ul>
      * @param filesToDelete {@link Set}<{@link CachedFile}> to delete.
      */
@@ -475,8 +475,8 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
      * @param expirationDate {@link OffsetDateTime} Expiration date of the {@link CachedFile} to restore in cache.
      * @return {@link DataFile}s that can not be restored.
      */
-    private Set<DataFile> scheduleDataFileRestoration(Long pluginConfId,
-            Collection<DataFile> dataFilesToRestore, OffsetDateTime expirationDate) {
+    private Set<DataFile> scheduleDataFileRestoration(Long pluginConfId, Collection<DataFile> dataFilesToRestore,
+            OffsetDateTime expirationDate) {
         LOG.debug("CachedFileService : Init restoration job for {} files.", dataFilesToRestore.size());
         Set<DataFile> restorabledataFiles = getRestorableDataFiles(dataFilesToRestore, expirationDate);
         LOG.debug("CachedFileService : Schedule restoration job for {} files.", restorabledataFiles.size());
@@ -511,7 +511,8 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         // lets instantiate every job for every DataStorage to use
         Set<JobInfo> jobs = Sets.newHashSet();
         for (IWorkingSubset workingSubset : workingSubsets) {
-            // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets storeAndCreate a job for each
+            // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets storeAndCreate a job
+            // for each
             // of them
             Set<JobParameter> parameters = Sets.newHashSet();
             parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, storageConfId));
@@ -541,10 +542,9 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         if (subSetDataFiles.size() != dataFilesToSubSet.size()) {
             Set<DataFile> notSubSetDataFiles = Sets.newHashSet(dataFilesToSubSet);
             notSubSetDataFiles.removeAll(subSetDataFiles);
-            notSubSetDataFiles.stream()
-                    .peek(df -> LOG.error(
-                                          String.format("DataFile %s with checksum %s could not be restored because it was not assign to a working subset by its DataStorage used to storeAndCreate it!",
-                                                        df.getId(), df.getChecksum())))
+            notSubSetDataFiles.stream().peek(df -> LOG.error(String
+                    .format("DataFile %s with checksum %s could not be restored because it was not assign to a working subset by its DataStorage used to storeAndCreate it!",
+                            df.getId(), df.getChecksum())))
                     .forEach(result::add);
         }
         return result;
@@ -561,14 +561,5 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             return null;
         }
         return Paths.get(globalCachePath, currentTenant);
-    }
-
-    private class TenantConnectionReadyHandler implements IHandler<TenantConnectionReady> {
-
-        @Override
-        public void handle(TenantWrapper<TenantConnectionReady> wrapper) {
-            // we just need to init the cache file system for this tenant:
-            initCacheFileSystem(wrapper.getTenant());
-        }
     }
 }
