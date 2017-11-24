@@ -22,14 +22,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.EventListener;
 
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.tenant.TenantCreatedEvent;
 import fr.cnes.regards.framework.amqp.event.tenant.TenantDeletedEvent;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionDiscarded;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionDiscarded;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 
 /**
  * Manage tenant event
@@ -65,10 +66,6 @@ public class RemoteTenantEventHandler implements ApplicationListener<Application
         subscriber.subscribeTo(TenantCreatedEvent.class, new TenantCreatedEventHandler());
         // Listen to tenant deletion
         subscriber.subscribeTo(TenantDeletedEvent.class, new TenantDeletedEventHandler());
-        // Listen to tenant connection ready event
-        subscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyHandler());
-        // Listen to tenant connection discard event
-        subscriber.subscribeTo(TenantConnectionDiscarded.class, new TenantConnectionDiscardedHandler());
     }
 
     private class TenantCreatedEventHandler implements IHandler<TenantCreatedEvent> {
@@ -87,19 +84,13 @@ public class RemoteTenantEventHandler implements ApplicationListener<Application
         }
     }
 
-    private class TenantConnectionReadyHandler implements IHandler<TenantConnectionReady> {
-
-        @Override
-        public void handle(TenantWrapper<TenantConnectionReady> pWrapper) {
-            tenantResolver.cleanActiveTenantCache();
-        }
+    @EventListener
+    public void processEvent(TenantConnectionReady event) {
+        tenantResolver.cleanActiveTenantCache();
     }
 
-    private class TenantConnectionDiscardedHandler implements IHandler<TenantConnectionDiscarded> {
-
-        @Override
-        public void handle(TenantWrapper<TenantConnectionDiscarded> pWrapper) {
-            tenantResolver.cleanActiveTenantCache();
-        }
+    @EventListener
+    public void processEvent(TenantConnectionDiscarded event) {
+        tenantResolver.cleanActiveTenantCache();
     }
 }

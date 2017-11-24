@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.listener.exception.ListenerExecutionFailedException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -43,13 +44,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
-import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionFailed;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -119,11 +117,6 @@ public class RoleService implements IRoleService {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     * AMQP instance message subscriber
-     */
-    private final IInstanceSubscriber instanceSubscriber;
-
-    /**
      * AMQP instance message publisher
      */
     private final IInstancePublisher instancePublisher;
@@ -138,30 +131,17 @@ public class RoleService implements IRoleService {
      */
     private final IAuthenticationResolver authResolver;
 
-    /**
-     * Constructor
-     *
-     * @param pMicroserviceName
-     * @param pRoleRepository
-     * @param pProjectUserRepository
-     * @param pTenantResolver
-     * @param pRuntimeTenantResolver
-     * @param pInstanceSubscriber
-     * @param instancePublisher
-     * @param pPublisher
-     */
     public RoleService(@Value("${spring.application.name}") final String pMicroserviceName,
             final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository,
             final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
-            final IInstanceSubscriber pInstanceSubscriber, final IInstancePublisher instancePublisher,
-            final IPublisher pPublisher, final IAuthenticationResolver authResolver) {
+            final IInstancePublisher instancePublisher, final IPublisher pPublisher,
+            final IAuthenticationResolver authResolver) {
         super();
         roleRepository = pRoleRepository;
         projectUserRepository = pProjectUserRepository;
         tenantResolver = pTenantResolver;
         runtimeTenantResolver = pRuntimeTenantResolver;
         microserviceName = pMicroserviceName;
-        instanceSubscriber = pInstanceSubscriber;
         this.instancePublisher = instancePublisher;
         publisher = pPublisher;
         this.authResolver = authResolver;
@@ -176,39 +156,18 @@ public class RoleService implements IRoleService {
         for (final String tenant : tenantResolver.getAllActiveTenants()) {
             initDefaultRoles(tenant);
         }
-        instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
     }
 
-    /**
-     * Handle a new tenant connection to initialize default roles
-     *
-     * @author Marc Sordi
-     *
-     */
-    private class TenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
-
-        /**
-         * Initialize default roles in the new project connection
-         *
-         * @see fr.cnes.regards.framework.amqp.domain.IHandler#handle(fr.cnes.regards.framework.amqp.domain.TenantWrapper)
-         * @since 1.0-SNAPSHOT
-         */
-        @Override
-        public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
-            if (microserviceName.equals(pWrapper.getContent().getMicroserviceName())) {
-
-                // Retrieve new tenant to manage
-                final String tenant = pWrapper.getContent().getTenant();
-                try {
-                    // Init default role for this tenant
-                    initDefaultRoles(tenant);
-                    // Populate default roles with resources informing security starter to process
-                    publisher.publish(new ResourceAccessInit());
-                } catch (final ListenerExecutionFailedException e) {
-                    LOGGER.error("Cannot initialize connection  for tenant " + tenant, e);
-                    instancePublisher.publish(new TenantConnectionFailed(tenant, microserviceName));
-                }
-            }
+    @EventListener
+    public void processEvent(TenantConnectionReady event) {
+        try {
+            // Init default role for this tenant
+            initDefaultRoles(event.getTenant());
+            // Populate default roles with resources informing security starter to process
+            publisher.publish(new ResourceAccessInit());
+        } catch (final ListenerExecutionFailedException e) {
+            LOGGER.error("Cannot initialize connection  for tenant " + event.getTenant(), e);
+            instancePublisher.publish(new TenantConnectionFailed(event.getTenant(), microserviceName));
         }
     }
 
@@ -222,18 +181,22 @@ public class RoleService implements IRoleService {
         // Init factory to create missing roles
         final RoleFactory roleFactory = new RoleFactory().doNotAutoCreateParents();
 
-        // Set working tenant
-        runtimeTenantResolver.forceTenant(tenant);
-        // Manage public
-        final Role publicRole = createOrLoadDefaultRole(roleFactory.createPublic(), null);
-        // Manage registered user
-        final Role registeredUserRole = createOrLoadDefaultRole(roleFactory.createRegisteredUser(), publicRole);
-        // Manage admin
-        createOrLoadDefaultRole(roleFactory.createAdmin(), registeredUserRole);
-        // Manage project admin
-        createOrLoadDefaultRole(roleFactory.createProjectAdmin(), null);
-        // Manage instance admin
-        createOrLoadDefaultRole(roleFactory.createInstanceAdmin(), null);
+        try {
+            // Set working tenant
+            runtimeTenantResolver.forceTenant(tenant);
+            // Manage public
+            final Role publicRole = createOrLoadDefaultRole(roleFactory.createPublic(), null);
+            // Manage registered user
+            final Role registeredUserRole = createOrLoadDefaultRole(roleFactory.createRegisteredUser(), publicRole);
+            // Manage admin
+            createOrLoadDefaultRole(roleFactory.createAdmin(), registeredUserRole);
+            // Manage project admin
+            createOrLoadDefaultRole(roleFactory.createProjectAdmin(), null);
+            // Manage instance admin
+            createOrLoadDefaultRole(roleFactory.createInstanceAdmin(), null);
+        } finally {
+            runtimeTenantResolver.clearTenant();
+        }
     }
 
     /**
@@ -855,9 +818,9 @@ public class RoleService implements IRoleService {
         // throw exception
         // a role must have a parent and cannot have less accesses than public
         if (parentRole == null) {
-            final String message = String.format(
-                                                 "Role %s cannot have less accesses than public role. Accesses removal cancelled.",
-                                                 role.getName());
+            final String message = String
+                    .format("Role %s cannot have less accesses than public role. Accesses removal cancelled.",
+                            role.getName());
             LOGGER.error(message);
             throw new EntityOperationForbiddenException(message);
         }
