@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
@@ -104,7 +105,7 @@ public class BasketController implements IResourceController<Basket> {
     /**
      * Remove dated item selection under dataset selection from basket
      * @param dsSelectionId dataset selection id (from basket, the one which contains dated items selection)
-     * @param itemsSelectionDate items selection date
+     * @param itemsSelectionDateStr items selection date
      * @return updated basket
      * @throws EmptyBasketException if no basket currently exists
      */
@@ -113,7 +114,8 @@ public class BasketController implements IResourceController<Basket> {
     @RequestMapping(method = RequestMethod.DELETE, value = DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE)
     public ResponseEntity<Resource<Basket>> removeDatedItemsSelection(
             @PathVariable("datasetSelectionId") Long dsSelectionId,
-            @PathVariable("itemsSelectionDate") OffsetDateTime itemsSelectionDate) throws EmptyBasketException {
+            @PathVariable("itemsSelectionDate") String itemsSelectionDateStr) throws EmptyBasketException {
+        OffsetDateTime itemsSelectionDate = OffsetDateTimeAdapter.parse(itemsSelectionDateStr);
         Basket basket = basketService.find(authResolver.getUser());
         return ResponseEntity
                 .ok(toResource(basketService.removeDatedItemsSelection(basket, dsSelectionId, itemsSelectionDate)));
