@@ -19,6 +19,7 @@ import javax.persistence.UniqueConstraint;
 
 import java.util.Collections;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.hibernate.annotations.SortNatural;
 
@@ -49,7 +50,7 @@ public class Basket implements IIdentifiable<Long> {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "basket_id", foreignKey = @ForeignKey(name = "fk_dataset_selection"))
     @SortNatural
-    private SortedSet<BasketDatasetSelection> datasetSelections = Collections.emptySortedSet();
+    private SortedSet<BasketDatasetSelection> datasetSelections = new TreeSet<>();
 
     @Override
     public Long getId() {
@@ -79,7 +80,11 @@ public class Basket implements IIdentifiable<Long> {
         return datasetSelections;
     }
 
-    public void setDatasetSelections(SortedSet<BasketDatasetSelection> datasetSelections) {
-        this.datasetSelections = datasetSelections;
+    public void addDatasetSelection(BasketDatasetSelection datasetSelections) {
+        this.datasetSelections.add(datasetSelections);
+    }
+
+    public void removeDatasetSelection(BasketDatasetSelection datasetSelections) {
+        this.datasetSelections.remove(datasetSelections);
     }
 }

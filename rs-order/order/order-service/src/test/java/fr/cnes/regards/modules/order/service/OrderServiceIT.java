@@ -170,8 +170,8 @@ public class OrderServiceIT {
         itemsSelection.setObjectsCount(1);
         itemsSelection.setOpenSearchRequest("someone:something");
         itemsSelection.setDate(OffsetDateTime.now());
-        dsSelection.setItemsSelections(Sets.newTreeSet(Collections.singleton(itemsSelection)));
-        basket.setDatasetSelections(Sets.newTreeSet(Collections.singleton(dsSelection)));
+        dsSelection.addItemsSelection(itemsSelection);
+        basket.addDatasetSelection(dsSelection);
 
         basket = basketRepos.save(basket);
 
@@ -247,9 +247,6 @@ public class OrderServiceIT {
     public void testBucketsJobs() throws IOException, InterruptedException {
 
         Basket basket = new Basket("tulavu@qui.fr");
-        SortedSet<BasketDatasetSelection> dsSelections = new TreeSet<>();
-        basket.setDatasetSelections(dsSelections);
-
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
         dsSelection.setDatasetLabel("DS");
@@ -257,7 +254,7 @@ public class OrderServiceIT {
         dsSelection.setFilesCount(12);
         dsSelection.setFilesSize(3_000_171l);
         dsSelection.setOpenSearchRequest("ALL");
-        dsSelections.add(dsSelection);
+        basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
         Order order = orderService.createOrder(basket);
@@ -275,9 +272,6 @@ public class OrderServiceIT {
     @Test
     public void testExpiredOrders() throws IOException, InterruptedException {
         Basket basket = new Basket("tulavu@qui.fr");
-        SortedSet<BasketDatasetSelection> dsSelections = new TreeSet<>();
-        basket.setDatasetSelections(dsSelections);
-
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
         dsSelection.setDatasetLabel("DS");
@@ -285,7 +279,7 @@ public class OrderServiceIT {
         dsSelection.setFilesCount(12);
         dsSelection.setFilesSize(3_000_171l);
         dsSelection.setOpenSearchRequest("ALL");
-        dsSelections.add(dsSelection);
+        basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
         Order order = orderService.createOrder(basket);
@@ -305,9 +299,6 @@ public class OrderServiceIT {
     public void testPauseResume() throws IOException, InterruptedException, CannotResumeOrderException {
 
         Basket basket = new Basket("tulavu@qui.fr");
-        SortedSet<BasketDatasetSelection> dsSelections = new TreeSet<>();
-        basket.setDatasetSelections(dsSelections);
-
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
         dsSelection.setDatasetLabel("DS");
@@ -315,7 +306,7 @@ public class OrderServiceIT {
         dsSelection.setFilesCount(12);
         dsSelection.setFilesSize(3_000_171l);
         dsSelection.setOpenSearchRequest("ALL");
-        dsSelections.add(dsSelection);
+        basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
         Order order = orderService.createOrder(basket);

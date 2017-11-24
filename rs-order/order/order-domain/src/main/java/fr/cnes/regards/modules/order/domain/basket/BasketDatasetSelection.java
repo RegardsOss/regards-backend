@@ -123,8 +123,12 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
         return itemsSelections;
     }
 
-    public void setItemsSelections(SortedSet<BasketDatedItemsSelection> itemsSelections) {
-        this.itemsSelections = itemsSelections;
+    public void addItemsSelection(BasketDatedItemsSelection itemsSelection) {
+        this.itemsSelections.add(itemsSelection);
+    }
+
+    public void removeItemsSelection(BasketDatedItemsSelection itemsSelection) {
+        this.itemsSelections.remove(itemsSelection);
     }
 
     @Override
