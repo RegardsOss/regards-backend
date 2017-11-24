@@ -29,10 +29,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -64,6 +67,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -265,7 +269,8 @@ public class AipClientIT extends AbstractRegardsWebIT {
         } catch (InterruptedException e) {
             // Nothing to do
         }
-        Assert.assertTrue("Http response should be CREATED after createAIP.", HttpStatus.CREATED.equals(resp.getStatusCode()));
+        Assert.assertTrue("Http response should be CREATED after createAIP.",
+                          HttpStatus.CREATED.equals(resp.getStatusCode()));
         Assert.assertTrue("AIP is not created", aipDao.findOneByIpId(aip.getId().toString()).isPresent());
         // 2. Retrieve it
         ResponseEntity<PagedResources<Resource<AIP>>> resp2 = client.retrieveAIPs(null, null, null, 0, 10);
@@ -322,17 +327,21 @@ public class AipClientIT extends AbstractRegardsWebIT {
 
     }
 
-    @Override
-    protected Logger getLogger() {
-        return LOG;
-    }
-
     @After
     public void cleanUp() throws URISyntaxException, IOException {
         jobInfoRepo.deleteAll();
         dataFileDao.deleteAll();
         aipDao.deleteAll();
         pluginRepo.deleteAll();
+    }
+
+    @Configuration
+    static class Conf {
+
+        @Bean
+        public INotificationClient notificationClient() {
+            return Mockito.mock(INotificationClient.class);
+        }
     }
 
 }
