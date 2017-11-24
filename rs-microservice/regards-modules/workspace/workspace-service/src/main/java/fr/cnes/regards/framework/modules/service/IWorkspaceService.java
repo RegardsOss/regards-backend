@@ -32,7 +32,7 @@ import fr.cnes.regards.framework.modules.domain.WorkspaceMonitoringInformation;
  */
 public interface IWorkspaceService {
 
-    void setIntoWorkspace(InputStream is) throws IOException;
+    void setIntoWorkspace(InputStream is, String fileName) throws IOException;
 
     void removeFromWorkspace(String file) throws IOException;
 

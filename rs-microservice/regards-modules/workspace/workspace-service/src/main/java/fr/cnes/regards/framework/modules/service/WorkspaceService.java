@@ -76,10 +76,10 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     }
 
     @Override
-    public void setIntoWorkspace(InputStream is) throws IOException {
+    public void setIntoWorkspace(InputStream is, String fileName) throws IOException {
         String tenant = runtimeTenantResolver.getTenant();
         OutputStream os = Files
-                .newOutputStream(Paths.get(microserviceWorkspace.toString(), tenant), StandardOpenOption.CREATE);
+                .newOutputStream(Paths.get(microserviceWorkspace.toString(), tenant, fileName), StandardOpenOption.CREATE);
         ByteStreams.copy(is, os);
         os.flush();
         os.close();
