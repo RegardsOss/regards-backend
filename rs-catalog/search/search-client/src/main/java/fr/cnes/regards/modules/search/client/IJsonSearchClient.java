@@ -40,29 +40,30 @@ import static fr.cnes.regards.modules.search.client.IJsonSearchClient.PATH;
 @RequestMapping(value = PATH, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IJsonSearchClient {
+
     String PATH = "/search";
 
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<JsonObject> searchAll(@RequestParam(required = false) final Map<String, String> allParams);
+    ResponseEntity<JsonObject> searchAll(@RequestParam(required = false) Map<String, String> allParams);
 
     @RequestMapping(value = "/withfacets", method = RequestMethod.GET)
-    ResponseEntity<JsonObject> searchAll(@RequestParam final Map<String, String> allParams,
-            @RequestParam(value = "facets", required = false) final String[] pFacets);
+    ResponseEntity<JsonObject> searchAll(@RequestParam Map<String, String> allParams,
+            @RequestParam(value = "facets", required = false) String[] pFacets);
 
     @RequestMapping(value = "/collections", method = RequestMethod.GET)
-    ResponseEntity<JsonObject> searchCollections(@RequestParam final Map<String, String> allParams);
+    ResponseEntity<JsonObject> searchCollections(@RequestParam Map<String, String> allParams);
 
     @RequestMapping(value = "/dataobjects/withfacets", method = RequestMethod.GET)
-    ResponseEntity<JsonObject> searchDataobjects(@RequestParam final Map<String, String> allParams,
+    ResponseEntity<JsonObject> searchDataobjects(@RequestParam Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] pFacets);
 
     @RequestMapping(value = "/dataobjects/datasets", method = RequestMethod.GET)
-    ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(@RequestParam final Map<String, String> allParams,
-            @RequestParam(value = "facets", required = false) final String[] pFacets);
+    ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(@RequestParam Map<String, String> allParams,
+            @RequestParam(value = "facets", required = false) String[] pFacets);
 
     @RequestMapping(value = "/datasets", method = RequestMethod.GET)
-    ResponseEntity<JsonObject> searchDatasets(@RequestParam final Map<String, String> allParams);
+    ResponseEntity<JsonObject> searchDatasets(@RequestParam Map<String, String> allParams);
 
     @RequestMapping(value = "/documents", method = RequestMethod.GET)
-    ResponseEntity<JsonObject> searchDocuments(@RequestParam final Map<String, String> allParams);
+    ResponseEntity<JsonObject> searchDocuments(@RequestParam Map<String, String> allParams);
 }

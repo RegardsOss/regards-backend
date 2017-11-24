@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 @RestClient(name = "rs-catalog")
 @RequestMapping(value = ISearchClient.PATH, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface ISearchClient {
+
     String PATH = "/search";
 
     String DATASET_URN_PATH = "/datasets/{urn}";
@@ -44,17 +45,16 @@ public interface ISearchClient {
      * @return the dataset
      */
     @RequestMapping(path = DATASET_URN_PATH, method = RequestMethod.GET)
-    ResponseEntity<Resource<Dataset>> getDataset(@PathVariable("urn") final UniformResourceName urn);
-
+    ResponseEntity<Resource<Dataset>> getDataset(@PathVariable("urn") UniformResourceName urn);
 
     @RequestMapping(path = DATAOBJECTS_COMPUTE_FILES_SUMMARY, method = RequestMethod.GET)
-    ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestParam final Map<String, String> allParams,
-            @RequestParam(value = "datasetIpId", required = false) final String datasetIpId,
-            @RequestParam(value = "fileTypes") final String... fileTypes);
+    ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestParam Map<String, String> allParams,
+            @RequestParam(value = "datasetIpId", required = false) String datasetIpId,
+            @RequestParam(value = "fileTypes") String... fileTypes);
 
     @RequestMapping(path = DATAOBJECTS_SEARCH_WITHOUT_FACETS, method = RequestMethod.GET)
-    ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(
-            @RequestParam final Map<String, String> allParams, final Pageable pPageable);
+    ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(@RequestParam Map<String, String> allParams,
+            @RequestParam("page") int page, @RequestParam("size") int size);
 
     /**
      * Unified entity retrieval endpoint
@@ -64,5 +64,5 @@ public interface ISearchClient {
     @RequestMapping(path = ENTITY_GET_MAPPING, method = RequestMethod.GET)
     @ResourceAccess(description = "Return the entity of passed URN.", role = DefaultRole.PUBLIC)
     <E extends AbstractEntity> ResponseEntity<Resource<E>> getEntity(
-            @Valid @PathVariable("urn") final UniformResourceName pUrn);
+            @Valid @PathVariable("urn") UniformResourceName pUrn);
 }
