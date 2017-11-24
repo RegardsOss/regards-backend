@@ -311,7 +311,7 @@ public class OrderService implements IOrderService {
         Map<String, String> requestMap = Collections.singletonMap("q", openSearchRequest);
 
         ResponseEntity<PagedResources<Resource<DataObject>>> pagedResourcesResponseEntity = searchClient
-                .searchDataobjects(requestMap, new PageRequest(page, MAX_PAGE_SIZE));
+                .searchDataobjects(requestMap, page, MAX_PAGE_SIZE);
         return pagedResourcesResponseEntity.getBody().getContent().stream().map(r -> r.getContent())
                 .collect(Collectors.toList());
     }

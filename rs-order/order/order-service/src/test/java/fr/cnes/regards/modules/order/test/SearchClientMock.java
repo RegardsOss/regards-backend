@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -301,8 +300,8 @@ public class SearchClientMock implements ISearchClient {
     // This method is called for datasetSelection (the only one)
     @Override
     public ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(
-            Map<String, String> allParams, Pageable pageable) {
-        if (pageable.getPageNumber() == 0) {
+            Map<String, String> allParams, int page, int size) {
+        if (page == 0) {
             try {
                 List<Resource<DataObject>> list = new ArrayList<>();
                 File testDir = new File("src/test/resources/files");
