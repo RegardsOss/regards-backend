@@ -16,27 +16,31 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.jpa.multitenant.event;
+package fr.cnes.regards.framework.jpa.multitenant.event.spring;
 
-import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.Target;
+import org.springframework.context.ApplicationEvent;
 
 /**
- * Event that informs the microservice instance that connection is ready for use. Each install will have to manage its
- * own event.
+ * Event that informs current microservice a connection is discarded on specified tenant.
  *
  * @author Marc Sordi
  *
  */
-@Event(target = Target.INSTANCE)
-public class TenantConnectionReady extends AbstractTenantEvent implements ISubscribable {
+@SuppressWarnings("serial")
+public class TenantConnectionDiscarded extends ApplicationEvent {
 
-    public TenantConnectionReady() {
-        // JSON constructor
+    private String tenant;
+
+    public TenantConnectionDiscarded(Object source, String tenant) {
+        super(source);
+        this.setTenant(tenant);
     }
 
-    public TenantConnectionReady(String tenant, String microserviceName) {
-        super(tenant, microserviceName);
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
     }
 }

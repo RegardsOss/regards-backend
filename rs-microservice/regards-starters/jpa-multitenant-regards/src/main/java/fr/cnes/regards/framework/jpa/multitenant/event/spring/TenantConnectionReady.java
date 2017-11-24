@@ -16,18 +16,31 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.amqp.test.event;
+package fr.cnes.regards.framework.jpa.multitenant.event.spring;
 
-import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.Target;
+import org.springframework.context.ApplicationEvent;
 
 /**
- * {@link Target#INSTANCE} restricted event
+ * Event that informs current microservice a connection is ready on specified tenant.
+ *
  * @author Marc Sordi
  *
  */
-@Event(target = Target.INSTANCE)
-public class InstanceInfo extends AbstractEvent implements ISubscribable {
+@SuppressWarnings("serial")
+public class TenantConnectionReady extends ApplicationEvent {
 
+    private String tenant;
+
+    public TenantConnectionReady(Object source, String tenant) {
+        super(source);
+        this.setTenant(tenant);
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
+    }
 }
