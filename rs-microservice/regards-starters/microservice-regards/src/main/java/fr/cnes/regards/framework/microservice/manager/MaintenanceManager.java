@@ -32,7 +32,6 @@ import java.util.concurrent.ConcurrentMap;
  */
 public final class MaintenanceManager {
 
-
     /**
      * map linking each tenant with his mode
      */
@@ -56,7 +55,7 @@ public final class MaintenanceManager {
     }
 
     public static void addTenant(String pTenant) {
-        maintenanceMap.put(pTenant, new MaintenanceInfo(Boolean.FALSE, null));
+        maintenanceMap.put(pTenant, new MaintenanceInfo(Boolean.FALSE, OffsetDateTime.now()));
     }
 
     public static void setMaintenance(String pTenant) {

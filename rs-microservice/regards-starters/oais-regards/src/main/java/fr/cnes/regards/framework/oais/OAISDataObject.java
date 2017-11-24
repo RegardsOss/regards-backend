@@ -37,19 +37,19 @@ import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgor
  */
 public class OAISDataObject {
 
-    @NotNull
+    @NotNull(message = "REGARDS data type is required to qualify the related data file")
     private DataType regardsDataType;
 
-    @NotNull
+    @NotNull(message = "Data file URL is required")
     private URL url;
 
     private String filename;
 
-    @NotBlank
+    @NotBlank(message = "Data file checksum algorithm is required")
     @HandledMessageDigestAlgorithm
     private String algorithm;
 
-    @NotBlank
+    @NotBlank(message = "Data file checksum is required")
     private String checksum;
 
     private Long fileSize;
