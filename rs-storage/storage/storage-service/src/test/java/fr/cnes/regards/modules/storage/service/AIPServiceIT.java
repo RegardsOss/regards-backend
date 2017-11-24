@@ -23,10 +23,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -34,7 +37,6 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -56,6 +58,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransact
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -135,9 +138,9 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // first of all, lets get an AIP with accessible dataObjects and real checksums
         aip = getAIP();
         // second, lets storeAndCreate a plugin configuration for IAllocationStrategy
-        PluginMetaData allocationMeta = PluginUtils
-                .createPluginMetaData(DefaultAllocationStrategyPlugin.class,
-                                      DefaultAllocationStrategyPlugin.class.getPackage().getName());
+        PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class,
+                                                                         DefaultAllocationStrategyPlugin.class
+                                                                                 .getPackage().getName());
         PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, ALLOCATION_CONF_LABEL);
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
@@ -148,9 +151,9 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         baseStorageLocation = new URL("file", "", Paths.get("target/AIPServiceIT").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "9000000000000").addParameter(
-                        LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                        gson.toJson(baseStorageLocation)).getParameters();
+                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "9000000000000")
+                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                              gson.toJson(baseStorageLocation)).getParameters();
         PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta,
                                                                       DATA_STORAGE_CONF_LABEL,
                                                                       parameters,
@@ -193,8 +196,10 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // first lets change the data location to be sure it fails
         aip.getProperties().getContentInformations()
                 .toArray(new ContentInformation[aip.getProperties().getContentInformations().size()])[0].getDataObject()
-                        .setUrl(new URL("file", "", Paths.get("src/test/resources/data_that_does_not_exists.txt")
-                                .toFile().getAbsolutePath()));
+                .setUrl(new URL("file",
+                                "",
+                                Paths.get("src/test/resources/data_that_does_not_exists.txt").toFile()
+                                        .getAbsolutePath()));
         Set<UUID> jobIds = aipService.storeAndCreate(Sets.newHashSet(aip));
         int wait = 0;
         LOG.info("Waiting for jobs end ...");
@@ -328,19 +333,21 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     private AIP getAIP() throws MalformedURLException {
 
-        AIPBuilder aipBuilder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                null, EntityType.DATA);
+        AIPBuilder aipBuilder = new AIPBuilder(new UniformResourceName(OAISIdentifier.AIP,
+                                                                       EntityType.DATA,
+                                                                       DEFAULT_TENANT,
+                                                                       UUID.randomUUID(),
+                                                                       1), null, EntityType.DATA);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
-                                                                "de89a907d33a9716d11765582102b2e0");
+        aipBuilder.getContentInformationBuilder()
+                .setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5", "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", "text/plain");
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
-        aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
-                                                                 OffsetDateTime.now());
+        aipBuilder.getPDIBuilder()
+                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event", OffsetDateTime.now());
 
         return aipBuilder.build();
     }
@@ -367,6 +374,15 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         if (baseStorageLocation != null) {
             Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
                     .forEach(File::delete);
+        }
+    }
+
+    @Configuration
+    static class Config {
+
+        @Bean
+        public INotificationClient notificationClient() {
+            return Mockito.mock(INotificationClient.class);
         }
     }
 

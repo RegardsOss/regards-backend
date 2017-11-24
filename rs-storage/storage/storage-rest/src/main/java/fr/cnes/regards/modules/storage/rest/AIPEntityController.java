@@ -24,7 +24,8 @@ import fr.cnes.regards.modules.storage.service.database.IAIPEntityService;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@RestController(value = AIPEntityController.BASE_PATH)
+@RestController
+@RequestMapping(path = AIPEntityController.BASE_PATH)
 public class AIPEntityController implements IResourceController<AIPEntity> {
 
     public static final String BASE_PATH = "sips/{sip_id}/aips";
