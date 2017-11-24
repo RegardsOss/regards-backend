@@ -58,11 +58,11 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
  *
  */
 @Entity
-@Table(name = "t_dpv_product",
-        indexes = { @Index(name = "idx_product_name", columnList = "product_name"),
-                @Index(name = "idx_ingest_chain", columnList = "ingest_chain"),
-                @Index(name = "idx_session", columnList = "session") },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_product_name", columnNames = "product_name") })
+@Table(name = "t_acquisition_product",
+        indexes = { @Index(name = "idx_acq_product_name", columnList = "product_name"),
+                @Index(name = "idx_acq_ingest_chain", columnList = "ingest_chain"),
+                @Index(name = "idx_acq_product_session", columnList = "session") },
+        uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @NamedEntityGraph(name = "graph.acquisition.file.complete", attributeNodes = @NamedAttributeNode(value = "fileList"))
 public class Product implements IIdentifiable<Long> {

@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -52,27 +51,30 @@ public class MetaProductService implements IMetaProductService {
     public MetaProduct retrieve(Long id) {
         return metaProductRepository.findOne(id);
     }
-    
+
     @Override
     public MetaProduct retrieve(String label) {
         return metaProductRepository.findByLabel(label);
     }
 
     @Override
-    public List<MetaProduct> retrieveAll() {
-        final List<MetaProduct> metaProducts = new ArrayList<>();
-        metaProductRepository.findAll().forEach(c -> metaProducts.add(c));
-        return metaProducts;
-    }
-
-    @Override
-    public void delete(Long id) {
-        this.metaProductRepository.delete(id);
+    public Page<MetaProduct> retrieveAll(Pageable page) {
+        return metaProductRepository.findAll(page);
     }
 
     @Override
     public MetaProduct retrieveComplete(Long id) {
-        return this.metaProductRepository.findCompleteById(id);
+        return metaProductRepository.findCompleteById(id);
+    }
+
+    @Override
+    public void delete(Long id) {
+        metaProductRepository.delete(id);
+    }
+
+    @Override
+    public void delete(MetaProduct metaProduct) {
+        metaProductRepository.delete(metaProduct);
     }
 
 }

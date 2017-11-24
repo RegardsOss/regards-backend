@@ -34,7 +34,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
+import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
@@ -43,6 +43,7 @@ import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * 
@@ -55,20 +56,25 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProductBulkRequestService.class);
 
-    private final IProductRepository productRepository;
+    //    private final IProductRepository productRepository;
 
     private final IProductService productService;
 
+    private final IChainGenerationService chainGenerationService;
+
     private final IIngestClient ingestClient;
+
+    private final IProcessGenerationService processService;
 
     @Value("${regards.acquisition.sip.bulk.request.limit:10000}")
     private Integer bulkRequestLimit;
 
-    public ProductBulkRequestService(IProductRepository productRepository, IProductService productService,
-            IIngestClient ingestClient) {
-        this.productRepository = productRepository;
+    public ProductBulkRequestService(IProductService productService, IChainGenerationService chainGenerationService,
+            IIngestClient ingestClient, IProcessGenerationService processService) {
         this.productService = productService;
+        this.chainGenerationService = chainGenerationService;
         this.ingestClient = ingestClient;
+        this.processService = processService;
     }
 
     @Override
@@ -76,11 +82,11 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
         LOG.debug("Start bulk request SIP creation");
 
         // Get all the ingestChain for that at least one product is ready to be send to ingest
-        Set<String> ingestChains = productRepository
+        Set<String> ingestChains = productService
                 .findDistinctIngestChainBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED);
 
         if (ingestChains.isEmpty()) {
-            LOG.info("Any products ready for SIP creation");
+            LOG.debug("Any products ready for SIP creation");
             return;
         }
 
@@ -90,7 +96,16 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
             postSIPBulkRequest(ingestChain);
         }
 
-        LOG.debug("End  bulk request SIP creation");
+        LOG.debug("End   bulk request SIP creation");
+    }
+
+    @Override
+    public void runActiveChains() {
+        LOG.info("Start run active chains");
+
+        chainGenerationService.findByActiveTrueAndRunningFalse().forEach(ch -> chainGenerationService.run(ch));
+
+        LOG.info("End   run active chains");
     }
 
     /**
@@ -101,7 +116,7 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
         LOG.info("[{}] Send SIP", ingestChain);
 
         // Get all the session
-        Set<String> sessions = productRepository
+        Set<String> sessions = productService
                 .findDistinctSessionByIngestChainAndSendedAndStatusIn(ingestChain, false, ProductStatus.COMPLETED,
                                                                       ProductStatus.FINISHED);
         for (String session : sessions) {
@@ -120,7 +135,7 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
      * @return true if at least one {@link Product} has been send to Ingest microservice
      */
     private boolean postSIPOnePage(String ingestChain, String session, Pageable pageable) {
-        Page<Product> page = productRepository
+        Page<Product> page = productService
                 .findAllByIngestChainAndSessionAndSendedAndStatusIn(ingestChain, session, false, pageable,
                                                                     ProductStatus.COMPLETED, ProductStatus.FINISHED);
         if (page.getContent().isEmpty()) {
@@ -164,8 +179,10 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
 
         if (response.getStatusCode().equals(HttpStatus.CREATED)) {
             nbSipOk = responseSipCreated(session, sipCollection);
+            updateProcessGeneration(session, nbSipOk, 0);
         } else if (response.getStatusCode().equals(HttpStatus.PARTIAL_CONTENT)) {
             nbSipOk = responseSipPartiallyCreated(session, response.getBody(), sipCollection);
+            updateProcessGeneration(session, nbSipOk, response.getBody().size());
         } else if (response.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
             LOG.error("[{}] Unauthorized access to ingest microservice", session);
 
@@ -241,4 +258,19 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
         }
     }
 
+    /**
+     * Update the {@link ProcessGeneration}
+     * @param session a current session identifier
+     * @param nbSipCreated the number of SIP that are in {@link SIPState#CREATED}
+     * @param nbSipError the number of SIP that are in {@link SIPState#REJECTED}
+     */
+    private void updateProcessGeneration(String session, int nbSipCreated, int nbSipError) {
+        ProcessGeneration processGeneration = processService.findBySession(session);
+        if (processGeneration != null) {
+            processGeneration.setNbSipCreated(processGeneration.getNbSipCreated() + nbSipCreated);
+            processGeneration.setNbSipError(processGeneration.getNbSipError() + nbSipError);
+            processService.save(processGeneration);
+        }
+
+    }
 }

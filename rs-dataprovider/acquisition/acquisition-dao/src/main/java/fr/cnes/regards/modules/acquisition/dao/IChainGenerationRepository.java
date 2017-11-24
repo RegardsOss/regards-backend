@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
-import org.springframework.data.repository.CrudRepository;
+import java.util.Set;
+
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
@@ -30,8 +32,9 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
  * @author Christophe Mertz
  */
 @Repository
-public interface IChainGenerationRepository extends CrudRepository<ChainGeneration, Long> {
+public interface IChainGenerationRepository extends JpaRepository<ChainGeneration, Long> {
 
     ChainGeneration findByMetaProduct(MetaProduct metaProduct);
 
+    Set<ChainGeneration> findByActiveTrueAndRunningFalse();
 }

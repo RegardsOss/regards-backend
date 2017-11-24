@@ -55,7 +55,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
  *
  */
 @Entity
-@Table(name = "t_dpv_acquisition_file")
+@Table(name = "t_acquisition_file")
 public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
 
     /**
@@ -99,7 +99,7 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "product_id", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "fk_acq_file_id"),
             updatable = false)
-    protected Product product;
+    private Product product;
 
     /**
      * The {@link MetaFile}

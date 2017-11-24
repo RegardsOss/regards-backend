@@ -27,8 +27,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
-import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.builder.AcquisitionFileBuilder;
@@ -36,11 +34,9 @@ import fr.cnes.regards.modules.acquisition.builder.ProductBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
-import fr.cnes.regards.modules.acquisition.domain.metadata.dto.MetaProductDto;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceConfiguration;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProcess;
-import fr.cnes.regards.modules.acquisition.service.plugins.TestGenerateSipPlugin;
 
 /**
  * @author Christophe Mertz
@@ -55,9 +51,6 @@ public class GenerateSIPStepIT extends AbstractAcquisitionIT {
 
     @Autowired
     private IPluginService pluginService;
-
-    @Autowired
-    private IGenerateSipStep generateSipStep;
 
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
@@ -81,7 +74,7 @@ public class GenerateSIPStepIT extends AbstractAcquisitionIT {
         productService.save(product);
 
         AcquisitionProcess process = new AcquisitionProcess(chain, product);
-        IStep generateSIPStep = generateSipStep;
+        IStep generateSIPStep = new GenerateSipStep();
         generateSIPStep.setProcess(process);
         beanFactory.autowireBean(generateSIPStep);
         process.setCurrentStep(generateSIPStep);
@@ -90,30 +83,6 @@ public class GenerateSIPStepIT extends AbstractAcquisitionIT {
 
         Product productRead = productService.retrieve(product.getProductName());
         Assert.assertNotNull(productRead.getSip());
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void proceedStepWithoutSipPLugin() throws ModuleException {
-        // Create a Product
-        Product product = productService.save(ProductBuilder.build(FIRST_PRODUCT).withStatus(ProductStatus.COMPLETED)
-                .withMetaProduct(metaProduct).withSession(SESSION_ID).get());
-
-        // Add to AcquisitionFile to the Product
-        product.addAcquisitionFile(acquisitionFileService.save(AcquisitionFileBuilder.build("file-1")
-                .withStatus(AcquisitionFileStatus.VALID.toString()).withMetaFile(metaFileMandatory).get()));
-        product.addAcquisitionFile(acquisitionFileService.save(AcquisitionFileBuilder.build("file-2")
-                .withStatus(AcquisitionFileStatus.VALID.toString()).withMetaFile(metaFileMandatory).get()));
-        productService.save(product);
-
-        AcquisitionProcess process = new AcquisitionProcess(chain, product);
-        IStep generateSIPStep = generateSipStep;
-        generateSIPStep.setProcess(process);
-        beanFactory.autowireBean(generateSIPStep);
-        process.setCurrentStep(generateSIPStep);
-
-        process.run();
-
-        Assert.fail();
     }
 
 }

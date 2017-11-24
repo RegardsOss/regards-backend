@@ -234,8 +234,8 @@ public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
         waitJobEvent();
 
         Assert.assertFalse(runnings.isEmpty());
-        Assert.assertTrue(succeededs.isEmpty());
-        Assert.assertEquals(1, faileds.size());
+        Assert.assertFalse(succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(16, productService

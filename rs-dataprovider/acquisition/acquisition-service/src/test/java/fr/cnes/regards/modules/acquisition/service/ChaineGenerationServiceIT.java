@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -118,11 +118,11 @@ public class ChaineGenerationServiceIT {
         Assert.assertNotNull(aProduct);
 
         // Get the ChainGeneration
-        List<ChainGeneration> chains = chainService.retrieveAll();
-        Assert.assertNotNull(chains);
-        Assert.assertEquals(1, chains.size());
-        Assert.assertEquals(CHAINE_LABEL, chains.get(0).getLabel());
-        Assert.assertEquals(DATASET_NAME, chains.get(0).getDataSet());
+        Page<ChainGeneration> chains = chainService.retrieveAll(new PageRequest(0, 10));
+        Assert.assertNotNull(chains.getContent());
+        Assert.assertEquals(1, chains.getContent().size());
+        Assert.assertEquals(CHAINE_LABEL, chains.getContent().get(0).getLabel());
+        Assert.assertEquals(DATASET_NAME, chains.getContent().get(0).getDataSet());
     }
 
     @Test
@@ -145,7 +145,7 @@ public class ChaineGenerationServiceIT {
 
         // Create a Product for the uniq MetaProduct
         Product aProduct = addProduct(metaProduct, PRODUCT_NAME_1);
-        Assert.assertEquals(1, productService.retrieveAll().size());
+        Assert.assertEquals(1, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertNotNull(aProduct);
         Assert.assertNotNull(aProduct.getId());
 
@@ -153,13 +153,13 @@ public class ChaineGenerationServiceIT {
         Product bProduct = addProduct(metaProduct, PRODUCT_NAME_2);
         Assert.assertNotNull(bProduct);
         Assert.assertNotNull(bProduct.getId());
-        Assert.assertEquals(2, productService.retrieveAll().size());
+        Assert.assertEquals(2, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
 
         // Control the number of products from the MetaProduct
         Assert.assertEquals(2, metaProductService.retrieveComplete(metaProduct.getId()).getProducts().size());
 
         // Delete a product
         productService.delete(aProduct.getId());
-        Assert.assertEquals(1, productService.retrieveAll().size());
+        Assert.assertEquals(1, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
     }
 }

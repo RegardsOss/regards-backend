@@ -32,7 +32,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.acquisition.domain.job.ProductJobParameter;
+import fr.cnes.regards.modules.acquisition.domain.job.SIPEventJobParameter;
 import fr.cnes.regards.modules.acquisition.service.job.PostAcquisitionJob;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
@@ -83,7 +83,7 @@ public class ProductSipEventHandler implements ApplicationListener<ApplicationRe
             LOG.debug("[{}] received event {}", event.getIpId(), event.getState());
 
             JobInfo acquisition = new JobInfo();
-            acquisition.setParameters(new ProductJobParameter(event.getIpId()));
+            acquisition.setParameters(new SIPEventJobParameter(event));
             acquisition.setClassName(PostAcquisitionJob.class.getName());
             acquisition.setOwner(authResolver.getUser());
             acquisition.setPriority(50); //TODO CMZ priority ?

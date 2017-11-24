@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
@@ -29,6 +29,6 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
  * @author Christophe Mertz
  */
 @Repository
-public interface IMetaFileRepository extends CrudRepository<MetaFile, Long> {
+public interface IMetaFileRepository extends JpaRepository<MetaFile, Long> {
 
 }

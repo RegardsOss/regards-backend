@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -59,25 +60,46 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public List<Product> retrieveAll() {
-        final List<Product> products = new ArrayList<>();
-        productRepository.findAll().forEach(c -> products.add(c));
-        return products;
+    public Page<Product> retrieveAll(Pageable page) {
+        return productRepository.findAll(page);
     }
 
     @Override
     public void delete(Long id) {
-        this.productRepository.delete(id);
+        productRepository.delete(id);
     }
 
     @Override
-    public List<Product> findByStatus(ProductStatus status) {
+    public void delete(Product product) {
+        productRepository.delete(product);
+    }
+
+    @Override
+    public Set<Product> findByStatus(ProductStatus status) {
         return productRepository.findByStatus(status);
     }
 
     @Override
-    public List<Product> findBySendedAndStatusIn(Boolean sended, ProductStatus... status) {
+    public Set<Product> findBySendedAndStatusIn(Boolean sended, ProductStatus... status) {
         return productRepository.findBySendedAndStatusIn(sended, status);
+    }
+
+    @Override
+    public Set<String> findDistinctIngestChainBySendedAndStatusIn(Boolean sended, ProductStatus... status) {
+        return productRepository.findDistinctIngestChainBySendedAndStatusIn(sended, status);
+    }
+
+    @Override
+    public Set<String> findDistinctSessionByIngestChainAndSendedAndStatusIn(String ingestChain, Boolean sended,
+            ProductStatus... status) {
+        return productRepository.findDistinctSessionByIngestChainAndSendedAndStatusIn(ingestChain, sended, status);
+    }
+
+    @Override
+    public Page<Product> findAllByIngestChainAndSessionAndSendedAndStatusIn(String ingestChain, String session,
+            Boolean sended, Pageable pageable, ProductStatus... status) {
+        return productRepository.findAllByIngestChainAndSessionAndSendedAndStatusIn(ingestChain, session, sended,
+                                                                                    pageable, status);
     }
 
 }

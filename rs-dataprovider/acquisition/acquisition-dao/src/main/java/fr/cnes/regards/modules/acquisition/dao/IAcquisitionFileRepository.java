@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.acquisition.dao;
 
 import java.util.List;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
  * @author Christophe Mertz
  */
 @Repository
-public interface IAcquisitionFileRepository extends CrudRepository<AcquisitionFile, Long> {
+public interface IAcquisitionFileRepository extends JpaRepository<AcquisitionFile, Long> {
 
     List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
 
@@ -43,5 +43,4 @@ public interface IAcquisitionFileRepository extends CrudRepository<AcquisitionFi
     List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileStatus status, MetaFile metaFile);
 
     List<AcquisitionFile> findByProduct(Product product);
-
 }

@@ -30,14 +30,15 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.job.ProductJobParameter;
+import fr.cnes.regards.modules.acquisition.domain.job.SIPEventJobParameter;
+import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.step.IPostAcquisitionStep;
 import fr.cnes.regards.modules.acquisition.service.step.IStep;
 import fr.cnes.regards.modules.acquisition.service.step.PostSipAcquisitionStep;
+import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
 /**
  * This job runs a set of step :<br>
@@ -59,21 +60,21 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
     private IProductService productService;
 
     @Autowired
-    private IChainGenerationRepository chainGenerationRepository;
+    private IChainGenerationService chainGenerationService;
 
-    private String productName;
+    private SIPEvent sipEvent;
 
     @Override
     public void run() {
-        LOGGER.info("Start POST acquisition SIP job for the product <{}>", productName);
+        LOGGER.info("Start POST acquisition SIP job for the product <{}>", sipEvent.getIpId());
 
-        Product product = productService.retrieve(productName);
-        ChainGeneration chainGeneration = chainGenerationRepository.findByMetaProduct(product.getMetaProduct());
+        Product product = productService.retrieve(sipEvent.getIpId());
+        ChainGeneration chainGeneration = chainGenerationService.findByMetaProduct(product.getMetaProduct());
 
         AcquisitionProcess process = new AcquisitionProcess(chainGeneration, product);
 
         // IPostAcquisitionStep is the first step
-        IStep postSipStep = new PostSipAcquisitionStep();
+        IStep postSipStep = new PostSipAcquisitionStep(sipEvent);
         postSipStep.setProcess(process);
         beanFactory.autowireBean(postSipStep);
         process.setCurrentStep(postSipStep);
@@ -92,10 +93,10 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
         }
 
         for (JobParameter jp : parameters.values()) {
-            if (ProductJobParameter.isCompatible(jp)) {
-                productName = jp.getValue();
+            if (SIPEventJobParameter.isCompatible(jp)) {
+                sipEvent = jp.getValue();
             } else {
-                throw new JobParameterInvalidException("Please use ProductJobParameter in place of JobParameter");
+                throw new JobParameterInvalidException("Please use SIPEventJobParameter in place of JobParameter");
             }
         }
     }

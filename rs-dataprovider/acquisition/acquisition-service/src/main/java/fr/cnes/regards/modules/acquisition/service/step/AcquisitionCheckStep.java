@@ -29,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import com.google.common.io.Files;
 
@@ -56,7 +55,6 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
  *
  */
 @MultitenantTransactional
-@Service
 public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCheckStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionCheckStep.class);
@@ -84,7 +82,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
     private List<AcquisitionFile> inProgressFileList;
 
     @Override
-    public void proceedStep() throws AcquisitionRuntimeException {
+    public void proceedStep() throws AcquisitionRuntimeException, AcquisitionException {
 
         if (chainGeneration == null) {
             String msg = "The chain generation is mandatory";
@@ -99,9 +97,8 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
         // A plugin for the scan configuration is required
         if (this.chainGeneration.getCheckAcquisitionPluginConf() == null) {
-            String msg = "[" + this.chainGeneration.getLabel() + "] The required ICheckFilePlugin is missing";
-            LOGGER.error(msg);
-            throw new RuntimeException(msg);
+            throw new AcquisitionException(
+                    "[" + this.chainGeneration.getLabel() + "] The required ICheckFilePlugin is missing");
         }
 
         // Lunch the check plugin

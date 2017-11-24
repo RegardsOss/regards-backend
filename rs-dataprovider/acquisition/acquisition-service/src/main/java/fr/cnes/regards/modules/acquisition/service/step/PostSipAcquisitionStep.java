@@ -22,25 +22,27 @@ package fr.cnes.regards.modules.acquisition.service.step;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
+import fr.cnes.regards.modules.acquisition.service.IProcessGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
 /**
  * @author Christophe Mertz
  *
  */
 @MultitenantTransactional
-@Service
 public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisitionStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostSipAcquisitionStep.class);
@@ -51,17 +53,33 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
     @Autowired
     private IProductService productService;
 
+    @Autowired
+    private IProcessGenerationService processService;
+
     private ChainGeneration chainGeneration;
 
     private Product product;
 
-    @Override
-    public void proceedStep() throws AcquisitionRuntimeException {
+    private SIPEvent sipEvent;
 
-        if (chainGeneration == null || product == null) {
-            String msg = "The chain generation and the product are mandatory";
+    /**
+     * @param sipEvent2
+     */
+    public PostSipAcquisitionStep(SIPEvent sipEvent2) {
+        this.sipEvent = sipEvent2;
+    }
+
+    @Override
+    public void proceedStep() throws AcquisitionRuntimeException, AcquisitionException {
+
+        if (chainGeneration == null) {
+            String msg = "The chain generation is mandatory";
             LOGGER.error(msg);
             throw new AcquisitionRuntimeException(msg);
+        }
+
+        if (product == null) {
+            throw new AcquisitionException("The product is mandatory");
         }
 
         LOGGER.info("[{}] Start POST acqusition SIP step for the product <{}>", chainGeneration.getSession(),
@@ -69,9 +87,8 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
 
         // A plugin for the generate SIP configuration is required
         if (this.chainGeneration.getPostProcessSipPluginConf() == null) {
-            String msg = "[" + this.chainGeneration.getLabel() + "] The required IPostProcessSipPlugin is missing";
-            LOGGER.error(msg);
-            throw new AcquisitionRuntimeException(msg);
+            throw new AcquisitionException(
+                    "[" + this.chainGeneration.getLabel() + "] The required IPostProcessSipPlugin is missing");
         }
 
         // Launch the generate plugin
@@ -85,14 +102,29 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
             product.setStatus(ProductStatus.SAVED);
             productService.save(this.product);
 
+            updateProcessGeneration();
+
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
-            throw new AcquisitionRuntimeException(e.getMessage());
+            throw new AcquisitionException(e.getMessage());
         }
 
         LOGGER.info("[{}] Stop  POST acqusition SIP step for the product <{}>", chainGeneration.getSession(),
                     product.getProductName());
 
+    }
+
+    private void updateProcessGeneration() {
+        ProcessGeneration processGeneration = processService.findBySession(chainGeneration.getSession());
+        if (processGeneration != null) {
+            if (sipEvent.getState().equals(SIPState.STORED)) {
+                processGeneration.sipStoredIncrease();
+            } else if (sipEvent.getState().equals(SIPState.STORE_ERROR)) {
+                LOGGER.info("[{}] received event {}", sipEvent.getIpId(), sipEvent.getState());
+                processGeneration.sipErrorIncrease();
+            }
+            processService.save(processGeneration);
+        }
     }
 
     @Override

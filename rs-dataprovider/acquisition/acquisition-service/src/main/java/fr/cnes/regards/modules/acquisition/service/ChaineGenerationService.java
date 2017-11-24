@@ -20,12 +20,13 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -34,9 +35,11 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.modules.acquisition.builder.ProcessGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProductsJob;
 
 /**
@@ -52,21 +55,26 @@ public class ChaineGenerationService implements IChainGenerationService {
 
     private final IChainGenerationRepository chainRepository;
 
-    @Autowired
-    private IJobInfoService jobInfoService;
+    private final IJobInfoService jobInfoService;
 
-    @Autowired
-    private IMetaProductService metaProductService;
+    private final IMetaProductService metaProductService;
 
-    @Autowired
-    private IPluginService pluginService;
+    private final IProcessGenerationService processService;
+
+    private final IPluginService pluginService;
 
     @Autowired
     private IAuthenticationResolver authResolver;
 
-    public ChaineGenerationService(final ISubscriber subscriber, IChainGenerationRepository repository) {
+    public ChaineGenerationService(ISubscriber subscriber, IChainGenerationRepository repository,
+            IProcessGenerationService processService, IMetaProductService metaProductService,
+            IJobInfoService jobInfoService, IPluginService pluginService) {
         super();
         this.chainRepository = repository;
+        this.processService = processService;
+        this.metaProductService = metaProductService;
+        this.jobInfoService = jobInfoService;
+        this.pluginService = pluginService;
     }
 
     @Override
@@ -75,10 +83,8 @@ public class ChaineGenerationService implements IChainGenerationService {
     }
 
     @Override
-    public List<ChainGeneration> retrieveAll() {
-        final List<ChainGeneration> chains = new ArrayList<>();
-        chainRepository.findAll().forEach(c -> chains.add(c));
-        return chains;
+    public Page<ChainGeneration> retrieveAll(Pageable page) {
+        return chainRepository.findAll(page);
     }
 
     @Override
@@ -121,6 +127,21 @@ public class ChaineGenerationService implements IChainGenerationService {
     }
 
     @Override
+    public void delete(ChainGeneration chainGeneration) {
+        chainRepository.delete(chainGeneration);
+    }
+
+    @Override
+    public ChainGeneration findByMetaProduct(MetaProduct metaProduct) {
+        return chainRepository.findByMetaProduct(metaProduct);
+    }
+
+    @Override
+    public Set<ChainGeneration> findByActiveTrueAndRunningFalse() {
+        return chainRepository.findByActiveTrueAndRunningFalse();
+    }
+
+    @Override
     public boolean run(Long id) {
         return run(this.retrieve(id));
     }
@@ -129,29 +150,33 @@ public class ChaineGenerationService implements IChainGenerationService {
     public boolean run(ChainGeneration chain) {
         // the ChainGeneration must be active
         if (!chain.isActive()) {
-            LOGGER.warn("[{}] Unable to run a not active the chain generation ", chain.getLabel());
+            LOGGER.warn("[{}] Unable to run a not active the chain generation", chain.getLabel());
             return false;
         }
 
         // the ChainGeneration must not be already running
         if (chain.isRunning()) {
-            LOGGER.warn("[{}] Unable to run an already running chain generation ", chain.getLabel());
+            LOGGER.warn("[{}] Unable to run an already running chain generation", chain.getLabel());
             return false;
         }
 
         // the difference between the previous activation date and current time must be greater than the periodicity
         if ((chain.getLastDateActivation() != null)
                 && chain.getLastDateActivation().plusSeconds(chain.getPeriodicity()).isAfter(OffsetDateTime.now())) {
-            LOGGER.warn("[{}] Unable to run the chain generation : the last activation date is to close from now with the periodicity {}. ",
+            LOGGER.warn("[{}] Unable to run the chain generation : the last activation date is to close from now with the periodicity {}.",
                         chain.getLabel(), chain.getPeriodicity());
             return false;
         }
 
+        // the ChainGeneration is ready to be started 
         chain.setRunning(true);
         chain.setSession(chain.getLabel() + ":" + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + ":"
                 + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
-
         save(chain);
+
+        // Create the ProcessGeneration
+        processService.save(ProcessGenerationBuilder.build(chain.getSession()).withChain(chain)
+                .withStartDate(OffsetDateTime.now()).get());
 
         LOGGER.info("[{}] a new session is created", chain.getSession());
 

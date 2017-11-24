@@ -57,7 +57,6 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginParameterRepository;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.modules.acquisition.builder.AcquisitionFileBuilder;
 import fr.cnes.regards.modules.acquisition.builder.ChainGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
@@ -67,6 +66,7 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
+import fr.cnes.regards.modules.acquisition.dao.IProcessGenerationRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
@@ -90,7 +90,6 @@ import fr.cnes.regards.modules.ingest.client.IIngestClient;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
@@ -172,6 +171,9 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
 
     @Autowired
     protected IMetaFileRepository metaFileRepository;
+
+    @Autowired
+    protected IProcessGenerationRepository processGenerationRepository;
 
     @Autowired
     protected IPluginParameterRepository pluginParameterRepository;
@@ -267,6 +269,7 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
         scanDirectoryRepository.deleteAll();
         productRepository.deleteAll();
         acquisitionFileRepository.deleteAll();
+        processGenerationRepository.deleteAll();
         chainGenerationRepository.deleteAll();
         metaProductRepository.deleteAll();
         metaFileRepository.deleteAll();
@@ -391,14 +394,14 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
     }
 
     protected class ScanJobHandler implements IHandler<JobEvent> {
-    
+
         @Override
         public void handle(TenantWrapper<JobEvent> wrapper) {
             JobEvent event = wrapper.getContent();
             JobEventType type = event.getJobEventType();
-    
+
             LOGGER.info(this.toString());
-    
+
             switch (type) {
                 case RUNNING:
                     runnings.add(wrapper.getContent().getJobId());

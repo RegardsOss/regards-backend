@@ -20,6 +20,9 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -37,20 +40,7 @@ public interface IAcquisitionFileService {
     /**
      * @return a {@link List} of {@link AcquisitionFile}
      */
-    List<AcquisitionFile> retrieveAll();
-
-    /**
-     * Find the {@link AcquisitionFile} for a {@link MetaFile}
-     * @param metaFile
-     * @return a {@link List} of {@link AcquisitionFile}
-     */
-    public List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
-
-    public List<AcquisitionFile> findByStatus(AcquisitionFileStatus status);
-    
-    public List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileStatus status, MetaFile metaFile);
-    
-    public List<AcquisitionFile> findByProduct(Product product);
+    Page<AcquisitionFile> retrieveAll(Pageable page);
 
     /**
      * Retrieve one specified {@link AcquisitionFile}
@@ -64,4 +54,24 @@ public interface IAcquisitionFileService {
      * @param id of a {@link AcquisitionFile}
      */
     void delete(Long id);
+
+    /**
+     * Delete a {@link AcquisitionFile}
+     * @param acquisitionFile the {@link AcquisitionFile} to delete
+     */
+    void delete(AcquisitionFile acquisitionFile);
+
+    /**
+     * Find the {@link AcquisitionFile} for a {@link MetaFile}
+     * @param metaFile
+     * @return a {@link List} of {@link AcquisitionFile}
+     */
+    public List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
+
+    public List<AcquisitionFile> findByStatus(AcquisitionFileStatus status);
+
+    public List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileStatus status, MetaFile metaFile);
+
+    public List<AcquisitionFile> findByProduct(Product product);
+
 }

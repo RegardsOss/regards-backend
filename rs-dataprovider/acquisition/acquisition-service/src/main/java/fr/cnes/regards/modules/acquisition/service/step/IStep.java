@@ -48,8 +48,10 @@ public interface IStep {
 
     /**
      * This method aims to run the treatments for the {@link IStep}  
+     * @throws AcquisitionRuntimeException
+     * @throws AcquisitionException
      */
-    public void proceedStep() throws AcquisitionRuntimeException;
+    public void proceedStep() throws AcquisitionRuntimeException, AcquisitionException;
 
     /**
      * This method chains the methods getResources,  proceedStep and freeResources

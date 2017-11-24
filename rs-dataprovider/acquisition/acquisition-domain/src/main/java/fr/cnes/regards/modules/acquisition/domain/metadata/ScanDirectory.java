@@ -18,10 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.metadata;
 
-import java.time.OffsetDateTime;
-
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -32,7 +29,6 @@ import javax.persistence.Table;
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 
 /**
  * Represents a directory to scan data files
@@ -41,7 +37,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
  *
  */
 @Entity
-@Table(name = "t_dpv_scan_directory")
+@Table(name = "t_acquisition_scan_directory")
 public class ScanDirectory implements IIdentifiable<Long> {
 
     @Id
@@ -55,13 +51,6 @@ public class ScanDirectory implements IIdentifiable<Long> {
     @NotBlank
     @Column(name = "scan_directory")
     private String scanDir;
-
-//    /**
-//     * Acquisition date of the last acquired file in the current directory
-//     */
-//    @Column(name = "last_acquisition_date")
-//    @Convert(converter = OffsetDateTimeAttributeConverter.class)
-//    private OffsetDateTime lastAcqDate;
 
     /**
      * Default constructor
@@ -117,12 +106,12 @@ public class ScanDirectory implements IIdentifiable<Long> {
         this.scanDir = scanDir;
     }
 
-//    public OffsetDateTime getLastAcqDate() {
-//        return lastAcqDate;
-//    }
-//
-//    public void setLastAcqDate(OffsetDateTime lastAcqDate) {
-//        this.lastAcqDate = lastAcqDate;
-//    }
+    //    public OffsetDateTime getLastAcqDate() {
+    //        return lastAcqDate;
+    //    }
+    //
+    //    public void setLastAcqDate(OffsetDateTime lastAcqDate) {
+    //        this.lastAcqDate = lastAcqDate;
+    //    }
 
 }

@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -54,15 +53,18 @@ public class MetaFileService implements IMetaFileService {
     }
 
     @Override
-    public List<MetaFile> retrieveAll() {
-        final List<MetaFile> chains = new ArrayList<>();
-        metaFileRepository.findAll().forEach(c -> chains.add(c));
-        return chains;
+    public Page<MetaFile> retrieveAll(Pageable page) {
+        return metaFileRepository.findAll(page);
     }
 
     @Override
     public void delete(Long id) {
-        this.metaFileRepository.delete(id);
+        metaFileRepository.delete(id);
+    }
+
+    @Override
+    public void delete(MetaFile metaFile) {
+        metaFileRepository.delete(metaFile);
     }
 
 }

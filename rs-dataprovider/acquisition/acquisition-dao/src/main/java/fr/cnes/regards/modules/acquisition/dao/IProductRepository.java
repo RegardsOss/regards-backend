@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.LockModeType;
@@ -45,9 +44,9 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
     @EntityGraph("graph.acquisition.file.complete")
     Product findCompleteByProductName(String productName);
 
-    List<Product> findByStatus(ProductStatus status);
+    Set<Product> findByStatus(ProductStatus status);
 
-    List<Product> findBySendedAndStatusIn(Boolean sended, ProductStatus... status);
+    Set<Product> findBySendedAndStatusIn(Boolean sended, ProductStatus... status);
 
     @Query("select distinct p.ingestChain from Product p where p.sended=?1 and p.status in ?2")
     Set<String> findDistinctIngestChainBySendedAndStatusIn(Boolean sended, ProductStatus... status);

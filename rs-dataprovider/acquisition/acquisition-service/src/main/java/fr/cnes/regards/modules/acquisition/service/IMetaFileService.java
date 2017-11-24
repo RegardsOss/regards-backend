@@ -18,7 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
@@ -34,7 +35,7 @@ public interface IMetaFileService {
     /**
      * @return all {@link MetaFile}
      */
-    List<MetaFile> retrieveAll();
+    Page<MetaFile> retrieveAll(Pageable page);
 
     /**
      * Retrieve one specified {@link MetaFile}
@@ -43,4 +44,6 @@ public interface IMetaFileService {
     MetaFile retrieve(Long id);
 
     void delete(Long id);
+    
+    void delete(MetaFile metaFile);
 }

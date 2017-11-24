@@ -46,7 +46,7 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  *
  */
 @Entity
-@Table(name = "t_dpv_meta_file")
+@Table(name = "t_acquisition_meta_file")
 public class MetaFile implements IIdentifiable<Long> {
 
     /**

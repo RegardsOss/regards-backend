@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -74,16 +75,15 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
-        // 5 products are ready to be send to ingest
-        Assert.assertEquals(5, faileds.size()); // because there is no GenerateSIPPluginis defined for the chain
+        Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
-        Assert.assertEquals(1, chainService.retrieveAll().size());
-        Assert.assertEquals(2, metaFileService.retrieveAll().size());
-        Assert.assertEquals(7, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(2, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(7, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
         Assert.assertEquals(1, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
-        Assert.assertEquals(5, productService.retrieveAll().size());
+        Assert.assertEquals(5, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(1, productService.findByStatus(ProductStatus.FINISHED).size());
         Assert.assertEquals(4, productService.findByStatus(ProductStatus.COMPLETED).size());
         Assert.assertEquals(0, productService.findByStatus(ProductStatus.ERROR).size());
@@ -104,7 +104,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
                                                                                 IAcquisitionScanDirectoryPlugin.class));
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.PARAM_1_NAME, "Hello param one");
-        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.PARAM_2_NAME, "Hello param 2");
+        chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.PARAM_2_NAME, "Hello param two");
 
         Assert.assertTrue(chainService.run(chain));
 
@@ -130,10 +130,10 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
-        Assert.assertEquals(1, chainService.retrieveAll().size());
-        Assert.assertEquals(2, metaFileService.retrieveAll().size());
+        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(2, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         // 6 mandatory and 1 optional
-        Assert.assertEquals(7, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(7, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(7, acquisitionFileService.findByStatus(AcquisitionFileStatus.IN_PROGRESS).size());
 
         chain = chainService.retrieve(chain.getId());
@@ -174,15 +174,15 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
-        Assert.assertEquals(3, faileds.size()); // because there is no GenerateSIPPlugin defined for the chain
+        Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
-        Assert.assertEquals(1, chainService.retrieveAll().size());
-        Assert.assertEquals(3, metaFileService.retrieveAll().size());
-        Assert.assertEquals(6, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(3, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(6, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
         Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
-        Assert.assertEquals(3, productService.retrieveAll().size());
+        Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, productService.findByStatus(ProductStatus.COMPLETED).size());
 
         chain = chainService.retrieve(chain.getId());
@@ -223,15 +223,15 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
-        Assert.assertEquals(3, faileds.size()); // because there is no GenerateSIPPlugin defined for the chain
+        Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
-        Assert.assertEquals(1, chainService.retrieveAll().size());
-        Assert.assertEquals(3, metaFileService.retrieveAll().size());
-        Assert.assertEquals(6, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(3, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(6, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
         Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
-        Assert.assertEquals(3, productService.retrieveAll().size());
+        Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, productService.findByStatus(ProductStatus.FINISHED).size());
 
         chain = chainService.retrieve(chain.getId());
@@ -268,18 +268,18 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
-        Assert.assertEquals(1, chainService.retrieveAll().size());
-        Assert.assertEquals(3, metaFileService.retrieveAll().size());
-        Assert.assertEquals(3, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(3, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(3, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
         Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
-        Assert.assertEquals(3, productService.retrieveAll().size());
+        Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         /*
          *  3 products are acquired but for each 1 mandatory file is missing 
          */
         Assert.assertEquals(3, productService.findByStatus(ProductStatus.ACQUIRING).size());
 
-        for (Product product : productService.retrieveAll()) {
+        for (Product product : productService.retrieveAll(new PageRequest(0, 10))) {
             Assert.assertFalse(product.isSended());
         }
 
@@ -300,15 +300,15 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
         Assert.assertFalse(runnings.isEmpty());
         Assert.assertFalse(succeededs.isEmpty());
-        Assert.assertEquals(3, faileds.size());
+        Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
-        Assert.assertEquals(1, chainService.retrieveAll().size());
-        Assert.assertEquals(3, metaFileService.retrieveAll().size());
-        Assert.assertEquals(6, acquisitionFileService.retrieveAll().size());
+        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(3, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(6, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
         Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
-        Assert.assertEquals(3, productService.retrieveAll().size());
+        Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         /**
          * the 3 products are finished
          */
@@ -322,8 +322,8 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         waitJobEvent();
 
         Assert.assertFalse(runnings.isEmpty());
-        Assert.assertTrue(succeededs.isEmpty());
-        Assert.assertFalse(faileds.isEmpty());
+        Assert.assertFalse(succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
     }
 

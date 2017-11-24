@@ -18,7 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.util.List;
+import java.util.Set;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
@@ -35,7 +38,7 @@ public interface IProductService {
     /**
      * @return all {@link Product}
      */
-    List<Product> retrieveAll();
+    Page<Product> retrieveAll(Pageable page);
 
     /**
      * Retrieve one specified {@link Product}
@@ -55,8 +58,22 @@ public interface IProductService {
      */
     void delete(Long id);
 
-    public List<Product> findByStatus(ProductStatus status);
+    /**
+     * Delete one specified {@link Product}
+     * @param product {@link Product} to delete
+     */
+    void delete(Product product);
 
-    public List<Product> findBySendedAndStatusIn(Boolean sended, ProductStatus... status);
+    Set<Product> findByStatus(ProductStatus status);
+
+    Set<Product> findBySendedAndStatusIn(Boolean sended, ProductStatus... status);
+
+    Set<String> findDistinctIngestChainBySendedAndStatusIn(Boolean sended, ProductStatus... status);
+
+    Set<String> findDistinctSessionByIngestChainAndSendedAndStatusIn(String ingestChain, Boolean sended,
+            ProductStatus... status);
+
+    Page<Product> findAllByIngestChainAndSessionAndSendedAndStatusIn(String ingestChain, String session, Boolean sended,
+            Pageable pageable, ProductStatus... status);
 
 }

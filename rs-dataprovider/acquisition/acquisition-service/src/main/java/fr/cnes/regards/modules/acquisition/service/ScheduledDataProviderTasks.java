@@ -67,5 +67,16 @@ public class ScheduledDataProviderTasks {
             runtimeTenantResolver.clearTenant();
         }
     }
+    
+    @Scheduled(fixedRateString = "${regards.acquisition.process.run.chains.delay:60000}")
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void processRunACtiveChains() {
+        LOG.debug("Process run active chains");
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            productBulkRequestService.runActiveChains();
+            runtimeTenantResolver.clearTenant();
+        }
+    }
 
 }

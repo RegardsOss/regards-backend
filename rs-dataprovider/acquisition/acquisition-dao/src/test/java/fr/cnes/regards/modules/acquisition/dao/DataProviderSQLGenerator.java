@@ -1,6 +1,3 @@
-package fr.cnes.regards.modules.acquisition.dao;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
-
 /*
  * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
@@ -19,6 +16,10 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTes
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+
+package fr.cnes.regards.modules.acquisition.dao;
+
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
 
 /**
  * @author Christophe Mertz

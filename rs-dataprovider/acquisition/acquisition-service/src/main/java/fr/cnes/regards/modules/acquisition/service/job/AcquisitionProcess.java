@@ -75,7 +75,8 @@ public class AcquisitionProcess {
                 setCurrentStep(currentStep.getNextStep());
             }
         } catch (ModuleException e) {
-            LOGGER.error(e.getMessage(), e);
+            String msg = "["+ chainGeneration.getSession()+ "]";
+            LOGGER.error(msg, e);
         }
     }
 

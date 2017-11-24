@@ -53,8 +53,8 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
  *
  */
 @Entity
-@Table(name = "t_dpv_meta_product", indexes = { @Index(name = "idx_meta_product_label", columnList = "label") },
-        uniqueConstraints = @UniqueConstraint(name = "uk_meta_product_label", columnNames = { "label" }))
+@Table(name = "t_acquisition_meta_product", indexes = { @Index(name = "idx_acq_meta_product_label", columnList = "label") },
+        uniqueConstraints = @UniqueConstraint(name = "uk_acq_meta_product_label", columnNames = { "label" }))
 @NamedEntityGraph(name = "graph.product.complete",
         attributeNodes = { @NamedAttributeNode(value = "products"), @NamedAttributeNode(value = "metaFiles") })
 public class MetaProduct implements IIdentifiable<Long> {

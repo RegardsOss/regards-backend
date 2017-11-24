@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -52,10 +53,8 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     }
 
     @Override
-    public List<AcquisitionFile> retrieveAll() {
-        final List<AcquisitionFile> acqFiles = new ArrayList<>();
-        acqfileRepository.findAll().forEach(c -> acqFiles.add(c));
-        return acqFiles;
+    public Page<AcquisitionFile> retrieveAll(Pageable page) {
+        return acqfileRepository.findAll(page);
     }
 
     @Override
@@ -67,7 +66,12 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     public void delete(Long id) {
         acqfileRepository.delete(id);
     }
-    
+
+    @Override
+    public void delete(AcquisitionFile acquisitionFile) {
+        acqfileRepository.delete(acquisitionFile);
+    }
+
     public List<AcquisitionFile> findByMetaFile(MetaFile metaFile) {
         return acqfileRepository.findByMetaFile(metaFile);
     }

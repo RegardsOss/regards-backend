@@ -18,23 +18,31 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
-import org.springframework.data.jpa.repository.EntityGraph;
+import java.time.OffsetDateTime;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
 
 /**
- * {@link MetaProduct} repository
+ * {@link ProcessGeneration} repository
  *
  * @author Christophe Mertz
  */
 @Repository
-public interface IMetaProductRepository extends JpaRepository<MetaProduct, Long> {
+public interface IProcessGenerationRepository extends JpaRepository<ProcessGeneration, Long> {
 
-    @EntityGraph("graph.product.complete")
-    MetaProduct findCompleteById(Long id);
-
-    MetaProduct findByLabel(String name);
-
+    ProcessGeneration findBySession(String session);
+    
+    Page<ProcessGeneration> findByChainGeneration(ChainGeneration chainGeneration, Pageable pageable);
+    
+    Page<ProcessGeneration> findByStartDateBetween(OffsetDateTime start, OffsetDateTime stop, Pageable pageable);
+    
+    Page<ProcessGeneration> findByStartDateAfterAndStopDateBefore(OffsetDateTime start, OffsetDateTime stop, Pageable pageable);
+    
+    Page<ProcessGeneration> findByStartDateAfter(OffsetDateTime start, Pageable pageable);
 }

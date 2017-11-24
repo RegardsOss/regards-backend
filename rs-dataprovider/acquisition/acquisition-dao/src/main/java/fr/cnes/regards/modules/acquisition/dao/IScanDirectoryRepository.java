@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
@@ -29,6 +29,6 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
  * @author Christophe Mertz
  */
 @Repository
-public interface IScanDirectoryRepository extends CrudRepository<ScanDirectory, Long> {
+public interface IScanDirectoryRepository extends JpaRepository<ScanDirectory, Long> {
 
 }

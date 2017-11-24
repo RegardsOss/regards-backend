@@ -36,9 +36,11 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
+import fr.cnes.regards.modules.acquisition.service.IProcessGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
@@ -48,7 +50,6 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
  *
  */
 @MultitenantTransactional
-@Service
 public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateSipStep.class);
@@ -61,6 +62,9 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
     @Autowired
     private IProductService productService;
+
+    @Autowired
+    private IProcessGenerationService processService;
 
     private ChainGeneration chainGeneration;
 
@@ -75,12 +79,16 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
     private List<AcquisitionFile> acqFiles;
 
     @Override
-    public void proceedStep() throws AcquisitionRuntimeException {
+    public void proceedStep() throws AcquisitionRuntimeException, AcquisitionException {
 
-        if (chainGeneration == null || product == null) {
-            String msg = "The chain generation and the product are mandatory";
+        if (chainGeneration == null) {
+            String msg = "The chain generation is mandatory";
             LOGGER.error(msg);
             throw new AcquisitionRuntimeException(msg);
+        }
+
+        if (product == null) {
+            throw new AcquisitionException("The product is mandatory");
         }
 
         LOGGER.info("[{}] Start generate SIP step for the product <{}>", chainGeneration.getSession(),
@@ -93,9 +101,8 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
         // A plugin for the generate SIP configuration is required
         if (this.chainGeneration.getGenerateSipPluginConf() == null) {
-            String msg = "[" + this.chainGeneration.getLabel() + "] The required IGenerateSIPPlugin is missing";
-            LOGGER.error(msg);
-            throw new RuntimeException(msg);
+            throw new AcquisitionException(
+                    "[" + this.chainGeneration.getLabel() + "] The required IGenerateSIPPlugin is missing");
         }
 
         // Launch the generate plugin
@@ -122,14 +129,23 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
             productService.save(this.product);
 
+            updateProcessGeneration();
+
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
-            throw new AcquisitionRuntimeException(e.getMessage());
+            throw new AcquisitionException(e.getMessage());
         }
 
         LOGGER.info("[{}] Stop  generate SIP step for the product <{}>", chainGeneration.getSession(),
                     product.getProductName());
+    }
 
+    private void updateProcessGeneration() {
+        ProcessGeneration processGeneration = processService.findBySession(chainGeneration.getSession());
+        if (processGeneration != null) {
+            processGeneration.sipCreatedIncrease();
+            processService.save(processGeneration);
+        }
     }
 
     @Override

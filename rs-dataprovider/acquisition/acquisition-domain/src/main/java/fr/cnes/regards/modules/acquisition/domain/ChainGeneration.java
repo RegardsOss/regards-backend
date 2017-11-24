@@ -56,12 +56,12 @@ import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
  * @author Christophe Mertz
  */
 @Entity
-@Table(name = "t_dpv_acquisition_chain", indexes = { @Index(name = "idx_chain_label", columnList = "label") },
-        uniqueConstraints = @UniqueConstraint(name = "uk_chain_label", columnNames = { "label" }))
+@Table(name = "t_acquisition_chain", indexes = { @Index(name = "idx_acq_chain_label", columnList = "label") },
+        uniqueConstraints = @UniqueConstraint(name = "uk_acq_chain_label", columnNames = { "label" }))
 public class ChainGeneration implements IIdentifiable<Long> {
 
     /**
-     * A constant used to define a {@link String} constraint with length 128
+     * A constant used to define a {@link String} constraint with length 256
      */
     private static final int MAX_STRING_LENGTH = 256;
 
@@ -71,7 +71,7 @@ public class ChainGeneration implements IIdentifiable<Long> {
     @Id
     @SequenceGenerator(name = "ChainSequence", initialValue = 1, sequenceName = "seq_chain")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ChainSequence")
-    protected Long id;
+    private Long id;
 
     /**
      * Label to identify the {@link ChainGeneration}

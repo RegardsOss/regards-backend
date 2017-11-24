@@ -18,11 +18,15 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.util.List;
+import java.util.Set;
 
 import javax.persistence.FetchType;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
  * 
@@ -50,9 +54,15 @@ public interface IChainGenerationService {
     /**
      * @return all {@link ChainGeneration}
      */
-    List<ChainGeneration> retrieveAll();
+    Page<ChainGeneration> retrieveAll(Pageable page);
 
     void delete(Long id);
+    
+    void delete(ChainGeneration chainGeneration);
+
+    ChainGeneration findByMetaProduct(MetaProduct metaProduct);
+
+    Set<ChainGeneration> findByActiveTrueAndRunningFalse();
 
     boolean run(Long id);
 

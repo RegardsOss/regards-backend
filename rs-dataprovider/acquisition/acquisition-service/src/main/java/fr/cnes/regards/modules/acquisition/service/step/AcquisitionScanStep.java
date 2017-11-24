@@ -27,7 +27,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -48,7 +47,6 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
  *
  */
 @MultitenantTransactional
-@Service
 public class AcquisitionScanStep extends AbstractStep implements IAcquisitionScanStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionScanStep.class);
@@ -65,7 +63,7 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
     private ChainGeneration chainGeneration;
 
     @Override
-    public void proceedStep() throws AcquisitionRuntimeException {
+    public void proceedStep() throws AcquisitionRuntimeException, AcquisitionException {
 
         if (chainGeneration == null) {
             String msg = "The chain generation is mandatory";
@@ -75,9 +73,8 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
 
         // A plugin for the scan configuration is required
         if (this.chainGeneration.getScanAcquisitionPluginConf() == null) {
-            String msg = "[" + this.chainGeneration.getLabel() + "] The required IAcquisitionScanPlugin is missing";
-            LOGGER.error(msg);
-            throw new RuntimeException(msg);
+            throw new AcquisitionException(
+                    "[" + this.chainGeneration.getLabel() + "] The required IAcquisitionScanPlugin is missing");
         }
 
         // Lunch the scan plugin

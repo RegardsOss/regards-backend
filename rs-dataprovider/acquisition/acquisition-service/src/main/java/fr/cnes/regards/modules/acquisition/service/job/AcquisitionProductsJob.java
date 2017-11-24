@@ -46,8 +46,6 @@ import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
 import fr.cnes.regards.modules.acquisition.service.step.AcquisitionCheckStep;
 import fr.cnes.regards.modules.acquisition.service.step.AcquisitionScanStep;
-import fr.cnes.regards.modules.acquisition.service.step.IAcquisitionCheckStep;
-import fr.cnes.regards.modules.acquisition.service.step.IAcquisitionScanStep;
 import fr.cnes.regards.modules.acquisition.service.step.IStep;
 
 /**
@@ -67,18 +65,18 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
-    @Autowired
-    private IAcquisitionScanStep scanStepImpl;
-
-    @Autowired
-    private IAcquisitionCheckStep checkStepImpl;
+    //    @Autowired
+    //    private IAcquisitionScanStep scanStepImpl;
+    //
+    //    @Autowired
+    //    private IAcquisitionCheckStep checkStepImpl;
 
     @Autowired
     private IProductService productService;
 
     @Autowired
     private IJobInfoService jobInfoService;
-    
+
     @Autowired
     private IChainGenerationService chainGenerationService;
 
@@ -101,7 +99,7 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
         AcquisitionProcess process = new AcquisitionProcess(chainGeneration);
 
         // IAcquisitionScanStep is the first step
-        IStep scanStep = scanStepImpl;
+        IStep scanStep = new AcquisitionScanStep();
         scanStep.setProcess(process);
         beanFactory.autowireBean(scanStep);
         process.setCurrentStep(scanStep);
@@ -109,7 +107,7 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
         // IAcquisitionCheckStep is second step
         IStep checkStep = null;
         if (chainGeneration.getCheckAcquisitionPluginConf() != null) {
-            checkStep = checkStepImpl;
+            checkStep = new AcquisitionCheckStep();
             checkStep.setProcess(process);
             beanFactory.autowireBean(checkStep);
             scanStep.setNextStep(checkStep);
@@ -119,7 +117,7 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
 
         // for each Product, create and queued a Job to generate SIP and send it to Ingest microservice
         final int n = submitProducts();
-        
+
         // the ChainGeneration is not running, it is available for a new scan
         chainGeneration.setRunning(false);
         chainGenerationService.save(chainGeneration);

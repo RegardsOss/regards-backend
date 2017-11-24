@@ -61,7 +61,7 @@ public abstract class AbstractStep implements IStep {
     /**
      * This method aims to run the treatments for the {@link IStep}  
      */
-    public abstract void proceedStep() throws AcquisitionRuntimeException;
+    public abstract void proceedStep() throws AcquisitionRuntimeException, AcquisitionException;
 
     @Override
     public IStep getNextStep() {

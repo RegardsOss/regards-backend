@@ -18,44 +18,36 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.time.OffsetDateTime;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
 
 /**
  * 
  * @author Christophe Mertz
  * 
  */
-public interface IMetaProductService {
+public interface IProcessGenerationService {
+    
+    ProcessGeneration save(ProcessGeneration chain);
 
-    MetaProduct save(MetaProduct metaProduct);
+    void delete(ProcessGeneration processGeneration);
+    
+    ProcessGeneration findBySession(String session);
 
-    /**
-     * @return all {@link MetaProduct}
-     */
-    Page<MetaProduct> retrieveAll(Pageable page);
+    Page<ProcessGeneration> retrieveAll(Pageable pageable);
 
-    /**
-     * Retrieve one specified {@link MetaProduct}
-     * @param id {@link MetaProduct}
-     */
-    MetaProduct retrieve(Long id);
+    Page<ProcessGeneration> findByChainGeneration(ChainGeneration chainGeneration, Pageable pageable);
 
-    /**
-     * Retrieve one specified {@link MetaProduct}
-     * @param label {@link MetaProduct}
-     */
-    MetaProduct retrieve(String label);
+    Page<ProcessGeneration> findByStartDateBetween(OffsetDateTime start, OffsetDateTime stop, Pageable pageable);
 
-    /**
-     * Retrieve one specified {@link MetaProduct} with all LAZU attributes
-     * @param id {@link MetaProduct}
-     */
-    MetaProduct retrieveComplete(Long id);
+    Page<ProcessGeneration> findByStartDateAfterAndStopDateBefore(OffsetDateTime start, OffsetDateTime stop,
+            Pageable pageable);
 
-    void delete(Long id);
+    Page<ProcessGeneration> findByStartDateAfter(OffsetDateTime start, Pageable pageable);
 
-    void delete(MetaProduct metaProduct);
 }
