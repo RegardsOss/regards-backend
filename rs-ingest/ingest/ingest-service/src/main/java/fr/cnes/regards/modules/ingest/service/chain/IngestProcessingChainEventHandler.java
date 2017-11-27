@@ -23,12 +23,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -49,12 +47,6 @@ public class IngestProcessingChainEventHandler implements ApplicationListener<Ap
     @Autowired
     private IIngestProcessingService ingestProcessingService;
 
-    /**
-     * AMQP Message subscriber
-     */
-    @Autowired
-    private IInstanceSubscriber instanceSubscriber;
-
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -67,7 +59,6 @@ public class IngestProcessingChainEventHandler implements ApplicationListener<Ap
     @Override
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
         LOGGER.info("IngestPorcessingChainEventHandler subscribing to new TenantConnectionReady events.");
-        instanceSubscriber.subscribeTo(TenantConnectionReady.class, new IngestPorcessingChainReadyEventHandler());
 
         // Multitenant version of the microservice.
         for (final String tenant : tenantResolver.getAllActiveTenants()) {
@@ -75,37 +66,28 @@ public class IngestProcessingChainEventHandler implements ApplicationListener<Ap
             try {
                 ingestProcessingService.initDefaultServiceConfiguration();
             } catch (ModuleException e) {
-                LOGGER.error("Error initializing ingest configuration for tenant {}. Error : {}", tenant, e.getMessage(),
-                          e);
+                LOGGER.error("Error initializing ingest configuration for tenant {}. Error : {}", tenant,
+                             e.getMessage(), e);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
         }
     }
 
-    /**
-     * Handle {@link IngestPorcessingChainReadyEventHandler} event to clear "servicesAggregated" cache
-     *
-     * @author Sébastien Binda
-     */
-    private class IngestPorcessingChainReadyEventHandler implements IHandler<TenantConnectionReady> {
-
-        @Override
-        public void handle(TenantWrapper<TenantConnectionReady> wrapper) {
-            try {
-                LOGGER.info("New tenant ready, initializing ingest processing configuration.",
-                         wrapper.getContent().getTenant());
-                String tenant = wrapper.getContent().getTenant();
-                runtimeTenantResolver.forceTenant(tenant);
-                ingestProcessingService.initDefaultServiceConfiguration();
-                LOGGER.info("New tenant ready, ingest processing configuration initialized successfully");
-            } catch (ModuleException e) {
-                LOGGER.error("Error during default ingest chain initialization for tenant {}. error : {}",
-                          wrapper.getContent().getTenant(), e.getMessage(), e);
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
+    @EventListener
+    public void processEvent(TenantConnectionReady event) {
+        try {
+            LOGGER.info("New tenant \"{}\" ready, initializing ingest processing configuration.", event.getTenant());
+            // Set working tenant
+            runtimeTenantResolver.forceTenant(event.getTenant());
+            ingestProcessingService.initDefaultServiceConfiguration();
+            LOGGER.info("New tenant \"{}\" ready, ingest processing configuration initialized successfully",
+                        event.getTenant());
+        } catch (ModuleException e) {
+            LOGGER.error("Error during default ingest chain initialization for tenant {}. error : {}",
+                         event.getTenant(), e.getMessage(), e);
+        } finally {
+            runtimeTenantResolver.clearTenant();
         }
     }
-
 }

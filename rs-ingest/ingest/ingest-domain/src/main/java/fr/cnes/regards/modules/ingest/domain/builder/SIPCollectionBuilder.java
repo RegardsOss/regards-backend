@@ -49,7 +49,7 @@ public class SIPCollectionBuilder {
     public SIPCollectionBuilder(String processingChain, String sessionId) {
         Assert.hasText(processingChain, "Processing chain identifier is required");
         collection.getMetadata().setProcessing(processingChain);
-        collection.getMetadata().setSessionId(sessionId);
+        collection.getMetadata().setSession(sessionId);
     }
 
     public SIPCollectionBuilder(String processingChain) {

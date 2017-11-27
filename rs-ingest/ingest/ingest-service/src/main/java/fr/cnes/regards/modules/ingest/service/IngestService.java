@@ -207,7 +207,7 @@ public class IngestService implements IIngestService {
         Integer version = sipRepository.getNextVersion(sip.getId());
 
         // Manage session
-        SIPSession session = sipSessionService.getSession(metadata.getSessionId().orElse(null), true);
+        SIPSession session = sipSessionService.getSession(metadata.getSession().orElse(null), true);
 
         SIPEntity entity = SIPEntityBuilder.build(runtimeTenantResolver.getTenant(), session, sip,
                                                   metadata.getProcessing(), authResolver.getUser(), version,

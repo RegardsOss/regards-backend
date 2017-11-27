@@ -206,11 +206,22 @@ public class IngestProcessingService implements IIngestProcessingService {
 
     @Override
     public void deleteChain(String name) throws ModuleException {
+
         Optional<IngestProcessingChain> oChain = ingestChainRepository.findOneByName(name);
-        if (oChain.isPresent()) {
-            ingestChainRepository.delete(oChain.get());
-        } else {
+        if (!oChain.isPresent()) {
             throw new EntityNotFoundException(name, IngestProcessingChain.class);
+        }
+
+        IngestProcessingChain chain = oChain.get();
+
+        // Get related plugin configurations
+        List<PluginConfiguration> plugins = chain.getChainPlugins();
+        // Delete chain
+        ingestChainRepository.delete(chain);
+        // Delete related plugin configurations
+        for (PluginConfiguration pluginConf : plugins) {
+            // TODO
+            // pluginService.deletePluginConfiguration(pluginConf.getId());
         }
     }
 

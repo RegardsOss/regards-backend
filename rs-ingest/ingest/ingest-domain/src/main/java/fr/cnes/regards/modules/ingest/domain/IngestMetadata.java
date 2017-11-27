@@ -39,9 +39,9 @@ public class IngestMetadata {
     private String processing;
 
     /**
-     * Session identifier
+     * Session name
      */
-    private String sessionId;
+    private String session;
 
     public String getProcessing() {
         return processing;
@@ -51,11 +51,11 @@ public class IngestMetadata {
         this.processing = processing;
     }
 
-    public Optional<String> getSessionId() {
-        return Optional.ofNullable(sessionId);
+    public Optional<String> getSession() {
+        return Optional.ofNullable(session);
     }
 
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
+    public void setSession(String session) {
+        this.session = session;
     }
 }
