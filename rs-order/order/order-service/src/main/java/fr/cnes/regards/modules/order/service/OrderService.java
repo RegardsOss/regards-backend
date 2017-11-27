@@ -203,9 +203,13 @@ public class OrderService implements IOrderService {
                     Multimap<DataType, DataFile> filesMultimap = object.getFiles();
                     for (DataType dataType : DATA_TYPES) {
                         for (DataFile file : filesMultimap.get(dataType)) {
-                            OrderDataFile orderDataFile = new OrderDataFile(file, object.getIpId(), order.getId());
-                            dataFileService.save(orderDataFile);
-                            bucketFiles.add(orderDataFile);
+                            // Only DataFile with a size (and != 0) are taken into account (others are not managed by
+                            // rs-storage hence cannot be ordered)
+                            if ((file.getSize() != null) && (file.getSize().longValue() != 0l)) {
+                                OrderDataFile orderDataFile = new OrderDataFile(file, object.getIpId(), order.getId());
+                                dataFileService.save(orderDataFile);
+                                bucketFiles.add(orderDataFile);
+                            }
                         }
                     }
                     // If sum of files size > bucketSize, add a new bucket
