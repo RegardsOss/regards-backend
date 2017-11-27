@@ -162,7 +162,7 @@ public class ProcessGeneration implements IIdentifiable<Long> {
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode() { // NOSONAR
         final int prime = 31;
         int result = 1;
         result = prime * result + ((chainGeneration == null) ? 0 : chainGeneration.hashCode());
@@ -172,7 +172,7 @@ public class ProcessGeneration implements IIdentifiable<Long> {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object obj) { // NOSONAR
         if (this == obj)
             return true;
         if (obj == null)

@@ -229,6 +229,10 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
             LOG.error("[{}] SIP in error : productName=<{}>, reason=<{}>", session, sipEntity.getIpId(),
                       sipEntity.getRejectionCauses());
             sipIdError.add(sipEntity.getIpId());
+            
+            Product pp = productService.retrieve(sipEntity.getIpId());
+            pp.setStatus(ProductStatus.ERROR);
+            productService.save(pp);
         }
 
         int nbSipOK = 0;

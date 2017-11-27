@@ -173,7 +173,7 @@ public class ScanDirectoryPluginIT {
     }
 
     public void initData() {
-        chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME)
+        chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL).withDataSet(DATASET_NAME)
                 .lastActivation(NOW.minusMinutes(75)).get());
     }
 
@@ -192,7 +192,7 @@ public class ScanDirectoryPluginIT {
         // Create a ScanDirectory
         ScanDirectory scanDir = scandirService.save(ScanDirectoryBuilder.build(dataPath.getPath()).get());
 
-        // Set the last modified date of the file mots recent that the last acquisition date  
+        // Set the last modified date of the file most recent that the last acquisition date  
         File dir = new File(dataPath.getPath());
         for (File ff : dir.listFiles()) {
             ff.setLastModified(1000 * NOW.minusMinutes(70).toEpochSecond());

@@ -70,7 +70,7 @@ public class ScheduledDataProviderTasks {
     
     @Scheduled(fixedRateString = "${regards.acquisition.process.run.chains.delay:60000}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void processRunACtiveChains() {
+    public void processRunActiveChains() {
         LOG.debug("Process run active chains");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);

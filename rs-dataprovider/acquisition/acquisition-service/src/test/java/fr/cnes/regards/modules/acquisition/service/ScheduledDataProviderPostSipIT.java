@@ -48,8 +48,8 @@ import fr.cnes.regards.modules.acquisition.service.step.AbstractAcquisitionIT;
 public class ScheduledDataProviderPostSipIT extends AbstractAcquisitionIT {
 
     @Value("${regards.acquisition.process.new.sip.ingest.delay}")
-    private String scheduledTasksDelay;
-    
+    private String scheduledIngestSipDelay;
+
     private ProcessGeneration process;
 
     @Before
@@ -63,20 +63,25 @@ public class ScheduledDataProviderPostSipIT extends AbstractAcquisitionIT {
         MetaProduct metaProduct003 = metaProductService.save(MetaProductBuilder.build("meta-product-name-003")
                 .addMetaFile(metaFileMandatory).withIngestProcessingChain("ingest-processing-chain-003").get());
 
-        // Create a Product
+        // Create Products
+
+        // ===================== session-001 ===================== 
         createProduct("product-001", "session-001", metaProduct001, false, ProductStatus.COMPLETED, "file-001",
                       "file-002");
         createProduct("product-002", "session-001", metaProduct001, false, ProductStatus.COMPLETED, "file-003",
                       "file-004");
-        createProduct("product-003", "session-002", metaProduct001, false, ProductStatus.FINISHED, "file-005",
+
+        createProduct("product-004", "session-001", metaProduct001, false, ProductStatus.COMPLETED, "file-007",
+                      "file-008");
+        createProduct("product-005", "session-001", metaProduct001, false, ProductStatus.COMPLETED, "file-009",
+                      "file-010");
+        createProduct("product-006", "session-001", metaProduct001, false, ProductStatus.COMPLETED, "file-011",
+                      "file-012");
+
+        // ===================== session-002 =====================
+        createProduct("product-003", "session-002", metaProduct002, false, ProductStatus.FINISHED, "file-005",
                       "file-006");
 
-        createProduct("product-004", "session-001", metaProduct002, false, ProductStatus.COMPLETED, "file-007",
-                      "file-008");
-        createProduct("product-005", "session-001", metaProduct002, false, ProductStatus.COMPLETED, "file-009",
-                      "file-010");
-        createProduct("product-006", "session-001", metaProduct002, false, ProductStatus.COMPLETED, "file-011",
-                      "file-012");
         createProduct("product-007", "session-002", metaProduct002, false, ProductStatus.COMPLETED, "file-013",
                       "file-014");
         createProduct("product-008", "session-002", metaProduct002, true, ProductStatus.COMPLETED, "file-015",
@@ -91,11 +96,13 @@ public class ScheduledDataProviderPostSipIT extends AbstractAcquisitionIT {
         createProduct("product-015", "session-002", metaProduct002, false, ProductStatus.COMPLETED, "file-024");
         createProduct("product-016", "session-002", metaProduct002, false, ProductStatus.COMPLETED, "file-025");
 
-        createProduct("product-099", "session-002", metaProduct003, false, ProductStatus.ACQUIRING, "file-099");
-        
+        createProduct("product-099", "session-003", metaProduct003, false, ProductStatus.ACQUIRING, "file-099");
+
         chain.setSession("session-001");
+        chain.setActive(false);
         chainService.save(chain);
-        process = processGenerationService.save(ProcessGenerationBuilder.build(chain.getSession()).withChain(chain).withStartDate(OffsetDateTime.now()).get());
+        process = processGenerationService.save(ProcessGenerationBuilder.build(chain.getSession()).withChain(chain)
+                .withStartDate(OffsetDateTime.now()).get());
     }
 
     @Test
@@ -110,18 +117,20 @@ public class ScheduledDataProviderPostSipIT extends AbstractAcquisitionIT {
         Assert.assertNotNull(processGenerationService.findBySession(chain.getSession()));
         Assert.assertEquals(process, processGenerationService.findBySession(chain.getSession()));
 
-        Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
+        Thread.sleep(Integer.parseInt(scheduledIngestSipDelay) + 1_000);
+
+        Assert.assertEquals(1, processGenerationRepository.findAll().size());
 
         Assert.assertEquals(0, productService
                 .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(16, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
-        
+
         ProcessGeneration processLoad = processGenerationService.findBySession(chain.getSession());
-        Assert.assertEquals(5,processLoad.getNbSipCreated()); // 5 product for session-001
-        Assert.assertEquals(0,processLoad.getNbSipError());
-        Assert.assertEquals(0,processLoad.getNbSipStored());
+        Assert.assertEquals(5, processLoad.getNbSipCreated()); // 5 product for session-001
+        Assert.assertEquals(0, processLoad.getNbSipError());
+        Assert.assertEquals(0, processLoad.getNbSipStored());
     }
 
     @Test
@@ -134,7 +143,9 @@ public class ScheduledDataProviderPostSipIT extends AbstractAcquisitionIT {
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
 
-        Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
+        Thread.sleep(Integer.parseInt(scheduledIngestSipDelay) + 1_000);
+
+        Assert.assertEquals(1, processGenerationRepository.findAll().size());
 
         // Nothing should be change
         Assert.assertEquals(14, productService
@@ -142,31 +153,35 @@ public class ScheduledDataProviderPostSipIT extends AbstractAcquisitionIT {
         Assert.assertEquals(2, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
-        
+
     }
 
     @Test
     public void scheduleDataProviderTaskNominalPartialResponseContent() throws InterruptedException {
-        mockIngestClientResponsePartialContent("product-001", "product-002", "product-016");
+        mockIngestClientResponsePartialContent("product-001", "product-002");
 
         Assert.assertEquals(14, productService
                 .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
         Assert.assertEquals(2, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+
+        Thread.sleep(Integer.parseInt(scheduledIngestSipDelay) + 1_000);
+
+        Assert.assertEquals(1, processGenerationRepository.findAll().size());
+
+        // 2 products in error are not sended
+        Assert.assertEquals(2, productService.findBySendedAndStatusIn(false, ProductStatus.ERROR).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
-
-        Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
-
-        Assert.assertEquals(3, productService
-                .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(13, productService
+        Assert.assertEquals(14, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
-        
+
         ProcessGeneration processLoad = processGenerationService.findBySession(chain.getSession());
-        Assert.assertEquals(3,processLoad.getNbSipCreated()); // 3 product for session-001
-//        Assert.assertEquals(2,processLoad.getNbSipError());
-        Assert.assertEquals(0,processLoad.getNbSipStored());
+        // 3 products are created for session-001 : product-004 - product-005 - product-006
+        Assert.assertEquals(3, processLoad.getNbSipCreated());
+        // 2 products in error for the 2 chains
+        Assert.assertEquals(4, processLoad.getNbSipError());
+        Assert.assertEquals(0, processLoad.getNbSipStored());
     }
 
 }

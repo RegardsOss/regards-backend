@@ -145,7 +145,7 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
 
     @Autowired
     protected IPluginService pluginService;
-    
+
     @Autowired
     protected IProcessGenerationService processGenerationService;
 
@@ -286,6 +286,9 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
         LOGGER.info("Clean the DB : {}", name.getMethodName());
     }
 
+    /**
+     * IngestClient's response is {@link HttpStatus#CREATED}
+     */
     protected void mockIngestClientResponseOK() {
         Collection<SIPDto> sips = new ArrayList<>();
         SIPDto sipEntity = new SIPDto();
@@ -296,6 +299,9 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
                 .thenReturn(new ResponseEntity<Collection<SIPDto>>(sips, HttpStatus.CREATED));
     }
 
+    /**
+     * IngestClient's response is {@link HttpStatus#UNAUTHORIZED}
+     */
     protected void mockIngestClientResponseUnauthorized() {
         Collection<SIPDto> sips = new ArrayList<>();
         SIPDto sipEntity = new SIPDto();
@@ -306,6 +312,10 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
                 .thenReturn(new ResponseEntity<Collection<SIPDto>>(sips, HttpStatus.UNAUTHORIZED));
     }
 
+    /**
+     * IngestClient's response is {@link HttpStatus#PARTIAL_CONTENT}. The {@link SIP} id parameters are rejected.
+     * @param sipIds {@link SIP} id that are rejected
+     */
     protected void mockIngestClientResponsePartialContent(String... sipIds) {
         Collection<SIPDto> sips = new ArrayList<>();
 
@@ -321,7 +331,7 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
                 .thenReturn(new ResponseEntity<Collection<SIPDto>>(sips, HttpStatus.PARTIAL_CONTENT));
     }
 
-    protected void waitJob(long millSecs) {
+    protected void waitTimer(long millSecs) {
         try {
             Thread.sleep(millSecs);
         } catch (InterruptedException e) {
@@ -361,6 +371,16 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
         }
     }
 
+    /**
+     * Create a {@link Product} and  persists it
+     * @param productName
+     * @param session
+     * @param metaProduct
+     * @param sended
+     * @param status
+     * @param fileNames
+     * @return the {@link Product} created
+     */
     protected Product createProduct(String productName, String session, MetaProduct metaProduct, boolean sended,
             ProductStatus status, String... fileNames) {
         Product product = ProductBuilder.build(productName).withStatus(status).withMetaProduct(metaProduct)
@@ -376,6 +396,17 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
         return productService.save(product);
     }
 
+    /**
+     * Create a {@link Product} and  persists it
+     * @param productName
+     * @param session
+     * @param metaProduct
+     * @param sended
+     * @param status
+     * @param fileName
+     * @param fileAcqInf
+     * @return the {@link Product} created
+     */
     protected Product createProduct(String productName, String session, MetaProduct metaProduct, boolean sended,
             ProductStatus status, String fileName, FileAcquisitionInformations fileAcqInf) {
         Product product = ProductBuilder.build(productName).withStatus(status).withMetaProduct(metaProduct)
@@ -390,6 +421,11 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
         return productService.save(product);
     }
 
+    /**
+     * Create a {@link SIP}
+     * @param productName
+     * @return the {@link SIP} created
+     */
     protected SIP createSIP(String productName) {
         SIPBuilder sipBuilder = new SIPBuilder(productName);
         sipBuilder.getPDIBuilder().addContextInformation("attribut-name",
@@ -397,6 +433,11 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
         return sipBuilder.build();
     }
 
+    /**
+     * This handler handle's {@link JobEvent} events
+     * @author Christophe Mertz
+     *
+     */
     protected class ScanJobHandler implements IHandler<JobEvent> {
 
         @Override
