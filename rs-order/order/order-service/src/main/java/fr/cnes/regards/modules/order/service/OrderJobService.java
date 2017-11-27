@@ -70,7 +70,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
 
     @Override
     @EventListener
-    @Transactional(Transactional.TxType.NEVER) // Doesn't need a transaction (make Controller IT tests failed otherwise)
+    @Transactional(TxType.NOT_SUPPORTED) // Doesn't need a transaction (make Controller IT tests failed otherwise)
     public void onApplicationEvent(ContextRefreshedEvent event) {
         subscriber.subscribeTo(JobEvent.class, this);
     }
