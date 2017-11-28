@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
+import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.EventType;
@@ -98,8 +99,8 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
     @Autowired
     private PluginService pluginService;
 
-    @Value("${regards.storage.workspace}")
-    private String workspace;
+    @Autowired
+    private IWorkspaceService workspaceService;
 
     /**
      * Dispatch actions to handle by {@link StorageAction}
@@ -291,15 +292,11 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
             // can only be obtained after the aip state STORING_METADATA which can only changed to STORED
             // if we just stored the AIP, there is nothing to do but changing AIP state, and clean the
             // workspace!
-            String dataFileName = storedDataFile.getChecksum() + AIPService.JSON_FILE_EXT;
-            Path aipDataFileFromWorkspace = Paths.get(workspace, runtimeTenantResolver.getTenant(), dataFileName);
-            if (aipDataFileFromWorkspace.toFile().exists()) {
-                try {
-                    Files.delete(aipDataFileFromWorkspace);
-                } catch (IOException e) {
-                    LOG.error("Error deleting temporary AIP metadata file from workspace {}", aipDataFileFromWorkspace,
-                              e);
-                }
+            // Lets clean the workspace
+            try {
+                workspaceService.removeFromWorkspace(storedDataFile.getChecksum() + AIPService.JSON_FILE_EXT);
+            } catch (IOException e) {
+                LOG.error("Error during workspace cleaning", e);
             }
             associatedAIP.setState(AIPState.STORED);
             associatedAIP.addEvent(EventType.STORAGE.name(), METADATA_STORED_SUCCESSFULLY);
