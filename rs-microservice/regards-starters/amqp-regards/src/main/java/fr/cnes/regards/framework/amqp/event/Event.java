@@ -46,7 +46,7 @@ import java.lang.annotation.RetentionPolicy;
  * <li>{@link WorkerMode#UNICAST} / {@link Target#MICROSERVICE} (default behaviour) : event can be polled ONCE by
  * the FIRST microservice instance which type is the same as the PUBLISHING
  * one.</li>
- * <li>{@link WorkerMode#UNICAST} / {@link Target#MICROSERVICE} : event can be polled ONCE by
+ * <li>{@link WorkerMode#UNICAST} / {@link Target#ALL} : event can be polled ONCE by
  * the FIRST microservice instance WHATEVER the microservice type.</li>
  * </ul>
  *
