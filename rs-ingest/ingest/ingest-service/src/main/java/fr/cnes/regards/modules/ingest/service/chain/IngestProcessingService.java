@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -36,6 +37,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -71,8 +73,6 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 public class IngestProcessingService implements IIngestProcessingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestProcessingService.class);
-
-    public static final String DEFAULT_INGEST_CHAIN_LABEL = "DefaultProcessingChain";
 
     public static final String DEFAULT_VALIDATION_PLUGIN_CONF_LABEL = "DefaultSIPValidation";
 
@@ -110,33 +110,24 @@ public class IngestProcessingService implements IIngestProcessingService {
     public void initDefaultServiceConfiguration() throws ModuleException {
 
         // Check if the default IngestProcessingChain is defined
-        if (!ingestChainRepository.findOneByName(DEFAULT_INGEST_CHAIN_LABEL).isPresent()) {
+        if (!ingestChainRepository.findOneByName(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL).isPresent()) {
             // Create the default chain
             IngestProcessingChain defaultChain = new IngestProcessingChain();
-            defaultChain.setName(DEFAULT_INGEST_CHAIN_LABEL);
-            PluginConfiguration validationDefaultConf = pluginService.savePluginConfiguration(new PluginConfiguration(
-                    PluginUtils.createPluginMetaData(DefaultSipValidation.class),
-                    DEFAULT_VALIDATION_PLUGIN_CONF_LABEL));
-            PluginConfiguration generationDefaultConf = pluginService.savePluginConfiguration(new PluginConfiguration(
-                    PluginUtils.createPluginMetaData(DefaultSingleAIPGeneration.class),
-                    DEFAULT_GENERATION_PLUGIN_CONF_LABEL));
+            defaultChain.setName(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
 
-            // Check if default plugin configurations are defined
-            Optional<PluginConfiguration> oConf = pluginService
-                    .findPluginConfigurationByLabel(DEFAULT_VALIDATION_PLUGIN_CONF_LABEL);
-            if (oConf.isPresent()) {
-                validationDefaultConf = oConf.get();
-            }
-            oConf = pluginService.findPluginConfigurationByLabel(DEFAULT_GENERATION_PLUGIN_CONF_LABEL);
-            if (oConf.isPresent()) {
-                generationDefaultConf = oConf.get();
-            }
-
+            // Create default validation plugin configuration
+            PluginConfiguration validationDefaultConf = new PluginConfiguration(
+                    PluginUtils.createPluginMetaData(DefaultSipValidation.class), DEFAULT_VALIDATION_PLUGIN_CONF_LABEL);
             defaultChain.setValidationPlugin(validationDefaultConf);
-            defaultChain.setGenerationPlugin(generationDefaultConf);
-            this.createNewChain(defaultChain);
-        }
 
+            // Create default generation plugin configuration
+            PluginConfiguration generationDefaultConf = new PluginConfiguration(
+                    PluginUtils.createPluginMetaData(DefaultSingleAIPGeneration.class),
+                    DEFAULT_GENERATION_PLUGIN_CONF_LABEL);
+            defaultChain.setGenerationPlugin(generationDefaultConf);
+
+            createNewChain(defaultChain);
+        }
     }
 
     @Override
@@ -183,25 +174,120 @@ public class IngestProcessingService implements IIngestProcessingService {
 
     @Override
     public IngestProcessingChain createNewChain(IngestProcessingChain newChain) throws ModuleException {
+
+        // Check no identifier
+        if (newChain.getId() != null) {
+            throw new EntityInvalidException(
+                    String.format("New chain %s must not already have and identifier.", newChain.getName()));
+        }
+
+        // Check not already exists
         Optional<IngestProcessingChain> oChain = ingestChainRepository.findOneByName(newChain.getName());
-        if (!oChain.isPresent()) {
-            this.createOrUpdatePluginConfigurations(newChain);
-            return ingestChainRepository.save(newChain);
-        } else {
+        if (oChain.isPresent()) {
             throw new EntityAlreadyExistsException(String
                     .format("%s for name %s aleady exists", IngestProcessingChain.class.getName(), newChain.getName()));
         }
+
+        // Register plugin configurations
+        if (newChain.getPreProcessingPlugin().isPresent()) {
+            createPluginConfiguration(newChain.getPreProcessingPlugin().get());
+        }
+        createPluginConfiguration(newChain.getValidationPlugin());
+        createPluginConfiguration(newChain.getGenerationPlugin());
+        if (newChain.getTagPlugin().isPresent()) {
+            createPluginConfiguration(newChain.getTagPlugin().get());
+        }
+        if (newChain.getPostProcessingPlugin().isPresent()) {
+            createPluginConfiguration(newChain.getPostProcessingPlugin().get());
+        }
+
+        // Save new chain
+        return ingestChainRepository.save(newChain);
+    }
+
+    private PluginConfiguration createPluginConfiguration(PluginConfiguration pluginConfiguration)
+            throws ModuleException {
+        // Check no identifier. For each new chain, we force plugin configuration creation. A configuration cannot be
+        // reused.
+        if (pluginConfiguration.getId() != null) {
+            throw new EntityInvalidException(
+                    String.format("Plugin configuration %s must not already have and identifier.",
+                                  pluginConfiguration.getLabel()));
+        }
+        return pluginService.savePluginConfiguration(pluginConfiguration);
     }
 
     @Override
     public IngestProcessingChain updateChain(IngestProcessingChain chainToUpdate) throws ModuleException {
-        Optional<IngestProcessingChain> oChain = ingestChainRepository.findOneByName(chainToUpdate.getName());
-        if (oChain.isPresent()) {
-            this.createOrUpdatePluginConfigurations(chainToUpdate);
-            return ingestChainRepository.save(chainToUpdate);
-        } else {
+
+        // Check already exists
+        if (!ingestChainRepository.exists(chainToUpdate.getName())) {
             throw new EntityNotFoundException(chainToUpdate.getName(), IngestProcessingChain.class);
         }
+
+        List<Optional<PluginConfiguration>> confsToRemove = new ArrayList<>();
+
+        // Manage plugin configuration
+        // ---------------------------
+        // Pre-processing plugine
+        Optional<PluginConfiguration> existing = ingestChainRepository
+                .findOnePreProcessingPluginByName(chainToUpdate.getName());
+        confsToRemove.add(updatePluginConfiguration(chainToUpdate.getPreProcessingPlugin(), existing));
+        // Validation plugin
+        existing = ingestChainRepository.findOneValidationPluginByName(chainToUpdate.getName());
+        confsToRemove.add(updatePluginConfiguration(Optional.of(chainToUpdate.getValidationPlugin()), existing));
+        // Generation plugin
+        existing = ingestChainRepository.findOneGenerationPluginByName(chainToUpdate.getName());
+        confsToRemove.add(updatePluginConfiguration(Optional.of(chainToUpdate.getGenerationPlugin()), existing));
+        // Tag plugin
+        existing = ingestChainRepository.findOneTagPluginByName(chainToUpdate.getName());
+        confsToRemove.add(updatePluginConfiguration(chainToUpdate.getTagPlugin(), existing));
+        // Post-processing plugin
+        existing = ingestChainRepository.findOnePostProcessingPluginByName(chainToUpdate.getName());
+        confsToRemove.add(updatePluginConfiguration(chainToUpdate.getPostProcessingPlugin(), existing));
+
+        // Update chain
+        ingestChainRepository.save(chainToUpdate);
+
+        // Clean unused plugin configuration after chain update avoiding foreign keys constraints restrictions.
+        for (Optional<PluginConfiguration> confToRemove : confsToRemove) {
+            if (confToRemove.isPresent()) {
+                pluginService.deletePluginConfiguration(confToRemove.get().getId());
+            }
+        }
+
+        return chainToUpdate;
+    }
+
+    /**
+     * Create or update a plugin configuration cleaning old one if necessary
+     * @param pluginConfiguration new plugin configuration or update
+     * @param existing existing plugin configuration
+     * @return configuration to remove because it is no longer used
+     * @throws ModuleException if error occurs!
+     */
+    private Optional<PluginConfiguration> updatePluginConfiguration(Optional<PluginConfiguration> pluginConfiguration,
+            Optional<PluginConfiguration> existing) throws ModuleException {
+
+        Optional<PluginConfiguration> confToRemove = Optional.empty();
+
+        if (pluginConfiguration.isPresent()) {
+            PluginConfiguration conf = pluginConfiguration.get();
+            if (conf.getId() == null) {
+                // Delete previous configuration if exists
+                confToRemove = existing;
+                // Save new configuration
+                pluginService.savePluginConfiguration(conf);
+            } else {
+                // Update configuration
+                pluginService.updatePluginConfiguration(conf);
+            }
+        } else {
+            // Delete previous configuration if exists
+            confToRemove = existing;
+        }
+
+        return confToRemove;
     }
 
     @Override
@@ -220,8 +306,7 @@ public class IngestProcessingService implements IIngestProcessingService {
         ingestChainRepository.delete(chain);
         // Delete related plugin configurations
         for (PluginConfiguration pluginConf : plugins) {
-            // TODO
-            // pluginService.deletePluginConfiguration(pluginConf.getId());
+            pluginService.deletePluginConfiguration(pluginConf.getId());
         }
     }
 
@@ -246,48 +331,4 @@ public class IngestProcessingService implements IIngestProcessingService {
         return oChain.isPresent();
     }
 
-    /**
-     * Creates or updates {@link PluginConfiguration} of each step of the {@link IngestProcessingChain}.
-     * @param ingestChain {@link IngestProcessingChain}
-     * @throws ModuleException
-     */
-    private void createOrUpdatePluginConfigurations(IngestProcessingChain ingestChain) throws ModuleException {
-        // Save new plugins conf, and update existing ones if they changed
-        if (ingestChain.getPreProcessingPlugin().isPresent()) {
-            ingestChain.setPreProcessingPlugin(createOrUpdatePluginConfiguration(ingestChain.getPreProcessingPlugin()
-                    .get()));
-        }
-        if (ingestChain.getValidationPlugin() != null) {
-            ingestChain.setValidationPlugin(createOrUpdatePluginConfiguration(ingestChain.getValidationPlugin()));
-        }
-        if (ingestChain.getGenerationPlugin() != null) {
-            ingestChain.setGenerationPlugin(createOrUpdatePluginConfiguration(ingestChain.getGenerationPlugin()));
-        }
-        if (ingestChain.getTagPlugin().isPresent()) {
-            ingestChain.setTagPlugin(createOrUpdatePluginConfiguration(ingestChain.getTagPlugin().get()));
-        }
-        if (ingestChain.getPostProcessingPlugin().isPresent()) {
-            ingestChain.setPostProcessingPlugin(createOrUpdatePluginConfiguration(ingestChain.getPostProcessingPlugin()
-                    .get()));
-        }
-    }
-
-    /**
-     * Create or update the given {@link PluginConfiguration}
-     * @param pluginConfiguration {@link PluginConfiguration} to save or update
-     * @return saved or updated {@link PluginConfiguration}
-     * @throws ModuleException
-     */
-    public PluginConfiguration createOrUpdatePluginConfiguration(PluginConfiguration pluginConfiguration)
-            throws ModuleException {
-        if (pluginConfiguration.getId() == null) {
-            return pluginService.savePluginConfiguration(pluginConfiguration);
-        } else {
-            PluginConfiguration existingConf = pluginService.getPluginConfiguration(pluginConfiguration.getId());
-            if (pluginConfiguration.compareTo(existingConf)) {
-                return pluginService.savePluginConfiguration(pluginConfiguration);
-            }
-        }
-        return pluginConfiguration;
-    }
 }

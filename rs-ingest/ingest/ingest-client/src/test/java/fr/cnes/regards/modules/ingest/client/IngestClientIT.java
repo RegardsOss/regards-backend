@@ -43,7 +43,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
-import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingService;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
 /**
  * Test Ingest API through its client
@@ -86,7 +86,7 @@ public class IngestClientIT extends AbstractRegardsWebIT {
     @Test
     public void ingestSIP() {
         SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
-                IngestProcessingService.DEFAULT_INGEST_CHAIN_LABEL);
+                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
 
         SIPBuilder sipBuilder = new SIPBuilder("CLIENT_SIP_001");
         String filename = OffsetDateTime.now().toString();

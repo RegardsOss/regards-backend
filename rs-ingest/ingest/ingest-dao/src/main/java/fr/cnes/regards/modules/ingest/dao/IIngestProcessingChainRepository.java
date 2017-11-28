@@ -22,7 +22,9 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
 /**
@@ -40,4 +42,25 @@ public interface IIngestProcessingChainRepository
      * @return {@link IngestProcessingChain}
      */
     Optional<IngestProcessingChain> findOneByName(String name);
+
+    Long countByName(String name);
+
+    default boolean exists(String name) {
+        return countByName(name) == 1;
+    }
+
+    @Query("select chain.preProcessingPlugin from IngestProcessingChain chain,PluginConfiguration conf where chain.name = ?1 and chain.preProcessingPlugin.id = conf.id")
+    Optional<PluginConfiguration> findOnePreProcessingPluginByName(String name);
+
+    @Query("select chain.validationPlugin from IngestProcessingChain chain,PluginConfiguration conf where chain.name = ?1 and chain.validationPlugin.id = conf.id")
+    Optional<PluginConfiguration> findOneValidationPluginByName(String name);
+
+    @Query("select chain.generationPlugin from IngestProcessingChain chain,PluginConfiguration conf where chain.name = ?1 and chain.generationPlugin.id = conf.id")
+    Optional<PluginConfiguration> findOneGenerationPluginByName(String name);
+
+    @Query("select chain.tagPlugin from IngestProcessingChain chain,PluginConfiguration conf where chain.name = ?1 and chain.tagPlugin.id = conf.id")
+    Optional<PluginConfiguration> findOneTagPluginByName(String name);
+
+    @Query("select chain.postProcessingPlugin from IngestProcessingChain chain,PluginConfiguration conf where chain.name = ?1 and chain.postProcessingPlugin.id = conf.id")
+    Optional<PluginConfiguration> findOnePostProcessingPluginByName(String name);
 }

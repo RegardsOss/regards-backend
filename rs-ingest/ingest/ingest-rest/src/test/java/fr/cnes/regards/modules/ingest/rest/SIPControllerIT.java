@@ -38,7 +38,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
-import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingService;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
 /**
  *
@@ -64,7 +64,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     public void ingestSips() {
 
         SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
-                IngestProcessingService.DEFAULT_INGEST_CHAIN_LABEL, "sessionId");
+                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "sessionId");
 
         // SIP 1
         SIPBuilder sipBuilder = new SIPBuilder("SIP_001");
@@ -108,7 +108,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     public void ingestInvalidSips() {
 
         SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
-                IngestProcessingService.DEFAULT_INGEST_CHAIN_LABEL, "sessionId");
+                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "sessionId");
 
         // SIP 1
         SIPBuilder sipBuilder = new SIPBuilder("SIP_001");

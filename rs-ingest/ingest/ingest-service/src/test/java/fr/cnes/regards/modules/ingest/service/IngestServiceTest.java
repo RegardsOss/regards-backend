@@ -39,9 +39,9 @@ import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingService;
 
 /**
  * @author Marc Sordi
@@ -78,7 +78,7 @@ public class IngestServiceTest extends AbstractSIPTest {
     @Test
     public void ingestWithCollision() throws ModuleException {
 
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(IngestProcessingService.DEFAULT_INGEST_CHAIN_LABEL,
+        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                 SESSION_ID);
         SIPCollection collection = colBuilder.build();
 
@@ -113,7 +113,7 @@ public class IngestServiceTest extends AbstractSIPTest {
     @Test
     public void ingestWithoutSession() throws ModuleException {
 
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(IngestProcessingService.DEFAULT_INGEST_CHAIN_LABEL);
+        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
         SIPCollection collection = colBuilder.build();
 
         SIPBuilder builder = new SIPBuilder("SIP_001");
@@ -265,7 +265,7 @@ public class IngestServiceTest extends AbstractSIPTest {
 
         String sipFilename = "sip" + version + ".xml";
 
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(IngestProcessingService.DEFAULT_INGEST_CHAIN_LABEL,
+        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                 SESSION_ID);
         SIPCollection collection = colBuilder.build();
 

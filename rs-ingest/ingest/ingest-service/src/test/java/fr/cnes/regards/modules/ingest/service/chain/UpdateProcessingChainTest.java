@@ -21,32 +21,38 @@ package fr.cnes.regards.modules.ingest.service.chain;
 import java.util.Optional;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.Lists;
 
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.service.TestConfiguration;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 
-@ActiveProfiles({ "disable-scheduled-ingest" })
-@TestPropertySource(locations = "classpath:test.properties")
-@ContextConfiguration(classes = { TestConfiguration.class })
-@RegardsTransactional
-public class IngestProcessingServiceTest extends AbstractRegardsServiceTransactionalIT {
+/**
+ * Create and update a processing chain (without test transaction that can't work)
+ * @author Marc Sordi
+ *
+ */
+@RunWith(SpringRunner.class)
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestu", "jwt.secret=123456789" })
+@ContextConfiguration(classes = { UpdateProcessingChainTest.IngestConfiguration.class })
+public class UpdateProcessingChainTest extends AbstractDaoTest {
+
+    private static final String CHAIN_NAME = "ipst_Chain1";
 
     @Autowired
     private IIngestProcessingService ingestProcessingService;
@@ -54,17 +60,23 @@ public class IngestProcessingServiceTest extends AbstractRegardsServiceTransacti
     @Autowired
     private IPluginService pluginService;
 
-    @Test
-    public void checkDefaultProcessingChain() {
-        Page<IngestProcessingChain> results = ingestProcessingService
-                .searchChains(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, new PageRequest(0, 100));
-        Assert.assertEquals(1, results.getTotalElements());
+    @Configuration
+    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
+    static class IngestConfiguration {
+    }
+
+    @Before
+    public void cleanBefore() throws ModuleException {
+        injectDefaultToken();
+        if (ingestProcessingService.existsChain(CHAIN_NAME)) {
+            ingestProcessingService.deleteChain(CHAIN_NAME);
+        }
     }
 
     private IngestProcessingChain createBaseChain() throws ModuleException {
         IngestProcessingChain newChain = new IngestProcessingChain();
         newChain.setDescription("Ingest processing chain");
-        newChain.setName("ipst_Chain1");
+        newChain.setName(CHAIN_NAME);
 
         PluginConfiguration validation = PluginUtils
                 .getPluginConfiguration(Lists.newArrayList(), ValidationTestPlugin.class, Lists.newArrayList());
@@ -82,27 +94,31 @@ public class IngestProcessingServiceTest extends AbstractRegardsServiceTransacti
     }
 
     @Test
-    public void createSingleProcessingChain() throws ModuleException {
-        Assert.assertNotNull(createBaseChain().getId());
-    }
-
-    @Test
-    public void updateProcessingChain() throws ModuleException {
-
+    public void updateAndCleanProcessingChain() throws ModuleException {
         IngestProcessingChain chain = createBaseChain();
-        String updatedLabel = "validationPlugin_ipst_update";
-        chain.getValidationPlugin().setLabel(updatedLabel);
+
+        // Register label
+        String validationLabel = chain.getValidationPlugin().getLabel();
+        String generationLabel = chain.getGenerationPlugin().getLabel();
+
+        PluginConfiguration validation = PluginUtils
+                .getPluginConfiguration(Lists.newArrayList(), ValidationTestPlugin.class, Lists.newArrayList());
+        validation.setIsActive(true);
+        validation.setLabel("validationPlugin_ipst_new");
+        chain.setValidationPlugin(validation);
+
+        PluginConfiguration generation = PluginUtils
+                .getPluginConfiguration(Lists.newArrayList(), AIPGenerationTestPlugin.class, Lists.newArrayList());
+        generation.setIsActive(true);
+        generation.setLabel("generationPlugin_ipst_new");
+        chain.setGenerationPlugin(generation);
+
         ingestProcessingService.updateChain(chain);
 
-        Optional<PluginConfiguration> conf = pluginService.findPluginConfigurationByLabel(updatedLabel);
-        Assert.assertTrue(conf.isPresent());
-        Assert.assertEquals(updatedLabel, conf.get().getLabel());
-    }
+        Optional<PluginConfiguration> conf = pluginService.findPluginConfigurationByLabel(validationLabel);
+        Assert.assertFalse(conf.isPresent());
 
-    @Test
-    public void deleteSingleProcessingChain() throws ModuleException {
-        IngestProcessingChain chain = createBaseChain();
-        Assert.assertNotNull(chain.getId());
-        ingestProcessingService.deleteChain(chain.getName());
+        conf = pluginService.findPluginConfigurationByLabel(generationLabel);
+        Assert.assertFalse(conf.isPresent());
     }
 }

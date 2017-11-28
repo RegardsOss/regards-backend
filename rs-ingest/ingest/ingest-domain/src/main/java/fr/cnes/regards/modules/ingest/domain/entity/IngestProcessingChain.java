@@ -33,6 +33,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
@@ -49,6 +50,8 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 @Table(name = "t_ingest_processing_chain",
         uniqueConstraints = { @UniqueConstraint(name = "uk_ingest_chain_name", columnNames = "name") })
 public class IngestProcessingChain {
+
+    public static final String DEFAULT_INGEST_CHAIN_LABEL = "DefaultProcessingChain";
 
     @Id
     @SequenceGenerator(name = "IngestChainSequence", initialValue = 1, sequenceName = "seq_ingest_chain")
@@ -75,10 +78,12 @@ public class IngestProcessingChain {
     @JoinColumn(name = "preprocessing_conf_id", foreignKey = @ForeignKey(name = "fk_preprocessing_conf_id"))
     private PluginConfiguration preProcessingPlugin;
 
+    @NotNull(message = "Validation plugin is required")
     @ManyToOne(optional = false)
     @JoinColumn(name = "validation_conf_id", nullable = false, foreignKey = @ForeignKey(name = "fk_validation_conf_id"))
     private PluginConfiguration validationPlugin;
 
+    @NotNull(message = "Generation plugin is required")
     @ManyToOne(optional = false)
     @JoinColumn(name = "generation_conf_id", nullable = false, foreignKey = @ForeignKey(name = "fk_generation_conf_id"))
     private PluginConfiguration generationPlugin;
