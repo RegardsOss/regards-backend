@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
  *
+ * WARNING : this test needs default "public" schema on the target database
  * @author Sylvain Vissiere-Guerinet
  *
  */
@@ -42,9 +43,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 @ContextConfiguration(classes = { JsonbTestConfiguration.class })
 public class JsonbTest {
 
-    /**
-     * Logger of this class
-     */
+    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonbTest.class);
 
     /**

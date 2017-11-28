@@ -33,7 +33,6 @@ import org.springframework.context.ApplicationListener;
 
 import com.mchange.v2.c3p0.DataSources;
 
-import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -70,9 +69,9 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
     private final IInstanceSubscriber instanceSubscriber;
 
     /**
-     * AMQP Message subscriber
+     * Spring events for local events broadcasting
      */
-    private final IInstancePublisher instancePublisher;
+    private final MultitenantJpaEventPublisher localPublisher;
 
     /**
      * Custom projects dao connection reader
@@ -96,15 +95,15 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
 
     public MultitenantJpaEventHandler(String microserviceName, Map<String, DataSource> dataSources,
             MultitenantDaoProperties daoProperties, IDatasourceSchemaHelper datasourceSchemaHelper,
-            IInstanceSubscriber instanceSubscriber, IInstancePublisher instancePublisher,
-            ITenantConnectionResolver multitenantResolver) {
+            IInstanceSubscriber instanceSubscriber, ITenantConnectionResolver multitenantResolver,
+            MultitenantJpaEventPublisher localPublisher) {
         this.microserviceName = microserviceName;
         this.dataSources = dataSources;
         this.daoProperties = daoProperties;
         this.datasourceSchemaHelper = datasourceSchemaHelper;
-        this.instancePublisher = instancePublisher;
         this.instanceSubscriber = instanceSubscriber;
         this.multitenantResolver = multitenantResolver;
+        this.localPublisher = localPublisher;
     }
 
     @Override
@@ -147,9 +146,8 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                                                 TenantConnectionState.ENABLED, Optional.empty());
                 // Register data source
                 dataSources.put(tenantConnection.getTenant(), dataSource);
-                // Broadcast connection ready
-                instancePublisher
-                        .publish(new TenantConnectionReady(tenantConnection.getTenant(), eventMicroserviceName));
+                // Broadcast connection ready with a Spring event
+                localPublisher.publishConnectionReady(tenantConnection.getTenant());
             } catch (PropertyVetoException | SQLException e) {
                 LOGGER.error("Cannot handle tenant connection for project {} and microservice {}",
                              tenantConnection.getTenant(), eventMicroserviceName);
@@ -223,9 +221,8 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                     if (oldDataSource != null) {
                         DataSources.destroy(oldDataSource);
                     }
-                    // Broadcast connection ready
-                    instancePublisher.publish(new TenantConnectionDiscarded(tenantConnection.getTenant(),
-                            pEvent.getContent().getMicroserviceName()));
+                    // Broadcast connection discarded with a Spring event
+                    localPublisher.publishConnectionDiscarded(tenantConnection.getTenant());
                 } catch (SQLException e) {
                     LOGGER.error("Cannot release datasource for tenant {}. Delete fails while closing existing connection.",
                                  tenantConnection.getTenant());

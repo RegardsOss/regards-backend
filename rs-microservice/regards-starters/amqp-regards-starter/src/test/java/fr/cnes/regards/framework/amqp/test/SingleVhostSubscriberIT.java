@@ -85,4 +85,15 @@ public class SingleVhostSubscriberIT extends AbstractSubscriberIT {
     private class MultipleReceiver extends AbstractInfoReceiver {
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see fr.cnes.regards.framework.amqp.test.AbstractSubscriberIT#publishMicroserviceInfo()
+     */
+    @Override
+    public void publishMicroserviceInfo() {
+        // TODO Auto-generated method stub
+        super.publishMicroserviceInfo();
+    }
+
 }

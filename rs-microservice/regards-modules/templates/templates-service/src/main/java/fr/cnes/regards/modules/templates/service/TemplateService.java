@@ -26,18 +26,17 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -57,7 +56,7 @@ import freemarker.template.Version;
  * @author Marc Sordi
  */
 @Service
-//@MultitenantTransactional A réactiver
+// @MultitenantTransactional A réactiver
 public class TemplateService implements ITemplateService {
 
     /**
@@ -111,8 +110,8 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Autowired
-    private Template emailAccountValidationTemplate;
+    // @Autowired
+    // private Template emailAccountValidationTemplate;
 
     @Autowired
     private Template passwordResetTemplate;
@@ -123,29 +122,27 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private Template accountRefusedTemplate;
 
-    @Autowired
-    private Template projectUserActivatedTemplate;
+    // @Autowired
+    // private Template projectUserActivatedTemplate;
+    //
+    // @Autowired
+    // private Template projectUserInactivatedTemplate;
+    //
+    // @Autowired
+    // private Template orderCreatedTemplate;
+    //
+    // @Autowired
+    // private Template asideOrdersNotificationTemplate;
 
     @Autowired
-    private Template projectUserInactivatedTemplate;
-
-    @Autowired
-    private Template orderCreatedTemplate;
-
-    @Autowired
-    private Template asideOrdersNotificationTemplate;
+    @Resource(name = TemplateServiceConfiguration.TEMPLATES)
+    private List<Template> templates;
 
     @Value("${spring.mail.sender.no.reply:regards@noreply.fr}")
     private String noReplyAdress;
 
     @Value("${spring.application.name}")
     private String microserviceName;
-
-    /**
-     * AMQP instance message subscriber
-     */
-    @Autowired
-    private IInstanceSubscriber instanceSubscriber;
 
     public TemplateService() throws IOException {
         configureTemplateLoader();
@@ -162,7 +159,14 @@ public class TemplateService implements ITemplateService {
             // Init default templates for this tenant
             initDefaultTemplates();
         }
-        instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
+    }
+
+    @EventListener
+    public void processEvent(TenantConnectionReady event) {
+        // Set working tenant
+        runtimeTenantResolver.forceTenant(event.getTenant());
+        // Init default templates for this tenant
+        initDefaultTemplates();
     }
 
     /**
@@ -171,43 +175,22 @@ public class TemplateService implements ITemplateService {
     private void initDefaultTemplates() {
         // Look into classpath (via TemplateServiceConfiguration) if some templates are present. If yes, check if they
         // exist into Database, if not, create them
-        checkAndSaveIfNecessary(passwordResetTemplate);
-        checkAndSaveIfNecessary(accountUnlockTemplate);
-        checkAndSaveIfNecessary(emailAccountValidationTemplate);
-        checkAndSaveIfNecessary(accountRefusedTemplate);
-        checkAndSaveIfNecessary(projectUserActivatedTemplate);
-        checkAndSaveIfNecessary(projectUserInactivatedTemplate);
-        checkAndSaveIfNecessary(orderCreatedTemplate);
-        checkAndSaveIfNecessary(asideOrdersNotificationTemplate);
+        // checkAndSaveIfNecessary(passwordResetTemplate);
+        // checkAndSaveIfNecessary(accountUnlockTemplate);
+        // checkAndSaveIfNecessary(emailAccountValidationTemplate);
+        // checkAndSaveIfNecessary(accountRefusedTemplate);
+        // checkAndSaveIfNecessary(projectUserActivatedTemplate);
+        // checkAndSaveIfNecessary(projectUserInactivatedTemplate);
+        // checkAndSaveIfNecessary(orderCreatedTemplate);
+        // checkAndSaveIfNecessary(asideOrdersNotificationTemplate);
+        for (Template template : templates) {
+            checkAndSaveIfNecessary(template);
+        }
     }
 
     private void checkAndSaveIfNecessary(Template template) {
         if ((template != null) && !templateRepository.findOneByCode(template.getCode()).isPresent()) {
             templateRepository.save(template);
-        }
-    }
-
-    /**
-     * Handle a new tenant connection to initialize default roles
-     * @author Marc Sordi
-     */
-    private class TenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
-
-        /**
-         * Initialize default roles in the new project connection
-         * @see fr.cnes.regards.framework.amqp.domain.IHandler#handle(fr.cnes.regards.framework.amqp.domain.TenantWrapper)
-         * @since 1.0-SNAPSHOT
-         */
-        @Override
-        public void handle(final TenantWrapper<TenantConnectionReady> wrapper) {
-            if (microserviceName.equals(wrapper.getContent().getMicroserviceName())) {
-                // Retrieve tenant
-                String tenant = wrapper.getContent().getTenant();
-                // Set working tenant
-                runtimeTenantResolver.forceTenant(tenant);
-                // Init default templates for this tenant
-                initDefaultTemplates();
-            }
         }
     }
 

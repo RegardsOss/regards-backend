@@ -104,10 +104,10 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         Exchange exchange;
         switch (workerMode) {
             case UNICAST:
-                exchange = new DirectExchange(getUnicastExchangeName(target), true, false);
+                exchange = new DirectExchange(getUnicastExchangeName(), true, false);
                 break;
             case BROADCAST:
-                exchange = new FanoutExchange(getBroadcastExchangeName(eventType.getName(), target), true, false);
+                exchange = new FanoutExchange(getBroadcastExchangeName(eventType.getName()), true, false);
                 break;
             default:
                 throw new EnumConstantNotPresentException(WorkerMode.class, workerMode.name());
@@ -118,57 +118,24 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     }
 
     /**
-     * Unicast exchange name build according to event {@link Target} restriction.
+     * Unicast exchange name
      *
-     * @param target {@link Target}
      * @return exchange name
      */
-    private String getUnicastExchangeName(Target target) {
-        StringBuilder builder = new StringBuilder();
-        builder.append(UNICAST_NAMESPACE);
-        builder.append(manageExchangeTargetRestriction(target));
-        return builder.toString();
+    private String getUnicastExchangeName() {
+        return UNICAST_NAMESPACE;
     }
 
     /**
-     * Broadcast exchange name build by event according to its {@link Target} restriction.
+     * Broadcast exchange name by event
      *
-     * @param target {@link Target}
      * @return exchange name
      */
-    private String getBroadcastExchangeName(String eventName, Target target) {
+    private String getBroadcastExchangeName(String eventType) {
         StringBuilder builder = new StringBuilder();
         builder.append(BROADCAST_NAMESPACE);
-        builder.append(manageExchangeTargetRestriction(target));
         builder.append(DOT);
-        builder.append(eventName);
-        return builder.toString();
-    }
-
-    /**
-     * Build {@link Target} event restriction namespace
-     * @param target
-     * @return
-     */
-    private String manageExchangeTargetRestriction(Target target) {
-        StringBuilder builder = new StringBuilder();
-        switch (target) {
-            case ALL:
-                // No prefix cause no target restriction
-                break;
-            case MICROSERVICE:
-                builder.append(DOT);
-                builder.append(microserviceTypeId);
-                break;
-            case INSTANCE:
-                builder.append(DOT);
-                builder.append(microserviceTypeId);
-                builder.append(DOT);
-                builder.append(microserviceInstanceId);
-                break;
-            default:
-                throw new EnumConstantNotPresentException(Target.class, target.name());
-        }
+        builder.append(eventType);
         return builder.toString();
     }
 
@@ -188,7 +155,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
             case BROADCAST:
                 // Allows to subscribe to a broadcast exchange
                 if (handlerType.isPresent()) {
-                    queue = new Queue(getSubscriptionQueueName(handlerType.get()), true, false, false, args);
+                    queue = new Queue(getSubscriptionQueueName(handlerType.get(), target), true, false, false, args);
                 } else {
                     throw new IllegalArgumentException("Missing event handler for broadcasted event");
                 }
@@ -202,7 +169,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     }
 
     /**
-     * Unicast publish queue name build by {@link IPollable} or {@link ISubscribable} event according to its
+     * Unicast publish queue name build for {@link IPollable} or {@link ISubscribable} event according to its
      * {@link Target} restriction.<br/>
      * Tenant is used for working queues naming to prevent starvation of a project. Otherwise, some projects may
      * monopolize a single multitenant queue!
@@ -217,26 +184,31 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         builder.append(UNICAST_NAMESPACE);
         builder.append(DOT);
         builder.append(tenant);
-        builder.append(manageExchangeTargetRestriction(target));
+        if (Target.MICROSERVICE.equals(target)) {
+            builder.append(DOT);
+            builder.append(microserviceTypeId);
+        }
         builder.append(DOT);
         builder.append(eventType.getName());
         return builder.toString();
     }
 
     /**
-     * Subscription queue name based on event {@link IHandler} type name. {@link Target} restriction is manage at
-     * exchange level. The uniqueness of the queue is guaranteed by the combination of microservice type, id and handler
+     * Subscription queue name based on event {@link IHandler} type name and {@link Target} restriction. The uniqueness
+     * of the queue is guaranteed by the combination of microservice type, id and handler for {@link Target#ALL}
      * type.
      * @param handlerType event handler
      * @return queue name
      */
-    private String getSubscriptionQueueName(Class<? extends IHandler<?>> handlerType) {
+    private String getSubscriptionQueueName(Class<? extends IHandler<?>> handlerType, Target target) {
         StringBuilder builder = new StringBuilder();
         builder.append(BROADCAST_NAMESPACE);
         builder.append(DOT);
         builder.append(microserviceTypeId);
-        builder.append(DOT);
-        builder.append(microserviceInstanceId);
+        if (Target.ALL.equals(target)) {
+            builder.append(DOT);
+            builder.append(microserviceInstanceId);
+        }
         builder.append(DOT);
         builder.append(handlerType.getName());
         return builder.toString();
