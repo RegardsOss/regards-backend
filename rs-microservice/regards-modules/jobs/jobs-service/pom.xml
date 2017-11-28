@@ -57,7 +57,7 @@
 			<artifactId>jobs-dao</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework.modules</groupId>
+			<groupId>fr.cnes.regards.framework.modules.workspace</groupId>
 			<artifactId>workspace-service</artifactId>
 		</dependency>
 		<!-- REGARDS starters -->
