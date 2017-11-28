@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -51,7 +52,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  */
 @Service
 @ConditionalOnMissingBean(value = IWorkspaceService.class)
-public class WorkspaceService implements IWorkspaceService, ApplicationListener<ApplicationReadyEvent> {
+public class WorkspaceService implements IWorkspaceService, ApplicationListener<ContextRefreshedEvent> {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkspaceService.class);
 
@@ -73,13 +74,15 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     private Path microserviceWorkspace;
 
     @Override
-    public void onApplicationEvent(ApplicationReadyEvent event) {
-        microserviceWorkspace = Paths.get(workspacePath, springApplicationName);
-        if(Files.notExists(microserviceWorkspace)) {
-            try {
-                Files.createDirectories(microserviceWorkspace);
-            } catch (IOException e) {
-                throw new IllegalStateException("Could not initialize workspace:", e);
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        if(microserviceWorkspace == null) {
+            microserviceWorkspace = Paths.get(workspacePath, springApplicationName);
+            if (Files.notExists(microserviceWorkspace)) {
+                try {
+                    Files.createDirectories(microserviceWorkspace);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Could not initialize workspace:", e);
+                }
             }
         }
     }
@@ -127,7 +130,7 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
         return microserviceWorkspace;
     }
 
-    @Scheduled(fixedDelay = 60 * 60000)
+    @Scheduled(fixedDelay = 60 * 60000, initialDelay = 60000)
     public void monitorWorkspace() {
         try {
             WorkspaceMonitoringInformation workspaceMonitoringInfo = getMonitoringInformation(Paths.get(workspacePath));

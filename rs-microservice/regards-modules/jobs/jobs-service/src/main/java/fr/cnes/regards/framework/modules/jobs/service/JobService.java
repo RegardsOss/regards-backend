@@ -1,9 +1,9 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.file.Files;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,8 +13,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +30,6 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -45,6 +42,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
@@ -56,6 +54,19 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 public class JobService implements IJobService {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
+
+    /**
+     * A BiMap between job id (UUID) and Job (Runnable, in fact RunnableFuture&lt;Void>)
+     */
+    private final BiMap<JobInfo, RunnableFuture<Void>> jobsMap = Maps.synchronizedBiMap(HashBiMap.create());
+
+    /**
+     * A set containing ids of Jobs asked to be stopped whereas they haven't still be launched
+     */
+    private final Set<UUID> abortedBeforeStartedJobs = Collections.synchronizedSet(new HashSet<>());
+
+    @Autowired
+    private IWorkspaceService workspaceService;
 
     @Autowired
     private IJobInfoService jobInfoService;
@@ -86,15 +97,11 @@ public class JobService implements IJobService {
 
     private ThreadPoolExecutor threadPool;
 
-    /**
-     * A BiMap between job id (UUID) and Job (Runnable, in fact RunnableFuture&lt;Void>)
-     */
-    private final BiMap<JobInfo, RunnableFuture<Void>> jobsMap = Maps.synchronizedBiMap(HashBiMap.create());
-
-    /**
-     * A set containing ids of Jobs asked to be stopped whereas they haven't still be launched
-     */
-    private final Set<UUID> abortedBeforeStartedJobs = Collections.synchronizedSet(new HashSet<>());
+    private static void printStackTrace(JobStatusInfo statusInfo, Exception e) {
+        StringWriter sw = new StringWriter();
+        e.printStackTrace(new PrintWriter(sw));
+        statusInfo.setStackTrace(sw.toString());
+    }
 
     @PostConstruct
     private void init() {
@@ -120,8 +127,10 @@ public class JobService implements IJobService {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
-                        LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning of the end, pray "
-                                + "for your soul", e);
+                        LOGGER.error(
+                                "Thread sleep has been interrupted, looks like it's the beginning of the end, pray "
+                                        + "for your soul",
+                                e);
                     }
                 }
                 // Find highest priority job to execute
@@ -168,12 +177,6 @@ public class JobService implements IJobService {
         }
     }
 
-    private static void printStackTrace(JobStatusInfo statusInfo, Exception e) {
-        StringWriter sw = new StringWriter();
-        e.printStackTrace(new PrintWriter(sw));
-        statusInfo.setStackTrace(sw.toString());
-    }
-
     @SuppressWarnings("unchecked")
     public void execute(JobInfo jobInfo) {
         try {
@@ -195,12 +198,11 @@ public class JobService implements IJobService {
                 return;
             }
             // First, instantiate job
-            @SuppressWarnings("rawtypes")
-            IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
+            @SuppressWarnings("rawtypes") IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
             beanFactory.autowireBean(job);
             job.setParameters(jobInfo.getParametersAsMap());
             if (job.needWorkspace()) {
-                job.setWorkspace(Files.createTempDirectory(jobInfo.getId().toString()));
+                job.setWorkspace(workspaceService.getPrivateDirectory());
             }
             jobInfo.setJob(job);
             // Run job (before executing Job, JobThreadPoolExecutor save JobInfo, have a look if you don't believe me)

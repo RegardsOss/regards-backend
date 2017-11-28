@@ -22,4 +22,9 @@ public class LongJob extends AbstractNoParamJob<Void> {
     public int getCompletionCount() {
         return 10;
     }
+
+    @Override
+    public boolean needWorkspace() {
+        return true;
+    }
 }

@@ -56,6 +56,10 @@
 			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
 			<artifactId>jobs-dao</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules</groupId>
+			<artifactId>workspace-service</artifactId>
+		</dependency>
 		<!-- REGARDS starters -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
