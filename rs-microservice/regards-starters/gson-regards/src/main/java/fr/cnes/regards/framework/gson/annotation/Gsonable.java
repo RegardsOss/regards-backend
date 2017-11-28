@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 /**
  *
  * Annotation allowing us to automatically add a class and it's subtypes to a {@link PolymorphicTypeAdapterFactory}
- *
+ * This annotation should be only used on abstract type.
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  *
