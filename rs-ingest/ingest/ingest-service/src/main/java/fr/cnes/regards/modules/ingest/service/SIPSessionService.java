@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPSessionRepository;
+import fr.cnes.regards.modules.ingest.dao.SIPSessionSpecifications;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPSessionBuilder;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
@@ -74,7 +75,8 @@ public class SIPSessionService implements ISIPSessionService {
 
     @Override
     public Page<SIPSession> search(String id, OffsetDateTime from, OffsetDateTime to, Pageable pageable) {
-        Page<SIPSession> pagedSessions = sipSessionRepository.findAllByOrderByLastActivationDateDesc(pageable);
+        Page<SIPSession> pagedSessions = sipSessionRepository.findAll(SIPSessionSpecifications.search(id, from, to),
+                                                                      pageable);
         List<SIPSession> sessions = Lists.newArrayList();
         pagedSessions.forEach(s -> sessions.add(this.addSessionSipInformations(s)));
         return new PageImpl<>(sessions, pageable, pagedSessions.getTotalElements());

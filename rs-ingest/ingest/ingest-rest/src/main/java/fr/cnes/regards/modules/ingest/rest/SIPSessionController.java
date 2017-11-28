@@ -76,8 +76,8 @@ public class SIPSessionController implements IResourceController<SIPSession> {
     }
 
     @ResourceAccess(description = "Delete one SIP by is ipId.")
-    @RequestMapping(method = RequestMethod.DELETE)
-    public ResponseEntity<Void> deleteSipEntityBySipId(@RequestParam("id") String id) throws ModuleException {
+    @RequestMapping(value = ID_PATH, method = RequestMethod.DELETE)
+    public ResponseEntity<Void> deleteSipEntityBySipId(@PathVariable("id") String id) throws ModuleException {
         sipSessionService.deleteSIPSession(id).isEmpty();
         return new ResponseEntity<>(HttpStatus.OK);
     }
