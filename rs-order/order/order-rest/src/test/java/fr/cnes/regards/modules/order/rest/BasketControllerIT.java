@@ -140,7 +140,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
                             request.computeOpenSearchRequest());
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
 
         ResultActions results = performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request,
                                                    customizer, "error");
@@ -157,7 +157,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
                             request.computeOpenSearchRequest());
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
 
         ResultActions results = performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request,
                                                    customizer, "error");
@@ -174,7 +174,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
                             request.computeOpenSearchRequest());
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
 
         ResultActions results = performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request,
                                                    customizer, "error");
@@ -190,7 +190,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
                             request.computeOpenSearchRequest());
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
 
         ResultActions results = performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request,
                                                    customizer, "error");
