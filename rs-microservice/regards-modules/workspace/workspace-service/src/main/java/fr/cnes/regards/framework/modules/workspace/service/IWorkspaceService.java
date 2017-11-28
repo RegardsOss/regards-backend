@@ -68,7 +68,14 @@ public interface IWorkspaceService {
     WorkspaceMonitoringInformation getMonitoringInformation() throws IOException;
 
     /**
-     *
+     * Allows to get the current workspace path.
      */
     Path getMicroserviceWorkspace();
+
+    /**
+     * Allows to get the path of the given file in the workspace of the current tenant.
+     * @param fileName
+     * @return
+     */
+    Path getFilePath(String fileName);
 }

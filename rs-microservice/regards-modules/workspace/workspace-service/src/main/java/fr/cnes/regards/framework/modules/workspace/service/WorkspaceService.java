@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -75,7 +74,7 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        if(microserviceWorkspace == null) {
+        if (microserviceWorkspace == null) {
             microserviceWorkspace = Paths.get(workspacePath, springApplicationName);
             if (Files.notExists(microserviceWorkspace)) {
                 try {
@@ -93,8 +92,7 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
         if (Files.notExists(Paths.get(microserviceWorkspace.toString(), tenant))) {
             Files.createDirectories(Paths.get(microserviceWorkspace.toString(), tenant));
         }
-        Path pathInWS = Paths.get(microserviceWorkspace.toString(), tenant, fileName);
-        OutputStream os = Files.newOutputStream(pathInWS, StandardOpenOption.CREATE);
+        OutputStream os = Files.newOutputStream(getFilePath(fileName), StandardOpenOption.CREATE);
         ByteStreams.copy(is, os);
         os.flush();
         os.close();
@@ -103,13 +101,13 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     @Override
     public InputStream retrieveFromWorkspace(String fileName) throws IOException {
         String tenant = runtimeTenantResolver.getTenant();
-        return Files.newInputStream(Paths.get(microserviceWorkspace.toString(), tenant, fileName));
+        return Files.newInputStream(getFilePath(fileName));
     }
 
     @Override
     public void removeFromWorkspace(String fileName) throws IOException {
         String tenant = runtimeTenantResolver.getTenant();
-        Files.deleteIfExists(Paths.get(microserviceWorkspace.toString(), tenant, fileName));
+        Files.deleteIfExists(getFilePath(fileName));
     }
 
     @Override
@@ -128,6 +126,12 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     @Override
     public Path getMicroserviceWorkspace() {
         return microserviceWorkspace;
+    }
+
+    @Override
+    public Path getFilePath(String fileName) {
+        String tenant = runtimeTenantResolver.getTenant();
+        return Paths.get(microserviceWorkspace.toString(), tenant, fileName);
     }
 
     @Scheduled(fixedDelay = 60 * 60000, initialDelay = 60000)
