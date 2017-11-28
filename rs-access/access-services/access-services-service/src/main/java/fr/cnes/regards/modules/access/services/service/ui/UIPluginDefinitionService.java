@@ -28,14 +28,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -66,12 +64,6 @@ public class UIPluginDefinitionService
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     * AMQP Message subscriber
-     */
-    @Autowired
-    private IInstanceSubscriber instanceSubscriber;
-
-    /**
      * Tenant resolver to access all configured tenant
      */
     @Autowired
@@ -83,21 +75,19 @@ public class UIPluginDefinitionService
     @Override
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
         LOG.info("UIPluginDefinitionService subscribing to new TenantConnectionReady events.");
-        // Initialize subscriber for new tenant connection and initialize database if not already done
-        instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
     }
 
-    private class TenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
-
-        @Override
-        public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
-            LOG.info("New tenant ready, initializing default plugins for tenant {}.",
-                     pWrapper.getContent().getTenant());
-            runtimeTenantResolver.forceTenant(pWrapper.getContent().getTenant());
+    @EventListener
+    public void processEvent(TenantConnectionReady event) {
+        LOG.info("New tenant ready, initializing default plugins for tenant {}.", event.getTenant());
+        try {
+            runtimeTenantResolver.forceTenant(event.getTenant());
             initDefault();
+        } finally {
             runtimeTenantResolver.clearTenant();
-            LOG.info("New tenant ready, default plugins initialized successfully.");
         }
+
+        LOG.info("New tenant ready, default plugins initialized successfully.");
     }
 
     /**
