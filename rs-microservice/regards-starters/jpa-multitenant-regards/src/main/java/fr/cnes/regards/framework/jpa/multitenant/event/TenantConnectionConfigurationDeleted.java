@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.jpa.multitenant.event;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionDiscarded;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 
 /**

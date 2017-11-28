@@ -43,14 +43,14 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.JpaException;
 import fr.cnes.regards.framework.jpa.multitenant.event.MultitenantJpaEventHandler;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionDiscarded;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.multitenant.event.MultitenantJpaEventPublisher;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionDiscarded;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
@@ -181,11 +181,20 @@ public class DataSourcesAutoConfiguration {
      */
     @Bean
     public MultitenantJpaEventHandler multitenantJpaEventHandler(IInstanceSubscriber instanceSubscriber,
-            IInstancePublisher instancePublisher, ITenantConnectionResolver multitenantResolver,
+            ITenantConnectionResolver multitenantResolver,
             @Qualifier(DATASOURCE_SCHEMA_HELPER_BEAN_NAME) IDatasourceSchemaHelper datasourceSchemaHelper)
             throws JpaMultitenantException {
         return new MultitenantJpaEventHandler(microserviceName, getDataSources(), daoProperties, datasourceSchemaHelper,
-                instanceSubscriber, instancePublisher, multitenantResolver);
+                instanceSubscriber, multitenantResolver, localPublisher());
+    }
+
+    /**
+     * Spring managed events for informing all microservice modules
+     * @return {@link MultitenantJpaEventPublisher}
+     */
+    @Bean
+    public MultitenantJpaEventPublisher localPublisher() {
+        return new MultitenantJpaEventPublisher();
     }
 
     /**

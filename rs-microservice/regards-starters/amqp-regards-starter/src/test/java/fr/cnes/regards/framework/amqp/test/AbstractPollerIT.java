@@ -33,7 +33,6 @@ import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.event.PollableInfo;
-import fr.cnes.regards.framework.amqp.test.event.PollableInstanceInfo;
 import fr.cnes.regards.framework.amqp.test.event.PollableMicroserviceInfo;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -107,28 +106,4 @@ public abstract class AbstractPollerIT {
         wrapper = poller.poll(PollableMicroserviceInfo.class);
         Assert.assertNull(wrapper);
     }
-
-    /**
-     * Publish an event on a working queue. Get the event from the worker.
-     */
-    @Requirement("REGARDS_DSL_CMP_ARC_030")
-    @Purpose("Event worker with restriction on microservice instance")
-    @Test
-    public void publishInstanceInfo() {
-        String message = "Poll it!";
-        PollableInstanceInfo info = new PollableInstanceInfo();
-        info.setMessage(message);
-
-        publisher.publish(info);
-
-        // Simulate worker
-        TenantWrapper<PollableInstanceInfo> wrapper = poller.poll(PollableInstanceInfo.class);
-        Assert.assertNotNull(wrapper);
-        Assert.assertEquals(PollableInstanceInfo.class, wrapper.getContent().getClass());
-        Assert.assertEquals(message, wrapper.getContent().getMessage());
-
-        wrapper = poller.poll(PollableInstanceInfo.class);
-        Assert.assertNull(wrapper);
-    }
-
 }

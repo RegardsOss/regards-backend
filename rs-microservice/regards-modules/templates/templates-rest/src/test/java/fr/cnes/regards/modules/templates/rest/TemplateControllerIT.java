@@ -27,7 +27,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -236,16 +235,4 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultDelete(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, expectations,
                              "Unable to update the template.", template.getId());
     }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.framework.test.integration.AbstractRegardsIT#getLogger()
-     */
-    @Override
-    protected Logger getLogger() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }

@@ -37,7 +37,6 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.event.Info;
-import fr.cnes.regards.framework.amqp.test.event.InstanceInfo;
 import fr.cnes.regards.framework.amqp.test.event.MicroserviceInfo;
 import fr.cnes.regards.framework.amqp.test.event.UnicastInfo;
 import fr.cnes.regards.framework.amqp.test.handler.AbstractInfoReceiver;
@@ -93,22 +92,17 @@ public abstract class AbstractSubscriberIT {
     @Purpose("Publish and receive a broadcast event with restriction on microservice type")
     @Test
     public void publishMicroserviceInfo() {
-        AbstractReceiver<MicroserviceInfo> infoSubscriber = new AbstractReceiver<MicroserviceInfo>() {
-        };
-        subscriber.subscribeTo(MicroserviceInfo.class, infoSubscriber, true);
+        MicroserviceReceiver receiver = new MicroserviceReceiver();
+        MicroserviceReceiver receiver2 = new MicroserviceReceiver();
+        subscriber.subscribeTo(MicroserviceInfo.class, receiver, true);
+        subscriber.subscribeTo(MicroserviceInfo.class, receiver2, true);
         publisher.publish(new MicroserviceInfo());
-        infoSubscriber.assertCount(1);
+
+        Assert.assertFalse(receiver.checkCount(1) && receiver2.checkCount(1));
+        Assert.assertTrue(receiver.checkCount(1) || receiver2.checkCount(1));
     }
 
-    @Requirement("REGARDS_DSL_CMP_ARC_030")
-    @Purpose("Publish and receive a broadcast event with restriction on microservice instance")
-    @Test
-    public void publishInstanceInfo() {
-        AbstractReceiver<InstanceInfo> infoSubscriber = new AbstractReceiver<InstanceInfo>() {
-        };
-        subscriber.subscribeTo(InstanceInfo.class, infoSubscriber, true);
-        publisher.publish(new InstanceInfo());
-        infoSubscriber.assertCount(1);
+    private class MicroserviceReceiver extends AbstractReceiver<MicroserviceInfo> {
     }
 
     /**
