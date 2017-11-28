@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.modules.service;
+package fr.cnes.regards.framework.modules.workspace.service;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,28 +26,31 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.google.common.io.ByteStreams;
-import fr.cnes.regards.framework.modules.domain.WorkspaceMonitoringInformation;
+import fr.cnes.regards.framework.modules.workspace.domain.WorkspaceMonitoringInformation;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
+ * Default {@link IWorkspaceService} implementation which dive the workspace per microservice and per tenant.
  *
- * TODO Description
- * @author TODO
+ * @author svissier
  *
  */
 @Service
+@ConditionalOnMissingBean(value = IWorkspaceService.class)
 public class WorkspaceService implements IWorkspaceService, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOG = LoggerFactory.getLogger(WorkspaceService.class);
@@ -69,26 +72,49 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
 
     private Path microserviceWorkspace;
 
-
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         microserviceWorkspace = Paths.get(workspacePath, springApplicationName);
+        if(Files.notExists(microserviceWorkspace)) {
+            try {
+                Files.createDirectories(microserviceWorkspace);
+            } catch (IOException e) {
+                throw new IllegalStateException("Could not initialize workspace:", e);
+            }
+        }
     }
 
     @Override
     public void setIntoWorkspace(InputStream is, String fileName) throws IOException {
         String tenant = runtimeTenantResolver.getTenant();
-        OutputStream os = Files
-                .newOutputStream(Paths.get(microserviceWorkspace.toString(), tenant, fileName), StandardOpenOption.CREATE);
+        if (Files.notExists(Paths.get(microserviceWorkspace.toString(), tenant))) {
+            Files.createDirectories(Paths.get(microserviceWorkspace.toString(), tenant));
+        }
+        Path pathInWS = Paths.get(microserviceWorkspace.toString(), tenant, fileName);
+        OutputStream os = Files.newOutputStream(pathInWS, StandardOpenOption.CREATE);
         ByteStreams.copy(is, os);
         os.flush();
         os.close();
     }
 
     @Override
-    public void removeFromWorkspace(String file) throws IOException {
+    public InputStream retrieveFromWorkspace(String fileName) throws IOException {
         String tenant = runtimeTenantResolver.getTenant();
-        Files.deleteIfExists(Paths.get(microserviceWorkspace.toString(), tenant, file));
+        return Files.newInputStream(Paths.get(microserviceWorkspace.toString(), tenant, fileName));
+    }
+
+    @Override
+    public void removeFromWorkspace(String fileName) throws IOException {
+        String tenant = runtimeTenantResolver.getTenant();
+        Files.deleteIfExists(Paths.get(microserviceWorkspace.toString(), tenant, fileName));
+    }
+
+    @Override
+    public Path getPrivateDirectory() throws IOException {
+        String tenant = runtimeTenantResolver.getTenant();
+        Path privateDir = Paths.get(microserviceWorkspace.toString(), tenant, UUID.randomUUID().toString());
+        Files.createDirectories(privateDir);
+        return privateDir;
     }
 
     @Override
@@ -96,28 +122,32 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
         return getMonitoringInformation(microserviceWorkspace);
     }
 
+    @Override
+    public Path getMicroserviceWorkspace() {
+        return microserviceWorkspace;
+    }
+
     @Scheduled(fixedDelay = 60 * 60000)
     public void monitorWorkspace() {
-        WorkspaceMonitoringInformation workspaceMonitoringInfo = null;
         try {
-            workspaceMonitoringInfo = getMonitoringInformation(Paths.get(workspacePath));
+            WorkspaceMonitoringInformation workspaceMonitoringInfo = getMonitoringInformation(Paths.get(workspacePath));
+            if (workspaceMonitoringInfo.getOccupationRatio() > workspaceOccupationThreshold) {
+                String message = String.format("Workspace is too busy. Occupation is %s which is greater than %s",
+                                               workspaceMonitoringInfo.getOccupationRatio().toString(),
+                                               workspaceOccupationThreshold.toString());
+                LOG.warn(message);
+                //TODO: set maintenance
+                notifier.sendErrorNotification(springApplicationName,
+                                               message,
+                                               "Workspace too busy",
+                                               DefaultRole.INSTANCE_ADMIN);
+            }
         } catch (IOException e) {
             String message = String.format("Error occured during workspace monitoring: %s", e.getMessage());
             LOG.error(message, e);
             notifier.sendErrorNotification(springApplicationName,
-                                      message,
-                                      "Error during workspace monitoring",
-                                      DefaultRole.INSTANCE_ADMIN);
-        }
-        if (workspaceMonitoringInfo.getOccupationRatio() > workspaceOccupationThreshold) {
-            String message = String.format("Workspace is too busy. Occupation is %s which is greater than %s",
-                                           workspaceMonitoringInfo.getOccupationRatio().toString(),
-                                           workspaceOccupationThreshold.toString());
-            LOG.warn(message);
-            //TODO: set maintenance
-            notifier.sendErrorNotification(springApplicationName,
                                            message,
-                                           "Workspace too busy",
+                                           "Error during workspace monitoring",
                                            DefaultRole.INSTANCE_ADMIN);
         }
     }

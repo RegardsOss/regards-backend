@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.modules.rest;
+package fr.cnes.regards.framework.modules.workspace.rest;
 
 import java.io.IOException;
 
@@ -32,19 +32,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.modules.domain.WorkspaceMonitoringInformation;
-import fr.cnes.regards.framework.modules.service.WorkspaceService;
+import fr.cnes.regards.framework.modules.workspace.domain.WorkspaceMonitoringInformation;
+import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
+import fr.cnes.regards.framework.modules.workspace.service.WorkspaceService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
- * REST module controller
+ * REST controller allowing to get workspace monitoring information.
  *
- * TODO Description
- *
- * @author TODO
- *
+ * @author svissier
  */
 @RestController
 @ModuleInfo(name = "workspace-rest", version = "2.0.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
@@ -58,7 +57,7 @@ public class WorkspaceController implements IResourceController<WorkspaceMonitor
     private IResourceService resourceService;
 
     @Autowired
-    private WorkspaceService workspaceService;
+    private IWorkspaceService workspaceService;
 
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
@@ -70,7 +69,8 @@ public class WorkspaceController implements IResourceController<WorkspaceMonitor
     @Override
     public Resource<WorkspaceMonitoringInformation> toResource(WorkspaceMonitoringInformation pElement,
             Object... pExtras) {
-        // TODO add hateoas links
-        return resourceService.toResource(pElement);
+        Resource<WorkspaceMonitoringInformation> resource = resourceService.toResource(pElement);
+        resourceService.addLink(resource, this.getClass(), "getMonitoringInformation", LinkRels.SELF);
+        return resource;
     }
 }

@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.service;
+package fr.cnes.regards.framework.modules.workspace.service;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;

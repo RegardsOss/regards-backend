@@ -35,12 +35,4 @@
 		</developer>
 	</developers>
 
-	<dependencies>
-		<!-- Test -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
 </project>

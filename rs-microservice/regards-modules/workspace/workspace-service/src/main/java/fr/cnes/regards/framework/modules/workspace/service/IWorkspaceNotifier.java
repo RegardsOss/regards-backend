@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.service;
+package fr.cnes.regards.framework.modules.workspace.service;
 
 import fr.cnes.regards.framework.security.role.DefaultRole;
 
