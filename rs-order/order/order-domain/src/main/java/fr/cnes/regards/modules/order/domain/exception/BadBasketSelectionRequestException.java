@@ -23,9 +23,9 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 /**
  * @author oroussel
  */
-public class BadBasketSelectionRequest extends ModuleException {
+public class BadBasketSelectionRequestException extends ModuleException {
 
-    public BadBasketSelectionRequest(String message) {
+    public BadBasketSelectionRequestException(String message) {
         super(message);
     }
 }

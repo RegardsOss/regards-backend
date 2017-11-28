@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
+import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.search.client.ISearchClient;
 
 /**
@@ -70,7 +71,8 @@ public class BasketService implements IBasketService {
     }
 
     @Override
-    public Basket addSelection(Long basketId, String datasetIpId, String inOpenSearchRequest) {
+    public Basket addSelection(Long basketId, String datasetIpId, String inOpenSearchRequest)
+            throws EmptySelectionException {
         Basket basket = repos.findOneById(basketId);
         if (basket == null) {
             throw new EntityNotFoundException("Basket with id " + basketId + " doesn't exist");
@@ -90,11 +92,20 @@ public class BasketService implements IBasketService {
             FeignSecurityManager.asSystem();
             DocFilesSummary summary = searchClient
                     .computeDatasetsSummary(queryMap, datasetIpId, DataTypeSelection.ALL.getFileTypes()).getBody();
+            // If global summary contains no files => EmptySelection
+            if (summary.getFilesCount() == 0l) {
+                throw new EmptySelectionException();
+            }
             // Create a map to find more easiely a basket dataset selection from dataset IpId
             Map<String, BasketDatasetSelection> basketDsSelectionMap = basket.getDatasetSelections().stream()
                     .collect(Collectors.toMap(BasketDatasetSelection::getDatasetIpid, Function.identity()));
             // Parsing results
             for (Map.Entry<String, DocFilesSubSummary> entry : summary.getSubSummariesMap().entrySet()) {
+                DocFilesSubSummary subSummary = entry.getValue();
+                if (subSummary.getFilesCount() == 0l) {
+                    continue;
+                }
+                // Try to retrieve current dataset selection
                 BasketDatasetSelection datasetSelection = basketDsSelectionMap.get(entry.getKey());
                 // Manage basket dataset selection
                 if (datasetSelection == null) {
@@ -110,13 +121,12 @@ public class BasketService implements IBasketService {
                             "(" + datasetSelection.getOpenSearchRequest() + " OR (" + openSearchRequest + "))");
                 }
                 // Create dated items selection
-                BasketDatedItemsSelection itemsSelection = createItemsSelection(openSearchRequest, now, entry.getValue());
+                BasketDatedItemsSelection itemsSelection = createItemsSelection(openSearchRequest, now, subSummary);
 
                 // Add items selection to dataset selection
                 datasetSelection.getItemsSelections().add(itemsSelection);
                 // Update DatasetSelection (summary)
                 computeSummaryAndUpdateDatasetSelection(datasetSelection);
-
             }
         } finally {
             FeignSecurityManager.reset();

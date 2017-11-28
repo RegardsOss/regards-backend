@@ -28,11 +28,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
-import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequest;
+import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequestException;
 import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
+import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
 
 /**
@@ -46,6 +47,12 @@ public class OrderControllerAdvice extends ResponseEntityExceptionHandler {
     public ResponseEntity<ServerErrorResponse> handleEmptyBasketException(EmptyBasketException ebe) {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ServerErrorResponse(ebe.getMessage()));
     }
+
+    @ExceptionHandler(EmptySelectionException.class)
+    public ResponseEntity<ServerErrorResponse> handleEmptySelectionException(EmptySelectionException ebe) {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ServerErrorResponse(ebe.getMessage()));
+    }
+
 
     @ExceptionHandler(NotYetAvailableException.class)
     public ResponseEntity<ServerErrorResponse> handleNotYetAvailableException(NotYetAvailableException e) {
@@ -67,8 +74,9 @@ public class OrderControllerAdvice extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage()));
     }
 
-    @ExceptionHandler(BadBasketSelectionRequest.class)
-    public ResponseEntity<ServerErrorResponse> handleBadBasketSelectionRequest(BadBasketSelectionRequest e) {
+    @ExceptionHandler(BadBasketSelectionRequestException.class)
+    public ResponseEntity<ServerErrorResponse> handleBadBasketSelectionRequestException(
+            BadBasketSelectionRequestException e) {
         return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ServerErrorResponse(e.getMessage()));
     }
 }

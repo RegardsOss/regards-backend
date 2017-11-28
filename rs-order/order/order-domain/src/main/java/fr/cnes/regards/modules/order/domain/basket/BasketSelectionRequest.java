@@ -3,9 +3,7 @@ package fr.cnes.regards.modules.order.domain.basket;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequest;
+import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequestException;
 
 /**
  * An object used to add a selection on a basket (only used by BasketController).
@@ -49,13 +47,13 @@ public class BasketSelectionRequest {
     /**
      * Compute openSearch request taking into account all parameters (selectAllOpenSearchRequest, ipIds, ...)
      */
-    public String computeOpenSearchRequest() throws BadBasketSelectionRequest {
+    public String computeOpenSearchRequest() throws BadBasketSelectionRequestException {
         String ipIdsOpenSearch = null;
         // ipIds specified
         if ((ipIds != null) && !ipIds.isEmpty()) {
             ipIdsOpenSearch = ipIds.stream().map(ipId -> "ipId:\"" + ipId + "\"").collect(Collectors.joining(" OR "));
         } else if (selectAllOpenSearchRequest == null) {
-            throw new BadBasketSelectionRequest("If opensearch request is null, at least on IP_ID must be provided");
+            throw new BadBasketSelectionRequestException("If opensearch request is null, at least on IP_ID must be provided");
         } else { // no IpIds specified => selectAll
             return selectAllOpenSearchRequest;
         }

@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
+import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import static fr.cnes.regards.modules.order.test.SearchClientMock.*;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -76,7 +77,7 @@ public class BasketServiceIT {
      */
     @Test
     @Requirement("REGARDS_DSL_STO_CMD_100")
-    public void test() throws EmptyBasketException {
+    public void test() throws EmptyBasketException, EmptySelectionException {
         Basket basket = basketService.findOrCreate(USER_EMAIL);
 
         Assert.assertNotNull(basketService.find(USER_EMAIL));

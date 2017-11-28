@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
+import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 
 /**
  * Basket service
@@ -41,7 +42,7 @@ public interface IBasketService {
      * Add a selection to a basket through an opensearch request. The selection concerns a priori several datasets.
      * Adding a selection concerns RAWDATA and QUICKLOOKS files
      */
-    default Basket addSelection(Long basketId, String openSearchRequest) {
+    default Basket addSelection(Long basketId, String openSearchRequest) throws EmptySelectionException {
         return this.addSelection(basketId, null, openSearchRequest);
     }
 
@@ -51,7 +52,7 @@ public interface IBasketService {
      * @param datasetIpId concerned dataset IP_ID (can be null)
      * @param openSearchRequest selection request
      */
-    Basket addSelection(Long basketId, String datasetIpId, String openSearchRequest);
+    Basket addSelection(Long basketId, String datasetIpId, String openSearchRequest) throws EmptySelectionException;
 
     /**
      * Remove specified dataset selection from basket

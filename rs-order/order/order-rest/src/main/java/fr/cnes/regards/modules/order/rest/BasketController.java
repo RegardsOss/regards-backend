@@ -38,8 +38,9 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequest;
+import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequestException;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
+import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.service.IBasketService;
 import fr.cnes.regards.modules.order.service.IOrderService;
 
@@ -81,7 +82,7 @@ public class BasketController implements IResourceController<Basket> {
     @ResourceAccess(description = "Add a selection to the basket", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, value = SELECTION)
     public ResponseEntity<Resource<Basket>> addSelection(@RequestBody BasketSelectionRequest basketSelectionRequest)
-            throws BadBasketSelectionRequest {
+            throws BadBasketSelectionRequestException, EmptySelectionException {
         String user = authResolver.getUser();
         Basket basket = basketService.findOrCreate(user);
         String openSearchRequest = basketSelectionRequest.computeOpenSearchRequest();

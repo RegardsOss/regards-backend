@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.order.rest;
 import java.util.Collections;
 import java.util.UUID;
 
-import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +46,7 @@ import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequest;
+import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequestException;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
@@ -132,7 +131,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testAddNullOpensearchSelection() throws BadBasketSelectionRequest {
+    public void testAddNullOpensearchSelection() throws BadBasketSelectionRequestException {
         // Test POST without argument : order should be created with RUNNING status
         BasketSelectionRequest request = new BasketSelectionRequest();
         request.setIpIds(Collections.singleton("URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
@@ -148,7 +147,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testAddEmptyOpensearchSelection() throws BadBasketSelectionRequest {
+    public void testAddEmptyOpensearchSelection() throws BadBasketSelectionRequestException {
         // Test POST without argument : order should be created with RUNNING status
         BasketSelectionRequest request = new BasketSelectionRequest();
         request.setIpIds(Collections.singleton("URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
@@ -165,7 +164,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testAddFullOpensearchSelection() throws BadBasketSelectionRequest {
+    public void testAddFullOpensearchSelection() throws BadBasketSelectionRequestException {
         // Test POST without argument : order should be created with RUNNING status
         BasketSelectionRequest request = new BasketSelectionRequest();
         request.setIpIds(Collections.singleton("URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
@@ -182,7 +181,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testAddOnlyOpensearchSelection() throws BadBasketSelectionRequest {
+    public void testAddOnlyOpensearchSelection() throws BadBasketSelectionRequestException {
         // Test POST without argument : order should be created with RUNNING status
         BasketSelectionRequest request = new BasketSelectionRequest();
         request.setSelectAllOpenSearchRequest("MACHIN: BIDULE AND PATATIPATAT: POUET");
