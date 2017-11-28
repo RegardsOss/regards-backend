@@ -50,7 +50,7 @@
 		</dependency>
 		<!-- Module dependencies -->
 		<dependency>
-			<groupId>fr.cnes.regards.framework.modules</groupId>
+			<groupId>fr.cnes.regards.framework.modules.workspace</groupId>
 			<artifactId>workspace-service</artifactId>
 		</dependency>
 		<!-- Test -->

@@ -41,17 +41,17 @@
         <dependencies>
             <!-- Module layers -->
             <dependency>
-                <groupId>fr.cnes.regards.framework.modules</groupId>
+                <groupId>fr.cnes.regards.framework.modules.workspace</groupId>
                 <artifactId>workspace-domain</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.framework.modules</groupId>
+                <groupId>fr.cnes.regards.framework.modules.workspace</groupId>
                 <artifactId>workspace-rest</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.framework.modules</groupId>
+                <groupId>fr.cnes.regards.framework.modules.workspace</groupId>
                 <artifactId>workspace-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
