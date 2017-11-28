@@ -48,6 +48,12 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>microservice-core-starter</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>fr.cnes.regards.framework</groupId>
+					<artifactId>cloud-regards-starter</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
