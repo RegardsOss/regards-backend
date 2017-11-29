@@ -201,7 +201,7 @@ public class MetaFile implements IIdentifiable<Long> {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object obj) { // NOSONAR
         if (this == obj) {
             return true;
         }

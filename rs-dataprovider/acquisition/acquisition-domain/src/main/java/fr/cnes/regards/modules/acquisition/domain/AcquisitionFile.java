@@ -153,7 +153,7 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object obj) { // NOSONAR
         if (this == obj) {
             return true;
         }

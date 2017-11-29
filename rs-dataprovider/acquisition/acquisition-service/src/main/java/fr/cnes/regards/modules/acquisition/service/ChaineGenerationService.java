@@ -151,13 +151,13 @@ public class ChaineGenerationService implements IChainGenerationService {
         // the ChainGeneration must be active
         if (!chain.isActive()) {
             LOGGER.warn("[{}] Unable to run a not active the chain generation", chain.getLabel());
-            return false;
+            return false; // NOSONAR
         }
 
         // the ChainGeneration must not be already running
         if (chain.isRunning()) {
             LOGGER.warn("[{}] Unable to run an already running chain generation", chain.getLabel());
-            return false;
+            return false; // NOSONAR
         }
 
         // the difference between the previous activation date and current time must be greater than the periodicity
@@ -165,7 +165,7 @@ public class ChaineGenerationService implements IChainGenerationService {
                 && chain.getLastDateActivation().plusSeconds(chain.getPeriodicity()).isAfter(OffsetDateTime.now())) {
             LOGGER.warn("[{}] Unable to run the chain generation : the last activation date is to close from now with the periodicity {}.",
                         chain.getLabel(), chain.getPeriodicity());
-            return false;
+            return false; // NOSONAR
         }
 
         // the ChainGeneration is ready to be started 
