@@ -31,9 +31,15 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  */
 public abstract class AbstractRegardsServiceTransactionalIT extends AbstractRegardsServiceIT {
 
+    /**
+     * {@link IRuntimeTenantResolver} instance
+     */
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
+    /**
+     * Set the tenant before a transaction
+     */
     @BeforeTransaction
     protected void beforeTransaction() {
         tenantResolver.forceTenant(DEFAULT_TENANT);

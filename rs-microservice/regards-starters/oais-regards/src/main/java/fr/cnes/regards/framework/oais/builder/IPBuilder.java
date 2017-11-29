@@ -19,6 +19,8 @@
 package fr.cnes.regards.framework.oais.builder;
 
 import javax.annotation.Nullable;
+import java.net.URL;
+import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 
@@ -32,6 +34,7 @@ import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 
 /**
@@ -68,9 +71,9 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IPBuilder.class);
 
-    private final InformationPackagePropertiesBuilder ipPropertiesBuilder;
-
     protected final T ip;
+
+    private final InformationPackagePropertiesBuilder ipPropertiesBuilder;
 
     public IPBuilder(Class<T> clazz, EntityType ipType) {
         Assert.notNull(clazz, "Class is required");

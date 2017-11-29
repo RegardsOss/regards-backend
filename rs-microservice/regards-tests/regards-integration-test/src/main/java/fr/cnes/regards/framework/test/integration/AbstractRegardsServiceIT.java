@@ -74,6 +74,9 @@ public abstract class AbstractRegardsServiceIT {
     @Autowired
     protected GsonBuilder gsonBuilder;
 
+    /**
+     * @return class logger instance
+     */
     protected Logger getLogger() {
         return LoggerFactory.getLogger(this.getClass());
     }
@@ -91,6 +94,9 @@ public abstract class AbstractRegardsServiceIT {
         return jwtService.generateToken(DEFAULT_TENANT, pName, pRole);
     }
 
+    /**
+     * @return default role
+     */
     protected String getDefaultRole() {
         return DEFAULT_ROLE;
     }
