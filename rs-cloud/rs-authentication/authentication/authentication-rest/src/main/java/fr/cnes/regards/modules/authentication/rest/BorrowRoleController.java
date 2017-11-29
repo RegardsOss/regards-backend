@@ -45,13 +45,29 @@ import fr.cnes.regards.modules.authentication.service.role.IBorrowRoleService;
 @RequestMapping(path = BorrowRoleController.PATH_BORROW_ROLE)
 public class BorrowRoleController {
 
+    /**
+     * Controller base path
+     */
     public static final String PATH_BORROW_ROLE = "/borrowRole";
 
+    /**
+     * Controller sub path to change role
+     */
     public static final String PATH_BORROW_ROLE_TARGET = "/{target_name}";
 
+    /**
+     * {@link IBorrowRoleService} instance
+     */
     @Autowired
     private IBorrowRoleService borrowRoleService;
 
+    /**
+     * Allows to switch role
+     * @param pTargetRoleName
+     * @return information to switch role
+     * @throws EntityOperationForbiddenException
+     * @throws JwtException
+     */
     @ResponseBody
     @ResourceAccess(role = DefaultRole.PUBLIC, description = "endpoint allowing to switch role")
     @RequestMapping(method = RequestMethod.GET, path = PATH_BORROW_ROLE_TARGET)

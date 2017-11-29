@@ -28,8 +28,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
@@ -46,10 +44,21 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 @Service
 public class BorrowRoleService implements IBorrowRoleService {
 
+    /**
+     * {@link IRolesClient} instance
+     */
     private final IRolesClient rolesClient;
 
+    /**
+     * {@link JWTService} instance
+     */
     private final JWTService jwtService;
 
+    /**
+     * Constructor setting the parameters as attributes
+     * @param pRolesClient
+     * @param pJwtService
+     */
     public BorrowRoleService(IRolesClient pRolesClient, JWTService pJwtService) {
         super();
         rolesClient = pRolesClient;
@@ -62,14 +71,15 @@ public class BorrowRoleService implements IBorrowRoleService {
 
         JWTAuthentication currentToken = jwtService.getCurrentToken();
         if (!borrowableRoleNames.contains(pTargetRoleName)) {
-            throw new EntityOperationForbiddenException(
-                    String.format("Users of role %s are not allowed to borrow role %s",
-                                  currentToken.getUser().getRole(), pTargetRoleName));
+            throw new EntityOperationForbiddenException(String.format(
+                    "Users of role %s are not allowed to borrow role %s",
+                    currentToken.getUser().getRole(),
+                    pTargetRoleName));
         }
 
-        return new CoupleJwtRole(
-                jwtService.generateToken(currentToken.getTenant(), currentToken.getName(), pTargetRoleName),
-                pTargetRoleName);
+        return new CoupleJwtRole(jwtService.generateToken(currentToken.getTenant(),
+                                                          currentToken.getName(),
+                                                          pTargetRoleName), pTargetRoleName);
 
     }
 
