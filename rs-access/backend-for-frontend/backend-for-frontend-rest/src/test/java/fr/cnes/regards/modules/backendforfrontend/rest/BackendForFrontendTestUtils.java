@@ -29,6 +29,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -81,7 +82,7 @@ public class BackendForFrontendTestUtils {
     public static final DataObject DATAOBJECT;
     static {
         DATAOBJECT = new DataObject(null, DEFAULT_TENANT, "dataobject");
-        DATAOBJECT.setTags(Sets.newHashSet(DATASET_0.getIpId().toString()));
+        DATAOBJECT.setTags(Sets.newHashSet(DATASET_0.getIpId().toString(), "string_tag"));
     }
 
     /**

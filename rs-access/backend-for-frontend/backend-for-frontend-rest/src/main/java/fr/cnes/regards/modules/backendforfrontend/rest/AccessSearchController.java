@@ -38,6 +38,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -196,8 +197,7 @@ public class AccessSearchController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(@RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) final String[] pFacets) {
-        JsonObject entities = searchClient.searchDataobjectsReturnDatasets(allParams, pFacets)
-                .getBody();
+        JsonObject entities = searchClient.searchDataobjectsReturnDatasets(allParams, pFacets).getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
     }
@@ -244,6 +244,7 @@ public class AccessSearchController {
         // @formatter:off
         List<Resource<PluginServiceDto>> applicableServices = JSON_ARRAY_TO_STREAM.apply(pEntity.get("tags").getAsJsonArray()) // Retrieve tags list and convert it to stream
             .map(JsonElement::getAsString) // Convert elements of the stream to strings
+            .filter(UniformResourceName::isValidUrn) // Only keep URNs
             .map(UniformResourceName::fromString) // Convert elements of the stream to URNs
             .filter(urn -> EntityType.DATASET.equals(urn.getEntityType())) // Only keep URNs of datasets
             .map(UniformResourceName::toString) // Go back to strings
