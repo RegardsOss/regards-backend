@@ -20,6 +20,8 @@ public interface IOrderDataFileService {
 
     Iterable<OrderDataFile> save(Iterable<OrderDataFile> dataFiles);
 
+    OrderDataFile load(Long dataFileId) throws NoSuchElementException;
+
     OrderDataFile find(Long orderId, UniformResourceName aipId, String checksum) throws NoSuchElementException;
 
     /**
@@ -37,7 +39,7 @@ public interface IOrderDataFileService {
     /**
      * Copy asked file from storage to HttpServletResponse
      */
-    void downloadFile(OrderDataFile dataFile, UniformResourceName aipId, String checksum, OutputStream os)
+    void downloadFile(OrderDataFile dataFile, OutputStream os)
             throws IOException;
 
     /**

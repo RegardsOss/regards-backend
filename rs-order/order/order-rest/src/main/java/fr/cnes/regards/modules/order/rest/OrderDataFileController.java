@@ -85,9 +85,6 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     @Autowired
     private JWTService jwtService;
 
-    @Value("${regards.order.files.displayable.maximum:5000}")
-    private int maximumDisplayableDataFiles;
-
     @Value("${regards.order.secret}")
     private String secret;
 
@@ -119,16 +116,14 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
 
     @ResourceAccess(description = "Download a file that is part of an order", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_ORDER_ID_AIPS_AIP_ID_FILES_CHECKSUM)
-    public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("orderId") Long orderId,
-            @PathVariable("aipId") String aipId, @PathVariable("checksum") String checksum,
+    public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("dataFileId") Long dataFileId,
             HttpServletResponse response) throws NoSuchElementException, IOException {
-        // Throws a NoSuchELementException if not found
-        OrderDataFile dataFile = dataFileService.find(orderId, decodeUrn(aipId), checksum);
+        // Throws a NoSuchElementException if not found
+        OrderDataFile dataFile = dataFileService.load(dataFileId);
         response.addHeader("Content-disposition", "attachment;filename=" + dataFile.getName());
         response.setContentType(dataFile.getMimeType().toString());
 
-        return new ResponseEntity<>(os -> dataFileService.downloadFile(dataFile, decodeUrn(aipId), checksum, os),
-                                    HttpStatus.OK);
+        return new ResponseEntity<>(os -> dataFileService.downloadFile(dataFile, os), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Download a file that is part of an order granted by token",
@@ -160,7 +155,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
             default:
                 // Stream the response
                 return new ResponseEntity<>(
-                        os -> dataFileService.downloadFile(dataFile, decodeUrn(aipId), checksum, os), HttpStatus.OK);
+                        os -> dataFileService.downloadFile(dataFile, os), HttpStatus.OK);
         }
     }
 

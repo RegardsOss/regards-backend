@@ -158,7 +158,8 @@ public class OrderController implements IResourceController<OrderDto> {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Find all specified user orders", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Find all specified user orders or all users orders",
+            role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH)
     public ResponseEntity<PagedResources<Resource<OrderDto>>> findAll(
             @RequestParam(value = "user", required = false) String user, Pageable pageRequest) {
@@ -174,7 +175,7 @@ public class OrderController implements IResourceController<OrderDto> {
         orderService.writeAllOrdersInCsv(new BufferedWriter(response.getWriter()));
     }
 
-    @ResourceAccess(description = "Find all users orders", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Find all user orders", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH)
     public ResponseEntity<PagedResources<Resource<OrderDto>>> findAll(Pageable pageRequest) {
         String user = authResolver.getUser();
@@ -247,8 +248,7 @@ public class OrderController implements IResourceController<OrderDto> {
         response.setContentType("application/metalink+xml");
 
         // Stream the response
-        return new ResponseEntity<>(os -> orderService.downloadOrderMetalink(orderId, os),
-                                    HttpStatus.OK);
+        return new ResponseEntity<>(os -> orderService.downloadOrderMetalink(orderId, os), HttpStatus.OK);
     }
 
     // TODO : add links

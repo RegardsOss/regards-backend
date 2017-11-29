@@ -53,6 +53,15 @@ public class OrderDataFileService implements IOrderDataFileService {
     }
 
     @Override
+    public OrderDataFile load(Long dataFileId) throws NoSuchElementException {
+        OrderDataFile dataFile = repos.findOne(dataFileId);
+        if (dataFile == null) {
+            throw new NoSuchElementException();
+        }
+        return dataFile;
+    }
+
+    @Override
     public OrderDataFile find(Long orderId, UniformResourceName aipId, String checksum) throws NoSuchElementException {
         Optional<OrderDataFile> dataFileOpt = repos.findFirstByChecksumAndIpIdAndOrderId(checksum, aipId, orderId);
         if (!dataFileOpt.isPresent()) {
@@ -72,9 +81,10 @@ public class OrderDataFileService implements IOrderDataFileService {
     }
 
     @Override
-    public void downloadFile(OrderDataFile dataFile, UniformResourceName aipId, String checksum, OutputStream os)
+    public void downloadFile(OrderDataFile dataFile, OutputStream os)
             throws IOException {
-        try (InputStream is = aipClient.downloadFile(aipId.toString(), checksum).body().asInputStream()) {
+        try (InputStream is = aipClient.downloadFile(dataFile.getIpId().toString(), dataFile.getChecksum()).body()
+                .asInputStream()) {
             ByteStreams.copy(is, os);
             os.close();
         }

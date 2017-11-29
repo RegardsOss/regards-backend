@@ -7,7 +7,7 @@ package fr.cnes.regards.modules.order.domain;
  * - DOWNLOADED : already downloaded (maybe no more available),
  * - ERROR : in error while asked to be made available.
  * Else, status is :
- * - ONLINE
+ * - ONLINE : not stored into rs-storage BUT managed by rs-storage as immediately available
  * @author oroussel
  */
 public enum FileState {
