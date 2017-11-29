@@ -81,10 +81,7 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    @Requirements({
-            @Requirement("REGARDS_DSL_STO_CMD_020"),
-            @Requirement("REGARDS_DSL_STO_CMD_030"),
-    })
+    @Requirements({ @Requirement("REGARDS_DSL_STO_CMD_020"), @Requirement("REGARDS_DSL_STO_CMD_030"), })
     public void testDownloadFile() throws URISyntaxException, IOException {
         Order order = new Order();
         order.setOwner(USER);
@@ -123,9 +120,8 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         int count = 0;
         do {
             count++;
-            ResultActions resultActions = performDefaultGet("/orders/{orderId}/aips/{aipId}/files/{checksum}",
-                                                            expectations, "Should return result", order.getId(),
-                                                            dataFile1.getIpId().toString(), dataFile1.getChecksum());
+            ResultActions resultActions = performDefaultGet(OrderDataFileController.ORDERS_FILES_DATA_FILE_ID,
+                                                            expectations, "Should return result", dataFile1.getId());
 
             assertMediaType(resultActions, MediaType.TEXT_PLAIN);
             resultFile = File.createTempFile("ORDER", "");
@@ -134,7 +130,8 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
             try (FileOutputStream fos = new FileOutputStream(resultFile)) {
                 // Wait for availability
                 resultActions.andReturn().getAsyncResult();
-                InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
+                InputStream is = new ByteArrayInputStream(
+                        resultActions.andReturn().getResponse().getContentAsByteArray());
                 ByteStreams.copy(is, fos);
                 is.close();
             }
@@ -146,7 +143,6 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         Optional<OrderDataFile> dataFileOpt = dataFileRepository
                 .findFirstByChecksumAndIpIdAndOrderId(dataFile1.getChecksum(), DO1_IP_ID, order.getId());
         Assert.assertTrue(dataFileOpt.isPresent());
-        Assert.assertEquals(FileState.DOWNLOADED,
-                            dataFileOpt.get().getState());
+        Assert.assertEquals(FileState.DOWNLOADED, dataFileOpt.get().getState());
     }
 }
