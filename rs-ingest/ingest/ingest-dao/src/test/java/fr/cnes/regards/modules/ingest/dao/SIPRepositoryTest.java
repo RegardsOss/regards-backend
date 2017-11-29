@@ -78,8 +78,8 @@ public class SIPRepositoryTest extends AbstractSIPRepositoryTest {
         Assert.assertTrue(res.size() == 4);
 
         // Check order by attribute on ingestDate
-        Assert.assertTrue(res.get(0).getIngestDate().compareTo(res.get(1).getIngestDate()) > 0);
-        Assert.assertTrue(res.get(1).getIngestDate().compareTo(res.get(2).getIngestDate()) > 0);
+        Assert.assertTrue(res.get(0).getIngestDate().compareTo(res.get(1).getIngestDate()) >= 0);
+        Assert.assertTrue(res.get(1).getIngestDate().compareTo(res.get(2).getIngestDate()) >= 0);
 
         res = sipRepository.findAll(SIPEntitySpecifications.search("SIP_003", null, null, null, null, null));
         Assert.assertTrue(res.size() == 2);
