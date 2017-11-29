@@ -349,6 +349,15 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     /**
      * Multipart request uses "file" as part name at the moment
      */
+    protected ResultActions performDefaultFileUpload(String urlTemplate, List<MockMultipartFile> pFileList,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
+        return performFileUpload(urlTemplate, jwt, pFileList, requestBuilderCustomizer, errorMsg, urlVariables);
+    }
+
+    /**
+     * Multipart request uses "file" as part name at the moment
+     */
     protected ResultActions performFileUpload(String urlTemplate, String jwt, List<MockMultipartFile> pFileList,
             RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
         return requestBuilderCustomizer.performFileUpload(mvc, urlTemplate, jwt, pFileList, errorMsg, urlVariables);
@@ -360,15 +369,6 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     protected ResultActions performFileUpload(String urlTemplate, String jwt, Path pFilePath,
             RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
         return requestBuilderCustomizer.performFileUpload(mvc, urlTemplate, jwt, pFilePath, errorMsg, urlVariables);
-    }
-
-    /**
-     * Multipart request uses "file" as part name at the moment
-     */
-    protected ResultActions performDefaultFileUpload(String urlTemplate, List<MockMultipartFile> pFileList,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
-        return performFileUpload(urlTemplate, jwt, pFileList, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
     /**

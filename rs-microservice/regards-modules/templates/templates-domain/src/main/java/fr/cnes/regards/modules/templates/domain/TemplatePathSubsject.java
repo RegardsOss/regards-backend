@@ -5,6 +5,9 @@ package fr.cnes.regards.modules.templates.domain;
  */
 public class TemplatePathSubsject {
 
+    /**
+     * The template path
+     */
     private String templatePath;
 
     private String emailSubject;

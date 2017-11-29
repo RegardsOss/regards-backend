@@ -137,6 +137,9 @@ public class TemplateServiceConfiguration {
 
     private static final String NOT_DISPATCHED_DATA_FILES_TEMPLATE = "template/not_dispatched_data_files_template.html";
 
+    /**
+     * The not subsetted data files template as html
+     */
     private static final String NOT_SUBSETTED_DATA_FILES_TEMPLATE = "template/not_subsetted_data_files_template.html";
 
     private static final Map<String, TemplatePathSubsject> templateCodePathMap = Maps.newHashMap();
@@ -213,6 +216,10 @@ public class TemplateServiceConfiguration {
         }
     }
 
+    /**
+     * @return the list of initialized template bean for the current microservice
+     * @throws IOException
+     */
     @Bean(name = TEMPLATES)
     public List<Template> templates() throws IOException {
         List<Template> templates = Lists.newArrayList();

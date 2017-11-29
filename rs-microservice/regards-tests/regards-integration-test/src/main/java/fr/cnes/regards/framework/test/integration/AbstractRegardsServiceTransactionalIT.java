@@ -23,7 +23,7 @@ import org.springframework.test.context.transaction.BeforeTransaction;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
-/**
+/**>
  * Add default transactional initialization
  *
  * @author Christophe Mertz

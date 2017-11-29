@@ -42,7 +42,6 @@ import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -90,7 +89,8 @@ public final class PluginParameterUtils {
         List<PluginParameterType> parameters = null;
 
         for (final Field field : pluginClass.getDeclaredFields()) {
-            if (field.isAnnotationPresent(PluginParameter.class) || (!usePluginParameterAnnotation && isToBeConsidered(field))) {
+            if (field.isAnnotationPresent(PluginParameter.class) || (!usePluginParameterAnnotation && isToBeConsidered(
+                    field))) {
                 if (parameters == null) {
                     parameters = new ArrayList<>();
                 }
@@ -134,17 +134,18 @@ public final class PluginParameterUtils {
             } else {
                 if (fieldType == ParamType.COLLECTION) {
                     // field is a java.util.Collection so it is a ParameterizedType which has only 1 parameter, so lets get its name
-                    String parameteredTypeName = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0].getTypeName();
+                    String parameteredTypeName = ((ParameterizedType) field.getGenericType())
+                            .getActualTypeArguments()[0].getTypeName();
                     // now that we have the parametered type, only add it to the parents if it is not primitive.
                     Class<?> parameteredClass = null;
                     try {
                         parameteredClass = Class.forName(parameteredTypeName);
                     } catch (ClassNotFoundException e) {
-                        PluginUtilsRuntimeException ex =new PluginUtilsRuntimeException(e.getMessage(), e);
+                        PluginUtilsRuntimeException ex = new PluginUtilsRuntimeException(e.getMessage(), e);
                         LOGGER.error(ex.getMessage());
                         throw ex;
                     }
-                    if(!isAPrimitiveType(parameteredClass).isPresent()) {
+                    if (!isAPrimitiveType(parameteredClass).isPresent()) {
                         hierarchicalParentUsedTypes.add(parameteredTypeName);
                     }
                 } else {
