@@ -2,4 +2,5 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 fr.cnes.regards.framework.microservice.autoconfigure.MicroserviceAutoConfiguration,\
 fr.cnes.regards.framework.microservice.rest.ManagerController,\
 fr.cnes.regards.framework.microservice.rest.MaintenanceController,\
-fr.cnes.regards.framework.microservice.rest.MaintenanceExceptionManager
+fr.cnes.regards.framework.microservice.rest.MaintenanceExceptionManager,\
+fr.cnes.regards.framework.microservice.rest.MicroserviceReadyController

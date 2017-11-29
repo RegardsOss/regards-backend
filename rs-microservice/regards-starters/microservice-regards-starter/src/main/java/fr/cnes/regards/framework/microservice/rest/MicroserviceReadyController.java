@@ -29,7 +29,7 @@ public class MicroserviceReadyController {
     /**
      * List of all {@link IModuleReady} instantiated
      */
-    @Autowired
+    @Autowired(required = false)
     private List<IModuleReady> moduleReadies;
 
     @RequestMapping(method = RequestMethod.GET)
