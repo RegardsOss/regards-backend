@@ -238,12 +238,22 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
         ci.getRepresentationInformation().setSemantic(semantic);
     }
 
+    /**
+     * Add sofware Environment property with the given parameters
+     * @param key
+     * @param value
+     */
     public void addSoftwareEnvironmentProperty(String key, Object value) {
         Assert.hasLength(key, "Software environment information key is required");
         Assert.notNull(value, "Software environment information value is required");
         ci.getRepresentationInformation().getEnvironmentDescription().getSoftwareEnvironment().put(key, value);
     }
 
+    /**
+     * Add hardware environment property with the given parameters
+     * @param key
+     * @param value
+     */
     public void addHardwareEnvironmentProperty(String key, Object value) {
         Assert.hasLength(key, "Hardware environment information key is required");
         Assert.notNull(value, "Hardware environment information value is required");

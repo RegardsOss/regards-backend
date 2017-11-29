@@ -37,67 +37,127 @@ import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgor
  */
 public class OAISDataObject {
 
+    /**
+     * The regards data type
+     */
     @NotNull(message = "REGARDS data type is required to qualify the related data file")
     private DataType regardsDataType;
 
+    /**
+     * The url
+     */
     @NotNull(message = "Data file URL is required")
     private URL url;
 
+    /**
+     * The file name
+     */
     private String filename;
 
+    /**
+     * The checksum algorithm
+     */
     @NotBlank(message = "Data file checksum algorithm is required")
     @HandledMessageDigestAlgorithm
     private String algorithm;
 
+    /**
+     * The checksum
+     */
     @NotBlank(message = "Data file checksum is required")
     private String checksum;
 
+    /**
+     * The file size
+     */
     private Long fileSize;
 
+    /**
+     * @return the file name
+     */
     public String getFilename() {
         return filename;
     }
 
+    /**
+     * Set the file name
+     * @param filename
+     */
     public void setFilename(String filename) {
         this.filename = filename;
     }
 
+    /**
+     * @return the regards data type
+     */
     public DataType getRegardsDataType() {
         return regardsDataType;
     }
 
+    /**
+     * Set the regards data type
+     * @param regardsDataType
+     */
     public void setRegardsDataType(DataType regardsDataType) {
         this.regardsDataType = regardsDataType;
     }
 
+    /**
+     * @return the url
+     */
     public URL getUrl() {
         return url;
     }
 
+    /**
+     * Set the url
+     * @param url
+     */
     public void setUrl(URL url) {
         this.url = url;
     }
 
+    /**
+     * @return the checksum algorithm
+     */
     public String getAlgorithm() {
         return algorithm;
     }
 
+    /**
+     * Set the checksum algorithm
+     * @param algorithm
+     */
     public void setAlgorithm(String algorithm) {
         this.algorithm = algorithm;
     }
 
+    /**
+     * @return the checksum
+     */
     public String getChecksum() {
         return checksum;
     }
 
+    /**
+     * Set the checksum
+     * @param checksum
+     */
     public void setChecksum(String checksum) {
         this.checksum = checksum;
     }
 
+    /**
+     * @return the file size
+     */
     public Long getFileSize() {
         return fileSize;
     }
 
+    /**
+     * Set the file size
+     * @param fileSize
+     */
     public void setFileSize(Long fileSize) {
         this.fileSize = fileSize;
     }

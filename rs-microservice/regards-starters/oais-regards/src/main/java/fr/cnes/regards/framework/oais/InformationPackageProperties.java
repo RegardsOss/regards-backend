@@ -1,10 +1,9 @@
 package fr.cnes.regards.framework.oais;
 
-import java.util.Map;
-import java.util.Set;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -12,20 +11,34 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
+ * Information package main structure
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class InformationPackageProperties {
 
+    /**
+     * The content informations
+     */
     @NotEmpty(message = "At least one content information is required")
     @Valid
     private Set<ContentInformation> contentInformations;
 
+    /**
+     * The preservation and description information
+     */
     @NotNull(message = "Preservation description information is required")
     @Valid
     private PreservationDescriptionInformation pdi = new PreservationDescriptionInformation();
 
+    /**
+     * The descriptive information
+     */
     private Map<String, Object> descriptiveInformation;
 
+    /**
+     * @return the content information
+     */
     public Set<ContentInformation> getContentInformations() {
         if (contentInformations == null) {
             contentInformations = Sets.newHashSet();
@@ -33,14 +46,24 @@ public class InformationPackageProperties {
         return contentInformations;
     }
 
+    /**
+     * @return the preservation and description information
+     */
     public PreservationDescriptionInformation getPdi() {
         return pdi;
     }
 
+    /**
+     * Set the preservation and description information
+     * @param pPdi
+     */
     public void setPdi(PreservationDescriptionInformation pPdi) {
         pdi = pPdi;
     }
 
+    /**
+     * @return the descriptive information
+     */
     public Map<String, Object> getDescriptiveInformation() {
         if (descriptiveInformation == null) {
             descriptiveInformation = Maps.newHashMap();

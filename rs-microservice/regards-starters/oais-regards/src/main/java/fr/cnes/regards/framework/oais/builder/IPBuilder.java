@@ -19,8 +19,6 @@
 package fr.cnes.regards.framework.oais.builder;
 
 import javax.annotation.Nullable;
-import java.net.URL;
-import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 
@@ -34,7 +32,6 @@ import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
-import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 
 /**
@@ -88,6 +85,10 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
         }
     }
 
+    /**
+     * Constructor using an existing information package so it can be updated
+     * @param toBeUpdated
+     */
     public IPBuilder(T toBeUpdated) {
         Assert.notNull(toBeUpdated, "Given information package cannot be null!");
         this.ip = toBeUpdated;
@@ -99,6 +100,10 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
         return build(ipPropertiesBuilder.build());
     }
 
+    /**
+     * @param properties
+     * @return the built information package thanks to the given properties
+     */
     public T build(InformationPackageProperties properties) {
         ip.setProperties(properties);
         return ip;
@@ -165,118 +170,270 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
         ipPropertiesBuilder.addDescriptiveInformation(key, value);
     }
 
+    /**
+     * Add tags to the information package
+     * @param tags
+     */
     public void addTags(String... tags) {
         ipPropertiesBuilder.addTags(tags);
     }
 
+    /**
+     * Add contect information to the information package
+     * @param key
+     * @param value
+     */
     public void addContextInformation(String key, Object value) {
         ipPropertiesBuilder.addContextInformation(key, value);
     }
 
+    /**
+     * Add reference information to the information package
+     * @param key
+     * @param value
+     */
     public void addReferenceInformation(String key, String value) {
         ipPropertiesBuilder.addReferenceInformation(key, value);
     }
 
+    /**
+     * Add additional provenance information to the information package
+     * @param key
+     * @param value
+     */
     public void addAdditionalProvenanceInformation(String key, Object value) {
         ipPropertiesBuilder.addAdditionalProvenanceInformation(key, value);
     }
 
+    /**
+     * Set the facility to the information package
+     * @param facility
+     */
     public void setFacility(String facility) {
         ipPropertiesBuilder.setFacility(facility);
     }
 
+    /**
+     * Set the instrument to the information package
+     * @param instrument
+     */
     public void setInstrument(String instrument) {
         ipPropertiesBuilder.setInstrument(instrument);
     }
 
+    /**
+     * Set the filter to the information package
+     * @param filter
+     */
     public void setFilter(String filter) {
         ipPropertiesBuilder.setFilter(filter);
     }
 
+    /**
+     * Set the detector to the information package
+     * @param detector
+     */
     public void setDetector(String detector) {
         ipPropertiesBuilder.setDetector(detector);
     }
 
+    /**
+     * Set the proposal to the information package
+     * @param proposal
+     */
     public void setProposal(String proposal) {
         ipPropertiesBuilder.setProposal(proposal);
     }
 
+    /**
+     * Add provenance information events to the information package
+     * @param events
+     */
     public void addProvenanceInformationEvents(Event... events) {
         ipPropertiesBuilder.addProvenanceInformationEvents(events);
     }
 
+    /**
+     * Add a provenance information event to the information package thanks to the given parameters
+     * @param type
+     * @param comment
+     * @param date
+     */
     public void addProvenanceInformationEvent(@Nullable String type, String comment, OffsetDateTime date) {
         ipPropertiesBuilder.addProvenanceInformationEvent(type, comment, date);
     }
 
+    /**
+     * Add a provenance information event to the information package thanks to the given parameters
+     * @param comment
+     * @param date
+     */
     public void addProvenanceInformationEvent(String comment, OffsetDateTime date) {
         ipPropertiesBuilder.addProvenanceInformationEvent(comment, date);
     }
 
+    /**
+     * Add a provenance information event to the information package thanks to the given parameter
+     * @param comment
+     */
     public void addProvenanceInformationEvent(String comment) {
         ipPropertiesBuilder.addProvenanceInformationEvent(comment);
     }
 
+    /**
+     * Add fixity information to the information package thanks to the given parameters
+     * @param key
+     * @param value
+     */
     public void addFixityInformation(String key, Object value) {
         ipPropertiesBuilder.addFixityInformation(key, value);
     }
 
+    /**
+     * Set the access right informtaion to the information package thanks to the given parameters
+     * @param licence
+     * @param dataRights
+     * @param publicReleaseDate
+     */
     public void setAccessRightInformation(String licence, String dataRights,
             @Nullable OffsetDateTime publicReleaseDate) {
         ipPropertiesBuilder.setAccessRightInformation(licence, dataRights, publicReleaseDate);
     }
 
+    /**
+     * Set access right information to the information package thanks to the given parameter
+     * @param dataRights
+     */
     public void setAccessRightInformation(String dataRights) {
         ipPropertiesBuilder.setAccessRightInformation(dataRights);
     }
 
+    /**
+     * Set the data object to the underlying content information builder thanks to the given parameters.
+     * @param dataType
+     * @param url
+     * @param filename
+     * @param algorithm
+     * @param checksum
+     * @param fileSize
+     */
     public void setDataObject(DataType dataType, URL url, String filename, String algorithm, String checksum,
             Long fileSize) {
         ipPropertiesBuilder.setDataObject(dataType, url, filename, algorithm, checksum, fileSize);
     }
 
+    /**
+     * Set the data object to the underlying content information builder thanks to the given parameters.
+     * @param dataType
+     * @param filename
+     * @param algorithm
+     * @param checksum
+     * @param fileSize
+     */
     public void setDataObject(DataType dataType, Path filePath, String filename, String algorithm, String checksum,
             Long fileSize) {
         ipPropertiesBuilder.setDataObject(dataType, filePath, filename, algorithm, checksum, fileSize);
     }
 
+    /**
+     * Set the data object to the underlying content information builder thanks to the given parameters.
+     * @param dataType
+     * @param url
+     * @param filename
+     * @param checksum
+     * @param fileSize
+     */
     public void setDataObject(DataType dataType, URL url, String filename, String checksum, Long fileSize) {
         ipPropertiesBuilder.setDataObject(dataType, url, filename, checksum, fileSize);
     }
 
+    /**
+     * Set the data object to the underlying content information builder thanks to the given parameters.
+     * @param dataType
+     * @param filename
+     * @param checksum
+     * @param fileSize
+     */
     public void setDataObject(DataType dataType, Path filePath, String filename, String checksum, Long fileSize) {
         ipPropertiesBuilder.setDataObject(dataType, filePath, filename, checksum, fileSize);
     }
 
+    /**
+     * Set the data object to the underlying content information builder thanks to the given parameters.
+     * @param dataType
+     * @param url
+     * @param algorithm
+     * @param checksum
+     */
     public void setDataObject(DataType dataType, URL url, String algorithm, String checksum) {
         ipPropertiesBuilder.setDataObject(dataType, url, algorithm, checksum);
     }
 
+    /**
+     * Set the data object to the underlying content information builder thanks to the given parameters.
+     * @param dataType
+     * @param algorithm
+     * @param checksum
+     */
     public void setDataObject(DataType dataType, Path filePath, String algorithm, String checksum) {
         ipPropertiesBuilder.setDataObject(dataType, filePath, algorithm, checksum);
     }
 
+    /**
+     * Set the data object to the underlying content information builder thanks to the given parameters.
+     * @param dataType
+     * @param url
+     * @param checksum
+     */
     public void setDataObject(DataType dataType, URL url, String checksum) {
         ipPropertiesBuilder.setDataObject(dataType, url, checksum);
     }
 
+    /**
+     * Set the data object to the underlying content information builder thanks to the given parameters.
+     * @param dataType
+     * @param checksum
+     */
     public void setDataObject(DataType dataType, Path filePath, String checksum) {
         ipPropertiesBuilder.setDataObject(dataType, filePath, checksum);
     }
 
+    /**
+     * Set the syntax to the information package thanks to the given parameters
+     * @param mimeName
+     * @param mimeDescription
+     * @param mimeType
+     */
     public void setSyntax(String mimeName, String mimeDescription, String mimeType) {
         ipPropertiesBuilder.setSyntax(mimeName, mimeDescription, mimeType);
     }
 
+    /**
+     * Set syntax and semantic to the information package thanks to the given parameters
+     * @param mimeName
+     * @param mimeDescription
+     * @param mimeType
+     * @param semanticDescription
+     */
     public void setSyntaxAndSemantic(String mimeName, String mimeDescription, String mimeType,
             String semanticDescription) {
         ipPropertiesBuilder.setSyntaxAndSemantic(mimeName, mimeDescription, mimeType, semanticDescription);
     }
 
+    /**
+     * Add software environment property to the information package thanks to the given parameters
+     * @param key
+     * @param value
+     */
     public void addSoftwareEnvironmentProperty(String key, Object value) {
         ipPropertiesBuilder.addSoftwareEnvironmentProperty(key, value);
     }
 
+    /**
+     * Add hardware environment property to the information package thanks to the given parameters
+     * @param key
+     * @param value
+     */
     public void addHardwareEnvironmentProperty(String key, Object value) {
         ipPropertiesBuilder.addHardwareEnvironmentProperty(key, value);
     }
@@ -330,6 +487,10 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
         addEvent(null, comment, OffsetDateTime.now());
     }
 
+    /**
+     * Remove tags from the information package
+     * @param tags
+     */
     public void removeTags(String... tags) {
         ipPropertiesBuilder.removeTags(tags);
     }

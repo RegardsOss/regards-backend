@@ -164,10 +164,17 @@ public class ResourceMapping {
         authorizedRoles.add(pRole);
     }
 
+    /**
+     * @return the controller simple name
+     */
     public String getControllerSimpleName() {
         return controllerSimpleName;
     }
 
+    /**
+     * Set the controller simple name
+     * @param pControllerSimpleName
+     */
     public void setControllerSimpleName(String pControllerSimpleName) {
         controllerSimpleName = pControllerSimpleName;
     }

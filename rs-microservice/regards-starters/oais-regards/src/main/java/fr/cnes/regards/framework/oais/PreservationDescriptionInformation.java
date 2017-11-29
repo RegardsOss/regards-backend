@@ -55,14 +55,23 @@ public class PreservationDescriptionInformation {
     @NotNull
     private final AccessRightInformation accessRightInformation = new AccessRightInformation();
 
+    /**
+     * @return the reference information
+     */
     public Map<String, String> getReferenceInformation() {
         return referenceInformation;
     }
 
+    /**
+     * @return the context information
+     */
     public Map<String, Object> getContextInformation() {
         return contextInformation;
     }
 
+    /**
+     * @return the tags
+     */
     public Collection<String> getTags() {
         @SuppressWarnings("unchecked") Collection<String> tags = (Collection<String>) getContextInformation()
                 .get(CONTEXT_INFO_TAGS_KEY);
@@ -73,18 +82,30 @@ public class PreservationDescriptionInformation {
         return tags;
     }
 
+    /**
+     * @return the access right information
+     */
     public AccessRightInformation getAccessRightInformation() {
         return accessRightInformation;
     }
 
+    /**
+     * @return the provenance information
+     */
     public ProvenanceInformation getProvenanceInformation() {
         return provenanceInformation;
     }
 
+    /**
+     * @return the fixity information
+     */
     public Map<String, Object> getFixityInformation() {
         return fixityInformation;
     }
 
+    /**
+     * @return the access right information
+     */
     public AccessRightInformation getAccesRightInformation() {
         return accessRightInformation;
     }

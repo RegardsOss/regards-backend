@@ -42,6 +42,9 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
     // Thread safe tenant holder for forced tenant
     private static final ThreadLocal<String> tenantHolder = new ThreadLocal<>();
 
+    /**
+     * The tenant
+     */
     private static final String TENANT = "tenant";
 
     /**

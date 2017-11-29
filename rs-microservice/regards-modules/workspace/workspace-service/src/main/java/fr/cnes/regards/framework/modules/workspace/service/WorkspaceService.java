@@ -144,6 +144,18 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
         return getMonitoringInformation(microserviceWorkspace);
     }
 
+    private WorkspaceMonitoringInformation getMonitoringInformation(Path path) throws IOException {
+        FileStore fileStore = Files.getFileStore(path);
+        long totalSpace = fileStore.getTotalSpace();
+        long usableSpace = fileStore.getUsableSpace();
+        long usedSpace = totalSpace - usableSpace;
+        return new WorkspaceMonitoringInformation(fileStore.name(),
+                                                  totalSpace,
+                                                  usedSpace,
+                                                  usableSpace,
+                                                  microserviceWorkspace.toString());
+    }
+
     @Override
     public Path getMicroserviceWorkspace() {
         return microserviceWorkspace;
@@ -178,17 +190,5 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
                                            "Error during workspace monitoring",
                                            DefaultRole.INSTANCE_ADMIN);
         }
-    }
-
-    private WorkspaceMonitoringInformation getMonitoringInformation(Path path) throws IOException {
-        FileStore fileStore = Files.getFileStore(path);
-        long totalSpace = fileStore.getTotalSpace();
-        long usableSpace = fileStore.getUsableSpace();
-        long usedSpace = totalSpace - usableSpace;
-        return new WorkspaceMonitoringInformation(fileStore.name(),
-                                                  totalSpace,
-                                                  usedSpace,
-                                                  usableSpace,
-                                                  microserviceWorkspace.toString());
     }
 }

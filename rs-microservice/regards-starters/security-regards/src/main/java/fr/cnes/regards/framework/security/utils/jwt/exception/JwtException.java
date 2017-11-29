@@ -26,6 +26,10 @@ public class JwtException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Constructor setting the message exception thanks to the parameter
+     * @param pClaimKey
+     */
     public JwtException(String pClaimKey) {
         super("Missing " + pClaimKey);
     }

@@ -92,12 +92,19 @@ import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
  */
 public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformation> {
 
+    /**
+     * Preservation and description information
+     */
     private final PreservationDescriptionInformation pdi;
 
     public PDIBuilder() {
         this.pdi = new PreservationDescriptionInformation();
     }
 
+    /**
+     * Constructor using the given preservation and description information as a base
+     * @param pdi
+     */
     public PDIBuilder(PreservationDescriptionInformation pdi) {
         this.pdi = pdi;
     }
@@ -123,6 +130,10 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
         }
     }
 
+    /**
+     * Remove tags from the information package
+     * @param tags
+     */
     public void removeTags(String... tags) {
         Collection<String> existingTags = (Collection<String>) pdi
                 .getContextInformation().get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);

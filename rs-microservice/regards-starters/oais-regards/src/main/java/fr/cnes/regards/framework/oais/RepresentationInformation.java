@@ -38,6 +38,9 @@ public class RepresentationInformation {
     @Valid
     private Syntax syntax;
 
+    /**
+     * The environment description
+     */
     private EnvironmentDescription environmentDescription;
 
     public Syntax getSyntax() {
@@ -56,10 +59,17 @@ public class RepresentationInformation {
         this.semantic = semantic;
     }
 
+    /**
+     * @return the environment description
+     */
     public EnvironmentDescription getEnvironmentDescription() {
         return environmentDescription;
     }
 
+    /**
+     * Set the environment description
+     * @param environmentDescription
+     */
     public void setEnvironmentDescription(EnvironmentDescription environmentDescription) {
         this.environmentDescription = environmentDescription;
     }
