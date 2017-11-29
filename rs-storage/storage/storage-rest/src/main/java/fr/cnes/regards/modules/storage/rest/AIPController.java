@@ -351,7 +351,7 @@ public class AIPController implements IResourceController<AIP> {
                                 MethodParamFactory.build(OffsetDateTime.class));
         resourceService.addLink(resource,
                                 this.getClass(),
-                                "retrieveAIP",
+                                "retrieveAip",
                                 LinkRels.SELF,
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
         resourceService.addLink(resource,
