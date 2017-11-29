@@ -53,23 +53,44 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 @ConditionalOnMissingBean(value = IWorkspaceService.class)
 public class WorkspaceService implements IWorkspaceService, ApplicationListener<ContextRefreshedEvent> {
 
+    /**
+     * Workspace service logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(WorkspaceService.class);
 
+    /**
+     * {@link IRuntimeTenantResolver} instance
+     */
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    /**
+     * {@link IWorkspaceNotifier} instance
+     */
     @Autowired
     private IWorkspaceNotifier notifier;
 
+    /**
+     * The workspace configured path
+     */
     @Value("${regards.workspace}")
     private String workspacePath;
 
+    /**
+     * The workspace occupation threshold at which point notification should be sent
+     */
     @Value("${regards.workspace.occupation.threshold:90}")
     private Integer workspaceOccupationThreshold;
 
+    /**
+     * the spring application name
+     */
     @Value("${spring.application.name}")
     private String springApplicationName;
 
+    /**
+     * The microservice workspace path
+     */
     private Path microserviceWorkspace;
 
     @Override

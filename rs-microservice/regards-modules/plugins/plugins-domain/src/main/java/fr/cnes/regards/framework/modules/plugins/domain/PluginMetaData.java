@@ -176,6 +176,10 @@ public class PluginMetaData {
         return url;
     }
 
+    /**
+     * Set the url
+     * @param pUrl
+     */
     public void setUrl(String pUrl) {
         url = pUrl;
     }
@@ -187,6 +191,10 @@ public class PluginMetaData {
         return contact;
     }
 
+    /**
+     * Set the contact
+     * @param pContact
+     */
     public void setContact(String pContact) {
         contact = pContact;
     }
@@ -198,22 +206,40 @@ public class PluginMetaData {
         return owner;
     }
 
+    /**
+     * Set the owner
+     * @param pOwner
+     */
     public void setOwner(String pOwner) {
         owner = pOwner;
     }
 
+    /**
+     * @return the licence
+     */
     public String getLicence() {
         return licence;
     }
 
+    /**
+     * Set the licence
+     * @param pLicence
+     */
     public void setLicence(String pLicence) {
         licence = pLicence;
     }
 
+    /**
+     * @return the plugin parameter types
+     */
     public List<PluginParameterType> getParameters() {
         return parameters;
     }
 
+    /**
+     * Set the plugin parameter types
+     * @param pParameters
+     */
     public void setParameters(List<PluginParameterType> pParameters) {
         if (pParameters == null) {
             this.parameters.clear();

@@ -17,6 +17,9 @@ public class AbstractPluginConfEvent {
      */
     private PluginServiceAction action;
 
+    /**
+     * The plugin types the plugin configuration is configuring
+     */
     private Set<String> pluginTypes;
 
     protected AbstractPluginConfEvent(Long pPluginConfId, PluginServiceAction pAction, Set<String> pPluginTypes) {
@@ -30,26 +33,47 @@ public class AbstractPluginConfEvent {
         this(null, null, null);
     }
 
+    /**
+     * @return the plugin configuration id
+     */
     public Long getPluginConfId() {
         return pluginConfId;
     }
 
+    /**
+     * Set the plugin configuration id
+     * @param pPluginConfId
+     */
     public void setPluginConfId(Long pPluginConfId) {
         pluginConfId = pPluginConfId;
     }
 
+    /**
+     * @return the action reflected by this event
+     */
     public PluginServiceAction getAction() {
         return action;
     }
 
+    /**
+     * Set the action this event is reflecting
+     * @param pAction
+     */
     public void setAction(PluginServiceAction pAction) {
         action = pAction;
     }
 
+    /**
+     * @return the plugin types
+     */
     public Set<String> getPluginTypes() {
         return pluginTypes;
     }
 
+    /**
+     * Set the plugin types
+     * @param pPluginTypes
+     */
     public void setPluginTypes(Set<String> pPluginTypes) {
         pluginTypes = pPluginTypes;
     }

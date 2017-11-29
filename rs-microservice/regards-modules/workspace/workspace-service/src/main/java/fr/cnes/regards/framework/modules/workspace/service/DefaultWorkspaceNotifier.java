@@ -14,7 +14,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 public class DefaultWorkspaceNotifier implements IWorkspaceNotifier {
 
     @Override
-    public void sendErrorNotification(String springApplicationName, String message, String title, DefaultRole role) {
+    public void sendErrorNotification(String sender, String message, String title, DefaultRole role) {
         //does nothing
     }
 
