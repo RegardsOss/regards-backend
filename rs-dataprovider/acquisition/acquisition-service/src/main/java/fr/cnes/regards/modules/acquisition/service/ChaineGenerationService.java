@@ -178,7 +178,7 @@ public class ChaineGenerationService implements IChainGenerationService {
         processService.save(ProcessGenerationBuilder.build(chain.getSession()).withChain(chain)
                 .withStartDate(OffsetDateTime.now()).get());
 
-        LOGGER.info("[{}] a new session is created", chain.getSession());
+        LOGGER.info("[{}] a new session is created : {}", chain.getLabel(), chain.getSession());
 
         // Create a ScanJob
         JobInfo acquisition = new JobInfo();

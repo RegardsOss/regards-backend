@@ -19,8 +19,9 @@
 
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.time.OffsetDateTime;
+
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
@@ -45,30 +46,20 @@ public class ScheduledStartChainIT extends AbstractAcquisitionIT {
     @Value("${regards.acquisition.process.run.chains.delay}")
     private String scheduledTasksDelay;
 
-    @Before
-    public void init() {
-    }
-
     @Test
     public void startScheduledChainsAnyChainActive() throws InterruptedException {
+        chain.setLastDateActivation(null);
         chain.setActive(false);
+        chain.setRunning(false);
         chainService.save(chain);
 
         Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(0, chainService.findByActiveTrueAndRunningFalse().size());
         Assert.assertFalse(chainService.retrieve(chain.getId()).isActive());
         Assert.assertFalse(chainService.retrieve(chain.getId()).isRunning());
-        Assert.assertEquals(0,
-                            productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING,
-                                                                   ProductStatus.COMPLETED, ProductStatus.FINISHED)
-                                    .size());
 
         Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
 
-        Assert.assertEquals(0,
-                            productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING,
-                                                                   ProductStatus.COMPLETED, ProductStatus.FINISHED)
-                                    .size());
         Assert.assertEquals(0, chainService.findByActiveTrueAndRunningFalse().size());
         Assert.assertFalse(chainService.retrieve(chain.getId()).isActive());
         Assert.assertFalse(chainService.retrieve(chain.getId()).isRunning());
@@ -80,7 +71,61 @@ public class ScheduledStartChainIT extends AbstractAcquisitionIT {
     }
 
     @Test
+    public void startScheduledChainsChainAlreadyRunning() throws InterruptedException {
+        chain.setLastDateActivation(null);
+        chain.setActive(true);
+        chain.setRunning(true);
+        chainService.save(chain);
+
+        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(0, chainService.findByActiveTrueAndRunningFalse().size());
+        Assert.assertTrue(chainService.retrieve(chain.getId()).isActive());
+        Assert.assertTrue(chainService.retrieve(chain.getId()).isRunning());
+
+        Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
+
+        Assert.assertEquals(0, chainService.findByActiveTrueAndRunningFalse().size());
+        Assert.assertTrue(chainService.retrieve(chain.getId()).isActive());
+        Assert.assertTrue(chainService.retrieve(chain.getId()).isRunning());
+
+        Assert.assertTrue(runnings.isEmpty());
+        Assert.assertTrue(succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
+    }
+
+    @Test
+    public void startScheduledChainsLastAcqDateTooEarlier() throws InterruptedException {
+        chain.setLastDateActivation(OffsetDateTime.now().minusMinutes(10));
+        chain.setPeriodicity(610L);
+        chain.setRunning(false);
+        chain.setActive(true);
+        chainService.save(chain);
+
+        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(1, chainService.findByActiveTrueAndRunningFalse().size());
+        Assert.assertTrue(chainService.retrieve(chain.getId()).isActive());
+        Assert.assertFalse(chainService.retrieve(chain.getId()).isRunning());
+
+        Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
+
+        Assert.assertEquals(1, chainService.findByActiveTrueAndRunningFalse().size());
+        Assert.assertTrue(chainService.retrieve(chain.getId()).isActive());
+        Assert.assertFalse(chainService.retrieve(chain.getId()).isRunning());
+
+        Assert.assertTrue(runnings.isEmpty());
+        Assert.assertTrue(succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
+    }
+
+    @Test
     public void startScheduledChainsOneChainActive() throws InterruptedException {
+        chain.setLastDateActivation(null);
+        chain.setRunning(false);
+        chain.setActive(true);
+        chainService.save(chain);
+
         Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(1, chainService.findByActiveTrueAndRunningFalse().size());
         Assert.assertTrue(chainService.retrieve(chain.getId()).isActive());

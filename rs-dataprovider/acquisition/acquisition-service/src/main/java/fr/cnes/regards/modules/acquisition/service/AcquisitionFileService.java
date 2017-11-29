@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.io.File;
 import java.util.List;
 import java.util.Set;
 
@@ -29,7 +28,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
@@ -50,12 +48,28 @@ public class AcquisitionFileService implements IAcquisitionFileService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionFileService.class);
 
+    /**
+     * {@link IAcquisitionFileRepository} bean
+     */
     private final IAcquisitionFileRepository acqfileRepository;
 
+    /**
+     * {@link IChainGenerationService} bean
+     */
     private final IChainGenerationService chainGenerationService;
 
+    /**
+     * {@link IProductService} bean
+     */
     private final IProductService productService;
 
+    /**
+     * Constructor with the bean method's member as pamaeters
+     * 
+     * @param acqFileRepository a {@link IAcquisitionFileRepository} bean
+     * @param prService a {@link ProductService} bean 
+     * @param chainGenService a {@link ChaineGenerationService} bean
+     */
     public AcquisitionFileService(IAcquisitionFileRepository acqFileRepository, IProductService prService,
             IChainGenerationService chainGenService) {
         super();

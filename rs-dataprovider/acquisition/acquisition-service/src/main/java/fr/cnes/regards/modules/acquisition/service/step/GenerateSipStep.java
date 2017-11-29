@@ -119,8 +119,8 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
             // TODO CMZ attention à ne calculer le SIP que si c'est nécessaire
             // si pas saved dans ingest, mais avec le SIP déjà calculé, il faut essayer de l'envoyer sans le recalculer
             // Calc the SIP and save the Product
-            productService.setSipAndSave(product, generateSipPlugin
-                    .runPlugin(this.acqFiles, Optional.of(chainGeneration.getDataSet())));
+            product.setSip(generateSipPlugin.runPlugin(this.acqFiles, Optional.of(chainGeneration.getDataSet())));
+            productService.save(product);
 
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);

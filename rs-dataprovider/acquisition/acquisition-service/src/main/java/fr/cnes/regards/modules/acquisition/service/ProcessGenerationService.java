@@ -39,11 +39,18 @@ import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
 @MultitenantTransactional
 @Service
 public class ProcessGenerationService implements IProcessGenerationService {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(ProcessGenerationService.class);
 
+    /**
+     * {@link IProcessGenerationRepository} bean
+     */
     private final IProcessGenerationRepository processRepository;
 
+    /**
+     * Constructor with the bean method's member as parameter
+     * @param repository a {@link IProcessGenerationRepository} bean
+     */
     public ProcessGenerationService(IProcessGenerationRepository repository) {
         super();
         this.processRepository = repository;
@@ -95,7 +102,8 @@ public class ProcessGenerationService implements IProcessGenerationService {
     public void updateProcessGeneration(String session, int nbSipCreated, int nbSipStored, int nbSipError) {
         ProcessGeneration processGeneration = this.findBySession(session);
         if (processGeneration != null) {
-            LOG.info("[{}] add nb SIP in process : created:{} - stored:{} - error:{}",session, nbSipCreated, nbSipStored, nbSipError);
+            LOG.info("[{}] add nb SIP in process : created:{} - stored:{} - error:{}", session, nbSipCreated,
+                     nbSipStored, nbSipError);
             processGeneration.setNbSipCreated(processGeneration.getNbSipCreated() + nbSipCreated);
             processGeneration.setNbSipStored(processGeneration.getNbSipStored() + nbSipStored);
             processGeneration.setNbSipError(processGeneration.getNbSipError() + nbSipError);
@@ -103,7 +111,7 @@ public class ProcessGenerationService implements IProcessGenerationService {
             if (processGeneration.getNbSipCreated() == processGeneration.getNbSipStored()
                     + processGeneration.getNbSipError()) {
                 processGeneration.setStopDate(OffsetDateTime.now());
-                LOG.info("[{}] set stop date in process : {}",processGeneration.getStopDate().toString());
+                LOG.info("[{}] set stop date in process : {}", processGeneration.getStopDate().toString());
             }
 
             this.save(processGeneration);

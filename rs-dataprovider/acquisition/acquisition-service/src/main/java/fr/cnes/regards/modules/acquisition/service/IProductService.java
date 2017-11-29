@@ -110,12 +110,12 @@ public interface IProductService {
     Product linkAcquisitionFileToProduct(String session, AcquisitionFile acqFile, String productName,
             MetaProduct metaProduct, String ingestChain);
 
-    /**
-     * Set the {@link SIP} to the {@link Product} and ppersist it.
-     * @param product the current {@link Product}
-     * @param sip the {@link SIP}
-     */
-    void setSipAndSave(Product product, SIP sip);
+//    /**
+//     * Set the {@link SIP} to the {@link Product} and ppersist it.
+//     * @param product the current {@link Product}
+//     * @param sip the {@link SIP}
+//     */
+//    void setSipAndSave(Product product, SIP sip);
     
 //    /**
 //     * Mark the {@link Product} as send to ingest and persists it.

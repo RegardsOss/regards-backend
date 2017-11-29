@@ -26,7 +26,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -48,9 +47,6 @@ import fr.cnes.regards.modules.acquisition.service.step.AbstractAcquisitionIT;
 @ActiveProfiles({ "test", "disableDataProviderTask" })
 @DirtiesContext
 public class ScheduledSIPBulkRequestIT extends AbstractAcquisitionIT {
-
-    @Value("${regards.acquisition.process.new.sip.ingest.delay}")
-    private String scheduledIngestSipDelay;
 
     @Autowired
     private IProductBulkRequestService productBulkRequestService;

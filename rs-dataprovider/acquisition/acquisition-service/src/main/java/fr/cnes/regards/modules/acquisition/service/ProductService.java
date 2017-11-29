@@ -34,7 +34,6 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
-import fr.cnes.regards.modules.ingest.domain.SIP;
 
 /**
  * 
@@ -44,11 +43,16 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
 @MultitenantTransactional
 @Service
 public class ProductService implements IProductService {
-    
-    private static final Logger LOG = LoggerFactory.getLogger(ProductService.class);
 
+    /**
+     * A {@link IProductRepository} bean
+     */
     private final IProductRepository productRepository;
 
+    /**
+     * Constructor with the bean method's member as parameters
+     * @param repository a {@link IProductRepository} bean
+     */
     public ProductService(IProductRepository repository) {
         this.productRepository = repository;
     }
@@ -171,12 +175,12 @@ public class ProductService implements IProductService {
         return currentProduct;
     }
     
-    @Override
-    public void setSipAndSave(Product product, SIP sip) {
-        product.setSip(sip);
-        this.save(product);
-    }
-    
+//    @Override
+//    public void setSipAndSave(Product product, SIP sip) {
+//        product.setSip(sip);
+//        this.save(product);
+//    }
+//    
 //    @Override
 //    public void setProductAsSend(String sipId) {
 //        Product product = this.retrieve(sipId);
