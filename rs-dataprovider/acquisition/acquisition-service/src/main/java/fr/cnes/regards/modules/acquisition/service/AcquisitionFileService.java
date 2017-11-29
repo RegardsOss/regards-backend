@@ -18,18 +18,26 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.io.File;
 import java.util.List;
+import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.ErrorType;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
  * 
@@ -40,11 +48,20 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 @Service
 public class AcquisitionFileService implements IAcquisitionFileService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionFileService.class);
+
     private final IAcquisitionFileRepository acqfileRepository;
 
-    public AcquisitionFileService(IAcquisitionFileRepository repository) {
+    private final IChainGenerationService chainGenerationService;
+
+    private final IProductService productService;
+
+    public AcquisitionFileService(IAcquisitionFileRepository acqFileRepository, IProductService prService,
+            IChainGenerationService chainGenService) {
         super();
-        this.acqfileRepository = repository;
+        this.acqfileRepository = acqFileRepository;
+        this.chainGenerationService = chainGenService;
+        this.productService = prService;
     }
 
     @Override
@@ -89,6 +106,75 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     @Override
     public List<AcquisitionFile> findByProduct(Product product) {
         return acqfileRepository.findByProduct(product);
+    }
+
+    @Override
+    public void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, ChainGeneration chain) {
+        for (AcquisitionFile af : acquisitionFiles) {
+            List<AcquisitionFile> listAf = this.findByMetaFile(af.getMetaFile());
+
+            if (listAf.contains(af)) {
+                // if the AcquisitionFile already exists in database
+                // update his status and his date acquisition
+                AcquisitionFile afExisting = listAf.get(listAf.indexOf(af));
+                afExisting.setAcqDate(af.getAcqDate());
+                afExisting.setStatus(AcquisitionFileStatus.IN_PROGRESS);
+                this.save(afExisting);
+            } else {
+                af.setStatus(AcquisitionFileStatus.IN_PROGRESS);
+                this.save(af);
+            }
+
+            // for the first activation of the ChainGeneration
+            // set the last activation date with the activation date of the current AcquisitionFile
+            if (chain.getLastDateActivation() == null) {
+                chain.setLastDateActivation(af.getAcqDate());
+            } else {
+                if (af.getAcqDate() != null && chain.getLastDateActivation().isBefore(af.getAcqDate())) {
+                    chain.setLastDateActivation(af.getAcqDate());
+                }
+            }
+        }
+
+        // Save the ChainGeneration the last activation date as been modified 
+        chainGenerationService.save(chain);
+    }
+
+    @Override
+    public void saveAcqFileAndProduct(AcquisitionFile acqFile) {
+        if (acqFile.getProduct() != null) {
+            productService.save(acqFile.getProduct());
+        }
+        this.save(acqFile);
+    }
+
+    @Override
+    public void checkFileStatus(boolean result, String session, AcquisitionFile acqFile, 
+            String productName, MetaProduct metaProduct, String ingestChain)  {
+        if (result) {
+
+            LOGGER.info("Valid file {}", acqFile.getFileName());
+
+            acqFile.setStatus(AcquisitionFileStatus.VALID);
+
+            // Link valid file to product
+            acqFile.setProduct(productService.linkAcquisitionFileToProduct(session, acqFile, productName, metaProduct,
+                                                                           ingestChain));
+
+        } else {
+
+            // TODO CMZ à gérer le cas d'un fichier optionnel INVALID
+            // juste logger que le fichier est invalide, mais le produit peut quand même être bon
+
+            LOGGER.info("Invalid file {}", acqFile.getFileName());
+
+            acqFile.setStatus(AcquisitionFileStatus.INVALID);
+
+            // CMZ : util ? Set error
+            acqFile.getAcquisitionInformations().setError(ErrorType.ERROR);
+        }
+
+        this.saveAcqFileAndProduct(acqFile);
     }
 
 }

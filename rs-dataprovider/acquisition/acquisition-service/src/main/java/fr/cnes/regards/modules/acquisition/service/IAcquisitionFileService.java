@@ -19,14 +19,17 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
  * 
@@ -66,12 +69,43 @@ public interface IAcquisitionFileService {
      * @param metaFile
      * @return a {@link List} of {@link AcquisitionFile}
      */
-    public List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
+    List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
 
-    public List<AcquisitionFile> findByStatus(AcquisitionFileStatus status);
+    List<AcquisitionFile> findByStatus(AcquisitionFileStatus status);
 
-    public List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileStatus status, MetaFile metaFile);
+    List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileStatus status, MetaFile metaFile);
 
-    public List<AcquisitionFile> findByProduct(Product product);
+    List<AcquisitionFile> findByProduct(Product product);
+
+    /**
+     * Set the status of all the {@link AcquisitionFile} to {@link AcquisitionFileStatus#IN_PROGRESS} and set the last acquisition date of the current {@link ChainGeneration}.</br>
+     * If a {@link AcquisitionFile} does not exixt it is creates and persists.
+     *   
+     * Save all the {@link AcquisitionFile} and the {@link ChainGeneration}.
+     * 
+     * @param acquisitionFiles a {@link Set} of {@link AcquisitionFile}
+     * @param chain the current {@link ChainGeneration}
+     */
+    void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, ChainGeneration chain);
+
+    /**
+     * Save the current {@link AcquisitionFile} and the associated {@link Product}.
+     * @param acqFile the current {@link AcquisitionFile}
+     */
+    void saveAcqFileAndProduct(AcquisitionFile acqFile);
+
+    /**
+     * Calculus the {@link AcquisitionFileStatus} of the current {@link AcquisitionFile} and save the {@link AcquisitionFile} and the {@link Product}.<br>
+     * <li>If the result is <code>true</code> the status is set to {@link AcquisitionFileStatus#VALID}</br></br>
+     * <li>If the result is <code>false</code> the status is set to {@link AcquisitionFileStatus#INVALID}</br></br>
+     * @param result <code>true</code> if the check result of current file is correct   
+     * @param session the current session
+     * @param acqFile the current {@link AcquisitionFile}
+     * @param productName the {@link Product} name
+     * @param metaProduct the {@link MetaProduct} of the current {@link Product}
+     * @param ingestChain the current ingest processing chain
+     */
+    void checkFileStatus(boolean result, String session, AcquisitionFile acqFile, String productName,
+            MetaProduct metaProduct, String ingestChain);
 
 }

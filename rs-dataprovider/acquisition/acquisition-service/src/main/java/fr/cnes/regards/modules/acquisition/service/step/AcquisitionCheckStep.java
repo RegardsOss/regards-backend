@@ -40,13 +40,9 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
-import fr.cnes.regards.modules.acquisition.domain.ErrorType;
-import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
-import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
 
@@ -66,9 +62,6 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     @Autowired
     private IAcquisitionFileService acquisitionFileService;
-
-    @Autowired
-    private IProductService productService;
 
     // TODO CMZ à revoir invalidDataFolder peut être différent par chaine de génération
     @Value("${regards.acquisition.invalid-data-folder:#{null}}")
@@ -119,19 +112,20 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
             // for each AcquisitionFile
             for (AcquisitionFile acqFile : inProgressFileList) {
-                File currentFile = acqFile.getFile();
-
                 // execute the check plugin
-                if (checkPlugin.runPlugin(chainGeneration.getLabel(), currentFile, chainGeneration.getDataSet())) {
-                    acqFile.setStatus(AcquisitionFileStatus.VALID);
-                } else {
-                    acqFile.setStatus(AcquisitionFileStatus.INVALID);
-                }
+                boolean result = checkPlugin.runPlugin(chainGeneration.getLabel(), acqFile.getFile(),
+                                                       chainGeneration.getDataSet());
 
                 // Check file status and link the AcquisitionFile to the Product
-                Product product = checkFileStatus(acqFile, currentFile, checkPlugin.getProductName());
+                acquisitionFileService.checkFileStatus(result, chainGeneration.getSession(), acqFile,
+                                                       checkPlugin.getProductName(),
+                                                       process.getChainGeneration().getMetaProduct(),
+                                                       process.getChainGeneration().getMetaProduct().getIngestChain());
 
-                synchronizedDatabase(acqFile, product);
+                if (acqFile.getStatus().equals(AcquisitionFileStatus.INVALID)) {
+                    // Move invalid file in a dedicated directory
+                    moveInvalidFile(acqFile);
+                }
             }
 
         } catch (ModuleException e) {
@@ -140,100 +134,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     }
 
-    private Product checkFileStatus(AcquisitionFile acqFile, File currentFile, String productName)
-            throws ModuleException {
-        Product product = null;
-        if (acqFile.getStatus().equals(AcquisitionFileStatus.VALID)) {
-
-            LOGGER.info("Valid file {}", acqFile.getFileName());
-
-            // Report status
-            //            process_.addEventToReport(AcquisitionMessages.getInstance()
-            //                    .getMessage("ssalto.service.acquisition.run.step.check.valid.file", currentFile.getFileName()));
-
-            // Link valid file to product
-            product = linkAcquisitionFileToProduct(acqFile, productName);
-
-        } else if (acqFile.getStatus().equals(AcquisitionFileStatus.INVALID)) {
-
-            // TODO CMZ à gérer le cas d'un fichier optionnel INVALID
-            // juste logger que le fichier est invalide, mais le produit peut quand même être bon
-
-            LOGGER.info("Invalid file {}", acqFile.getFileName());
-
-            // Set error
-            acqFile.getAcquisitionInformations().setError(ErrorType.ERROR);
-
-            // Move invalid file in a dedicated directory
-            moveInvalidFile(acqFile, currentFile);
-
-        } else {
-            LOGGER.error("Invalid status for file {}", acqFile.getFileName());
-        }
-
-        return product;
-    }
-
-    private Product linkAcquisitionFileToProduct(AcquisitionFile acqFile, String productName) {
-        // Get the product if it exists
-        Product currentProduct = productService.retrieve(productName);
-
-        if (currentProduct == null) {
-            // It is a new Product,  create it
-            currentProduct = new Product();
-            currentProduct.setProductName(productName);
-            currentProduct.setMetaProduct(process.getChainGeneration().getMetaProduct());
-        }
-
-        currentProduct.setSession(chainGeneration.getSession());
-        currentProduct.setIngestChain(process.getChainGeneration().getMetaProduct().getIngestChain());
-        currentProduct.addAcquisitionFile(acqFile);
-        calcProductStatus(currentProduct);
-
-        acqFile.setProduct(currentProduct);
-
-        return currentProduct;
-    }
-
-    private void calcProductStatus(Product product) {
-        int nbTotalMandatory = 0;
-        int nbTotalOptional = 0;
-        int nbActualMandatory = 0;
-        int nbActualOptional = 0;
-        // At least one mandatory file is VALID
-        product.setStatus(ProductStatus.ACQUIRING);
-
-        for (MetaFile mf : process.getChainGeneration().getMetaProduct().getMetaFiles()) {
-            // Calculus the number of mandatory files
-            if (mf.isMandatory()) {
-                nbTotalMandatory++;
-            } else {
-                nbTotalOptional++;
-            }
-            for (AcquisitionFile af : product.getAcquisitionFile()) {
-                if (af.getMetaFile().equals(mf) && af.getStatus().equals(AcquisitionFileStatus.VALID)) {
-                    if (mf.isMandatory()) {
-                        // At least one mandatory file is VALID
-                        nbActualMandatory++;
-                    } else {
-                        nbActualOptional++;
-                    }
-                }
-            }
-        }
-
-        if (nbTotalMandatory == nbActualMandatory) {
-            // ProductStatus is COMPLETED if mandatory files is acquired
-            product.setStatus(ProductStatus.COMPLETED);
-            if (nbTotalOptional == nbActualOptional) {
-                // ProductStatus is FINISHED if mandatory and optional files is acquired
-                product.setStatus(ProductStatus.FINISHED);
-            }
-        }
-
-    }
-
-    private void moveInvalidFile(AcquisitionFile acqFile, File currentFile) throws ModuleException {
+    private void moveInvalidFile(AcquisitionFile acqFile) throws ModuleException {
         // Create invalid folder (if necessary)
         final File invalidFolder = new File(
                 this.invalidDataFolder + File.separator + acqFile.getMetaFile().getInvalidFolder());
@@ -242,19 +143,11 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
         try {
             Files.createParentDirs(targetFile);
-            Files.move(currentFile, targetFile);
+            Files.move(acqFile.getFile(), targetFile);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
 
-    }
-
-    private void synchronizedDatabase(AcquisitionFile acqFile, Product product) {
-        if (product != null) {
-            productService.save(product);
-        }
-
-        acquisitionFileService.save(acqFile);
     }
 
     @Override

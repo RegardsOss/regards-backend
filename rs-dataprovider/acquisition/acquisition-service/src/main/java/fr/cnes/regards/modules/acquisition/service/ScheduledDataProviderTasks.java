@@ -57,7 +57,7 @@ public class ScheduledDataProviderTasks {
     @Autowired
     private IProductBulkRequestService productBulkRequestService;
 
-    @Scheduled(fixedRateString = "${regards.acquisition.process.new.sip.ingest.delay:60000}")
+    @Scheduled(fixedRateString = "${regards.acquisition.process.new.sip.ingest.delay:60000}", initialDelay = 10000)
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processNewSIPBulkRequest() {
         LOG.debug("Process new SIP bulk request to ingest");
@@ -68,7 +68,7 @@ public class ScheduledDataProviderTasks {
         }
     }
     
-    @Scheduled(fixedRateString = "${regards.acquisition.process.run.chains.delay:60000}")
+    @Scheduled(fixedRateString = "${regards.acquisition.process.run.chains.delay:60000}", initialDelay = 10000)
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processRunActiveChains() {
         LOG.debug("Process run active chains");

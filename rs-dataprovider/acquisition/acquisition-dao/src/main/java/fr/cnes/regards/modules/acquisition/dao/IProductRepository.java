@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 @Repository
 public interface IProductRepository extends JpaRepository<Product, Long> {
 
-    @EntityGraph("graph.acquisition.file.complete")
+    @EntityGraph("graph.metaproduct.complete")
     Product findCompleteByProductName(String productName);
 
     Set<Product> findByStatus(ProductStatus status);

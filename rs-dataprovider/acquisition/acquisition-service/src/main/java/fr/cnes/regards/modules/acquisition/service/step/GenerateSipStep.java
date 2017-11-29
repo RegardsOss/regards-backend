@@ -35,11 +35,9 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
-import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
-import fr.cnes.regards.modules.acquisition.service.IProcessGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
@@ -61,9 +59,6 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
     @Autowired
     private IProductService productService;
-
-    @Autowired
-    private IProcessGenerationService processService;
 
     private ChainGeneration chainGeneration;
 
@@ -124,11 +119,8 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
             // TODO CMZ attention à ne calculer le SIP que si c'est nécessaire
             // si pas saved dans ingest, mais avec le SIP déjà calculé, il faut essayer de l'envoyer sans le recalculer
             // Calc the SIP and save the Product
-            this.product.setSip(generateSipPlugin.runPlugin(this.acqFiles, Optional.of(chainGeneration.getDataSet())));
-
-            productService.save(this.product);
-
-            updateProcessGeneration();
+            productService.setSipAndSave(product, generateSipPlugin
+                    .runPlugin(this.acqFiles, Optional.of(chainGeneration.getDataSet())));
 
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
@@ -137,13 +129,6 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
         LOGGER.info("[{}] Stop  generate SIP step for the product <{}>", chainGeneration.getSession(),
                     product.getProductName());
-    }
-
-    private void updateProcessGeneration() {
-        ProcessGeneration processGeneration = processService.findBySession(chainGeneration.getSession());
-        if (processGeneration != null) {
-            processService.save(processGeneration);
-        }
     }
 
     @Override

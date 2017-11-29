@@ -20,7 +20,6 @@
 package fr.cnes.regards.modules.acquisition.service.step;
 
 import java.io.File;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,11 +33,9 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
-import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
 
@@ -53,9 +50,6 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
 
     @Autowired
     private IPluginService pluginService;
-
-    @Autowired
-    private IChainGenerationService chainGenerationService;
 
     @Autowired
     private IAcquisitionFileService acquisitionFileService;
@@ -100,46 +94,14 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
                     .getAcquisitionFiles(this.chainGeneration.getLabel(), this.chainGeneration.getMetaProduct(),
                                          this.chainGeneration.getLastDateActivation());
 
-            synchronizedDatabase(acquisitionFiles);
+            acquisitionFileService.saveAcqFilesAndChain(acquisitionFiles, chainGeneration);
 
             reportBadFiles(scanPlugin.getBadFiles(this.chainGeneration.getLabel(),
                                                   this.chainGeneration.getMetaProduct().getMetaFiles()));
-
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
         }
 
-    }
-
-    private void synchronizedDatabase(Set<AcquisitionFile> acquisitionFiles) {
-        for (AcquisitionFile af : acquisitionFiles) {
-            List<AcquisitionFile> listAf = acquisitionFileService.findByMetaFile(af.getMetaFile());
-
-            if (listAf.contains(af)) {
-                // if the AcquisitionFile already exists in database
-                // update his status and his date acquisition
-                AcquisitionFile afExisting = listAf.get(listAf.indexOf(af));
-                afExisting.setAcqDate(af.getAcqDate());
-                afExisting.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-                acquisitionFileService.save(afExisting);
-            } else {
-                af.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-                acquisitionFileService.save(af);
-            }
-
-            // for the first activation of the ChainGeneration
-            // set the last activation date with the activation date of the current AcquisitionFile
-            if (chainGeneration.getLastDateActivation() == null) {
-                chainGeneration.setLastDateActivation(af.getAcqDate());
-            } else {
-                if (af.getAcqDate() != null && chainGeneration.getLastDateActivation().isBefore(af.getAcqDate())) {
-                    chainGeneration.setLastDateActivation(af.getAcqDate());
-                }
-            }
-        }
-
-        // Save the ChainGeneration the last activation date as been modified 
-        chainGenerationService.save(chainGeneration);
     }
 
     private void reportBadFiles(Set<File> badFiles) {

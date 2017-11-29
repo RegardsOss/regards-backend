@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.OffsetDateTime;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,8 +36,10 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.builder.ChainGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
+import fr.cnes.regards.modules.acquisition.builder.ProcessGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
+import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -70,9 +73,10 @@ public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
 
     private ChainGeneration chainForProcessing;
 
+    private ProcessGeneration process;
+
     @Before
     public void init() {
-
         metaProduct001 = metaProductService
                 .save(MetaProductBuilder.build("meta-product-name-001").addMetaFile(metaFileOptional)
                         .addMetaFile(metaFileMandatory).withIngestProcessingChain("ingest-processing-chain-001").get());
@@ -82,19 +86,22 @@ public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
                 .addMetaFile(metaFileMandatory).withIngestProcessingChain("ingest-processing-chain-003").get());
 
         // Create a Product
+
+        // ===================== session-001 ===================== 
         createProduct("product-001", "session-001", metaProduct001, true, ProductStatus.COMPLETED, "file-001.dat",
                       "file-002.dat");
         createProduct("product-002", "session-001", metaProduct001, true, ProductStatus.COMPLETED, "file-003",
                       "file-004");
-        createProduct("product-003", "session-002", metaProduct001, true, ProductStatus.FINISHED, "file-005",
-                      "file-006");
-
         createProduct("product-004", "session-001", metaProduct002, true, ProductStatus.COMPLETED, "file-007",
                       "file-008");
         createProduct("product-005", "session-001", metaProduct002, true, ProductStatus.COMPLETED, "file-009",
                       "file-010");
         createProduct("product-006", "session-001", metaProduct002, true, ProductStatus.COMPLETED, "file-011",
                       "file-012");
+
+        // ===================== session-002 =====================
+        createProduct("product-003", "session-002", metaProduct001, true, ProductStatus.FINISHED, "file-005",
+                      "file-006");
         createProduct("product-007", "session-002", metaProduct002, true, ProductStatus.COMPLETED, "file-013",
                       "file-014");
         createProduct("product-008", "session-002", metaProduct002, true, ProductStatus.COMPLETED, "file-015",
@@ -111,19 +118,25 @@ public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
 
         createProduct("product-099", "session-002", metaProduct003, false, ProductStatus.ACQUIRING, "file-099");
 
-        // Create a first generation chain
-        chainForProcessing = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL + "for processing").isActive()
-                .withDataSet(DATASET_IP_ID).withSession("session-001").get());
+        // the chain is not active to not activate it 
+        chain.setActive(false);
+        chain.setSession("session-001");
+        chainService.save(chain);
 
-        // Set the MetaProduct to the ChainGeneration
-        chainForProcessing.setMetaProduct(metaProduct001);
-        chainForProcessing = chainService.save(chainForProcessing);
+        // Create a generation chain for the ProcessGeneration
+        chainForProcessing = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL + "for processing")
+                .withDataSet(DATASET_IP_ID).withSession("session-001").withMetaProduct(metaProduct001).get());
+        process = processGenerationService.save(ProcessGenerationBuilder.build(chainForProcessing.getSession())
+                .withChain(chainForProcessing).withStartDate(OffsetDateTime.now()).get());
 
         runtimeTenantResolver.forceTenant(tenant);
     }
 
     @Test
     public void receivedOneSipStoreEvent() throws InterruptedException, ModuleException {
+        process.setNbSipCreated(1);
+        processGenerationService.save(process);
+
         Assert.assertEquals(16, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
@@ -154,50 +167,22 @@ public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
 
         Assert.assertEquals(16, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(true, ProductStatus.SAVED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
-    }
-    
-    @Test
-    public void receivedOneSipStoreEventExistingFile() throws InterruptedException, ModuleException {
-        Assert.assertEquals(16, productService
-                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
 
-        chainForProcessing.setPostProcessSipPluginConf(pluginService
-                .getPluginConfiguration("CleanOriginalFilePostPlugin", IPostProcessSipPlugin.class));
-        chainService.save(chainForProcessing);
-
-        String productName = "product-044";
-        try {
-            File f1 = File.createTempFile("file-044", ".dat");
-            FileAcquisitionInformations fai1 = new FileAcquisitionInformations();
-            fai1.setAcquisitionDirectory("/tmp");
-            createProduct(productName, "session-001", metaProduct001, true, ProductStatus.COMPLETED, f1.getName(),
-                          fai1);
-            Assert.assertTrue(f1.canRead());
-            Assert.assertTrue(f1.canWrite());
-        } catch (IOException e) {
-            Assert.fail();
-        }
-
-        publishSipEvent(productName, SIPState.STORED);
-
-        waitJobEvent();
-
-        Assert.assertEquals(1, runnings.size());
-        Assert.assertEquals(1, succeededs.size());
-        Assert.assertTrue(faileds.isEmpty());
-        Assert.assertTrue(aborteds.isEmpty());
-
-        Assert.assertEquals(16, productService
-                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(true, ProductStatus.SAVED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+        ProcessGeneration processLoad = processGenerationService.findBySession(chainForProcessing.getSession());
+        Assert.assertEquals(1, processLoad.getNbSipCreated());
+        Assert.assertEquals(0, processLoad.getNbSipError());
+        Assert.assertEquals(1, processLoad.getNbSipStored());
+        Assert.assertNotNull(processLoad.getStopDate());
     }
 
     @Test
     public void receivedSipStoreEvents() throws InterruptedException, ModuleException {
+        process.setNbSipCreated(3);
+        processGenerationService.save(process);
+
         Assert.assertEquals(16, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
@@ -221,6 +206,12 @@ public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(3, productService.findBySendedAndStatusIn(true, ProductStatus.SAVED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+
+        ProcessGeneration processLoad = processGenerationService.findBySession(chainForProcessing.getSession());
+        Assert.assertEquals(3, processLoad.getNbSipCreated());
+        Assert.assertEquals(0, processLoad.getNbSipError());
+        Assert.assertEquals(3, processLoad.getNbSipStored());
+        Assert.assertNotNull(processLoad.getStopDate());
     }
 
     @Test
@@ -248,7 +239,8 @@ public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
         Assert.assertEquals(16, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
-        chainGenerationRepository.deleteAll();
+        processGenerationRepository.delete(process);
+        chainGenerationRepository.delete(chainForProcessing);
 
         publishSipEvent("product-001", SIPState.STORED);
 

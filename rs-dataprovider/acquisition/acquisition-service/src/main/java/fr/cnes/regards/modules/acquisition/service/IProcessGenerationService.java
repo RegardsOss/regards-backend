@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * 
@@ -32,11 +33,11 @@ import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
  * 
  */
 public interface IProcessGenerationService {
-    
+
     ProcessGeneration save(ProcessGeneration chain);
 
     void delete(ProcessGeneration processGeneration);
-    
+
     ProcessGeneration findBySession(String session);
 
     Page<ProcessGeneration> retrieveAll(Pageable pageable);
@@ -49,5 +50,14 @@ public interface IProcessGenerationService {
             Pageable pageable);
 
     Page<ProcessGeneration> findByStartDateAfter(OffsetDateTime start, Pageable pageable);
+
+    /**
+     * Update the {@link ProcessGeneration}
+     * @param session a current session identifier
+     * @param nbSipCreated the number of SIP that are in {@link SIPState#CREATED}
+     * @param nbSipStored the number of SIP that are in {@link SIPState#STORED}
+     * @param nbSipError the number of SIP that are in {@link SIPState#REJECTED} or {@link SIPState#STORE_ERROR} 
+     */
+    void updateProcessGeneration(String session, int nbSipCreated, int nbSipStored, int nbSipError);
 
 }

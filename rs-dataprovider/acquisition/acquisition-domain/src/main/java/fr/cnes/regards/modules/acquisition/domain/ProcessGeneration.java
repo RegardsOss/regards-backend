@@ -48,9 +48,9 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 public class ProcessGeneration implements IIdentifiable<Long> {
 
     /**
-     * A constant used to define a {@link String} constraint with length 256
+     * A constant used to define a {@link String} constraint with length 255
      */
-    private static final int MAX_STRING_LENGTH = 256;
+    private static final int MAX_STRING_LENGTH = 255;
 
     /**
      * entity id for SGBD purpose mainly and REST request

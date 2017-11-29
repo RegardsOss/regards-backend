@@ -36,6 +36,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
+import javax.persistence.NamedEntityGraphs;
+import javax.persistence.NamedSubgraph;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -64,11 +66,21 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
                 @Index(name = "idx_acq_product_session", columnList = "session") },
         uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-@NamedEntityGraph(name = "graph.acquisition.file.complete", attributeNodes = @NamedAttributeNode(value = "fileList"))
+@NamedEntityGraphs({
+        @NamedEntityGraph(name = "graph.acquisition.file.complete",
+                attributeNodes = @NamedAttributeNode(value = "fileList")),
+        @NamedEntityGraph(name = "graph.metaproduct.complete",
+                attributeNodes = {
+                        @NamedAttributeNode(value = "metaProduct", subgraph = "graph.metaproduct.complete.metafiles"),
+                        @NamedAttributeNode(value = "fileList") },
+                subgraphs = { @NamedSubgraph(name = "graph.metaproduct.complete.metafiles", attributeNodes = {
+                        @NamedAttributeNode(value = "metaFiles"), @NamedAttributeNode(value = "products") }) })
+
+})
 public class Product implements IIdentifiable<Long> {
 
     /**
-     * A constant used to define a {@link String} constraint with length 64
+     * A constant used to define a {@link String} constraint with length 128
      */
     private static final int MAX_STRING_LENGTH = 128;
 

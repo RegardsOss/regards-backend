@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,8 @@ import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
 @MultitenantTransactional
 @Service
 public class ProcessGenerationService implements IProcessGenerationService {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(ProcessGenerationService.class);
 
     private final IProcessGenerationRepository processRepository;
 
@@ -86,4 +90,24 @@ public class ProcessGenerationService implements IProcessGenerationService {
     public ProcessGeneration findBySession(String session) {
         return processRepository.findBySession(session);
     }
+
+    @Override
+    public void updateProcessGeneration(String session, int nbSipCreated, int nbSipStored, int nbSipError) {
+        ProcessGeneration processGeneration = this.findBySession(session);
+        if (processGeneration != null) {
+            LOG.info("[{}] add nb SIP in process : created:{} - stored:{} - error:{}",session, nbSipCreated, nbSipStored, nbSipError);
+            processGeneration.setNbSipCreated(processGeneration.getNbSipCreated() + nbSipCreated);
+            processGeneration.setNbSipStored(processGeneration.getNbSipStored() + nbSipStored);
+            processGeneration.setNbSipError(processGeneration.getNbSipError() + nbSipError);
+
+            if (processGeneration.getNbSipCreated() == processGeneration.getNbSipStored()
+                    + processGeneration.getNbSipError()) {
+                processGeneration.setStopDate(OffsetDateTime.now());
+                LOG.info("[{}] set stop date in process : {}",processGeneration.getStopDate().toString());
+            }
+
+            this.save(processGeneration);
+        }
+    }
+
 }

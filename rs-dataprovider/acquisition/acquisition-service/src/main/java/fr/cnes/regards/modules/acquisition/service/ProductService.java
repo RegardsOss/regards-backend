@@ -20,14 +20,21 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.ingest.domain.SIP;
 
 /**
  * 
@@ -37,6 +44,8 @@ import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 @MultitenantTransactional
 @Service
 public class ProductService implements IProductService {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(ProductService.class);
 
     private final IProductRepository productRepository;
 
@@ -102,4 +111,92 @@ public class ProductService implements IProductService {
                                                                                     pageable, status);
     }
 
+    @Override
+    public void calcProductStatus(Product product) {
+        int nbTotalMandatory = 0;
+        int nbTotalOptional = 0;
+        int nbActualMandatory = 0;
+        int nbActualOptional = 0;
+        
+        // At least one mandatory file is VALID
+        product.setStatus(ProductStatus.ACQUIRING);
+
+        for (MetaFile mf : product.getMetaProduct().getMetaFiles()) {
+            // Calculus the number of mandatory files
+            if (mf.isMandatory()) {
+                nbTotalMandatory++;
+            } else {
+                nbTotalOptional++;
+            }
+            for (AcquisitionFile af : product.getAcquisitionFile()) {
+                if (af.getMetaFile().equals(mf) && af.getStatus().equals(AcquisitionFileStatus.VALID)) {
+                    if (mf.isMandatory()) {
+                        // At least one mandatory file is VALID
+                        nbActualMandatory++;
+                    } else {
+                        nbActualOptional++;
+                    }
+                }
+            }
+        }
+
+        if (nbTotalMandatory == nbActualMandatory) {
+            // ProductStatus is COMPLETED if mandatory files is acquired
+            product.setStatus(ProductStatus.COMPLETED);
+            if (nbTotalOptional == nbActualOptional) {
+                // ProductStatus is FINISHED if mandatory and optional files is acquired
+                product.setStatus(ProductStatus.FINISHED);
+            }
+        }
+    }
+    
+    @Override
+    public Product linkAcquisitionFileToProduct(String session, AcquisitionFile acqFile, String productName,
+            MetaProduct metaProduct, String ingestChain) {
+        // Get the product if it exists
+        Product currentProduct = this.retrieve(productName);
+
+        if (currentProduct == null) {
+            // It is a new Product,  create it
+            currentProduct = new Product();
+            currentProduct.setProductName(productName);
+            currentProduct.setMetaProduct(metaProduct);
+        }
+
+        currentProduct.setSession(session);
+        currentProduct.setIngestChain(ingestChain);
+        currentProduct.addAcquisitionFile(acqFile);
+        this.calcProductStatus(currentProduct);
+
+        return currentProduct;
+    }
+    
+    @Override
+    public void setSipAndSave(Product product, SIP sip) {
+        product.setSip(sip);
+        this.save(product);
+    }
+    
+//    @Override
+//    public void setProductAsSend(String sipId) {
+//        Product product = this.retrieve(sipId);
+//        if (product == null) {
+//            final StringBuilder buff = new StringBuilder();
+//            buff.append("The product name <");
+//            buff.append(sipId);
+//            buff.append("> does not exist");
+//            LOG.error(buff.toString());
+//        } else {
+//            product.setSended(Boolean.TRUE);
+//            this.save(product);
+//        }
+//    }
+
+//    @Override
+//    public void setStatusAndSaved(String sipId, ProductStatus status) {
+//        // todo cmz, il faut un retrieve light et pas complet 
+//        Product product = this.retrieve(sipId);
+//        product.setStatus(status);
+//        this.save(product);
+//    }
 }

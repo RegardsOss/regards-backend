@@ -20,8 +20,6 @@
 package fr.cnes.regards.modules.acquisition.service.step;
 
 import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -55,10 +53,6 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
     @Test
     public void runActiveChainGeneration() throws ModuleException, InterruptedException {
-        Set<MetaFile> metaFiles = new HashSet<>();
-        metaFiles.add(metaFileMandatory);
-        metaFiles.add(metaFileOptional);
-
         chain.setLastDateActivation(OffsetDateTime.now().minusDays(10));
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
                                                                                 IAcquisitionScanDirectoryPlugin.class));
@@ -96,10 +90,6 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
     public void runActiveChainGenerationAcquireSameFilesWithSameChecksum()
             throws ModuleException, InterruptedException {
         this.chain.setPeriodicity(1L);
-
-        Set<MetaFile> metaFiles = new HashSet<>();
-        metaFiles.add(metaFileMandatory);
-        metaFiles.add(metaFileOptional);
 
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
                                                                                 IAcquisitionScanDirectoryPlugin.class));
@@ -153,11 +143,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
                 .withFilePattern("file pattern for the header file").comment("it is mandatory second").isMandatory()
                 .get());
         metaProduct.addMetaFile(secondMetaFileMandatory);
-
-        Set<MetaFile> metaFiles = new HashSet<>();
-        metaFiles.add(metaFileMandatory);
-        metaFiles.add(secondMetaFileMandatory);
-        metaFiles.add(metaFileOptional);
+        metaProductService.save(metaProduct);
 
         // Scan plugin
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration(
@@ -184,7 +170,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
         Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
         Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, productService.findByStatus(ProductStatus.COMPLETED).size());
-        
+
         Assert.assertEquals(1, processGenerationService.retrieveAll(new PageRequest(0, 10)).getNumberOfElements());
 
         chain = chainService.retrieve(chain.getId());
@@ -205,10 +191,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
                 .get());
         metaProduct.addMetaFile(secondMetaFileMandatory);
         metaProduct.removeMetaFile(metaFileOptional);
-
-        Set<MetaFile> metaFiles = new HashSet<>();
-        metaFiles.add(metaFileMandatory);
-        metaFiles.add(secondMetaFileMandatory);
+        metaProductService.save(metaProduct);
 
         // Scan plugin
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration(
@@ -248,12 +231,9 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
                 .get());
         metaProduct.addMetaFile(secondMetaFileMandatory);
         metaProduct.removeMetaFile(metaFileOptional);
+        metaProductService.save(metaProduct);
 
-        Set<MetaFile> metaFiles = new HashSet<>();
-        metaFiles.add(metaFileMandatory);
-        metaFiles.add(secondMetaFileMandatory);
-
-        // Scan plugin
+        // Scan plugin : only the data file are acquired
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanProductsData",
                                                                                 IAcquisitionScanDirectoryPlugin.class));
 
@@ -290,7 +270,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
 
         Thread.sleep(WAIT_TIME);
 
-        // Scan plugin : in this step we acquire the 3 mandatory missing files
+        // Scan plugin : the header files are acquired, the 3 products will be complete
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanProductsHeader",
                                                                                 IAcquisitionScanDirectoryPlugin.class));
 

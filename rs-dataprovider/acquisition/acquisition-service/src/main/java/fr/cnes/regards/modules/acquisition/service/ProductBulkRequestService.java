@@ -18,9 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -35,11 +33,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
-import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
@@ -56,8 +52,6 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 public class ProductBulkRequestService implements IProductBulkRequestService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProductBulkRequestService.class);
-
-    //    private final IProductRepository productRepository;
 
     private final IProductService productService;
 
@@ -80,7 +74,7 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
 
     @Override
     public void runBulkRequest() {
-        LOG.debug("Start bulk request SIP creation");
+        LOG.debug("----> Start bulk request SIP creation");
 
         // Get all the ingestChain for that at least one product is ready to be send to ingest
         Set<String> ingestChains = productService
@@ -97,16 +91,16 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
             postSIPBulkRequest(ingestChain);
         }
 
-        LOG.debug("End   bulk request SIP creation");
+        LOG.debug("<----  End   bulk request SIP creation");
     }
 
     @Override
     public void runActiveChains() {
-        LOG.info("Start run active chains");
+        LOG.info("----> Start run active chains");
 
         chainGenerationService.findByActiveTrueAndRunningFalse().forEach(ch -> chainGenerationService.run(ch));
 
-        LOG.info("End   run active chains");
+        LOG.info("<---- End   run active chains");
     }
 
     /**
@@ -174,16 +168,16 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
      */
     private int postSipCollection(String session, SIPCollection sipCollection) {
         LOG.info("[{}] Start publish SIP Collections", session);
-        int nbSipOk = 0;
+        int nbSipCreated = 0;
 
         ResponseEntity<Collection<SIPDto>> response = ingestClient.ingest(sipCollection);
 
         if (response.getStatusCode().equals(HttpStatus.CREATED)) {
-            nbSipOk = responseSipCreated(session, sipCollection);
-            updateProcessGeneration(session, nbSipOk, 0);
+            nbSipCreated = responseSipPartiallyCreated(session, response.getBody());
+            processService.updateProcessGeneration(session, nbSipCreated, 0, 0);
         } else if (response.getStatusCode().equals(HttpStatus.PARTIAL_CONTENT)) {
-            nbSipOk = responseSipPartiallyCreated(session, response.getBody(), sipCollection);
-            updateProcessGeneration(session, nbSipOk, response.getBody().size());
+            nbSipCreated = responseSipPartiallyCreated(session, response.getBody());
+            processService.updateProcessGeneration(session, nbSipCreated, 0, response.getBody().size()-nbSipCreated);
         } else if (response.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
             LOG.error("[{}] Unauthorized access to ingest microservice", session);
 
@@ -194,62 +188,64 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
 
         LOG.info("[{}] End  publish SIP Collections", session);
 
-        return nbSipOk;
+        return nbSipCreated;
     }
 
-    /**
-     * SIP bulk request has been processed with success, change the {@link Product} state.
-     * @param session a current session identifier
-     * @param sipCollection the {@link SIPCollection} send to Ingest microservice
-     * @return the number of {@link Product} that has been sended in Ingest microservice
-     */
-    private int responseSipCreated(String session, SIPCollection sipCollection) {
-        LOG.info("[{}] SIP collection has heen processed with success : {} SIP ingested", session,
-                 sipCollection.getFeatures().size());
-        for (SIP sip : sipCollection.getFeatures()) {
-            setSipProductSaved(sip.getId());
-        }
-        return sipCollection.getFeatures().size();
-    }
+    //    /**
+    //     * SIP bulk request has been processed with success, change the {@link Product} state.
+    //     * @param session a current session identifier
+    //     * @param sipCollection the {@link SIPCollection} send to Ingest microservice
+    //     * @return the number of {@link Product} that has been sended in Ingest microservice
+    //     */
+    //    private int responseSipCreated(String session, SIPCollection sipCollection) {
+    //        LOG.info("[{}] SIP collection has heen processed with success : {} SIP ingested", session,
+    //                 sipCollection.getFeatures().size());
+    //        for (SIP sip : sipCollection.getFeatures()) {
+    //            LOG.info("------------------> {}", sip.getId());
+    //            this.setProductAsSend(sip.getId());
+    //        }
+    //        return sipCollection.getFeatures().size();
+    //    }
 
     /**
      * SIP bulk request has been processed and some SIP has been rejected, change the {@link Product} state.
      * @param session a current session identifier
-     * @param rejectedSips the {@link Collection} of {@link SIPEntity} that have been rejected
-     * @param sipCollection the {@link SIPCollection} send to Ingest microservice
+     * @param response the {@link Collection} of {@link SIPEntity} that returned by Ingest client
      * @return the number of {@link Product} that has been sended to Ingest microservice
      */
-    private int responseSipPartiallyCreated(String session, Collection<SIPDto> rejectedSips,
-            SIPCollection sipCollection) {
-        LOG.info("features size:{} - rejected size:{}", sipCollection.getFeatures().size(), rejectedSips.size());
-        LOG.error("[{}] SIP collection has heen partially processed with success : {} ingested / {} rejected", session,
-                  sipCollection.getFeatures().size() - rejectedSips.size(), rejectedSips.size());
-        Set<String> sipIdError = new HashSet<>();
-        for (SIPDto sipEntity : rejectedSips) {
-            LOG.error("[{}] SIP in error : productName=<{}>, reason=<{}>", session, sipEntity.getIpId(),
-                      sipEntity.getRejectionCauses());
-            sipIdError.add(sipEntity.getIpId());
-            
-            Product pp = productService.retrieve(sipEntity.getIpId());
-            pp.setStatus(ProductStatus.ERROR);
-            productService.save(pp);
+    private int responseSipPartiallyCreated(String session, Collection<SIPDto> response) {
+        int nbSipOK = 0;
+        int nbSipError = 0;
+
+        for (SIPDto sipEntity : response) {
+            Product product = productService.retrieve(sipEntity.getIpId());
+
+            if (sipEntity.getState().equals(SIPState.REJECTED)) {
+                nbSipError++;
+                LOG.error("[{}] SIP in error : productName=<{}>, reason=<{}>", session, sipEntity.getIpId(),
+                          sipEntity.getRejectionCauses());
+
+                product.setStatus(ProductStatus.ERROR);
+
+                //                productService.setStatusAndSaved(sipEntity.getIpId(), ProductStatus.ERROR);
+            } else if (sipEntity.getState().equals(SIPState.CREATED)) {
+                nbSipOK++;
+
+                product.setSended(Boolean.TRUE);
+                //                LOG.info("------------------> {}", sipEntity.getIpId());
+                //                this.setProductAsSend(sipEntity.getIpId());
+            }
+
+            productService.save(product);
         }
 
-        int nbSipOK = 0;
-        for (SIP sip : sipCollection.getFeatures()) {
-            if (!sipIdError.contains(sip.getId())) {
-                setSipProductSaved(sip.getId());
-                nbSipOK++;
-            }
-        }
+        LOG.info("[{}] SIP collection has heen partially processed with success : {} ingested / {} rejected", session,
+                 nbSipOK, nbSipError);
+
         return nbSipOK;
     }
 
-    /**
-     * Change the state of a {@link Product} and persists it.
-     * @param sipId the {@link Product} identifier
-     */
-    private void setSipProductSaved(String sipId) {
+    private void setProductAsSend(String sipId) {
         Product product = productService.retrieve(sipId);
         if (product == null) {
             final StringBuilder buff = new StringBuilder();
@@ -261,25 +257,5 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
             product.setSended(Boolean.TRUE);
             productService.save(product);
         }
-    }
-
-    /**
-     * Update the {@link ProcessGeneration}
-     * @param session a current session identifier
-     * @param nbSipCreated the number of SIP that are in {@link SIPState#CREATED}
-     * @param nbSipError the number of SIP that are in {@link SIPState#REJECTED}
-     */
-    private void updateProcessGeneration(String session, int nbSipCreated, int nbSipError) {
-        ProcessGeneration processGeneration = processService.findBySession(session);
-        if (processGeneration != null) {
-            processGeneration.setNbSipCreated(processGeneration.getNbSipCreated() + nbSipCreated);
-            processGeneration.setNbSipError(processGeneration.getNbSipError() + nbSipError);
-            if (processGeneration.getNbSipCreated() == processGeneration.getNbSipStored()
-                    + processGeneration.getNbSipError()) {
-                processGeneration.setStopDate(OffsetDateTime.now());
-            }
-            processService.save(processGeneration);
-        }
-
     }
 }

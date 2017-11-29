@@ -20,9 +20,12 @@ package fr.cnes.regards.modules.acquisition.dao;
 
 import java.time.OffsetDateTime;
 
+import javax.persistence.LockModeType;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
@@ -36,6 +39,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
 @Repository
 public interface IProcessGenerationRepository extends JpaRepository<ProcessGeneration, Long> {
 
+    @Lock(LockModeType.PESSIMISTIC_READ)
     ProcessGeneration findBySession(String session);
     
     Page<ProcessGeneration> findByChainGeneration(ChainGeneration chainGeneration, Pageable pageable);

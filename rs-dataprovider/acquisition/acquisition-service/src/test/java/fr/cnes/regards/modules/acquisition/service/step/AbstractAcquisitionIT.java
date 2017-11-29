@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -289,11 +290,15 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
     /**
      * IngestClient's response is {@link HttpStatus#CREATED}
      */
-    protected void mockIngestClientResponseOK() {
+    protected void mockIngestClientResponseOK(List<String> sipIdsCreated) {
         Collection<SIPDto> sips = new ArrayList<>();
-        SIPDto sipEntity = new SIPDto();
-        sipEntity.setState(SIPState.CREATED);
-        sips.add(sipEntity);
+        
+        for (String sipId : sipIdsCreated) {
+            SIPDto sipEntity = new SIPDto();
+            sipEntity.setState(SIPState.CREATED);
+            sipEntity.setIpId(sipId);
+            sips.add(sipEntity);
+        }
 
         Mockito.when(ingestClient.ingest(Mockito.any()))
                 .thenReturn(new ResponseEntity<Collection<SIPDto>>(sips, HttpStatus.CREATED));
@@ -316,10 +321,17 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
      * IngestClient's response is {@link HttpStatus#PARTIAL_CONTENT}. The {@link SIP} id parameters are rejected.
      * @param sipIds {@link SIP} id that are rejected
      */
-    protected void mockIngestClientResponsePartialContent(String... sipIds) {
+    protected void mockIngestClientResponsePartialContent(List<String> sipIdsCreated, List<String> sipIdsError) {
         Collection<SIPDto> sips = new ArrayList<>();
 
-        for (String sipId : sipIds) {
+        for (String sipId : sipIdsCreated) {
+            SIPDto sipEntity = new SIPDto();
+            sipEntity.setState(SIPState.CREATED);
+            sipEntity.setIpId(sipId);
+            sips.add(sipEntity);
+        }
+        
+        for (String sipId : sipIdsError) {
             SIPDto sipEntity = new SIPDto();
             sipEntity.setRejectionCauses(Arrays.asList("bad SIP format"));
             sipEntity.setState(SIPState.REJECTED);

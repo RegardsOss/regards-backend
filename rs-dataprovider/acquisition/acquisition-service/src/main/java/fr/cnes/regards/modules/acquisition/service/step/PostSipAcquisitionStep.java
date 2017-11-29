@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
-import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
@@ -100,7 +99,15 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
             product.setStatus(ProductStatus.SAVED);
             productService.save(this.product);
 
-            updateProcessGeneration();
+            int nbSipStored = 0;
+            int nbSipError = 0;
+            if (sipEvent.getState().equals(SIPState.STORED)) {
+                nbSipStored = 1;
+            } else if (sipEvent.getState().equals(SIPState.STORE_ERROR)) {
+                nbSipError = 1;
+            }
+            
+            processService.updateProcessGeneration(chainGeneration.getSession(), 0, nbSipStored, nbSipError);
 
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
@@ -110,19 +117,6 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
         LOGGER.info("[{}] Stop  POST acqusition SIP step for the product <{}>", chainGeneration.getSession(),
                     product.getProductName());
 
-    }
-
-    private void updateProcessGeneration() {
-        ProcessGeneration processGeneration = processService.findBySession(chainGeneration.getSession());
-        if (processGeneration != null) {
-            if (sipEvent.getState().equals(SIPState.STORED)) {
-                processGeneration.sipStoredIncrease();
-            } else if (sipEvent.getState().equals(SIPState.STORE_ERROR)) {
-                LOGGER.info("[{}] received event {}", sipEvent.getIpId(), sipEvent.getState());
-                processGeneration.sipErrorIncrease();
-            }
-            processService.save(processGeneration);
-        }
     }
 
     @Override

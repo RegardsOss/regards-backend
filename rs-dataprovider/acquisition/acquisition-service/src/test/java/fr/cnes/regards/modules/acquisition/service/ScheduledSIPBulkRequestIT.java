@@ -20,10 +20,12 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -43,18 +45,20 @@ import fr.cnes.regards.modules.acquisition.service.step.AbstractAcquisitionIT;
  *
  */
 @ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class, MockedFeignClientConf.class })
-@ActiveProfiles({ "test" })
+@ActiveProfiles({ "test", "disableDataProviderTask" })
 @DirtiesContext
-public class ScheduledDataProviderPostSipIT extends AbstractAcquisitionIT {
+public class ScheduledSIPBulkRequestIT extends AbstractAcquisitionIT {
 
     @Value("${regards.acquisition.process.new.sip.ingest.delay}")
     private String scheduledIngestSipDelay;
 
+    @Autowired
+    private IProductBulkRequestService productBulkRequestService;
+
     private ProcessGeneration process;
 
     @Before
-    public void init() {
-
+    public void createProductsAndProcess() {
         MetaProduct metaProduct001 = metaProductService
                 .save(MetaProductBuilder.build("meta-product-name-001").addMetaFile(metaFileOptional)
                         .addMetaFile(metaFileMandatory).withIngestProcessingChain("ingest-processing-chain-001").get());
@@ -98,8 +102,9 @@ public class ScheduledDataProviderPostSipIT extends AbstractAcquisitionIT {
 
         createProduct("product-099", "session-003", metaProduct003, false, ProductStatus.ACQUIRING, "file-099");
 
-        chain.setSession("session-001");
+        // the chain is not active to not activate it 
         chain.setActive(false);
+        chain.setSession("session-001");
         chainService.save(chain);
         process = processGenerationService.save(ProcessGenerationBuilder.build(chain.getSession()).withChain(chain)
                 .withStartDate(OffsetDateTime.now()).get());
@@ -107,7 +112,10 @@ public class ScheduledDataProviderPostSipIT extends AbstractAcquisitionIT {
 
     @Test
     public void scheduleDataProviderTaskNominalAllSipCreated() throws InterruptedException {
-        mockIngestClientResponseOK();
+        mockIngestClientResponseOK(Arrays.asList("product-001", "product-002", "product-003", "product-004",
+                                                 "product-005", "product-006", "product-007", "product-008",
+                                                 "product-009", "product-010", "product-011", "product-012",
+                                                 "product-013", "product-014", "product-015", "product-016"));
 
         Assert.assertEquals(14, productService
                 .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
@@ -117,7 +125,7 @@ public class ScheduledDataProviderPostSipIT extends AbstractAcquisitionIT {
         Assert.assertNotNull(processGenerationService.findBySession(chain.getSession()));
         Assert.assertEquals(process, processGenerationService.findBySession(chain.getSession()));
 
-        Thread.sleep(Integer.parseInt(scheduledIngestSipDelay) + 1_000);
+        productBulkRequestService.runBulkRequest();
 
         Assert.assertEquals(1, processGenerationRepository.findAll().size());
 
@@ -128,9 +136,10 @@ public class ScheduledDataProviderPostSipIT extends AbstractAcquisitionIT {
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
 
         ProcessGeneration processLoad = processGenerationService.findBySession(chain.getSession());
-        Assert.assertEquals(5, processLoad.getNbSipCreated()); // 5 product for session-001
+        Assert.assertEquals(16, processLoad.getNbSipCreated()); // 16 products created cf mock
         Assert.assertEquals(0, processLoad.getNbSipError());
         Assert.assertEquals(0, processLoad.getNbSipStored());
+        Assert.assertNull(processLoad.getStopDate());
     }
 
     @Test
@@ -143,7 +152,7 @@ public class ScheduledDataProviderPostSipIT extends AbstractAcquisitionIT {
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
 
-        Thread.sleep(Integer.parseInt(scheduledIngestSipDelay) + 1_000);
+        productBulkRequestService.runBulkRequest();
 
         Assert.assertEquals(1, processGenerationRepository.findAll().size());
 
@@ -157,8 +166,11 @@ public class ScheduledDataProviderPostSipIT extends AbstractAcquisitionIT {
     }
 
     @Test
-    public void scheduleDataProviderTaskNominalPartialResponseContent() throws InterruptedException {
-        mockIngestClientResponsePartialContent("product-001", "product-002");
+    public void scheduleDataProviderTaskNominalPartialContentResponse() throws InterruptedException {
+        mockIngestClientResponsePartialContent(Arrays
+                .asList("product-003", "product-004", "product-005", "product-006", "product-007", "product-008",
+                        "product-009", "product-010", "product-011", "product-012", "product-013", "product-014",
+                        "product-015", "product-016"), Arrays.asList("product-001", "product-002"));
 
         Assert.assertEquals(14, productService
                 .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
@@ -166,7 +178,7 @@ public class ScheduledDataProviderPostSipIT extends AbstractAcquisitionIT {
         Assert.assertEquals(2, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
 
-        Thread.sleep(Integer.parseInt(scheduledIngestSipDelay) + 1_000);
+        productBulkRequestService.runBulkRequest();
 
         Assert.assertEquals(1, processGenerationRepository.findAll().size());
 
@@ -177,11 +189,10 @@ public class ScheduledDataProviderPostSipIT extends AbstractAcquisitionIT {
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
 
         ProcessGeneration processLoad = processGenerationService.findBySession(chain.getSession());
-        // 3 products are created for session-001 : product-004 - product-005 - product-006
-        Assert.assertEquals(3, processLoad.getNbSipCreated());
-        // 2 products in error for the 2 chains
-        Assert.assertEquals(4, processLoad.getNbSipError());
+        Assert.assertEquals(14, processLoad.getNbSipCreated()); // 14 products created cf mock
+        Assert.assertEquals(2, processLoad.getNbSipError());
         Assert.assertEquals(0, processLoad.getNbSipStored());
+        Assert.assertNull(processLoad.getStopDate());
     }
 
 }
