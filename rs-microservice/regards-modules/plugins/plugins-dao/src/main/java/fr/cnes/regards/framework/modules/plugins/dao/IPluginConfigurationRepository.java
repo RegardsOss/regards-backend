@@ -48,6 +48,10 @@ public interface IPluginConfigurationRepository extends CrudRepository<PluginCon
     @Query("from PluginConfiguration pc join fetch pc.parameters where parent_conf_id=:id")
     PluginConfiguration findOneWithPluginParameter(@Param("id") Long pId);
 
+    /**
+     * @param pConfigurationLabel
+     * @return the plugin configuration which label is the given label in parameter
+     */
     PluginConfiguration findOneByLabel(String pConfigurationLabel);
 
     /**

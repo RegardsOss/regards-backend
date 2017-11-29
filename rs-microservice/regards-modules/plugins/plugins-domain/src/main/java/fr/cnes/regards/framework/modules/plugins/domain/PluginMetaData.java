@@ -89,6 +89,10 @@ public class PluginMetaData {
      */
     private List<PluginParameterType> parameters = new ArrayList<>();
 
+    /**
+     * Constructor initializing a plugin metadata from a plugin annotation
+     * @param plugin
+     */
     public PluginMetaData(Plugin plugin) {
         author = plugin.author();
         pluginId = plugin.id();
@@ -100,6 +104,9 @@ public class PluginMetaData {
         licence = plugin.licence();
     }
 
+    /**
+     * Default constructor
+     */
     public PluginMetaData() {
 
     }
@@ -120,6 +127,9 @@ public class PluginMetaData {
         pluginClassName = pPluginClassName;
     }
 
+    /**
+     * @return the interface names
+     */
     public Set<String> getInterfaceNames() {
         if (interfaceNames == null) {
             interfaceNames = Sets.newHashSet();
@@ -127,6 +137,10 @@ public class PluginMetaData {
         return interfaceNames;
     }
 
+    /**
+     * Set the interface names
+     * @param pInterfaceNames
+     */
     public void setInterfaceNames(Set<String> pInterfaceNames) {
         interfaceNames = pInterfaceNames;
     }
@@ -155,6 +169,9 @@ public class PluginMetaData {
         description = pDescription;
     }
 
+    /**
+     * @return the url
+     */
     public String getUrl() {
         return url;
     }
@@ -163,6 +180,9 @@ public class PluginMetaData {
         url = pUrl;
     }
 
+    /**
+     * @return the contact
+     */
     public String getContact() {
         return contact;
     }
@@ -171,6 +191,9 @@ public class PluginMetaData {
         contact = pContact;
     }
 
+    /**
+     * @return the owner
+     */
     public String getOwner() {
         return owner;
     }

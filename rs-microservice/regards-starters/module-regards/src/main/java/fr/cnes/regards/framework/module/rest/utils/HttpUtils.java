@@ -25,6 +25,9 @@ import org.springframework.http.HttpStatus;
  */
 public final class HttpUtils {
 
+    /**
+     * Http code class multiplier
+     */
     private static final int HTTP_CODE_CLASS_MULTIPLIER = 100;
 
     /**

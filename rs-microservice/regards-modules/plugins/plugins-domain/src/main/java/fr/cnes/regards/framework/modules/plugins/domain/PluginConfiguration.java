@@ -209,6 +209,10 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         this(pPluginMetaData, pLabel, Lists.newArrayList(), pOrder);
     }
 
+    /**
+     * Constructor initializing a new plugin configuration from an other one
+     * @param other
+     */
     public PluginConfiguration(PluginConfiguration other) {
         active = other.active;
         id = other.id;
@@ -379,10 +383,17 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return pluginClassName;
     }
 
+    /**
+     * @return the interface names
+     */
     public Set<String> getInterfaceNames() {
         return interfaceNames;
     }
 
+    /**
+     * Set the interface names
+     * @param pInterfaceNames
+     */
     public void setInterfaceNames(Set<String> pInterfaceNames) {
         interfaceNames = pInterfaceNames;
     }

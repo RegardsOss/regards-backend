@@ -29,6 +29,11 @@ package fr.cnes.regards.framework.module.rest.exception;
 @SuppressWarnings("serial")
 public class EntityNotEmptyException extends EntityException {
 
+    /**
+     * Constructor setting exception message thanks to given parameters
+     * @param pEntityIdentifier
+     * @param pEntityClass
+     */
     public EntityNotEmptyException(final Long pEntityIdentifier, final Class<?> pEntityClass) {
         super(String.format("Entity of type \"%s\" with id \"%s\" is not empty and cannot be removed.",
                             pEntityClass.getName(), pEntityIdentifier));

@@ -6,8 +6,15 @@ import java.util.Set;
  * @author oroussel
  */
 public class AbstractPluginConfEvent {
+
+    /**
+     * The plugin configuration id
+     */
     private Long pluginConfId;
 
+    /**
+     * The action this event reflects
+     */
     private PluginServiceAction action;
 
     private Set<String> pluginTypes;

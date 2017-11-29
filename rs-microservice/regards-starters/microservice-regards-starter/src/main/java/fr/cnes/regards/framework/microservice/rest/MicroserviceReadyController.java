@@ -32,6 +32,9 @@ public class MicroserviceReadyController {
     @Autowired(required = false)
     private List<IModuleReady> moduleReadies;
 
+    /**
+     * @return whether the microservice is ready or not with the reasons
+     */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "allows to known if the microservice is ready to work")
     public ResponseEntity<ModuleReadiness> isReady() {

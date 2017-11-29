@@ -37,6 +37,10 @@ public class EntityInvalidException extends EntityException {
      */
     private final List<String> messages;
 
+    /**
+     * Constructor setting the exception message
+     * @param pMessage
+     */
     public EntityInvalidException(final String pMessage) {
         super(pMessage);
         this.messages = new ArrayList<>();

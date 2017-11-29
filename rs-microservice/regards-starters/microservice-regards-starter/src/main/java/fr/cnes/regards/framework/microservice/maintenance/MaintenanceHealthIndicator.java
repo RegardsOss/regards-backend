@@ -69,7 +69,10 @@ public class MaintenanceHealthIndicator extends AbstractHealthIndicator
         subscriber.subscribeTo(TenantCreatedEvent.class, new TenantCreatedEventHandler());
     }
 
-    private class TenantCreatedEventHandler implements IHandler<TenantCreatedEvent> {
+    /**
+     * Amqp event handler
+     */
+    private static class TenantCreatedEventHandler implements IHandler<TenantCreatedEvent> {
 
         @Override
         public void handle(TenantWrapper<TenantCreatedEvent> wrapper) {
