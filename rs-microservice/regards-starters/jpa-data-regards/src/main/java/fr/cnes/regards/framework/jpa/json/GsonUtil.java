@@ -107,13 +107,12 @@ public final class GsonUtil {
      * @return a TypeToken representing a Map<K,V>, K and V being dynamicly set
      */
     public static <K, V> TypeToken<Map<K, V>> createMapTypeToken(Type keyArgType, Type argType) {
-        final TypeToken<Map<K, V>> mapTypeToken = new TypeToken<Map<K, V>>() {
+        return new TypeToken<Map<K, V>>() {
 
         }.where(new TypeParameter<K>() {
 
         }, (TypeToken<K>) TypeToken.of(keyArgType)).where(new TypeParameter<V>() {
 
         }, (TypeToken<V>) TypeToken.of(argType));
-        return mapTypeToken;
     }
 }

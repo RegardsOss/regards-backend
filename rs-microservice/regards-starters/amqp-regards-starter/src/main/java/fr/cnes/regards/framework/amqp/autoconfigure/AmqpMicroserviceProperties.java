@@ -43,10 +43,17 @@ public class AmqpMicroserviceProperties {
     @NotNull
     private String instanceIdentifier;
 
+    /**
+     * @return the microservice type identifier
+     */
     public String getTypeIdentifier() {
         return typeIdentifier;
     }
 
+    /**
+     * Set the microservice type identifier
+     * @param pTypeIdentifier
+     */
     public void setTypeIdentifier(String pTypeIdentifier) {
         typeIdentifier = pTypeIdentifier;
     }

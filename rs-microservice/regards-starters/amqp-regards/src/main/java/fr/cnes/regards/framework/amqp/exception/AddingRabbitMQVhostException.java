@@ -29,6 +29,10 @@ public class AddingRabbitMQVhostException extends RabbitMQVhostException {
      */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Constructor setting the exception message
+     * @param pMessage
+     */
     public AddingRabbitMQVhostException(String pMessage) {
         super(pMessage);
     }

@@ -21,8 +21,14 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 @RequestMapping(MicroserviceReadyController.BASE_PATH)
 public class MicroserviceReadyController {
 
+    /**
+     * Controller base path
+     */
     public static final String BASE_PATH = "/ready";
 
+    /**
+     * List of all {@link IModuleReady} instantiated
+     */
     @Autowired
     private List<IModuleReady> moduleReadies;
 

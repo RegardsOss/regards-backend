@@ -29,6 +29,9 @@ import org.slf4j.LoggerFactory;
  */
 public interface IHandler<T> {
 
+    /**
+     * Logger instance
+     */
     static final Logger LOGGER = LoggerFactory.getLogger(IHandler.class);
 
     public default void handleAndLog(TenantWrapper<T> wrapper) {

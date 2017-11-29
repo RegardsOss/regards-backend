@@ -101,6 +101,9 @@ public class AmqpAutoConfiguration {
      */
     private AmqpProperties amqpProperties;
 
+    /**
+     * Initilization method
+     */
     @PostConstruct
     public void init() {
         amqpProperties = new AmqpProperties(rabbitProperties, amqpManagmentProperties, amqpMicroserviceProperties);
@@ -118,6 +121,9 @@ public class AmqpAutoConfiguration {
                 bootstrapProperties.getBootstrapTenants());
     }
 
+    /**
+     * @return a {@link RestTemplate} instance
+     */
     @Bean
     @ConditionalOnMissingBean(RestTemplate.class)
     public RestTemplate restTemplate() {
@@ -144,6 +150,9 @@ public class AmqpAutoConfiguration {
         return rabbitTemplate;
     }
 
+    /**
+     * @return a {@link Jackson2JsonMessageConverter} instance used to (de)serialize events
+     */
     @Bean
     public Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
         return new Jackson2JsonMessageConverter();

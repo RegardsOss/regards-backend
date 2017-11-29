@@ -34,6 +34,10 @@ public class RabbitMQVhostException extends RuntimeException {
      */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Constrcutor setting the exception message
+     * @param pMessage
+     */
     public RabbitMQVhostException(String pMessage) {
         super(pMessage);
     }
