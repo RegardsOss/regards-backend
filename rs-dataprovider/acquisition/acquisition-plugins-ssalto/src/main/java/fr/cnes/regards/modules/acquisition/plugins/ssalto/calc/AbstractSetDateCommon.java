@@ -54,7 +54,22 @@ public abstract class AbstractSetDateCommon implements ICalculationClass {
         String requiredPattern = "([0-9]{4})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})";
         Pattern pattern = Pattern.compile(requiredPattern);
         Matcher matcher = pattern.matcher((String) value);
-        if (!matcher.matches()) {
+
+        if (matcher.matches()) {
+            status = true;
+            // Year = group 1
+            year = matcher.group(1);
+            // Month = group 2
+            month = matcher.group(2);
+            // Day = group 3
+            day = matcher.group(3);
+            // Hour = group 4
+            hours = matcher.group(4);
+            // Minutes = group 5
+            minutes = matcher.group(5);
+            // Seconds = group 6
+            seconds = matcher.group(6);
+        } else {
             // Verify without the hour indication
             String altRequiredPattern = "([0-9]{4})\\s+([0-9]{1,2})\\s+([0-9]{1,2})";
             Pattern altPattern = Pattern.compile(altRequiredPattern);
@@ -69,20 +84,6 @@ public abstract class AbstractSetDateCommon implements ICalculationClass {
                 // Day = group 3
                 day = matcher.group(3);
             }
-        } else {
-            status = true;
-            // Year = group 1
-            year = matcher.group(1);
-            // Month = group 2
-            month = matcher.group(2);
-            // Day = group 3
-            day = matcher.group(3);
-            // Hour = group 4
-            hours = matcher.group(4);
-            // Minutes = group 5
-            minutes = matcher.group(5);
-            // Seconds = group 6
-            seconds = matcher.group(6);
         }
 
         Calendar cal = Calendar.getInstance();
@@ -119,10 +120,10 @@ public abstract class AbstractSetDateCommon implements ICalculationClass {
         return result;
     }
 
-    abstract protected int getDefaultHour();
+    protected abstract int getDefaultHour();
 
-    abstract protected int getDefaultMinute();
+    protected abstract int getDefaultMinute();
 
-    abstract protected int getDefaultSecond();
+    protected abstract int getDefaultSecond();
 
 }
