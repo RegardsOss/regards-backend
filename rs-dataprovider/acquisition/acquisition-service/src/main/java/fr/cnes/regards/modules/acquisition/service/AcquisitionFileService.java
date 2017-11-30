@@ -32,7 +32,6 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
-import fr.cnes.regards.modules.acquisition.domain.ErrorType;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -163,8 +162,8 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     }
 
     @Override
-    public void checkFileStatus(boolean result, String session, AcquisitionFile acqFile, 
-            String productName, MetaProduct metaProduct, String ingestChain)  {
+    public void checkFileStatus(boolean result, String session, AcquisitionFile acqFile, String productName,
+            MetaProduct metaProduct, String ingestChain) {
         if (result) {
 
             LOGGER.info("Valid file {}", acqFile.getFileName());
@@ -183,9 +182,6 @@ public class AcquisitionFileService implements IAcquisitionFileService {
             LOGGER.info("Invalid file {}", acqFile.getFileName());
 
             acqFile.setStatus(AcquisitionFileStatus.INVALID);
-
-            // CMZ : util ? Set error
-            acqFile.getAcquisitionInformations().setError(ErrorType.ERROR);
         }
 
         this.saveAcqFileAndProduct(acqFile);

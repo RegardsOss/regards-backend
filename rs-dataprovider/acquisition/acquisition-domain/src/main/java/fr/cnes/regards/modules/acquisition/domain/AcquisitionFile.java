@@ -44,12 +44,13 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
 
 /**
  * This class represents a {@link MetaFile} instance.<br>
- * A data file is detected by a plugin {@link IAcquisitionScanPlugin}. 
+ * A data file is detected by a {@link Plugin} {@link IAcquisitionScanPlugin} 
  * 
  * @author Christophe Mertz
  *
@@ -96,6 +97,9 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
     @Enumerated(EnumType.STRING)
     private AcquisitionFileStatus status;
 
+    /**
+     * The {@link Product} associated to the data file
+     */
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "product_id", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "fk_acq_file_id"),
             updatable = false)
@@ -111,20 +115,13 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
     private MetaFile metaFile;
 
     /**
-     * informations sur l'acquisition de ce fichier
+     * File information used to locate the data file
      */
     @Embedded
     private FileAcquisitionInformations acquisitionInformations;
 
     /**
-     * Processing state of the data file
-     */
-    @Column(name = "error", length = MAX_ENUM_LENGTH)
-    @Enumerated(EnumType.STRING)
-    private ErrorType error = ErrorType.OK;
-
-    /**
-     * Data file asquisition date
+     * Acquisition date of the data file
      */
     @Column(name = "acquisition_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
@@ -137,7 +134,7 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
     private String checksum;
 
     /**
-     * Algorithm used to calculate the checksum.
+     * Algorithm used to calculate the checksum
      * see {@link MessageDigest}
      */
     @Column(name = "checksumAlgorithm", length = 16)
@@ -228,14 +225,6 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
 
     public void setProduct(Product product) {
         this.product = product;
-    }
-
-    public ErrorType getError() {
-        return error;
-    }
-
-    public void setError(ErrorType error) {
-        this.error = error;
     }
 
     public OffsetDateTime getAcqDate() {

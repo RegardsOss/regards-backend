@@ -40,7 +40,6 @@ import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.builder.ProductBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.ErrorType;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
@@ -134,8 +133,8 @@ public class AcquisitionFileServiceIT {
         // Create 2 AcquisitionFile 
         AcquisitionFile acqFile1 = AcquisitionFileBuilder.build("file one")
                 .withStatus(AcquisitionFileStatus.IN_PROGRESS.toString()).withSize(133L)
-                .withActivationDate(OffsetDateTime.now().minusDays(5)).withErrorType(ErrorType.WARNING.toString())
-                .withChecksum("XXXXXXXXXXXXXXX", CHECKUM_ALGO).get();
+                .withActivationDate(OffsetDateTime.now().minusDays(5)).withChecksum("XXXXXXXXXXXXXXX", CHECKUM_ALGO)
+                .get();
         acqFile1.setMetaFile(aMetaFile);
         acqFile1.setProduct(aProduct);
         acqFile1 = acqfileService.save(acqFile1);
@@ -203,8 +202,8 @@ public class AcquisitionFileServiceIT {
         // Create 2 AcquisitionFile 
         AcquisitionFile acqFile1 = AcquisitionFileBuilder.build("file one")
                 .withStatus(AcquisitionFileStatus.IN_PROGRESS.toString()).withSize(133L)
-                .withActivationDate(OffsetDateTime.now().minusDays(5)).withErrorType(ErrorType.WARNING.toString())
-                .withChecksum("XXXXXXXXXXXXXXX", CHECKUM_ALGO).get();
+                .withActivationDate(OffsetDateTime.now().minusDays(5)).withChecksum("XXXXXXXXXXXXXXX", CHECKUM_ALGO)
+                .get();
         acqFile1.setMetaFile(aMetaFile);
         acqFile1 = acqfileService.save(acqFile1);
 

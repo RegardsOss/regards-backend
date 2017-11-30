@@ -89,7 +89,6 @@ public class AttributeFactory {
         MetaAttribute meta = new MetaAttribute();
         meta.setName(pLabel);
         meta.setValueType(pType); // FA-ID : SIPNG-FA-0121-CN : Line added
-        meta.setIsStandard(Boolean.FALSE); // FA-ID : SIPNG-FA-0121-CN : Line added
         attribute.setMetaAttribute(meta);
 
         if (pCompositeAttributeName != null) {

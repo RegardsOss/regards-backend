@@ -22,7 +22,6 @@ import java.time.OffsetDateTime;
 
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.ErrorType;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
@@ -100,16 +99,6 @@ public final class AcquisitionFileBuilder {
      */
     public AcquisitionFileBuilder withFileAcquisitionInformations(FileAcquisitionInformations fileAcqInformations) {
         acqFile.setAcquisitionInformations(fileAcqInformations);
-        return this;
-    }
-
-    /**
-     * Set the {@link ErrorType} property to the current {@link AcquisitionFile}
-     * @param error the {@link ErrorType} {@link String} value
-     * @return the current {@link AcquisitionFileBuilder}
-     */
-    public AcquisitionFileBuilder withErrorType(String error) {
-        acqFile.setError((ErrorType.valueOf(error)));
         return this;
     }
 

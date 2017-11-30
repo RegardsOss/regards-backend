@@ -47,26 +47,6 @@ public class MetaAttribute {
     protected String name = null;
 
     /**
-     * l'attribut est il affichable ?
-     */
-    protected Boolean displayable = null;
-
-    /**
-     * l'attribut est il consultable ?
-     */
-    protected Boolean consultable = null;
-
-    /**
-     * indique si l'attribut est standard ou pas.
-     */
-    protected Boolean isStandard = null;
-
-    /**
-     * indique si l'attribut sert a identifier une entite partagee
-     */
-    protected Boolean isSharedMetaIdentifier = null;
-
-    /**
      * liste des differentes valeurs du meta attribut
      */
     protected List<Attribute> distinctValues = null;
@@ -85,8 +65,6 @@ public class MetaAttribute {
      */
     public MetaAttribute() {
         super();
-        // by default meta attribute are not designed to fit shared meta entiti definitions
-        isSharedMetaIdentifier = Boolean.FALSE;
     }
 
     /**
@@ -132,34 +110,6 @@ public class MetaAttribute {
         valueType = AttributeTypeEnum.parse(pEnum);
     }
 
-    public Boolean getIsStandard() {
-        return isStandard;
-    }
-
-    public boolean isStandard() {
-        return isStandard.booleanValue();
-    }
-
-    public void setIsStandard(Boolean pIsStandard) {
-        isStandard = pIsStandard;
-    }
-
-    public Boolean getConsultable() {
-        return consultable;
-    }
-
-    public void setConsultable(Boolean pConsultable) {
-        consultable = pConsultable;
-    }
-
-    public Boolean getDisplayable() {
-        return displayable;
-    }
-
-    public void setDisplayable(Boolean pDisplayable) {
-        displayable = pDisplayable;
-    }
-
     public CalculationFunctionTypeEnum getComputationRule() {
         return computationRule;
     }
@@ -176,14 +126,6 @@ public class MetaAttribute {
         distinctValues = pDistinctValues;
     }
 
-    public boolean isSharedMetaIdentifier() {
-        return isSharedMetaIdentifier.booleanValue();
-    }
-
-    public void setIsSharedMetaIdentifier(Boolean pBoolean) {
-        isSharedMetaIdentifier = pBoolean;
-    }
-
     @Override
     public boolean equals(Object pToBeCompared) {
         boolean ret = false;
@@ -196,11 +138,6 @@ public class MetaAttribute {
         return ret;
     }
 
-    /**
-     * Methode surchargee
-     * 
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
         // getName() is consistent and ValueType is an Enum which Object.hashcode point to a static reference
