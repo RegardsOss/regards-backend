@@ -523,29 +523,51 @@ public class AccountsController implements IResourceController<Account> {
             this.password = password;
         }
 
+        /**
+         * @return the password
+         */
         public String getPassword() {
             return password;
         }
 
+        /**
+         * Set the password
+         * @param password
+         */
         public void setPassword(String password) {
             this.password = password;
         }
     }
 
-    @SuppressWarnings("unused")
-
+    /**
+     * DTO to wrap password rules into an object
+     */
     private static class PasswordRules {
 
+        /**
+         * The rules
+         */
         private String rules;
 
+        /**
+         * Constructor setting the parameter as attribute
+         * @param passwordRules
+         */
         public PasswordRules(String passwordRules) {
             rules = passwordRules;
         }
 
+        /**
+         * @return the rules
+         */
         public String getRules() {
             return rules;
         }
 
+        /**
+         * Set the rules
+         * @param rules
+         */
         public void setRules(String rules) {
             this.rules = rules;
         }
