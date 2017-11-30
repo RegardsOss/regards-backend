@@ -3,7 +3,6 @@ package fr.cnes.regards.modules.search.client;
 import javax.validation.Valid;
 import java.util.Map;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
@@ -37,6 +36,9 @@ public interface ISearchClient {
 
     String DATAOBJECTS_SEARCH_WITHOUT_FACETS = "/dataobjects";
 
+    /**
+     * Entity get mapping
+     */
     String ENTITY_GET_MAPPING = "/entities/{urn}";
 
     /**

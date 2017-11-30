@@ -180,11 +180,11 @@ public class CatalogSearchService implements ICatalogSearchService {
     @Override
     public <E extends AbstractEntity> E get(UniformResourceName urn)
             throws EntityOperationForbiddenException, EntityNotFoundException {
-        Set<String> userGroups = null;
         E entity = searchService.get(urn);
         if (entity == null) {
             throw new EntityNotFoundException(urn.toString(), AbstractEntity.class);
         }
+        Set<String> userGroups = null;
         try {
             userGroups = accessRightFilter.getUserAccessGroups();
         } catch (AccessRightFilterException e) {

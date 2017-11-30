@@ -102,11 +102,10 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
      */
     private IPluginService pluginService;
 
+    /**
+     * {@link IRuntimeTenantResolver} instance
+     */
     private IRuntimeTenantResolver tenantResolver;
-
-    private ITenantResolver tenantsResolver;
-
-    private ISubscriber subscriber;
 
     /**
      * Map of pluginConfiguration to be used for a specific MediaType
@@ -128,10 +127,8 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
             ITenantResolver tenantsResolver, ISubscriber subscriber)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         this.tenantResolver = tenantResolver;
-        this.tenantsResolver = tenantsResolver;
         pluginService = pPluginService;
         pluginService.addPluginPackage(IRepresentation.class.getPackage().getName());
-        this.subscriber = subscriber;
         enabledRepresentationPluginMapByTenant = Collections.synchronizedMap(new HashMap<>());
         for (String tenant : tenantsResolver.getAllActiveTenants()) {
             HashMap<MediaType, Long> enabledRepresentationPluginMap = new HashMap<>();
