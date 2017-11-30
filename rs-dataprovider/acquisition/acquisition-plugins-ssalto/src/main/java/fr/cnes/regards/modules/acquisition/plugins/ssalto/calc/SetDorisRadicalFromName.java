@@ -32,16 +32,16 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
  */
 public class SetDorisRadicalFromName implements ICalculationClass {
 
-    private final static String PATTERND = "^(.*)([a-z]{1})(D|S)([0-9]{8}_[0-9]{6})$";
+    private static final String PATTERND = "^(.*)([a-z]{1})(D|S)([0-9]{8}_[0-9]{6})$";
 
-    private final static String PATTERNS = "^(.*)([a-z]{1})(D|S)([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$";
+    private static final String PATTERNS = "^(.*)([a-z]{1})(D|S)([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$";
 
-    private final static String DATE_SEPARATOR = "_";
+    private static final String DATE_SEPARATOR = "_";
 
     @Override
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
+    public Object calculateValue(Object value, AttributeTypeEnum type, PluginConfigurationProperties properties) {
 
-        String str = (String) pValue;
+        String str = (String) value;
         String radical = "";
 
         Matcher matcherD = (Pattern.compile(PATTERND)).matcher(str);

@@ -31,14 +31,10 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
  */
 public class SetStopDateSaralDoris10Redate implements ICalculationClass {
 
-    public SetStopDateSaralDoris10Redate() {
-        super();
-    }
-
     @Override
     public Object calculateValue(Object value, AttributeTypeEnum attributeType,
             PluginConfigurationProperties properties) {
-        
+
         return ((OffsetDateTime) value).minusHours(2);
     }
 }

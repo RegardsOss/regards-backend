@@ -31,10 +31,6 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
  */
 public class SetStopDateHours implements ICalculationClass {
 
-    public SetStopDateHours() {
-        super();
-    }
-
     @Override
     public Object calculateValue(Object value, AttributeTypeEnum attributeType,
             PluginConfigurationProperties properties) {

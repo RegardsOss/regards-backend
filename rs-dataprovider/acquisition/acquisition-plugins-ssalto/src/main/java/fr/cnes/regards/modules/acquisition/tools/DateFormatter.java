@@ -1,31 +1,20 @@
 /*
- * $Id$
+ * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
- * HISTORIQUE
+ * This file is part of REGARDS.
  *
- * VERSION : 5.5.2 : DM : SIPNG-DM-165-CN : 27/11/2015 : Ajout du format TIME_ONLY_FORMAT
- * VERSION : 5.2 : DM : SIPNG-DM-0112-CN : 01/07/2012 : RIA
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * VERSION : 2012/04/18 : 5.1 : CS
- * FA-ID : SIPNG-DM-RIA-CN : 2012/04/18 : Merge Sadic.
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- * VERSION : 2011/09/05 : 5.0 : CS
- * DM-ID : SIPNG-DM-0099-CN : 2011/09/05 : Conversion en UTF-8
- *
- * VERSION : 2010/03/08 : 4.4.1 : CS
- * FA-ID : SIPNG-FA-0566-CN : 2010/03/08 : correction nommage fichiers statistiques
- *
- * VERSION : 2009/06/09 : 4.4 : CS
- * FA-ID : SIPNG-FA-0410-CN : 2009/06/09 : ajout du format DATE_HOUR_MIN_FORMAT pour le nom des fichiers descripteurs.
- * DM-ID : SIPNG-DM-0059-CN : 2009/11/16 : ajout format DATE_TIMESTAMP et DATE_FORMAT pour le client de statistique.
- *
- * VERSION : 2007/08/01 : 3.4 : CS
- * DM-ID : SADIC : 2007/08/01 : Ajout des formats correspondant aux types xsd xs:date et xs:dateTime
- *
- * VERSION : 2006/04/10 : 3.0 : CS
- * DM-ID : SIPNG-DM-0013-CN : 2006/04/10 : CS : Creation. Code deplace depuis sipad.client.web.common.tagbean.GuiDate.
- *
- * FIN-HISTORIQUE
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.cnes.regards.modules.acquisition.tools;
 

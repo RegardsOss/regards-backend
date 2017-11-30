@@ -29,12 +29,16 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
 import fr.cnes.regards.modules.acquisition.tools.DateFormatter;
 
 /**
+ * This class parses a {@link String} to extracts a date and format this date with the format "yyyy-MM-dd'T'HH:mm:ss".
  * 
  * @author Christophe Mertz
  *
  */
-public abstract class AbstractSetDateCommun implements ICalculationClass {
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
+public abstract class AbstractSetDateCommon implements ICalculationClass {
+
+    @Override
+    public Object calculateValue(Object value, AttributeTypeEnum attributeType,
+            PluginConfigurationProperties properties) {
 
         boolean status = false;
         String result = null;
@@ -49,12 +53,12 @@ public abstract class AbstractSetDateCommun implements ICalculationClass {
         // Required filePattern
         String requiredPattern = "([0-9]{4})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})";
         Pattern pattern = Pattern.compile(requiredPattern);
-        Matcher matcher = pattern.matcher((String) pValue);
+        Matcher matcher = pattern.matcher((String) value);
         if (!matcher.matches()) {
             // Verify without the hour indication
             String altRequiredPattern = "([0-9]{4})\\s+([0-9]{1,2})\\s+([0-9]{1,2})";
             Pattern altPattern = Pattern.compile(altRequiredPattern);
-            matcher = altPattern.matcher((String) pValue);
+            matcher = altPattern.matcher((String) value);
 
             if (matcher.matches()) {
                 status = true;
@@ -77,7 +81,7 @@ public abstract class AbstractSetDateCommun implements ICalculationClass {
             hours = matcher.group(4);
             // Minutes = group 5
             minutes = matcher.group(5);
-            // Secondes = group 6
+            // Seconds = group 6
             seconds = matcher.group(6);
         }
 
@@ -115,10 +119,10 @@ public abstract class AbstractSetDateCommun implements ICalculationClass {
         return result;
     }
 
-    abstract int getDefaultHour();
+    abstract protected int getDefaultHour();
 
-    abstract int getDefaultMinute();
+    abstract protected int getDefaultMinute();
 
-    abstract int getDefaultSecond();
+    abstract protected int getDefaultSecond();
 
 }

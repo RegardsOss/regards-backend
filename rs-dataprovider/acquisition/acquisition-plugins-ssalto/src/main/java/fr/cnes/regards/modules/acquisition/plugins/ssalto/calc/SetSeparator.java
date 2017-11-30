@@ -30,18 +30,13 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
 
 public class SetSeparator implements ICalculationClass {
 
-    public SetSeparator() {
-        super();
-    }
-
     @Override
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
-
-        String value = (String) pValue;
+    public Object calculateValue(Object value, AttributeTypeEnum type, PluginConfigurationProperties properties) {
+        String strValue = (String) value;
         String version = "";
 
-        version = value.substring(0, 2);
-        version = version + "." + value.substring(2, 4);
+        version = strValue.substring(0, 2);
+        version = version + "." + strValue.substring(2, 4);
 
         return version;
     }

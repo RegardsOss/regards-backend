@@ -31,9 +31,10 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
 public class IsPairCalculation implements ICalculationClass {
 
     @Override
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
-        int value = Integer.parseInt(pValue.toString());
-        int reste = value % 2;
+    public Object calculateValue(Object value, AttributeTypeEnum attributeType,
+            PluginConfigurationProperties properties) {
+        int intValue = Integer.parseInt(value.toString());
+        int reste = intValue % 2;
         if (reste == 0) {
             return "Descending";
         } else {

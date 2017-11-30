@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
  * @author Christophe Mertz
  *
  */
-public abstract class Attribute {
+public class Attribute {
 
     /**
      * Liste de valeurs de l'attribut.

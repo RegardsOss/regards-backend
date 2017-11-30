@@ -40,19 +40,15 @@ public class SetEnvisatD1BPoeCddisStopDate implements ICalculationClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SetEnvisatD1BPoeCddisStopDate.class);
 
-    public SetEnvisatD1BPoeCddisStopDate() {
-        super();
-    }
-
     @Override
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
+    public Object calculateValue(Object value, AttributeTypeEnum type, PluginConfigurationProperties properties) {
 
         GregorianCalendar calendar = new GregorianCalendar();
         Date stopDate = null;
 
         Date date;
         try {
-            date = DateFormatter.parse((String) pValue, DateFormatter.XS_DATE_TIME_FORMAT);
+            date = DateFormatter.parse((String) value, DateFormatter.XS_DATE_TIME_FORMAT);
             calendar.setTime(date);
             calendar.add(Calendar.DAY_OF_YEAR, 6);
             calendar.set(Calendar.HOUR, 23);
@@ -60,7 +56,7 @@ public class SetEnvisatD1BPoeCddisStopDate implements ICalculationClass {
             calendar.set(Calendar.SECOND, 59);
             stopDate = calendar.getTime();
         } catch (DateUtilException e) {
-            LOGGER.error(e.getMessage(),e);
+            LOGGER.error(e.getMessage(), e);
         }
 
         return DateFormatter.getDateRepresentation(stopDate, DateFormatter.XS_DATE_TIME_FORMAT);

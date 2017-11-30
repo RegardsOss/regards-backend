@@ -20,8 +20,6 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -121,7 +119,7 @@ public class ProductService implements IProductService {
         int nbTotalOptional = 0;
         int nbActualMandatory = 0;
         int nbActualOptional = 0;
-        
+
         // At least one mandatory file is VALID
         product.setStatus(ProductStatus.ACQUIRING);
 
@@ -153,7 +151,7 @@ public class ProductService implements IProductService {
             }
         }
     }
-    
+
     @Override
     public Product linkAcquisitionFileToProduct(String session, AcquisitionFile acqFile, String productName,
             MetaProduct metaProduct, String ingestChain) {
@@ -174,33 +172,33 @@ public class ProductService implements IProductService {
 
         return currentProduct;
     }
-    
-//    @Override
-//    public void setSipAndSave(Product product, SIP sip) {
-//        product.setSip(sip);
-//        this.save(product);
-//    }
-//    
-//    @Override
-//    public void setProductAsSend(String sipId) {
-//        Product product = this.retrieve(sipId);
-//        if (product == null) {
-//            final StringBuilder buff = new StringBuilder();
-//            buff.append("The product name <");
-//            buff.append(sipId);
-//            buff.append("> does not exist");
-//            LOG.error(buff.toString());
-//        } else {
-//            product.setSended(Boolean.TRUE);
-//            this.save(product);
-//        }
-//    }
 
-//    @Override
-//    public void setStatusAndSaved(String sipId, ProductStatus status) {
-//        // todo cmz, il faut un retrieve light et pas complet 
-//        Product product = this.retrieve(sipId);
-//        product.setStatus(status);
-//        this.save(product);
-//    }
+    //    @Override
+    //    public void setSipAndSave(Product product, SIP sip) {
+    //        product.setSip(sip);
+    //        this.save(product);
+    //    }
+    //    
+    //    @Override
+    //    public void setProductAsSend(String sipId) {
+    //        Product product = this.retrieve(sipId);
+    //        if (product == null) {
+    //            final StringBuilder buff = new StringBuilder();
+    //            buff.append("The product name <");
+    //            buff.append(sipId);
+    //            buff.append("> does not exist");
+    //            LOG.error(buff.toString());
+    //        } else {
+    //            product.setSended(Boolean.TRUE);
+    //            this.save(product);
+    //        }
+    //    }
+
+    //    @Override
+    //    public void setStatusAndSaved(String sipId, ProductStatus status) {
+    //        // todo cmz, il faut un retrieve light et pas complet 
+    //        Product product = this.retrieve(sipId);
+    //        product.setStatus(status);
+    //        this.save(product);
+    //    }
 }

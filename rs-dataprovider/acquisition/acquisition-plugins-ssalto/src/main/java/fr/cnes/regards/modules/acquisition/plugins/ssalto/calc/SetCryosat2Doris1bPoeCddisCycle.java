@@ -30,8 +30,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ICalculationClass;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
 /**
- * Classe permettant de calculer le cycle associee a une date donnee au format specific lu dans les
- * fichiers cryosat2.
+ * Classe permettant de calculer le cycle associee a une date donnee au format specific lu dans les fichiers cryosat2.
  * 
  * @author sbinda
  * @author Christophe Mertz
@@ -39,11 +38,13 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
  */
 public class SetCryosat2Doris1bPoeCddisCycle implements ICalculationClass {
 
-    public Object calculateValue(Object value, AttributeTypeEnum type, PluginConfigurationProperties properties) {
+    @Override
+    public java.lang.Object calculateValue(java.lang.Object value, AttributeTypeEnum attributeType,
+            PluginConfigurationProperties properties) {
         String cycle = "";
         SetCryosat2Doris1bPoeCddisDate calculationDate = new SetCryosat2Doris1bPoeCddisDate();
-        Date date = calculationDate.calculate(value, type);
-        
+        Date date = calculationDate.calculate(value, attributeType);
+
         if (date != null) {
             OffsetDateTime odt = OffsetDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
             TranslatedFromCycleFileFinder finder = new TranslatedFromCycleFileFinder();
@@ -69,7 +70,6 @@ public class SetCryosat2Doris1bPoeCddisCycle implements ICalculationClass {
         }
 
         return cycle;
-
     }
 
 }

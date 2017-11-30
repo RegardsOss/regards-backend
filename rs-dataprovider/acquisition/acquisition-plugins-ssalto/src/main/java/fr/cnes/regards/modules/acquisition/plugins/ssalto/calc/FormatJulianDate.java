@@ -35,10 +35,12 @@ import fr.cnes.regards.modules.acquisition.tools.DateFormatter;
  */
 public class FormatJulianDate implements ICalculationClass {
 
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
+    @Override
+    public Object calculateValue(Object value, AttributeTypeEnum attributeType,
+            PluginConfigurationProperties properties) {
 
         // Get Julian day and seconds
-        StringTokenizer tokenizer = new StringTokenizer(pValue.toString(), " ");
+        StringTokenizer tokenizer = new StringTokenizer(value.toString(), " ");
         String julianDayString = null;
         String secondInDay = null;
         if (tokenizer.hasMoreTokens()) {
@@ -47,7 +49,7 @@ public class FormatJulianDate implements ICalculationClass {
         if (tokenizer.hasMoreTokens()) {
             secondInDay = tokenizer.nextToken();
         }
-        Date tmp = CNESJulianDate.toDate(julianDayString, secondInDay); 
+        Date tmp = CNESJulianDate.toDate(julianDayString, secondInDay);
         String tmp2String = DateFormatter.getDateRepresentation(tmp, DateFormatter.XS_DATE_TIME_FORMAT);
         return tmp2String;
     }

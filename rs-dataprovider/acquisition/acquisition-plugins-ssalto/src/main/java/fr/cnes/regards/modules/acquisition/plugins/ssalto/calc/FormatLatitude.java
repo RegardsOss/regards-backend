@@ -34,10 +34,10 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
 public class FormatLatitude implements ICalculationClass {
 
     @Override
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
+    public Object calculateValue(Object value, AttributeTypeEnum attributeType, PluginConfigurationProperties properties) {
         NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);
         nf.setMaximumFractionDigits(2);
-        String output = nf.format(pValue);
+        String output = nf.format(value);
         return new Double(output);
     }
 }

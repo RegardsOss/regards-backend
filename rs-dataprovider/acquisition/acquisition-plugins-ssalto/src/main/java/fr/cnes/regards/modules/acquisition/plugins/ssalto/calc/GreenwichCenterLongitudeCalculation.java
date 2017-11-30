@@ -25,7 +25,6 @@ import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.plugins.ICalculationClass;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
-
 /**
  * Cette classe permet de passer de longitude 0 360 a des longitudes
  * -180 180, en limitant la precision a deux chiffres apres la virgule.
@@ -35,25 +34,17 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
  */
 public class GreenwichCenterLongitudeCalculation implements ICalculationClass {
 
-    /**
-     * 
-     * @since 1.2
-     * 
-     */
-    public GreenwichCenterLongitudeCalculation() {
-        super();
-    }
-
     @Override
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
+    public Object calculateValue(Object value, AttributeTypeEnum attributeType,
+            PluginConfigurationProperties properties) {
         // value is a Double
-        double value = Double.parseDouble(pValue.toString());
-        if(value>180) {
-            value=-360+value;        
+        double longValue = Double.parseDouble(value.toString());
+        if (longValue > 180) {
+            longValue = -360 + longValue;
         }
         NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);
         nf.setMaximumFractionDigits(2);
-        String output = nf.format(value);
+        String output = nf.format(longValue);
         return new Double(output);
     }
 

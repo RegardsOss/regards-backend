@@ -32,14 +32,9 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
 public class SetLogvolDorisDGXXSeparator implements ICalculationClass {
 
     @Override
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
-
-        String value = (String) pValue;
-        String version = "";
-
-        version = "DORIS=" + value.substring(0, 1) + "." + value.substring(1, 3) + " - DIODE=" + value.substring(4, 5)
-                + "." + value.substring(5, 7);
-
-        return version;
+    public Object calculateValue(Object value, AttributeTypeEnum type, PluginConfigurationProperties properties) {
+        String strValue = (String) value;
+        return "DORIS=" + strValue.substring(0, 1) + "." + strValue.substring(1, 3) + " - DIODE="
+                + strValue.substring(4, 5) + "." + strValue.substring(5, 7);
     }
 }

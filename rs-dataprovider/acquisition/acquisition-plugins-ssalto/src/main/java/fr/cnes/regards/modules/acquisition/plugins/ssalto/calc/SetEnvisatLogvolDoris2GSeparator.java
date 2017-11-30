@@ -23,26 +23,19 @@ import fr.cnes.regards.modules.acquisition.plugins.ICalculationClass;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
 /**
- * Met en forme la version passee en parametre XYYab sous le format DORIS=X.YY - DIODE=a.b
+ * Mets en forme la version passee en parametre XYYab<br>
+ * sous le format DORIS=X.YY - DIODE=a.b<br>
  * pour le cas particulier DA_TC_ENVISAT_LOGVOL_DORIS_2G 
+ * 
  * @author Christophe Mertz
  */
 
 public class SetEnvisatLogvolDoris2GSeparator implements ICalculationClass {
 
-    public SetEnvisatLogvolDoris2GSeparator() {
-        super();
-    }
-
     @Override
-    public Object calculateValue(Object newValue, AttributeTypeEnum type, PluginConfigurationProperties properties) {
-
-        String value = (String) newValue;
-        String version = "";
-
-        version = "DORIS=" + value.substring(0, 1) + "." + value.substring(1, 3) + " - DIODE=" + value.substring(3, 4)
-                + "." + value.substring(4, 5);
-
-        return version;
+    public Object calculateValue(Object value, AttributeTypeEnum type, PluginConfigurationProperties properties) {
+        String strVal = (String) value;
+        return "DORIS=" + strVal.substring(0, 1) + "." + strVal.substring(1, 3) + " - DIODE=" + strVal.substring(3, 4)
+                + "." + strVal.substring(4, 5);
     }
 }

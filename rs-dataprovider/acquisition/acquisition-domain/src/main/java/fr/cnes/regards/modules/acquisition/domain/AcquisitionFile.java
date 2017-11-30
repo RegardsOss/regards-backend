@@ -265,10 +265,10 @@ public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
             currentFile = new File(this.getFileName());
         } else {
             String workingDir = this.getAcquisitionInformations().getWorkingDirectory();
-            if (workingDir != null) {
-                currentFile = new File(workingDir, this.getFileName());
-            } else {
+            if (workingDir == null) {
                 currentFile = new File(this.getAcquisitionInformations().getAcquisitionDirectory(), this.getFileName());
+            } else {
+                currentFile = new File(workingDir, this.getFileName());
             }
         }
         return currentFile;

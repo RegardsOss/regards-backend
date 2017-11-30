@@ -33,19 +33,11 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
  */
 public class SetCpfEphemerisStopDate implements ICalculationClass {
 
-    /**
-     * 
-     * @since 1.2
-     * 
-     */
-    public SetCpfEphemerisStopDate() {
-        super();
-    }
-
     @Override
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
+    public Object calculateValue(Object value, AttributeTypeEnum attributeType,
+            PluginConfigurationProperties properties) {
         GregorianCalendar calendar = new GregorianCalendar();
-        calendar.setTime((Date) pValue);
+        calendar.setTime((Date) value);
         calendar.add(Calendar.DAY_OF_YEAR, 4);
         calendar.set(Calendar.HOUR, 23);
         calendar.set(Calendar.MINUTE, 59);

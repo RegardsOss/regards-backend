@@ -30,23 +30,17 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
 
 public class SetEnvisatD1BPoeCddisCycleMin implements ICalculationClass {
 
-    public SetEnvisatD1BPoeCddisCycleMin() {
-        super();
-    }
-
     @Override
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
-        Integer numeroArc = (Integer) pValue;
+    public Object calculateValue(Object value, AttributeTypeEnum type, PluginConfigurationProperties properties) {
+        Integer numeroArc = (Integer) value;
         int temp;
 
         if ((numeroArc.intValue() % 5) != 0) {
             temp = numeroArc.intValue() / 5 + 7;
-        }
-        else {
+        } else {
             temp = numeroArc.intValue() / 5 + 6;
         }
 
-        Integer minCycle = Integer.valueOf(temp);
-        return minCycle;
+        return Integer.valueOf(temp);
     }
 }

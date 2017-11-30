@@ -31,10 +31,6 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
  */
 public class SetStartDateSaralDoris10Redate implements ICalculationClass {
 
-    public SetStartDateSaralDoris10Redate() {
-        super();
-    }
-
     @Override
     public Object calculateValue(Object value, AttributeTypeEnum attributeType,
             PluginConfigurationProperties properties) {

@@ -32,13 +32,9 @@ import fr.cnes.regards.modules.acquisition.tools.DateFormatter;
  */
 public class SetEnvisatD1BPoeCddisStartDate implements ICalculationClass {
 
-    public SetEnvisatD1BPoeCddisStartDate() {
-        super();
-    }
-
     @Override
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
-        Integer numeroArc = (Integer) pValue;
+    public Object calculateValue(Object value, AttributeTypeEnum type, PluginConfigurationProperties properties) {
+        Integer numeroArc = (Integer) value;
 
         Calendar cal = Calendar.getInstance();
         cal.set(2002, Calendar.JUNE, 18, 00, 00, 00);

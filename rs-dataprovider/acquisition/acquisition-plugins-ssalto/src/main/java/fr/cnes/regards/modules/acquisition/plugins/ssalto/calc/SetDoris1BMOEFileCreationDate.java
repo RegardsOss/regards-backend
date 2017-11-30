@@ -32,14 +32,10 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
  */
 public class SetDoris1BMOEFileCreationDate implements ICalculationClass {
 
-    public SetDoris1BMOEFileCreationDate() {
-        super();
-    }
-
     @Override
-    public Object calculateValue(Object pValue, AttributeTypeEnum pType, PluginConfigurationProperties properties) {
+    public Object calculateValue(Object value, AttributeTypeEnum type, PluginConfigurationProperties properties) {
         // The day after at midday
-        Date oneDate = (Date) pValue;
+        Date oneDate = (Date) value;
         Calendar cal = Calendar.getInstance();
 
         cal.setTime(oneDate);
