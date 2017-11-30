@@ -249,6 +249,10 @@ public interface IProjectUserService {
      */
     void resetLicence();
 
+    /**
+     * @param role
+     * @return users which role is the given one
+     */
     Collection<ProjectUser> retrieveUserByRole(Role role);
 
     /**

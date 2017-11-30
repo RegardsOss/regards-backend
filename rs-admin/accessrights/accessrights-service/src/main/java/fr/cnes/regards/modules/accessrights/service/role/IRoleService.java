@@ -62,6 +62,16 @@ public interface IRoleService {
     Role retrieveRole(String pRoleName) throws EntityNotFoundException;
 
     /**
+     *
+     * retrieve a role by its Id
+     *
+     * @param pRoleId
+     * @return required role
+     * @throws EntityNotFoundException
+     */
+    Role retrieveRole(Long pRoleId) throws EntityNotFoundException;
+
+    /**
      * Return the single <code>default</code> {@link Role}.
      *
      * @return The only {@link Role} with it's <code>default</code> attribute set to <code>true</code>
@@ -215,16 +225,6 @@ public interface IRoleService {
      * @since 1.0-SNAPSHOT
      */
     Set<Role> retrieveInheritedRoles(Role pRole);
-
-    /**
-     *
-     * retrieve a role by its Id
-     *
-     * @param pRoleId
-     * @return required role
-     * @throws EntityNotFoundException
-     */
-    Role retrieveRole(Long pRoleId) throws EntityNotFoundException;
 
     /**
      * Remove given resources accesses from the given role and its descendancy

@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.notification.rest;
 
-import java.util.List;
-
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -55,10 +54,19 @@ import fr.cnes.regards.modules.notification.service.INotificationSettingsService
 @RequestMapping(NotificationController.NOTIFICATION_PATH)
 public class NotificationController {
 
+    /**
+     * Controller base path
+     */
     public static final String NOTIFICATION_PATH = "/notifications";
 
+    /**
+     * Controller path using notification id as path variable
+     */
     public static final String NOTIFICATION_ID_PATH = "/{notification_id}";
 
+    /**
+     * Controller path for notification settings
+     */
     public static final String NOTIFICATION_SETTINGS = "/settings";
 
     /**

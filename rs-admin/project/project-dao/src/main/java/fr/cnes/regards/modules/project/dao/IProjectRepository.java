@@ -39,6 +39,11 @@ import fr.cnes.regards.modules.project.domain.Project;
 @InstanceEntity
 public interface IProjectRepository extends JpaRepository<Project, Long> {
 
+    /**
+     * Find a project in the database by its name without taking care of the case
+     * @param pName
+     * @return the project or null if none found
+     */
     Project findOneByNameIgnoreCase(String pName);
 
     Page<Project> findByIsPublicTrue(Pageable pPageable);

@@ -85,6 +85,9 @@ public class RoleController implements IResourceController<Role> {
     @Autowired
     private IRoleService roleService;
 
+    /**
+     * {@link IProjectUserService} instance
+     */
     @Autowired
     private IProjectUserService projectUserService;
 

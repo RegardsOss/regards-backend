@@ -65,6 +65,9 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
      */
     private ISendingStrategy strategy;
 
+    /**
+     * {@link IRuntimeTenantResolver} instance
+     */
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 

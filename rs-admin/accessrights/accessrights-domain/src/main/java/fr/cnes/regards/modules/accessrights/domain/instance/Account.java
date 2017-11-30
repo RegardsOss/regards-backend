@@ -74,6 +74,9 @@ public class Account implements IIdentifiable<Long> {
     @Column(name = "lastName", length = 100)
     private String lastName;
 
+    /**
+     * invalidity date of the account
+     */
     @Column
     private LocalDateTime invalidityDate;
 
@@ -90,6 +93,9 @@ public class Account implements IIdentifiable<Long> {
     @Column(name = "password", length = 200)
     private String password;
 
+    /**
+     * last password update date
+     */
     @Column(name = "password_update_date")
     private LocalDateTime passwordUpdateDate;
 
@@ -200,7 +206,7 @@ public class Account implements IIdentifiable<Long> {
      * @param pPassword
      *            the password to set
      */
-    public void setPassword(final String pPassword) {
+    public final void setPassword(final String pPassword) {
         passwordUpdateDate = LocalDateTime.now();
         password = pPassword;
     }
@@ -220,6 +226,9 @@ public class Account implements IIdentifiable<Long> {
         status = pStatus;
     }
 
+    /**
+     * @return the last password update date
+     */
     public LocalDateTime getPasswordUpdateDate() {
         return passwordUpdateDate;
     }
@@ -228,6 +237,9 @@ public class Account implements IIdentifiable<Long> {
         this.passwordUpdateDate = passwordUpdateDate;
     }
 
+    /**
+     * @return whether this account is external to REGARDS
+     */
     public Boolean getExternal() {
         return external;
     }
@@ -236,6 +248,9 @@ public class Account implements IIdentifiable<Long> {
         external = pExternal;
     }
 
+    /**
+     * @return the authentication failed counter
+     */
     public Long getAuthenticationFailedCounter() {
         return authenticationFailedCounter;
     }
@@ -244,6 +259,9 @@ public class Account implements IIdentifiable<Long> {
         authenticationFailedCounter = pAuthenticationFailedCounter;
     }
 
+    /**
+     * @return the account invalidity date
+     */
     public LocalDateTime getInvalidityDate() {
         return invalidityDate;
     }

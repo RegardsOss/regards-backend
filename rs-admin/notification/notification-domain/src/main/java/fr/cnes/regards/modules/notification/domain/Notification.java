@@ -116,6 +116,9 @@ public class Notification implements IIdentifiable<Long> {
     @Column(name = "status")
     private NotificationStatus status;
 
+    /**
+     * The notification type
+     */
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
@@ -245,10 +248,17 @@ public class Notification implements IIdentifiable<Long> {
         title = pTitle;
     }
 
+    /**
+     * @return the notification type
+     */
     public NotificationType getType() {
         return type;
     }
 
+    /**
+     * Set the notification type
+     * @param type
+     */
     public void setType(NotificationType type) {
         this.type = type;
     }

@@ -77,15 +77,26 @@ public class AccountsController implements IResourceController<Account> {
 
     public static final String PATH_PASSWORD = "/password"; // NOSONAR: not a password
 
+    /**
+     * Controller path for account email validation
+     */
     public static final String PATH_ACCOUNT_EMAIL_VALIDATE = "/{account_email}/validate";
 
     public static final String PATH_ACCOUNT_EMAIL_RESET_PASSWORD = "/{account_email}/resetPassword"; // NOSONAR: not a
                                                                                                      // password
-
+    /**
+     * Controller path for account email unlock
+     */
     public static final String PATH_ACCOUNT_EMAIL_UNLOCK_ACCOUNT = "/{account_email}/unlockAccount";
 
+    /**
+     * Controller path using account email as path variable
+     */
     public static final String PATH_ACCOUNT_ACCOUNT_EMAIL = "/account/{account_email}";
 
+    /**
+     * Controller path using account id as path variable
+     */
     public static final String PATH_ACCOUNT_ID = "/{account_id}";
 
     public static final String PATH_ACTIVE_ACCOUNT = "/{account_email}/active";
@@ -491,13 +502,23 @@ public class AccountsController implements IResourceController<Account> {
         return resource;
     }
 
+    /**
+     * DTO to wrap password
+     */
     static class Password {
 
         private String password; //NOSONAR
 
+        /**
+         * Default constructor
+         */
         public Password() {
         }
 
+        /**
+         * Constructor setting the parameter as attribute
+         * @param password
+         */
         public Password(String password) {
             this.password = password;
         }

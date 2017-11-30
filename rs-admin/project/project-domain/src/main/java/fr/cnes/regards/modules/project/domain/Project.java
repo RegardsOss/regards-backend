@@ -120,6 +120,9 @@ public class Project implements IIdentifiable<Long> {
     @Column
     private String host;
 
+    /**
+     * Default constructor
+     */
     public Project() {
         super();
         name = "undefined";
@@ -158,6 +161,9 @@ public class Project implements IIdentifiable<Long> {
         id = pId;
     }
 
+    /**
+     * @return the name
+     */
     public String getName() {
         return name;
     }
@@ -190,6 +196,9 @@ public class Project implements IIdentifiable<Long> {
         isPublic = pIsPublic;
     }
 
+    /**
+     * @return the licence link
+     */
     public String getLicenceLink() {
         return licenceLink;
     }

@@ -322,6 +322,9 @@ public class ProjectUser implements IIdentifiable<Long> {
         email = pEmail;
     }
 
+    /**
+     * @return whether the license is accepted or not
+     */
     public boolean isLicenseAccepted() {
         return licenseAccepted;
     }

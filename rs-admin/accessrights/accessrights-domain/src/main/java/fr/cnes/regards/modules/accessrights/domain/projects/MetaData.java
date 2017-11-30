@@ -62,6 +62,12 @@ public class MetaData implements IIdentifiable<Long> {
         super();
     }
 
+    /**
+     * Constructor setting the parameters as attributes
+     * @param key
+     * @param value
+     * @param visibility
+     */
     public MetaData(String key, String value, UserVisibility visibility) {
         this.key=key;
         this.value=value;

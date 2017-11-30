@@ -93,6 +93,9 @@ public class NotificationService implements INotificationService {
      */
     private final IProjectUsersClient projectUserClient;
 
+    /**
+     * Application event publisher
+     */
     private final ApplicationEventPublisher applicationEventPublisher;
 
     /**
@@ -246,7 +249,7 @@ public class NotificationService implements INotificationService {
         }
     }
 
-    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(Role pRole,
+    private ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(Role pRole,
             Pageable pPageable) {
         final ResponseEntity<PagedResources<Resource<ProjectUser>>> response = projectUserClient
                 .retrieveRoleProjectUserList(pRole.getId(), pPageable.getPageNumber(), pPageable.getPageSize());

@@ -74,6 +74,9 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     @Column(name = "microservice", length = 32)
     private String microservice;
 
+    /**
+     * The controller simple name
+     */
     @NotBlank
     @Column(name = "controller_name", length = 32)
     private String controllerSimpleName;
@@ -236,6 +239,9 @@ public class ResourcesAccess implements IIdentifiable<Long> {
         verb = pVerb;
     }
 
+    /**
+     * @return the controller simple name
+     */
     public String getControllerSimpleName() {
         return controllerSimpleName;
     }

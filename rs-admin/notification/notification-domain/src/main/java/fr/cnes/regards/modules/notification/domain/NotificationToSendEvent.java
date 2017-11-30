@@ -9,13 +9,23 @@ import org.springframework.context.ApplicationEvent;
  */
 public class NotificationToSendEvent extends ApplicationEvent {
 
+    /**
+     * The notification
+     */
     private final Notification notification;
 
+    /**
+     * Constructor setting the parameter as attribute
+     * @param notification
+     */
     public NotificationToSendEvent(Notification notification) {
         super(notification);
         this.notification = notification;
     }
 
+    /**
+     * @return the notification
+     */
     public Notification getNotification() {
         return notification;
     }

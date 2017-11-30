@@ -57,11 +57,26 @@ public class NotificationDTO {
      */
     private String title;
 
+    /**
+     * The notification type
+     */
     private NotificationType type;
 
+    /**
+     * Default constructor
+     */
     public NotificationDTO() {
     }
 
+    /**
+     * Constructor setting the parameters as attributes
+     * @param message notification message
+     * @param projectUserRecipients users recieving the notification
+     * @param roleRecipients roles recieving the notification
+     * @param sender notification sender
+     * @param title notification title
+     * @param type notification type
+     */
     public NotificationDTO(String message, List<String> projectUserRecipients, List<String> roleRecipients,
             String sender, String title, NotificationType type) {
         this.message = message;
@@ -147,10 +162,17 @@ public class NotificationDTO {
         title = pTitle;
     }
 
+    /**
+     * @return the notification type
+     */
     public NotificationType getType() {
         return type;
     }
 
+    /**
+     * Set the notification type
+     * @param type
+     */
     public void setType(NotificationType type) {
         this.type = type;
     }

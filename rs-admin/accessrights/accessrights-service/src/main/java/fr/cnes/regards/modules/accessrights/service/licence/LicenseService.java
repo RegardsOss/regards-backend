@@ -49,12 +49,24 @@ import fr.cnes.regards.modules.project.domain.Project;
 @EnableFeignClients(clients = IProjectsClient.class)
 public class LicenseService {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(LicenseService.class);
 
+    /**
+     * Project user service
+     */
     private final IProjectUserService projectUserService;
 
+    /**
+     * Project client
+     */
     private final IProjectsClient projectsClient;
 
+    /**
+     * Authentication resolver
+     */
     private final IAuthenticationResolver authResolver;
 
     public LicenseService(IProjectUserService pProjectUserService, IProjectsClient pProjectsClient,
@@ -65,24 +77,26 @@ public class LicenseService {
         this.authResolver = authResolver;
     }
 
+    /**
+     * Retrieve the license state for the given project and the current user
+     * @param pProjectName
+     * @return the license state
+     * @throws EntityNotFoundException
+     */
     public LicenseDTO retrieveLicenseState(String pProjectName) throws EntityNotFoundException {
         Project project = retrieveProject(pProjectName);
-        if (!authResolver.getRole().equals(DefaultRole.INSTANCE_ADMIN.toString())) {
+        if (authResolver.getRole().equals(DefaultRole.INSTANCE_ADMIN.toString())) {
+            return new LicenseDTO(true, project.getLicenceLink());
+        } else {
             ProjectUser pu = projectUserService.retrieveCurrentUser();
             if ((project.getLicenceLink() != null) && !project.getLicenceLink().isEmpty()) {
                 return new LicenseDTO(pu.isLicenseAccepted(), project.getLicenceLink());
             }
             return new LicenseDTO(true, project.getLicenceLink());
-        } else {
-            return new LicenseDTO(true, project.getLicenceLink());
         }
     }
 
-    /**
-     * @param pProjectName
-     * @return
-     * @throws EntityNotFoundException
-     */
+
     private Project retrieveProject(String pProjectName) throws EntityNotFoundException {
         FeignSecurityManager.asSystem();
         ResponseEntity<Resource<Project>> response = projectsClient.retrieveProject(pProjectName);
@@ -94,6 +108,12 @@ public class LicenseService {
         return response.getBody().getContent();
     }
 
+    /**
+     * Accept the license of the given project for the current user
+     * @param pProjectName
+     * @return accepted license state
+     * @throws EntityException
+     */
     public LicenseDTO acceptLicense(String pProjectName) throws EntityException {
         ProjectUser pu = projectUserService.retrieveCurrentUser();
         pu.setLicenseAccepted(true);
@@ -101,6 +121,9 @@ public class LicenseService {
         return retrieveLicenseState(pProjectName);
     }
 
+    /**
+     * Reset the license state for all users of the current project
+     */
     public void resetLicence() {
         projectUserService.resetLicence();
     }

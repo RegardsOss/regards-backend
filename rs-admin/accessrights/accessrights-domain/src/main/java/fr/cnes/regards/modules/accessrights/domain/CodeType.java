@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.accessrights.domain;
 
+/**
+ * Type of code sent to the user
+ */
 public enum CodeType {
     /**
      * Type of the code given to the user to know that he is asking to have his account password reseted

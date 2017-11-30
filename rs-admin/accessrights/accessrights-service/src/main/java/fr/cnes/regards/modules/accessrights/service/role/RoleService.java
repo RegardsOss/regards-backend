@@ -297,6 +297,18 @@ public class RoleService implements IRoleService {
                 .orElseThrow(() -> new EntityNotFoundException(pRoleName, Role.class));
     }
 
+    /**
+     * Retrieve a role
+     */
+    @Override
+    public Role retrieveRole(final Long pRoleId) throws EntityNotFoundException {
+        final Role role = roleRepository.findOne(pRoleId);
+        if (role == null) {
+            throw new EntityNotFoundException(pRoleId, Role.class);
+        }
+        return role;
+    }
+
     @Override
     public Role updateRole(final String pRoleName, final Role pUpdatedRole) throws EntityException {
         if (!pRoleName.equals(pUpdatedRole.getName())) {
@@ -674,18 +686,6 @@ public class RoleService implements IRoleService {
             }
         }
         return results;
-    }
-
-    /**
-     * Retrieve a role
-     */
-    @Override
-    public Role retrieveRole(final Long pRoleId) throws EntityNotFoundException {
-        final Role role = roleRepository.findOne(pRoleId);
-        if (role == null) {
-            throw new EntityNotFoundException(pRoleId, Role.class);
-        }
-        return role;
     }
 
     /**
