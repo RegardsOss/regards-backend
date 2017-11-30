@@ -82,7 +82,7 @@ public class UniformResourceName {
     /**
      * Compiled pattern
      */
-    private final static Pattern PATTERN = Pattern.compile(URN_PATTERN);
+    private static final Pattern PATTERN = Pattern.compile(URN_PATTERN);
 
     /**
      * the oais identifier

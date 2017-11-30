@@ -39,8 +39,14 @@ import fr.cnes.regards.framework.security.utils.HttpConstants;
  */
 public class RequestBuilderCustomizer {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestBuilderCustomizer.class);
 
+    /**
+     * Default request headers
+     */
     private static final HttpHeaders DEFAULT_HEADERS = new HttpHeaders();
 
     /**
@@ -236,7 +242,7 @@ public class RequestBuilderCustomizer {
      * perform a request and generate the documentation
      */
     private ResultActions performRequest(MockMvc mvc, MockHttpServletRequestBuilder requestBuilder, String errorMsg) {
-        Assert.assertTrue("At least one expectation is required", expectations.size() > 0);
+        Assert.assertFalse("At least one expectation is required", expectations.isEmpty());
         try {
             Map<String, Object> queryParams = Maps.newHashMap();
             List<ParameterDescriptor> queryParamDescriptors = Lists.newArrayList();
