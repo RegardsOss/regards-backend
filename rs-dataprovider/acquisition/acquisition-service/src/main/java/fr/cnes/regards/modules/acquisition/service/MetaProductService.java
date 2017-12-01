@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
- * Manage global {@link MetaProduct} life cycle
+ *{@link MetaProduct} service
  * 
  * @author Christophe Mertz
  *
@@ -56,15 +56,14 @@ public class MetaProductService implements IMetaProductService {
     }
 
     @Override
-    public MetaProduct update(Long metaproductId, MetaProduct metaproduct) throws ModuleException {
-        if (!metaproductId.equals(metaproduct.getId())) {
-            throw new EntityInconsistentIdentifierException(metaproductId, metaproduct.getId(), metaproduct.getClass());
+    public MetaProduct update(Long metaproductId, MetaProduct metaProduct) throws ModuleException {
+        if (!metaproductId.equals(metaProduct.getId())) {
+            throw new EntityInconsistentIdentifierException(metaproductId, metaProduct.getId(), metaProduct.getClass());
         }
         if (!metaProductRepository.exists(metaproductId)) {
             throw new EntityNotFoundException(metaproductId, ChainGeneration.class);
         }
-        // TODO CMZ gérer les MetaFile
-        return metaProductRepository.save(metaproduct);
+        return createOrUpdateMetaProduct(metaProduct);
     }
 
     @Override

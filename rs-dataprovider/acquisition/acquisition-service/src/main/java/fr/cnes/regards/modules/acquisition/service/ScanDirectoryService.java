@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -31,6 +33,7 @@ import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 
 /**
+ * {@link ScanDirectory} service
  * 
  * @author Christophe Mertz
  *
@@ -38,6 +41,8 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 @MultitenantTransactional
 @Service
 public class ScanDirectoryService implements IScanDirectoryService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScanDirectoryService.class);
 
     private final IScanDirectoryRepository scandirRepository;
 
@@ -59,12 +64,12 @@ public class ScanDirectoryService implements IScanDirectoryService {
     @Override
     public Set<ScanDirectory> createOrUpdate(Set<ScanDirectory> newScanDirectories,
             Set<ScanDirectory> existingScanDirectories) throws ModuleException {
-
-        deletUnusedScanDirectories(newScanDirectories, existingScanDirectories);
-
         for (ScanDirectory scanDir : newScanDirectories) {
             createOrUpdate(scanDir);
         }
+
+        deletUnusedScanDirectories(newScanDirectories, existingScanDirectories);
+
         return newScanDirectories;
     }
 
@@ -108,6 +113,8 @@ public class ScanDirectoryService implements IScanDirectoryService {
             boolean isPresent = false;
             for (ScanDirectory aNewScanDir : newScanDirectories) {
                 if (!isPresent) {
+                    LOGGER.info("new scan dir id:{}  -  existing scan dir id:{}", aNewScanDir.getId(),
+                                aScanDir.getId());
                     isPresent = aNewScanDir.getId().equals(aScanDir.getId());
                 }
             }

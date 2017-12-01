@@ -26,6 +26,8 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 
 /**
  * 
+ * {@link ScanDirectory} management service
+ * 
  * @author Christophe Mertz
  * 
  */
@@ -45,7 +47,7 @@ public interface IScanDirectoryService {
     /**
      * Create or update a {@link Set} of {@link ScanDirectory}
      * @param newScanDirectories the {@link Set} of {@link ScanDirectory} to save
-     * @return the saved {@link Set} of {@link ScanDirectory
+     * @return the saved {@link Set} of {@link ScanDirectory}
      * @throws ModuleException if error occurs!
      */
     Set<ScanDirectory> createOrUpdate(Set<ScanDirectory> newScanDirectories) throws ModuleException;
@@ -76,5 +78,9 @@ public interface IScanDirectoryService {
      */
     ScanDirectory retrieve(Long id);
 
+    /**
+     * Delete a {@link ScanDirectory}
+     * @param id the {@link ScanDirectory} identifier of the {@link ScanDirectory} to delete
+     */
     void delete(Long id);
 }

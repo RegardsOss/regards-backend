@@ -22,7 +22,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
@@ -35,13 +34,26 @@ public interface IMetaProductService {
 
     /**
      * Create or update a {@link MetaProduct}
-     * @param chain {@link ChainGeneration}
-     * @throws ModuleException 
+     * @param metaProduct the {@link MetaProduct} to save
+     * @return the created {@link MetaProduct}
+     * @throws ModuleException if error occurs!
      */
     MetaProduct createOrUpdateMetaProduct(MetaProduct metaProduct) throws ModuleException;
 
+    /**
+     * Save a {@link MetaProduct}
+     * @param metaProduct the {@link MetaProduct} to save
+     * @return the saved {@link MetaProduct}
+     */
     MetaProduct save(MetaProduct metaProduct);
 
+    /**
+     * Update a {@link MetaProduct}
+     * @param metaproductId the {@link MetaProduct} identifier
+     * @param metaproduct the {@link MetaProduct} to update
+     * @return the updated {@link MetaProduct}
+     * @throws ModuleException if error occurs!
+     */
     MetaProduct update(Long metaproductId, MetaProduct metaproduct) throws ModuleException;
 
     /**
@@ -67,7 +79,15 @@ public interface IMetaProductService {
      */
     MetaProduct retrieveComplete(Long id);
 
+    /**
+     * Delete a {@link MetaProduct}
+     * @param id the {@link MetaProduct} identifier
+     */
     void delete(Long id);
 
+    /**
+     * Delete a {@link MetaProduct}
+     * @param metaProduct the {@link MetaProduct} to delete
+     */
     void delete(MetaProduct metaProduct);
 }

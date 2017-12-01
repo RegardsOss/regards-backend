@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
 /**
- * Manage global {@link MetaFile} life cycle
+ * {@link MetaFile} service
  * 
  * @author Christophe Mertz
  *
@@ -67,9 +67,7 @@ public class MetaFileService implements IMetaFileService {
             throw new EntityNotFoundException(metafileId, ChainGeneration.class);
         }
 
-        // TODO CMZ gérer les ScanDirectory
-
-        return metaFileRepository.save(metafile);
+        return createOrUpdate(metafile);
     }
 
     @Override
@@ -80,12 +78,12 @@ public class MetaFileService implements IMetaFileService {
     @Override
     public Set<MetaFile> createOrUpdate(Set<MetaFile> newMetaFiles, Set<MetaFile> existingMetaFiles)
             throws ModuleException {
-
-        deletUnusedMetaFiles(newMetaFiles, existingMetaFiles);
-
         for (MetaFile metaFile : newMetaFiles) {
             createOrUpdate(metaFile);
         }
+        
+        deletUnusedMetaFiles(newMetaFiles, existingMetaFiles);
+
         return newMetaFiles;
     }
 

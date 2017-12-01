@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
+import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 
 /**
  * {@link MetaFile} management service
@@ -34,14 +35,46 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
  */
 public interface IMetaFileService {
 
+    /**
+     * Create or update a {@link Set} of {@link MetaFile}.<br>
+     * If a {@link MetaFile} does not exist in the new {@link Set}, it is delete from the repository.
+     * @param newMetaFiles the {@link Set} of {@link MetaFile} to save
+     * @param existingMetaFiles the existing {@link Set} of {@link MetaFile} to update
+     * @return the saved {@link Set} of {@link MetaFile}
+     * @throws ModuleException if error occurs!
+     */
     Set<MetaFile> createOrUpdate(Set<MetaFile> newMetaFiles, Set<MetaFile> existingMetaFiles) throws ModuleException;
-    
+
+    /**
+     * Create or update a {@link Set} of {@link MetaFile}
+     * @param metaFiles the {@link Set} of {@link MetaFile} to save
+     * @return the saved {@link Set} of {@link ScanDirectory}
+     * @throws ModuleException if error occurs!
+     */
     Set<MetaFile> createOrUpdate(Set<MetaFile> metaFiles) throws ModuleException;
 
+    /**
+     * Create or update a {@link MetaFile}
+     * @param metaFile the {@link MetaFile} to save
+     * @return the saved {@link Set} of {@link MetaFile}
+     * @throws ModuleException if error occurs!
+     */
     MetaFile createOrUpdate(MetaFile metaFile) throws ModuleException;
 
+    /**
+     * Save a {@link MetaFile}
+     * @param metaFile the {@link MetaFile} to save
+     * @return the saved {@link MetaFile}
+     */
     MetaFile save(MetaFile metaFile);
 
+    /**
+     * Update a {@link MetaFile}
+     * @param metafileId the {@link MetaFile} identifier
+     * @param metafile the {@link MetaFile} to update
+     * @return the updated {@link MetaFile}
+     * @throws ModuleException if error occurs!
+     */
     MetaFile update(Long metafileId, MetaFile metafile) throws ModuleException;
 
     /**
@@ -55,7 +88,15 @@ public interface IMetaFileService {
      */
     MetaFile retrieve(Long id);
 
+    /**
+     * Delete a {@link MetaFile}
+     * @param id the {@link MetaFile} identifer of the {@link MetaFile} to delete
+     */
     void delete(Long id);
 
+    /**
+     * Delete a {@link MetaFile}
+     * @param metaFile the {@link MetaFile} to delete
+     */
     void delete(MetaFile metaFile);
 }
