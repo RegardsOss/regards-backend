@@ -73,17 +73,19 @@ public @interface PluginParameter {
      */
     boolean optional() default false;
 
-    /**
-     * Raw type can be specified here to explicitly tell GSON which type to deserialize to! Otherwise, plugin engine
-     * will try to guess it.
-     * @return raw parameter type
-     */
-    Class<?> rawtype() default Void.class;
-
-    /**
-     * Argument types can be explicitly specified here for parameterized raw types for GSON deserialization! Otherwise,
-     * plugin engine will try to guess them.
-     * @return list of generic types affecting the raw parameter type
-     */
-    Class<?>[] argTypes() default {};
+    // FIXME run CI before remove
+    // /**
+    // * Raw type can be specified here to explicitly tell GSON which type to deserialize to! Otherwise, plugin engine
+    // * will try to guess it.
+    // * @return raw parameter type
+    // */
+    // Class<?> rawtype() default Void.class;
+    //
+    // /**
+    // * Argument types can be explicitly specified here for parameterized raw types for GSON deserialization!
+    // Otherwise,
+    // * plugin engine will try to guess them.
+    // * @return list of generic types affecting the raw parameter type
+    // */
+    // Class<?>[] argTypes() default {};
 }

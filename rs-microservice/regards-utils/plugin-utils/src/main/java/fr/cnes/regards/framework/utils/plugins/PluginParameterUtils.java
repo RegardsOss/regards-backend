@@ -40,7 +40,6 @@ import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import fr.cnes.regards.framework.gson.utils.ParameterizedTypeImpl;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -66,14 +65,7 @@ public final class PluginParameterUtils {
     /**
      * Gson object used to deserialize configuration parameters
      */
-    private static final Gson gson = new GsonBuilder().setDateFormat(DATE_TIME_FORMAT).create();
-
-    /**
-     * Default constructor
-     */
-    private PluginParameterUtils() {
-
-    }
+    private static final Gson localGson = new GsonBuilder().setDateFormat(DATE_TIME_FORMAT).create();
 
     /**
      * Retrieve {@link List} of {@link PluginParameterType} by reflection on class fields
@@ -153,11 +145,6 @@ public final class PluginParameterUtils {
             if ((pluginParameter.defaultValue() != null) && !pluginParameter.defaultValue().isEmpty()) {
                 result.setDefaultValue(pluginParameter.defaultValue());
             }
-
-            // FIXME remove for simplicity and add restriction
-            // if (!Void.class.equals(pluginParameter.rawtype())) {
-            // result.setType(pluginParameter.rawtype().getName());
-            // }
         }
 
         // Do in depth discovery for OBJECT
@@ -319,19 +306,35 @@ public final class PluginParameterUtils {
     }
 
     /**
-     * Use configured values to set field values.
-     *
-     * @param @param <T> a {@link Plugin} type
+     * Post process with local Gson instance. Useful for simple test.
      * @param returnPlugin the plugin instance
      * @param plgConf the {@link PluginConfiguration}
-     * @param prefixs a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
+     * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param instantiatedPluginMap a {@link Map} of already instantiated {@link Plugin}
      * @param plgParameters an optional set of
      *            {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter} @ if any error occurs
      */
-    public static <T> void postProcess(final T returnPlugin, final PluginConfiguration plgConf,
-            final List<String> prefixs, Map<Long, Object> instantiatedPluginMap,
-            final fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... plgParameters) {
+    public static <T> void postProcess(T returnPlugin, PluginConfiguration plgConf, List<String> prefixes,
+            Map<Long, Object> instantiatedPluginMap,
+            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... plgParameters) {
+        postProcess(localGson, returnPlugin, plgConf, prefixes, instantiatedPluginMap, plgParameters);
+    }
+
+    /**
+     * Use configured values to set field values.
+     *
+     * @param @param <T> a {@link Plugin} type
+     * @param gson GSON deserializer instance
+     * @param returnPlugin the plugin instance
+     * @param plgConf the {@link PluginConfiguration}
+     * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
+     * @param instantiatedPluginMap a {@link Map} of already instantiated {@link Plugin}
+     * @param plgParameters an optional set of
+     *            {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter} @ if any error occurs
+     */
+    public static <T> void postProcess(Gson gson, T returnPlugin, PluginConfiguration plgConf, List<String> prefixes,
+            Map<Long, Object> instantiatedPluginMap,
+            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... plgParameters) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Starting postProcess :" + returnPlugin.getClass().getSimpleName());
         }
@@ -346,8 +349,8 @@ public final class PluginParameterUtils {
         for (final Field field : returnPlugin.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(PluginParameter.class)) {
                 final PluginParameter plgParamAnnotation = field.getAnnotation(PluginParameter.class);
-                processPluginParameter(returnPlugin, plgConf, field, plgParamAnnotation, prefixs, instantiatedPluginMap,
-                                       plgParameters);
+                processPluginParameter(gson, returnPlugin, plgConf, field, plgParamAnnotation, prefixes,
+                                       instantiatedPluginMap, plgParameters);
             }
         }
 
@@ -360,6 +363,7 @@ public final class PluginParameterUtils {
      * Use configured values to set field value for a {@link PluginParameter}
      *
      * @param <T> a {@link Plugin} type
+     * @param gson GSON deserializer instance
      * @param pluginInstance the {@link Plugin} instance
      * @param plgConf the plugin configuration to used
      * @param field the parameter
@@ -369,8 +373,9 @@ public final class PluginParameterUtils {
      * @param plgParameters an optional set of
      *            {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter} @ if any error occurs
      */
-    private static <T> void processPluginParameter(T pluginInstance, PluginConfiguration plgConf, Field field,
-            PluginParameter plgParamAnnotation, List<String> prefixes, Map<Long, Object> instantiatedPluginMap,
+    private static <T> void processPluginParameter(Gson gson, T pluginInstance, PluginConfiguration plgConf,
+            Field field, PluginParameter plgParamAnnotation, List<String> prefixes,
+            Map<Long, Object> instantiatedPluginMap,
             fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... plgParameters) {
 
         // Inject value
@@ -395,7 +400,8 @@ public final class PluginParameterUtils {
             case MAP:
                 LOGGER.debug(String.format("Object parameter %s : %s --> %s", paramType, field.getName(),
                                            field.getType()));
-                postProcessObjectType(pluginInstance, plgConf, field, plgParamAnnotation, paramType, plgParameters);
+                postProcessObjectType(gson, pluginInstance, plgConf, field, plgParamAnnotation, paramType,
+                                      plgParameters);
                 break;
             default:
                 throw new PluginUtilsRuntimeException(String.format("Type parameter <%s> is unknown.", field));
@@ -406,6 +412,7 @@ public final class PluginParameterUtils {
      * Use configured values to set field values for a parameter of type OBJECT or PARAMETERIZED_OBJECT
      *
      * @param <T> a {@link Plugin} type
+     * @param gson GSON deserializer instance
      * @param pluginInstance the {@link Plugin} instance
      * @param plgConf the plugin configuration to used
      * @param field the parameter
@@ -414,7 +421,7 @@ public final class PluginParameterUtils {
      * @param plgParameters an optional set of
      *            {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter}
      */
-    private static <T> void postProcessObjectType(T pluginInstance, PluginConfiguration plgConf, Field field,
+    private static <T> void postProcessObjectType(Gson gson, T pluginInstance, PluginConfiguration plgConf, Field field,
             PluginParameter plgParamAnnotation, ParamType paramType,
             fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... plgParameters) {
         if (LOGGER.isDebugEnabled()) {
@@ -465,16 +472,18 @@ public final class PluginParameterUtils {
             }
             // Deserialize object from JSON value
             Type classType = field.getGenericType();
+
+            // FIXME run CI before remove
             // Custom deserialization with GSON
-            if (!Void.class.equals(plgParamAnnotation.rawtype()) || (plgParamAnnotation.argTypes().length > 0)) {
-                // Raw type
-                Type rawType = field.getType();
-                if (!Void.class.equals(plgParamAnnotation.rawtype())) {
-                    rawType = plgParamAnnotation.rawtype();
-                }
-                // Manage generic arguments types
-                classType = new ParameterizedTypeImpl(null, rawType, plgParamAnnotation.argTypes());
-            }
+            // if (!Void.class.equals(plgParamAnnotation.rawtype()) || (plgParamAnnotation.argTypes().length > 0)) {
+            // // Raw type
+            // Type rawType = field.getType();
+            // if (!Void.class.equals(plgParamAnnotation.rawtype())) {
+            // rawType = plgParamAnnotation.rawtype();
+            // }
+            // // Manage generic arguments types
+            // classType = new ParameterizedTypeImpl(null, rawType, plgParamAnnotation.argTypes());
+            // }
             Object objectParamValue = gson.fromJson(paramValue, classType);
 
             if (objectParamValue != null) {

@@ -179,38 +179,15 @@ public final class PluginUtils {
      * @param <T> a {@link Plugin}
      * @param pluginConf the {@link PluginConfiguration}
      * @param pluginMetadata the {@link PluginMetaData}
-     * @param prefixs a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
+     * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param instantiatedPluginMap already instaniated plugins
      * @param pluginParameters an optional list of {@link PluginParameter}
      * @return an instance of a {@link Plugin} @ if a problem occurs
      */
-    @SuppressWarnings("unchecked")
-    public static <T> T getPlugin(PluginConfiguration pluginConf, PluginMetaData pluginMetadata, List<String> prefixs,
+    public static <T> T getPlugin(PluginConfiguration pluginConf, PluginMetaData pluginMetadata, List<String> prefixes,
             Map<Long, Object> instantiatedPluginMap, PluginParameter... pluginParameters) {
-        T returnPlugin = null;
-
-        try {
-            // Make a new instance
-            returnPlugin = (T) Class.forName(pluginMetadata.getPluginClassName()).newInstance();
-
-            // Post process parameters
-            PluginParameterUtils.postProcess(returnPlugin, pluginConf, prefixs, instantiatedPluginMap,
-                                             pluginParameters);
-
-            if (PluginUtilsBean.getInstance() != null) {
-                PluginUtilsBean.getInstance().processAutowiredBean(returnPlugin);
-            }
-
-            // Launch init method if detected
-            doInitPlugin(returnPlugin);
-
-        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | ClassNotFoundException e) {
-            throw new PluginUtilsRuntimeException(
-                    String.format(CANNOT_INSTANTIATE, pluginMetadata.getPluginClassName()), e);
-
-        }
-
-        return returnPlugin;
+        return getPlugin(pluginConf, pluginMetadata.getPluginClassName(), prefixes, instantiatedPluginMap,
+                         pluginParameters);
     }
 
     public static <T> T getPlugin(PluginConfiguration pluginConf, PluginMetaData pluginMetadata,
@@ -238,12 +215,15 @@ public final class PluginUtils {
             // Make a new instance
             returnPlugin = (T) Class.forName(pluginClassName).newInstance();
 
-            // Post process parameters
-            PluginParameterUtils.postProcess(returnPlugin, pluginConf, prefixes, instantiatedPluginMap,
-                                             pluginParameters);
-
             if (PluginUtilsBean.getInstance() != null) {
+                // Post process parameters in Spring context
+                PluginParameterUtils.postProcess(PluginUtilsBean.getInstance().getGson(), returnPlugin, pluginConf,
+                                                 prefixes, instantiatedPluginMap, pluginParameters);
                 PluginUtilsBean.getInstance().processAutowiredBean(returnPlugin);
+            } else {
+                // Post process parameters without Spring
+                PluginParameterUtils.postProcess(returnPlugin, pluginConf, prefixes, instantiatedPluginMap,
+                                                 pluginParameters);
             }
 
             // Launch init method if detected
