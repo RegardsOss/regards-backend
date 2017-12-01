@@ -44,7 +44,7 @@ public class AIPBuilder extends IPBuilder<AIP> {
         ip.setSipId(sipId);
     }
 
-    public AIPBuilder(AIP oldAip) {
-        super(oldAip);
+    public AIPBuilder(AIP toBeUpdated) {
+        super(toBeUpdated);
     }
 }
