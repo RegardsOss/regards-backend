@@ -43,6 +43,10 @@ public interface IOrderRepository extends JpaRepository<Order, Long> {
     Page<Order> findAllByOwnerOrderByCreationDateDesc(String owner, Pageable pageRequest);
 
     @EntityGraph("graph.order.simple")
+    Page<Order> findAllByOwnerAndStatusNotInOrderByCreationDateDesc(String owner, OrderStatus[] excludeStatuses,
+            Pageable pageRequest);
+
+    @EntityGraph("graph.order.simple")
     List<Order> findByAvailableFilesCountGreaterThanAndAvailableUpdateDateLessThanOrderByOwner(int count,
             OffsetDateTime date);
 
@@ -63,7 +67,7 @@ public interface IOrderRepository extends JpaRepository<Order, Long> {
      * Find one expired order.
      */
     default Optional<Order> findOneExpiredOrder() {
-        return findOneByExpirationDateLessThanAndStatusIn(OffsetDateTime.now(), OrderStatus.PENDING, OrderStatus.RUNNING,
-                                                       OrderStatus.PAUSED);
+        return findOneByExpirationDateLessThanAndStatusIn(OffsetDateTime.now(), OrderStatus.PENDING,
+                                                          OrderStatus.RUNNING, OrderStatus.PAUSED);
     }
 }

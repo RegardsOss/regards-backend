@@ -214,7 +214,7 @@ public class OrderService implements IOrderService {
                     }
                     // If sum of files size > bucketSize, add a new bucket
                     if (bucketFiles.stream().mapToLong(DataFile::getSize).sum() >= bucketSize) {
-                        createSubOrder(basket, dsTask, bucketFiles, order.getExpirationDate(), priority);
+                        createSubOrder(basket, dsTask, bucketFiles, order, priority);
 
                         bucketFiles.clear();
                     }
@@ -223,7 +223,7 @@ public class OrderService implements IOrderService {
             }
             // Manage remaining files
             if (!bucketFiles.isEmpty()) {
-                createSubOrder(basket, dsTask, bucketFiles, order.getExpirationDate(), priority);
+                createSubOrder(basket, dsTask, bucketFiles, order, priority);
             }
 
             order.addDatasetOrderTask(dsTask);
@@ -296,8 +296,11 @@ public class OrderService implements IOrderService {
      * Create a sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to DatasetTask
      */
     private void createSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles,
-            OffsetDateTime expirationDate, int priority) {
+            Order order, int priority) {
+        OffsetDateTime expirationDate = order.getExpirationDate();
         FilesTask currentFilesTask = new FilesTask();
+        currentFilesTask.setOrderId(order.getId());
+        currentFilesTask.setOwner(order.getOwner());
         currentFilesTask.addAllFiles(bucketFiles);
 
         JobInfo storageJobInfo = new JobInfo();
@@ -363,16 +366,12 @@ public class OrderService implements IOrderService {
     public void delete(Long id) throws CannotDeleteOrderException {
         Order order = repos.findCompleteById(id);
         if (order.getStatus() != OrderStatus.PAUSED) {
-            throw new CannotDeleteOrderException(
-                    String.format("An order must be paused before being deleted (current status is %s).",
-                                  order.getStatus()));
+            throw new CannotDeleteOrderException("ORDER_MUST_BE_PAUSED_BEFORE_BEING_DELETED");
         }
         // Look at all associated JobInfos : they must be at a paused compatible status
         boolean inPause = orderEffectivelyInPause(order);
         if (!inPause) {
-            throw new CannotDeleteOrderException(
-                    "Order is not completely stopped, some tasks are still running, please "
-                            + "wait a while and retry later");
+            throw new CannotDeleteOrderException("ORDER_NOT_COMPLETELY_STOPPED");
         }
         // Delete all order data files
         dataFileService.removeAll(order.getId());
@@ -392,9 +391,7 @@ public class OrderService implements IOrderService {
     public void remove(Long id) throws CannotRemoveOrderException {
         Order order = repos.findCompleteById(id);
         if (order.getStatus() != OrderStatus.DELETED) {
-            throw new CannotRemoveOrderException(
-                    String.format("An order must be deleted before being removed (current status is %s).",
-                                  order.getStatus()));
+            throw new CannotRemoveOrderException();
         }
         repos.delete(order.getId());
     }
@@ -425,12 +422,16 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public Page<Order> findAll(String user, Pageable pageRequest) {
-        return repos.findAllByOwnerOrderByCreationDateDesc(user, pageRequest);
+    public Page<Order> findAll(String user, Pageable pageRequest, OrderStatus... excludeStatuses) {
+        if (excludeStatuses.length == 0) {
+            return repos.findAllByOwnerOrderByCreationDateDesc(user, pageRequest);
+        } else {
+            return repos.findAllByOwnerAndStatusNotInOrderByCreationDateDesc(user, excludeStatuses, pageRequest);
+        }
     }
 
     @Override
-    public void downloadOrderCurrentZip(List<OrderDataFile> inDataFiles, OutputStream os) throws IOException {
+    public void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os) throws IOException {
         List<OrderDataFile> availableFiles = new ArrayList<>(inDataFiles);
         List<OrderDataFile> inErrorFiles = new ArrayList<>();
 
@@ -477,6 +478,9 @@ public class OrderService implements IOrderService {
         inErrorFiles.forEach(f -> f.setState(FileState.ERROR));
         availableFiles.addAll(inErrorFiles);
         dataFileService.save(availableFiles);
+
+        // Don't forget to manage user order jobs (maybe order is in waitingForUser state)
+        orderJobService.manageUserOrderJobInfos(orderOwner);
     }
 
     @Override
@@ -583,7 +587,6 @@ public class OrderService implements IOrderService {
             runtimeTenantResolver.forceTenant(tenant);
             self.sendTenantPeriodicNotifications();
         }
-
     }
 
     @Override

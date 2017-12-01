@@ -90,6 +90,9 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     @SortNatural
     private SortedSet<DatasetTask> datasetTasks = new TreeSet<>(Comparator.naturalOrder());
 
+    @Column(name = "files_task_waiting", nullable = false)
+    private boolean filesTaskWaiting = false;
+
     public Order() {
     }
 
@@ -183,6 +186,14 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
 
     public OffsetDateTime getAvailableUpdateDate() {
         return availableUpdateDate;
+    }
+
+    public boolean isFilesTaskWaiting() {
+        return filesTaskWaiting;
+    }
+
+    public void setFilesTaskWaiting(boolean filesTaskWaiting) {
+        this.filesTaskWaiting = filesTaskWaiting;
     }
 
     @Override

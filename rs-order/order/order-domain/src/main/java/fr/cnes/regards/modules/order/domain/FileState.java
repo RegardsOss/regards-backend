@@ -2,12 +2,13 @@ package fr.cnes.regards.modules.order.domain;
 
 /**
  * In case a file is nearline, it is at one of these states :
- * - PENDING : called to storage to make it available,
+ * - PENDING : asked to storage to make it available,
  * - AVAILABLE : available to be downloaded,
  * - DOWNLOADED : already downloaded (maybe no more available),
  * - ERROR : in error while asked to be made available.
  * Else, status is :
- * - ONLINE : not stored into rs-storage BUT managed by rs-storage as immediately available
+ * - ONLINE : not stored into rs-storage BUT managed by rs-storage as immediately available.
+ * <b>NOTE : even online files are marked as DOWNLOADED when user downloads them</b>
  * @author oroussel
  */
 public enum FileState {

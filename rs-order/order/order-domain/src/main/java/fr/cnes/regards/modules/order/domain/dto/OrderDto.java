@@ -34,6 +34,8 @@ public class OrderDto {
 
     private int filesInErrorCount;
 
+    private int availableFilesCount;
+
     private OrderStatus status;
 
     private OffsetDateTime statusDate;
@@ -86,6 +88,14 @@ public class OrderDto {
 
     public void setFilesInErrorCount(int filesInErrorCount) {
         this.filesInErrorCount = filesInErrorCount;
+    }
+
+    public int getAvailableFilesCount() {
+        return availableFilesCount;
+    }
+
+    public void setAvailableFilesCount(int availableFilesCount) {
+        this.availableFilesCount = availableFilesCount;
     }
 
     public OrderStatus getStatus() {

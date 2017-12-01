@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.order.service;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -20,8 +19,11 @@ import org.springframework.stereotype.Service;
 import com.google.common.io.ByteStreams;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
+import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.FileState;
+import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.storage.client.IAipClient;
@@ -40,16 +42,66 @@ public class OrderDataFileService implements IOrderDataFileService {
     private IAipClient aipClient;
 
     @Autowired
+    private IOrderJobService orderJobService;
+
+    @Autowired
     private IOrderDataFileService self;
+
+    @Autowired
+    private IFilesTasksRepository filesTasksRepository;
+
+    @Autowired
+    private IOrderRepository orderRepository;
 
     @Override
     public OrderDataFile save(OrderDataFile dataFile) {
-        return repos.save(dataFile);
+        dataFile = repos.save(dataFile);
+        // Look at FilesTask if it is ended (no more file to download)...
+        FilesTask filesTask = filesTasksRepository.findDistinctByFilesIn(dataFile);
+        // In case FilesTask does not yet exist
+        if (filesTask != null) {
+            if (filesTask.getFiles().stream()
+                    .allMatch(f -> (f.getState() == FileState.DOWNLOADED) || (f.getState() == FileState.ERROR))) {
+                filesTask.setEnded(true);
+            }
+            // ...and if it is waiting for user
+            filesTask.computeWaitingForUser();
+            filesTasksRepository.save(filesTask);
+            // Update then associated information to order
+            Order order = orderRepository.findSimpleById(filesTask.getOrderId());
+            order.setFilesTaskWaiting(
+                    filesTasksRepository.findByOrderId(filesTask.getOrderId()).anyMatch(t -> t.isWaitingForUser()));
+            orderRepository.save(order);
+        }
+        return dataFile;
     }
 
     @Override
-    public Iterable<OrderDataFile> save(Iterable<OrderDataFile> dataFiles) {
-        return repos.save(dataFiles);
+    public Iterable<OrderDataFile> save(Iterable<OrderDataFile> inDataFiles) {
+        List<OrderDataFile> dataFiles = repos.save(inDataFiles);
+        // Look at FilesTasks if they are ended (no more file to download)...
+        List<FilesTask> filesTasks = filesTasksRepository.findDistinctByFilesIn(dataFiles);
+        Long orderId = null;
+        // Update all these FileTasks
+        for (FilesTask filesTask : filesTasks) {
+            if (filesTask.getFiles().stream()
+                    .allMatch(f -> (f.getState() == FileState.DOWNLOADED) || (f.getState() == FileState.ERROR))) {
+                filesTask.setEnded(true);
+            }
+            // Save order id for later
+            orderId = filesTask.getOrderId();
+            // ...and if it is waiting for user
+            filesTask.computeWaitingForUser();
+            filesTasksRepository.save(filesTask);
+        }
+        // All files come from same order
+        if (orderId != null) {
+            // Update then associated information to order
+            Order order = orderRepository.findSimpleById(orderId);
+            order.setFilesTaskWaiting(filesTasksRepository.findByOrderId(orderId).anyMatch(t -> t.isWaitingForUser()));
+            orderRepository.save(order);
+        }
+        return dataFiles;
     }
 
     @Override
@@ -81,8 +133,7 @@ public class OrderDataFileService implements IOrderDataFileService {
     }
 
     @Override
-    public void downloadFile(OrderDataFile dataFile, OutputStream os)
-            throws IOException {
+    public void downloadFile(OrderDataFile dataFile, OutputStream os) throws IOException {
         try (InputStream is = aipClient.downloadFile(dataFile.getIpId().toString(), dataFile.getChecksum()).body()
                 .asInputStream()) {
             ByteStreams.copy(is, os);
@@ -90,7 +141,9 @@ public class OrderDataFileService implements IOrderDataFileService {
         }
         // Update OrderDataFile (set State as DOWNLOADED, even if it is online)
         dataFile.setState(FileState.DOWNLOADED);
-        self.save(dataFile);
+        dataFile = self.save(dataFile);
+        Order order = orderRepository.findSimpleById(dataFile.getOrderId());
+        orderJobService.manageUserOrderJobInfos(order.getOwner());
     }
 
     @Override

@@ -8,16 +8,13 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -35,7 +32,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -45,10 +41,10 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
+import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
@@ -83,7 +79,16 @@ public class OrderServiceIT {
     private IOrderRepository orderRepos;
 
     @Autowired
+    private IOrderDataFileService orderDataFileService;
+
+    @Autowired
+    private IOrderJobService orderJobService;
+
+    @Autowired
     private IOrderDataFileRepository dataFileRepos;
+
+    @Autowired
+    private IFilesTasksRepository filesTasksRepository;
 
     @Autowired
     private IBasketRepository basketRepos;
@@ -108,16 +113,16 @@ public class OrderServiceIT {
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
 
     public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-            "ORDER", UUID.randomUUID(), 1);
+                                                                                "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DS2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-            "ORDER", UUID.randomUUID(), 1);
+                                                                                "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-            "ORDER", UUID.randomUUID(), 1);
+                                                                                "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-            "ORDER", UUID.randomUUID(), 1);
+                                                                                "ORDER", UUID.randomUUID(), 1);
 
     @Before
     public void init() {
@@ -146,10 +151,10 @@ public class OrderServiceIT {
     }
 
     // Reactivate this if you test template
-//    @AfterClass
-//    public static void cleanAfterAll() {
-//        staticTemplateService.deleteAll();
-//    }
+    //    @AfterClass
+    //    public static void cleanAfterAll() {
+    //        staticTemplateService.deleteAll();
+    //    }
 
     @Test
     public void test1() throws Exception {
@@ -199,6 +204,7 @@ public class OrderServiceIT {
 
         // DS1 files sub order tasks
         FilesTask ds1SubOrder1Task = new FilesTask();
+        ds1SubOrder1Task.setOwner(USER_EMAIL);
         DataFile dataFile1 = new DataFile();
         dataFile1.setUri(new URI("staff://toto/titi/tutu"));
         dataFile1.setOnline(true);
@@ -245,8 +251,8 @@ public class OrderServiceIT {
     @Requirement("REGARDS_DSL_STO_CMD_050")
     @Requirement("REGARDS_DSL_STO_CMD_050")
     public void testBucketsJobs() throws IOException, InterruptedException {
-
-        Basket basket = new Basket("tulavu@qui.fr");
+        String user = "tulavu@qui.fr";
+        Basket basket = new Basket(user);
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
         dsSelection.setDatasetLabel("DS");
@@ -262,9 +268,20 @@ public class OrderServiceIT {
         Thread.sleep(15_000);
         // Some files are in error
         List<OrderDataFile> files = dataFileRepos.findAllAvailables(order.getId());
+        int firstAvailables = files.size();
+
+        // Download all available files
+        files.forEach(f -> f.setState(FileState.DOWNLOADED));
+        orderDataFileService.save(files);
+        // Act as true downloads
+        orderJobService.manageUserOrderJobInfos(user);
+        // Re-wait a while to permit execution of last jobInfo
+        Thread.sleep(10_000);
+
+        files = dataFileRepos.findAllAvailables(order.getId());
         order = orderService.loadSimple(order.getId());
         // Error file count on order should be the same as total files - available files
-        Assert.assertEquals(12 - files.size(), order.getFilesInErrorCount());
+        Assert.assertEquals(12 - files.size() - firstAvailables, order.getFilesInErrorCount());
         // But order should be at 100 % ever
         Assert.assertEquals(100, order.getPercentCompleted());
     }
@@ -332,8 +349,37 @@ public class OrderServiceIT {
         order = orderService.loadComplete(order.getId());
         jobInfos = order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
                 .map(FilesTask::getJobInfo).collect(Collectors.toSet());
+        // Because there 3 sub-tasks and only 2 can be executed simustaneously without downloading files, only 2 of the
+        // 3 should be SUCCEEDED, the last one must be at PENDING state
+        Assert.assertEquals(2, jobInfos.stream().map(jobInfo -> jobInfo.getStatus().getStatus())
+                .filter(status -> status == JobStatus.SUCCEEDED).count());
+        Assert.assertEquals(1, jobInfos.stream().map(jobInfo -> jobInfo.getStatus().getStatus())
+                .filter(status -> status == JobStatus.PENDING).count());
+
+        List<FilesTask> waitingForUserTasks = filesTasksRepository.findDistinctByWaitingForUser(true);
+        Assert.assertEquals(2, waitingForUserTasks.size());
+
+        for (FilesTask filesTask : waitingForUserTasks) {
+            Set<OrderDataFile> toSaveDataFiles = new HashSet<>();
+            for (OrderDataFile dataFile : filesTask.getFiles()) {
+                // Emulate a user download
+                if (dataFile.getState() == FileState.AVAILABLE) {
+                    dataFile.setState(FileState.DOWNLOADED);
+                    toSaveDataFiles.add(dataFile);
+                }
+            }
+            orderDataFileService.save(toSaveDataFiles);
+        }
+        // Act as it was true downloads (to permit pending jobs changing their states and so be executed)
+        orderJobService.manageUserOrderJobInfos(order.getOwner());
+
+        Thread.sleep(8_000);
+        order = orderService.loadComplete(order.getId());
+        jobInfos = order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
+                .map(FilesTask::getJobInfo).collect(Collectors.toSet());
         Assert.assertTrue(jobInfos.stream().map(jobInfo -> jobInfo.getStatus().getStatus())
                                   .allMatch(status -> status == JobStatus.SUCCEEDED));
+
         Assert.assertTrue(order.getPercentCompleted() == 100);
     }
 
@@ -341,7 +387,7 @@ public class OrderServiceIT {
     @Requirement("REGARDS_DSL_CMD_ARC_520")
     @Requirement("REGARDS_DSL_CMD_ARC_530")
     @Test
-    public void testEmailNotifications()  {
+    public void testEmailNotifications() {
         Mockito.when(emailClient.sendEmail(Mockito.any())).thenAnswer(invocation -> {
             mailMessage = (SimpleMailMessage) invocation.getArguments()[0];
             return new ResponseEntity<>(HttpStatus.CREATED);
@@ -381,7 +427,6 @@ public class OrderServiceIT {
         Assert.assertTrue(mailMessage.getText().contains(sdf.format(Date.from(order.getCreationDate().toInstant()))));
 
         Assert.assertFalse(mailMessage.getText().contains("${order}"));
-
 
     }
 

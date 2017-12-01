@@ -41,6 +41,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 
 /**
  * Order jobs specific behavior, like priority computation or job enqueue user business rules management
@@ -58,6 +59,9 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
 
     @Autowired
     private IJobInfoRepository jobInfoRepository;
+
+    @Autowired
+    private IFilesTasksRepository filesTasksRepository;
 
     @Autowired
     private ISubscriber subscriber;
@@ -95,10 +99,14 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
     @Override
     public void manageUserOrderJobInfos(String user) {
         int currentUserJobCount = (int) jobInfoRepository.countUserPlannedAndRunningJobs(user);
+
+        int finishedJobsOnNotEndedFilesTaskCount = (int) filesTasksRepository
+                .countFinishedJobsOnNotEndedFilesTaskCount(user);
+
         // There is room for several jobs to be executed for this user
-        if (currentUserJobCount < maxJobsPerUser) {
-            List<JobInfo> jobInfos = jobInfoRepository.findTopUserPendingJobs(user,
-                                                                              maxJobsPerUser - currentUserJobCount);
+        if (currentUserJobCount + finishedJobsOnNotEndedFilesTaskCount < maxJobsPerUser) {
+            List<JobInfo> jobInfos = jobInfoRepository.findTopUserPendingJobs(user, maxJobsPerUser - currentUserJobCount
+                    - finishedJobsOnNotEndedFilesTaskCount);
             if (!jobInfos.isEmpty()) {
                 for (JobInfo jobInfo : jobInfos) {
                     jobInfo.updateStatus(JobStatus.QUEUED);

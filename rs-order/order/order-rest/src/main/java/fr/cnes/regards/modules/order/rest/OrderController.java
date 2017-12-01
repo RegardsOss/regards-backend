@@ -39,6 +39,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.dto.OrderDto;
 import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
@@ -175,12 +176,13 @@ public class OrderController implements IResourceController<OrderDto> {
         orderService.writeAllOrdersInCsv(new BufferedWriter(response.getWriter()));
     }
 
-    @ResourceAccess(description = "Find all user orders", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Find all user current orders", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH)
     public ResponseEntity<PagedResources<Resource<OrderDto>>> findAll(Pageable pageRequest) {
         String user = authResolver.getUser();
-        return ResponseEntity.ok(toPagedResources(orderService.findAll(user, pageRequest).map(OrderDto::fromOrder),
-                                                  orderDtoPagedResourcesAssembler));
+        return ResponseEntity.ok(toPagedResources(
+                orderService.findAll(user, pageRequest, OrderStatus.DELETED, OrderStatus.REMOVED)
+                        .map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
     }
 
     @ResourceAccess(description = "Download a Zip file containing all currently available files",
@@ -202,7 +204,8 @@ public class OrderController implements IResourceController<OrderDto> {
         }
 
         // Stream the response
-        return new ResponseEntity<>(os -> orderService.downloadOrderCurrentZip(availableFiles, os), HttpStatus.OK);
+        return new ResponseEntity<>(os -> orderService.downloadOrderCurrentZip(order.getOwner(), availableFiles, os),
+                                    HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Download a Metalink file containing all files", role = DefaultRole.REGISTERED_USER)

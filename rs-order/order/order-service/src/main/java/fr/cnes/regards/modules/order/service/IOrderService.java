@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
@@ -27,6 +28,7 @@ import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
  * @author oroussel
  */
 public interface IOrderService {
+
     String ORDER_TOKEN = "orderToken";
 
     String ORDER_ID_KEY = "ORDER_ID";
@@ -95,9 +97,10 @@ public interface IOrderService {
     /**
      * Find all user orders sorted by descending date
      * Orders are simple loaded
-     * @param user user 
+     * @param user user
+     * @param excludeStatuses statuses to exclude from the search
      */
-    Page<Order> findAll(String user, Pageable pageRequest);
+    Page<Order> findAll(String user, Pageable pageRequest, OrderStatus... excludeStatuses);
 
     default Page<Order> findAll(String user, int pageSize) {
         return findAll(user, new PageRequest(0, pageSize));
@@ -106,10 +109,12 @@ public interface IOrderService {
     /**
      * Create a ZIP containing all currently available files. Once a file has been part of ZIP file, it will not be
      * part of another again.
+     * @param orderOwner order owner
      * @param inDataFiles concerned order data files
      * @throws NotYetAvailableException if no files are available yet
      */
-    void downloadOrderCurrentZip(List<OrderDataFile> inDataFiles, OutputStream os) throws IOException;
+    void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os)
+            throws IOException;
 
     /**
      * Create a metalink file with all files.

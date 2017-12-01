@@ -26,6 +26,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 public class CannotResumeOrderException extends ModuleException {
 
     public CannotResumeOrderException() {
-        super("Order is not completely in pause. You must wait for its full pause before resume it.");
+        super("ORDER_NOT_COMPLETELY_PAUSED");
     }
 }
