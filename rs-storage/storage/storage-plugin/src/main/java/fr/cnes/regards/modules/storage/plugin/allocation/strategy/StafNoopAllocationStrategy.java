@@ -38,16 +38,31 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFDataStorage;
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class StafNoopAllocationStrategy implements IAllocationStrategy {
 
+    /**
+     * Plugin parameter name for the default data storage plugin configuration id
+     */
     public static final String DEFAULT_DATA_STORAGE_CONFIGURATION_ID = "Default_data_storage_configuration_id";
 
+    /**
+     * Class logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(StafNoopAllocationStrategy.class);
 
+    /**
+     * {@link Gson} instance
+     */
     @Autowired
     private Gson gson;
 
+    /**
+     * {@link IPluginService} instance
+     */
     @Autowired
     private IPluginService pluginService;
 
+    /**
+     * Default data storage to use if the file to retrieve is not in the staf
+     */
     @PluginParameter(name = DEFAULT_DATA_STORAGE_CONFIGURATION_ID,
             description = "Default data storage to use if the file to retrieve is not in the staf")
     private Long dataStorageConfigurationId;

@@ -24,6 +24,9 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 @Component
 public class StorageModuleReady implements IModuleReady {
 
+    /**
+     * {@link IPluginService} instance
+     */
     @Autowired
     private IPluginService pluginService;
 

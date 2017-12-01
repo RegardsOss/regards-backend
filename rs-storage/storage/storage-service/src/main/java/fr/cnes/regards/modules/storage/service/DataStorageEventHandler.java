@@ -61,8 +61,14 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
      */
     private static final Logger LOG = LoggerFactory.getLogger(DataStorageEventHandler.class);
 
+    /**
+     * Metadata stored successfully message
+     */
     private static final String METADATA_STORED_SUCCESSFULLY = "AIP metadata has been successfully stored into REGARDS";
 
+    /**
+     * Data file stored successfully message format
+     */
     private static final String DATAFILE_STORED_SUCCESSFULLY = "File %s has been successfully stored";
 
     private static final String DATAFILE_DELETED_SUCCESSFULLY = "File %s has been successfully deleted";

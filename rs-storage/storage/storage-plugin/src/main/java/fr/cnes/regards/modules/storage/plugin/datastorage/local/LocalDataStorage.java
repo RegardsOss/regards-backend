@@ -175,8 +175,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
             Files.createDirectories(Paths.get(storageLocation));
         }
         // files are stored with the checksum as their name and their extension is based on the url, first '.' after the last '/' of the url
-        String fullPathToFile = storageLocation + "/" + checksum + getExtension(data.getUrl());
-        return fullPathToFile;
+        return storageLocation + "/" + checksum + getExtension(data.getUrl());
     }
 
     /**

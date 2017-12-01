@@ -16,10 +16,15 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IWorkingSubset;
 
 /**
+ * Restoration job implementation. It allows to restore DataFiles
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class RestorationJob extends AbstractStoreFilesJob {
 
+    /**
+     * Job parameter name of destination path
+     */
     public static final String DESTINATION_PATH_PARAMETER_NAME = "destination";
 
     @Override

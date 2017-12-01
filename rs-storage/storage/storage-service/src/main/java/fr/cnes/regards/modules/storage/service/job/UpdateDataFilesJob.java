@@ -24,6 +24,9 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.IWorkingSubset;
  */
 public class UpdateDataFilesJob extends AbstractStoreFilesJob {
 
+    /**
+     * Job Parameter name for the old data files
+     */
     public static final String OLD_DATA_FILES_PARAMETER_NAME = "old_data_files";
 
     @Override

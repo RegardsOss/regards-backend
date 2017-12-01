@@ -16,10 +16,12 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.search.client.ISearchClient;
-import fr.cnes.regards.modules.storage.dao.AIPDao;
+import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
+ * Default {@link ISecurityDelegation} implementation using rs-catalog to check access rights
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Plugin(author = "REGARDS Team", description = "Plugin handling the security thanks to catalog",
@@ -27,15 +29,27 @@ import fr.cnes.regards.modules.storage.domain.AIP;
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class CatalogSecurityDelegation implements ISecurityDelegation {
 
+    /**
+     * {@link ISearchClient} instance
+     */
     @Autowired
     private ISearchClient searchClient;
 
+    /**
+     * {@link IProjectUsersClient} instance
+     */
     @Autowired
     private IProjectUsersClient projectUsersClient;
 
+    /**
+     * {@link IAIPDao} instance
+     */
     @Autowired
-    private AIPDao aipDao;
+    private IAIPDao aipDao;
 
+    /**
+     * {@link IAuthenticationResolver} instance
+     */
     @Autowired
     private IAuthenticationResolver authenticationResolver;
 
@@ -45,7 +59,8 @@ public class CatalogSecurityDelegation implements ISecurityDelegation {
             FeignSecurityManager.asSystem();
             ResponseEntity<Resource<AbstractEntity>> catalogResponse = searchClient
                     .getEntity(UniformResourceName.fromString(ipId));
-            if (!HttpUtils.isSuccess(catalogResponse.getStatusCode()) && !catalogResponse.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+            if (!HttpUtils.isSuccess(catalogResponse.getStatusCode()) && !catalogResponse.getStatusCode()
+                    .equals(HttpStatus.NOT_FOUND)) {
                 // either there was an error or it was forbidden
                 return false;
             }
@@ -60,10 +75,10 @@ public class CatalogSecurityDelegation implements ISecurityDelegation {
             }
             ResponseEntity<Boolean> adminResponse = projectUsersClient.isAdmin(authenticationResolver.getUser());
             if (HttpUtils.isSuccess(adminResponse.getStatusCode())) {
-                // if no problem occured then lets give the answer from rs-admin
+                // if no problem occurred then lets give the answer from rs-admin
                 return adminResponse.getBody();
             } else {
-                // if a problem occured, we cannot now if current user is an admin or not: lets assume he is not
+                // if a problem occurred, we cannot know if current user is an admin or not: lets assume he is not
                 return false;
             }
         } finally {

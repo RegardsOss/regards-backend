@@ -7,7 +7,13 @@ package fr.cnes.regards.modules.storage.domain.database;
  */
 public interface MonitoringAggregation {
 
+    /**
+     * @return the data storage used id
+     */
     Long getDataStorageUsedId();
 
+    /**
+     * @return the used size
+     */
     Long getUsedSize();
 }

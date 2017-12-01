@@ -52,6 +52,9 @@ public class StorageJobProgressManager implements IProgressManager {
      */
     private final Collection<DataFile> failedDataFile = Sets.newConcurrentHashSet();
 
+    /**
+     * Collection of data files that has been handled
+     */
     private final Collection<DataFile> handledDataFile = Sets.newConcurrentHashSet();
 
     public StorageJobProgressManager(IPublisher publisher, IJob<?> job) {
@@ -128,14 +131,23 @@ public class StorageJobProgressManager implements IProgressManager {
         publisher.publish(dataStorageEvent);
     }
 
+    /**
+     * @return the failure causes
+     */
     public Set<String> getFailureCauses() {
         return failureCauses;
     }
 
+    /**
+     * @return the failed data files
+     */
     public Collection<DataFile> getFailedDataFile() {
         return failedDataFile;
     }
 
+    /**
+     * @return the handled data files
+     */
     public Collection<DataFile> getHandledDataFile() {
         return handledDataFile;
     }
