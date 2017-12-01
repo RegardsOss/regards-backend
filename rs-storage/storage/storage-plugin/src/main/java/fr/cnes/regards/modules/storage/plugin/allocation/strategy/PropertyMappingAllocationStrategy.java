@@ -14,6 +14,7 @@ import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -61,8 +62,7 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
      * Collection representing the mapping between a value and the data storage to use
      */
     @PluginParameter(name = PROPERTY_VALUE_DATA_STORAGE_MAPPING,
-            description = "Collection representing the mapping between a value and the data storage to use",
-            type = PropertyDataStorageMapping.class)
+            description = "Collection representing the mapping between a value and the data storage to use")
     private List<PropertyDataStorageMapping> propertyDataStorageMappings;
 
     /**
@@ -71,7 +71,7 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
     @PluginInit
     public void init() {
         if (!propertyPath.startsWith("$.")) {
-            //our json path lib only understand path that starts with "$.", so lets add it in case the user didn't
+            // our json path lib only understand path that starts with "$.", so lets add it in case the user didn't
             propertyPath = "$." + propertyPath;
         }
     }
@@ -79,29 +79,26 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
     @Override
     public Multimap<Long, DataFile> dispatch(Collection<DataFile> dataFilesToHandle) {
         Multimap<Long, DataFile> dispatch = HashMultimap.create();
-        //First lets construct a map, which is way better to manipulate
-        Map<String, Long> valueConfIdMap = propertyDataStorageMappings.stream()
-                .collect(Collectors.toMap(PropertyDataStorageMapping
-                                                  ::getPropertyValue, PropertyDataStorageMapping
-                                                  ::getDataStorageConfId));
+        // First lets construct a map, which is way better to manipulate
+        Map<String, Long> valueConfIdMap = propertyDataStorageMappings.stream().collect(Collectors
+                .toMap(PropertyDataStorageMapping::getPropertyValue, PropertyDataStorageMapping::getDataStorageConfId));
         for (DataFile dataFile : dataFilesToHandle) {
-            //now lets extract the property value from the AIP
+            // now lets extract the property value from the AIP
             try {
                 String propertyValue = JsonPath.read(gson.toJson(dataFile.getAip()), propertyPath);
                 Long chosenOne = valueConfIdMap.get(propertyValue);
                 if (chosenOne == null) {
-                    LOG.error(String.format(
-                            "File(url: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
-                            dataFile.getUrl()));
+                    LOG.error(String
+                            .format("File(url: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
+                                    dataFile.getUrl()));
                 } else {
                     dispatch.put(chosenOne, dataFile);
                 }
             } catch (PathNotFoundException e) {
-                LOG.error(String.format(
-                        "File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
-                        dataFile.getUrl(),
-                        dataFile.getAip().getId(),
-                        propertyPath), e);
+                LOG.error(String
+                        .format("File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
+                                dataFile.getUrl(), dataFile.getAip().getId(), propertyPath),
+                          e);
             }
         }
 
