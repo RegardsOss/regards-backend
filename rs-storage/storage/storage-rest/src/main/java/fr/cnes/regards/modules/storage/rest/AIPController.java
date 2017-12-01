@@ -109,8 +109,6 @@ public class AIPController implements IResourceController<AIP> {
      */
     public static final String OBJECT_LINK_PATH = ID_PATH + "/objectlinks";
 
-//    public static final String ID_OBJECT_LINK_PATH = OBJECT_LINK_PATH + "/{objectLinkid}";
-
     /**
      * Controller path using an aip ip id as path variable
      */
@@ -130,16 +128,6 @@ public class AIPController implements IResourceController<AIP> {
      * Controller path using an aip ip id and a tag as path variable
      */
     public static final String TAG = TAG_PATH + "/{tag}";
-
-//    public static final String QUICK_LOOK = ID_PATH + "/quicklook";
-//
-//    public static final String THUMB_NAIL = ID_PATH + "/thumbnail";
-//
-//    public static final String TAGS_PATH = "/tags";
-//
-//    public static final String TAGS_VALUE_PATH = "/{tag}";
-//
-//    public static final String OBJECT_LINKS_ID_PATH = "/objectLinks/{objectLinkid}";
 
     /**
      * Controller path using an aip ip id and a file checksum as path variable

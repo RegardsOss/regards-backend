@@ -106,15 +106,17 @@ public interface IAIPService {
             throws ModuleException;
 
     /**
+     * Retrieve the files metadata associated to an aip
      * @param pIpId
-     * @return
+     * @return the files metadata
      * @throws EntityNotFoundException
      */
     Set<OAISDataObject> retrieveAIPFiles(UniformResourceName pIpId) throws ModuleException;
 
     /**
+     * Retrieve the versions of an aip
      * @param pIpId
-     * @return
+     * @return the aip versions ip ids
      */
     List<String> retrieveAIPVersionHistory(UniformResourceName pIpId);
 
@@ -134,12 +136,34 @@ public interface IAIPService {
      */
     Optional<DataFile> getAIPDataFile(String pAipId, String pChecksum) throws ModuleException;
 
+    /**
+     * Retrieve the history of event that occurred to an aip, represented by its ip id
+     * @param pIpId
+     * @return the aip history
+     * @throws ModuleException
+     */
     List<Event> retrieveAIPHistory(UniformResourceName pIpId) throws ModuleException;
 
+    /**
+     * Retrieve all aips which ip id is at least one of the provided ones
+     * @param ipIds
+     * @return all aips which ip id is at least one of the provided ones
+     */
     Set<AIP> retrieveAipsBulk(Set<String> ipIds);
 
+    /**
+     * Retrieve all aips that are tagged by the given tag
+     * @param tag
+     * @return tagged aips
+     */
     Set<AIP> retrieveAipsByTag(String tag);
 
+    /**
+     * Retrieve an aip thanks to its ip id
+     * @param ipId
+     * @return the aip
+     * @throws EntityNotFoundException
+     */
     AIP retrieveAip(String ipId) throws EntityNotFoundException;
 
     /**
@@ -194,12 +218,20 @@ public interface IAIPService {
     void scheduleStorageMetadata(Set<DataFile> metadataToStore);
 
     /**
-     * Schedule
+     * Schedule the storage of metadata update
      * @param metadataToUpdate
      */
     void scheduleStorageMetadataUpdate(Set<UpdatableMetadataFile> metadataToUpdate);
 
+    /**
+     * Prepare the aip metadata of already stored aip that has been updated
+     * @return the new and old aip metadata associated data file
+     */
     Set<UpdatableMetadataFile> prepareUpdatedAIP();
 
+    /**
+     * Prepare the aip metadata that are not yet stored
+     * @return data files to store
+     */
     Set<DataFile> prepareNotFullyStored();
 }

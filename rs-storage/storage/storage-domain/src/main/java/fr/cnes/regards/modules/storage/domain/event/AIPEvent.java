@@ -17,6 +17,9 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 @Event
 public class AIPEvent implements ISubscribable {
 
+    /**
+     * Failure cause message format
+     */
     private static final String FAILURE_CAUSE_TEMPLATE = "File %s could not be stored by IDataStorage( plugin configuration id: %s)";
 
     /**

@@ -39,32 +39,58 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.PluginStorageInfo;
 
 /**
+ * Data storage service
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Service
 @RegardsTransactional
 public class DataStorageService implements IDataStorageService, ApplicationListener<ApplicationReadyEvent> {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(DataStorageInfo.class);
 
+    /**
+     * {@link IPluginService} instance
+     */
     @Autowired
     private IPluginService pluginService;
 
+    /**
+     * {@link IDataFileDao} instance
+     */
     @Autowired
     private IDataFileDao dataFileDao;
 
+    /**
+     * {@link ITenantResolver} instance
+     */
     @Autowired
     private ITenantResolver tenantResolver;
 
+    /**
+     * {@link IRuntimeTenantResolver} instance
+     */
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    /**
+     * {@link INotificationClient} instance
+     */
     @Autowired
     private INotificationClient notificationClient;
 
+    /**
+     * Spring application name ~= microservice type
+     */
     @Value("${spring.application.name}")
     private String applicationName;
 
+    /**
+     * data storage occupation threshold in percent
+     */
     @Value("${regards.storage.data.storage.threshold.percent:90}")
     private Integer threshold;
 
