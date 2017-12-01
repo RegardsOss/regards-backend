@@ -97,6 +97,7 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         order.addDatasetOrderTask(ds1Task);
 
         FilesTask files1Task = new FilesTask();
+        files1Task.setOwner(USER);
         OrderDataFile dataFile1 = new OrderDataFile();
         dataFile1.setUrl("file:///test/files/file1.txt");
         dataFile1.setName("file1.txt");

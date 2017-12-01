@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
+import org.omg.PortableInterceptor.USER_EXCEPTION;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpHeaders;
@@ -238,6 +239,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         order.addDatasetOrderTask(ds1Task);
 
         FilesTask files1Task = new FilesTask();
+        files1Task.setOwner(DEFAULT_USER_EMAIL);
         files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1.txt", FileState.ONLINE));
         files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_hd.txt", FileState.ONLINE));
         files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_md.txt", FileState.ONLINE));
@@ -251,6 +253,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         order.addDatasetOrderTask(ds2Task);
 
         FilesTask files20Task = new FilesTask();
+        files20Task.setOwner(DEFAULT_USER_EMAIL);
         files20Task.addFile(createOrderDataFile(order, DO2_IP_ID, "file2.txt", FileState.AVAILABLE));
         files20Task.addFile(createOrderDataFile(order, DO2_IP_ID, "file2_ql_hd.txt", FileState.AVAILABLE));
         files20Task.addFile(createOrderDataFile(order, DO2_IP_ID, "file2_ql_md.txt", FileState.AVAILABLE));
@@ -258,6 +261,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         ds2Task.addReliantTask(files20Task);
 
         FilesTask files21Task = new FilesTask();
+        files21Task.setOwner(DEFAULT_USER_EMAIL);
         files21Task.addFile(createOrderDataFile(order, DO3_IP_ID, "file2.txt", FileState.AVAILABLE));
         files21Task.addFile(createOrderDataFile(order, DO3_IP_ID, "file2_ql_hd_bis.txt", FileState.AVAILABLE));
         files21Task.addFile(createOrderDataFile(order, DO3_IP_ID, "file2_ql_md_bis.txt", FileState.AVAILABLE));
@@ -411,6 +415,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         order.addDatasetOrderTask(ds1Task);
 
         FilesTask files1Task = new FilesTask();
+        files1Task.setOwner(DEFAULT_USER_EMAIL);
         files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1.txt", FileState.ONLINE));
         files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_hd.txt", FileState.ONLINE));
         files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_md.txt", FileState.ONLINE));
@@ -424,6 +429,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         order.addDatasetOrderTask(ds2Task);
 
         FilesTask files20Task = new FilesTask();
+        files20Task.setOwner(DEFAULT_USER_EMAIL);
         files20Task.addFile(createOrderDataFile(order, DO2_IP_ID, "file2.txt", FileState.AVAILABLE));
         files20Task.addFile(createOrderDataFile(order, DO2_IP_ID, "file2_ql_hd.txt", FileState.AVAILABLE));
         files20Task.addFile(createOrderDataFile(order, DO2_IP_ID, "file2_ql_md.txt", FileState.AVAILABLE));
@@ -431,6 +437,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         ds2Task.addReliantTask(files20Task);
 
         FilesTask files21Task = new FilesTask();
+        files21Task.setOwner(DEFAULT_USER_EMAIL);
         files21Task.addFile(createOrderDataFile(order, DO3_IP_ID, "file2.txt", FileState.AVAILABLE));
         files21Task.addFile(createOrderDataFile(order, DO3_IP_ID, "file2_ql_hd_bis.txt", FileState.AVAILABLE));
         files21Task.addFile(createOrderDataFile(order, DO3_IP_ID, "file2_ql_md_bis.txt", FileState.AVAILABLE));
