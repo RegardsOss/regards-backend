@@ -18,9 +18,12 @@
  */
 package fr.cnes.regards.modules.acquisition.builder;
 
+import java.util.Set;
+
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 
 /**
  *
@@ -68,6 +71,16 @@ public final class MetaProductBuilder {
      */
     public MetaProductBuilder addMetaFile(MetaFile metaFile) {
         metaProduct.addMetaFile(metaFile);
+        return this;
+    }
+    
+    /**
+     * Set the {@link Set} of {@link MetaFile} property to the current {@link MetaProduct}
+     * @param metaFile a {@link Set} of {@link MetaFile}
+     * @return the current {@link MetaProductBuilder}
+     */
+    public MetaProductBuilder withMetaFiles(Set<MetaFile> metaFiles) {
+        metaProduct.setMetaFiles(metaFiles);
         return this;
     }
 

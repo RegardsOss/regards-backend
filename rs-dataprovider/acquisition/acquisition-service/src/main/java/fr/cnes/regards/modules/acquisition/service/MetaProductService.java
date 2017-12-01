@@ -72,13 +72,15 @@ public class MetaProductService implements IMetaProductService {
             return null;
         }
 
-        metaProduct.setMetaFiles(metaFileService.createOrUpdate(metaProduct.getMetaFiles()));
-
         if (metaProduct.getId() == null) {
             // It is a new MetaProduct --> create a new
+            metaProduct.setMetaFiles(metaFileService.createOrUpdate(metaProduct.getMetaFiles()));
             return this.save(metaProduct);
         } else {
-            MetaProduct existingMetaProduct = this.retrieve(metaProduct.getId());
+            MetaProduct existingMetaProduct = this.retrieveComplete(metaProduct.getId());
+
+            metaProduct.setMetaFiles(metaFileService.createOrUpdate(metaProduct.getMetaFiles(),
+                                                                    existingMetaProduct.getMetaFiles()));
 
             if (existingMetaProduct.equals(metaProduct)) {
                 // it is the same --> just return it

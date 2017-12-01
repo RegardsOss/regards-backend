@@ -81,7 +81,7 @@ public class MetaFileService implements IMetaFileService {
         for (MetaFile metaFile : newMetaFiles) {
             createOrUpdate(metaFile);
         }
-        
+
         deletUnusedMetaFiles(newMetaFiles, existingMetaFiles);
 
         return newMetaFiles;
@@ -93,15 +93,16 @@ public class MetaFileService implements IMetaFileService {
             return null;
         }
 
+        metaFile.setScanDirectories(scanDirectoryService.createOrUpdate(metaFile.getScanDirectories()));
+
         if (metaFile.getId() == null) {
             // It is a new MetaFile --> create a new
+            metaFile.setScanDirectories(scanDirectoryService.createOrUpdate(metaFile.getScanDirectories()));
             return this.save(metaFile);
         } else {
             MetaFile existingMetaFile = this.retrieve(metaFile.getId());
-
             metaFile.setScanDirectories(scanDirectoryService.createOrUpdate(metaFile.getScanDirectories(),
                                                                             existingMetaFile.getScanDirectories()));
-
             if (existingMetaFile.equals(metaFile)) {
                 // it is the same --> just return it
                 return metaFile;
@@ -122,7 +123,7 @@ public class MetaFileService implements IMetaFileService {
 
         for (MetaFile aScanDir : existingMetaFiles) {
             boolean isPresent = false;
-            for (MetaFile aNewScanDir : existingMetaFiles) {
+            for (MetaFile aNewScanDir : newMetaFiles) {
                 if (!isPresent) {
                     isPresent = aNewScanDir.getId().equals(aScanDir.getId());
                 }

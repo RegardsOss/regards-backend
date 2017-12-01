@@ -105,5 +105,14 @@ public class ScanDirectory implements IIdentifiable<Long> {
         }
         return true;
     }
+    
+    @Override
+    public String toString() {
+        StringBuilder strBuilder = new StringBuilder();
+        strBuilder.append(id);
+        strBuilder.append(" - ");
+        strBuilder.append(scanDir);
+        return strBuilder.toString();
+    }
 
 }

@@ -54,7 +54,7 @@ import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionServiceConfig
 @ContextConfiguration(classes = { AcquisitionServiceConfiguration.class })
 @ActiveProfiles({ "test", "disableDataProviderTask" })
 @DirtiesContext
-public class ScanServiceTest {
+public class MetaFileServiceTest {
 
     @Value("${regards.tenant}")
     private String tenant;
@@ -89,7 +89,7 @@ public class ScanServiceTest {
     public void createAndUpdateOneScanDir() throws ModuleException {
         String dirName = "/etc/alternatives";
 
-        Assert.assertEquals(0, scandirService.retrieveAll().size());
+        Assert.assertEquals(0, scanDirectoryRepository.count());
 
         // create first scan dir
         ScanDirectory scanDir1 = ScanDirectoryBuilder.build(dirName).get();
@@ -123,7 +123,7 @@ public class ScanServiceTest {
     public void createAndUpdateSetOfScanDir() throws ModuleException {
         String dirName = "/usr/local/sbin";
 
-        Assert.assertEquals(0, scandirService.retrieveAll().size());
+        Assert.assertEquals(0, scanDirectoryRepository.count());
 
         // create many scan dir
         ScanDirectory scanDir1 = ScanDirectoryBuilder.build(dirName + "/one").get();
@@ -144,7 +144,7 @@ public class ScanServiceTest {
         scanDirs.add(scanDir3);
         scandirService.createOrUpdate(scanDirs);
 
-        Assert.assertEquals(3, scandirService.retrieveAll().size());
+        Assert.assertEquals(3, scanDirectoryRepository.count());
         Assert.assertEquals(newDirName, scandirService.retrieve(scanDir2.getId()).getScanDir());
         Assert.assertEquals(dirName + "/one", scandirService.retrieve(scanDir1.getId()).getScanDir());
         Assert.assertEquals(dirName + "/three", scandirService.retrieve(scanDir3.getId()).getScanDir());

@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.builder;
 
+import java.util.Set;
+
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 
@@ -82,6 +84,16 @@ public final class MetaFileBuilder {
      */
     public MetaFileBuilder addScanDirectory(ScanDirectory scanDirectory) {
         metaFile.addScanDirectory(scanDirectory);
+        return this;
+    }
+    
+    /**
+     * Set the {@link Set} of {@link ScanDirectory} property to the current {@link MetaFile}
+     * @param scanDirectory {@link Set} of {@link ScanDirectory}
+     * @return the current {@link MetaFileBuilder}
+     */
+    public MetaFileBuilder withScanDirectories(Set<ScanDirectory> scanDirectories) {
+        metaFile.setScanDirectories(scanDirectories);
         return this;
     }
 
