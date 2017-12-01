@@ -78,6 +78,10 @@
             <artifactId>jobs-service</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.framework.modules.workspace</groupId>
+            <artifactId>workspace-service</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework.utils</groupId>
             <artifactId>file-utils</artifactId>
         </dependency>

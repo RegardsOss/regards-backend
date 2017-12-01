@@ -88,7 +88,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
             JobParameterInvalidException invalid = new JobParameterInvalidException(String.format(
                     "Job %s: There is no plugin configuration with id: %s",
                     this.getClass(),
-                    confId));
+                    confId), e);
             logger.error(invalid.getMessage(), invalid);
             throw invalid;
         }

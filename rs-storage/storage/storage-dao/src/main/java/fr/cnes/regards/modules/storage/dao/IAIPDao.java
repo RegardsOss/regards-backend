@@ -109,19 +109,56 @@ public interface IAIPDao {
      */
     Set<AIP> findAllByIpIdStartingWith(String ipIdWithoutVersion);
 
+    /**
+     * Retrieve all aips which state is the one given
+     * @param state
+     * @return aips which state is the requested one
+     */
     Set<AIP> findAllByStateService(AIPState state);
 
+    /**
+     * Retrieve a single aip according to its ip id
+     * @param ipId
+     * @return an optional wrapping the aip to avoid nulls
+     */
     Optional<AIP> findOneByIpId(String ipId);
 
+    /**
+     * Delete all aips from the database
+     */
     void deleteAll();
 
+    /**
+     * Retrieve all aips which state is one of the provided ones
+     * @param states
+     * @return aips which state is one of the requested
+     */
     Set<AIP> findAllByStateInService(AIPState... states);
 
-    void remove(AIP associatedAIP);
+    /**
+     * Remove the given aip from the database
+     * @param aip
+     */
+    void remove(AIP aip);
 
+    /**
+     * Retrieve all aip which ip id is one of the provided ones
+     * @param ipIds
+     * @return aips which ip id is one of the requested
+     */
     Set<AIP> findAllByIpIdIn(Collection<String> ipIds);
 
+    /**
+     * Retrieve all aips which are tagged with the given tag
+     * @param tag
+     * @return aip tagged by tag
+     */
     Set<AIP> findAllByTags(String tag);
 
+    /**
+     * Retrieve all aips which sip ip id is the given one
+     * @param sipIpId
+     * @return aips which sip ip id matches
+     */
     Set<AIP> findAllBySipId(String sipIpId);
 }

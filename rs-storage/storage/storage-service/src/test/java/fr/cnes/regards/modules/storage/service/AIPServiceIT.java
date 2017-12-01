@@ -47,6 +47,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.EventType;
@@ -115,15 +116,15 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     @Autowired
     private ISubscriber subscriber;
 
-    @Value("${regards.storage.workspace}")
-    private String workspace;
-
     private AIP aip;
 
     private URL baseStorageLocation;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
+
+    @Autowired
+    private IWorkspaceService workspaceService;
 
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
@@ -227,7 +228,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     @Test
     public void createFailOnMetadataTest() throws ModuleException, InterruptedException, IOException {
         // to make the process fail just on metadata storage, lets remove permissions from the workspace
-        Path workspacePath = Paths.get(workspace, DEFAULT_TENANT);
+        Path workspacePath = workspaceService.getMicroserviceWorkspace();
         Set<PosixFilePermission> oldPermissions = Files.getPosixFilePermissions(workspacePath);
         Files.setPosixFilePermissions(workspacePath, Sets.newHashSet());
         try {

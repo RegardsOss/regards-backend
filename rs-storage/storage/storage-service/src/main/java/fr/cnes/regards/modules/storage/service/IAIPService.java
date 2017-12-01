@@ -199,7 +199,7 @@ public interface IAIPService {
      */
     void scheduleStorageMetadataUpdate(Set<UpdatableMetadataFile> metadataToUpdate);
 
-    Set<UpdatableMetadataFile> prepareUpdatedAIP(Path tenantWorkspace);
+    Set<UpdatableMetadataFile> prepareUpdatedAIP();
 
-    Set<DataFile> prepareNotFullyStored(Path tenantWorkspace);
+    Set<DataFile> prepareNotFullyStored();
 }
