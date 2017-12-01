@@ -173,11 +173,11 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
         ResponseEntity<Collection<SIPDto>> response = ingestClient.ingest(sipCollection);
 
         if (response.getStatusCode().equals(HttpStatus.CREATED)) {
-            nbSipCreated = responseSipPartiallyCreated(session, response.getBody());
+            nbSipCreated = responseIngestSip(session, response.getBody());
             processService.updateProcessGeneration(session, nbSipCreated, 0, 0);
         } else if (response.getStatusCode().equals(HttpStatus.PARTIAL_CONTENT)) {
-            nbSipCreated = responseSipPartiallyCreated(session, response.getBody());
-            processService.updateProcessGeneration(session, nbSipCreated, 0, response.getBody().size()-nbSipCreated);
+            nbSipCreated = responseIngestSip(session, response.getBody());
+            processService.updateProcessGeneration(session, nbSipCreated, 0, response.getBody().size() - nbSipCreated);
         } else if (response.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
             LOG.error("[{}] Unauthorized access to ingest microservice", session);
 
@@ -191,29 +191,13 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
         return nbSipCreated;
     }
 
-    //    /**
-    //     * SIP bulk request has been processed with success, change the {@link Product} state.
-    //     * @param session a current session identifier
-    //     * @param sipCollection the {@link SIPCollection} send to Ingest microservice
-    //     * @return the number of {@link Product} that has been sended in Ingest microservice
-    //     */
-    //    private int responseSipCreated(String session, SIPCollection sipCollection) {
-    //        LOG.info("[{}] SIP collection has heen processed with success : {} SIP ingested", session,
-    //                 sipCollection.getFeatures().size());
-    //        for (SIP sip : sipCollection.getFeatures()) {
-    //            LOG.info("------------------> {}", sip.getId());
-    //            this.setProductAsSend(sip.getId());
-    //        }
-    //        return sipCollection.getFeatures().size();
-    //    }
-
     /**
      * SIP bulk request has been processed and some SIP has been rejected, change the {@link Product} state.
      * @param session a current session identifier
      * @param response the {@link Collection} of {@link SIPEntity} that returned by Ingest client
      * @return the number of {@link Product} that has been sended to Ingest microservice
      */
-    private int responseSipPartiallyCreated(String session, Collection<SIPDto> response) {
+    private int responseIngestSip(String session, Collection<SIPDto> response) {
         int nbSipOK = 0;
         int nbSipError = 0;
 
@@ -221,19 +205,15 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
             Product product = productService.retrieve(sipEntity.getIpId());
 
             if (sipEntity.getState().equals(SIPState.REJECTED)) {
-                nbSipError++;
                 LOG.error("[{}] SIP in error : productName=<{}>, reason=<{}>", session, sipEntity.getIpId(),
                           sipEntity.getRejectionCauses());
 
+                nbSipError++;
                 product.setStatus(ProductStatus.ERROR);
 
-                //                productService.setStatusAndSaved(sipEntity.getIpId(), ProductStatus.ERROR);
             } else if (sipEntity.getState().equals(SIPState.CREATED)) {
                 nbSipOK++;
-
                 product.setSended(Boolean.TRUE);
-                //                LOG.info("------------------> {}", sipEntity.getIpId());
-                //                this.setProductAsSend(sipEntity.getIpId());
             }
 
             productService.save(product);
@@ -245,17 +225,4 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
         return nbSipOK;
     }
 
-    private void setProductAsSend(String sipId) {
-        Product product = productService.retrieve(sipId);
-        if (product == null) {
-            final StringBuilder buff = new StringBuilder();
-            buff.append("The product name <");
-            buff.append(sipId);
-            buff.append("> does not exist");
-            LOG.error(buff.toString());
-        } else {
-            product.setSended(Boolean.TRUE);
-            productService.save(product);
-        }
-    }
 }

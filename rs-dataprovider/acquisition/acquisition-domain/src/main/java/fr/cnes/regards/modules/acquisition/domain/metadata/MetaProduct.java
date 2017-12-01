@@ -53,7 +53,8 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
  *
  */
 @Entity
-@Table(name = "t_acquisition_meta_product", indexes = { @Index(name = "idx_acq_meta_product_label", columnList = "label") },
+@Table(name = "t_acquisition_meta_product",
+        indexes = { @Index(name = "idx_acq_meta_product_label", columnList = "label") },
         uniqueConstraints = @UniqueConstraint(name = "uk_acq_meta_product_label", columnNames = { "label" }))
 @NamedEntityGraph(name = "graph.product.complete",
         attributeNodes = { @NamedAttributeNode(value = "products"), @NamedAttributeNode(value = "metaFiles") })
@@ -101,7 +102,7 @@ public class MetaProduct implements IIdentifiable<Long> {
      */
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_meta_product_id"))
-    private final Set<MetaFile> metaFiles = new HashSet<MetaFile>();
+    private Set<MetaFile> metaFiles = new HashSet<MetaFile>();
 
     @Column(name = "ingest_chain")
     private String ingestChain;
@@ -116,36 +117,6 @@ public class MetaProduct implements IIdentifiable<Long> {
     @Override
     public Long getId() {
         return id;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((label == null) ? 0 : label.hashCode()); // NOSONAR
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) { // NOSONAR
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        MetaProduct other = (MetaProduct) obj;
-        if (label == null) {
-            if (other.label != null) {
-                return false;
-            }
-        } else if (!label.equals(other.label)) {
-            return false;
-        }
-        return true;
     }
 
     public String getChecksumAlgorithm() {
@@ -187,6 +158,10 @@ public class MetaProduct implements IIdentifiable<Long> {
     public Set<MetaFile> getMetaFiles() {
         return metaFiles;
     }
+    
+    public void setMetaFiles(Set<MetaFile> newMetaFiles) {
+        this.metaFiles = newMetaFiles;
+    }
 
     public void addMetaFile(MetaFile metaFile) {
         this.metaFiles.add(metaFile);
@@ -206,6 +181,56 @@ public class MetaProduct implements IIdentifiable<Long> {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((checksumAlgorithm == null) ? 0 : checksumAlgorithm.hashCode());
+        result = prime * result + ((cleanOriginalFile == null) ? 0 : cleanOriginalFile.hashCode());
+        result = prime * result + ((ingestChain == null) ? 0 : ingestChain.hashCode());
+        result = prime * result + ((label == null) ? 0 : label.hashCode());
+        result = prime * result + ((metaFiles == null) ? 0 : metaFiles.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        MetaProduct other = (MetaProduct) obj;
+        if (checksumAlgorithm == null) {
+            if (other.checksumAlgorithm != null)
+                return false;
+        } else if (!checksumAlgorithm.equals(other.checksumAlgorithm))
+            return false;
+        if (cleanOriginalFile == null) {
+            if (other.cleanOriginalFile != null)
+                return false;
+        } else if (!cleanOriginalFile.equals(other.cleanOriginalFile))
+            return false;
+        if (ingestChain == null) {
+            if (other.ingestChain != null)
+                return false;
+        } else if (!ingestChain.equals(other.ingestChain))
+            return false;
+        if (label == null) {
+            if (other.label != null)
+                return false;
+        } else if (!label.equals(other.label))
+            return false;
+        if (metaFiles == null) {
+            if (other.metaFiles != null)
+                return false;
+        } else if (!metaFiles.equals(other.metaFiles))
+            return false;
+        return true;
     }
 
     @Override

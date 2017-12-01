@@ -18,15 +18,23 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
+import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
 /**
+ * Manage global {@link MetaFile} life cycle
  * 
  * @author Christophe Mertz
  *
@@ -37,14 +45,100 @@ public class MetaFileService implements IMetaFileService {
 
     private final IMetaFileRepository metaFileRepository;
 
-    public MetaFileService(IMetaFileRepository repository) {
+    private final IScanDirectoryService scanDirectoryService;
+
+    public MetaFileService(IMetaFileRepository repository, IScanDirectoryService scanDirectoryService) {
         super();
         this.metaFileRepository = repository;
+        this.scanDirectoryService = scanDirectoryService;
     }
 
     @Override
     public MetaFile save(MetaFile metaFile) {
         return metaFileRepository.save(metaFile);
+    }
+
+    @Override
+    public MetaFile update(Long metafileId, MetaFile metafile) throws ModuleException {
+        if (!metafileId.equals(metafile.getId())) {
+            throw new EntityInconsistentIdentifierException(metafileId, metafile.getId(), metafile.getClass());
+        }
+        if (!metaFileRepository.exists(metafileId)) {
+            throw new EntityNotFoundException(metafileId, ChainGeneration.class);
+        }
+
+        // TODO CMZ gérer les ScanDirectory
+
+        return metaFileRepository.save(metafile);
+    }
+
+    @Override
+    public Set<MetaFile> createOrUpdate(Set<MetaFile> metaFiles) throws ModuleException {
+        return createOrUpdate(metaFiles, null);
+    }
+
+    @Override
+    public Set<MetaFile> createOrUpdate(Set<MetaFile> newMetaFiles, Set<MetaFile> existingMetaFiles)
+            throws ModuleException {
+
+        deletUnusedMetaFiles(newMetaFiles, existingMetaFiles);
+
+        for (MetaFile metaFile : newMetaFiles) {
+            createOrUpdate(metaFile);
+        }
+        return newMetaFiles;
+    }
+
+    @Override
+    public MetaFile createOrUpdate(MetaFile metaFile) throws ModuleException {
+        if (metaFile == null) {
+            return null;
+        }
+
+        if (metaFile.getId() == null) {
+            // It is a new MetaFile --> create a new
+            return this.save(metaFile);
+        } else {
+            MetaFile existingMetaFile = this.retrieve(metaFile.getId());
+
+            metaFile.setScanDirectories(scanDirectoryService
+                                        .createOrUpdate(metaFile.getScanDirectories(), existingMetaFile.getScanDirectories()));
+
+            if (!existingMetaFile.equals(metaFile)) {
+                // it is different --> update it
+                return this.save(metaFile);
+            } else {
+                // it is the same --> just return it
+                return metaFile;
+            }
+        }
+    }
+
+    private void deletUnusedMetaFiles(Set<MetaFile> newMetaFiles, Set<MetaFile> existingMetaFiles) {
+        if (existingMetaFiles == null) {
+            return;
+        }
+
+        // It is a modification
+        Set<MetaFile> toDelete = new HashSet<>();
+
+        for (MetaFile aScanDir : existingMetaFiles) {
+            boolean isPresent = false;
+            for (MetaFile aNewScanDir : existingMetaFiles) {
+                if (!isPresent) {
+                    isPresent = aNewScanDir.getId().equals(aScanDir.getId());
+                }
+            }
+            if (!isPresent) {
+                // the existing scan dir does not exist in the new Set of scan dir
+                toDelete.add(aScanDir);
+            }
+        }
+
+        // delete the scan dir not found in the new Set of scan dir
+        for (MetaFile aScanDir : toDelete) {
+            metaFileRepository.delete(aScanDir);
+        }
     }
 
     @Override

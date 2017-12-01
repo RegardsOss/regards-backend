@@ -19,7 +19,9 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.util.List;
+import java.util.Set;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 
 /**
@@ -29,6 +31,38 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
  */
 public interface IScanDirectoryService {
 
+    /**
+     * Create or update a {@link Set} of {@link ScanDirectory}.<br>
+     * If a {@link ScanDirectory} does not exist in the new {@link Set}, it is delete from the repository.
+     * @param newScanDirectories the {@link Set} of {@link ScanDirectory} to save
+     * @param existingScanDirectories the existing {@link Set} of {@link ScanDirectory} to update
+     * @return the saved {@link Set} of {@link ScanDirectory
+     * @throws ModuleException if error occurs!
+     */
+    Set<ScanDirectory> createOrUpdate(Set<ScanDirectory> newScanDirectories, Set<ScanDirectory> existingScanDirectories)
+            throws ModuleException;
+
+    /**
+     * Create or update a {@link Set} of {@link ScanDirectory}
+     * @param newScanDirectories the {@link Set} of {@link ScanDirectory} to save
+     * @return the saved {@link Set} of {@link ScanDirectory
+     * @throws ModuleException if error occurs!
+     */
+    Set<ScanDirectory> createOrUpdate(Set<ScanDirectory> newScanDirectories) throws ModuleException;
+
+    /**
+     * Create or update a {@link ScanDirectory}
+     * @param scanDirectory the {@link ScanDirectory} to save
+     * @return
+     * @throws ModuleException if error occurs!
+     */
+    ScanDirectory createOrUpdate(ScanDirectory scanDirectory) throws ModuleException;
+
+    /**
+     * Save a {@link ScanDirectory}
+     * @param scanDir the {@link ScanDirectory} to save
+     * @return the saved {@link ScanDirectory}
+     */
     ScanDirectory save(ScanDirectory scanDir);
 
     /**

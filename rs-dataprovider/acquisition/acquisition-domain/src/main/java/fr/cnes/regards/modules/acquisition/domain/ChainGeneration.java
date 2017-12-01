@@ -106,7 +106,9 @@ public class ChainGeneration implements IIdentifiable<Long> {
     private Long periodicity;
 
     /**
-     * THe {@link MetaProduct} used for this {@link ChainGeneration}
+     * The {@link MetaProduct} used for this {@link ChainGeneration}
+     * 
+     * TODO CMZ : nullable = true ? non
      */
     @OneToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_metaproduct_id"), nullable = true,

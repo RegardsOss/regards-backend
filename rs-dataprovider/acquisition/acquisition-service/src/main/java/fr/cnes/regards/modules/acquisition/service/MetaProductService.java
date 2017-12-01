@@ -23,10 +23,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
+import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
+ * Manage global {@link MetaProduct} life cycle
  * 
  * @author Christophe Mertz
  *
@@ -37,14 +42,53 @@ public class MetaProductService implements IMetaProductService {
 
     private final IMetaProductRepository metaProductRepository;
 
-    public MetaProductService(IMetaProductRepository repository) {
+    private final IMetaFileService metaFileService;
+
+    public MetaProductService(IMetaProductRepository repository, IMetaFileService metaFileService) {
         super();
         this.metaProductRepository = repository;
+        this.metaFileService = metaFileService;
     }
 
     @Override
     public MetaProduct save(MetaProduct metaProduct) {
         return metaProductRepository.save(metaProduct);
+    }
+
+    @Override
+    public MetaProduct update(Long metaproductId, MetaProduct metaproduct) throws ModuleException {
+        if (!metaproductId.equals(metaproduct.getId())) {
+            throw new EntityInconsistentIdentifierException(metaproductId, metaproduct.getId(), metaproduct.getClass());
+        }
+        if (!metaProductRepository.exists(metaproductId)) {
+            throw new EntityNotFoundException(metaproductId, ChainGeneration.class);
+        }
+        // TODO CMZ gérer les MetaFile
+        return metaProductRepository.save(metaproduct);
+    }
+
+    @Override
+    public MetaProduct createOrUpdateMetaProduct(MetaProduct metaProduct) throws ModuleException {
+        if (metaProduct == null) {
+            return null;
+        }
+
+        metaProduct.setMetaFiles(metaFileService.createOrUpdate(metaProduct.getMetaFiles()));
+
+        if (metaProduct.getId() == null) {
+            // It is a new MetaProduct --> create a new
+            return this.save(metaProduct);
+        } else {
+            MetaProduct existingMetaProduct = this.retrieve(metaProduct.getId());
+
+            if (!existingMetaProduct.equals(metaProduct)) {
+                // it is different --> update it
+                return this.save(metaProduct);
+            } else {
+                // it is the same --> just return it
+                return metaProduct;
+            }
+        }
     }
 
     @Override

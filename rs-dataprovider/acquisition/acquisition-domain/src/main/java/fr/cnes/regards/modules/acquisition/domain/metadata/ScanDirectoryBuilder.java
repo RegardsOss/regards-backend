@@ -47,11 +47,6 @@ public final class ScanDirectoryBuilder {
         return new ScanDirectoryBuilder(sd);
     }
 
-    //    public ScanDirectoryBuilder withDateAcquisition(OffsetDateTime odt) {
-    //        scanDirectory.setLastAcqDate(odt);
-    //        return this;
-    //    }
-
     public ScanDirectory get() {
         return scanDirectory;
     }

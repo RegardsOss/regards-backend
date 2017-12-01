@@ -18,19 +18,31 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.util.Set;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
 /**
+ * {@link MetaFile} management service
  * 
  * @author Christophe Mertz
  * 
  */
 public interface IMetaFileService {
 
+    Set<MetaFile> createOrUpdate(Set<MetaFile> newMetaFiles, Set<MetaFile> existingMetaFiles) throws ModuleException;
+    
+    Set<MetaFile> createOrUpdate(Set<MetaFile> metaFiles) throws ModuleException;
+
+    MetaFile createOrUpdate(MetaFile metaFile) throws ModuleException;
+
     MetaFile save(MetaFile metaFile);
+
+    MetaFile update(Long metafileId, MetaFile metafile) throws ModuleException;
 
     /**
      * @return all {@link MetaFile}
@@ -44,6 +56,6 @@ public interface IMetaFileService {
     MetaFile retrieve(Long id);
 
     void delete(Long id);
-    
+
     void delete(MetaFile metaFile);
 }

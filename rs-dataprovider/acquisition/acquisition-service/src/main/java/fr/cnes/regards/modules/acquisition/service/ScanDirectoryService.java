@@ -19,11 +19,14 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 
@@ -46,6 +49,78 @@ public class ScanDirectoryService implements IScanDirectoryService {
     @Override
     public ScanDirectory save(ScanDirectory scanDir) {
         return scandirRepository.save(scanDir);
+    }
+
+    @Override
+    public Set<ScanDirectory> createOrUpdate(Set<ScanDirectory> newScanDirectories) throws ModuleException {
+        return createOrUpdate(newScanDirectories, null);
+    }
+
+    @Override
+    public Set<ScanDirectory> createOrUpdate(Set<ScanDirectory> newScanDirectories,
+            Set<ScanDirectory> existingScanDirectories) throws ModuleException {
+
+        deletUnusedScanDirectories(newScanDirectories, existingScanDirectories);
+
+        for (ScanDirectory scanDir : newScanDirectories) {
+            createOrUpdate(scanDir);
+        }
+        return newScanDirectories;
+    }
+
+    @Override
+    public ScanDirectory createOrUpdate(ScanDirectory scanDirectory) throws ModuleException {
+        if (scanDirectory == null) {
+            return null;
+        }
+
+        if (scanDirectory.getId() == null) {
+            // It is a new MetaProduct --> create a new
+            return this.save(scanDirectory);
+        } else {
+            ScanDirectory existingScanDirectory = this.retrieve(scanDirectory.getId());
+
+            if (!existingScanDirectory.equals(scanDirectory)) {
+                // it is different --> update it
+                return this.save(scanDirectory);
+            } else {
+                // it is the same --> just return it
+                return scanDirectory;
+            }
+        }
+    }
+
+    /**
+     * Delete from a {@link Set} of {@link ScanDirectory} the {@link ScanDirectory} not present in a {@link Set} of {@link ScanDirectory}.
+     * @param newScanDirectories a {@link Set} of {@link ScanDirectory}
+     * @param existingScanDirectories a {@link Set} of {@link ScanDirectory}
+     */
+    private void deletUnusedScanDirectories(Set<ScanDirectory> newScanDirectories,
+            Set<ScanDirectory> existingScanDirectories) {
+        if (existingScanDirectories == null) {
+            return;
+        }
+
+        // It is a modification
+        Set<ScanDirectory> toDelete = new HashSet<>();
+
+        for (ScanDirectory aScanDir : existingScanDirectories) {
+            boolean isPresent = false;
+            for (ScanDirectory aNewScanDir : newScanDirectories) {
+                if (!isPresent) {
+                    isPresent = aNewScanDir.getId().equals(aScanDir.getId());
+                }
+            }
+            if (!isPresent) {
+                // the existing scan dir does not exist in the new Set of scan dir
+                toDelete.add(aScanDir);
+            }
+        }
+
+        // delete the scan dir not found in the new Set of scan dir
+        for (ScanDirectory aScanDir : toDelete) {
+            scandirRepository.delete(aScanDir);
+        }
     }
 
     @Override

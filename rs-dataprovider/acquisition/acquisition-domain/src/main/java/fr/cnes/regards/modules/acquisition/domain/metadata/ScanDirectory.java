@@ -60,6 +60,23 @@ public class ScanDirectory implements IIdentifiable<Long> {
     }
 
     @Override
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getScanDir() {
+        return scanDir;
+    }
+
+    public void setScanDir(String scanDir) {
+        this.scanDir = scanDir;
+    }
+
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -88,30 +105,5 @@ public class ScanDirectory implements IIdentifiable<Long> {
         }
         return true;
     }
-
-    @Override
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getScanDir() {
-        return scanDir;
-    }
-
-    public void setScanDir(String scanDir) {
-        this.scanDir = scanDir;
-    }
-
-    //    public OffsetDateTime getLastAcqDate() {
-    //        return lastAcqDate;
-    //    }
-    //
-    //    public void setLastAcqDate(OffsetDateTime lastAcqDate) {
-    //        this.lastAcqDate = lastAcqDate;
-    //    }
 
 }

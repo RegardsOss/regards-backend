@@ -25,17 +25,36 @@ import javax.persistence.FetchType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
+ * {@link ChainGeneration} management service
  * 
  * @author Christophe Mertz
  * 
  */
 public interface IChainGenerationService {
 
+    /**
+     * Create a new {@link ChainGeneration} 
+     * @param chain the {@link ChainGeneration} to create
+     * @return the {@link ChainGeneration} created
+     * @throws ModuleException if error occurs!
+     */
+    ChainGeneration create(ChainGeneration chain) throws ModuleException;
+
     ChainGeneration save(ChainGeneration chain);
+
+    /**
+     * Update a {@link ChainGeneration}
+     * @param chainId the {@link ChainGeneration} identifier to update
+     * @param chain the {@link ChainGeneration} to update
+     * @return the updated {@link ChainGeneration}
+     * @throws ModuleException if error occurs!
+     */
+    ChainGeneration update(Long chainId, ChainGeneration chain) throws ModuleException;
 
     /**
      * Retrieve one specified {@link ChainGeneration}
@@ -56,15 +75,33 @@ public interface IChainGenerationService {
      */
     Page<ChainGeneration> retrieveAll(Pageable page);
 
+    /**
+     * Delete a {@link ChainGeneration}
+     * @param id the {@link ChainGeneration} identifier 
+     */
     void delete(Long id);
-    
+
+    /**
+     * Delete a {@link ChainGeneration}
+     * @param chainGeneration the {@link ChainGeneration} to delete
+     */
     void delete(ChainGeneration chainGeneration);
 
     ChainGeneration findByMetaProduct(MetaProduct metaProduct);
 
     Set<ChainGeneration> findByActiveTrueAndRunningFalse();
 
+    /**
+     * Start the acquisition process for a {@link ChainGeneration}
+     * @param id the {@link ChainGeneration} identifier 
+     * @return the {@link ChainGeneration} has been started
+     */
     boolean run(Long id);
 
+    /**
+     * Start the acquisition process for a {@link ChainGeneration}
+     * @param chain the {@link ChainGeneration} to start
+     * @return been started
+     */
     boolean run(ChainGeneration chain);
 }

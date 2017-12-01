@@ -21,16 +21,28 @@ package fr.cnes.regards.modules.acquisition.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
+ * {@link MetaProduct} management service
  * 
  * @author Christophe Mertz
  * 
  */
 public interface IMetaProductService {
 
+    /**
+     * Create or update a {@link MetaProduct}
+     * @param chain {@link ChainGeneration}
+     * @throws ModuleException 
+     */
+    MetaProduct createOrUpdateMetaProduct(MetaProduct metaProduct) throws ModuleException;
+
     MetaProduct save(MetaProduct metaProduct);
+
+    MetaProduct update(Long metaproductId, MetaProduct metaproduct) throws ModuleException;
 
     /**
      * @return all {@link MetaProduct}

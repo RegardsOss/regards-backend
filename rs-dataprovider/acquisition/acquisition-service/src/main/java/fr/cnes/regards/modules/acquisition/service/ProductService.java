@@ -173,32 +173,4 @@ public class ProductService implements IProductService {
         return currentProduct;
     }
 
-    //    @Override
-    //    public void setSipAndSave(Product product, SIP sip) {
-    //        product.setSip(sip);
-    //        this.save(product);
-    //    }
-    //    
-    //    @Override
-    //    public void setProductAsSend(String sipId) {
-    //        Product product = this.retrieve(sipId);
-    //        if (product == null) {
-    //            final StringBuilder buff = new StringBuilder();
-    //            buff.append("The product name <");
-    //            buff.append(sipId);
-    //            buff.append("> does not exist");
-    //            LOG.error(buff.toString());
-    //        } else {
-    //            product.setSended(Boolean.TRUE);
-    //            this.save(product);
-    //        }
-    //    }
-
-    //    @Override
-    //    public void setStatusAndSaved(String sipId, ProductStatus status) {
-    //        // todo cmz, il faut un retrieve light et pas complet 
-    //        Product product = this.retrieve(sipId);
-    //        product.setStatus(status);
-    //        this.save(product);
-    //    }
 }

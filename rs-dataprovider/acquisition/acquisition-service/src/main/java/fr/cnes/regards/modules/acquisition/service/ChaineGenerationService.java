@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -32,8 +33,14 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.builder.ProcessGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
@@ -43,7 +50,8 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProductsJob;
 
 /**
- *
+ * Manage global {@link ChainGeneration} life cycle
+ * 
  * @author Christophe Mertz
  *
  */
@@ -80,6 +88,84 @@ public class ChaineGenerationService implements IChainGenerationService {
     @Override
     public ChainGeneration save(ChainGeneration chain) {
         return chainRepository.save(chain);
+    }
+
+    @Override
+    public ChainGeneration create(ChainGeneration chain) throws ModuleException {
+        Optional<ChainGeneration> chainGen = chainRepository.findOneByLabel(chain.getLabel());
+        if (chainGen.isPresent()) {
+            throw new EntityAlreadyExistsException(
+                    String.format("%s for name %s aleady exists", ChainGeneration.class.getName(), chain.getLabel()));
+        } else {
+            return chainRepository.save(createOrUpdate(chain));
+        }
+    }
+
+    private ChainGeneration createOrUpdate(ChainGeneration newChain, ChainGeneration... existingChain)
+            throws ModuleException {
+
+        if (existingChain != null) {
+            // It's a modification
+            // TODO CMZ
+        }
+
+        createOrUpdatePluginConfigurations(newChain);
+
+        newChain.setMetaProduct(metaProductService.createOrUpdateMetaProduct(newChain.getMetaProduct()));
+
+        return newChain;
+
+    }
+
+    /**
+     * Creates or updates {@link PluginConfiguration} of each {@link Plugin} of the {@link ChainGeneration}
+     * @param chain {@link ChainGeneration}
+     * @throws ModuleException if error occurs!
+     */
+    private void createOrUpdatePluginConfigurations(ChainGeneration chain) throws ModuleException {
+        // Save new plugins conf, and update existing ones if they changed
+        if (chain.getCheckAcquisitionPluginConf() != null) {
+            chain.setCheckAcquisitionPluginConf(createOrUpdatePluginConfiguration(chain
+                    .getCheckAcquisitionPluginConf()));
+        }
+        if (chain.getGenerateSipPluginConf() != null) {
+            chain.setGenerateSipPluginConf(createOrUpdatePluginConfiguration(chain.getGenerateSipPluginConf()));
+        }
+        if (chain.getPostProcessSipPluginConf() != null) {
+            chain.setPostProcessSipPluginConf(createOrUpdatePluginConfiguration(chain.getPostProcessSipPluginConf()));
+        }
+    }
+
+    /**
+     * @param checkAcquisitionPluginConf
+     * @return
+     * @throws ModuleException 
+     */
+    private PluginConfiguration createOrUpdatePluginConfiguration(PluginConfiguration pluginConfiguration)
+            throws ModuleException {
+        if (pluginConfiguration.getId() == null) {
+            return pluginService.savePluginConfiguration(pluginConfiguration);
+        } else {
+            PluginConfiguration existingConf = pluginService.getPluginConfiguration(pluginConfiguration.getId());
+            if (!pluginConfiguration.equals(existingConf)) {
+                return pluginService.savePluginConfiguration(pluginConfiguration);
+            }
+        }
+        return pluginConfiguration;
+    }
+
+    @Override
+    public ChainGeneration update(Long chainId, ChainGeneration chain) throws ModuleException {
+        if (!chainId.equals(chain.getId())) {
+            throw new EntityInconsistentIdentifierException(chainId, chain.getId(), chain.getClass());
+        }
+        if (!chainRepository.exists(chainId)) {
+            throw new EntityNotFoundException(chainId, ChainGeneration.class);
+        }
+        
+        ChainGeneration existingChain = chainRepository.findOne(chain.getId());
+        
+        return chainRepository.save(createOrUpdate(chain, existingChain));
     }
 
     @Override
@@ -172,7 +258,7 @@ public class ChaineGenerationService implements IChainGenerationService {
         chain.setRunning(true);
         chain.setSession(chain.getLabel() + ":" + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + ":"
                 + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
-        save(chain);
+        chainRepository.save(chain);
 
         // Create the ProcessGeneration
         processService.save(ProcessGenerationBuilder.build(chain.getSession()).withChain(chain)

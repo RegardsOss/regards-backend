@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -33,6 +34,8 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
  */
 @Repository
 public interface IChainGenerationRepository extends JpaRepository<ChainGeneration, Long> {
+
+    Optional<ChainGeneration> findOneByLabel(String name);
 
     ChainGeneration findByMetaProduct(MetaProduct metaProduct);
 

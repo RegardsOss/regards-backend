@@ -79,7 +79,7 @@ public class MetaFile implements IIdentifiable<Long> {
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "scan_directory_id", referencedColumnName = "ID",
             foreignKey = @ForeignKey(name = "fk_acq_directory"))
-    private final Set<ScanDirectory> scanDirectories = new HashSet<ScanDirectory>();
+    private Set<ScanDirectory> scanDirectories = new HashSet<ScanDirectory>();
 
     /**
      * A folder used to move invalid data file
@@ -89,6 +89,7 @@ public class MetaFile implements IIdentifiable<Long> {
 
     /**
      * A {@link String} corresponding to the data file mime-type
+     * TODO CMZ à completer fileType et à reporter dans le SIP content information
      */
     @Column(name = "file_type", length = 16)
     private String fileType;
@@ -158,6 +159,10 @@ public class MetaFile implements IIdentifiable<Long> {
         return scanDirectories;
     }
 
+    public void setScanDirectories(Set<ScanDirectory> scanDirectories) {
+        this.scanDirectories = scanDirectories;
+    }
+
     public void addScanDirectory(ScanDirectory scanDirectory) {
         this.scanDirectories.add(scanDirectory);
     }
@@ -194,45 +199,54 @@ public class MetaFile implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((fileNamePattern == null) ? 0 : fileNamePattern.hashCode()); // NOSONAR
-        result = prime * result + ((invalidFolder == null) ? 0 : invalidFolder.hashCode()); // NOSONAR
-        result = prime * result + ((mandatory == null) ? 0 : mandatory.hashCode()); // NOSONAR
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
+        result = prime * result + ((fileNamePattern == null) ? 0 : fileNamePattern.hashCode());
+        result = prime * result + ((fileType == null) ? 0 : fileType.hashCode());
+        result = prime * result + ((invalidFolder == null) ? 0 : invalidFolder.hashCode());
+        result = prime * result + ((mandatory == null) ? 0 : mandatory.hashCode());
+        result = prime * result + ((scanDirectories == null) ? 0 : scanDirectories.hashCode());
         return result;
     }
 
     @Override
-    public boolean equals(Object obj) { // NOSONAR
-        if (this == obj) {
+    public boolean equals(Object obj) {
+        if (this == obj)
             return true;
-        }
-        if (obj == null) {
+        if (obj == null)
             return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if (getClass() != obj.getClass())
             return false;
-        }
         MetaFile other = (MetaFile) obj;
+        if (comment == null) {
+            if (other.comment != null)
+                return false;
+        } else if (!comment.equals(other.comment))
+            return false;
         if (fileNamePattern == null) {
-            if (other.fileNamePattern != null) {
+            if (other.fileNamePattern != null)
                 return false;
-            }
-        } else if (!fileNamePattern.equals(other.fileNamePattern)) {
+        } else if (!fileNamePattern.equals(other.fileNamePattern))
             return false;
-        }
+        if (fileType == null) {
+            if (other.fileType != null)
+                return false;
+        } else if (!fileType.equals(other.fileType))
+            return false;
         if (invalidFolder == null) {
-            if (other.invalidFolder != null) {
+            if (other.invalidFolder != null)
                 return false;
-            }
-        } else if (!invalidFolder.equals(other.invalidFolder)) {
+        } else if (!invalidFolder.equals(other.invalidFolder))
             return false;
-        }
         if (mandatory == null) {
-            if (other.mandatory != null) {
+            if (other.mandatory != null)
                 return false;
-            }
-        } else if (!mandatory.equals(other.mandatory)) {
+        } else if (!mandatory.equals(other.mandatory))
             return false;
-        }
+        if (scanDirectories == null) {
+            if (other.scanDirectories != null)
+                return false;
+        } else if (!scanDirectories.equals(other.scanDirectories))
+            return false;
         return true;
     }
 
