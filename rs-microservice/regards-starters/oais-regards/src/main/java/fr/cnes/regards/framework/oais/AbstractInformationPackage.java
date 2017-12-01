@@ -72,6 +72,11 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
         getHistory().add(event);
     }
 
+    /**
+     * Add an event to the information package thanks to the given parameters
+     * @param type
+     * @param comment
+     */
     public void addEvent(String type, String comment) {
         addEvent(type, comment, OffsetDateTime.now());
     }
@@ -80,6 +85,9 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
         addEvent(null, comment, OffsetDateTime.now());
     }
 
+    /**
+     * @return the information package type
+     */
     public EntityType getIpType() {
         return ipType;
     }

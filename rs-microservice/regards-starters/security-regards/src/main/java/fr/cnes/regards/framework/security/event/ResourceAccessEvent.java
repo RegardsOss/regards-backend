@@ -38,6 +38,9 @@ public class ResourceAccessEvent implements ISubscribable {
      */
     private String microservice;
 
+    /**
+     * Concerned role name
+     */
     private String roleName;
 
     /**
@@ -46,23 +49,42 @@ public class ResourceAccessEvent implements ISubscribable {
     private ResourceAccessEvent() {
     }
 
+    /**
+     * Constructor setting the parameters as attributes
+     * @param microservice
+     * @param roleName
+     */
     public ResourceAccessEvent(String microservice, String roleName) {
         this.microservice = microservice;
         this.roleName = roleName;
     }
 
+    /**
+     * @return the role name
+     */
     public String getRoleName() {
         return roleName;
     }
 
+    /**
+     * Set the role name
+     * @param roleName
+     */
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
 
+    /**
+     * @return the microservice
+     */
     public String getMicroservice() {
         return microservice;
     }
 
+    /**
+     * Set the microservice
+     * @param pMicroservice
+     */
     public void setMicroservice(String pMicroservice) {
         microservice = pMicroservice;
     }

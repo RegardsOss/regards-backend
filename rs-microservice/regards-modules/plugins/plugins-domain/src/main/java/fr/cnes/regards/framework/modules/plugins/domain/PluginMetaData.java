@@ -89,6 +89,10 @@ public class PluginMetaData {
      */
     private List<PluginParameterType> parameters = new ArrayList<>();
 
+    /**
+     * Constructor initializing a plugin metadata from a plugin annotation
+     * @param plugin
+     */
     public PluginMetaData(Plugin plugin) {
         author = plugin.author();
         pluginId = plugin.id();
@@ -100,6 +104,9 @@ public class PluginMetaData {
         licence = plugin.licence();
     }
 
+    /**
+     * Default constructor
+     */
     public PluginMetaData() {
 
     }
@@ -120,6 +127,9 @@ public class PluginMetaData {
         pluginClassName = pPluginClassName;
     }
 
+    /**
+     * @return the interface names
+     */
     public Set<String> getInterfaceNames() {
         if (interfaceNames == null) {
             interfaceNames = Sets.newHashSet();
@@ -127,6 +137,10 @@ public class PluginMetaData {
         return interfaceNames;
     }
 
+    /**
+     * Set the interface names
+     * @param pInterfaceNames
+     */
     public void setInterfaceNames(Set<String> pInterfaceNames) {
         interfaceNames = pInterfaceNames;
     }
@@ -155,42 +169,77 @@ public class PluginMetaData {
         description = pDescription;
     }
 
+    /**
+     * @return the url
+     */
     public String getUrl() {
         return url;
     }
 
+    /**
+     * Set the url
+     * @param pUrl
+     */
     public void setUrl(String pUrl) {
         url = pUrl;
     }
 
+    /**
+     * @return the contact
+     */
     public String getContact() {
         return contact;
     }
 
+    /**
+     * Set the contact
+     * @param pContact
+     */
     public void setContact(String pContact) {
         contact = pContact;
     }
 
+    /**
+     * @return the owner
+     */
     public String getOwner() {
         return owner;
     }
 
+    /**
+     * Set the owner
+     * @param pOwner
+     */
     public void setOwner(String pOwner) {
         owner = pOwner;
     }
 
+    /**
+     * @return the licence
+     */
     public String getLicence() {
         return licence;
     }
 
+    /**
+     * Set the licence
+     * @param pLicence
+     */
     public void setLicence(String pLicence) {
         licence = pLicence;
     }
 
+    /**
+     * @return the plugin parameter types
+     */
     public List<PluginParameterType> getParameters() {
         return parameters;
     }
 
+    /**
+     * Set the plugin parameter types
+     * @param pParameters
+     */
     public void setParameters(List<PluginParameterType> pParameters) {
         if (pParameters == null) {
             this.parameters.clear();

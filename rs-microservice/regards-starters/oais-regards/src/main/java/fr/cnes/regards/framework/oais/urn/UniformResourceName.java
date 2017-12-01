@@ -46,34 +46,70 @@ import fr.cnes.regards.framework.oais.urn.validator.RegardsOaisUrn;
 @RegardsOaisUrn
 @Convert(converter = UrnConverter.class)
 public class UniformResourceName {
+
     public static final int MAX_SIZE = 128;
 
+    /**
+     * URN pattern
+     */
     public static final String URN_PATTERN = "URN:[^:]+:[^:]+:[^:]+:[^:]+:V\\d{1,3}(,\\d+)?(:REV.+)?";
 
+    /**
+     * Version prefix
+     */
     private static final String VERSION_PREFIX = "V";
 
+    /**
+     * Section delimiter
+     */
     private static final String DELIMITER = ":";
 
+    /**
+     * Revision prefix
+     */
     private static final String REVISION_PREFIX = "REV";
 
+    /**
+     * Version minimum value
+     */
     private static final int MIN_VERSION_VALUE = 1;
 
+    /**
+     * Version maximum value
+     */
     private static final int MAX_VERSION_VALUE = 999;
 
+    /**
+     * Compiled pattern
+     */
+    private static final Pattern PATTERN = Pattern.compile(URN_PATTERN);
+
+    /**
+     * the oais identifier
+     */
     @NotNull
     private OAISIdentifier oaisIdentifier;
 
+    /**
+     * Entity type
+     */
     @NotNull
     private EntityType entityType;
 
+    /**
+     * Tenant which the entity belongs toù
+     */
     @NotNull
     private String tenant;
 
+    /**
+     * Entity id
+     */
     @NotNull
     private UUID entityId;
 
     /**
-     * version number on 3 digits by specs(cf REGARDS_DSL_SYS_ARC_410)
+     * Entity version number on 3 digits by specs(cf REGARDS_DSL_SYS_ARC_410)
      */
     @Min(MIN_VERSION_VALUE)
     @Max(MAX_VERSION_VALUE)
@@ -84,10 +120,19 @@ public class UniformResourceName {
      */
     private Long order;
 
+    /**
+     * Revision of the entity
+     */
     private String revision;
 
-    private final static Pattern PATTERN = Pattern.compile(URN_PATTERN);
-
+    /**
+     * Constructor setting the given parameters as attributes
+     * @param pOaisIdentifier
+     * @param pEntityType
+     * @param pTenant
+     * @param pEntityId
+     * @param pVersion
+     */
     public UniformResourceName(OAISIdentifier pOaisIdentifier, EntityType pEntityType, String pTenant, UUID pEntityId,
             int pVersion) {
         super();
@@ -98,20 +143,51 @@ public class UniformResourceName {
         version = pVersion;
     }
 
-    public UniformResourceName(OAISIdentifier pOaisIdentifier, EntityType pEntityType, String pTenant, UUID pEntityId, // NOSONAR
+    /**
+     * Constructor setting the given parameters as attributes
+     * @param pOaisIdentifier
+     * @param pEntityType
+     * @param pTenant
+     * @param pEntityId
+     * @param pVersion
+     * @param pOrder
+     * @param pRevision
+     */
+    public UniformResourceName(OAISIdentifier pOaisIdentifier, EntityType pEntityType, String pTenant, UUID pEntityId,
+            // NOSONAR
             int pVersion, Long pOrder, String pRevision) {
         this(pOaisIdentifier, pEntityType, pTenant, pEntityId, pVersion);
         order = pOrder;
         revision = pRevision;
     }
 
-    public UniformResourceName(OAISIdentifier pOaisIdentifier, EntityType pEntityType, String pTenant, UUID pEntityId, // NOSONAR
+    /**
+     * Constructor setting the given parameters as attributes
+     * @param pOaisIdentifier
+     * @param pEntityType
+     * @param pTenant
+     * @param pEntityId
+     * @param pVersion
+     * @param pOrder
+     */
+    public UniformResourceName(OAISIdentifier pOaisIdentifier, EntityType pEntityType, String pTenant, UUID pEntityId,
+            // NOSONAR
             int pVersion, long pOrder) {// NOSONAR
         this(pOaisIdentifier, pEntityType, pTenant, pEntityId, pVersion);
         order = pOrder;
     }
 
-    public UniformResourceName(OAISIdentifier pOaisIdentifier, EntityType pEntityType, String pTenant, UUID pEntityId, // NOSONAR
+    /**
+     * Constructor setting the given parameters as attributes
+     * @param pOaisIdentifier
+     * @param pEntityType
+     * @param pTenant
+     * @param pEntityId
+     * @param pVersion
+     * @param pRevision
+     */
+    public UniformResourceName(OAISIdentifier pOaisIdentifier, EntityType pEntityType, String pTenant, UUID pEntityId,
+            // NOSONAR
             int pVersion, String pRevision) {
         this(pOaisIdentifier, pEntityType, pTenant, pEntityId, pVersion);
         revision = pRevision;
@@ -119,81 +195,6 @@ public class UniformResourceName {
 
     public UniformResourceName() {// NOSONAR
         // for testing purpose
-    }
-
-    @Override
-    public String toString() {
-        final StringJoiner urnBuilder = new StringJoiner(":", "URN:", "");
-        urnBuilder.add(oaisIdentifier.toString());
-        urnBuilder.add(entityType.toString());
-        urnBuilder.add(tenant);
-        urnBuilder.add(entityId.toString());
-        String orderString = "";
-        if (order != null) {
-            orderString = "," + order;
-        }
-        // order is not added with the joiner because it is "version,order" and not "version:order"
-        urnBuilder.add(VERSION_PREFIX + version + orderString);
-        if (revision != null) {
-            urnBuilder.add(REVISION_PREFIX + revision);
-        }
-        return urnBuilder.toString();
-    }
-
-    public OAISIdentifier getOaisIdentifier() {
-        return oaisIdentifier;
-    }
-
-    public void setOaisIdentifier(OAISIdentifier pOaisIdentifier) {
-        oaisIdentifier = pOaisIdentifier;
-    }
-
-    public EntityType getEntityType() {
-        return entityType;
-    }
-
-    public void setEntityType(EntityType pEntityType) {
-        entityType = pEntityType;
-    }
-
-    public String getTenant() {
-        return tenant;
-    }
-
-    public void setTenant(String pTenant) {
-        tenant = pTenant;
-    }
-
-    public UUID getEntityId() {
-        return entityId;
-    }
-
-    public void setEntityId(UUID pEntityId) {
-        entityId = pEntityId;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int pVersion) {
-        version = pVersion;
-    }
-
-    public Long getOrder() {
-        return order;
-    }
-
-    public void setOrder(Long pOrder) {
-        order = pOrder;
-    }
-
-    public String getRevision() {
-        return revision;
-    }
-
-    public void setRevision(String pRevision) {
-        revision = pRevision;
     }
 
     /**
@@ -223,14 +224,21 @@ public class UniformResourceName {
                 // Revision is precised
                 final String revisionString = stringFragment[6];
                 // so we have all fields
-                return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                        Long.parseLong(versionWithOrder[1]), revisionString.substring(REVISION_PREFIX.length()));
+                return new UniformResourceName(oaisIdentifier,
+                                               entityType,
+                                               tenant,
+                                               entityId,
+                                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
+                                               Long.parseLong(versionWithOrder[1]),
+                                               revisionString.substring(REVISION_PREFIX.length()));
             } else {
                 // Revision is missing so we have all except Revision
-                return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                        Long.parseLong(versionWithOrder[1]));
+                return new UniformResourceName(oaisIdentifier,
+                                               entityType,
+                                               tenant,
+                                               entityId,
+                                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
+                                               Long.parseLong(versionWithOrder[1]));
             }
         } else {
             // we don't have an order specified
@@ -238,19 +246,154 @@ public class UniformResourceName {
                 // Revision is precised
                 final String revisionString = stringFragment[6];
                 // so we have all fields exception Order
-                return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                        revisionString.substring(REVISION_PREFIX.length()));
+                return new UniformResourceName(oaisIdentifier,
+                                               entityType,
+                                               tenant,
+                                               entityId,
+                                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
+                                               revisionString.substring(REVISION_PREFIX.length()));
             } else {
                 // Revision is missing so we have all except Revision and Order
-                return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())));
+                return new UniformResourceName(oaisIdentifier,
+                                               entityType,
+                                               tenant,
+                                               entityId,
+                                               Integer.parseInt(versionWithOrder[0]
+                                                                        .substring(VERSION_PREFIX.length())));
             }
         }
     }
 
+    /**
+     * @param pUrn
+     * @return whether the given string is a urn or not
+     */
     public static boolean isValidUrn(String pUrn) {
         return PATTERN.matcher(pUrn).matches();
+    }
+
+    @Override
+    public String toString() {
+        final StringJoiner urnBuilder = new StringJoiner(":", "URN:", "");
+        urnBuilder.add(oaisIdentifier.toString());
+        urnBuilder.add(entityType.toString());
+        urnBuilder.add(tenant);
+        urnBuilder.add(entityId.toString());
+        String orderString = "";
+        if (order != null) {
+            orderString = "," + order;
+        }
+        // order is not added with the joiner because it is "version,order" and not "version:order"
+        urnBuilder.add(VERSION_PREFIX + version + orderString);
+        if (revision != null) {
+            urnBuilder.add(REVISION_PREFIX + revision);
+        }
+        return urnBuilder.toString();
+    }
+
+    /**
+     * @return the oais identifier
+     */
+    public OAISIdentifier getOaisIdentifier() {
+        return oaisIdentifier;
+    }
+
+    /**
+     * Set the oais identifier
+     * @param pOaisIdentifier
+     */
+    public void setOaisIdentifier(OAISIdentifier pOaisIdentifier) {
+        oaisIdentifier = pOaisIdentifier;
+    }
+
+    /**
+     * @return the entity type
+     */
+    public EntityType getEntityType() {
+        return entityType;
+    }
+
+    /**
+     * Set the entity type
+     * @param pEntityType
+     */
+    public void setEntityType(EntityType pEntityType) {
+        entityType = pEntityType;
+    }
+
+    /**
+     * @return the tenant
+     */
+    public String getTenant() {
+        return tenant;
+    }
+
+    /**
+     * Set the tenant
+     * @param pTenant
+     */
+    public void setTenant(String pTenant) {
+        tenant = pTenant;
+    }
+
+    /**
+     * @return the entity id
+     */
+    public UUID getEntityId() {
+        return entityId;
+    }
+
+    /**
+     * Set the entity id
+     * @param pEntityId
+     */
+    public void setEntityId(UUID pEntityId) {
+        entityId = pEntityId;
+    }
+
+    /**
+     * @return the version
+     */
+    public int getVersion() {
+        return version;
+    }
+
+    /**
+     * Set the version
+     * @param pVersion
+     */
+    public void setVersion(int pVersion) {
+        version = pVersion;
+    }
+
+    /**
+     * @return the order
+     */
+    public Long getOrder() {
+        return order;
+    }
+
+    /**
+     * Set the order
+     * @param pOrder
+     */
+    public void setOrder(Long pOrder) {
+        order = pOrder;
+    }
+
+    /**
+     * @return the revision
+     */
+    public String getRevision() {
+        return revision;
+    }
+
+    /**
+     * Set the revision
+     * @param pRevision
+     */
+    public void setRevision(String pRevision) {
+        revision = pRevision;
     }
 
     @Override

@@ -14,6 +14,9 @@ import fr.cnes.regards.framework.amqp.event.Target;
 @Event(target = Target.MICROSERVICE)
 public class StopJobEvent implements ISubscribable {
 
+    /**
+     * the job id
+     */
     protected UUID jobId;
 
     public StopJobEvent() {
@@ -23,10 +26,17 @@ public class StopJobEvent implements ISubscribable {
         this.jobId = jobId;
     }
 
+    /**
+     * @return the job id
+     */
     public UUID getJobId() {
         return jobId;
     }
 
+    /**
+     * Set the job id
+     * @param jobId
+     */
     public void setJobId(UUID jobId) {
         this.jobId = jobId;
     }

@@ -44,20 +44,32 @@ public class RabbitMqVhostPermission {
      */
     private final String read;
 
+    /**
+     * default constructor
+     */
     public RabbitMqVhostPermission() {
         configure = ALL_RIGHTS;
         write = ALL_RIGHTS;
         read = ALL_RIGHTS;
     }
 
+    /**
+     * @return the right to configure objects onto rabbitmq virtual host
+     */
     public String getConfigure() {
         return configure;
     }
 
+    /**
+     * @return the right to write into objects into rabbitmq virtual host
+     */
     public String getWrite() {
         return write;
     }
 
+    /**
+     * @return the right to read from objects into rabbitmq virtual host
+     */
     public String getRead() {
         return read;
     }

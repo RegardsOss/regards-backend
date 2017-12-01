@@ -106,6 +106,9 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 @Order(Ordered.LOWEST_PRECEDENCE - 100)
 public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 
+    /**
+     * Formatting constant
+     */
     private static final String CAUSE = ". Cause :";
 
     /**
@@ -215,6 +218,9 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(exception.getMessage()));
     }
 
+    /**
+     * Exception handler for {@link EntityNotEmptyException}
+     */
     @ExceptionHandler(EntityNotEmptyException.class)
     public ResponseEntity<ServerErrorResponse> entityNotEmpty(final EntityNotEmptyException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(exception.getMessage()));

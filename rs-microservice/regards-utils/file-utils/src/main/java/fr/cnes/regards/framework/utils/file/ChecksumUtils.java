@@ -9,7 +9,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-public class ChecksumUtils {
+public final class ChecksumUtils {
 
     private ChecksumUtils() {}
 

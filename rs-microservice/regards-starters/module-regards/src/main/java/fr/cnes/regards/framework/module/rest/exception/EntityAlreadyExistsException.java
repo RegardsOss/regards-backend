@@ -29,6 +29,10 @@ package fr.cnes.regards.framework.module.rest.exception;
 @SuppressWarnings("serial")
 public class EntityAlreadyExistsException extends EntityException {
 
+    /**
+     * Constructor setting exception message
+     * @param message
+     */
     public EntityAlreadyExistsException(String message) {
         super(message);
     }

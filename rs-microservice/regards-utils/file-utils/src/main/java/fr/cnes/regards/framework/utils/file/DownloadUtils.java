@@ -18,7 +18,7 @@ import com.google.common.io.ByteStreams;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-public class DownloadUtils {
+public final class DownloadUtils {
 
     private DownloadUtils() {}
 

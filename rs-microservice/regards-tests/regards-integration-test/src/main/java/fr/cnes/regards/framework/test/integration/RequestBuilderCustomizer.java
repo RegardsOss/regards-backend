@@ -16,6 +16,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
+import org.springframework.restdocs.operation.preprocess.Preprocessors;
 import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Snippet;
@@ -29,10 +30,6 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.removeHeaders;
 
 /**
  * Allow to customize the request done thanks to {@link MockMvc}.
@@ -42,20 +39,44 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.re
  */
 public class RequestBuilderCustomizer {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestBuilderCustomizer.class);
 
+    /**
+     * Default request headers
+     */
     private static final HttpHeaders DEFAULT_HEADERS = new HttpHeaders();
 
+    /**
+     * Headers
+     */
     private final HttpHeaders headers = new HttpHeaders();
 
+    /**
+     * Request parameter builder
+     */
     private final RequestParamBuilder requestParamBuilder = RequestParamBuilder.build();
 
+    /**
+     * Documentation snippets
+     */
     private final List<Snippet> documentationSnippets = Lists.newArrayList();
 
+    /**
+     * Request result expectations
+     */
     private final List<ResultMatcher> expectations = Lists.newArrayList();
 
+    /**
+     * Should the doc be skip
+     */
     private boolean skipDocumentation = false;
 
+    /**
+     * Gson builder
+     */
     private final GsonBuilder gsonBuilder;
 
     static {
@@ -64,20 +85,33 @@ public class RequestBuilderCustomizer {
         DEFAULT_HEADERS.add(HttpConstants.ACCEPT, "application/json");
     }
 
+    /**
+     * Constructor setting the parameter as attribute
+     * @param gsonBuilder
+     */
     public RequestBuilderCustomizer(GsonBuilder gsonBuilder) {
         this.gsonBuilder = gsonBuilder;
     }
 
+    /**
+     * @return the customizer configured to skip the documentation
+     */
     public RequestBuilderCustomizer skipDocumentation() {
         skipDocumentation = true;
         return this;
     }
 
+    /**
+     * Allows to perform GET request
+     */
     protected ResultActions performGet(MockMvc mvc, String urlTemplate, String authToken, String errorMsg,
             Object... urlVariables) {
         return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.GET, urlTemplate, urlVariables), errorMsg);
     }
 
+    /**
+     * Allows to perform DELETE request
+     */
     protected ResultActions performDelete(MockMvc mvc, String urlTemplate, String authToken, String errorMsg,
             Object... urlVariables) {
         return performRequest(mvc,
@@ -85,6 +119,9 @@ public class RequestBuilderCustomizer {
                               errorMsg);
     }
 
+    /**
+     * Allows to perform POSTn request
+     */
     protected ResultActions performPost(MockMvc mvc, String urlTemplate, String authToken, Object content,
             String errorMsg, Object... urlVariables) {
         return performRequest(mvc,
@@ -92,6 +129,9 @@ public class RequestBuilderCustomizer {
                               errorMsg);
     }
 
+    /**
+     * Allows to perform PUT request
+     */
     protected ResultActions performPut(MockMvc mvc, String urlTemplate, String authToken, Object content,
             String errorMsg, Object... urlVariables) {
         return performRequest(mvc,
@@ -99,11 +139,17 @@ public class RequestBuilderCustomizer {
                               errorMsg);
     }
 
+    /**
+     * Allows to perform multipart request providing the multiple parts
+     */
     protected ResultActions performFileUpload(MockMvc mvc, String urlTemplate, String authToken,
             List<MockMultipartFile> files, String errorMsg, Object... urlVariables) {
         return performRequest(mvc, getMultipartRequestBuilder(authToken, files, urlTemplate, urlVariables), errorMsg);
     }
 
+    /**
+     * Allows to perform multipart request providing the path of the file that should be uploaded
+     */
     protected ResultActions performFileUpload(MockMvc mvc, String urlTemplate, String authToken, Path filePath,
             String errorMsg, Object... urlVariables) {
         return performRequest(mvc,
@@ -111,6 +157,9 @@ public class RequestBuilderCustomizer {
                               errorMsg);
     }
 
+    /**
+     * @return {@link MockHttpServletRequestBuilder} customized with RequestBuilderCustomizer#headers or default ones if none has been specified
+     */
     private MockHttpServletRequestBuilder getRequestBuilder(String authToken, HttpMethod method, Object content,
             String urlTemplate, Object... urlVariables) {
         MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken, method, urlTemplate, urlVariables);
@@ -134,6 +183,10 @@ public class RequestBuilderCustomizer {
         return requestBuilder;
     }
 
+    /**
+     * @param object
+     * @return jsonified object using GSON
+     */
     protected String gson(Object object) {
         if (object instanceof String) {
             return (String) object;
@@ -185,8 +238,11 @@ public class RequestBuilderCustomizer {
         documentationSnippets.add(snippet);
     }
 
+    /**
+     * perform a request and generate the documentation
+     */
     private ResultActions performRequest(MockMvc mvc, MockHttpServletRequestBuilder requestBuilder, String errorMsg) {
-        Assert.assertTrue("At least one expectation is required", expectations.size() > 0);
+        Assert.assertFalse("At least one expectation is required", expectations.isEmpty());
         try {
             Map<String, Object> queryParams = Maps.newHashMap();
             List<ParameterDescriptor> queryParamDescriptors = Lists.newArrayList();
@@ -208,12 +264,12 @@ public class RequestBuilderCustomizer {
             }
             if (!skipDocumentation) {
                 request.andDo(MockMvcRestDocumentation.document("{ClassName}/{methodName}",
-                                                                preprocessRequest(prettyPrint(),
-                                                                                  removeHeaders("Authorization",
+                                                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint(),
+                                                                                                Preprocessors.removeHeaders("Authorization",
                                                                                                 "Host",
                                                                                                 "Content-Length")),
-                                                                preprocessResponse(prettyPrint(),
-                                                                                   removeHeaders("Content-Length")),
+                                                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint(),
+                                                                                   Preprocessors.removeHeaders("Content-Length")),
                                                                 documentationSnippets
                                                                         .toArray(new Snippet[documentationSnippets
                                                                                 .size()])));
@@ -273,8 +329,10 @@ public class RequestBuilderCustomizer {
         return multipartRequestBuilder;
     }
 
-
-
+    /**
+     * Check if the request customizer is coherent towards the multiple options used
+     * @param httpMethod
+     */
     protected void checkCustomizationCoherence(HttpMethod httpMethod) {
         // constaints are only on DELETE, PUT and POST, for now, as they cannot have request parameters
         switch (httpMethod) {
@@ -290,6 +348,11 @@ public class RequestBuilderCustomizer {
         }
     }
 
+    /**
+     * Add the authorization header to the request
+     * @param requestBuilder
+     * @param authToken
+     */
     protected void addSecurityHeader(MockHttpServletRequestBuilder requestBuilder, String authToken) {
         requestBuilder.header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + authToken);
     }

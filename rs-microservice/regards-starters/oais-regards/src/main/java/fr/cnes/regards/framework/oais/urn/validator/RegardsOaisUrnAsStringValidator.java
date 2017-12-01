@@ -14,7 +14,10 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
  */
 public class RegardsOaisUrnAsStringValidator implements ConstraintValidator<RegardsOaisUrnAsString, String> {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(RegardsOaisUrnAsStringValidator.class);
+    /**
+     * Logger instance
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(RegardsOaisUrnAsStringValidator.class);
 
     @Override
     public void initialize(RegardsOaisUrnAsString constraintAnnotation) {

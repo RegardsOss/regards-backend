@@ -86,12 +86,18 @@ public class TemplateServiceConfiguration {
     public static final String ASIDE_ORDERS_NOTIFICATION_TEMPLATE_CODE = "ASIDE_ORDERS_NOTIFICATION_TEMPLATE";
 
     /**
-     * The not subsetted data files template code
+     * The not dispatched data files template code
      */
     public static final String NOT_DISPATCHED_DATA_FILES_CODE = "NOT_DISPATCHED_DATA_FILES";
 
+    /**
+     * the not subsetted data files template code
+     */
     public static final String NOT_SUBSETTED_DATA_FILES_CODE = "NOT_SUBSETTED_DATA_FILES";
 
+    /**
+     * List of template bean name
+     */
     public static final String TEMPLATES = "templates";
 
     /**
@@ -135,8 +141,14 @@ public class TemplateServiceConfiguration {
      */
     private static final String ASIDE_ORDERS_NOTIFICATION_TEMPLATE = "template/aside-orders-notification-template.html";
 
+    /**
+     * The not dispatched data files template as html
+     */
     private static final String NOT_DISPATCHED_DATA_FILES_TEMPLATE = "template/not_dispatched_data_files_template.html";
 
+    /**
+     * The not subsetted data files template as html
+     */
     private static final String NOT_SUBSETTED_DATA_FILES_TEMPLATE = "template/not_subsetted_data_files_template.html";
 
     private static final Map<String, TemplatePathSubsject> templateCodePathMap = Maps.newHashMap();
@@ -213,6 +225,10 @@ public class TemplateServiceConfiguration {
         }
     }
 
+    /**
+     * @return the list of initialized template bean for the current microservice
+     * @throws IOException
+     */
     @Bean(name = TEMPLATES)
     public List<Template> templates() throws IOException {
         List<Template> templates = Lists.newArrayList();

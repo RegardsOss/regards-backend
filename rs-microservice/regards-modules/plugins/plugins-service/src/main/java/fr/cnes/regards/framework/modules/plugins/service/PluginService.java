@@ -117,6 +117,9 @@ public class PluginService implements IPluginService {
      */
     private final Map<String, ConcurrentMap<Long, Object>> instantiatePlugins = new HashMap<>();
 
+    /**
+     * Amqp publisher
+     */
     private final IPublisher publisher;
 
     public PluginService(final IPluginConfigurationRepository pPluginConfigurationRepository,

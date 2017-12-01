@@ -258,6 +258,10 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
         }
     }
 
+    /**
+     * @param pTenant
+     * @return whether the mapping should be refreshed for the given tenant
+     */
     protected Boolean needRefreshMapping(String pTenant) {
         if (!refreshMappingMap.containsKey(pTenant)) {
             LOGGER.warn("Empty mapping for tenant {}", pTenant);

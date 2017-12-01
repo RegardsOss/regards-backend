@@ -11,6 +11,9 @@ package fr.cnes.regards.framework.module.ready;
  */
 public interface IModuleReady {
 
+    /**
+     * @return whether or not the module is considered ready
+     */
     ModuleReadiness isReady();
 
 }

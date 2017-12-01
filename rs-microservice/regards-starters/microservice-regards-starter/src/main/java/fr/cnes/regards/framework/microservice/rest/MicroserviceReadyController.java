@@ -21,11 +21,20 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 @RequestMapping(MicroserviceReadyController.BASE_PATH)
 public class MicroserviceReadyController {
 
+    /**
+     * Controller base path
+     */
     public static final String BASE_PATH = "/ready";
 
-    @Autowired
+    /**
+     * List of all {@link IModuleReady} instantiated
+     */
+    @Autowired(required = false)
     private List<IModuleReady> moduleReadies;
 
+    /**
+     * @return whether the microservice is ready or not with the reasons
+     */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "allows to known if the microservice is ready to work")
     public ResponseEntity<ModuleReadiness> isReady() {

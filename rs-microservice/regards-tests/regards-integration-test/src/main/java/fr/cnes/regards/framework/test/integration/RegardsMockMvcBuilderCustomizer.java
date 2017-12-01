@@ -22,6 +22,9 @@ import org.springframework.test.web.servlet.setup.ConfigurableMockMvcBuilder;
 @ConditionalOnBean(value = { RestDocumentationContextProvider.class })
 public class RegardsMockMvcBuilderCustomizer implements MockMvcBuilderCustomizer {
 
+    /**
+     * {@link RestDocumentationContextProvider} instance
+     */
     @Autowired
     private RestDocumentationContextProvider restDocumentation;
 

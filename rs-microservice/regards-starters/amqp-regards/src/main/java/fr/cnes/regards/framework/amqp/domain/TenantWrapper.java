@@ -45,33 +45,58 @@ public class TenantWrapper<T> implements Cloneable {
      */
     private Date date;
 
+    /**
+     * Default constructor
+     */
     public TenantWrapper() {
         // constructor for serialization
     }
 
+    /**
+     * Constructor setting the wrapper content and tenant and initializing the publishing date
+     * @param pContent
+     * @param pTenant
+     */
     public TenantWrapper(T pContent, String pTenant) {
         content = pContent;
         tenant = pTenant;
         date = new Date();
     }
 
+    /**
+     * @return the wrapper content
+     */
     @JsonTypeInfo(use = Id.CLASS)
     public T getContent() {
         return content;
     }
 
+    /**
+     * Set the wrapper content
+     * @param pContent
+     */
     public void setContent(T pContent) {
         content = pContent;
     }
 
+    /**
+     * @return the tenant
+     */
     public String getTenant() {
         return tenant;
     }
 
+    /**
+     * Set the tenant
+     * @param pTenant
+     */
     public void setTenant(String pTenant) {
         tenant = pTenant;
     }
 
+    /**
+     * @return wrapper publishing date
+     */
     public Date getDate() {
         return date;
     }

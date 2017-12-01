@@ -43,18 +43,32 @@ public class AmqpManagementProperties {
 
     private VirtualHostMode mode = VirtualHostMode.SINGLE;
 
+    /**
+     * @return the management host
+     */
     public String getHost() {
         return host;
     }
 
+    /**
+     * Set the management host
+     * @param pAmqpManagementHost
+     */
     public void setHost(String pAmqpManagementHost) {
         host = pAmqpManagementHost;
     }
 
+    /**
+     * @return the management port
+     */
     public Integer getPort() {
         return port;
     }
 
+    /**
+     * Set the management port
+     * @param pAmqpManagementPort
+     */
     public void setPort(Integer pAmqpManagementPort) {
         port = pAmqpManagementPort;
     }

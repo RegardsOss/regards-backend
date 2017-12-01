@@ -34,8 +34,15 @@ import com.google.common.collect.Sets;
 @Converter
 public class SetStringCsvConverter implements AttributeConverter<Set<String>, String> {
 
+    /**
+     * Delimiter used
+     */
     private static final String DELIMITER = ",";
 
+    /**
+     * @param pSet
+     * @return converted set to string for the database
+     */
     @Override
     public String convertToDatabaseColumn(Set<String> pSet) {
         if (pSet == null) {
@@ -49,6 +56,10 @@ public class SetStringCsvConverter implements AttributeConverter<Set<String>, St
 
     }
 
+    /**
+     * @param pArg0
+     * @return converted string from database to a set
+     */
     @Override
     public Set<String> convertToEntityAttribute(String pArg0) {
         Set<String> result = Sets.newHashSet();

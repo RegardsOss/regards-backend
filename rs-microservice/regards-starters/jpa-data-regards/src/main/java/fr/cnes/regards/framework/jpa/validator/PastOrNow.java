@@ -31,14 +31,14 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-@Retention(RUNTIME)
-@Target({ FIELD, METHOD, PARAMETER, ANNOTATION_TYPE })
-@Constraint(validatedBy = PastOrNowValidator.class)
-@Documented
 /**
  * @author Sylvain Vissiere-Guerinet
  *
  */
+@Retention(RUNTIME)
+@Target({ FIELD, METHOD, PARAMETER, ANNOTATION_TYPE })
+@Constraint(validatedBy = PastOrNowValidator.class)
+@Documented
 public @interface PastOrNow {
 
     /**

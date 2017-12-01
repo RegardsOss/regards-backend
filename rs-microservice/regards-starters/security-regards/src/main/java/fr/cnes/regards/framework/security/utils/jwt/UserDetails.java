@@ -58,10 +58,17 @@ public class UserDetails implements Serializable {
         name = pName;
     }
 
+    /**
+     * @return the tenant
+     */
     public String getTenant() {
         return tenant;
     }
 
+    /**
+     * Set the tenant
+     * @param pTenant
+     */
     public void setTenant(String pTenant) {
         tenant = pTenant;
     }

@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.framework.oais;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 /**
  * OAIS Preservation Description Information object
@@ -36,16 +35,34 @@ import javax.validation.constraints.NotNull;
  */
 public class ProvenanceInformation {
 
+    /**
+     * The facility
+     */
     private String facility;
 
+    /**
+     * The instrument
+     */
     private String instrument;
 
+    /**
+     * The filter
+     */
     private String filter;
 
+    /**
+     * The detector
+     */
     private String detector;
 
+    /**
+     * The proposal
+     */
     private String proposal;
 
+    /**
+     * The history
+     */
     @NotNull
     private final List<Event> history = new ArrayList<>();
 
@@ -70,34 +87,62 @@ public class ProvenanceInformation {
         return additional;
     }
 
+    /**
+     * @return the instrument
+     */
     public String getInstrument() {
         return instrument;
     }
 
+    /**
+     * Set the instrument
+     * @param instrument
+     */
     public void setInstrument(String instrument) {
         this.instrument = instrument;
     }
 
+    /**
+     * @return the filter
+     */
     public String getFilter() {
         return filter;
     }
 
+    /**
+     * Set the filter
+     * @param filter
+     */
     public void setFilter(String filter) {
         this.filter = filter;
     }
 
+    /**
+     * @return the detector
+     */
     public String getDetector() {
         return detector;
     }
 
+    /**
+     * Set the detector
+     * @param detector
+     */
     public void setDetector(String detector) {
         this.detector = detector;
     }
 
+    /**
+     * @return the proposal
+     */
     public String getProposal() {
         return proposal;
     }
 
+    /**
+     * Set the proposal
+     * @param proposal
+     */
     public void setProposal(String proposal) {
         this.proposal = proposal;
     }

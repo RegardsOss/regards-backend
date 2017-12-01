@@ -62,6 +62,11 @@ public interface IPluginService {
      */
     List<PluginMetaData> getPluginsByType(Class<?> interfacePluginType);
 
+    /**
+     * @param pluginConfigurationId
+     * @return whether the plugin configured by the given plugin configuration threw its id cna be instantiated or not
+     * @throws ModuleException
+     */
     boolean canInstantiate(Long pluginConfigurationId) throws ModuleException;
 
     /**

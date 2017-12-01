@@ -5,7 +5,6 @@ import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -24,15 +23,29 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 public class MaintenanceHealthIndicator extends AbstractHealthIndicator
         implements ApplicationListener<ApplicationReadyEvent> {
 
+    /**
+     * {@link IRuntimeTenantResolver} instance
+     */
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
+    /**
+     * {@link IInstanceSubscriber} instance
+     */
     @Autowired
     private IInstanceSubscriber subscriber;
 
+    /**
+     * {@link ITenantResolver} instance
+     */
     @Autowired
     private ITenantResolver tenantResolver;
 
+    /**
+     * Constructor setting the runtime tenant resolver
+     * @param runtimeTenantResolver
+     */
     public MaintenanceHealthIndicator(IRuntimeTenantResolver runtimeTenantResolver) {
+        super();
         this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
@@ -56,7 +69,10 @@ public class MaintenanceHealthIndicator extends AbstractHealthIndicator
         subscriber.subscribeTo(TenantCreatedEvent.class, new TenantCreatedEventHandler());
     }
 
-    private class TenantCreatedEventHandler implements IHandler<TenantCreatedEvent> {
+    /**
+     * Amqp event handler
+     */
+    private static class TenantCreatedEventHandler implements IHandler<TenantCreatedEvent> {
 
         @Override
         public void handle(TenantWrapper<TenantCreatedEvent> wrapper) {

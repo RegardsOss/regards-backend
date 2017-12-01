@@ -28,6 +28,10 @@ import java.time.OffsetDateTime;
  */
 public class PastOrNowValidator implements ConstraintValidator<PastOrNow, OffsetDateTime> {
 
+    /**
+     * Validator initializing method
+     * @param pArg0
+     */
     @Override
     public void initialize(PastOrNow pArg0) {
         // Nothing to initialize for now

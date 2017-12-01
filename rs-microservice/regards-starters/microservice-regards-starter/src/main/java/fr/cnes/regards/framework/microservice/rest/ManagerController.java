@@ -52,6 +52,9 @@ public class ManagerController {
     @Autowired
     private IApplicationManager applicationManager;
 
+    /**
+     * Allows to immediately shutdown the application
+     */
     @PostMapping("/shutdown/immediate")
     public ResponseEntity<Void> immediateShutdown() {
         ResponseEntity<Void> response = new ResponseEntity<>(HttpStatus.OK);

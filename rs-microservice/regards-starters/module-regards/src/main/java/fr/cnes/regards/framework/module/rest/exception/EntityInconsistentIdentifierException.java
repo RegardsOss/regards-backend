@@ -27,6 +27,12 @@ package fr.cnes.regards.framework.module.rest.exception;
 @SuppressWarnings("serial")
 public class EntityInconsistentIdentifierException extends EntityException {
 
+    /**
+     * Constructor setting the exception message thanks to the given parameters
+     * @param pathId
+     * @param bodyId
+     * @param entityClass
+     */
     public EntityInconsistentIdentifierException(final Long pathId, final Long bodyId, final Class<?> entityClass) {
         // CHECKSTYLE:OFF
         super(String.format(
@@ -35,6 +41,12 @@ public class EntityInconsistentIdentifierException extends EntityException {
         // CHECKSTYLE:ON
     }
 
+    /**
+     * Constructor setting the exception message thanks to the given parameters
+     * @param pPathName
+     * @param pBodyName
+     * @param pEntityClass
+     */
     public EntityInconsistentIdentifierException(final String pPathName, final String pBodyName,
             final Class<?> pEntityClass) {
         // CHECKSTYLE:OFF

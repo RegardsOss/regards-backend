@@ -36,7 +36,6 @@ import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.modules.workspace.domain.WorkspaceMonitoringInformation;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
-import fr.cnes.regards.framework.modules.workspace.service.WorkspaceService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 
@@ -51,14 +50,27 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 @RequestMapping(WorkspaceController.BASE_PATH)
 public class WorkspaceController implements IResourceController<WorkspaceMonitoringInformation> {
 
+    /**
+     * the controller base path
+     */
     public static final String BASE_PATH = "/workspaces";
 
+    /**
+     * {@link IResourceService} instance
+     */
     @Autowired
     private IResourceService resourceService;
 
+    /**
+     * {@link IWorkspaceService} instance
+     */
     @Autowired
     private IWorkspaceService workspaceService;
 
+    /**
+     * @return workspace monitoring information wrapped into a {@link Resource}
+     * @throws IOException
+     */
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "send monitoring informations about the workspace", role = DefaultRole.INSTANCE_ADMIN)

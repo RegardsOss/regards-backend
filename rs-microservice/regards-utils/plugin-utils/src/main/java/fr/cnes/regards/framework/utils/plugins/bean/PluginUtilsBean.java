@@ -43,6 +43,9 @@ public class PluginUtilsBean {
         instance = bean;
     }
 
+    /**
+     * Allows to autowire bean into a plugin instance
+     */
     public <T> void processAutowiredBean(final T plugin) {
         beanFactory.autowireBean(plugin);
     }
