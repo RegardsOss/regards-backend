@@ -30,21 +30,20 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class ComplexErrorPlugin implements ISamplePlugin {
 
-    /**
-     * constant PLG
-     */
-    static final String PLUGIN_PARAM = "plgInterface";
+    public static final String FIELD_NAME_COEF = "coef";
+
+    public static final String FIELD_NAME_PLUGIN = "interfacePlugin";
 
     /**
      * A {@link Integer} parameter
      */
-    @PluginParameter(description = "int parameter", name = COEFF)
+    @PluginParameter(description = "int parameter", label = "COEFF")
     private final Integer coef = 0;
 
     /**
      * A {@link String} parameter
      */
-    @PluginParameter(description = "plugin parameter", name = PLUGIN_PARAM)
+    @PluginParameter(description = "plugin parameter", label = "PLUGIN_PARAM")
     private INotInterfacePlugin interfacePlugin;
 
     @Override

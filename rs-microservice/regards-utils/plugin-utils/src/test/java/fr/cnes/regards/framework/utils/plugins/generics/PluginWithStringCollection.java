@@ -16,34 +16,36 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.utils.plugins.plugintypes;
+package fr.cnes.regards.framework.utils.plugins.generics;
+
+import java.util.List;
+
+import org.junit.Assert;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
- * ParameterPlugin
+ * @author Marc Sordi
  *
- * @author Christophe Mertz
  */
-@Plugin(description = "Parameter plugin test", id = "aParameterPlugin", version = "0.0.1", author = "REGARDS Team",
-        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
-public class AParameterPluginImplementation implements IComplexInterfacePlugin {
+@Plugin(author = "REGARDS Team", description = "Plugin with string collection parameter",
+        id = "PluginWithStringCollection", version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3",
+        owner = "CNES", url = "https://regardsoss.github.io/")
+public class PluginWithStringCollection implements IPluginWithGenerics {
 
-    // Field name
-    public static final String FIELD_NAME = "ll";
+    // Attribute name
+    public static final String FIELD_NAME = "infos";
 
-    /**
-     * A {@link Integer} parameter
-     */
-    @PluginParameter(description = "long parameter", label = "Long parameter")
-    private Long ll;
+    @PluginParameter(label = "Informations", description = "List of infos")
+    private List<String> infos;
 
     @Override
-    public int mult(final int pFirst, final int pSecond) {
-        final int res = ll.intValue() * (pFirst * pSecond);
-
-        return res;
+    public void doIt() {
+        Assert.assertNotNull(infos);
+        Assert.assertTrue(infos.size() == 3);
+        for (String info : infos) {
+            Assert.assertTrue(info instanceof String);
+        }
     }
-
 }

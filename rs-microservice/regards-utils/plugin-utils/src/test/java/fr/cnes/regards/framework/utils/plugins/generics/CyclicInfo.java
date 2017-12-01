@@ -16,38 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.plugins;
-
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+package fr.cnes.regards.framework.utils.plugins.generics;
 
 /**
- * ISamplePlugin
- *
- * @author Christophe Mertz
- *
+ * This class contains a {@link CyclicMessage}
+ * @author Marc Sordi
  */
-@PluginInterface(description = "hello sample plugin interface")
-public interface ISamplePlugin {
+public class CyclicInfo {
 
-    /**
-     * method echo
-     *
-     * @param pMessage
-     *            message to display
-     *
-     * @return the message
-     */
-    String echo(String pMessage);
+    private CyclicMessage message;
 
-    /**
-     * method add
-     *
-     * @param pFirst
-     *            first element
-     * @param pSecond
-     *            second item
-     * @return the result
-     */
-    int add(int pFirst, int pSecond);
+    public CyclicMessage getMessage() {
+        return message;
+    }
 
+    public void setMessage(CyclicMessage message) {
+        this.message = message;
+    }
 }

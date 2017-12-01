@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * IComplexInterfacePlugin
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -30,13 +30,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 public interface IComplexInterfacePlugin {
 
     /**
-     * constant klong
-     */
-    public static final String LONG_PARAM = "long_param";
-
-    /**
      * method mult
-     * 
+     *
      * @param pFirst
      *            first parameter's method
      * @param pSecond

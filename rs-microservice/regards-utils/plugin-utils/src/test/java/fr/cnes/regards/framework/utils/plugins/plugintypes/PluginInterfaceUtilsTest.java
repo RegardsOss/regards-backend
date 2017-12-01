@@ -35,7 +35,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginInterfaceUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
-import fr.cnes.regards.framework.utils.plugins.PluginUtilsTestConstants;
+import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants;
 
 /**
  * Unit testing of {@link PluginInterfaceUtils}.
@@ -143,7 +143,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
          * Get the configuration for the Plugin parameter (ie the child)
          */
         final List<PluginParameter> interfaceParameters = PluginParametersFactory.build()
-                .addParameter(AParameterPluginImplementation.LONG_PARAM, PluginInterfaceUtilsTest.LONG_STR_VALUE)
+                .addParameter(AParameterPluginImplementation.FIELD_NAME, PluginInterfaceUtilsTest.LONG_STR_VALUE)
                 .getParameters();
         final PluginConfiguration pluginConfigurationInterface = PluginUtils
                 .getPluginConfiguration(interfaceParameters, AParameterPluginImplementation.class,
@@ -154,9 +154,9 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
          * Get the configuration for the complex Plugin (ie the parent)
          */
         final List<PluginParameter> complexParameters = PluginParametersFactory.build()
-                .addParameterPluginConfiguration(ComplexPlugin.PLUGIN_PARAM, pluginConfigurationInterface)
-                .addParameter(ComplexPlugin.ACTIVE, TRUE)
-                .addParameter(ComplexPlugin.COEFF, PluginInterfaceUtilsTest.CINQ).getParameters();
+                .addParameterPluginConfiguration(ComplexPlugin.FIELD_NAME_PLUGIN, pluginConfigurationInterface)
+                .addParameter(ComplexPlugin.FIELD_NAME_ACTIVE, TRUE)
+                .addParameter(ComplexPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ).getParameters();
 
         HashMap<Long, Object> instantiatedPluginMap = new HashMap<>();
         instantiatedPluginMap.put(pluginConfigurationInterface.getId(),
@@ -193,9 +193,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
          */
 
         final List<PluginParameter> complexParameters = PluginParametersFactory.build()
-                .addParameter(ComplexErrorPlugin.ACTIVE, TRUE)
-                .addParameter(ComplexErrorPlugin.COEFF, PluginInterfaceUtilsTest.CINQ)
-                .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "coucou").getParameters();
+                .addParameter(ComplexErrorPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ)
+                .addParameter(ComplexErrorPlugin.FIELD_NAME_PLUGIN, "coucou").getParameters();
 
         // instantiate plugin
         PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class, Arrays.asList(PLUGIN_CURRENT_PACKAGE),
@@ -215,8 +214,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
          */
 
         final List<PluginParameter> complexParameters = PluginParametersFactory.build()
-                .addParameter(ComplexErrorPlugin.ACTIVE, TRUE).addParameter(ComplexErrorPlugin.COEFF, "allo")
-                .addParameter(ComplexErrorPlugin.PLUGIN_PARAM, "lorem ipsum").getParameters();
+                .addParameter(ComplexErrorPlugin.FIELD_NAME_COEF, "allo")
+                .addParameter(ComplexErrorPlugin.FIELD_NAME_PLUGIN, "lorem ipsum").getParameters();
 
         // instantiate plugin
         PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class, Arrays.asList(PLUGIN_CURRENT_PACKAGE),

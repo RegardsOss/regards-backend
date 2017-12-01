@@ -42,6 +42,8 @@ import org.hibernate.usertype.DynamicParameterizedType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.gson.utils.ParameterizedTypeImpl;
+
 /**
  * @author Vlad Mihalcea
  */

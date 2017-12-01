@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.plugins.IComplexInterfacePlugin;
+import fr.cnes.regards.framework.plugins.SamplePlugin;
 
 /***
  * Constants and datas for unit testing of plugin's Service.
@@ -102,21 +103,6 @@ public class PluginServiceUtility {
     protected static final String PLUGIN_PARAMETER_ID = "aParameterPlugin";
 
     /**
-     * isActive constant {@link String}
-     */
-    protected static final String PARAM_IS_ACTIVE = "isActive";
-
-    /**
-     * coeff constant {@link String}
-     */
-    protected static final String PARAM_COEFF = "coeff";
-
-    /**
-     * suffix constant {@link String}
-     */
-    protected static final String PARAM_SUFFIX = "suffix";
-
-    /**
      * A {@link List} of values
      */
     protected static final List<String> DYNAMICVALUES = Arrays.asList(RED, BLUE, GREEN);
@@ -125,26 +111,27 @@ public class PluginServiceUtility {
      * A {@link PluginParameter}
      */
     protected static final List<PluginParameter> DYNAMICPARAMETERS = PluginParametersFactory.build()
-            .addParameter("param11", "value11").addParameterDynamic(PARAM_COEFF, "0")
-            .addParameter(PARAM_IS_ACTIVE, Boolean.TRUE.toString())
-            .addParameterDynamic(PARAM_SUFFIX, RED, DYNAMICVALUES).getParameters();
+            .addParameter("param11", "value11").addParameterDynamic(SamplePlugin.FIELD_NAME_COEF, "0")
+            .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE.toString())
+            .addParameterDynamic(SamplePlugin.FIELD_NAME_SUFFIX, RED, DYNAMICVALUES).getParameters();
 
     /**
      * A {@link PluginParameter}
      */
     protected static final List<PluginParameter> DYNAMICPARAMETERS_TO_UPDATE = PluginParametersFactory.build()
-            .addParameter("param11", "value11").addParameterDynamic(PARAM_COEFF, "0")
-            .addParameter(PARAM_IS_ACTIVE, Boolean.TRUE.toString())
-            .addParameterDynamic(PARAM_SUFFIX, RED, DYNAMICVALUES).getParameters();
+            .addParameter("param11", "value11").addParameterDynamic(SamplePlugin.FIELD_NAME_COEF, "0")
+            .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE.toString())
+            .addParameterDynamic(SamplePlugin.FIELD_NAME_SUFFIX, RED, DYNAMICVALUES).getParameters();
 
     /**
      * A list of {@link PluginParameter}
      */
     protected static final List<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
             .addParameter("param31", "value31").addParameter("param32", "value32").addParameter("param33", "value33")
-            .addParameter("param34", "value34").addParameter("param35", "value35").addParameterDynamic(PARAM_COEFF, "3")
-            .addParameter(PARAM_IS_ACTIVE, Boolean.TRUE.toString()).addParameter(PARAM_SUFFIX, "Toulouse")
-            .getParameters();
+            .addParameter("param34", "value34").addParameter("param35", "value35")
+            .addParameterDynamic(SamplePlugin.FIELD_NAME_COEF, "3")
+            .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE.toString())
+            .addParameter(SamplePlugin.FIELD_NAME_SUFFIX, "Toulouse").getParameters();
 
     /**
      * A {@link PluginConfiguration}

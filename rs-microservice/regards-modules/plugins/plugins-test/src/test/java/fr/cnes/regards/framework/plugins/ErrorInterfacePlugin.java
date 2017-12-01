@@ -34,6 +34,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class ErrorInterfacePlugin implements IComplexInterfacePlugin {
 
+    public static final String FIELD_NAME = "aLong";
+
     /**
      * Class logger
      */
@@ -42,7 +44,7 @@ public class ErrorInterfacePlugin implements IComplexInterfacePlugin {
     /**
      * A {@link Long} parameter
      */
-    @PluginParameter(description = "long parameter", name = LONG_PARAM)
+    @PluginParameter(description = "long parameter", label = "LONG_PARAM")
     private Long aLong;
 
     /**

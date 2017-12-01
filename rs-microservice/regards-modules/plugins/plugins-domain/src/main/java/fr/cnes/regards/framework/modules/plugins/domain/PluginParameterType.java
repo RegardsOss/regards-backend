@@ -19,10 +19,11 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
-import java.util.ArrayList; 
-import java.util.List; 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-import com.google.common.base.Strings;
+import org.springframework.util.Assert;
 
 /**
  * Plugin parameter type
@@ -32,20 +33,29 @@ import com.google.common.base.Strings;
 public class PluginParameterType {
 
     /**
-     * The parameter's name
+     * The parameter's name used as a key for database registration
      */
     private String name;
 
     /**
-     * The parameter's type Java
+     * The parameter label, a required human readable information
+     */
+    private String label;
+
+    /**
+     * The parameter description, an optional further human readable information if the label is not explicit enough!
+     */
+    private String description;
+
+    /**
+     * The JAVA parameter's type
      */
     private String type;
-    
-    /** 
-     * Id the paramType is a PARAMETIRIZED_OBJECT then this properties contains the parameterized type. 
-     * For List<String>, parameterizedSubType=String and type=List 
-     */ 
-    private String parameterizedSubType; 
+
+    /**
+     * Argument parameter types for parameterized types
+     */
+    private String[] parameterizedSubTypes;
 
     /**
      * The parameters's type {@link ParamType}.
@@ -61,46 +71,58 @@ public class PluginParameterType {
      * Define if the parameter is optional or mandatory
      */
     private Boolean optional;
-    
-    /** 
-     * The parameters of the plugin 
-     */ 
-    private List<PluginParameterType> parameters = new ArrayList<>(); 
 
     /**
-     * A constructor with the attribute
-     * 
-     * @param pName
-     *            The parameter's name
-     * @param pType
-     *            The parameter's type Java
-     * @param pTypeEnum
-     *            The parameter's type (ie PRIMITIVE or PLUGIN)
-     * 
+     * The parameters of the plugin
      */
-    public PluginParameterType(String pName, String pType, ParamType pTypeEnum) {
-        super();
-        this.name = pName;
-        this.type = pType;
-        this.paramType = pTypeEnum;
-    }
+    private List<PluginParameterType> parameters = new ArrayList<>();
 
-    public PluginParameterType(String pName, String pType, String pDefValue, boolean pOptional, ParamType pTypeEnum) {
-        super();
-        this.name = pName;
-        this.type = pType;
-        this.paramType = pTypeEnum;
-        if (!Strings.isNullOrEmpty(pDefValue)) {
-            this.defaultValue = pDefValue;
-        }
-        this.optional = pOptional;
+    /**
+     * {@link PluginParameterType} builder.<br/>
+     * Additional setter can be used :
+     * <ul>
+     * <li>{@link #setDefaultValue(String)}</li>
+     * <li>{@link #setParameters(List)}</li>
+     * <li>{@link #setParameterizedSubTypes(String...)}</li>
+     * </ul>
+     * @param name parameter's name used as a key for database registration
+     * @param label a required human readable information
+     * @param description an optional further human readable information if the label is not explicit enough!
+     * @param clazz The JAVA class
+     * @param paramType {@link ParamType}
+     * @param optional true if parameter is optional
+     * @return {@link PluginParameterType}
+     */
+    public static PluginParameterType create(String name, String label, String description, Class<?> clazz,
+            ParamType paramType, Boolean optional) {
+        PluginParameterType ppt = new PluginParameterType();
+
+        // Validate and set
+        Assert.hasText(name, "Name is required");
+        ppt.setName(name);
+
+        Assert.hasText(label, "Label is required");
+        ppt.setLabel(label);
+
+        ppt.setDescription(description);
+
+        Assert.notNull(clazz, "Class is required");
+        ppt.setType(clazz.getName());
+
+        Assert.notNull(paramType, "Parameter type is required");
+        ppt.setParamType(paramType);
+
+        Assert.notNull(optional, "Optional value is required");
+        ppt.setOptional(optional);
+
+        return ppt;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String pName) {
+    private void setName(String pName) {
         this.name = pName;
     }
 
@@ -108,7 +130,7 @@ public class PluginParameterType {
         return type;
     }
 
-    public void setType(String pType) {
+    private void setType(String pType) {
         this.type = pType;
     }
 
@@ -116,7 +138,7 @@ public class PluginParameterType {
         return paramType;
     }
 
-    public void setParamType(ParamType pParamType) {
+    private void setParamType(ParamType pParamType) {
         this.paramType = pParamType;
     }
 
@@ -125,6 +147,7 @@ public class PluginParameterType {
     }
 
     public void setDefaultValue(String defaultValue) {
+        Assert.hasText(defaultValue, "Default value is required");
         this.defaultValue = defaultValue;
     }
 
@@ -132,40 +155,66 @@ public class PluginParameterType {
         return optional;
     }
 
-    public void setOptional(Boolean optional) {
+    private void setOptional(Boolean optional) {
         this.optional = optional;
     }
-    
-    public List<PluginParameterType> getParameters() { 
-        return parameters; 
-    } 
- 
-    public void setParameters(List<PluginParameterType> pParameters) { 
-        parameters = pParameters; 
-    } 
- 
-    public String getParameterizedSubType() { 
-        return parameterizedSubType; 
-    } 
- 
-    public void setParameterizedSubType(String pParamParameterizedSubType) { 
-        parameterizedSubType = pParamParameterizedSubType; 
+
+    public List<PluginParameterType> getParameters() {
+        return parameters;
+    }
+
+    public void addAllParameters(List<PluginParameterType> parameterTypes) {
+        if (parameterTypes != null) {
+            if (parameters == null) {
+                parameters = new ArrayList<>();
+            }
+            parameters.addAll(parameterTypes);
+        }
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    private void setLabel(String label) {
+        this.label = label;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    private void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String[] getParameterizedSubTypes() {
+        return parameterizedSubTypes;
+    }
+
+    public void setParameterizedSubTypes(String... parameterizedSubTypes) {
+        this.parameterizedSubTypes = parameterizedSubTypes;
     }
 
     /**
      * An enumeration with PRIMITIVE and PLUGIN defaultValue
-     * 
+     *
      * @author Christophe Mertz
      *
      */
     public enum ParamType {
-        /** 
+
+        /**
+         * Parameter type {@link Map}
+         */
+        MAP,
+        /**
          * Parameter type {@link java.util.Collection}
-         */ 
+         */
         COLLECTION,
-        /** 
-         * Object type 
-         */ 
+        /**
+         * Object type (not parameterized)
+         */
         OBJECT,
         /**
          * Parameter type primitif
@@ -174,10 +223,6 @@ public class PluginParameterType {
         /**
          * Parameter type plugin
          */
-        PLUGIN,
-        /**
-         * Parameter type is undefined
-         */
-        UNDEFINED
+        PLUGIN
     }
 }

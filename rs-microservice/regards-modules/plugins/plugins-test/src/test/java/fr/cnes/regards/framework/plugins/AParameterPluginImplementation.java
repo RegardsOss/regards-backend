@@ -30,10 +30,12 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class AParameterPluginImplementation implements IComplexInterfacePlugin {
 
+    public static final String FIELD_NAME_LONG_PARAM = "ll";
+
     /**
      * A {@link Integer} parameter
      */
-    @PluginParameter(description = "long parameter", name = LONG_PARAM)
+    @PluginParameter(description = "long parameter", label = "LONG_PARAM")
     private Long ll;
 
     @Override

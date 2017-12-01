@@ -34,10 +34,11 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class ComplexPlugin implements ISamplePlugin {
 
-    /**
-     * constant PLG
-     */
-    static final String PLUGIN_PARAM = "plgInterface";
+    public static final String FIELD_NAME_COMPLEX = "complexInterfacePlugin";
+
+    public static final String FIELD_NAME_COEF = "coef";
+
+    public static final String FIELD_NAME_ACTIVE = "isActive";
 
     /**
      * Class logger
@@ -47,19 +48,19 @@ public class ComplexPlugin implements ISamplePlugin {
     /**
      * A plugin with an annotation {@link PluginParameter}
      */
-    @PluginParameter(description = "Plugin interface", name = PLUGIN_PARAM)
+    @PluginParameter(description = "Plugin interface", label = "PLUGIN_PARAM")
     private IComplexInterfacePlugin complexInterfacePlugin;
 
     /**
      * A {@link Integer} parameter
      */
-    @PluginParameter(description = "int parameter", name = COEFF)
+    @PluginParameter(description = "int parameter", label = "COEFF")
     private final Integer coef = 0;
 
     /**
      * A {@link Boolean} parameter
      */
-    @PluginParameter(description = "boolean parameter", name = ACTIVE)
+    @PluginParameter(description = "boolean parameter", label = "ACTIVE")
     private final Boolean isActive = Boolean.FALSE;
 
     @Override

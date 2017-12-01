@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -81,7 +82,7 @@ public class ComplexPluginTest {
         pojo.setPojoParam("string_value");
         pojo.setOtherPojoParam(pojo2);
 
-        dynParameters.add(new PluginParameter(TestPlugin.POJO_PARAM_NAME, new Gson().toJson(pojo)));
+        dynParameters.add(new PluginParameter(TestPlugin.FIELD_NAME_POJO_PARAM, new Gson().toJson(pojo)));
 
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = new PluginConfiguration(result,

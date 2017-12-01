@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.jpa.json;
+package fr.cnes.regards.framework.gson.utils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

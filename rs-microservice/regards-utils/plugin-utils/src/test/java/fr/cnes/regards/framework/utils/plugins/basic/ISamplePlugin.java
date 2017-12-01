@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.utils.plugins;
+package fr.cnes.regards.framework.utils.plugins.basic;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
@@ -28,31 +28,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
  */
 @PluginInterface(description = "hello sample plugin interface")
 public interface ISamplePlugin {
-
-    /**
-     * constant suffix
-     */
-    public static final String SUFFIXE = "suffix";
-
-    /**
-     * constant is active
-     */
-    public static final String ACTIVE = "isActive";
-
-    /**
-     * constant coeff
-     */
-    public static final String COEFF = "coeff";
-
-    /**
-     * constant pojo parameter
-     */
-    public static final String POJO = "pojo";
-    
-    /**
-     * constant pojo parameter
-     */
-    public static final String OFF_SET_DATE_TIME = "offset-date-time";
 
     /**
      * method echo

@@ -18,15 +18,13 @@
  */
 package fr.cnes.regards.framework.utils.cycle.detection;
 
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.framework.utils.plugins.ISamplePlugin;
+import fr.cnes.regards.framework.utils.plugins.basic.ISamplePlugin;
 
 /**
  * SamplePlugin
@@ -37,41 +35,40 @@ import fr.cnes.regards.framework.utils.plugins.ISamplePlugin;
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class SamplePluginWithPojo implements ISamplePlugin {
 
-    /**
-     * Class logger
-     */
+    public static final String FIELD_NAME_SUFFIX = "suffix";
+
+    public static final String FIELD_NAME_COEF = "coef";
+
+    public static final String FIELD_NAME_ACTIVE = "isActive";
+
+    public static final String FIELD_NAME_POJO = "pojo";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(SamplePluginWithPojo.class);
-
-    private static final int ONE = 3;
-
-    private static final int SECOND = 9;
-
-    private static final ColorStatus DEFAULT_COLOR = ColorStatus.BLUE;
 
     /**
      * A {@link String} parameter
      */
-    @PluginParameter(description = "string parameter", name = SUFFIXE)
+    @PluginParameter(description = "string parameter", label = "Suffix")
     private String suffix;
 
     /**
      * A {@link Integer} parameter
      */
-    @PluginParameter(description = "int parameter", name = COEFF, defaultValue = "-100")
+    @PluginParameter(description = "int parameter", label = "Coef", defaultValue = "-100")
     private Integer coef;
 
     /**
      * A {@link Boolean} parameter
      */
-    @PluginParameter(description = "boolean parameter", name = ACTIVE)
+    @PluginParameter(description = "boolean parameter", label = "Enabled")
     private Boolean isActive;
 
     /**
      * A {@link TestPojo} parameter
      */
-    @PluginParameter(description = "Pojo parameter", name = POJO)
+    @PluginParameter(description = "Pojo parameter", label = "Pojo")
     private TestPojo pojo;
-    
+
     @Override
     public String echo(final String pMessage) {
         final StringBuffer str = new StringBuffer();
@@ -102,13 +99,6 @@ public class SamplePluginWithPojo implements ISamplePlugin {
 
     public TestPojo getPojo() {
         return pojo;
-    }
-
-    private enum ColorStatus {
-        BLUE,
-        RED,
-        YELLOW,
-        BLACK;
     }
 
 }
