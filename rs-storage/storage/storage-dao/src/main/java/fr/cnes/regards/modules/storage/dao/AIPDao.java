@@ -15,13 +15,22 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 
 /**
+ * Implementation of {@link IAIPDao}
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
 public class AIPDao implements IAIPDao {
 
+    /**
+     * {@link IAIPEntityRepository} instance
+     */
     private final IAIPEntityRepository repo;
 
+    /**
+     * Constructor setting the parameter as attribute
+     * @param repo
+     */
     public AIPDao(IAIPEntityRepository repo) {
         this.repo = repo;
     }
@@ -128,8 +137,8 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public void remove(AIP associatedAIP) {
-        Optional<AIPEntity> opt = repo.findOneByIpId(associatedAIP.getId().toString());
+    public void remove(AIP aip) {
+        Optional<AIPEntity> opt = repo.findOneByIpId(aip.getId().toString());
         if(opt.isPresent()) {
             repo.delete(opt.get());
         }

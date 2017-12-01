@@ -21,12 +21,23 @@ import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
 @Component
 public class DataFileDao implements IDataFileDao {
 
+    /**
+     * {@link IDataFileRepository} instance
+     */
     @Autowired
     private IDataFileRepository repository;
 
+    /**
+     * {@link IAIPEntityRepository} instance
+     */
     @Autowired
     private IAIPEntityRepository aipRepo;
 
+    /**
+     * Constructor setting the parameters as attributes
+     * @param repository
+     * @param aipRepo
+     */
     public DataFileDao(IDataFileRepository repository, IAIPEntityRepository aipRepo) {
         this.repository = repository;
         this.aipRepo = aipRepo;
@@ -127,7 +138,7 @@ public class DataFileDao implements IDataFileDao {
         return aipRepo.findOneByIpId(aip.getId().toString());
     }
 
-    public Optional<AIPEntity> getAipDataBase(DataFile dataFile) {
+    private Optional<AIPEntity> getAipDataBase(DataFile dataFile) {
         return aipRepo.findOneByIpId(dataFile.getAipEntity().getIpId());
     }
 }
