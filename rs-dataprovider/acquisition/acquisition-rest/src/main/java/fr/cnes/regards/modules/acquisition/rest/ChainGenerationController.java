@@ -60,7 +60,6 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -128,7 +127,8 @@ public class ChainGenerationController implements IResourceController<ChainGener
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
     @ResourceAccess(description = "Add a chain", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<ChainGeneration>> create(@Valid @RequestBody ChainGeneration chainGeneration) throws ModuleException {
+    public ResponseEntity<Resource<ChainGeneration>> create(@Valid @RequestBody ChainGeneration chainGeneration)
+            throws ModuleException {
         return new ResponseEntity<>(toResource(chainService.create(chainGeneration)), HttpStatus.CREATED);
     }
 

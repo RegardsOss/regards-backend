@@ -113,6 +113,9 @@ public class ScanServiceTest {
         Assert.assertEquals(1, scanDirectoryRepository.count());
         Assert.assertEquals(newDirName, scandirService.retrieve(scanDir1.getId()).getScanDir());
         Assert.assertEquals(updated, scanDir1);
+        
+        scandirService.delete(scanDir1.getId());
+        Assert.assertEquals(0, scanDirectoryRepository.count());
     }
 
     @Test
@@ -195,6 +198,12 @@ public class ScanServiceTest {
         Assert.assertEquals("tmp/invalid3", metaFileService.retrieve(metaFile3.getId()).getInvalidFolder());
         Assert.assertEquals("pattern2", metaFileService.retrieve(metaFile2.getId()).getFileNamePattern());
         Assert.assertEquals("pattern1", metaFileService.retrieve(metaFile1.getId()).getFileNamePattern());
+        
+        metaFileService.delete(metaFile1);
+        Assert.assertEquals(2, metaFileRepository.count());
+        
+        metaFileService.delete(metaFile2.getId());
+        Assert.assertEquals(1, metaFileRepository.count());
     }
 
     @Test

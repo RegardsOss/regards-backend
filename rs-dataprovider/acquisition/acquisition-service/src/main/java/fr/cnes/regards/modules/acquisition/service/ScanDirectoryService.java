@@ -80,12 +80,12 @@ public class ScanDirectoryService implements IScanDirectoryService {
         } else {
             ScanDirectory existingScanDirectory = this.retrieve(scanDirectory.getId());
 
-            if (!existingScanDirectory.equals(scanDirectory)) {
-                // it is different --> update it
-                return this.save(scanDirectory);
-            } else {
+            if (existingScanDirectory.equals(scanDirectory)) {
                 // it is the same --> just return it
                 return scanDirectory;
+            } else {
+                // it is different --> update it
+                return this.save(scanDirectory);
             }
         }
     }

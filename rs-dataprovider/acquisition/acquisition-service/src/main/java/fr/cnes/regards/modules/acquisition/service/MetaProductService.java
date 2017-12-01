@@ -81,12 +81,12 @@ public class MetaProductService implements IMetaProductService {
         } else {
             MetaProduct existingMetaProduct = this.retrieve(metaProduct.getId());
 
-            if (!existingMetaProduct.equals(metaProduct)) {
-                // it is different --> update it
-                return this.save(metaProduct);
-            } else {
+            if (existingMetaProduct.equals(metaProduct)) {
                 // it is the same --> just return it
                 return metaProduct;
+            } else {
+                // it is different --> update it
+                return this.save(metaProduct);
             }
         }
     }

@@ -101,15 +101,15 @@ public class MetaFileService implements IMetaFileService {
         } else {
             MetaFile existingMetaFile = this.retrieve(metaFile.getId());
 
-            metaFile.setScanDirectories(scanDirectoryService
-                                        .createOrUpdate(metaFile.getScanDirectories(), existingMetaFile.getScanDirectories()));
+            metaFile.setScanDirectories(scanDirectoryService.createOrUpdate(metaFile.getScanDirectories(),
+                                                                            existingMetaFile.getScanDirectories()));
 
-            if (!existingMetaFile.equals(metaFile)) {
-                // it is different --> update it
-                return this.save(metaFile);
-            } else {
+            if (existingMetaFile.equals(metaFile)) {
                 // it is the same --> just return it
                 return metaFile;
+            } else {
+                // it is different --> update it
+                return this.save(metaFile);
             }
         }
     }
