@@ -62,7 +62,8 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
      * Collection representing the mapping between a value and the data storage to use
      */
     @PluginParameter(name = PROPERTY_VALUE_DATA_STORAGE_MAPPING,
-            description = "Collection representing the mapping between a value and the data storage to use")
+            description = "Collection representing the mapping between a value and the data storage to use",
+            type = PropertyDataStorageMapping.class)
     private List<PropertyDataStorageMapping> propertyDataStorageMappings;
 
     /**
