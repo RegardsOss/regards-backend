@@ -15,6 +15,9 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.validation.FileSize;
  */
 public class DataStorageInfo {
 
+    /**
+     * The storage unit
+     */
     public static final String BYTES_UNIT = "B";
 
     /**
@@ -55,34 +58,62 @@ public class DataStorageInfo {
         this.ratio = (Double.valueOf(usedSize) / totalSize) * 100;
     }
 
+    /**
+     * @return the storage physical id
+     */
     public String getStoragePhysicalId() {
         return storagePhysicalId;
     }
 
+    /**
+     * Set the storage physical id
+     * @param storagePhysicalId
+     */
     public void setStoragePhysicalId(String storagePhysicalId) {
         this.storagePhysicalId = storagePhysicalId;
     }
 
+    /**
+     * @return the total size
+     */
     public String getTotalSize() {
         return totalSize;
     }
 
+    /**
+     * Set the total size
+     * @param pTotalSize
+     */
     public void setTotalSize(@FileSize String pTotalSize) {
         totalSize = pTotalSize;
     }
 
+    /**
+     * @return the used size
+     */
     public String getUsedSize() {
         return usedSize;
     }
 
+    /**
+     * Set the used size
+     * @param pUsedSize
+     */
     public void setUsedSize(@FileSize String pUsedSize) {
         usedSize = pUsedSize;
     }
 
+    /**
+     * @return the ratio
+     */
     public Double getRatio() {
         return ratio;
     }
 
+    /**
+     * Set the ratio
+     * @param ratio
+     */
     public void setRatio(Double ratio) {
         this.ratio = ratio;
     }

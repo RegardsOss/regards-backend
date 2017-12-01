@@ -16,6 +16,8 @@ import java.net.URL;
 import java.time.OffsetDateTime;
 
 /**
+ * Representation of a DataFile which is in the cache
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
@@ -32,10 +34,16 @@ public class CachedFile {
     @GeneratedValue(generator = "cachedFileSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
+    /**
+     * The cached file checksum
+     */
     @NotNull
     @Column
     private String checksum;
 
+    /**
+     * the cached file size
+     */
     @Column
     private Long fileSize;
 
@@ -57,16 +65,31 @@ public class CachedFile {
     @Column
     private OffsetDateTime lastRequestDate;
 
+    /**
+     * The cached file state
+     */
     @Column
     @Enumerated(EnumType.STRING)
     private CachedFileState state;
 
+    /**
+     * Causes why a file could not be set into the cache
+     */
     @Column(length = 512)
     private String failureCause;
 
+    /**
+     * Default constructor
+     */
     public CachedFile() {
     }
 
+    /**
+     * Constructor initializing the cached file from the parameters
+     * @param df
+     * @param expirationDate
+     * @param fileState
+     */
     public CachedFile(DataFile df, OffsetDateTime expirationDate, CachedFileState fileState) {
         checksum = df.getChecksum();
         fileSize = df.getFileSize();
@@ -75,26 +98,47 @@ public class CachedFile {
         state = fileState;
     }
 
+    /**
+     * @return the id
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * Set the id
+     * @param id
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * @return the location
+     */
     public URL getLocation() {
         return location;
     }
 
+    /**
+     * Set the location
+     * @param location
+     */
     public void setLocation(URL location) {
         this.location = location;
     }
 
+    /**
+     * @return the expiration date
+     */
     public OffsetDateTime getExpiration() {
         return expiration;
     }
 
+    /**
+     * Set the expiration date
+     * @param expiration
+     */
     public void setExpiration(OffsetDateTime expiration) {
         this.expiration = expiration;
     }

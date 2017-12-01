@@ -29,6 +29,9 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class DefaultAllocationStrategyPlugin implements IAllocationStrategy {
 
+    /**
+     * {@link IPluginService} instance
+     */
     @Autowired
     private IPluginService pluginService;
 

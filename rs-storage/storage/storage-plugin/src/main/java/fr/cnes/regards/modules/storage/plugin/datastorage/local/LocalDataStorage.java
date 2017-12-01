@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.storage.plugin.datastorage.local;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
@@ -25,7 +24,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageAccessModeEnum;
-import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageInfo;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IProgressManager;
 
@@ -38,28 +36,59 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.IProgressManager;
         url = "https://regardsoss.github.io/")
 public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LocalDataStorage.class);
-
+    /**
+     * Plugin parameter name of the storage base location as a string
+     */
     public static final String BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME = "Storage_URL";
 
+    /**
+     * Plugin parameter name of the can delete attribute
+     */
     public static final String LOCAL_STORAGE_DELETE_OPTION = "Local_Delete_Option";
 
+    /**
+     * Plugin parameter name of the total space allowed
+     */
     public static final String LOCAL_STORAGE_TOTAL_SPACE = "Local_Total_Space";
 
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(LocalDataStorage.class);
+
+    /**
+     * {@link Gson} instance
+     */
     @Autowired
     private Gson gson;
 
-    @PluginParameter(name = BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME)
+    /**
+     * Base storage location url
+     */
+    @PluginParameter(name = BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, description = "Base storage location url")
     private String baseStorageLocationAsString;
 
+    /**
+     * can this data storage delete files or not?
+     */
     @PluginParameter(name = LOCAL_STORAGE_DELETE_OPTION, defaultValue = "true")
     private Boolean canDelete;
 
-    @PluginParameter(name = LOCAL_STORAGE_TOTAL_SPACE, description = "total space, in byte, this data storage is allowed to use")
+    /**
+     * Total space, in byte, this data storage is allowed to use
+     */
+    @PluginParameter(name = LOCAL_STORAGE_TOTAL_SPACE,
+            description = "total space, in byte, this data storage is allowed to use")
     private Long totalSpace;
 
+    /**
+     * storage base location as url
+     */
     private URL baseStorageLocation;
 
+    /**
+     * Plugin init method
+     */
     @PluginInit
     public void init() {
         baseStorageLocation = gson.fromJson(baseStorageLocationAsString, URL.class);
@@ -99,21 +128,23 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                 return;
             }
         } catch (IOException ioe) {
-            String failureCause = String
-                    .format("Storage of DataFile(%s) failed due to the following IOException: %s", data.getChecksum(),
-                            ioe.getMessage());
+            String failureCause = String.format("Storage of DataFile(%s) failed due to the following IOException: %s",
+                                                data.getChecksum(),
+                                                ioe.getMessage());
             LOG.error(failureCause, ioe);
             progressManager.storageFailed(data, failureCause);
             return;
         }
         try {
-            boolean downloadOk = DownloadUtils
-                    .downloadAndCheckChecksum(data.getUrl(), Paths.get(fullPathToFile), data.getAlgorithm(),
-                                              data.getChecksum());
+            boolean downloadOk = DownloadUtils.downloadAndCheckChecksum(data.getUrl(),
+                                                                        Paths.get(fullPathToFile),
+                                                                        data.getAlgorithm(),
+                                                                        data.getChecksum());
             if (!downloadOk) {
-                String failureCause = String
-                        .format("Storage of DataFile(%s) failed at the following location: %s. Its checksum once stored do not match with expected",
-                                data.getChecksum(), fullPathToFile);
+                String failureCause = String.format(
+                        "Storage of DataFile(%s) failed at the following location: %s. Its checksum once stored do not match with expected",
+                        data.getChecksum(),
+                        fullPathToFile);
                 Files.deleteIfExists(Paths.get(fullPathToFile));
                 progressManager.storageFailed(data, failureCause);
             } else {
@@ -128,9 +159,9 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                     re);
             throw re;
         } catch (IOException ioe) {
-            String failureCause = String
-                    .format("Storage of DataFile(%s) failed due to the following IOException: %s", data.getChecksum(),
-                            ioe.getMessage());
+            String failureCause = String.format("Storage of DataFile(%s) failed due to the following IOException: %s",
+                                                data.getChecksum(),
+                                                ioe.getMessage());
             LOG.error(failureCause, ioe);
             Paths.get(fullPathToFile).toFile().delete();
             progressManager.storageFailed(data, failureCause);
@@ -171,9 +202,10 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                 Files.deleteIfExists(Paths.get(getStorageLocation(data)));
                 progressManager.deletionSucceed(data);
             } catch (IOException ioe) {
-                String failureCause = String
-                        .format("Deletion of DataFile(%s) failed due to the following IOException: %s",
-                                data.getChecksum(), ioe.getMessage());
+                String failureCause = String.format(
+                        "Deletion of DataFile(%s) failed due to the following IOException: %s",
+                        data.getChecksum(),
+                        ioe.getMessage());
                 LOG.error(failureCause, ioe);
                 progressManager.deletionFailed(data, failureCause);
             }

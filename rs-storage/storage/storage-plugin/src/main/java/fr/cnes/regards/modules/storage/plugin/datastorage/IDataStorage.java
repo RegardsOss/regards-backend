@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.storage.plugin.datastorage;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
 
@@ -39,6 +38,9 @@ public interface IDataStorage<T extends IWorkingSubset> {
         }
     }
 
+    /**
+     * @return whether the deletion action is allowed on this data storage
+     */
     boolean canDelete();
 
     /**
@@ -56,5 +58,8 @@ public interface IDataStorage<T extends IWorkingSubset> {
      */
     void store(T workingSubset, Boolean replaceMode, IProgressManager progressManager);
 
+    /**
+     * @return the total space allocated to this data storage
+     */
     Long getTotalSpace();
 }

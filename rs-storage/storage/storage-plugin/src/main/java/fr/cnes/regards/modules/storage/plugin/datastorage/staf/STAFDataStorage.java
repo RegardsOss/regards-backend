@@ -77,8 +77,14 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
 
     public static final String STAF_WORKSPACE_PATH = "workspaceDirectory";
 
+    /**
+     * Plugin parameter name of the deletion option
+     */
     public static final String STAF_STORAGE_DELETE_OPTION = "stafDeleteOption";
 
+    /**
+     * Plugin parameter name of the total space allocated to this data storage
+     */
     public static final String STAF_STORAGE_TOTAL_SPACE = "stafTotalSpace";
 
     /**
@@ -98,9 +104,15 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     @PluginParameter(name = STAF_ARCHIVE_PARAMETER_NAME)
     private STAFArchive stafArchive;
 
+    /**
+     * Can this data storage delete files or not?
+     */
     @PluginParameter(name = STAF_STORAGE_DELETE_OPTION, defaultValue = "true")
     private Boolean canDelete;
 
+    /**
+     * Total space, in byte, this data storage is allowed to use
+     */
     @PluginParameter(name = STAF_STORAGE_TOTAL_SPACE, description = "total space, in byte, this data storage is allowed to use")
     private Long totalSpace;
 

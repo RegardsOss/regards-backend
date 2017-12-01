@@ -29,24 +29,45 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
 
+    /**
+     * Plugin parameter name of the property path
+     */
     public static final String PROPERTY_PATH = "Property_path";
 
+    /**
+     * Plugin parameter name of the property data storage mappings
+     */
     public static final String PROPERTY_VALUE_DATA_STORAGE_MAPPING = "Property_value_data_storage_mapping";
 
+    /**
+     * Class logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(PropertyMappingAllocationStrategy.class);
 
+    /**
+     * {@link Gson} instance
+     */
     @Autowired
     private Gson gson;
 
+    /**
+     * Json path to the property from the AIP which value should discriminate data storages to use
+     */
     @PluginParameter(name = PROPERTY_PATH,
             description = "Json path to the property from the AIP which value should discriminate data storages to use")
     private String propertyPath;
 
+    /**
+     * Collection representing the mapping between a value and the data storage to use
+     */
     @PluginParameter(name = PROPERTY_VALUE_DATA_STORAGE_MAPPING,
             description = "Collection representing the mapping between a value and the data storage to use",
             type = PropertyDataStorageMapping.class)
     private List<PropertyDataStorageMapping> propertyDataStorageMappings;
 
+    /**
+     * Plugin init method
+     */
     @PluginInit
     public void init() {
         if (!propertyPath.startsWith("$.")) {

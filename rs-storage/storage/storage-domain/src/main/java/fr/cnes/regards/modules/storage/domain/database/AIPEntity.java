@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 
 /**
- * Metadata of an AIP.
+ * Metadata of an AIP metadata.
  * It was not necessary to map all the AIP structure into the database so we just mapped some metadata and added the whole AIP as a json field.
  *
  * @author Sylvain VISSIERE-GUERINET
@@ -47,8 +47,14 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 @NamedEntityGraph(name = "graph.aip.tags", attributeNodes = { @NamedAttributeNode("tags") })
 public class AIPEntity {
 
+    /**
+     * Max urn size
+     */
     private static final int MAX_URN_SIZE = 128;
 
+    /**
+     * The id
+     */
     @Id
     @SequenceGenerator(name = "AipSequence", initialValue = 1, sequenceName = "seq_aip")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "AipSequence")
@@ -61,9 +67,15 @@ public class AIPEntity {
     @Column(name = "ip_id", length = MAX_URN_SIZE)
     private String ipId;
 
+    /**
+     * The aip sip id
+     */
     @Column(name = "sip_id", length = MAX_URN_SIZE)
     private String sipId;
 
+    /**
+     * The aip metadata tags
+     */
     @ElementCollection
     @CollectionTable(name = "t_aip_tag", joinColumns = @JoinColumn(name = "aip_id"),
             foreignKey = @javax.persistence.ForeignKey(name = "fk_aip_tag_aip_id"))
@@ -88,13 +100,23 @@ public class AIPEntity {
     @Column
     private OffsetDateTime submissionDate;
 
+    /**
+     * The actual aip metadata
+     */
     @Column(columnDefinition = "jsonb", name = "json_aip")
     @Type(type = "jsonb")
     private AIP aip;
 
+    /**
+     * Default constructor
+     */
     public AIPEntity() {
     }
 
+    /**
+     * Constructor initializing the aip entity from an actual aip
+     * @param aip
+     */
     public AIPEntity(AIP aip) {
         this.ipId = aip.getId().toString();
         this.sipId = aip.getSipId();
@@ -105,66 +127,122 @@ public class AIPEntity {
         this.aip = aip;
     }
 
+    /**
+     * @return the id
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * Set the id
+     * @param id
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * @return the ip id
+     */
     public String getIpId() {
         return ipId;
     }
 
+    /**
+     * Set the ip id
+     * @param ipId
+     */
     public void setIpId(String ipId) {
         this.ipId = ipId;
     }
 
+    /**
+     * @return the sip id
+     */
     public String getSipId() {
         return sipId;
     }
 
+    /**
+     * set the sip id
+     * @param sipId
+     */
     public void setSipId(String sipId) {
         this.sipId = sipId;
     }
 
+    /**
+     * @return the tags
+     */
     public Set<String> getTags() {
         return tags;
     }
 
+    /**
+     * Set the tags
+     * @param tags
+     */
     public void setTags(Set<String> tags) {
         this.tags = tags;
     }
 
+    /**
+     * @return the state
+     */
     public AIPState getState() {
         return state;
     }
 
+    /**
+     * Set the state
+     * @param state
+     */
     public void setState(AIPState state) {
         this.state = state;
     }
 
+    /**
+     * @return the last event
+     */
     public Event getLastEvent() {
         return lastEvent;
     }
 
+    /**
+     * Set the last event
+     * @param lastEvent
+     */
     public void setLastEvent(Event lastEvent) {
         this.lastEvent = lastEvent;
     }
 
+    /**
+     * @return the submission date
+     */
     public OffsetDateTime getSubmissionDate() {
         return submissionDate;
     }
 
+    /**
+     * Set the submission date
+     * @param submissionDate
+     */
     public void setSubmissionDate(OffsetDateTime submissionDate) {
         this.submissionDate = submissionDate;
     }
 
+    /**
+     * @return the aip
+     */
     public AIP getAip() {
         return aip;
     }
 
+    /**
+     * Set the aip
+     * @param aip
+     */
     public void setAip(AIP aip) {
         this.aip = aip;
     }
