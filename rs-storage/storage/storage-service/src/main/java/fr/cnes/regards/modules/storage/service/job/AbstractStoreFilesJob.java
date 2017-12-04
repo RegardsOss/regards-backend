@@ -27,32 +27,67 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.IWorkingSubset;
 
 /**
+ * Abstract job that allows to handle most of storage operations.
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
 
+    /**
+     * Job parameter name for the Data storage plugin configuration id to use
+     */
     public static final String PLUGIN_TO_USE_PARAMETER_NAME = "pluginToUseId";
 
+    /**
+     * Job parameter name for the working subset
+     */
     public static final String WORKING_SUB_SET_PARAMETER_NAME = "workingSubSet";
 
+    /**
+     * Not handled data file message
+     */
     protected static final String NOT_HANDLED_MSG = "This data file has not been handled by the designated DataStorage";
 
+    /**
+     * Failure causes message format
+     */
     protected static final String FAILURE_CAUSES = "Storage failed due to the following reasons: %s";
 
+    /**
+     * Job parameter missing message format
+     */
     protected static final String PARAMETER_MISSING = "%s requires a %s as \"%s\" parameter";
 
+    /**
+     * Job parameter invalid message format
+     */
     protected static final String PARAMETER_INVALID = "%s requires a valid %s(identifier: %s)";
 
+    /**
+     * Class logger
+     */
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    /**
+     * {@link IPluginService} instance
+     */
     @Autowired
     protected IPluginService pluginService;
 
+    /**
+     * {@link IPublisher} instance
+     */
     @Autowired
     protected IPublisher publisher;
 
+    /**
+     * The progress manager allowing to get a communication between the job, the plugin and the AIPService
+     */
     protected StorageJobProgressManager progressManager;
 
+    /**
+     * The job parameters as a map
+     */
     protected Map<String, JobParameter> parameters;
 
     /**
@@ -171,6 +206,11 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
      */
     protected abstract void handleNotHandledDataFile(DataFile notHandled);
 
+    /**
+     * Store files thanks to the parametrized data storage. Indicated to the data storage if the file should be replaced or not
+     * @param parameterMap
+     * @param replaceMode
+     */
     @SuppressWarnings("unchecked")
     protected void storeFile(Map<String, JobParameter> parameterMap, boolean replaceMode) {
         // lets instantiate the plugin to use
@@ -198,6 +238,9 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         return ((IWorkingSubset) parameters.get(WORKING_SUB_SET_PARAMETER_NAME).getValue()).getDataFiles().size();
     }
 
+    /**
+     * @return the progress manager
+     */
     public StorageJobProgressManager getProgressManager() {
         return progressManager;
     }

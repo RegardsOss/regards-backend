@@ -18,9 +18,6 @@ import fr.cnes.regards.modules.storage.domain.database.DataFile;
  */
 public class StoreMetadataFilesJob extends AbstractStoreFilesJob {
 
-    /**
-     * @param parameterMap parsed parameters
-     */
     @Override
     protected void doRun(Map<String, JobParameter> parameterMap) {
         storeFile(parameterMap, true);

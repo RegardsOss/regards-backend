@@ -44,6 +44,10 @@ public class AIPBuilder extends IPBuilder<AIP> {
         ip.setSipId(sipId);
     }
 
+    /**
+     * Constructor used to initialize the builder from an AIP
+     * @param toBeUpdated
+     */
     public AIPBuilder(AIP toBeUpdated) {
         super(toBeUpdated);
     }

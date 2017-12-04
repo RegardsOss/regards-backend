@@ -22,20 +22,38 @@ import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.service.database.IAIPEntityService;
 
 /**
+ * REST controller handling request about {@link AIPEntity}s
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @RestController
 @RequestMapping(path = AIPEntityController.BASE_PATH)
 public class AIPEntityController implements IResourceController<AIPEntity> {
 
+    /**
+     * Controller base path
+     */
     public static final String BASE_PATH = "sips/{sip_id}/aips";
 
+    /**
+     * {@link IResourceService} instance
+     */
     @Autowired
     private IResourceService resourceService;
 
+    /**
+     * {@link IAIPEntityService} instance
+     */
     @Autowired
     private IAIPEntityService aipEntityService;
 
+    /**
+     * Retrieve a page of AIPEntities from a given sip id
+     * @param sipId
+     * @param pageable
+     * @param pagedResourcesAssembler
+     * @return a page of aip entities
+     */
     @ResponseBody
     @ResourceAccess(description = "send pages of AIPEntity")
     @RequestMapping(method = RequestMethod.GET)

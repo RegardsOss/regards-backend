@@ -61,12 +61,24 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
      */
     private static final Logger LOG = LoggerFactory.getLogger(DataStorageEventHandler.class);
 
+    /**
+     * Metadata stored successfully message
+     */
     private static final String METADATA_STORED_SUCCESSFULLY = "AIP metadata has been successfully stored into REGARDS";
 
+    /**
+     * Data file stored successfully message format
+     */
     private static final String DATAFILE_STORED_SUCCESSFULLY = "File %s has been successfully stored";
 
+    /**
+     * Data file deleted successfully message format
+     */
     private static final String DATAFILE_DELETED_SUCCESSFULLY = "File %s has been successfully deleted";
 
+    /**
+     * Metadata updated successfully message
+     */
     private static final String METADATA_UPDATED_SUCCESSFULLY = "AIP metadata has been successfully updated";
 
     @Autowired
@@ -212,7 +224,13 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                           dataFileDeleted.getAip().getId().toString());
                 dataFileDao.remove(dataFileDeleted);
             } else {
-                if (associatedAIP.getState() != AIPState.DELETED) {
+                if (associatedAIP.getState() == AIPState.DELETED) {
+                    // Deletion has been explicitly required, so lets remove all the dataFiles associated to this AIP...
+                    dataFileDao.findAllByAip(associatedAIP).forEach(df -> dataFileDao.remove(df));
+                    // ...and the aip itself
+                    aipDao.remove(associatedAIP);
+                    publisher.publish(new AIPEvent(associatedAIP));
+                } else {
                     // Do not delete the dataFileDeleted from db. At this time in db the file is the new one that has been
                     // stored previously to replace the deleted one. This is a special case for AIP metadata file because,
                     // at any time we want to ensure that there is only one DataFile of AIP type for a given AIP.
@@ -220,12 +238,6 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                               dataFileDeleted.getAip().getId().toString());
                     associatedAIP.addEvent(EventType.UPDATE.name(), METADATA_UPDATED_SUCCESSFULLY);
                     // unless no other datafiles are linked to the metadata, in that case it means it
-                } else {
-                    // Deletion has been explicitly required, so lets remove all the dataFiles associated to this AIP...
-                    dataFileDao.findAllByAip(associatedAIP).forEach(df -> dataFileDao.remove(df));
-                    // ...and the aip itself
-                    aipDao.remove(associatedAIP);
-                    publisher.publish(new AIPEvent(associatedAIP));
                 }
             }
         }

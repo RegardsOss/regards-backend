@@ -87,11 +87,20 @@ import fr.cnes.regards.modules.storage.service.job.RestorationJob;
 @MultitenantTransactional
 public class CachedFileService implements ICachedFileService, ApplicationListener<ApplicationReadyEvent> {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(CachedFileService.class);
 
+    /**
+     * {@link IPluginService} instance
+     */
     @Autowired
     private IPluginService pluginService;
 
+    /**
+     * {@link ICachedFileRepository} instance
+     */
     @Autowired
     private ICachedFileRepository cachedFileRepository;
 
@@ -119,12 +128,21 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     @Value("${regards.storage.cache.purge.lower.threshold.ko.per.tenant:400000000}")
     private Long cacheSizePurgeLowerThreshold;
 
+    /**
+     * Cache file minimum time to live
+     */
     @Value("${regards.storage.cache.minimum.time.to.live.hours}")
-    private Long cahcheFilesMinTtl;
+    private Long cacheFilesMinTtl;
 
+    /**
+     * {@link IDataFileDao} instance
+     */
     @Autowired
     private IDataFileDao dataFileDao;
 
+    /**
+     * {@link IRuntimeTenantResolver} instance
+     */
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -134,12 +152,21 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     @Autowired
     private ITenantResolver tenantResolver;
 
+    /**
+     * {@link IAuthenticationResolver} instance
+     */
     @Autowired
     private IAuthenticationResolver authResolver;
 
+    /**
+     * {@link IJobInfoService} instance
+     */
     @Autowired
     private IJobInfoService jobService;
 
+    /**
+     * {@link IPublisher} instance
+     */
     @Autowired
     private IPublisher publisher;
 
@@ -156,6 +183,10 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         initCacheFileSystem(event.getTenant());
     }
 
+    /**
+     * Initialize the cache file system for the given tenant
+     * @param tenant
+     */
     protected void initCacheFileSystem(String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
         Path tenantCachePath = getTenantCachePath();
@@ -356,7 +387,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             Set<CachedFile> allOlderDeletableCachedFiles = cachedFileRepository
                     .findByStateAndLastRequestDateBeforeOrderByLastRequestDateAsc(CachedFileState.AVAILABLE,
                                                                                   OffsetDateTime.now()
-                                                                                          .minusHours(this.cahcheFilesMinTtl));
+                                                                                          .minusHours(this.cacheFilesMinTtl));
 
             Long fileSizesSum = 0L;
             Set<CachedFile> filesToDelete = Sets.newHashSet();

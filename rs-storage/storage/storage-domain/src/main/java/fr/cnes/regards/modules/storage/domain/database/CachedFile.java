@@ -143,42 +143,77 @@ public class CachedFile {
         this.expiration = expiration;
     }
 
+    /**
+     * @return the state
+     */
     public CachedFileState getState() {
         return state;
     }
 
+    /**
+     * Set the state
+     * @param state
+     */
     public void setState(CachedFileState state) {
         this.state = state;
     }
 
+    /**
+     * Set the failure cause
+     * @param failureCause
+     */
     public void setFailureCause(String failureCause) {
         this.failureCause = failureCause;
     }
 
+    /**
+     * @return the failure cause
+     */
     public String getFailureCause() {
         return failureCause;
     }
 
+    /**
+     * @return the last request date
+     */
     public OffsetDateTime getLastRequestDate() {
         return lastRequestDate;
     }
 
+    /**
+     * Set last request date
+     * @param pLastRequestDate
+     */
     public void setLastRequestDate(OffsetDateTime pLastRequestDate) {
         lastRequestDate = pLastRequestDate;
     }
 
+    /**
+     * @return the file size
+     */
     public Long getFileSize() {
         return fileSize;
     }
 
+    /**
+     * Set the file size
+     * @param pFileSize
+     */
     public void setFileSize(Long pFileSize) {
         fileSize = pFileSize;
     }
 
+    /**
+     * @return the checksum
+     */
     public String getChecksum() {
         return checksum;
     }
 
+    /**
+     * Set the checksum
+     * @param pChecksum
+     */
     public void setChecksum(String pChecksum) {
         checksum = pChecksum;
     }

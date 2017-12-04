@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 

@@ -56,38 +56,68 @@ public class DataFile {
      */
     public static final int CHECKSUM_MAX_LENGTH = 128;
 
+    /**
+     * The id
+     */
     @Id
     @SequenceGenerator(name = "dataFileSequence", initialValue = 1, sequenceName = "seq_data_file")
     @GeneratedValue(generator = "dataFileSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
+    /**
+     * File url
+     */
     @Column
     private URL url;
 
+    /**
+     * File name
+     */
     @Column
     private String name;
 
+    /**
+     * Checksum
+     */
     @Column(length = CHECKSUM_MAX_LENGTH, nullable = false)
     private String checksum;
 
+    /**
+     * Checksum algorithm
+     */
     @Column(nullable = false)
     private String algorithm;
 
+    /**
+     * Data type
+     */
     @Column
     @Enumerated(EnumType.STRING)
     private DataType dataType;
 
+    /**
+     * File size
+     */
     @Column
     private Long fileSize;
 
+    /**
+     * File state
+     */
     @Column
     @Enumerated(EnumType.STRING)
     private DataFileState state;
 
+    /**
+     * File mime type
+     */
     @Column(nullable = false)
     @Convert(converter = MimeTypeConverter.class)
     private MimeType mimeType;
 
+    /**
+     * Data storage plugin configuration used to store the file
+     */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "data_storage_plugin_configuration",
             foreignKey = @ForeignKey(name = "fk_data_file_data_storage_plugin_configuration"))
@@ -101,12 +131,28 @@ public class DataFile {
     @GsonIgnore
     private AIPEntity aipEntity;
 
-    // serialization
+    /**
+     * Default constructor
+     */
     private DataFile() {
+        // serialization
     }
 
+    /**
+     * Initialize the data file from the parameters
+     * @param file
+     * @param mimeType
+     * @param aip
+     */
     public DataFile(OAISDataObject file, MimeType mimeType, AIP aip) {
-        this(file.getUrl(), file.getChecksum(), file.getAlgorithm(), file.getRegardsDataType(), file.getFileSize(), mimeType, aip, null);
+        this(file.getUrl(),
+             file.getChecksum(),
+             file.getAlgorithm(),
+             file.getRegardsDataType(),
+             file.getFileSize(),
+             mimeType,
+             aip,
+             null);
         String name = file.getFilename();
         if (Strings.isNullOrEmpty(name)) {
             String[] pathParts = file.getUrl().getPath().split("/");
@@ -115,6 +161,17 @@ public class DataFile {
         this.name = name;
     }
 
+    /**
+     * Constructor setting the parameters as attribute except for the aip which is transformed to a {@link AIPEntity}
+     * @param url
+     * @param checksum
+     * @param algorithm
+     * @param type
+     * @param fileSize
+     * @param mimeType
+     * @param aip
+     * @param name
+     */
     public DataFile(URL url, String checksum, String algorithm, DataType type, Long fileSize, MimeType mimeType,
             AIP aip, String name) {
         this.url = url;
@@ -124,104 +181,14 @@ public class DataFile {
         this.fileSize = fileSize;
         this.mimeType = mimeType;
         this.aipEntity = new AIPEntity(aip);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
         this.name = name;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public URL getUrl() {
-        return url;
-    }
-
-    public void setUrl(URL url) {
-        this.url = url;
-    }
-
-    public String getChecksum() {
-        return checksum;
-    }
-
-    public void setChecksum(String checksum) {
-        this.checksum = checksum;
-    }
-
-    public String getAlgorithm() {
-        return algorithm;
-    }
-
-    public void setAlgorithm(String algorithm) {
-        this.algorithm = algorithm;
-    }
-
-    public DataType getDataType() {
-        return dataType;
-    }
-
-    public void setDataType(DataType type) {
-        this.dataType = type;
-    }
-
-    public Long getFileSize() {
-        return fileSize;
-    }
-
-    public void setFileSize(Long fileSize) {
-        this.fileSize = fileSize;
-    }
-
-    public PluginConfiguration getDataStorageUsed() {
-        return dataStorageUsed;
-    }
-
-    public void setDataStorageUsed(PluginConfiguration dataStorageUsed) {
-        this.dataStorageUsed = dataStorageUsed;
-    }
-
-    public MimeType getMimeType() {
-        return mimeType;
-    }
-
-    public void setMimeType(MimeType mimeType) {
-        this.mimeType = mimeType;
-    }
-
-    public DataFileState getState() {
-        return state;
-    }
-
-    public void setState(DataFileState state) {
-        this.state = state;
-    }
-
-    public void setAipEntity(AIPEntity aipEntity) {
-        this.aipEntity = aipEntity;
-    }
-
-    public AIPEntity getAipEntity() {
-        return this.aipEntity;
-    }
-
-    public AIP getAip() {
-        return aipEntity.getAip();
-    }
-
-    public void setAip(AIP aip) {
-        this.aipEntity = new AIPEntity(aip);
-    }
-
+    /**
+     * Extract the different file metadata from an aip
+     * @param aip
+     * @return extracted data files
+     */
     public static Set<DataFile> extractDataFiles(AIP aip) {
         Set<DataFile> dataFiles = Sets.newHashSet();
         for (ContentInformation ci : aip.getProperties().getContentInformations()) {
@@ -230,6 +197,186 @@ public class DataFile {
             dataFiles.add(new DataFile(file, mimeType, aip));
         }
         return dataFiles;
+    }
+
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Set the name
+     * @param name
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * @return the id
+     */
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * Set the id
+     * @param id
+     */
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    /**
+     * @return the url
+     */
+    public URL getUrl() {
+        return url;
+    }
+
+    /**
+     * Set the url
+     * @param url
+     */
+    public void setUrl(URL url) {
+        this.url = url;
+    }
+
+    /**
+     * @return the checksum
+     */
+    public String getChecksum() {
+        return checksum;
+    }
+
+    /**
+     * Set the checksum
+     * @param checksum
+     */
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
+    }
+
+    /**
+     * @return the checksum algorithm
+     */
+    public String getAlgorithm() {
+        return algorithm;
+    }
+
+    /**
+     * Set the checksum algorithm
+     * @param algorithm
+     */
+    public void setAlgorithm(String algorithm) {
+        this.algorithm = algorithm;
+    }
+
+    /**
+     * @return the data type
+     */
+    public DataType getDataType() {
+        return dataType;
+    }
+
+    /**
+     * Set the data type
+     * @param type
+     */
+    public void setDataType(DataType type) {
+        this.dataType = type;
+    }
+
+    /**
+     * @return the file size
+     */
+    public Long getFileSize() {
+        return fileSize;
+    }
+
+    /**
+     * Set the file size
+     * @param fileSize
+     */
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    /**
+     * @return the data storage plugin configuration
+     */
+    public PluginConfiguration getDataStorageUsed() {
+        return dataStorageUsed;
+    }
+
+    /**
+     * Set the data storage plugin configuration
+     * @param dataStorageUsed
+     */
+    public void setDataStorageUsed(PluginConfiguration dataStorageUsed) {
+        this.dataStorageUsed = dataStorageUsed;
+    }
+
+    /**
+     * @return the mime type
+     */
+    public MimeType getMimeType() {
+        return mimeType;
+    }
+
+    /**
+     * Set the mime type
+     * @param mimeType
+     */
+    public void setMimeType(MimeType mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    /**
+     * @return the state
+     */
+    public DataFileState getState() {
+        return state;
+    }
+
+    /**
+     * Set the state
+     * @param state
+     */
+    public void setState(DataFileState state) {
+        this.state = state;
+    }
+
+    /**
+     * @return the jpa representation of the associated aip(AIPEntity)
+     */
+    public AIPEntity getAipEntity() {
+        return this.aipEntity;
+    }
+
+    /**
+     * Set the jpa representation fo the associated aip(AIPEntity)
+     * @param aipEntity
+     */
+    public void setAipEntity(AIPEntity aipEntity) {
+        this.aipEntity = aipEntity;
+    }
+
+    /**
+     * @return the associated aip
+     */
+    public AIP getAip() {
+        return aipEntity.getAip();
+    }
+
+    /**
+     * Set the associated aip
+     * @param aip
+     */
+    public void setAip(AIP aip) {
+        this.aipEntity = new AIPEntity(aip);
     }
 
     @Override

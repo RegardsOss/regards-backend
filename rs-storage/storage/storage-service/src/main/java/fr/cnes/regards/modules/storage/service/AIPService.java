@@ -8,9 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
@@ -50,6 +47,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -148,6 +146,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      */
     private static final Logger LOG = LoggerFactory.getLogger(AIPService.class);
 
+    /**
+     * Forbidden aip access message
+     */
     private static final String AIP_ACCESS_FORBIDDEN = "You do not have suffisent access right to get this aip.";
 
     /**
@@ -192,12 +193,21 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     @Autowired
     private ITenantResolver tenantResolver;
 
+    /**
+     * {@link IRuntimeTenantResolver} instance
+     */
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    /**
+     * {@link IAuthenticationResolver} instance
+     */
     @Autowired
     private IAuthenticationResolver authResolver;
 
+    /**
+     * {@link Gson} instance
+     */
     @Autowired
     private Gson gson;
 
@@ -219,18 +229,33 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     @Autowired
     private DataStorageEventHandler dataStorageEventHandler;
 
+    /**
+     * {@link Validator} instance
+     */
     @Autowired
     private Validator validator;
 
+    /**
+     * {@link ITemplateService} instance
+     */
     @Autowired
     private ITemplateService templateService;
 
+    /**
+     * {@link INotificationClient} instance
+     */
     @Autowired
     private INotificationClient notificationClient;
 
+    /**
+     * {@link IWorkspaceService} instance
+     */
     @Autowired
     private IWorkspaceService workspaceService;
 
+    /**
+     * The spring application name ~= microservice type
+     */
     @Value("${spring.application.name}")
     private String applicationName;
 
@@ -276,8 +301,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             // Notify system for AIP updated to PENDING state.
             publisher.publish(new AIPEvent(aip));
         }
-        Set<UUID> jobIds = store(dataFilesToStore);
-        return jobIds;
+        return store(dataFilesToStore);
     }
 
     /**
@@ -297,8 +321,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                   storageWorkingSetMap.keySet().size());
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
         checkDispatch(dataFilesToStore, storageWorkingSetMap);
-        Set<UUID> jobIds = scheduleStorage(storageWorkingSetMap, true);
-        return jobIds;
+        return scheduleStorage(storageWorkingSetMap, true);
     }
 
     @Override
@@ -368,7 +391,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     @Override
     public Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, Pageable pPageable)
-            throws ModuleException { // NOSONAR
+            throws ModuleException {
         if (!getSecurityDelegationPlugin().hasAccessToListFeature()) {
             throw new EntityOperationForbiddenException("Only Admins can access this feature.");
         }
@@ -463,7 +486,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 email = templateService
                         .writeToEmail(TemplateServiceConfiguration.NOT_DISPATCHED_DATA_FILES_CODE, dataMap);
             } catch (EntityNotFoundException e) {
-                throw new RuntimeException(e);
+                throw new MaintenanceException(e.getMessage(), e);
             }
             notifyAdmins("Some file were not associated to a data storage", email.getText(), NotificationType.ERROR);
         }
@@ -565,7 +588,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 email = templateService
                         .writeToEmail(TemplateServiceConfiguration.NOT_SUBSETTED_DATA_FILES_CODE, dataMap);
             } catch (EntityNotFoundException e) {
-                throw new RuntimeException(e);
+                throw new MaintenanceException(e.getMessage(), e);
             }
             notifyAdmins("Some file were not handled by a data storage", email.getText(), NotificationType.ERROR);
         }
@@ -655,12 +678,12 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             Set<DataFile> metadataToStore = Sets.newHashSet();
             // first lets get AIP that are not fully stored(at least metadata are not stored)
             metadataToStore.addAll(self.prepareNotFullyStored());
-            if (!metadataToStore.isEmpty()) {
+            if (metadataToStore.isEmpty()) {
+                LOG.debug("No updated metadata files to storeAndCreate.");
+            } else {
                 LOG.debug("Scheduling {} updated metadata files for storage.", metadataToStore.size());
                 // now that we know all the metadata that should be stored, lets schedule their storage!
                 self.scheduleStorageMetadata(metadataToStore);
-            } else {
-                LOG.debug("No updated metadata files to storeAndCreate.");
             }
         }
         LOG.debug(" ------------------------> Update AIP storage informations - END <---------------------------- ");
@@ -957,7 +980,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      */
     private DataFile writeMetaToWorkspace(AIP aip) throws IOException, FileCorruptedException {
 
-        DataFile metadataAipFile = null;
+        DataFile metadataAipFile;
         String checksumAlgorithm = "MD5";
         MessageDigest md5;
         try {
@@ -973,7 +996,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         try (InputStream is = workspaceService.retrieveFromWorkspace(metadataName)) {
             String fileChecksum = ChecksumUtils.computeHexChecksum(is, checksumAlgorithm);
             if (fileChecksum.equals(checksum)) {
-                URL urlToMetadata = new URL("file", "localhost", workspaceService.getFilePath(metadataName).toAbsolutePath().toString());
+                URL urlToMetadata = new URL("file",
+                                            "localhost",
+                                            workspaceService.getFilePath(metadataName).toAbsolutePath().toString());
                 metadataAipFile = new DataFile(urlToMetadata,
                                                checksum,
                                                checksumAlgorithm,
@@ -995,7 +1020,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             }
         } catch (NoSuchAlgorithmException e) {
             // Delete written file
+            LOG.error(e.getMessage(), e);
             workspaceService.removeFromWorkspace(metadataName);
+            // this exception should never be thrown as it comes from the same algorithm then at the beginning
+            throw new IOException(e);
         }
         return metadataAipFile;
     }
