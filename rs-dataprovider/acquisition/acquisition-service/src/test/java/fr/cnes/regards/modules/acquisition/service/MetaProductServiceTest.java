@@ -130,7 +130,7 @@ public class MetaProductServiceTest {
         scanDirs.add(ScanDirectoryBuilder.build(dirName + "/three").get());
         scanDirs.add(ScanDirectoryBuilder.build(dirName + "/for").get());
 
-        /// create 3 Metafile
+        // create 3 Metafile
         metaFiles.add(MetaFileBuilder.build().isMandatory().withFilePattern("pattern1").withFileType("file type")
                 .withInvalidFolder("tmp/invalid1").get());
         MetaFile metaFile2 = MetaFileBuilder.build().isMandatory().withFilePattern("pattern2").withFileType("file type")
@@ -139,6 +139,7 @@ public class MetaProductServiceTest {
         metaFiles.add(MetaFileBuilder.build().isMandatory().withFilePattern("pattern3").withFileType("file type")
                 .withInvalidFolder("tmp/invalid3").get());
 
+        // create a MetaProduct
         MetaProduct metaProduct1 = MetaProductBuilder.build(labelMetaProduct + "one").withCleanOriginalFile(true)
                 .withIngestProcessingChain("ingest processing chain one").withMetaFiles(metaFiles).get();
 
@@ -148,6 +149,7 @@ public class MetaProductServiceTest {
         Assert.assertEquals(3, metaFileRepository.count());
         Assert.assertEquals(4, scanDirectoryRepository.count());
         Assert.assertEquals(metaProduct1, metaProductService.retrieveComplete(metaProduct1.getId()));
+        Assert.assertEquals(3, metaProduct1.getMetaFiles().size());
 
         // Add a scan dir to a MetaFile
         metaFiles.remove(metaFile2);
@@ -160,6 +162,7 @@ public class MetaProductServiceTest {
         Assert.assertEquals(3, metaFileRepository.count());
         Assert.assertEquals(5, scanDirectoryRepository.count());
         Assert.assertEquals(metaProduct1, metaProductService.retrieveComplete(metaProduct1.getId()));
+        Assert.assertEquals(3, metaProduct1.getMetaFiles().size());
 
         // Remove a MetaFile
         metaProduct1.getMetaFiles().remove(metaFile2);
@@ -167,8 +170,9 @@ public class MetaProductServiceTest {
 
         Assert.assertEquals(1, metaProductRepository.count());
         Assert.assertEquals(2, metaFileRepository.count());
-//        Assert.assertEquals(0, scanDirectoryRepository.count());
+        Assert.assertEquals(0, scanDirectoryRepository.count());
         Assert.assertEquals(metaProduct1, metaProductService.retrieveComplete(metaProduct1.getId()));
+        Assert.assertEquals(2, metaProduct1.getMetaFiles().size());
 
         metaProductService.delete(metaProduct1.getId());
         Assert.assertEquals(0, metaProductRepository.count());

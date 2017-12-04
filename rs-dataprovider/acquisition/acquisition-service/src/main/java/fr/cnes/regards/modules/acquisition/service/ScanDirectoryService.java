@@ -27,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
@@ -102,7 +104,8 @@ public class ScanDirectoryService implements IScanDirectoryService {
      */
     private void deletUnusedScanDirectories(Set<ScanDirectory> newScanDirectories,
             Set<ScanDirectory> existingScanDirectories) {
-        if (existingScanDirectories == null) {
+
+        if (existingScanDirectories == null || existingScanDirectories.size() == 0) {
             return;
         }
 

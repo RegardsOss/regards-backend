@@ -114,29 +114,29 @@ public class MetaFileService implements IMetaFileService {
     }
 
     private void deletUnusedMetaFiles(Set<MetaFile> newMetaFiles, Set<MetaFile> existingMetaFiles) {
-        if (existingMetaFiles == null) {
+        if (existingMetaFiles == null || existingMetaFiles.size() == 0) {
             return;
         }
 
         // It is a modification
         Set<MetaFile> toDelete = new HashSet<>();
 
-        for (MetaFile aScanDir : existingMetaFiles) {
+        for (MetaFile aMetaFile : existingMetaFiles) {
             boolean isPresent = false;
-            for (MetaFile aNewScanDir : newMetaFiles) {
+            for (MetaFile aNewMetaFile : newMetaFiles) {
                 if (!isPresent) {
-                    isPresent = aNewScanDir.getId().equals(aScanDir.getId());
+                    isPresent = aNewMetaFile.getId().equals(aMetaFile.getId());
                 }
             }
             if (!isPresent) {
                 // the existing scan dir does not exist in the new Set of scan dir
-                toDelete.add(aScanDir);
+                toDelete.add(aMetaFile);
             }
         }
 
         // delete the scan dir not found in the new Set of scan dir
-        for (MetaFile aScanDir : toDelete) {
-            metaFileRepository.delete(aScanDir);
+        for (MetaFile aMetaFile : toDelete) {
+            metaFileRepository.delete(aMetaFile);
         }
     }
 

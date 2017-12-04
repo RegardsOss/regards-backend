@@ -76,9 +76,10 @@ public class MetaFile implements IIdentifiable<Long> {
     /**
      * A {@link Set} of {@link ScanDirectory} to scan and search data files corresponding to the file name pattern
      */
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, orphanRemoval=true)
     @JoinColumn(name = "scan_directory_id", referencedColumnName = "ID",
             foreignKey = @ForeignKey(name = "fk_acq_directory"))
+    @Column(name="scan")
     private Set<ScanDirectory> scanDirectories = new HashSet<ScanDirectory>();
 
     /**
