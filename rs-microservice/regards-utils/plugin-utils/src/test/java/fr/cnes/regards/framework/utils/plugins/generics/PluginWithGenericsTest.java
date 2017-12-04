@@ -109,7 +109,7 @@ public class PluginWithGenericsTest {
         infos.put("info3", info3);
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(PluginWithPojoMap.FIELD_NAME, gson.toJson(infos)).getParameters();
+                .addParameter(PluginWithPojoMap.PARAMETER_NAME, gson.toJson(infos)).getParameters();
 
         IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithPojoMap.class,
                                                            Arrays.asList(this.getClass().getPackage().getName()), null);

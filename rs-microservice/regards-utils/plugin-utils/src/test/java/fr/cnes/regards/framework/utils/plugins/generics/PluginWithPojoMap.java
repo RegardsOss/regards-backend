@@ -36,9 +36,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 public class PluginWithPojoMap implements IPluginWithGenerics {
 
     // Attribute name
-    public static final String FIELD_NAME = "infos";
+    public static final String PARAMETER_NAME = "param_infos";
 
-    @PluginParameter(label = "Informations", description = "Map of infos as POJO")
+    @PluginParameter(name = PARAMETER_NAME, label = "Informations", description = "Map of infos as POJO")
     private Map<String, Info> infos;
 
     @Override

@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.utils.plugins.bean;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.stereotype.Component;
@@ -36,7 +38,7 @@ public class PluginUtilsBean {
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
-    @Autowired
+    @Autowired(required = false)
     private Gson gson;
 
     public static PluginUtilsBean getInstance() {
@@ -55,7 +57,7 @@ public class PluginUtilsBean {
         beanFactory.autowireBean(plugin);
     }
 
-    public Gson getGson() {
-        return gson;
+    public Optional<Gson> getGson() {
+        return Optional.ofNullable(gson);
     }
 }

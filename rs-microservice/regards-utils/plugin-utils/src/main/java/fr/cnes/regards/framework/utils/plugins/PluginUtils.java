@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -222,8 +223,8 @@ public final class PluginUtils {
                 PluginUtilsBean.getInstance().processAutowiredBean(returnPlugin);
             } else {
                 // Post process parameters without Spring
-                PluginParameterUtils.postProcess(returnPlugin, pluginConf, prefixes, instantiatedPluginMap,
-                                                 pluginParameters);
+                PluginParameterUtils.postProcess(Optional.empty(), returnPlugin, pluginConf, prefixes,
+                                                 instantiatedPluginMap, pluginParameters);
             }
 
             // Launch init method if detected

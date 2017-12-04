@@ -50,9 +50,16 @@ import java.lang.annotation.Target;
 public @interface PluginParameter {
 
     /**
+     * @return the parameter's name used as a key for database registration. If not specified, falling back to class
+     *         field name.
+     */
+    String name() default "";
+
+    /**
+     * FIXME pass as required!
      * @return a required human readable label
      */
-    String label();
+    String label() default "";
 
     /**
      * @return an optional further human readable information if the label is not explicit enough!
