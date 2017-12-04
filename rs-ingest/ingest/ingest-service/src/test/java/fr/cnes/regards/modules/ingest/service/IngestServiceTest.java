@@ -44,6 +44,7 @@ import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
 
 /**
  * @author Marc Sordi
@@ -60,6 +61,9 @@ public class IngestServiceTest extends AbstractSIPTest {
     private IIngestService ingestService;
 
     @Autowired
+    private IIngestProcessingService ingestProcessingService;
+
+    @Autowired
     private ISIPService sipService;
 
     private final static String SESSION_ID = "sessionId";
@@ -67,8 +71,9 @@ public class IngestServiceTest extends AbstractSIPTest {
     private final static String PROCESSING = "processingChain";
 
     @Override
-    public void doInit() {
+    public void doInit() throws ModuleException {
         sipSessionRepository.deleteAll();
+        ingestProcessingService.initDefaultServiceConfiguration();
     }
 
     /**
