@@ -33,6 +33,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.BeforeTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
 
@@ -53,6 +54,7 @@ import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionServiceConfig
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AcquisitionServiceConfiguration.class })
 @ActiveProfiles({ "test", "disableDataProviderTask" })
+@Transactional
 @DirtiesContext
 public class MetaFileServiceTest {
 
