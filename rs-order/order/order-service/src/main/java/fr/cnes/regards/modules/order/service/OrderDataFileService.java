@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -161,7 +162,12 @@ public class OrderDataFileService implements IOrderDataFileService {
         // Set or orders not yet finished
         Set<Order> orders = totalOrderFiles.stream().map(array -> (Order) array[0]).collect(Collectors.toSet());
         // Map { order_id -> total files size }
-        Map<Long, Long> totalSizeMap = totalOrderFiles.stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
+        Map<Long, Long> totalSizeMap = new HashMap<>();
+        try {
+            totalSizeMap = totalOrderFiles.stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
+        } catch (NullPointerException npe) {
+            System.out.println();
+        }
 
         // Map { order_id -> treated files size  }
         Map<Long, Long> treatedSizeMap = repos

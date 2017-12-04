@@ -96,16 +96,20 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
 
         order.addDatasetOrderTask(ds1Task);
 
+        File testFile = new File("src/test/resources/files/file1.txt");
+
         FilesTask files1Task = new FilesTask();
         files1Task.setOwner(USER);
+        files1Task.setOrderId(order.getId());
         OrderDataFile dataFile1 = new OrderDataFile();
         dataFile1.setUrl("file:///test/files/file1.txt");
-        dataFile1.setName("file1.txt");
+        dataFile1.setName(testFile.getName());
         dataFile1.setIpId(DO1_IP_ID);
         dataFile1.setOnline(true);
         // Use filename as checksum (same as OrderControllerIT)
         dataFile1.setChecksum(dataFile1.getName());
         dataFile1.setOrderId(order.getId());
+        dataFile1.setSize(testFile.length());
         dataFile1.setMimeType(MediaType.TEXT_PLAIN);
         dataFileRepository.save(dataFile1);
         files1Task.addFile(dataFile1);
@@ -137,7 +141,7 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
                 is.close();
             }
         } while ((resultFile.length() == 0) && (count < 4));
-        Assert.assertTrue(Files.equal(new File("src/test/resources/files/file1.txt"), resultFile));
+        Assert.assertTrue(Files.equal(testFile, resultFile));
 
         tenantResolver.forceTenant(DEFAULT_TENANT); // ?
 
