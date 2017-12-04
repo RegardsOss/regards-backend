@@ -296,7 +296,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                           handler.getJobSucceeds().size() == 1);
         Assert.assertFalse("There shouldn't be a FAIL jobEvent. Cause : All files nearLine are available !",
                            handler.isFailed());
-
+        //just add a sleep of one sec so event should have been handled
+        Thread.sleep(1000);
         Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum("10");
         Assert.assertTrue("The nearLine file 10 should be present in db as a cachedFile", ocf.isPresent());
         Assert.assertTrue(String.format("The nearLine file 10 should be have status AVAILABLE not %s.",

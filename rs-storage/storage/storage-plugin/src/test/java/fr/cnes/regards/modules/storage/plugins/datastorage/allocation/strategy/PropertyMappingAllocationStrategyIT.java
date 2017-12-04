@@ -145,7 +145,7 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
                 PropertyMappingAllocationStrategy.class,
                 PropertyMappingAllocationStrategy.class.getPackage().getName(),
                 IAllocationStrategy.class.getPackage().getName());
-        //before getting the alloc strat plg params, lets make some mapping
+        // before getting the alloc strat plg params, lets make some mapping
         Set<PropertyDataStorageMapping> mappings = Sets.newHashSet();
         mappings.add(new PropertyDataStorageMapping(PROPERTY_VALUE, MAPPED_DATA_STORAGE_CONF_ID));
         List<PluginParameter> propertyMappingAllocStratParam = PluginParametersFactory.build()
