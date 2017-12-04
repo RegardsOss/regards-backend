@@ -126,7 +126,7 @@ public class MetaFileService implements IMetaFileService {
     }
 
     private void deletUnusedMetaFiles(Set<MetaFile> newMetaFiles, Set<MetaFile> existingMetaFiles) {
-        if (existingMetaFiles == null || existingMetaFiles.size() == 0) {
+        if (existingMetaFiles == null || existingMetaFiles.isEmpty()) {
             return;
         }
 

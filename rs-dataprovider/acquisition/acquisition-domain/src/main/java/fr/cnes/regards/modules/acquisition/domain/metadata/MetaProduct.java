@@ -80,7 +80,7 @@ public class MetaProduct implements IIdentifiable<Long> {
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_meta_product_id"))
     @GsonIgnore
-    private final Set<Product> products = new HashSet<Product>();
+    private Set<Product> products = new HashSet<Product>();
 
     /**
      * Algorithm used to calculate the checksum

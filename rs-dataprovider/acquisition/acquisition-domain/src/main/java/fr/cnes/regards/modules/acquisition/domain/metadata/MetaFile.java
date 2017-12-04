@@ -92,8 +92,8 @@ public class MetaFile implements IIdentifiable<Long> {
      * A {@link String} corresponding to the data file mime-type
      * TODO CMZ à completer fileType et à reporter dans le SIP content information
      */
-    @Column(name = "file_type", length = 16)
-    private String fileType;
+    @Column(name = "media_type", length = 255)
+    private String mediaType;
 
     /**
      * A comment 
@@ -180,12 +180,12 @@ public class MetaFile implements IIdentifiable<Long> {
         this.invalidFolder = invalidFolder;
     }
 
-    public String getFileType() {
-        return fileType;
+    public String getMediaType() {
+        return mediaType;
     }
 
-    public void setFileType(String fileType) {
-        this.fileType = fileType;
+    public void setMediaType(String mediaType) {
+        this.mediaType = mediaType;
     }
 
     public String getComment() {
@@ -202,7 +202,7 @@ public class MetaFile implements IIdentifiable<Long> {
         int result = 1;
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         result = prime * result + ((fileNamePattern == null) ? 0 : fileNamePattern.hashCode());
-        result = prime * result + ((fileType == null) ? 0 : fileType.hashCode());
+        result = prime * result + ((mediaType == null) ? 0 : mediaType.hashCode());
         result = prime * result + ((invalidFolder == null) ? 0 : invalidFolder.hashCode());
         result = prime * result + ((mandatory == null) ? 0 : mandatory.hashCode());
         result = prime * result + ((scanDirectories == null) ? 0 : scanDirectories.hashCode());
@@ -235,11 +235,11 @@ public class MetaFile implements IIdentifiable<Long> {
         } else if (!fileNamePattern.equals(other.fileNamePattern)) {
             return false;
         }
-        if (fileType == null) {
-            if (other.fileType != null) {
+        if (mediaType == null) {
+            if (other.mediaType != null) {
                 return false;
             }
-        } else if (!fileType.equals(other.fileType)) {
+        } else if (!mediaType.equals(other.mediaType)) {
             return false;
         }
         if (invalidFolder == null) {

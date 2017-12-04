@@ -45,6 +45,11 @@ public interface IChainGenerationService {
      */
     ChainGeneration create(ChainGeneration chain) throws ModuleException;
 
+    /**
+     * Save a {@link ChainGeneration}
+     * @param chain the {@link ChainGeneration} to save
+     * @return the saved {@link ChainGeneration}
+     */
     ChainGeneration save(ChainGeneration chain);
 
     /**
@@ -87,6 +92,11 @@ public interface IChainGenerationService {
      */
     void delete(ChainGeneration chainGeneration);
 
+    /**
+     * Find a {@link ChainGeneration} by {@link MetaProduct}
+     * @param metaProduct the {@link MetaProduct} to find
+     * @return the finded {@link ChainGeneration}
+     */
     ChainGeneration findByMetaProduct(MetaProduct metaProduct);
 
     Set<ChainGeneration> findByActiveTrueAndRunningFalse();

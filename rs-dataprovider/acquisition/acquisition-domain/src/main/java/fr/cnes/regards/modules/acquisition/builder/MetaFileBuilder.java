@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.acquisition.builder;
 
 import java.util.Set;
 
+import com.google.common.net.MediaType;
+
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 
@@ -108,12 +110,12 @@ public final class MetaFileBuilder {
     }
 
     /**
-     * Set the mandatory property to the current {@link MetaFile}
-     * @param type the file type {@link String} value
+     * Set the {@link MediaType} property to the current {@link MetaFile}
+     * @param mediaType the {@link MediaType} {@link String} value
      * @return the current {@link MetaFileBuilder}
      */
-    public MetaFileBuilder withFileType(String type) {
-        metaFile.setFileType(type);
+    public MetaFileBuilder withMediaType(String mediaType) {
+        metaFile.setMediaType(mediaType);
         return this;
     }
 

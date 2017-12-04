@@ -139,7 +139,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
     public void runActiveChainGenerationOneProductWithThreeAcquisitionFilesWithOptionalMissing()
             throws ModuleException, InterruptedException {
         MetaFile secondMetaFileMandatory = metaFileService.save(MetaFileBuilder.build()
-                .withInvalidFolder("/var/regards/data/invalid").withFileType(MediaType.APPLICATION_JSON_VALUE)
+                .withInvalidFolder("/var/regards/data/invalid").withMediaType(MediaType.APPLICATION_JSON_VALUE)
                 .withFilePattern("file pattern for the header file").comment("it is mandatory second").isMandatory()
                 .get());
         metaProduct.addMetaFile(secondMetaFileMandatory);
@@ -186,7 +186,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
     public void runActiveChainGenerationOneProductWithThreeAcquisitionFiles()
             throws ModuleException, InterruptedException {
         MetaFile secondMetaFileMandatory = metaFileService.save(MetaFileBuilder.build()
-                .withInvalidFolder("/var/regards/data/invalid").withFileType(MediaType.APPLICATION_JSON_VALUE)
+                .withInvalidFolder("/var/regards/data/invalid").withMediaType(MediaType.APPLICATION_JSON_VALUE)
                 .withFilePattern("file pattern for the header file").comment("it is mandatory second").isMandatory()
                 .get());
         metaProduct.addMetaFile(secondMetaFileMandatory);
@@ -226,7 +226,7 @@ public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
     @Test
     public void runActiveChainGenerationProductsWithTwoAcquisitions() throws ModuleException, InterruptedException {
         MetaFile secondMetaFileMandatory = metaFileService.save(MetaFileBuilder.build()
-                .withInvalidFolder("/var/regards/data/invalid").withFileType(MediaType.APPLICATION_JSON_VALUE)
+                .withInvalidFolder("/var/regards/data/invalid").withMediaType(MediaType.APPLICATION_JSON_VALUE)
                 .withFilePattern("file pattern for the header file").comment("it is mandatory second").isMandatory()
                 .get());
         metaProduct.addMetaFile(secondMetaFileMandatory);

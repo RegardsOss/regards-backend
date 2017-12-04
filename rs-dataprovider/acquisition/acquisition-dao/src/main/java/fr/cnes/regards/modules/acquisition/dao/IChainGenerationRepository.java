@@ -35,9 +35,23 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 @Repository
 public interface IChainGenerationRepository extends JpaRepository<ChainGeneration, Long> {
 
+    /**
+     * Find a {@link ChainGeneration} by label
+     * @param name the {@link ChainGeneration} label to find
+     * @return an {@link Optional} {@link ChainGeneration}
+     */
     Optional<ChainGeneration> findOneByLabel(String name);
 
+    /**
+     * Find a {@link ChainGeneration} by {@link MetaProduct}
+     * @param metaProduct the {@link MetaProduct} to find
+     * @return the finded {@link ChainGeneration}
+     */
     ChainGeneration findByMetaProduct(MetaProduct metaProduct);
 
+    /**
+     * Find all the {@link ChainGeneration} tahat are active and not running
+     * @return the {@link Set} of finded {@link ChainGeneration} 
+     */
     Set<ChainGeneration> findByActiveTrueAndRunningFalse();
 }

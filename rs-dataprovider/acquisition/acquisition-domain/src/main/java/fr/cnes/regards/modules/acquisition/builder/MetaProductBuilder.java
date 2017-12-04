@@ -23,7 +23,6 @@ import java.util.Set;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
-import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 
 /**
  *
@@ -73,7 +72,7 @@ public final class MetaProductBuilder {
         metaProduct.addMetaFile(metaFile);
         return this;
     }
-    
+
     /**
      * Set the {@link Set} of {@link MetaFile} property to the current {@link MetaProduct}
      * @param metaFile a {@link Set} of {@link MetaFile}

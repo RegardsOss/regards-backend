@@ -27,4 +27,12 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTes
  */
 public class DataProviderSQLGenerator extends AbstractScriptGeneratorTest {
 
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest#generate()
+     */
+    @Override
+    public void generate() {
+        // TODO Auto-generated method stub
+        super.generate();
+    }
 }

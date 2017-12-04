@@ -198,7 +198,7 @@ public class ScanDirectoryPluginIT {
         }
 
         MetaFile metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
+                .withMediaType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir).get());
 
         MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
@@ -235,7 +235,7 @@ public class ScanDirectoryPluginIT {
         }
 
         MetaFile metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
+                .withMediaType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir).get());
 
         MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
@@ -259,7 +259,7 @@ public class ScanDirectoryPluginIT {
         ScanDirectory scanDir = scandirService.save(new ScanDirectory("/tmp/regards/data/unknown"));
 
         MetaFile metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
+                .withMediaType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir).get());
 
         MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
@@ -286,7 +286,7 @@ public class ScanDirectoryPluginIT {
         ScanDirectory scanDir = scandirService.save(new ScanDirectory(dataPath.getPath()));
 
         MetaFile metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
+                .withMediaType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir).get());
 
         MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)

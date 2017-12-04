@@ -114,7 +114,7 @@ public class AcquisitionFileServiceIT {
 
         // Create a aMetaFile with the 3 ScanDirectory
         MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
+                .withMediaType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
                 .addScanDirectory(scanDir2).addScanDirectory(scanDir3).get();
         aMetaFile = metaFileService.save(aMetaFile);
@@ -193,7 +193,7 @@ public class AcquisitionFileServiceIT {
 
         // Create a aMetaFile with the 3 ScanDirectory
         MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
+                .withMediaType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
                 .addScanDirectory(scanDir2).addScanDirectory(scanDir3).get();
         aMetaFile = metaFileService.save(aMetaFile);
@@ -232,7 +232,7 @@ public class AcquisitionFileServiceIT {
 
         // Create a MetaFile with the 2 ScanDirectory
         MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
+                .withMediaType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
                 .addScanDirectory(scanDir2).get();
         aMetaFile = metaFileService.save(aMetaFile);
@@ -273,7 +273,7 @@ public class AcquisitionFileServiceIT {
 
         // Create a MetaFile with the 2 ScanDirectory
         MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
+                .withMediaType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern")
                 .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir1)
                 .addScanDirectory(scanDir2).get();
         aMetaFile = metaFileService.save(aMetaFile);

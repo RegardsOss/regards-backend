@@ -113,7 +113,7 @@ public class ScanDirectoryService implements IScanDirectoryService {
     private void deletUnusedScanDirectories(Set<ScanDirectory> newScanDirectories,
             Set<ScanDirectory> existingScanDirectories) {
 
-        if (existingScanDirectories == null || existingScanDirectories.size() == 0) {
+        if (existingScanDirectories == null || existingScanDirectories.isEmpty()) {
             return;
         }
 

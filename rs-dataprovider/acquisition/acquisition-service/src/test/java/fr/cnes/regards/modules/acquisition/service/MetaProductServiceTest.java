@@ -130,12 +130,12 @@ public class MetaProductServiceTest {
         scanDirs.add(new ScanDirectory(dirName + "/for"));
 
         // create 3 Metafile
-        metaFiles.add(MetaFileBuilder.build().isMandatory().withFilePattern("pattern1").withFileType("file type")
+        metaFiles.add(MetaFileBuilder.build().isMandatory().withFilePattern("pattern1").withMediaType("file type")
                 .withInvalidFolder("tmp/invalid1").get());
-        MetaFile metaFile2 = MetaFileBuilder.build().isMandatory().withFilePattern("pattern2").withFileType("file type")
+        MetaFile metaFile2 = MetaFileBuilder.build().isMandatory().withFilePattern("pattern2").withMediaType("file type")
                 .withInvalidFolder("tmp/invalid2").withScanDirectories(scanDirs).get();
         metaFiles.add(metaFile2);
-        metaFiles.add(MetaFileBuilder.build().isMandatory().withFilePattern("pattern3").withFileType("file type")
+        metaFiles.add(MetaFileBuilder.build().isMandatory().withFilePattern("pattern3").withMediaType("file type")
                 .withInvalidFolder("tmp/invalid3").get());
 
         // create a MetaProduct

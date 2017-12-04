@@ -252,10 +252,10 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
         ScanDirectory scanDir3 = scandirService.save(new ScanDirectory("/var/regards/data/input3"));
 
         metaFileOptional = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern optional")
+                .withMediaType(MediaType.APPLICATION_JSON_UTF8_VALUE).withFilePattern("file pattern optional")
                 .comment("it is optional").addScanDirectory(scanDir1).addScanDirectory(scanDir2).get());
         metaFileMandatory = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("one other file pattern mandatory")
+                .withMediaType(MediaType.APPLICATION_PDF_VALUE).withFilePattern("one other file pattern mandatory")
                 .comment("it is mandatory").isMandatory().addScanDirectory(scanDir3).get());
 
         // Create a ChainGeneration and a MetaProduct
