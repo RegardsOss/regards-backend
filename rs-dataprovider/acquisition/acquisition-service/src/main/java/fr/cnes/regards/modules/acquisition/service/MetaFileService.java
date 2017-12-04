@@ -32,6 +32,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
+import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 
 /**
  * {@link MetaFile} service
@@ -43,10 +44,21 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 @Service
 public class MetaFileService implements IMetaFileService {
 
+    /**
+     * {@link MetaFile} repository
+     */
     private final IMetaFileRepository metaFileRepository;
 
+    /**
+     * {@link ScanDirectory} service
+     */
     private final IScanDirectoryService scanDirectoryService;
 
+    /**
+     * The Default constructor
+     * @param repository a bean of {@link IMetaFileRepository}
+     * @param scanDirectoryService a bean of {@link IScanDirectoryService} 
+     */
     public MetaFileService(IMetaFileRepository repository, IScanDirectoryService scanDirectoryService) {
         super();
         this.metaFileRepository = repository;

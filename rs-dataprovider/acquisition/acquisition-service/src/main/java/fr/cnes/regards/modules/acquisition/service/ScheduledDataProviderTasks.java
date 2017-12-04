@@ -41,7 +41,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 public class ScheduledDataProviderTasks {
 
     /**
-     * Class logger.
+     * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(ScheduledDataProviderTasks.class);
 
@@ -51,6 +51,9 @@ public class ScheduledDataProviderTasks {
     @Autowired
     private ITenantResolver tenantResolver;
 
+    /**
+     * Resolver to retrieve request tenant
+     */
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 

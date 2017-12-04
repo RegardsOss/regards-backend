@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
@@ -40,10 +41,21 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 @Service
 public class MetaProductService implements IMetaProductService {
 
+    /**
+     * {@link MetaProduct} repository
+     */
     private final IMetaProductRepository metaProductRepository;
 
+    /**
+     * {@link MetaFile} service
+     */
     private final IMetaFileService metaFileService;
 
+    /**
+     * The Default constructor
+     * @param repository a bean of {@link IMetaProductRepository}
+     * @param metaFileService a bean of {@link IMetaFileService}
+     */
     public MetaProductService(IMetaProductRepository repository, IMetaFileService metaFileService) {
         super();
         this.metaProductRepository = repository;

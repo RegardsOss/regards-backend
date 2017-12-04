@@ -78,7 +78,6 @@ import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
-import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectoryBuilder;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
@@ -248,9 +247,9 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
 
     public void initData() {
         // Create 2 ScanDirectory
-        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input1").get());
-        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input2").get());
-        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input3").get());
+        ScanDirectory scanDir1 = scandirService.save(new ScanDirectory("/var/regards/data/input1"));
+        ScanDirectory scanDir2 = scandirService.save(new ScanDirectory("/var/regards/data/input2"));
+        ScanDirectory scanDir3 = scandirService.save(new ScanDirectory("/var/regards/data/input3"));
 
         metaFileOptional = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
                 .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern("file pattern optional")
@@ -292,7 +291,7 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
      */
     protected void mockIngestClientResponseOK(List<String> sipIdsCreated) {
         Collection<SIPDto> sips = new ArrayList<>();
-        
+
         for (String sipId : sipIdsCreated) {
             SIPDto sipEntity = new SIPDto();
             sipEntity.setState(SIPState.CREATED);
@@ -330,7 +329,7 @@ public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
             sipEntity.setIpId(sipId);
             sips.add(sipEntity);
         }
-        
+
         for (String sipId : sipIdsError) {
             SIPDto sipEntity = new SIPDto();
             sipEntity.setRejectionCauses(Arrays.asList("bad SIP format"));

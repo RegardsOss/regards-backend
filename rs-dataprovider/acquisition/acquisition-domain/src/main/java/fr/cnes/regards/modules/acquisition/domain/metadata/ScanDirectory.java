@@ -59,6 +59,11 @@ public class ScanDirectory implements IIdentifiable<Long> {
         super();
     }
 
+    public ScanDirectory(String dir) {
+        super();
+        this.scanDir = dir;
+    }
+
     @Override
     public Long getId() {
         return id;
@@ -80,7 +85,7 @@ public class ScanDirectory implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((scanDir == null) ? 0 : scanDir.hashCode()); // NOSONAR
+        result = prime * result + ((scanDir == null) ? 0 : scanDir.hashCode());
         return result;
     }
 
@@ -105,7 +110,7 @@ public class ScanDirectory implements IIdentifiable<Long> {
         }
         return true;
     }
-    
+
     @Override
     public String toString() {
         StringBuilder strBuilder = new StringBuilder();

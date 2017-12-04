@@ -44,7 +44,6 @@ import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
-import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectoryBuilder;
 import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionServiceConfiguration;
 
 /**
@@ -94,7 +93,7 @@ public class MetaFileServiceTest {
         Assert.assertEquals(0, scanDirectoryRepository.count());
 
         // create first scan dir
-        ScanDirectory scanDir1 = ScanDirectoryBuilder.build(dirName).get();
+        ScanDirectory scanDir1 = new ScanDirectory(dirName);
         ScanDirectory created = scandirService.createOrUpdate(scanDir1);
 
         Assert.assertEquals(1, scanDirectoryRepository.count());
@@ -128,9 +127,9 @@ public class MetaFileServiceTest {
         Assert.assertEquals(0, scanDirectoryRepository.count());
 
         // create many scan dir
-        ScanDirectory scanDir1 = ScanDirectoryBuilder.build(dirName + "/one").get();
-        ScanDirectory scanDir2 = ScanDirectoryBuilder.build(dirName + "/two").get();
-        ScanDirectory scanDir3 = ScanDirectoryBuilder.build(dirName + "/three").get();
+        ScanDirectory scanDir1 = new ScanDirectory(dirName + "/one");
+        ScanDirectory scanDir2 = new ScanDirectory(dirName + "/two");
+        ScanDirectory scanDir3 = new ScanDirectory(dirName + "/three");
         scandirService.createOrUpdate(scanDir1);
         scandirService.createOrUpdate(scanDir2);
         scandirService.createOrUpdate(scanDir3);
@@ -152,7 +151,7 @@ public class MetaFileServiceTest {
         Assert.assertEquals(dirName + "/three", scandirService.retrieve(scanDir3.getId()).getScanDir());
 
         // add a new scan dir to the Set
-        ScanDirectory scanDir4 = ScanDirectoryBuilder.build(dirName + "/for").get();
+        ScanDirectory scanDir4 = new ScanDirectory(dirName + "/for");
         scanDirs.add(scanDir4);
         Set<ScanDirectory> createdScanDirs = scandirService.createOrUpdate(scanDirs);
 
@@ -205,11 +204,11 @@ public class MetaFileServiceTest {
 
         metaFileService.delete(metaFile1);
         Assert.assertEquals(2, metaFileRepository.count());
-        
+
         metaFile2.setComment("a new comment");
         metaFile2.setFileType("application/pdf");
         metaFile2.setMandatory(true);
-        
+
         metaFileService.update(metaFile2.getId(), metaFile2);
         Assert.assertEquals(metaFile2, metaFileService.retrieve(metaFile2.getId()));
 
@@ -240,8 +239,8 @@ public class MetaFileServiceTest {
 
         // Modify a MetaFile and update the set of MetaFile
         metaFiles.remove(metaFile2);
-        metaFile2.addScanDirectory(ScanDirectoryBuilder.build(dirName + "/one").get());
-        metaFile2.addScanDirectory(ScanDirectoryBuilder.build(dirName + "/two").get());
+        metaFile2.addScanDirectory(new ScanDirectory(dirName + "/one"));
+        metaFile2.addScanDirectory(new ScanDirectory(dirName + "/two"));
         String newPattern = "a new pattern for metafile 2";
         metaFile2.setFileNamePattern(newPattern);
         metaFiles.add(metaFile2);
@@ -255,7 +254,7 @@ public class MetaFileServiceTest {
 
         // Modify a MetaFile and update the set of MetaFile
         metaFiles.remove(metaFile2);
-        metaFile2.addScanDirectory(ScanDirectoryBuilder.build(dirName + "/three").get());
+        metaFile2.addScanDirectory(new ScanDirectory(dirName + "/three"));
         metaFiles.add(metaFile2);
 
         metaFileService.createOrUpdate(metaFiles);

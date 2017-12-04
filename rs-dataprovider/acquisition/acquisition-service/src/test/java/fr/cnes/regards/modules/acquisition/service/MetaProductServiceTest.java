@@ -44,7 +44,6 @@ import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
-import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectoryBuilder;
 import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionServiceConfiguration;
 
 /**
@@ -125,10 +124,10 @@ public class MetaProductServiceTest {
         Set<MetaFile> metaFiles = new HashSet<>();
 
         // create 4 scan dir
-        scanDirs.add(ScanDirectoryBuilder.build(dirName + "/one").get());
-        scanDirs.add(ScanDirectoryBuilder.build(dirName + "/two").get());
-        scanDirs.add(ScanDirectoryBuilder.build(dirName + "/three").get());
-        scanDirs.add(ScanDirectoryBuilder.build(dirName + "/for").get());
+        scanDirs.add(new ScanDirectory(dirName + "/one"));
+        scanDirs.add(new ScanDirectory(dirName + "/two"));
+        scanDirs.add(new ScanDirectory(dirName + "/three"));
+        scanDirs.add(new ScanDirectory(dirName + "/for"));
 
         // create 3 Metafile
         metaFiles.add(MetaFileBuilder.build().isMandatory().withFilePattern("pattern1").withFileType("file type")
@@ -153,7 +152,7 @@ public class MetaProductServiceTest {
 
         // Add a scan dir to a MetaFile
         metaFiles.remove(metaFile2);
-        metaFile2.addScanDirectory(ScanDirectoryBuilder.build(dirName + "/five").get());
+        metaFile2.addScanDirectory(new ScanDirectory(dirName + "/five"));
         metaFiles.add(metaFile2);
 
         metaProductService.createOrUpdateMetaProduct(metaProduct1);

@@ -33,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
@@ -51,12 +52,24 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 @Service
 public class ProductBulkRequestService implements IProductBulkRequestService {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(ProductBulkRequestService.class);
 
+    /**
+     * {@link Product} service
+     */
     private final IProductService productService;
 
+    /**
+     * {@link ChainGeneration} service
+     */
     private final IChainGenerationService chainGenerationService;
 
+    /**
+     * Ingest client
+     */
     private final IIngestClient ingestClient;
 
     private final IProcessGenerationService processService;

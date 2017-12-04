@@ -40,6 +40,9 @@ import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
 @Service
 public class ProcessGenerationService implements IProcessGenerationService {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(ProcessGenerationService.class);
 
     /**

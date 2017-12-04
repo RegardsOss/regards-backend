@@ -27,8 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
@@ -44,10 +42,20 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 @Service
 public class ScanDirectoryService implements IScanDirectoryService {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(ScanDirectoryService.class);
 
+    /**
+     * {@link ScanDirectory} repository
+     */
     private final IScanDirectoryRepository scandirRepository;
 
+    /**
+     * The Default constructor 
+     * @param repository a bean of {@link IScanDirectoryRepository}
+     */
     public ScanDirectoryService(IScanDirectoryRepository repository) {
         super();
         this.scandirRepository = repository;

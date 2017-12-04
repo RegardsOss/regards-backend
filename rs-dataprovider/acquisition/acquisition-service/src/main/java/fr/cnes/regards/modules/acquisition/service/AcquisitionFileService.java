@@ -45,29 +45,32 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 @Service
 public class AcquisitionFileService implements IAcquisitionFileService {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionFileService.class);
 
     /**
-     * {@link IAcquisitionFileRepository} bean
+     * {@link AcquisitionFile} repository
      */
     private final IAcquisitionFileRepository acqfileRepository;
 
     /**
-     * {@link IChainGenerationService} bean
+     * {@link ChainGeneration} service
      */
     private final IChainGenerationService chainGenerationService;
 
     /**
-     * {@link IProductService} bean
+     * {@link Product} service
      */
     private final IProductService productService;
 
     /**
-     * Constructor with the bean method's member as pamaeters
+     * Constructor with the bean method's member as parameters
      * 
-     * @param acqFileRepository a {@link IAcquisitionFileRepository} bean
-     * @param prService a {@link ProductService} bean 
-     * @param chainGenService a {@link ChaineGenerationService} bean
+     * @param acqFileRepository a {@link AcquisitionFile} repository
+     * @param prService a {@link Product} service
+     * @param chainGenService a {@link ChainGeneration} service
      */
     public AcquisitionFileService(IAcquisitionFileRepository acqFileRepository, IProductService prService,
             IChainGenerationService chainGenService) {

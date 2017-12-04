@@ -62,7 +62,6 @@ import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
-import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectoryBuilder;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
 import fr.cnes.regards.modules.acquisition.service.AcquisitionFileServiceIT;
@@ -190,7 +189,7 @@ public class ScanDirectoryPluginIT {
     @Test
     public void scanPluginTest() throws ModuleException {
         // Create a ScanDirectory
-        ScanDirectory scanDir = scandirService.save(ScanDirectoryBuilder.build(dataPath.getPath()).get());
+        ScanDirectory scanDir = scandirService.save(new ScanDirectory(dataPath.getPath()));
 
         // Set the last modified date of the file most recent that the last acquisition date  
         File dir = new File(dataPath.getPath());
@@ -227,7 +226,7 @@ public class ScanDirectoryPluginIT {
     @Test
     public void scanPluginTestWithOutOfDateFiles() throws ModuleException {
         // Create a ScanDirectory
-        ScanDirectory scanDir = scandirService.save(ScanDirectoryBuilder.build(dataPath.getPath()).get());
+        ScanDirectory scanDir = scandirService.save(new ScanDirectory(dataPath.getPath()));
 
         // Set the last modified date of the file mots recent that the last acquisition date
         File dir = new File(dataPath.getPath());
@@ -257,7 +256,7 @@ public class ScanDirectoryPluginIT {
 
     @Test
     public void scanPluginTestUnknowDirectory() throws ModuleException {
-        ScanDirectory scanDir = scandirService.save(ScanDirectoryBuilder.build("/tmp/regards/data/unknown").get());
+        ScanDirectory scanDir = scandirService.save(new ScanDirectory("/tmp/regards/data/unknown"));
 
         MetaFile metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
                 .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
@@ -284,7 +283,7 @@ public class ScanDirectoryPluginIT {
 
     @Test
     public void scanPluginTestWrongChecksumAlgo() throws ModuleException {
-        ScanDirectory scanDir = scandirService.save(ScanDirectoryBuilder.build(dataPath.getPath()).get());
+        ScanDirectory scanDir = scandirService.save(new ScanDirectory(dataPath.getPath()));
 
         MetaFile metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
                 .withFileType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)

@@ -76,10 +76,10 @@ public class MetaFile implements IIdentifiable<Long> {
     /**
      * A {@link Set} of {@link ScanDirectory} to scan and search data files corresponding to the file name pattern
      */
-    @OneToMany(fetch = FetchType.EAGER, orphanRemoval=true)
+    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "scan_directory_id", referencedColumnName = "ID",
             foreignKey = @ForeignKey(name = "fk_acq_directory"))
-    @Column(name="scan")
+    @Column(name = "scan")
     private Set<ScanDirectory> scanDirectories = new HashSet<ScanDirectory>();
 
     /**
@@ -197,7 +197,7 @@ public class MetaFile implements IIdentifiable<Long> {
     }
 
     @Override
-    public int hashCode() { //NOSONAR
+    public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
@@ -210,44 +210,59 @@ public class MetaFile implements IIdentifiable<Long> {
     }
 
     @Override
-    public boolean equals(Object obj) { //NOSONAR
-        if (this == obj)
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         MetaFile other = (MetaFile) obj;
         if (comment == null) {
-            if (other.comment != null)
+            if (other.comment != null) {
                 return false;
-        } else if (!comment.equals(other.comment))
+            }
+        } else if (!comment.equals(other.comment)) {
             return false;
+        }
         if (fileNamePattern == null) {
-            if (other.fileNamePattern != null)
+            if (other.fileNamePattern != null) {
                 return false;
-        } else if (!fileNamePattern.equals(other.fileNamePattern))
+            }
+        } else if (!fileNamePattern.equals(other.fileNamePattern)) {
             return false;
+        }
         if (fileType == null) {
-            if (other.fileType != null)
+            if (other.fileType != null) {
                 return false;
-        } else if (!fileType.equals(other.fileType))
+            }
+        } else if (!fileType.equals(other.fileType)) {
             return false;
+        }
         if (invalidFolder == null) {
-            if (other.invalidFolder != null)
+            if (other.invalidFolder != null) {
                 return false;
-        } else if (!invalidFolder.equals(other.invalidFolder))
+            }
+        } else if (!invalidFolder.equals(other.invalidFolder)) {
             return false;
+        }
         if (mandatory == null) {
-            if (other.mandatory != null)
+            if (other.mandatory != null) {
                 return false;
-        } else if (!mandatory.equals(other.mandatory))
+            }
+        } else if (!mandatory.equals(other.mandatory)) {
             return false;
+        }
         if (scanDirectories == null) {
-            if (other.scanDirectories != null)
+            if (other.scanDirectories != null) {
                 return false;
-        } else if (!scanDirectories.equals(other.scanDirectories))
+            }
+        } else if (!scanDirectories.equals(other.scanDirectories)) {
             return false;
+        }
         return true;
     }
 

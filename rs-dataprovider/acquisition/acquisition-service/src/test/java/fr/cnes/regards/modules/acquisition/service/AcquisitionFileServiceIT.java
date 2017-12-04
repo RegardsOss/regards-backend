@@ -45,7 +45,6 @@ import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
-import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectoryBuilder;
 import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionServiceConfiguration;
 
 /**
@@ -109,9 +108,9 @@ public class AcquisitionFileServiceIT {
         Assert.assertEquals(0, scandirService.retrieveAll().size());
 
         // Create 3 ScanDirectory
-        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input01").get());
-        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input02").get());
-        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input03").get());
+        ScanDirectory scanDir1 = scandirService.save(new ScanDirectory("/var/regards/data/input01"));
+        ScanDirectory scanDir2 = scandirService.save(new ScanDirectory("/var/regards/data/input02"));
+        ScanDirectory scanDir3 = scandirService.save(new ScanDirectory("/var/regards/data/input03"));
 
         // Create a aMetaFile with the 3 ScanDirectory
         MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
@@ -188,9 +187,9 @@ public class AcquisitionFileServiceIT {
         Assert.assertEquals(0, scandirService.retrieveAll().size());
 
         // Create 3 ScanDirectory
-        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input01").get());
-        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input02").get());
-        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input03").get());
+        ScanDirectory scanDir1 = scandirService.save(new ScanDirectory("/var/regards/data/input01"));
+        ScanDirectory scanDir2 = scandirService.save(new ScanDirectory("/var/regards/data/input02"));
+        ScanDirectory scanDir3 = scandirService.save(new ScanDirectory("/var/regards/data/input03"));
 
         // Create a aMetaFile with the 3 ScanDirectory
         MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
@@ -227,9 +226,9 @@ public class AcquisitionFileServiceIT {
         Product aProduct = addProduct(metaProduct, PRODUCT_NAME);
 
         // Create 3 ScanDirectory
-        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input").get());
-        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input").get());
-        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input").get());
+        ScanDirectory scanDir1 = scandirService.save(new ScanDirectory("/var/regards/data/input"));
+        ScanDirectory scanDir2 = scandirService.save(new ScanDirectory("/var/regards/data/input"));
+        ScanDirectory scanDir3 = scandirService.save(new ScanDirectory("/var/regards/data/input"));
 
         // Create a MetaFile with the 2 ScanDirectory
         MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
@@ -268,9 +267,9 @@ public class AcquisitionFileServiceIT {
     @Test
     public void removeUnkonwScanDirectory() {
         // Create 3 ScanDirectory
-        ScanDirectory scanDir1 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input").get());
-        ScanDirectory scanDir2 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input").get());
-        ScanDirectory scanDir3 = scandirService.save(ScanDirectoryBuilder.build("/var/regards/data/input").get());
+        ScanDirectory scanDir1 = scandirService.save(new ScanDirectory("/var/regards/data/input"));
+        ScanDirectory scanDir2 = scandirService.save(new ScanDirectory("/var/regards/data/input"));
+        ScanDirectory scanDir3 = scandirService.save(new ScanDirectory("/var/regards/data/input"));
 
         // Create a MetaFile with the 2 ScanDirectory
         MetaFile aMetaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")

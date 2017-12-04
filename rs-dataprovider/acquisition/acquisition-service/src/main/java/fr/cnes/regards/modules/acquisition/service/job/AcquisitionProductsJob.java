@@ -65,24 +65,33 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
-    //    @Autowired
-    //    private IAcquisitionScanStep scanStepImpl;
-    //
-    //    @Autowired
-    //    private IAcquisitionCheckStep checkStepImpl;
-
+    /**
+     * {@link Product} srvice
+     */
     @Autowired
     private IProductService productService;
 
+    /**
+     * {@link JobInfo} service
+     */
     @Autowired
     private IJobInfoService jobInfoService;
 
+    /**
+     * {@link ChainGeneration} service
+     */
     @Autowired
     private IChainGenerationService chainGenerationService;
 
+    /**
+     * Resolver to retrieve authentication information
+     */
     @Autowired
     private IAuthenticationResolver authResolver;
 
+    /**
+     * The current {@link ChainGeneration}
+     */
     private ChainGeneration chainGeneration;
 
     @Override

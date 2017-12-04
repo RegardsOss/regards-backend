@@ -184,7 +184,7 @@ public class MetaProduct implements IIdentifiable<Long> {
     }
 
     @Override
-    public int hashCode() { //NOSONAR
+    public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((checksumAlgorithm == null) ? 0 : checksumAlgorithm.hashCode());
@@ -192,43 +192,64 @@ public class MetaProduct implements IIdentifiable<Long> {
         result = prime * result + ((ingestChain == null) ? 0 : ingestChain.hashCode());
         result = prime * result + ((label == null) ? 0 : label.hashCode());
         result = prime * result + ((metaFiles == null) ? 0 : metaFiles.hashCode());
+        result = prime * result + ((products == null) ? 0 : products.hashCode());
         return result;
     }
 
     @Override
-    public boolean equals(Object obj) { //NOSONAR
-        if (this == obj)
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         MetaProduct other = (MetaProduct) obj;
         if (checksumAlgorithm == null) {
-            if (other.checksumAlgorithm != null)
+            if (other.checksumAlgorithm != null) {
                 return false;
-        } else if (!checksumAlgorithm.equals(other.checksumAlgorithm))
+            }
+        } else if (!checksumAlgorithm.equals(other.checksumAlgorithm)) {
             return false;
+        }
         if (cleanOriginalFile == null) {
-            if (other.cleanOriginalFile != null)
+            if (other.cleanOriginalFile != null) {
                 return false;
-        } else if (!cleanOriginalFile.equals(other.cleanOriginalFile))
+            }
+        } else if (!cleanOriginalFile.equals(other.cleanOriginalFile)) {
             return false;
+        }
         if (ingestChain == null) {
-            if (other.ingestChain != null)
+            if (other.ingestChain != null) {
                 return false;
-        } else if (!ingestChain.equals(other.ingestChain))
+            }
+        } else if (!ingestChain.equals(other.ingestChain)) {
             return false;
+        }
         if (label == null) {
-            if (other.label != null)
+            if (other.label != null) {
                 return false;
-        } else if (!label.equals(other.label))
+            }
+        } else if (!label.equals(other.label)) {
             return false;
+        }
         if (metaFiles == null) {
-            if (other.metaFiles != null)
+            if (other.metaFiles != null) {
                 return false;
-        } else if (!metaFiles.equals(other.metaFiles))
+            }
+        } else if (!metaFiles.equals(other.metaFiles)) {
             return false;
+        }
+        if (products == null) {
+            if (other.products != null) {
+                return false;
+            }
+        } else if (!products.equals(other.products)) {
+            return false;
+        }
         return true;
     }
 

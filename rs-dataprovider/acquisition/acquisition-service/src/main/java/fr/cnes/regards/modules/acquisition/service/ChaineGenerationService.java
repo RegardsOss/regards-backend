@@ -45,6 +45,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.builder.ProcessGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
 import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProductsJob;
@@ -59,18 +60,39 @@ import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProductsJob;
 @Service
 public class ChaineGenerationService implements IChainGenerationService {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(ChaineGenerationService.class);
 
+    /**
+     * {@link ChainGeneration} repository
+     */
     private final IChainGenerationRepository chainRepository;
 
+    /**
+     * {@link JobInfo} service
+     */
     private final IJobInfoService jobInfoService;
 
+    /**
+     * {@link MetaProduct} service
+     */
     private final IMetaProductService metaProductService;
 
+    /**
+     * {@link ProcessGeneration} service
+     */
     private final IProcessGenerationService processService;
 
+    /**
+     * {@link Plugin} service
+     */
     private final IPluginService pluginService;
 
+    /**
+     * Resolver to retrieve authentication information
+     */
     @Autowired
     private IAuthenticationResolver authResolver;
 
@@ -162,9 +184,9 @@ public class ChaineGenerationService implements IChainGenerationService {
         if (!chainRepository.exists(chainId)) {
             throw new EntityNotFoundException(chainId, ChainGeneration.class);
         }
-        
+
         ChainGeneration existingChain = chainRepository.findOne(chain.getId());
-        
+
         return chainRepository.save(createOrUpdate(chain, existingChain));
     }
 

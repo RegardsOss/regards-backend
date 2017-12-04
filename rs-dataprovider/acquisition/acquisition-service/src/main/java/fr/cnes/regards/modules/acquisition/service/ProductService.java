@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 public class ProductService implements IProductService {
 
     /**
-     * A {@link IProductRepository} bean
+     * {@link Product} repository
      */
     private final IProductRepository productRepository;
 

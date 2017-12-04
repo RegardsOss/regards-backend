@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 public class ProductSipEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 
     /**
-     * Class logger.
+     * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(ProductSipEventHandler.class);
 
@@ -55,12 +55,21 @@ public class ProductSipEventHandler implements ApplicationListener<ApplicationRe
     @Autowired
     private ISubscriber subscriber;
 
+    /**
+     * Resolver to retrieve request tenant
+     */
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    /**
+     * Resolver to retrieve authentication information
+     */
     @Autowired
     private IAuthenticationResolver authResolver;
 
+    /**
+     * {@link JobInfo} service
+     */
     @Autowired
     private IJobInfoService jobInfoService;
 
