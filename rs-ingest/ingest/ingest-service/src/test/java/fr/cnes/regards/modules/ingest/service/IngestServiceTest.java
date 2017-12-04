@@ -26,6 +26,8 @@ import java.util.Collection;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -48,6 +50,8 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * @author Sébastien Binda
  */
 public class IngestServiceTest extends AbstractSIPTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestServiceTest.class);
 
     @Autowired
     private ISIPSessionRepository sipSessionRepository;
@@ -77,6 +81,8 @@ public class IngestServiceTest extends AbstractSIPTest {
     @Purpose("Store SIP checksum and prevent from submitting twice")
     @Test
     public void ingestWithCollision() throws ModuleException {
+
+        LOGGER.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 
         SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                 SESSION_ID);

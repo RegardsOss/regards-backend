@@ -109,8 +109,11 @@ public class IngestProcessingService implements IIngestProcessingService {
     @Override
     public void initDefaultServiceConfiguration() throws ModuleException {
 
+        LOGGER.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ init 1");
         // Check if the default IngestProcessingChain is defined
         if (!ingestChainRepository.findOneByName(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL).isPresent()) {
+
+            LOGGER.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ init 2");
             // Create the default chain
             IngestProcessingChain defaultChain = new IngestProcessingChain();
             defaultChain.setName(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
@@ -128,6 +131,8 @@ public class IngestProcessingService implements IIngestProcessingService {
 
             createNewChain(defaultChain);
         }
+
+        LOGGER.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ init 3");
     }
 
     @Override
