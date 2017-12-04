@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionRe
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
 /**
  * Module-common handler for AMQP events.
@@ -64,6 +65,8 @@ public class IngestProcessingChainEventHandler implements ApplicationListener<Ap
         for (final String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             try {
+                LOGGER.debug("Trying to initialize {} for tenant {}", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                             tenant);
                 ingestProcessingService.initDefaultServiceConfiguration();
             } catch (ModuleException e) {
                 LOGGER.error("Error initializing ingest configuration for tenant {}. Error : {}", tenant,
