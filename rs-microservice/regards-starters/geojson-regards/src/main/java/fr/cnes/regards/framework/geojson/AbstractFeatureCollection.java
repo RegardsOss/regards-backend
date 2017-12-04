@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.framework.geojson;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import javax.validation.Valid;
 
 /**
  * RFC 7946 -August 2016<br/>
@@ -44,7 +43,7 @@ public abstract class AbstractFeatureCollection<F extends AbstractFeature<?, ?>>
         super(GeoJsonType.FEATURE_COLLECTION);
     }
 
-    public List<F> getFeatures() {
+    public final List<F> getFeatures() {
         return features;
     }
 
