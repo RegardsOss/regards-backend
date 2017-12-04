@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.storage.domain.event;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 
@@ -14,7 +15,7 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
  *
  * @author Sylvain Vissiere-Guerinet
  */
-@Event
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public class AIPEvent implements ISubscribable {
 
     private static final String FAILURE_CAUSE_TEMPLATE = "File %s could not be stored by IDataStorage( plugin configuration id: %s)";
