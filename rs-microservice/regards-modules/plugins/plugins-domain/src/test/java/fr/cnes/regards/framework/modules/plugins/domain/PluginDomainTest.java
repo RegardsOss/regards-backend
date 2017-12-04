@@ -12,7 +12,7 @@ import org.junit.Test;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType.ParamType;
 
 /**
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -147,9 +147,10 @@ public class PluginDomainTest extends PluginDomainUtility {
         final String aDescription = USERROLE + BLUE + RED;
         plgMetaData.setDescription(aDescription);
         final List<PluginParameterType> parameters = Arrays
-                .asList(new PluginParameterType(RED, String.class.getName(), ParamType.PRIMITIVE),
-                        new PluginParameterType(BLUE, String.class.getName(), ParamType.PRIMITIVE),
-                        new PluginParameterType(GREEN, String.class.getName(), ParamType.PLUGIN));
+                .asList(PluginParameterType.create(RED, "red", null, String.class, ParamType.PRIMITIVE, false),
+                        PluginParameterType.create(BLUE, "blue", null, String.class, ParamType.PRIMITIVE, false),
+                        PluginParameterType.create(GREEN, "green", null, String.class, ParamType.PLUGIN, false));
+
         plgMetaData.setParameters(parameters);
 
         Assert.assertEquals(anAuthor, plgMetaData.getAuthor());

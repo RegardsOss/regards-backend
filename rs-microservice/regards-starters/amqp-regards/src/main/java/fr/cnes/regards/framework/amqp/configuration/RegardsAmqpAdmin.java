@@ -86,12 +86,12 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     /**
      * Microservice type identifier
      */
-    private final String microserviceTypeId;
+    private String microserviceTypeId;
 
     /**
      * Microservice instance identifier
      */
-    private final String microserviceInstanceId;
+    private String microserviceInstanceId;
 
     public RegardsAmqpAdmin(String microserviceTypeId, String microserviceInstanceId) {
         this.microserviceTypeId = microserviceTypeId;
@@ -107,7 +107,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
                 exchange = new DirectExchange(getUnicastExchangeName(), true, false);
                 break;
             case BROADCAST:
-                exchange = new FanoutExchange(getBroadcastExchangeName(eventType.getName()), true, false);
+                exchange = new FanoutExchange(getBroadcastExchangeName(eventType.getName(), target), true, false);
                 break;
             default:
                 throw new EnumConstantNotPresentException(WorkerMode.class, workerMode.name());
@@ -131,9 +131,14 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
      *
      * @return exchange name
      */
-    private String getBroadcastExchangeName(String eventType) {
+    private String getBroadcastExchangeName(String eventType, Target target) {
         StringBuilder builder = new StringBuilder();
         builder.append(BROADCAST_NAMESPACE);
+        if (Target.MICROSERVICE.equals(target)) {
+            // Restrict exchange to microservice type
+            builder.append(DOT);
+            builder.append(microserviceTypeId);
+        }
         builder.append(DOT);
         builder.append(eventType);
         return builder.toString();
@@ -180,6 +185,10 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
      * @return queue name
      */
     private String getUnicastQueueName(String tenant, Class<?> eventType, Target target) {
+        if (Target.ONE_PER_MICROSERVICE_TYPE.equals(target)) {
+            throw new IllegalArgumentException(String.format("Target %s not supported", target.toString()));
+        }
+
         StringBuilder builder = new StringBuilder();
         builder.append(UNICAST_NAMESPACE);
         builder.append(DOT);
@@ -205,7 +214,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         builder.append(BROADCAST_NAMESPACE);
         builder.append(DOT);
         builder.append(microserviceTypeId);
-        if (Target.ALL.equals(target)) {
+        if (Target.ALL.equals(target) || Target.MICROSERVICE.equals(target)) {
             builder.append(DOT);
             builder.append(microserviceInstanceId);
         }
@@ -272,5 +281,19 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     @Override
     public void deleteQueue(String queueName, boolean unused, boolean empty) {
         rabbitAdmin.deleteQueue(queueName, unused, empty);
+    }
+
+    /**
+     * Only used for test purpose
+     */
+    public void setMicroserviceTypeId(String microserviceTypeId) {
+        this.microserviceTypeId = microserviceTypeId;
+    }
+
+    /**
+     * Only used for test purpose
+     */
+    public void setMicroserviceInstanceId(String microserviceInstanceId) {
+        this.microserviceInstanceId = microserviceInstanceId;
     }
 }

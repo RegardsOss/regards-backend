@@ -33,24 +33,28 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class TestPlugin implements ITestPlugin {
 
-    public final static String POJO_PARAM_NAME = "pojo";
+    public static final String FIELD_NAME_STRING_PARAM = "stringParam";
+
+    public static final String FIELD_NAME_POJO_PARAM = "pojoParam";
+
+    public static final String FIELD_NAME_POJO_PARAMS = "pojoParams";
 
     /**
      * Primitive parameter
      */
-    @PluginParameter(name = "stringParam", description = "la description", optional = true)
+    @PluginParameter(label = "stringParam", description = "la description", optional = true)
     private String stringParam;
 
     /**
      * Object parameter
      */
-    @PluginParameter(name = POJO_PARAM_NAME, description = "la description", optional = true)
+    @PluginParameter(label = "pojoParam", description = "la description", optional = true)
     private TestPojo pojoParam;
 
     /**
      * Parameterized object parameter
      */
-    @PluginParameter(name = "pojoParams", description = "la description", optional = true)
+    @PluginParameter(label = "pojoParams", description = "la description", optional = true)
     private List<TestPojo> pojoParams;
 
     @Override

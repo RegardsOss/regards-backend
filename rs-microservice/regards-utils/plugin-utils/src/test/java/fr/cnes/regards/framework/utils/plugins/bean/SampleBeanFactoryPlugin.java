@@ -35,6 +35,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class SampleBeanFactoryPlugin implements ISamplePlugin {
 
+    public static final String FIELD_NAME_SUFFIX = "suffix";
+
     /**
      * Class logger
      */
@@ -43,7 +45,7 @@ public class SampleBeanFactoryPlugin implements ISamplePlugin {
     /**
      * A {@link String} parameter
      */
-    @PluginParameter(description = "string parameter", name = SUFFIXE)
+    @PluginParameter(description = "string parameter", label = "Suffix")
     private String suffix;
 
     /**

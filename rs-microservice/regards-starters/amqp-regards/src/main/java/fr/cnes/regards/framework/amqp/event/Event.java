@@ -29,10 +29,13 @@ import java.lang.annotation.RetentionPolicy;
  * <h1>For {@link ISubscribable} events:</h1>
  * <br/>
  * <ul>
- * <li>{@link WorkerMode#BROADCAST} / {@link Target#MICROSERVICE} (default behaviour) : event will
- * be received by ALL handlers of a SINGLE microservice instance PER microservice type.</li>
  * <li>{@link WorkerMode#BROADCAST} / {@link Target#ALL} : event will
  * be received by ALL handlers of ALL microservice instances.</li>
+ * <li>{@link WorkerMode#BROADCAST} / {@link Target#MICROSERVICE} : event will
+ * be received by ALL handlers of a ALL microservice instances which type is the same as the PUBLISHING
+ * one.</li>
+ * <li>{@link WorkerMode#BROADCAST} / {@link Target#ONE_PER_MICROSERVICE_TYPE} : event will
+ * be received by ALL handlers of a ONE microservice instance PER microservice instance.</li>
  * <li>{@link WorkerMode#UNICAST} / {@link Target#MICROSERVICE} : event will
  * be received by a SINGLE handler of a SINGLE microservice instance which type is the same as the PUBLISHING
  * one.</li>
@@ -58,14 +61,17 @@ import java.lang.annotation.RetentionPolicy;
 public @interface Event {
 
     /**
+     * With {@link ISubscribable} events, all {@link Target} are usable.<br/>
+     * With {@link IPollable} events, only {@link Target#ALL} or {@link Target#MICROSERVICE} are.<br/>
+     * Look at {@link Event} javadoc for usage.
      *
      * @return event {@link Target}
-     *
      */
-    Target target() default Target.MICROSERVICE;
+    Target target();
 
     /**
-     * This mode is only used for {@link ISubscribable} event.
+     * This mode is only used for {@link ISubscribable} event.<br/>
+     * Look at {@link Event} javadoc for usage.
      *
      * @return event {@link WorkerMode}
      */

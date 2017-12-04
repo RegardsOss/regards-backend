@@ -20,7 +20,7 @@ package fr.cnes.regards.framework.utils.plugins.plugintypes;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.framework.utils.plugins.ISamplePlugin;
+import fr.cnes.regards.framework.utils.plugins.basic.ISamplePlugin;
 
 /**
  * ISamplePlugin
@@ -31,21 +31,22 @@ import fr.cnes.regards.framework.utils.plugins.ISamplePlugin;
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class ComplexErrorPlugin implements ISamplePlugin {
 
-    /**
-     * constant PLG
-     */
-    static final String PLUGIN_PARAM = "plgInterface";
+    // Field name
+    public static final String FIELD_NAME_COEF = "coef";
+
+    // Field name
+    public static final String FIELD_NAME_PLUGIN = "interfacePlugin";
 
     /**
      * A {@link Integer} parameter
      */
-    @PluginParameter(description = "int parameter", name = COEFF)
+    @PluginParameter(description = "int parameter", label = "Coefficient")
     private final Integer coef = 0;
 
     /**
      * A {@link String} parameter
      */
-    @PluginParameter(description = "plugin parameter", name = PLUGIN_PARAM)
+    @PluginParameter(description = "plugin parameter", label = "Embedded plugin")
     private INotInterfacePlugin interfacePlugin;
 
     @Override

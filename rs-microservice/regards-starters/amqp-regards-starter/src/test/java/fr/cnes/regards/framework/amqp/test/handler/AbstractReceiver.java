@@ -68,14 +68,14 @@ public abstract class AbstractReceiver<T> implements IHandler<T> {
      * @return true if handler has been reached "count" times
      */
     public boolean checkCount(Integer count) {
-        if (getCount() != count) {
+        if (this.count != count) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 Assert.fail("Thread interrupted");
             }
         }
-        return count == getCount();
+        return this.count == count;
     }
 
     /**

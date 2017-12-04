@@ -24,8 +24,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
-
 /**
  *
  * Annotate a plugin parameter. Following field types are supported for injection :
@@ -38,6 +36,10 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
  * <li>Float</li>
  * <li>Double</li>
  * <li>Boolean</li>
+ * <li>Collection</li>
+ * <li>Plugin interface</li>
+ * <li>Map</li>
+ * <li>POJO</li>
  * </ul>
  *
  * @author Christophe Mertz
@@ -48,36 +50,49 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
 public @interface PluginParameter {
 
     /**
-     *
-     * Plugin parameter name. The parameter name defined here are managed by the PluginManager service.
-     *
-     * @return the plugin parameter name
+     * @return the parameter's name used as a key for database registration. If not specified, falling back to class
+     *         field name.
      */
-    String name();
+    String name() default "";
+
+    /**
+     * FIXME pass as required!
+     * @return a required human readable label
+     */
+    String label() default "";
+
+    /**
+     * @return an optional further human readable information if the label is not explicit enough!
+     */
+    String description() default "";
 
     /**
      * Plugin parameter default value.
-     * 
+     *
      * @return the default parameter value
      */
     String defaultValue() default "";
 
-    PluginParameterType.ParamType paramType() default PluginParameterType.ParamType.UNDEFINED;
-
     /**
      * Is the Plugin parameter is mandatory ?
-     * 
-     * @return true if the plugin parameter is mandatory. 
+     *
+     * @return true if the plugin parameter is mandatory.
      */
     boolean optional() default false;
 
-    /**
-     *
-     * Parameter description to explain the expected value if the name is not explicit enough.
-     *
-     * @return plugin parameter's description
-     */
-    String description() default "";
-
-    Class type() default void.class;
+    // FIXME run CI before remove
+    // /**
+    // * Raw type can be specified here to explicitly tell GSON which type to deserialize to! Otherwise, plugin engine
+    // * will try to guess it.
+    // * @return raw parameter type
+    // */
+    // Class<?> rawtype() default Void.class;
+    //
+    // /**
+    // * Argument types can be explicitly specified here for parameterized raw types for GSON deserialization!
+    // Otherwise,
+    // * plugin engine will try to guess them.
+    // * @return list of generic types affecting the raw parameter type
+    // */
+    // Class<?>[] argTypes() default {};
 }

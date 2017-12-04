@@ -18,11 +18,12 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import javax.annotation.Nullable;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+
+import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -174,17 +175,17 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
     }
 
     /**
-     * Add tags to the information package
-     * @param tags
+     * Add tags into context information
+     * @param tags list of tags
      */
     public void addTags(String... tags) {
         ipPropertiesBuilder.addTags(tags);
     }
 
     /**
-     * Add contect information to the information package
-     * @param key
-     * @param value
+     * Add link into context information
+     * @param key link key
+     * @param value link value
      */
     public void addContextInformation(String key, Object value) {
         ipPropertiesBuilder.addContextInformation(key, value);

@@ -16,7 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.cnes.regards.framework.utils.plugins.generics;
+
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+
 /**
- * TODO Description 
+ * Testing purpose contract
+ *
+ * @author Marc Sordi
+ *
  */
-package fr.cnes.regards.framework.utils.plugins.plugintypes;
+@PluginInterface(description = "Test contract for testing generics")
+public interface IPluginWithGenerics {
+
+    void doIt();
+}

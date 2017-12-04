@@ -79,21 +79,19 @@ public class SingleVhostSubscriberIT extends AbstractSubscriberIT {
         Assert.assertNotNull(wrapper);
         Assert.assertEquals(tenant, wrapper.getTenant());
         Assert.assertEquals(message, wrapper.getContent().getMessage());
-
     }
 
     private class MultipleReceiver extends AbstractInfoReceiver {
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see fr.cnes.regards.framework.amqp.test.AbstractSubscriberIT#publishMicroserviceInfo()
-     */
     @Override
     public void publishMicroserviceInfo() {
-        // TODO Auto-generated method stub
         super.publishMicroserviceInfo();
+    }
+
+    @Override
+    public void onePerMicroserviceTypeTest() {
+        super.onePerMicroserviceTypeTest();
     }
 
 }

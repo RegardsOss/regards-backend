@@ -33,11 +33,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.cnes.regards.framework.amqp.AbstractSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
 import fr.cnes.regards.framework.amqp.test.event.Info;
 import fr.cnes.regards.framework.amqp.test.event.MicroserviceInfo;
+import fr.cnes.regards.framework.amqp.test.event.OnePerMicroserviceInfo;
 import fr.cnes.regards.framework.amqp.test.event.UnicastInfo;
 import fr.cnes.regards.framework.amqp.test.handler.AbstractInfoReceiver;
 import fr.cnes.regards.framework.amqp.test.handler.AbstractReceiver;
@@ -62,6 +65,9 @@ public abstract class AbstractSubscriberIT {
 
     @Autowired
     protected ISubscriber subscriber;
+
+    @Autowired
+    protected IAmqpAdmin amqpAdmin;
 
     @Before
     public void init() throws RabbitMQVhostException {
@@ -182,5 +188,46 @@ public abstract class AbstractSubscriberIT {
     }
 
     private class Receiver extends AbstractReceiver<Info> {
+    }
+
+    @Test
+    public void onePerMicroserviceTypeTest() {
+
+        RegardsAmqpAdmin admin = (RegardsAmqpAdmin) amqpAdmin;
+
+        // Microservice A
+        admin.setMicroserviceTypeId("A");
+        // Simulate consumer A1
+        admin.setMicroserviceInstanceId("A1");
+        SingleReceiverA a1 = new SingleReceiverA();
+        subscriber.subscribeTo(OnePerMicroserviceInfo.class, a1);
+        // Simulate consumer A2
+        admin.setMicroserviceInstanceId("A2");
+        SingleReceiverA a2 = new SingleReceiverA();
+        subscriber.subscribeTo(OnePerMicroserviceInfo.class, a2);
+
+        // Microservice B
+        admin.setMicroserviceTypeId("B");
+        // Simulate consumer A1
+        admin.setMicroserviceInstanceId("B1");
+        SingleReceiverB b1 = new SingleReceiverB();
+        subscriber.subscribeTo(OnePerMicroserviceInfo.class, b1);
+        // Simulate consumer A2
+        admin.setMicroserviceInstanceId("B2");
+        SingleReceiverB b2 = new SingleReceiverB();
+        subscriber.subscribeTo(OnePerMicroserviceInfo.class, b2);
+
+        // Check only one consumer per microservice type receives the event.
+        publisher.publish(new OnePerMicroserviceInfo());
+        Assert.assertFalse(a1.checkCount(1) && a2.checkCount(1));
+        Assert.assertTrue(a1.checkCount(1) || a2.checkCount(1));
+        Assert.assertFalse(b1.checkCount(1) && b2.checkCount(1));
+        Assert.assertTrue(b1.checkCount(1) || b2.checkCount(1));
+    }
+
+    private class SingleReceiverA extends AbstractReceiver<OnePerMicroserviceInfo> {
+    }
+
+    private class SingleReceiverB extends AbstractReceiver<OnePerMicroserviceInfo> {
     }
 }

@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * ISamplePlugin
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -30,17 +30,11 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 public interface ISamplePlugin {
 
     /**
-     * constant suffix
-     */
-    public static final String SUFFIXE = "suffix";
-
-
-    /**
      * method echo
-     * 
+     *
      * @param pMessage
      *            message to display
-     * 
+     *
      * @return the message
      */
     String echo(String pMessage);

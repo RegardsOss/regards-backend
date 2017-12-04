@@ -19,8 +19,7 @@
 package fr.cnes.regards.framework.amqp.event;
 
 /**
- * If {@link Target#ALL}, all instances of all microservice types can poll or subscribe to this event. <br/>
- * If {@link Target#MICROSERVICE}, only instances of the same microservice can.<br/>
+ * See {@link Event} for usage.
  *
  * @author Marc Sordi
  *
@@ -31,5 +30,6 @@ public enum Target {
      * Available values for event target restriction
      */
     ALL,
-    MICROSERVICE;
+    MICROSERVICE,
+    ONE_PER_MICROSERVICE_TYPE;
 }

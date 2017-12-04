@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.framework.utils.plugins.ISamplePlugin;
+import fr.cnes.regards.framework.utils.plugins.basic.ISamplePlugin;
 
 /**
  * ISamplePlugin
@@ -35,10 +35,12 @@ import fr.cnes.regards.framework.utils.plugins.ISamplePlugin;
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class ComplexPlugin implements ISamplePlugin {
 
-    /**
-     * constant PLG
-     */
-    static final String PLUGIN_PARAM = "plgInterface";
+    // Field names
+    public static final String FIELD_NAME_PLUGIN = "complexInterfacePlugin";
+
+    public static final String FIELD_NAME_COEF = "coef";
+
+    public static final String FIELD_NAME_ACTIVE = "isActive";
 
     /**
      * Class logger
@@ -48,19 +50,19 @@ public class ComplexPlugin implements ISamplePlugin {
     /**
      * A plugin with an annotation {@link PluginParameter}
      */
-    @PluginParameter(description = "Plugin interface", name = PLUGIN_PARAM)
+    @PluginParameter(description = "Plugin interface", label = "Embedded plugin")
     private IComplexInterfacePlugin complexInterfacePlugin;
 
     /**
      * A {@link Integer} parameter
      */
-    @PluginParameter(description = "int parameter", name = COEFF)
+    @PluginParameter(description = "int parameter", label = "Coeff")
     private final Integer coef = 0;
 
     /**
      * A {@link Boolean} parameter
      */
-    @PluginParameter(description = "boolean parameter", name = ACTIVE)
+    @PluginParameter(description = "boolean parameter", label = "Enabled")
     private final Boolean isActive = Boolean.FALSE;
 
     @Override
@@ -96,5 +98,4 @@ public class ComplexPlugin implements ISamplePlugin {
         LOGGER.info("Init method call : " + this.getClass().getName() + "|active:" + isActive + "|coeff:" + coef);
         // + "|plg_conf:" + this.pluginConfiguration.getId()+ "|plg_int:" + this.complexInterfacePlugin.toString()
     }
-
 }

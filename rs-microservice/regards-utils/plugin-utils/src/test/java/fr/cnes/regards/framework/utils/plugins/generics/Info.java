@@ -16,38 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.plugins;
-
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+package fr.cnes.regards.framework.utils.plugins.generics;
 
 /**
- * ISamplePlugin
- *
- * @author Christophe Mertz
+ * Simple POJO
+ * @author Marc Sordi
  *
  */
-@PluginInterface(description = "hello sample plugin interface")
-public interface ISamplePlugin {
+public class Info {
 
-    /**
-     * method echo
-     *
-     * @param pMessage
-     *            message to display
-     *
-     * @return the message
-     */
-    String echo(String pMessage);
+    private String message;
 
-    /**
-     * method add
-     *
-     * @param pFirst
-     *            first element
-     * @param pSecond
-     *            second item
-     * @return the result
-     */
-    int add(int pFirst, int pSecond);
+    public String getMessage() {
+        return message;
+    }
 
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }

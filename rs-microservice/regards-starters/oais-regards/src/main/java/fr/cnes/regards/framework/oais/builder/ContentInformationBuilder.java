@@ -175,7 +175,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param checksum the checksum
      */
     public void setDataObject(DataType dataType, Path filePath, String algorithm, String checksum) {
-        setDataObject(dataType, filePath, null, algorithm, checksum, null);
+        setDataObject(dataType, filePath, filePath.getFileName().toString(), algorithm, checksum, null);
     }
 
     /**
@@ -197,7 +197,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param checksum the checksum
      */
     public void setDataObject(DataType dataType, Path filePath, String checksum) {
-        setDataObject(dataType, filePath, null, IPBuilder.MD5_ALGORITHM, checksum, null);
+        setDataObject(dataType, filePath, filePath.getFileName().toString(), IPBuilder.MD5_ALGORITHM, checksum, null);
     }
 
     /**

@@ -16,38 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.plugins;
+package fr.cnes.regards.framework.amqp.test.event;
 
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
- * ISamplePlugin
- *
- * @author Christophe Mertz
+ * {@link Target#MICROSERVICE} restricted event
+ * @author Marc Sordi
  *
  */
-@PluginInterface(description = "hello sample plugin interface")
-public interface ISamplePlugin {
-
-    /**
-     * method echo
-     *
-     * @param pMessage
-     *            message to display
-     *
-     * @return the message
-     */
-    String echo(String pMessage);
-
-    /**
-     * method add
-     *
-     * @param pFirst
-     *            first element
-     * @param pSecond
-     *            second item
-     * @return the result
-     */
-    int add(int pFirst, int pSecond);
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
+public class OnePerMicroserviceInfo extends AbstractEvent implements ISubscribable {
 
 }
