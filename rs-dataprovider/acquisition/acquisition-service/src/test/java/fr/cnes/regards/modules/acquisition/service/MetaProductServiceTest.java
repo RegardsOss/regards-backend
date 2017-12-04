@@ -38,8 +38,11 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
+import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
+import fr.cnes.regards.modules.acquisition.dao.IProcessGenerationRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -66,11 +69,20 @@ public class MetaProductServiceTest {
     private IScanDirectoryRepository scanDirectoryRepository;
 
     @Autowired
+    private IAcquisitionFileRepository acquisitionFileRepository;
+    
+    @Autowired
     private IMetaFileRepository metaFileRepository;
 
     @Autowired
     private IMetaProductService metaProductService;
 
+    @Autowired
+    private IProcessGenerationRepository processGenerationRepository;
+    
+    @Autowired
+    private IChainGenerationRepository chainGenerationRepository;
+    
     @Autowired
     private IMetaProductRepository metaProductRepository;
 
@@ -81,8 +93,11 @@ public class MetaProductServiceTest {
 
     @Before
     public void cleanDb() {
+        processGenerationRepository.deleteAll();
+        chainGenerationRepository.deleteAll();
         scanDirectoryRepository.deleteAll();
-        metaFileRepository.deleteAll();
+        acquisitionFileRepository.deleteAll();
+        metaFileRepository.deleteAll();        
         metaProductRepository.deleteAll();
     }
 

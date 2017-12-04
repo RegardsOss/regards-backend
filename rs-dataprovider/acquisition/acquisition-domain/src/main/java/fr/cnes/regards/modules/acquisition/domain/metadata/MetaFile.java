@@ -52,7 +52,7 @@ public class MetaFile implements IIdentifiable<Long> {
     /**
      * Maximum file size name constraint with length 255
      */
-    private static final int MAX_FILE_NAME_LENGTH = 255;
+    private static final int MAX_STRING_LENGTH = 255;
 
     @Id
     @SequenceGenerator(name = "MetaFileSequence", initialValue = 1, sequenceName = "seq_meta_file")
@@ -85,14 +85,14 @@ public class MetaFile implements IIdentifiable<Long> {
     /**
      * A folder used to move invalid data file
      */
-    @Column(name = "invalid_folder_name", length = MAX_FILE_NAME_LENGTH)
+    @Column(name = "invalid_folder_name", length = MAX_STRING_LENGTH)
     private String invalidFolder;
 
     /**
      * A {@link String} corresponding to the data file mime-type
      * TODO CMZ à completer fileType et à reporter dans le SIP content information
      */
-    @Column(name = "media_type", length = 255)
+    @Column(name = "media_type", length = MAX_STRING_LENGTH)
     private String mediaType;
 
     /**
