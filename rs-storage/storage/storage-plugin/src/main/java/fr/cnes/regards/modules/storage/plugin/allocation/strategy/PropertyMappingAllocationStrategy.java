@@ -55,14 +55,14 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
      * Json path to the property from the AIP which value should discriminate data storages to use
      */
     @PluginParameter(name = PROPERTY_PATH,
-            description = "Json path to the property from the AIP which value should discriminate data storages to use")
+            description = "Json path to the property from the AIP which value should discriminate data storages to use", label = "Property path")
     private String propertyPath;
 
     /**
      * Collection representing the mapping between a value and the data storage to use
      */
     @PluginParameter(name = PROPERTY_VALUE_DATA_STORAGE_MAPPING,
-            description = "Collection representing the mapping between a value and the data storage to use")
+            description = "Collection representing the mapping between a value and the data storage to use", label = "Property value - Data storage mappings")
     private List<PropertyDataStorageMapping> propertyDataStorageMappings;
 
     /**

@@ -65,20 +65,20 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     /**
      * Base storage location url
      */
-    @PluginParameter(name = BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, description = "Base storage location url")
+    @PluginParameter(name = BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, description = "Base storage location url to use", label = "Base storage location url")
     private String baseStorageLocationAsString;
 
     /**
      * can this data storage delete files or not?
      */
-    @PluginParameter(name = LOCAL_STORAGE_DELETE_OPTION, defaultValue = "true")
+    @PluginParameter(name = LOCAL_STORAGE_DELETE_OPTION, defaultValue = "true", description = "Can this data storage delete files or not?", label = "Deletion option")
     private Boolean canDelete;
 
     /**
      * Total space, in byte, this data storage is allowed to use
      */
     @PluginParameter(name = LOCAL_STORAGE_TOTAL_SPACE,
-            description = "total space, in byte, this data storage is allowed to use")
+            description = "Total space, in byte, this data storage is allowed to use", label = "Total allocated space")
     private Long totalSpace;
 
     /**

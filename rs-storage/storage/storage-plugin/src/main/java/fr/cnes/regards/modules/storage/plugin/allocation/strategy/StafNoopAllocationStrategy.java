@@ -64,7 +64,7 @@ public class StafNoopAllocationStrategy implements IAllocationStrategy {
      * Default data storage to use if the file to retrieve is not in the staf
      */
     @PluginParameter(name = DEFAULT_DATA_STORAGE_CONFIGURATION_ID,
-            description = "Default data storage to use if the file to retrieve is not in the staf")
+            description = "Default data storage to use if the file to retrieve is not in the staf", label = "Default data storage configuration id")
     private Long dataStorageConfigurationId;
 
     @Override
