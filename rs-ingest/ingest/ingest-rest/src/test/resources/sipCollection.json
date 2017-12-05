@@ -18,6 +18,13 @@
                             "url": "file:/home/test.xml",
                             "checksum": "sdfsd455sdfdsgdfg4dgdfg",
                             "algorithm": "MD5"
+                        },
+                        "representationInformation": {
+                            "syntax": {
+                                "name": "XML",
+                                "mimeType": "application/xml",
+                                "description": "https://en.wikipedia.org/wiki/XML"
+                            }
                         }
                     }
                 ],

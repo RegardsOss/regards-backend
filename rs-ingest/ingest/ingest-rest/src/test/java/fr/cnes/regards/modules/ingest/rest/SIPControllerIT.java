@@ -70,6 +70,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         SIPBuilder sipBuilder = new SIPBuilder("SIP_001");
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"),
                                                                 "sdsdfm1211vd");
+        sipBuilder.setSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
         sipBuilder.addContentInformation();
         collectionBuilder.add(sipBuilder.build());
 
@@ -77,6 +78,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         sipBuilder = new SIPBuilder("SIP_002");
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data2.fits"),
                                                                 "sdsdfm1211vsdfdsfd");
+        sipBuilder.setSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
         sipBuilder.addContentInformation();
         collectionBuilder.add(sipBuilder.build());
 
@@ -114,6 +116,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         SIPBuilder sipBuilder = new SIPBuilder("SIP_001");
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "FAKE_ALGO",
                                                                 "sdsdfm1211vd");
+        sipBuilder.setSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
         sipBuilder.addContentInformation();
         collectionBuilder.add(sipBuilder.build());
 
@@ -121,6 +124,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         sipBuilder = new SIPBuilder("SIP_002");
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data2.fits"),
                                                                 "sdsdfm1211vsdfdsfd");
+        sipBuilder.setSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
         sipBuilder.addContentInformation();
         collectionBuilder.add(sipBuilder.build());
 
