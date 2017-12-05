@@ -32,7 +32,7 @@ import org.springframework.test.context.ContextConfiguration;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceConfiguration;
 import fr.cnes.regards.modules.acquisition.service.conf.MockedFeignClientConf;
-import fr.cnes.regards.modules.acquisition.service.step.AbstractAcquisitionIT;
+import fr.cnes.regards.modules.acquisition.service.step.AcquisitionITHelper;
 
 /**
  * @author Christophe Mertz
@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.acquisition.service.step.AbstractAcquisitionIT;
 @ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class, MockedFeignClientConf.class })
 @ActiveProfiles({ "test" })
 @DirtiesContext
-public class ScheduledStartChainIT extends AbstractAcquisitionIT {
+public class ScheduledStartChainIT extends AcquisitionITHelper {
 
     @Value("${regards.acquisition.process.run.chains.delay}")
     private String scheduledTasksDelay;

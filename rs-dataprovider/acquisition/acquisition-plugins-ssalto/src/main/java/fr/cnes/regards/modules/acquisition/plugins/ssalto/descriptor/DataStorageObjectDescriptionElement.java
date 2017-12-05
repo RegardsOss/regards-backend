@@ -52,7 +52,7 @@ public class DataStorageObjectDescriptionElement extends DataStorageObjectElemen
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = 1;
+        int result = super.hashCode();
         result = prime * result
                 + ((getDataStorageObjectIdentifier() == null) ? 0 : getDataStorageObjectIdentifier().hashCode());
         return result;
@@ -60,18 +60,23 @@ public class DataStorageObjectDescriptionElement extends DataStorageObjectElemen
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (!super.equals(obj)) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         DataStorageObjectDescriptionElement other = (DataStorageObjectDescriptionElement) obj;
         if (getDataStorageObjectIdentifier() == null) {
-            if (other.getDataStorageObjectIdentifier() != null)
+            if (other.getDataStorageObjectIdentifier() != null) {
                 return false;
-        } else if (!getDataStorageObjectIdentifier().equals(other.getDataStorageObjectIdentifier()))
+            }
+        } else if (!getDataStorageObjectIdentifier().equals(other.getDataStorageObjectIdentifier())) {
             return false;
+        }
         return true;
     }
 }

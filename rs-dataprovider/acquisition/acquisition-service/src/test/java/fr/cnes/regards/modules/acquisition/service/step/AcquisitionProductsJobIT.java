@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.acquisition.service.plugins.TestScanDirectoryPlug
 @ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class, MockedFeignClientConf.class })
 @ActiveProfiles({ "test", "disableDataProviderTask", "testAmqp" })
 @DirtiesContext
-public class AcquisitionProductsJobIT extends AbstractAcquisitionIT {
+public class AcquisitionProductsJobIT extends AcquisitionITHelper {
 
     @Test
     public void runActiveChainGeneration() throws ModuleException, InterruptedException {

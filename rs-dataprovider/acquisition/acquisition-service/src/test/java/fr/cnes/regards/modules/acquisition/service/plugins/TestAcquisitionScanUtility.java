@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
  * @author Christophe Mertz
  *
  */
-public class TestAcquisitionScanUtility extends AbstractAcquisitionScanPlugin {
+public class TestAcquisitionScanUtility extends AcquisitionScanPluginHelper {
 
     @Autowired
     private IMetaFileService metaFileService;

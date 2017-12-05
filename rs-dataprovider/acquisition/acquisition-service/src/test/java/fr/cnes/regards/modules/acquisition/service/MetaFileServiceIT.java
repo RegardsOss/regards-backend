@@ -54,9 +54,8 @@ import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionServiceConfig
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AcquisitionServiceConfiguration.class })
 @ActiveProfiles({ "test", "disableDataProviderTask" })
-@Transactional
 @DirtiesContext
-public class MetaFileServiceTest {
+public class MetaFileServiceIT {
 
     @Value("${regards.tenant}")
     private String tenant;

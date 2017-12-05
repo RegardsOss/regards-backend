@@ -105,14 +105,13 @@ public class MetaFileService implements IMetaFileService {
             return null;
         }
 
-        metaFile.setScanDirectories(scanDirectoryService.createOrUpdate(metaFile.getScanDirectories()));
-
         if (metaFile.getId() == null) {
-            // It is a new MetaFile --> create a new
+            // It is a new MetaFile --> create it
             metaFile.setScanDirectories(scanDirectoryService.createOrUpdate(metaFile.getScanDirectories()));
             return this.save(metaFile);
         } else {
             MetaFile existingMetaFile = this.retrieve(metaFile.getId());
+            
             metaFile.setScanDirectories(scanDirectoryService.createOrUpdate(metaFile.getScanDirectories(),
                                                                             existingMetaFile.getScanDirectories()));
             if (existingMetaFile.equals(metaFile)) {

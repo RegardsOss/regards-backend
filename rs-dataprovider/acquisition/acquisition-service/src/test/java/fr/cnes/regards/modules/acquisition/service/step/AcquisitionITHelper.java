@@ -97,9 +97,9 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * @author Christophe Mertz
  *
  */
-public abstract class AbstractAcquisitionIT extends AbstractRegardsIT {
+public class AcquisitionITHelper extends AbstractRegardsIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAcquisitionIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionITHelper.class);
 
     protected static final String FIRST_PRODUCT = "PAUB_MESURE_TC_20130701_103715";
 

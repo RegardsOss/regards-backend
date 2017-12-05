@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.service;
 import java.time.OffsetDateTime;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,13 +32,19 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.BeforeTransaction;
-import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.builder.AcquisitionFileBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.builder.ProductBuilder;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
+import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
+import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
+import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
+import fr.cnes.regards.modules.acquisition.dao.IProcessGenerationRepository;
+import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
+import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -54,7 +61,6 @@ import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionServiceConfig
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AcquisitionServiceConfiguration.class })
-@Transactional
 @DirtiesContext
 public class AcquisitionFileServiceIT {
 
@@ -88,9 +94,41 @@ public class AcquisitionFileServiceIT {
     @Autowired
     private IScanDirectoryService scandirService;
 
+    @Autowired
+    private IScanDirectoryRepository scanDirectoryRepository;
+
+    @Autowired
+    private IAcquisitionFileRepository acquisitionFileRepository;
+
+    @Autowired
+    private IMetaFileRepository metaFileRepository;
+
+    @Autowired
+    private IProcessGenerationRepository processGenerationRepository;
+
+    @Autowired
+    private IChainGenerationRepository chainGenerationRepository;
+
+    @Autowired
+    private IMetaProductRepository metaProductRepository;
+
+    @Autowired
+    private IProductRepository productRepository;
+
     @BeforeTransaction
-    protected void beforeTransaction() {
+    public void beforeTransaction() {
         tenantResolver.forceTenant(tenant);
+    }
+
+    @Before
+    public void cleanDb() {
+        processGenerationRepository.deleteAll();
+        chainGenerationRepository.deleteAll();
+        scanDirectoryRepository.deleteAll();
+        acquisitionFileRepository.deleteAll();
+        metaFileRepository.deleteAll();
+        metaProductRepository.deleteAll();
+        productRepository.deleteAll();
     }
 
     private Product addProduct(MetaProduct metaProduct, String productName) {
@@ -124,9 +162,7 @@ public class AcquisitionFileServiceIT {
                 .withChecksumAlgorithm(CHECKUM_ALGO).withCleanOriginalFile(Boolean.FALSE).addMetaFile(aMetaFile).get());
         Product aProduct = addProduct(metaProduct, PRODUCT_NAME);
 
-        //        Assert.assertEquals(1, metaProductService.retrieveAll().size());
-        Assert.assertEquals(metaProduct, metaProductService.retrieve(metaProduct.getId()));
-        Assert.assertEquals(metaProduct, metaProductService.retrieve(metaProduct.getLabel()));
+        Assert.assertEquals(1, metaProductService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(metaProduct, metaProductService.retrieveComplete(metaProduct.getId()));
 
         // Create 2 AcquisitionFile 

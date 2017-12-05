@@ -57,7 +57,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
  */
 @Entity
 @Table(name = "t_acquisition_file")
-public class AcquisitionFile implements IIdentifiable<Long>, Cloneable {
+public class AcquisitionFile implements IIdentifiable<Long> {
 
     /**
      * Maximum String size constraint with length 255

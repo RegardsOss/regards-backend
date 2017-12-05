@@ -38,7 +38,9 @@ public interface IMetaProductService {
      * @return the created {@link MetaProduct}
      * @throws ModuleException if error occurs!
      */
-    MetaProduct createOrUpdateMetaProduct(MetaProduct metaProduct) throws ModuleException;
+    MetaProduct createOrUpdate(MetaProduct metaProduct) throws ModuleException;
+    
+    MetaProduct createOrUpdate(MetaProduct newMetaProduct, MetaProduct existingMetaProduct) throws ModuleException;
 
     /**
      * Save a {@link MetaProduct}

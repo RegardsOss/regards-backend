@@ -68,25 +68,30 @@ public class DataObjectDescriptionElement extends DataObjectElement {
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = 1;
+        int result = super.hashCode();
         result = prime * result + ((getDataObjectIdentifier() == null) ? 0 : getDataObjectIdentifier().hashCode());
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (!super.equals(obj)) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         DataObjectDescriptionElement other = (DataObjectDescriptionElement) obj;
         if (getDataObjectIdentifier() == null) {
-            if (other.getDataObjectIdentifier() != null)
+            if (other.getDataObjectIdentifier() != null) {
                 return false;
-        } else if (!getDataObjectIdentifier().equals(other.getDataObjectIdentifier()))
+            }
+        } else if (!getDataObjectIdentifier().equals(other.getDataObjectIdentifier())) {
             return false;
+        }
         return true;
     }
 
@@ -217,4 +222,5 @@ public class DataObjectDescriptionElement extends DataObjectElement {
     public void setAttributeLst(List<Attribute> pAttributeLst) {
         attributeLst = pAttributeLst;
     }
+
 }

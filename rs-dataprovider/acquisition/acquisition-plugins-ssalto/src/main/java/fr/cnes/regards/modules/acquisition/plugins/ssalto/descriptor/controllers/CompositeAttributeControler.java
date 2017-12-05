@@ -25,8 +25,6 @@ import org.w3c.dom.Element;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.CompositeAttribute;
 
-
-
 /**
  * classe permettant de parser les fichiers descripteurs
  *
@@ -81,8 +79,8 @@ public class CompositeAttributeControler extends AttributeControler {
 
                 for (Attribute anotherAttribute : attribute.getAttributeList()) {
                     for (Object value : anotherAttribute.getValueList()) {
-                        org.jdom.Element attElement = new org.jdom.Element(anotherAttribute.getMetaAttribute()
-                                .getName(), xmlns);
+                        org.jdom.Element attElement = new org.jdom.Element(
+                                anotherAttribute.getMetaAttribute().getName(), xmlns);
                         String val = SsaltoControlers.getControler(anotherAttribute).doGetStringValue(value);
                         attElement.addContent(val);
                         // add attribute element to the composite root element
@@ -110,18 +108,18 @@ public class CompositeAttributeControler extends AttributeControler {
             // create composite root element
             compositeRootElement = newDoc.createElement(name);
         }
+
         for (Attribute anotherAttribute : compositeAttribute.getAttributeList()) {
             for (Object value : anotherAttribute.getValueList()) {
                 Element attElement = newDoc.createElement(anotherAttribute.getMetaAttribute().getName());
                 String val = SsaltoControlers.getControler(anotherAttribute).doGetStringValue(value);
                 attElement.appendChild(newDoc.createTextNode(val));
-                if (name != null) {
-                    // add attribute element to the composite root element
-                    compositeRootElement.appendChild(attElement);
-                }
-                else {
+                if (name == null) {
                     // add attribute element directly into parentElement
                     parentElement.appendChild(attElement);
+                } else {
+                    // add attribute element to the composite root element
+                    compositeRootElement.appendChild(attElement);
                 }
             }
             if (name != null) {

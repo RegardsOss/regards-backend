@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlug
 @Plugin(id = "ScanDirectoryPlugin", version = "1.0.0-SNAPSHOT",
         description = "Scan directories to detect incoming data files", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
-public class ScanDirectoryPlugin extends AbstractAcquisitionScanPlugin implements IAcquisitionScanDirectoryPlugin {
+public class ScanDirectoryPlugin extends AcquisitionScanPluginHelper implements IAcquisitionScanDirectoryPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ScanDirectoryPlugin.class);
 

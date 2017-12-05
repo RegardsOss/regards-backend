@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProcess;
 @ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class })
 @ActiveProfiles({ "test", "disableDataProviderTask" })
 @DirtiesContext
-public class GenerateSIPStepIT extends AbstractAcquisitionIT {
+public class GenerateSIPStepIT extends AcquisitionITHelper {
 
     private static final String SESSION_ID = "session-identifier-999";
 

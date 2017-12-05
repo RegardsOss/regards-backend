@@ -66,25 +66,43 @@ public class ProcessGeneration implements IIdentifiable<Long> {
     @Column(length = MAX_STRING_LENGTH)
     private String session;
 
+    /**
+     * The {@link ChainGeneration} associate to the current {@link ProcessGeneration}
+     */
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name = "chain_id", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "fk_acq_chain_id"),
             updatable = false)
     private ChainGeneration chainGeneration;
 
+    /**
+     * The start date of the {@link ProcessGeneration}
+     */
     @Column(name = "start_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime startDate;
 
+    /**
+     * The stop date of the {@link ProcessGeneration}
+     */
     @Column(name = "stop_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime stopDate;
 
+    /**
+     * The number of SIP created for the current {@link ProcessGeneration}
+     */
     @Column(name = "nb_sip_created", nullable = false)
     private int nbSipCreated = 0;
 
+    /**
+     * The number of SIP in error for the current {@link ProcessGeneration}
+     */
     @Column(name = "nb_sip_in_error", nullable = false)
     private int nbSipError = 0;
 
+    /**
+     * The number of SIP stored for the current {@link ProcessGeneration}
+     */
     @Column(name = "nb_sip_stored", nullable = false)
     private int nbSipStored = 0;
 
@@ -162,7 +180,7 @@ public class ProcessGeneration implements IIdentifiable<Long> {
     }
 
     @Override
-    public int hashCode() { // NOSONAR
+    public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((chainGeneration == null) ? 0 : chainGeneration.hashCode());
@@ -172,29 +190,38 @@ public class ProcessGeneration implements IIdentifiable<Long> {
     }
 
     @Override
-    public boolean equals(Object obj) { // NOSONAR
-        if (this == obj)
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         ProcessGeneration other = (ProcessGeneration) obj;
         if (chainGeneration == null) {
-            if (other.chainGeneration != null)
+            if (other.chainGeneration != null) {
                 return false;
-        } else if (!chainGeneration.equals(other.chainGeneration))
+            }
+        } else if (!chainGeneration.equals(other.chainGeneration)) {
             return false;
+        }
         if (id == null) {
-            if (other.id != null)
+            if (other.id != null) {
                 return false;
-        } else if (!id.equals(other.id))
+            }
+        } else if (!id.equals(other.id)) {
             return false;
+        }
         if (session == null) {
-            if (other.session != null)
+            if (other.session != null) {
                 return false;
-        } else if (!session.equals(other.session))
+            }
+        } else if (!session.equals(other.session)) {
             return false;
+        }
         return true;
     }
 

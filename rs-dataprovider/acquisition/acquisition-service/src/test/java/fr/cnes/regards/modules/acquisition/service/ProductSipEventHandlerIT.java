@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
 import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceConfiguration;
-import fr.cnes.regards.modules.acquisition.service.step.AbstractAcquisitionIT;
+import fr.cnes.regards.modules.acquisition.service.step.AcquisitionITHelper;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
@@ -57,7 +57,7 @@ import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 @ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class })
 @ActiveProfiles({ "test", "disableDataProviderTask", "testAmqp" })
 @DirtiesContext
-public class ProductSipEventHandlerIT extends AbstractAcquisitionIT {
+public class ProductSipEventHandlerIT extends AcquisitionITHelper {
 
     @Autowired
     private IPublisher publisher;

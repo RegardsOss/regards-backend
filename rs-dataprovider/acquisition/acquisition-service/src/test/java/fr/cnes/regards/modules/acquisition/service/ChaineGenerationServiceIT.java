@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,15 +27,22 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.BeforeTransaction;
-import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.builder.ChainGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.builder.ProductBuilder;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
+import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
+import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
+import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
+import fr.cnes.regards.modules.acquisition.dao.IProcessGenerationRepository;
+import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
+import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
@@ -48,7 +56,7 @@ import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionServiceConfig
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AcquisitionServiceConfiguration.class })
-@Transactional
+@ActiveProfiles({ "test", "disableDataProviderTask" })
 @DirtiesContext
 public class ChaineGenerationServiceIT {
 
@@ -80,9 +88,41 @@ public class ChaineGenerationServiceIT {
     @Autowired
     private IProductService productService;
 
+    @Autowired
+    private IScanDirectoryRepository scanDirectoryRepository;
+
+    @Autowired
+    private IAcquisitionFileRepository acquisitionFileRepository;
+
+    @Autowired
+    private IMetaFileRepository metaFileRepository;
+
+    @Autowired
+    private IProcessGenerationRepository processGenerationRepository;
+
+    @Autowired
+    private IChainGenerationRepository chainGenerationRepository;
+
+    @Autowired
+    private IMetaProductRepository metaProductRepository;
+
+    @Autowired
+    private IProductRepository productRepository;
+
     @BeforeTransaction
     protected void beforeTransaction() {
         tenantResolver.forceTenant(tenant);
+    }
+
+    @Before
+    public void cleanDb() {
+        processGenerationRepository.deleteAll();
+        chainGenerationRepository.deleteAll();
+        scanDirectoryRepository.deleteAll();
+        acquisitionFileRepository.deleteAll();
+        metaFileRepository.deleteAll();
+        metaProductRepository.deleteAll();
+        productRepository.deleteAll();
     }
 
     private Product addProduct(MetaProduct metaProduct, String productName) {

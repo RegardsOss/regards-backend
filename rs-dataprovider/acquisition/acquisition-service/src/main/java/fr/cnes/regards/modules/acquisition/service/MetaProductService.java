@@ -75,17 +75,17 @@ public class MetaProductService implements IMetaProductService {
         if (!metaProductRepository.exists(metaproductId)) {
             throw new EntityNotFoundException(metaproductId, ChainGeneration.class);
         }
-        return createOrUpdateMetaProduct(metaProduct);
+        return createOrUpdate(metaProduct);
     }
 
     @Override
-    public MetaProduct createOrUpdateMetaProduct(MetaProduct metaProduct) throws ModuleException {
+    public MetaProduct createOrUpdate(MetaProduct metaProduct) throws ModuleException {
         if (metaProduct == null) {
             return null;
         }
 
         if (metaProduct.getId() == null) {
-            // It is a new MetaProduct --> create a new
+            // It is a new MetaProduct --> create it
             metaProduct.setMetaFiles(metaFileService.createOrUpdate(metaProduct.getMetaFiles()));
             return this.save(metaProduct);
         } else {
@@ -102,6 +102,15 @@ public class MetaProductService implements IMetaProductService {
                 return this.save(metaProduct);
             }
         }
+    }
+
+    @Override
+    public MetaProduct createOrUpdate(MetaProduct newMetaProduct, MetaProduct existingMetaProduct)
+            throws ModuleException {
+        if (!newMetaProduct.equals(existingMetaProduct)) {
+            metaProductRepository.delete(existingMetaProduct);
+        }
+        return createOrUpdate(newMetaProduct);
     }
 
     @Override

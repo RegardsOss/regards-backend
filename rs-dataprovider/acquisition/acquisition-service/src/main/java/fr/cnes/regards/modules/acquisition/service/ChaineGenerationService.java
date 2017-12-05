@@ -123,19 +123,38 @@ public class ChaineGenerationService implements IChainGenerationService {
         }
     }
 
-    private ChainGeneration createOrUpdate(ChainGeneration newChain, ChainGeneration... existingChain)
-            throws ModuleException {
-
-        if (existingChain != null) {
-            // It's a modification
-            // TODO CMZ
+    @Override
+    public ChainGeneration update(Long chainId, ChainGeneration chain) throws ModuleException {
+        if (!chainId.equals(chain.getId())) {
+            throw new EntityInconsistentIdentifierException(chainId, chain.getId(), chain.getClass());
+        }
+        if (!chainRepository.exists(chainId)) {
+            throw new EntityNotFoundException(chainId, ChainGeneration.class);
         }
 
-        createOrUpdatePluginConfigurations(newChain);
+        //        ChainGeneration existingChain = chainRepository.findOne(chain.getId());
 
-        newChain.setMetaProduct(metaProductService.createOrUpdateMetaProduct(newChain.getMetaProduct()));
+        return chainRepository.save(createOrUpdate(chain));
+    }
 
-        return newChain;
+    private ChainGeneration createOrUpdate(ChainGeneration chain) throws ModuleException {
+        if (chain == null) {
+            return null;
+        }
+
+        createOrUpdatePluginConfigurations(chain);
+
+        if (chain.getId() == null) {
+            // It is a new Chain --> create it
+            chain.setMetaProduct(metaProductService.createOrUpdate(chain.getMetaProduct()));
+            return this.save(chain);
+        }
+        else {
+            ChainGeneration existingChain = this.retrieve(chain.getId());            
+            chain.setMetaProduct(metaProductService.createOrUpdate(chain.getMetaProduct(), existingChain.getMetaProduct()));
+        }
+
+        return chain;
 
     }
 
@@ -174,20 +193,6 @@ public class ChaineGenerationService implements IChainGenerationService {
             }
         }
         return pluginConfiguration;
-    }
-
-    @Override
-    public ChainGeneration update(Long chainId, ChainGeneration chain) throws ModuleException {
-        if (!chainId.equals(chain.getId())) {
-            throw new EntityInconsistentIdentifierException(chainId, chain.getId(), chain.getClass());
-        }
-        if (!chainRepository.exists(chainId)) {
-            throw new EntityNotFoundException(chainId, ChainGeneration.class);
-        }
-
-        ChainGeneration existingChain = chainRepository.findOne(chain.getId());
-
-        return chainRepository.save(createOrUpdate(chain, existingChain));
     }
 
     @Override
@@ -259,13 +264,13 @@ public class ChaineGenerationService implements IChainGenerationService {
         // the ChainGeneration must be active
         if (!chain.isActive()) {
             LOGGER.warn("[{}] Unable to run a not active the chain generation", chain.getLabel());
-            return false; // NOSONAR
+            return false;
         }
 
         // the ChainGeneration must not be already running
         if (chain.isRunning()) {
             LOGGER.warn("[{}] Unable to run an already running chain generation", chain.getLabel());
-            return false; // NOSONAR
+            return false;
         }
 
         // the difference between the previous activation date and current time must be greater than the periodicity
@@ -273,7 +278,7 @@ public class ChaineGenerationService implements IChainGenerationService {
                 && chain.getLastDateActivation().plusSeconds(chain.getPeriodicity()).isAfter(OffsetDateTime.now())) {
             LOGGER.warn("[{}] Unable to run the chain generation : the last activation date is to close from now with the periodicity {}.",
                         chain.getLabel(), chain.getPeriodicity());
-            return false; // NOSONAR
+            return false;
         }
 
         // the ChainGeneration is ready to be started 

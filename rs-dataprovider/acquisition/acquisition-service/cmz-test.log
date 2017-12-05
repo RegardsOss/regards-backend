@@ -1,0 +1,34 @@
+[INFO] Scanning for projects...
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Acquisition Service 2.0.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.7.7.201606060606:prepare-agent (pre-unit-test) @ acquisition-service ---
+[INFO] jacoco.agent.ut.arg set to -javaagent:/home/cmertz/.m2/repository/org/jacoco/org.jacoco.agent/0.7.7.201606060606/org.jacoco.agent-0.7.7.201606060606-runtime.jar=destfile=/home/cmertz/git-regards/rs-dataprovider/acquisition/acquisition-service/target/coverage-reports/jacoco-ut.exec,append=true
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ acquisition-service ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/cmertz/git-regards/rs-dataprovider/acquisition/acquisition-service/src/main/resources
+[INFO] skip non existing resourceDirectory /home/cmertz/git-regards/rs-dataprovider/acquisition/acquisition-service/src/main/resources
+[INFO] skip non existing resourceDirectory /home/cmertz/git-regards/rs-dataprovider/acquisition/acquisition-service/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ acquisition-service ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ acquisition-service ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 16 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ acquisition-service ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 20 source files to /home/cmertz/git-regards/rs-dataprovider/acquisition/acquisition-service/target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.18.1:test (default-test) @ acquisition-service ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 5.231 s
+[INFO] Finished at: 2017-12-05T09:22:16+01:00
+[INFO] Final Memory: 70M/531M
+[INFO] ------------------------------------------------------------------------

@@ -57,7 +57,7 @@ import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionServiceConfig
 @ContextConfiguration(classes = { AcquisitionServiceConfiguration.class })
 @ActiveProfiles({ "test", "disableDataProviderTask" })
 @DirtiesContext
-public class MetaProductServiceTest {
+public class MetaProductServiceIT {
 
     @Value("${regards.tenant}")
     private String tenant;
@@ -70,19 +70,22 @@ public class MetaProductServiceTest {
 
     @Autowired
     private IAcquisitionFileRepository acquisitionFileRepository;
-    
+
     @Autowired
     private IMetaFileRepository metaFileRepository;
+
+    @Autowired
+    private IMetaFileService metaFileService;
 
     @Autowired
     private IMetaProductService metaProductService;
 
     @Autowired
     private IProcessGenerationRepository processGenerationRepository;
-    
+
     @Autowired
     private IChainGenerationRepository chainGenerationRepository;
-    
+
     @Autowired
     private IMetaProductRepository metaProductRepository;
 
@@ -97,7 +100,7 @@ public class MetaProductServiceTest {
         chainGenerationRepository.deleteAll();
         scanDirectoryRepository.deleteAll();
         acquisitionFileRepository.deleteAll();
-        metaFileRepository.deleteAll();        
+        metaFileRepository.deleteAll();
         metaProductRepository.deleteAll();
     }
 
@@ -108,7 +111,7 @@ public class MetaProductServiceTest {
 
         MetaProduct metaProduct1 = MetaProductBuilder.build(labelMetaProduct + "one").withCleanOriginalFile(true)
                 .withIngestProcessingChain("ingest processing chain one").get();
-        metaProductService.createOrUpdateMetaProduct(metaProduct1);
+        metaProductService.createOrUpdate(metaProduct1);
 
         Assert.assertEquals(1, metaProductRepository.count());
         Assert.assertEquals(metaProduct1, metaProductService
@@ -117,7 +120,7 @@ public class MetaProductServiceTest {
         MetaProduct metaProduct2 = MetaProductBuilder.build(labelMetaProduct + "two").withCleanOriginalFile(false)
                 .withIngestProcessingChain("ingest processing chain two").get();
         metaProductService.save(metaProduct2);
-        metaProductService.createOrUpdateMetaProduct(metaProduct2);
+        metaProductService.createOrUpdate(metaProduct2);
 
         Assert.assertEquals(2, metaProductRepository.count());
         Assert.assertEquals(metaProduct2, metaProductService
@@ -147,8 +150,8 @@ public class MetaProductServiceTest {
         // create 3 Metafile
         metaFiles.add(MetaFileBuilder.build().isMandatory().withFilePattern("pattern1").withMediaType("file type")
                 .withInvalidFolder("tmp/invalid1").get());
-        MetaFile metaFile2 = MetaFileBuilder.build().isMandatory().withFilePattern("pattern2").withMediaType("file type")
-                .withInvalidFolder("tmp/invalid2").withScanDirectories(scanDirs).get();
+        MetaFile metaFile2 = MetaFileBuilder.build().isMandatory().withFilePattern("pattern2")
+                .withMediaType("file type").withInvalidFolder("tmp/invalid2").withScanDirectories(scanDirs).get();
         metaFiles.add(metaFile2);
         metaFiles.add(MetaFileBuilder.build().isMandatory().withFilePattern("pattern3").withMediaType("file type")
                 .withInvalidFolder("tmp/invalid3").get());
@@ -157,7 +160,7 @@ public class MetaProductServiceTest {
         MetaProduct metaProduct1 = MetaProductBuilder.build(labelMetaProduct + "one").withCleanOriginalFile(true)
                 .withIngestProcessingChain("ingest processing chain one").withMetaFiles(metaFiles).get();
 
-        metaProductService.createOrUpdateMetaProduct(metaProduct1);
+        metaProductService.createOrUpdate(metaProduct1);
 
         Assert.assertEquals(1, metaProductRepository.count());
         Assert.assertEquals(3, metaFileRepository.count());
@@ -170,7 +173,7 @@ public class MetaProductServiceTest {
         metaFile2.addScanDirectory(new ScanDirectory(dirName + "/five"));
         metaFiles.add(metaFile2);
 
-        metaProductService.createOrUpdateMetaProduct(metaProduct1);
+        metaProductService.createOrUpdate(metaProduct1);
 
         Assert.assertEquals(1, metaProductRepository.count());
         Assert.assertEquals(3, metaFileRepository.count());
@@ -180,7 +183,7 @@ public class MetaProductServiceTest {
 
         // Remove a MetaFile
         metaProduct1.getMetaFiles().remove(metaFile2);
-        metaProductService.createOrUpdateMetaProduct(metaProduct1);
+        metaProductService.createOrUpdate(metaProduct1);
 
         Assert.assertEquals(1, metaProductRepository.count());
         Assert.assertEquals(2, metaFileRepository.count());

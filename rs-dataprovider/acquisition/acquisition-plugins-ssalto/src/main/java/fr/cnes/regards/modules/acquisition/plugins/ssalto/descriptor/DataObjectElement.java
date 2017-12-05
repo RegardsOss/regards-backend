@@ -82,18 +82,23 @@ public abstract class DataObjectElement extends EntityDescriptorElement {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         DataObjectElement other = (DataObjectElement) obj;
         if (dataObjectIdentifier == null) {
-            if (other.dataObjectIdentifier != null)
+            if (other.dataObjectIdentifier != null) {
                 return false;
-        } else if (!dataObjectIdentifier.equals(other.dataObjectIdentifier))
+            }
+        } else if (!dataObjectIdentifier.equals(other.dataObjectIdentifier)) {
             return false;
+        }
         return true;
     }
 

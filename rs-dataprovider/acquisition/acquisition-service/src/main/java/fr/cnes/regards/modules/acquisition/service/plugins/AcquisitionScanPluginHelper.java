@@ -46,9 +46,9 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
  * @author Christophe Mertz
  *
  */
-public abstract class AbstractAcquisitionScanPlugin {
+public class AcquisitionScanPluginHelper {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAcquisitionScanPlugin.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionScanPluginHelper.class);
 
     /**
      * Process the checksum of the {@link File} inside the {@link AcquisitionFile}.
