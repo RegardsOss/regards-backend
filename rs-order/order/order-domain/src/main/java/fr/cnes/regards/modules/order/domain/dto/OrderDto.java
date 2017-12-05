@@ -1,17 +1,11 @@
 package fr.cnes.regards.modules.order.domain.dto;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.beans.BeanUtils;
 
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
@@ -39,6 +33,8 @@ public class OrderDto {
     private OrderStatus status;
 
     private OffsetDateTime statusDate;
+
+    private boolean waitingForUser;
 
     private List<DatasetTaskDto> datasetTasks = new ArrayList<>();
 
@@ -112,6 +108,14 @@ public class OrderDto {
 
     public void setStatusDate(OffsetDateTime statusDate) {
         this.statusDate = statusDate;
+    }
+
+    public boolean isWaitingForUser() {
+        return waitingForUser;
+    }
+
+    public void setWaitingForUser(boolean waitingForUser) {
+        this.waitingForUser = waitingForUser;
     }
 
     public List<DatasetTaskDto> getDatasetTasks() {

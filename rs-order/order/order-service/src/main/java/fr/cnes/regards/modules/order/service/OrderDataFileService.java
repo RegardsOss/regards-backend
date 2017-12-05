@@ -70,7 +70,7 @@ public class OrderDataFileService implements IOrderDataFileService {
             filesTasksRepository.save(filesTask);
             // Update then associated information to order
             Order order = orderRepository.findSimpleById(filesTask.getOrderId());
-            order.setFilesTaskWaiting(
+            order.setWaitingForUser(
                     filesTasksRepository.findByOrderId(filesTask.getOrderId()).anyMatch(t -> t.isWaitingForUser()));
             orderRepository.save(order);
         }
@@ -99,7 +99,7 @@ public class OrderDataFileService implements IOrderDataFileService {
         if (orderId != null) {
             // Update then associated information to order
             Order order = orderRepository.findSimpleById(orderId);
-            order.setFilesTaskWaiting(filesTasksRepository.findByOrderId(orderId).anyMatch(t -> t.isWaitingForUser()));
+            order.setWaitingForUser(filesTasksRepository.findByOrderId(orderId).anyMatch(t -> t.isWaitingForUser()));
             orderRepository.save(order);
         }
         return dataFiles;

@@ -25,7 +25,6 @@ import java.util.TreeSet;
 
 import org.hibernate.annotations.SortNatural;
 
-import com.google.common.annotations.VisibleForTesting;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 
@@ -90,8 +89,8 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     @SortNatural
     private SortedSet<DatasetTask> datasetTasks = new TreeSet<>(Comparator.naturalOrder());
 
-    @Column(name = "files_task_waiting", nullable = false)
-    private boolean filesTaskWaiting = false;
+    @Column(name = "waiting_for_user", nullable = false)
+    private boolean waitingForUser = false;
 
     public Order() {
     }
@@ -188,12 +187,12 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
         return availableUpdateDate;
     }
 
-    public boolean isFilesTaskWaiting() {
-        return filesTaskWaiting;
+    public boolean isWaitingForUser() {
+        return waitingForUser;
     }
 
-    public void setFilesTaskWaiting(boolean filesTaskWaiting) {
-        this.filesTaskWaiting = filesTaskWaiting;
+    public void setWaitingForUser(boolean waitingForUser) {
+        this.waitingForUser = waitingForUser;
     }
 
     @Override
