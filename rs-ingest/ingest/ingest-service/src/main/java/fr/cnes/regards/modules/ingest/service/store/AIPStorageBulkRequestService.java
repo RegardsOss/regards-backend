@@ -37,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
@@ -101,7 +102,9 @@ public class AIPStorageBulkRequestService
         // Update all aip in request to  AIPState to QUEUED.
         aipsInRequest.forEach(aipId -> aipRepository.updateAIPEntityState(AIPState.QUEUED, aipId));
         if (!aipsInRequest.isEmpty()) {
+            FeignSecurityManager.asSystem(); // as we are using this method into a schedule, we clearly use the
             ResponseEntity<List<RejectedAip>> response = aipClient.store(aips);
+            FeignSecurityManager.reset();
             if ((response != null) && (response.getStatusCode().is2xxSuccessful())) {
                 List<RejectedAip> rejectedAips = response.getBody();
                 // If there is rejected aips, remove them from the list of AIPEntity to set to QUEUED status.
