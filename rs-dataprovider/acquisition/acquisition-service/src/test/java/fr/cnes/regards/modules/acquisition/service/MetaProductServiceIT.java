@@ -34,6 +34,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.BeforeTransaction;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
@@ -73,9 +75,6 @@ public class MetaProductServiceIT {
 
     @Autowired
     private IMetaFileRepository metaFileRepository;
-
-    @Autowired
-    private IMetaFileService metaFileService;
 
     @Autowired
     private IMetaProductService metaProductService;
@@ -193,6 +192,63 @@ public class MetaProductServiceIT {
 
         metaProductService.delete(metaProduct1.getId());
         Assert.assertEquals(0, metaProductRepository.count());
+    }
+
+    @Test(expected = EntityNotFoundException.class)
+    public void updateUnknownMetaProduct() throws ModuleException {
+        Assert.assertEquals(0, metaProductRepository.count());
+        String labelMetaProduct = "meta product label ";
+        String dirName = "/usr/local/sbin";
+        Set<ScanDirectory> scanDirs = new HashSet<>();
+        Set<MetaFile> metaFiles = new HashSet<>();
+
+        // create 1 scan dir
+        scanDirs.add(new ScanDirectory(dirName + "/one"));
+
+        // create 1 Metafiles
+        metaFiles.add(MetaFileBuilder.build().isMandatory().withFilePattern("pattern1").withMediaType("file type")
+                .withInvalidFolder("tmp/invalid1").get());
+
+        // create 1 MetaProduct
+        MetaProduct metaProduct1 = MetaProductBuilder.build(labelMetaProduct + "one").withCleanOriginalFile(true)
+                .withIngestProcessingChain("ingest processing chain one").withMetaFiles(metaFiles).get();
+
+        metaProductService.createOrUpdate(metaProduct1);
+
+        Assert.assertEquals(1, metaProductRepository.count());
+
+        metaProduct1.setId(9999L);
+        metaProductService.update(9999L, metaProduct1);
+
+        Assert.fail("error");
+    }
+
+    @Test(expected = EntityInconsistentIdentifierException.class)
+    public void updateInconsistentMetaProduct() throws ModuleException {
+        Assert.assertEquals(0, metaProductRepository.count());
+        String labelMetaProduct = "meta product label ";
+        String dirName = "/usr/local/sbin";
+        Set<ScanDirectory> scanDirs = new HashSet<>();
+        Set<MetaFile> metaFiles = new HashSet<>();
+
+        // create 1 scan dir
+        scanDirs.add(new ScanDirectory(dirName + "/one"));
+
+        // create 1 Metafiles
+        metaFiles.add(MetaFileBuilder.build().isMandatory().withFilePattern("pattern1").withMediaType("file type")
+                .withInvalidFolder("tmp/invalid1").get());
+
+        // create 1 MetaProduct
+        MetaProduct metaProduct1 = MetaProductBuilder.build(labelMetaProduct + "one").withCleanOriginalFile(true)
+                .withIngestProcessingChain("ingest processing chain one").withMetaFiles(metaFiles).get();
+
+        metaProductService.createOrUpdate(metaProduct1);
+
+        Assert.assertEquals(1, metaProductRepository.count());
+
+        metaProductService.update(9999L, metaProduct1);
+
+        Assert.fail("error");
     }
 
 }

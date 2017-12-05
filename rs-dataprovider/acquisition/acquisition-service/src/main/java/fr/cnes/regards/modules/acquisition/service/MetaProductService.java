@@ -107,10 +107,27 @@ public class MetaProductService implements IMetaProductService {
     @Override
     public MetaProduct createOrUpdate(MetaProduct newMetaProduct, MetaProduct existingMetaProduct)
             throws ModuleException {
-        if (!newMetaProduct.equals(existingMetaProduct)) {
+        if (newMetaProduct == null) {
+            return null;
+        }
+        if (newMetaProduct.getId() == null || newMetaProduct.getId() != existingMetaProduct.getId()) {
             metaProductRepository.delete(existingMetaProduct);
         }
-        return createOrUpdate(newMetaProduct);
+        if (newMetaProduct.getId() == null) {
+            // It is a new MetaProdict --> create it
+            newMetaProduct.setMetaFiles(metaFileService.createOrUpdate(newMetaProduct.getMetaFiles()));
+            return createOrUpdate(newMetaProduct);
+        } else {
+            newMetaProduct.setMetaFiles(metaFileService.createOrUpdate(newMetaProduct.getMetaFiles(),
+                                                                       existingMetaProduct.getMetaFiles()));
+            if (existingMetaProduct.equals(newMetaProduct)) {
+                // it is the same --> just return it
+                return newMetaProduct;
+            } else {
+                // it is different --> update it
+                return this.save(newMetaProduct);
+            }
+        }
     }
 
     @Override

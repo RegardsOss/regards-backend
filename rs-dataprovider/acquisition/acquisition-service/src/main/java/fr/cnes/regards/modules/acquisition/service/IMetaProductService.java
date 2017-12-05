@@ -40,6 +40,13 @@ public interface IMetaProductService {
      */
     MetaProduct createOrUpdate(MetaProduct metaProduct) throws ModuleException;
     
+    /**
+     * CReta eor Update an existing {@link MetaProduct} 
+     * @param newMetaProduct the {@link MetaProduct} to create or update
+     * @param existingMetaProduct an existing {@link MetaProduct} to update
+     * @return the created or updated {@link MetaProduct}
+     * @throws ModuleException if error occurs!
+     */
     MetaProduct createOrUpdate(MetaProduct newMetaProduct, MetaProduct existingMetaProduct) throws ModuleException;
 
     /**

@@ -79,7 +79,7 @@ public class DescriptorFileControler implements IDescriptorFileControler<Descrip
      * 
      * @return un objet document representant la structure du fichier descripteur
      */
-    public synchronized static DocumentImpl getDescDocument(DescriptorFile pDescriptorFile) {
+    public static synchronized DocumentImpl getDescDocument(DescriptorFile pDescriptorFile) {
         // Build document
         DocumentImpl newDoc = null;
         if (pDescriptorFile.getDescElementMap().size() > 0) {
@@ -109,7 +109,7 @@ public class DescriptorFileControler implements IDescriptorFileControler<Descrip
      * @param elementList
      * @return
      */
-    public synchronized static DocumentImpl buildDocument(DescriptorFile pDescriptorFile,
+    public static synchronized  DocumentImpl buildDocument(DescriptorFile pDescriptorFile,
             List<EntityDescriptorElement> elementList) {
         // Build document
         DocumentImpl newDoc = null;
@@ -140,7 +140,7 @@ public class DescriptorFileControler implements IDescriptorFileControler<Descrip
      * 
      * @return une liste de <code>DocumentImpl</code>
      */
-    public synchronized static List<DocumentImpl> getDescDocumentList(DescriptorFile pDescriptorFile) {
+    public static synchronized  List<DocumentImpl> getDescDocumentList(DescriptorFile pDescriptorFile) {
         ArrayList<DocumentImpl> descDocumentList = new ArrayList<>();
 
         // Loop through the blocks to add all blocks data storage objects
@@ -177,7 +177,7 @@ public class DescriptorFileControler implements IDescriptorFileControler<Descrip
      * 
      * @return une liste de <code>DocumentImpl</code>
      */
-    public synchronized static List<DocumentImpl> getUpdateDocumentList(DescriptorFile pDescriptorFile) {
+    public static synchronized  List<DocumentImpl> getUpdateDocumentList(DescriptorFile pDescriptorFile) {
         List<DocumentImpl> updateDocumentList = new ArrayList<>();
 
         // Loop through the blocks to add all blocks data storage objects

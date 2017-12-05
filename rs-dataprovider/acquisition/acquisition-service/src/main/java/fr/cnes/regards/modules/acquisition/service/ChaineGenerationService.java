@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -33,7 +32,6 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -113,17 +111,6 @@ public class ChaineGenerationService implements IChainGenerationService {
     }
 
     @Override
-    public ChainGeneration create(ChainGeneration chain) throws ModuleException {
-        Optional<ChainGeneration> chainGen = chainRepository.findOneByLabel(chain.getLabel());
-        if (chainGen.isPresent()) {
-            throw new EntityAlreadyExistsException(
-                    String.format("%s for name %s aleady exists", ChainGeneration.class.getName(), chain.getLabel()));
-        } else {
-            return chainRepository.save(createOrUpdate(chain));
-        }
-    }
-
-    @Override
     public ChainGeneration update(Long chainId, ChainGeneration chain) throws ModuleException {
         if (!chainId.equals(chain.getId())) {
             throw new EntityInconsistentIdentifierException(chainId, chain.getId(), chain.getClass());
@@ -131,8 +118,6 @@ public class ChaineGenerationService implements IChainGenerationService {
         if (!chainRepository.exists(chainId)) {
             throw new EntityNotFoundException(chainId, ChainGeneration.class);
         }
-
-        //        ChainGeneration existingChain = chainRepository.findOne(chain.getId());
 
         return chainRepository.save(createOrUpdate(chain));
     }
@@ -148,10 +133,10 @@ public class ChaineGenerationService implements IChainGenerationService {
             // It is a new Chain --> create it
             chain.setMetaProduct(metaProductService.createOrUpdate(chain.getMetaProduct()));
             return this.save(chain);
-        }
-        else {
-            ChainGeneration existingChain = this.retrieve(chain.getId());            
-            chain.setMetaProduct(metaProductService.createOrUpdate(chain.getMetaProduct(), existingChain.getMetaProduct()));
+        } else {
+            ChainGeneration existingChain = this.retrieve(chain.getId());
+            chain.setMetaProduct(metaProductService.createOrUpdate(chain.getMetaProduct(),
+                                                                   existingChain.getMetaProduct()));
         }
 
         return chain;

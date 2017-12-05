@@ -38,14 +38,6 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 public interface IChainGenerationService {
 
     /**
-     * Create a new {@link ChainGeneration} 
-     * @param chain the {@link ChainGeneration} to create
-     * @return the {@link ChainGeneration} created
-     * @throws ModuleException if error occurs!
-     */
-    ChainGeneration create(ChainGeneration chain) throws ModuleException;
-
-    /**
      * Save a {@link ChainGeneration}
      * @param chain the {@link ChainGeneration} to save
      * @return the saved {@link ChainGeneration}
@@ -99,6 +91,10 @@ public interface IChainGenerationService {
      */
     ChainGeneration findByMetaProduct(MetaProduct metaProduct);
 
+    /**
+     * Find a {@link Set} of {@link ChainGeneration} that are active and not running
+     * @return the finded {@link Set} of {@link ChainGeneration}
+     */
     Set<ChainGeneration> findByActiveTrueAndRunningFalse();
 
     /**
