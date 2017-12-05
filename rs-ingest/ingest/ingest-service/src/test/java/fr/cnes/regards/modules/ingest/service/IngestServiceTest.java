@@ -73,7 +73,7 @@ public class IngestServiceTest extends AbstractSIPTest {
     @Override
     public void doInit() throws ModuleException {
         sipSessionRepository.deleteAll();
-        ingestProcessingService.initDefaultServiceConfiguration();
+        // ingestProcessingService.initDefaultServiceConfiguration();
     }
 
     /**
@@ -87,7 +87,7 @@ public class IngestServiceTest extends AbstractSIPTest {
     @Test
     public void ingestWithCollision() throws ModuleException {
 
-        LOGGER.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        LOGGER.debug("Starting test ingestWithCollision");
 
         SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                 SESSION_ID);

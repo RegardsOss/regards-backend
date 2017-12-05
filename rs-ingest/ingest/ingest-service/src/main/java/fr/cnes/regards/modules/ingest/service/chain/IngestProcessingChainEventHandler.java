@@ -59,7 +59,7 @@ public class IngestProcessingChainEventHandler implements ApplicationListener<Ap
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
-        LOGGER.info("IngestPorcessingChainEventHandler subscribing to new TenantConnectionReady events.");
+        LOGGER.info("IngestProcessingChainEventHandler subscribing to new TenantConnectionReady events.");
 
         // Multitenant version of the microservice.
         for (final String tenant : tenantResolver.getAllActiveTenants()) {
