@@ -20,7 +20,7 @@ properties([
   pipelineTriggers([
     upstream(
       threshold: hudson.model.Result.SUCCESS,
-      upstreamProjects: 'rs-microservice-multi-branch/develop', 'rs-storage-multi-branch/develop'
+      upstreamProjects: 'rs-microservice-multi-branch/develop, rs-storage-multi-branch/develop'
     )
   ])
 ])
