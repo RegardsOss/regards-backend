@@ -45,6 +45,7 @@ import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProcessGenerationRepository;
+import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -90,6 +91,9 @@ public class MetaProductServiceIT {
 
     @Autowired
     private IMetaProductRepository metaProductRepository;
+    
+    @Autowired
+    private IProductRepository productRepository;
 
     @BeforeTransaction
     protected void beforeTransaction() {
@@ -103,6 +107,7 @@ public class MetaProductServiceIT {
         scanDirectoryRepository.deleteAll();
         acquisitionFileRepository.deleteAll();
         metaFileRepository.deleteAll();
+        productRepository.deleteAll();
         metaProductRepository.deleteAll();
     }
 

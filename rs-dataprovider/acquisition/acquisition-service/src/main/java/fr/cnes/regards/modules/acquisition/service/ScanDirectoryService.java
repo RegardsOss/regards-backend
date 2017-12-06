@@ -124,7 +124,7 @@ public class ScanDirectoryService implements IScanDirectoryService {
             boolean isPresent = false;
             for (ScanDirectory aNewScanDir : newScanDirectories) {
                 if (!isPresent) {
-                    LOGGER.info("new scan dir id:{}  -  existing scan dir id:{}", aNewScanDir.getId(),
+                    LOGGER.debug("new scan dir id:{}  -  existing scan dir id:{}", aNewScanDir.getId(),
                                 aScanDir.getId());
                     isPresent = aNewScanDir.getId().equals(aScanDir.getId());
                 }
