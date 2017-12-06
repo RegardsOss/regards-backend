@@ -49,8 +49,8 @@ public class CheckInPlugin implements ICheckFilePlugin {
     }
 
     @Override
-    public boolean runPlugin(String chainLabel, File fileToCheck, String dataSetId) throws ModuleException {
-        LOGGER.info("Start check file <{}> for the chain <{}>", fileToCheck.getAbsoluteFile(), chainLabel);
+    public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
+        LOGGER.info("Start check file <{}>", fileToCheck.getAbsoluteFile());
         boolean result = false;
 
         // Check file exists
@@ -74,7 +74,7 @@ public class CheckInPlugin implements ICheckFilePlugin {
             LOGGER.error("Can't read file <{}>", fileToCheck.getAbsolutePath());
         }
 
-        LOGGER.info("End check file <{}> for the chain <{}>", fileToCheck.getAbsoluteFile(), chainLabel);
+        LOGGER.info("End check file <{}>", fileToCheck.getAbsoluteFile());
 
         return result;
     }

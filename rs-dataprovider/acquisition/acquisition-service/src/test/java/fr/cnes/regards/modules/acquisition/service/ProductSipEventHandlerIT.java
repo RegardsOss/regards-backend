@@ -34,17 +34,17 @@ import org.springframework.test.context.ContextConfiguration;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.acquisition.builder.ChainGenerationBuilder;
+import fr.cnes.regards.modules.acquisition.builder.AcquisitionProcessingChainBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
-import fr.cnes.regards.modules.acquisition.builder.ProcessGenerationBuilder;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.builder.ExecAcquisitionProcessingChainBuilder;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
-import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
+import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
-import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceConfiguration;
+import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionProcessingChainConfiguration;
 import fr.cnes.regards.modules.acquisition.service.step.AcquisitionITHelper;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
@@ -54,7 +54,7 @@ import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
  * @author Christophe Mertz
  *
  */
-@ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class })
+@ContextConfiguration(classes = { AcquisitionProcessingChainConfiguration.class })
 @ActiveProfiles({ "test", "disableDataProviderTask", "testAmqp" })
 @DirtiesContext
 public class ProductSipEventHandlerIT extends AcquisitionITHelper {
@@ -71,9 +71,9 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
 
     private MetaProduct metaProduct003;
 
-    private ChainGeneration chainForProcessing;
+    private AcquisitionProcessingChain chainForProcessing;
 
-    private ProcessGeneration process;
+    private ExecAcquisitionProcessingChain process;
 
     @Before
     public void init() throws ModuleException {
@@ -121,12 +121,12 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
         // the chain is not active to not activate it 
         chain.setActive(false);
         chain.setSession("session-001");
-        chainService.createOrUpdate(chain);
+        acqProcessChainService.createOrUpdate(chain);
 
-        // Create a generation chain for the ProcessGeneration
-        chainForProcessing = chainService.createOrUpdate(ChainGenerationBuilder.build(CHAINE_LABEL + "for processing")
+        // Create a generation chain for the ExecAcquisitionProcessingChain
+        chainForProcessing = acqProcessChainService.createOrUpdate(AcquisitionProcessingChainBuilder.build(CHAIN_LABEL + "for processing")
                 .withDataSet(DATASET_IP_ID).withSession("session-001").withMetaProduct(metaProduct001).get());
-        process = processGenerationService.save(ProcessGenerationBuilder.build(chainForProcessing.getSession())
+        process = execProcessingChainService.save(ExecAcquisitionProcessingChainBuilder.build(chainForProcessing.getSession())
                 .withChain(chainForProcessing).withStartDate(OffsetDateTime.now()).get());
 
         runtimeTenantResolver.forceTenant(tenant);
@@ -135,7 +135,7 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
     @Test
     public void receivedOneSipStoreEvent() throws InterruptedException, ModuleException {
         process.setNbSipCreated(1);
-        processGenerationService.save(process);
+        execProcessingChainService.save(process);
 
         Assert.assertEquals(16, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
@@ -143,7 +143,7 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
 
         chainForProcessing.setPostProcessSipPluginConf(pluginService
                 .getPluginConfiguration("CleanOriginalFilePostPlugin", IPostProcessSipPlugin.class));
-        chainService.createOrUpdate(chainForProcessing);
+        acqProcessChainService.createOrUpdate(chainForProcessing);
 
         String productName = "product-033";
         try {
@@ -171,7 +171,7 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
 
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(true, ProductStatus.SAVED).size());
 
-        ProcessGeneration processLoad = processGenerationService.findBySession(chainForProcessing.getSession());
+        ExecAcquisitionProcessingChain processLoad = execProcessingChainService.findBySession(chainForProcessing.getSession());
         Assert.assertEquals(1, processLoad.getNbSipCreated());
         Assert.assertEquals(0, processLoad.getNbSipError());
         Assert.assertEquals(1, processLoad.getNbSipStored());
@@ -181,7 +181,7 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
     @Test
     public void receivedSipStoreEvents() throws InterruptedException, ModuleException {
         process.setNbSipCreated(3);
-        processGenerationService.save(process);
+        execProcessingChainService.save(process);
 
         Assert.assertEquals(16, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
@@ -189,7 +189,7 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
 
         chainForProcessing.setPostProcessSipPluginConf(pluginService
                 .getPluginConfiguration("CleanOriginalFilePostPlugin", IPostProcessSipPlugin.class));
-        chainService.createOrUpdate(chainForProcessing);
+        acqProcessChainService.createOrUpdate(chainForProcessing);
 
         publishSipEvent("product-001", SIPState.STORED);
         publishSipEvent("product-002", SIPState.STORED);
@@ -207,7 +207,7 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
         Assert.assertEquals(3, productService.findBySendedAndStatusIn(true, ProductStatus.SAVED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
 
-        ProcessGeneration processLoad = processGenerationService.findBySession(chainForProcessing.getSession());
+        ExecAcquisitionProcessingChain processLoad = execProcessingChainService.findBySession(chainForProcessing.getSession());
         Assert.assertEquals(3, processLoad.getNbSipCreated());
         Assert.assertEquals(0, processLoad.getNbSipError());
         Assert.assertEquals(3, processLoad.getNbSipStored());
@@ -239,8 +239,8 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
         Assert.assertEquals(16, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
-        processGenerationRepository.delete(process);
-        chainGenerationRepository.delete(chainForProcessing);
+        execProcessingChainRepository.delete(process);
+        processingChainRepository.delete(chainForProcessing);
 
         publishSipEvent("product-001", SIPState.STORED);
 

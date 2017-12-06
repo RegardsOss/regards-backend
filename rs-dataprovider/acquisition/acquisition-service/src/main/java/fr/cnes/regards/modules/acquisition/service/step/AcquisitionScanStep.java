@@ -32,7 +32,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
@@ -52,28 +52,28 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
     @Autowired
     private IAcquisitionFileService acquisitionFileService;
 
-    private ChainGeneration chainGeneration;
+    private AcquisitionProcessingChain acqProcessingChain;
 
     @Override
     public void proceedStep() throws AcquisitionRuntimeException, AcquisitionException {
 
-        if (chainGeneration == null) {
+        if (acqProcessingChain == null) {
             String msg = "The chain generation is mandatory";
             LOGGER.error(msg);
             throw new AcquisitionRuntimeException(msg);
         }
 
         // A plugin for the scan configuration is required
-        if (this.chainGeneration.getScanAcquisitionPluginConf() == null) {
+        if (this.acqProcessingChain.getScanAcquisitionPluginConf() == null) {
             throw new AcquisitionException(
-                    "[" + this.chainGeneration.getLabel() + "] The required IAcquisitionScanPlugin is missing");
+                    "[" + this.acqProcessingChain.getLabel() + "] The required IAcquisitionScanPlugin is missing");
         }
 
         // Lunch the scan plugin
         try {
             // build the plugin parameters
             PluginParametersFactory factory = PluginParametersFactory.build();
-            for (Map.Entry<String, String> entry : this.chainGeneration.getScanAcquisitionParameter().entrySet()) {
+            for (Map.Entry<String, String> entry : this.acqProcessingChain.getScanAcquisitionParameter().entrySet()) {
                 factory.addParameterDynamic(entry.getKey(), entry.getValue());
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Add parameter <{}> with value : {}", entry.getKey(), entry.getValue());
@@ -82,20 +82,20 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
 
             // get an instance of the plugin
             IAcquisitionScanPlugin scanPlugin = pluginService
-                    .getPlugin(this.chainGeneration.getScanAcquisitionPluginConf().getId(),
+                    .getPlugin(this.acqProcessingChain.getScanAcquisitionPluginConf().getId(),
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
             // launch the plugin to get the AcquisitionFile
             // c'est le plugin qui met la Date d'acquisition du fichier
             // c'est plugin qui calcule le checksum si c'est configuré dans la chaine   
             Set<AcquisitionFile> acquisitionFiles = scanPlugin
-                    .getAcquisitionFiles(this.chainGeneration.getLabel(), this.chainGeneration.getMetaProduct(),
-                                         this.chainGeneration.getLastDateActivation());
+                    .getAcquisitionFiles(this.acqProcessingChain.getLabel(), this.acqProcessingChain.getMetaProduct(),
+                                         this.acqProcessingChain.getLastDateActivation());
 
-            acquisitionFileService.saveAcqFilesAndChain(acquisitionFiles, chainGeneration);
+            acquisitionFileService.saveAcqFilesAndChain(acquisitionFiles, acqProcessingChain);
 
-            reportBadFiles(scanPlugin.getBadFiles(this.chainGeneration.getLabel(),
-                                                  this.chainGeneration.getMetaProduct().getMetaFiles()));
+            reportBadFiles(scanPlugin.getBadFiles(this.acqProcessingChain.getLabel(),
+                                                  this.acqProcessingChain.getMetaProduct().getMetaFiles()));
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -107,12 +107,12 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
             return;
         }
         badFiles.forEach(f -> LOGGER.info("Unexpected file <{}> for the chain <{}>", f.getAbsoluteFile(),
-                                          chainGeneration.getLabel()));
+                                          acqProcessingChain.getLabel()));
     }
 
     @Override
     public void getResources() throws AcquisitionException {
-        this.chainGeneration = process.getChainGeneration();
+        this.acqProcessingChain = process.getChainGeneration();
     }
 
     @Override

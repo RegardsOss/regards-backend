@@ -63,11 +63,11 @@ import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
-import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
 
 /**
- * {@link ChainGeneration} REST module controller
+ * {@link AcquisitionProcessingChain} REST module controller
  * 
  * @author Christophe Mertz
  *
@@ -75,16 +75,16 @@ import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 @RestController
 @ModuleInfo(name = "chains", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
-@RequestMapping(path = ChainGenerationController.BASE_PATH)
-public class ChainGenerationController implements IResourceController<ChainGeneration> {
+@RequestMapping(path = AcquisitionProcessingChainController.BASE_PATH)
+public class AcquisitionProcessingChainController implements IResourceController<AcquisitionProcessingChain> {
 
     public static final String BASE_PATH = "chains";
 
     /**
-     * Business service for {@link ChainGeneration}
+     * Business service for {@link AcquisitionProcessingChain}
      */
     @Autowired
-    private IChainGenerationService chainService;
+    private IAcquisitionProcessingChainService acqProcessChainService;
 
     /**
      * HATEOAS service
@@ -93,69 +93,69 @@ public class ChainGenerationController implements IResourceController<ChainGener
     private IResourceService resourceService;
 
     /**
-     * Get all {@link ChainGeneration}
+     * Get all {@link AcquisitionProcessingChain}
      * @param pageable a {@link Pageable} for pagination information
      * @param assembler a {@link ResourceAssembler} to easily convert {@link Page} instances into {@link PagedResources}
-     * @return {@link List} of {@link Resource} of {@link ChainGeneration}
+     * @return {@link List} of {@link Resource} of {@link AcquisitionProcessingChain}
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "List all the chains", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<PagedResources<Resource<ChainGeneration>>> retrieveAll(final Pageable pageable,
-            final PagedResourcesAssembler<ChainGeneration> assembler) {
-        return new ResponseEntity<>(toPagedResources(chainService.retrieveAll(pageable), assembler), HttpStatus.OK);
+    public ResponseEntity<PagedResources<Resource<AcquisitionProcessingChain>>> retrieveAll(final Pageable pageable,
+            final PagedResourcesAssembler<AcquisitionProcessingChain> assembler) {
+        return new ResponseEntity<>(toPagedResources(acqProcessChainService.retrieveAll(pageable), assembler), HttpStatus.OK);
     }
 
     /**
-     * Get a {@link ChainGeneration}
-     * @param chainId the {@link ChainGeneration} identifier
-     * @return the retrieved {@link ChainGeneration}
+     * Get a {@link AcquisitionProcessingChain}
+     * @param chainId the {@link AcquisitionProcessingChain} identifier
+     * @return the retrieved {@link AcquisitionProcessingChain}
      * @throws ModuleException if error occurs!
      */
     @RequestMapping(method = RequestMethod.GET, value = "/{chainId}")
     @ResourceAccess(description = "Get a chain", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<ChainGeneration>> get(@PathVariable final Long chainId) throws ModuleException {
-        return ResponseEntity.ok(toResource(chainService.retrieve(chainId)));
+    public ResponseEntity<Resource<AcquisitionProcessingChain>> get(@PathVariable final Long chainId) throws ModuleException {
+        return ResponseEntity.ok(toResource(acqProcessChainService.retrieve(chainId)));
     }
 
     /**
-     * Create a {@link ChainGeneration}
-     * @param chainGeneration the {@link ChainGeneration} to create
-     * @return the created {@link ChainGeneration}
+     * Create a {@link AcquisitionProcessingChain}
+     * @param processingChain the {@link AcquisitionProcessingChain} to create
+     * @return the created {@link AcquisitionProcessingChain}
      * @throws ModuleException if error occurs!
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
     @ResourceAccess(description = "Add a chain", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<ChainGeneration>> create(@Valid @RequestBody ChainGeneration chainGeneration)
+    public ResponseEntity<Resource<AcquisitionProcessingChain>> create(@Valid @RequestBody AcquisitionProcessingChain processingChain)
             throws ModuleException {
-        return new ResponseEntity<>(toResource(chainService.createOrUpdate(chainGeneration)), HttpStatus.CREATED);
+        return new ResponseEntity<>(toResource(acqProcessChainService.createOrUpdate(processingChain)), HttpStatus.CREATED);
     }
 
     /**
-     * Update a {@link ChainGeneration} 
-     * @param chainId the {@link ChainGeneration} identifier to update
-     * @param chainGeneration the {@link ChainGeneration} to update
-     * @return the updated {@link ChainGeneration}
+     * Update a {@link AcquisitionProcessingChain} 
+     * @param chainId the {@link AcquisitionProcessingChain} identifier to update
+     * @param processingChain the {@link AcquisitionProcessingChain} to update
+     * @return the updated {@link AcquisitionProcessingChain}
      * @throws ModuleException if error occurs!
      */
     @RequestMapping(method = RequestMethod.PUT, value = "/{chainId}")
     @ResponseBody
     @ResourceAccess(description = "Update a chain", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<ChainGeneration>> update(@PathVariable final Long chainId,
-            @Valid @RequestBody ChainGeneration chainGeneration) throws ModuleException {
-        return ResponseEntity.ok(toResource(chainService.update(chainId, chainGeneration)));
+    public ResponseEntity<Resource<AcquisitionProcessingChain>> update(@PathVariable final Long chainId,
+            @Valid @RequestBody AcquisitionProcessingChain processingChain) throws ModuleException {
+        return ResponseEntity.ok(toResource(acqProcessChainService.update(chainId, processingChain)));
     }
 
     @Override
-    public Resource<ChainGeneration> toResource(ChainGeneration element, Object... extras) {
-        Resource<ChainGeneration> resource = resourceService.toResource(element);
+    public Resource<AcquisitionProcessingChain> toResource(AcquisitionProcessingChain element, Object... extras) {
+        Resource<AcquisitionProcessingChain> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveAll", LinkRels.LIST);
         resourceService.addLink(resource, this.getClass(), "get", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
         resourceService.addLink(resource, this.getClass(), "update", LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, element.getId()),
-                                MethodParamFactory.build(ChainGeneration.class));
+                                MethodParamFactory.build(AcquisitionProcessingChain.class));
         return resource;
     }
 

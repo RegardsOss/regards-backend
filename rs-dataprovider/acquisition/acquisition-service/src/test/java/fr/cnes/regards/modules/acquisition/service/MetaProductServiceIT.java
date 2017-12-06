@@ -41,10 +41,10 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
-import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
-import fr.cnes.regards.modules.acquisition.dao.IProcessGenerationRepository;
+import fr.cnes.regards.modules.acquisition.dao.IExecAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
@@ -84,10 +84,10 @@ public class MetaProductServiceIT {
     private IMetaProductService metaProductService;
 
     @Autowired
-    private IProcessGenerationRepository processGenerationRepository;
+    private IExecAcquisitionProcessingChainRepository execProcessingChainRepository;
 
     @Autowired
-    private IChainGenerationRepository chainGenerationRepository;
+    private IAcquisitionProcessingChainRepository processingChainRepository;
 
     @Autowired
     private IMetaProductRepository metaProductRepository;
@@ -102,8 +102,8 @@ public class MetaProductServiceIT {
 
     @Before
     public void cleanDb() {
-        processGenerationRepository.deleteAll();
-        chainGenerationRepository.deleteAll();
+        execProcessingChainRepository.deleteAll();
+        processingChainRepository.deleteAll();
         scanDirectoryRepository.deleteAll();
         acquisitionFileRepository.deleteAll();
         metaFileRepository.deleteAll();

@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentif
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
@@ -68,7 +68,7 @@ public class MetaProductService implements IMetaProductService {
             throw new EntityInconsistentIdentifierException(metaproductId, metaProduct.getId(), metaProduct.getClass());
         }
         if (!metaProductRepository.exists(metaproductId)) {
-            throw new EntityNotFoundException(metaproductId, ChainGeneration.class);
+            throw new EntityNotFoundException(metaproductId, AcquisitionProcessingChain.class);
         }
         return createOrUpdate(metaProduct);
     }

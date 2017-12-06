@@ -38,7 +38,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
         ignoreResourceNotFound = true)
 @ComponentScan(basePackages = {"fr.cnes.regards.modules.acquisition"})
 @EnableAutoConfiguration
-public class ChainGenerationServiceConfiguration {
+public class AcquisitionProcessingChainConfiguration {
     
     @Bean
     public IAuthenticationResolver authenticationResolver() {

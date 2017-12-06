@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
 import fr.cnes.regards.modules.acquisition.service.step.IStep;
@@ -36,7 +36,7 @@ public class AcquisitionProcess {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcess.class);
 
-    private final ChainGeneration chainGeneration;
+    private final AcquisitionProcessingChain acqProcessingChain;
 
     private Product product;
 
@@ -51,12 +51,12 @@ public class AcquisitionProcess {
      */
     private boolean stopProcess = false;
 
-    public AcquisitionProcess(ChainGeneration chain) {
-        chainGeneration = chain;
+    public AcquisitionProcess(AcquisitionProcessingChain acquisitionProcessingChain) {
+        this.acqProcessingChain = acquisitionProcessingChain;
     }
 
-    public AcquisitionProcess(ChainGeneration chain, Product aProduct) {
-        chainGeneration = chain;
+    public AcquisitionProcess(AcquisitionProcessingChain acquisitionProcessingChain, Product aProduct) {
+        this.acqProcessingChain = acquisitionProcessingChain;
         product = aProduct;
     }
 
@@ -75,13 +75,13 @@ public class AcquisitionProcess {
                 setCurrentStep(currentStep.getNextStep());
             }
         } catch (ModuleException e) {
-            String msg = "["+ chainGeneration.getSession()+ "]";
+            String msg = "["+ acqProcessingChain.getSession()+ "]";
             LOGGER.error(msg, e);
         }
     }
 
-    public ChainGeneration getChainGeneration() {
-        return chainGeneration;
+    public AcquisitionProcessingChain getChainGeneration() {
+        return acqProcessingChain;
     }
 
     public Product getProduct() {

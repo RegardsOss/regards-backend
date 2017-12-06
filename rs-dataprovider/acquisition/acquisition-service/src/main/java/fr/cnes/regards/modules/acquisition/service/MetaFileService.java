@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentif
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 
@@ -71,7 +71,7 @@ public class MetaFileService implements IMetaFileService {
             throw new EntityInconsistentIdentifierException(metafileId, metafile.getId(), metafile.getClass());
         }
         if (!metaFileRepository.exists(metafileId)) {
-            throw new EntityNotFoundException(metafileId, ChainGeneration.class);
+            throw new EntityNotFoundException(metafileId, AcquisitionProcessingChain.class);
         }
 
         return createOrUpdate(metafile);

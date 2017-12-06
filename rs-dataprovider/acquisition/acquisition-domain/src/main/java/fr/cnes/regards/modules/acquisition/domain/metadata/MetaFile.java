@@ -89,7 +89,6 @@ public class MetaFile implements IIdentifiable<Long> {
 
     /**
      * A {@link String} corresponding to the data file mime-type
-     * TODO CMZ à completer fileType et à reporter dans le SIP content information
      */
     @Column(name = "media_type", length = MAX_STRING_LENGTH)
     private String mediaType;

@@ -30,10 +30,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.job.SIPEventJobParameter;
-import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.step.IPostAcquisitionStep;
 import fr.cnes.regards.modules.acquisition.service.step.IStep;
@@ -60,7 +60,7 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
     private IProductService productService;
 
     @Autowired
-    private IChainGenerationService chainGenerationService;
+    private IAcquisitionProcessingChainService acqProcessChainService;
 
     private SIPEvent sipEvent;
 
@@ -69,9 +69,9 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
         LOGGER.info("Start POST acquisition SIP job for the product <{}>", sipEvent.getIpId());
 
         Product product = productService.retrieve(sipEvent.getIpId());
-        ChainGeneration chainGeneration = chainGenerationService.findByMetaProduct(product.getMetaProduct());
+        AcquisitionProcessingChain acqProcessingChain = acqProcessChainService.findByMetaProduct(product.getMetaProduct());
 
-        AcquisitionProcess process = new AcquisitionProcess(chainGeneration, product);
+        AcquisitionProcess process = new AcquisitionProcess(acqProcessingChain, product);
 
         // IPostAcquisitionStep is the first step
         IStep postSipStep = new PostSipAcquisitionStep(sipEvent);

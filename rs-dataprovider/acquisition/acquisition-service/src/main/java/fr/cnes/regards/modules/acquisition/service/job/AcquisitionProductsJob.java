@@ -37,12 +37,12 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
-import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
+import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionProcessingChainJobParameter;
 import fr.cnes.regards.modules.acquisition.domain.job.ProductJobParameter;
-import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
 import fr.cnes.regards.modules.acquisition.service.step.AcquisitionCheckStep;
@@ -79,10 +79,10 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
     private IJobInfoService jobInfoService;
 
     /**
-     * {@link ChainGeneration} service
+     * {@link AcquisitionProcessingChain} service
      */
     @Autowired
-    private IChainGenerationService chainGenerationService;
+    private IAcquisitionProcessingChainService acqProcessChainService;
 
     /**
      * Resolver to retrieve authentication information
@@ -91,22 +91,22 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
     private IAuthenticationResolver authResolver;
 
     /**
-     * The current {@link ChainGeneration}
+     * The current {@link AcquisitionProcessingChain}
      */
-    private ChainGeneration chainGeneration;
+    private AcquisitionProcessingChain acqProcessingChain;
 
     @Override
     public void run() {
-        LOGGER.info("[{}] Start acquisition job for the chain <{}>", chainGeneration.getSession(),
-                    chainGeneration.getLabel());
+        LOGGER.info("[{}] Start acquisition job for the chain <{}>", acqProcessingChain.getSession(),
+                    acqProcessingChain.getLabel());
 
         // The MetaProduct is required
-        if (chainGeneration.getMetaProduct() == null) {
+        if (acqProcessingChain.getMetaProduct() == null) {
             throw new AcquisitionRuntimeException(
-                    "The required MetaProduct is missing for the ChainGeneration <" + chainGeneration.getLabel() + ">");
+                    "The required MetaProduct is missing for the AcquisitionProcessingChain <" + acqProcessingChain.getLabel() + ">");
         }
 
-        AcquisitionProcess process = new AcquisitionProcess(chainGeneration);
+        AcquisitionProcess process = new AcquisitionProcess(acqProcessingChain);
 
         // IAcquisitionScanStep is the first step
         IStep scanStep = new AcquisitionScanStep();
@@ -116,7 +116,7 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
 
         // IAcquisitionCheckStep is second step
         IStep checkStep = null;
-        if (chainGeneration.getCheckAcquisitionPluginConf() != null) {
+        if (acqProcessingChain.getCheckAcquisitionPluginConf() != null) {
             checkStep = new AcquisitionCheckStep();
             checkStep.setProcess(process);
             beanFactory.autowireBean(checkStep);
@@ -129,19 +129,19 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
         final int n = submitProducts();
 
         // the ChainGeneration is not running, it is available for a new scan
-        chainGeneration.setRunning(false);
+        acqProcessingChain.setRunning(false);
         try {
-            chainGenerationService.createOrUpdate(chainGeneration);
+            acqProcessChainService.createOrUpdate(acqProcessingChain);
         } catch (ModuleException e) {
-            LOGGER.error("[{}] Error when try to save the chain {}", chainGeneration.getSession(),
-                         chainGeneration.getLabel());
+            LOGGER.error("[{}] Error when try to save the chain {}", acqProcessingChain.getSession(),
+                         acqProcessingChain.getLabel());
             LOGGER.error(e.getMessage(), e);
         }
 
-        LOGGER.info("[{}] {} AcquisitionGenerateSIPJob queued", chainGeneration.getSession(), n);
+        LOGGER.info("[{}] {} AcquisitionGenerateSIPJob queued", acqProcessingChain.getSession(), n);
 
-        LOGGER.info("[{}] End  acquisition job for the chain <{}>", chainGeneration.getSession(),
-                    chainGeneration.getLabel());
+        LOGGER.info("[{}] End  acquisition job for the chain <{}>", acqProcessingChain.getSession(),
+                    acqProcessingChain.getLabel());
     }
 
     /**
@@ -173,11 +173,10 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
     private boolean createJob(Product product) {
         // Create a ScanJob
         JobInfo acquisition = new JobInfo();
-        acquisition.setParameters(new ChainGenerationJobParameter(chainGeneration),
+        acquisition.setParameters(new AcquisitionProcessingChainJobParameter(acqProcessingChain),
                                   new ProductJobParameter(product.getProductName()));
         acquisition.setClassName(AcquisitionGenerateSIPJob.class.getName());
         acquisition.setOwner(authResolver.getUser());
-        acquisition.setPriority(50); //TODO CMZ priority ?
 
         acquisition = jobInfoService.createAsQueued(acquisition);
 
@@ -194,12 +193,12 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
             throw new JobParameterInvalidException("Only one parameter is expected.");
         }
         JobParameter param = parameters.values().iterator().next();
-        if (!ChainGenerationJobParameter.isCompatible(param)) {
+        if (!AcquisitionProcessingChainJobParameter.isCompatible(param)) {
             throw new JobParameterInvalidException(
                     "Please use ChainGenerationJobParameter in place of JobParameter (this "
                             + "class is here to facilitate your life so please use it.");
         }
 
-        chainGeneration = param.getValue();
+        acqProcessingChain = param.getValue();
     }
 }

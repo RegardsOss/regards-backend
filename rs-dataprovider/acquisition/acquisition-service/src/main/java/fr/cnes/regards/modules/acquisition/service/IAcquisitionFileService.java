@@ -27,7 +27,7 @@ import org.springframework.data.domain.Pageable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -79,15 +79,15 @@ public interface IAcquisitionFileService {
     List<AcquisitionFile> findByProduct(Product product);
 
     /**
-     * Set the status of all the {@link AcquisitionFile} to {@link AcquisitionFileStatus#IN_PROGRESS} and set the last acquisition date of the current {@link ChainGeneration}.</br>
+     * Set the status of all the {@link AcquisitionFile} to {@link AcquisitionFileStatus#IN_PROGRESS} and set the last acquisition date of the current {@link AcquisitionProcessingChain}.</br>
      * If a {@link AcquisitionFile} does not exixt it is creates and persists.
      *   
-     * Save all the {@link AcquisitionFile} and the {@link ChainGeneration}.
+     * Save all the {@link AcquisitionFile} and the {@link AcquisitionProcessingChain}.
      * 
      * @param acquisitionFiles a {@link Set} of {@link AcquisitionFile}
-     * @param chain the current {@link ChainGeneration}
+     * @param chain the current {@link AcquisitionProcessingChain}
      */
-    void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, ChainGeneration chain) throws ModuleException;
+    void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, AcquisitionProcessingChain chain) throws ModuleException;
 
     /**
      * Save the current {@link AcquisitionFile} and the associated {@link Product}.

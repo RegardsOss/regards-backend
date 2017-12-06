@@ -32,7 +32,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -57,9 +57,9 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     private final IAcquisitionFileRepository acqfileRepository;
 
     /**
-     * {@link ChainGeneration} service
+     * {@link AcquisitionProcessingChain} service
      */
-    private final IChainGenerationService chainGenerationService;
+    private final IAcquisitionProcessingChainService acqProcessingChainService;
 
     /**
      * {@link Product} service
@@ -71,13 +71,13 @@ public class AcquisitionFileService implements IAcquisitionFileService {
      * 
      * @param acqFileRepository a {@link AcquisitionFile} repository
      * @param prService a {@link Product} service
-     * @param chainGenService a {@link ChainGeneration} service
+     * @param acqProcessChainService a {@link AcquisitionProcessingChain} service
      */
     public AcquisitionFileService(IAcquisitionFileRepository acqFileRepository, IProductService productService,
-            IChainGenerationService chainGenService) {
+            IAcquisitionProcessingChainService acqProcessChainService) {
         super();
         this.acqfileRepository = acqFileRepository;
-        this.chainGenerationService = chainGenService;
+        this.acqProcessingChainService = acqProcessChainService;
         this.productService = productService;
     }
 
@@ -126,7 +126,7 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     }
 
     @Override
-    public void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, ChainGeneration chain)
+    public void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, AcquisitionProcessingChain chain)
             throws ModuleException {
         for (AcquisitionFile af : acquisitionFiles) {
             List<AcquisitionFile> listAf = this.findByMetaFile(af.getMetaFile());
@@ -143,7 +143,7 @@ public class AcquisitionFileService implements IAcquisitionFileService {
                 this.save(af);
             }
 
-            // for the first activation of the ChainGeneration
+            // for the first activation of the AcquisitionProcessingChain
             // set the last activation date with the activation date of the current AcquisitionFile
             if (chain.getLastDateActivation() == null) {
                 chain.setLastDateActivation(af.getAcqDate());
@@ -154,8 +154,8 @@ public class AcquisitionFileService implements IAcquisitionFileService {
             }
         }
 
-        // Save the ChainGeneration the last activation date as been modified 
-        chainGenerationService.createOrUpdate(chain);
+        // Save the AcquisitionProcessingChain the last activation date as been modified 
+        acqProcessingChainService.createOrUpdate(chain);
     }
 
     @Override

@@ -38,7 +38,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
@@ -65,7 +65,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
     @Value("${regards.acquisition.invalid-data-folder:#{null}}")
     private String invalidDataFolder;
 
-    private ChainGeneration chainGeneration;
+    private AcquisitionProcessingChain acqProcessingChain;
 
     /**
      * {@link List} of {@link AcquisitionFile} that should be check
@@ -75,28 +75,28 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
     @Override
     public void proceedStep() throws AcquisitionRuntimeException, AcquisitionException {
 
-        if (chainGeneration == null) {
+        if (acqProcessingChain == null) {
             String msg = "The chain generation is mandatory";
             LOGGER.error(msg);
             throw new AcquisitionRuntimeException(msg);
         }
 
         if (inProgressFileList == null || inProgressFileList.isEmpty()) {
-            LOGGER.info("Any file to process for the acquisition chain <{}>", this.chainGeneration.getLabel());
+            LOGGER.info("Any file to process for the acquisition chain <{}>", this.acqProcessingChain.getLabel());
             return;
         }
 
         // A plugin for the scan configuration is required
-        if (this.chainGeneration.getCheckAcquisitionPluginConf() == null) {
+        if (this.acqProcessingChain.getCheckAcquisitionPluginConf() == null) {
             throw new AcquisitionException(
-                    "[" + this.chainGeneration.getLabel() + "] The required ICheckFilePlugin is missing");
+                    "[" + this.acqProcessingChain.getLabel() + "] The required ICheckFilePlugin is missing");
         }
 
         // Lunch the check plugin
         try {
             // build the plugin parameters
             PluginParametersFactory factory = PluginParametersFactory.build();
-            for (Map.Entry<String, String> entry : this.chainGeneration.getCheckAcquisitionParameter().entrySet()) {
+            for (Map.Entry<String, String> entry : this.acqProcessingChain.getCheckAcquisitionParameter().entrySet()) {
                 factory.addParameterDynamic(entry.getKey(), entry.getValue());
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Add parameter <{}> with value : {}", entry.getKey(), entry.getValue());
@@ -105,17 +105,16 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
             // get an instance of the plugin
             ICheckFilePlugin checkPlugin = pluginService
-                    .getPlugin(this.chainGeneration.getCheckAcquisitionPluginConf().getId(),
+                    .getPlugin(this.acqProcessingChain.getCheckAcquisitionPluginConf().getId(),
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
             // for each AcquisitionFile
             for (AcquisitionFile acqFile : inProgressFileList) {
                 // execute the check plugin
-                boolean result = checkPlugin.runPlugin(chainGeneration.getLabel(), acqFile.getFile(),
-                                                       chainGeneration.getDataSet());
+                boolean result = checkPlugin.runPlugin(acqFile.getFile(), acqProcessingChain.getDataSet());
 
                 // Check file status and link the AcquisitionFile to the Product
-                acquisitionFileService.checkFileStatus(result, chainGeneration.getSession(), acqFile,
+                acquisitionFileService.checkFileStatus(result, acqProcessingChain.getSession(), acqFile,
                                                        checkPlugin.getProductName(),
                                                        process.getChainGeneration().getMetaProduct(),
                                                        process.getChainGeneration().getMetaProduct().getIngestChain());
@@ -150,7 +149,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     @Override
     public void getResources() throws AcquisitionException {
-        this.chainGeneration = process.getChainGeneration();
+        this.acqProcessingChain = process.getChainGeneration();
 
         this.inProgressFileList = new ArrayList<>();
 

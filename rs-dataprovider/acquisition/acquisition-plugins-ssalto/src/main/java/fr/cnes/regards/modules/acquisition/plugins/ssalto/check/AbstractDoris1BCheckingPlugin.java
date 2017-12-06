@@ -45,7 +45,7 @@ public abstract class AbstractDoris1BCheckingPlugin implements ICheckFilePlugin,
     protected Map<String, String> prefixMap = null;
 
     @Override
-    public boolean runPlugin(String chainLabel, File fileToCheck, String datasetId) throws ModuleException {
+    public boolean runPlugin(File fileToCheck, String datasetId) throws ModuleException {
         boolean result = false;
 
         initPrefixMap();

@@ -25,11 +25,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
-import fr.cnes.regards.modules.acquisition.service.IProcessGenerationService;
+import fr.cnes.regards.modules.acquisition.service.IExecAcquisitionProcessingChainService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
@@ -51,9 +51,9 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
     private IProductService productService;
 
     @Autowired
-    private IProcessGenerationService processService;
+    private IExecAcquisitionProcessingChainService execProcessingChainService;
 
-    private ChainGeneration chainGeneration;
+    private AcquisitionProcessingChain acqProcessingChain;
 
     private Product product;
 
@@ -67,7 +67,7 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
     @Override
     public void proceedStep() throws AcquisitionRuntimeException, AcquisitionException {
 
-        if (chainGeneration == null) {
+        if (acqProcessingChain == null) {
             String msg = "The chain generation is mandatory";
             LOGGER.error(msg);
             throw new AcquisitionRuntimeException(msg);
@@ -77,21 +77,21 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
             throw new AcquisitionException("The product is mandatory");
         }
 
-        LOGGER.info("[{}] Start POST acqusition SIP step for the product <{}>", chainGeneration.getSession(),
+        LOGGER.info("[{}] Start POST acqusition SIP step for the product <{}>", acqProcessingChain.getSession(),
                     product.getProductName());
 
         // A plugin for the generate SIP configuration is required
-        if (this.chainGeneration.getPostProcessSipPluginConf() == null) {
+        if (this.acqProcessingChain.getPostProcessSipPluginConf() == null) {
             throw new AcquisitionException(
-                    "[" + this.chainGeneration.getLabel() + "] The required IPostProcessSipPlugin is missing");
+                    "[" + this.acqProcessingChain.getLabel() + "] The required IPostProcessSipPlugin is missing");
         }
 
         // Launch the generate plugin
         try {
             // get an instance of the plugin
             IPostProcessSipPlugin postProcessPlugin = pluginService
-                    .getPlugin(this.chainGeneration.getPostProcessSipPluginConf().getId());
-            postProcessPlugin.runPlugin(product, chainGeneration);
+                    .getPlugin(this.acqProcessingChain.getPostProcessSipPluginConf().getId());
+            postProcessPlugin.runPlugin(product, acqProcessingChain);
 
             // Update ProductStatus to SAVED
             product.setStatus(ProductStatus.SAVED);
@@ -105,14 +105,14 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
                 nbSipError = 1;
             }
 
-            processService.updateProcessGeneration(chainGeneration.getSession(), 0, nbSipStored, nbSipError);
+            execProcessingChainService.updateExecProcessingChain(acqProcessingChain.getSession(), 0, nbSipStored, nbSipError);
 
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             throw new AcquisitionException(e.getMessage());
         }
 
-        LOGGER.info("[{}] Stop  POST acqusition SIP step for the product <{}>", chainGeneration.getSession(),
+        LOGGER.info("[{}] Stop  POST acqusition SIP step for the product <{}>", acqProcessingChain.getSession(),
                     product.getProductName());
 
     }
@@ -120,7 +120,7 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
     @Override
     public void getResources() throws AcquisitionException {
         this.product = process.getProduct();
-        this.chainGeneration = process.getChainGeneration();
+        this.acqProcessingChain = process.getChainGeneration();
     }
 
     @Override

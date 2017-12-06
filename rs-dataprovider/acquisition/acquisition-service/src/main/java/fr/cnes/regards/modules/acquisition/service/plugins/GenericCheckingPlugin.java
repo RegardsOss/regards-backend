@@ -48,7 +48,7 @@ public class GenericCheckingPlugin implements ICheckFilePlugin {
     }
 
     @Override
-    public boolean runPlugin(String chainLabel, File fileToCheck, String dataSetId) throws ModuleException {
+    public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
         LOGGER.info("Start check file <{}>", fileToCheck.getAbsoluteFile());
         boolean result = false;
 

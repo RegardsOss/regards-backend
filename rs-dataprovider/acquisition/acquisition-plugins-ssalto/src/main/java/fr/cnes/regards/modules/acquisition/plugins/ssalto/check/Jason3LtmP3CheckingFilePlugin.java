@@ -41,7 +41,7 @@ public class Jason3LtmP3CheckingFilePlugin implements ICheckFilePlugin {
     private String productName;
 
     @Override
-    public boolean runPlugin(String chainLabel, File fileToCheck, String datasetId) throws ModuleException {
+    public boolean runPlugin(File fileToCheck, String datasetId) throws ModuleException {
         boolean result = false;
 
         // Check file exists

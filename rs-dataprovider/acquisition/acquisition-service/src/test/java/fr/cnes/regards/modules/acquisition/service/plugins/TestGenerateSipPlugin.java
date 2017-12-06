@@ -30,8 +30,6 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.net.MediaType;
-
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.Point;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -84,7 +82,6 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
             try {
                 sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, af.getFile().toURI().toURL(),
                                                                         af.getChecksumAlgorithm(), af.getChecksum());
-                MediaType.parse(af.getMetaFile().getMediaType());
                 sipBuilder.getContentInformationBuilder().setSyntax("Mime name", "Mime Description",
                                                                     af.getMetaFile().getMediaType());
                 sipBuilder.addContentInformation();

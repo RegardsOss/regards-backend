@@ -33,7 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
@@ -63,26 +63,26 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
     private final IProductService productService;
 
     /**
-     * {@link ChainGeneration} service
+     * {@link AcquisitionProcessingChain} service
      */
-    private final IChainGenerationService chainGenerationService;
+    private final IAcquisitionProcessingChainService acqProcessChainService;
 
     /**
      * Ingest client
      */
     private final IIngestClient ingestClient;
 
-    private final IProcessGenerationService processService;
+    private final IExecAcquisitionProcessingChainService execProcessingChainService;
 
     @Value("${regards.acquisition.sip.bulk.request.limit:10000}")
     private Integer bulkRequestLimit;
 
-    public ProductBulkRequestService(IProductService productService, IChainGenerationService chainGenerationService,
-            IIngestClient ingestClient, IProcessGenerationService processService) {
+    public ProductBulkRequestService(IProductService productService, IAcquisitionProcessingChainService acqProcessChainService,
+            IIngestClient ingestClient, IExecAcquisitionProcessingChainService processService) {
         this.productService = productService;
-        this.chainGenerationService = chainGenerationService;
+        this.acqProcessChainService = acqProcessChainService;
         this.ingestClient = ingestClient;
-        this.processService = processService;
+        this.execProcessingChainService = processService;
     }
 
     @Override
@@ -111,7 +111,7 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
     public void runActiveChains() {
         LOG.info("----> Start run active chains");
 
-        chainGenerationService.findByActiveTrueAndRunningFalse().forEach(ch -> chainGenerationService.run(ch));
+        acqProcessChainService.findByActiveTrueAndRunningFalse().forEach(ch -> acqProcessChainService.run(ch));
 
         LOG.info("<---- End   run active chains");
     }
@@ -187,10 +187,10 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
 
         if (response.getStatusCode().equals(HttpStatus.CREATED)) {
             nbSipCreated = responseIngestSip(session, response.getBody());
-            processService.updateProcessGeneration(session, nbSipCreated, 0, 0);
+            execProcessingChainService.updateExecProcessingChain(session, nbSipCreated, 0, 0);
         } else if (response.getStatusCode().equals(HttpStatus.PARTIAL_CONTENT)) {
             nbSipCreated = responseIngestSip(session, response.getBody());
-            processService.updateProcessGeneration(session, nbSipCreated, 0, response.getBody().size() - nbSipCreated);
+            execProcessingChainService.updateExecProcessingChain(session, nbSipCreated, 0, response.getBody().size() - nbSipCreated);
         } else if (response.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
             LOG.error("[{}] Unauthorized access to ingest microservice", session);
 
