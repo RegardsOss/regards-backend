@@ -29,14 +29,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
@@ -101,14 +102,19 @@ public class AIPStorageBulkRequestService
         // Update all aip in request to  AIPState to QUEUED.
         aipsInRequest.forEach(aipId -> aipRepository.updateAIPEntityState(AIPState.QUEUED, aipId));
         if (!aipsInRequest.isEmpty()) {
+            FeignSecurityManager.asSystem(); // as we are using this method into a schedule, we clearly use the
             ResponseEntity<List<RejectedAip>> response = aipClient.store(aips);
-            if ((response != null) && (response.getStatusCode().is2xxSuccessful())) {
+            FeignSecurityManager.reset();
+            // lets treat the response if it exists and the return code is coherent with the API standard return codes: 2xx or 422
+            if ((response != null) && (response.getStatusCode().is2xxSuccessful()
+                    || response.getStatusCode().value() == HttpStatus.UNPROCESSABLE_ENTITY.value())) {
                 List<RejectedAip> rejectedAips = response.getBody();
                 // If there is rejected aips, remove them from the list of AIPEntity to set to QUEUED status.
                 if ((rejectedAips != null) && !rejectedAips.isEmpty()) {
                     Set<String> resjectAipIds = rejectedAips.stream().map(r -> {
-                        LOGGER.warn("Created AIP {}, has been rejected by archival storage microservice for store action",
-                                    r.getIpId());
+                        LOGGER.warn(
+                                "Created AIP {}, has been rejected by archival storage microservice for store action",
+                                r.getIpId());
                         return r.getIpId();
                     }).collect(Collectors.toSet());
                     resjectAipIds.forEach(aipId -> aipRepository.updateAIPEntityState(AIPState.STORE_REJECTED, aipId));

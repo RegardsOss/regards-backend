@@ -147,6 +147,7 @@ public class ScheduledIngestTaskTest extends AbstractRegardsServiceIT {
         SIPBuilder builder = new SIPBuilder(SIP_ID_TEST);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("testing.json"),
                                                              "2323DFgfdgdfgfdgfdgdfgesd");
+        builder.setSyntax("JSON", "https://www.json.org/json-en.html", "application/json");
         builder.addContentInformation();
         collection.add(builder.build());
 
@@ -198,6 +199,7 @@ public class ScheduledIngestTaskTest extends AbstractRegardsServiceIT {
         SIPBuilder builder = new SIPBuilder(SIP_ID_TEST);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("test.xml"),
                                                              "sdsdfm1211vsdfdsfddsffdsd");
+        builder.setSyntax("XML", "https://en.wikipedia.org/wiki/XML", "application/xml");
         builder.addContentInformation();
         collection.add(builder.build());
 
