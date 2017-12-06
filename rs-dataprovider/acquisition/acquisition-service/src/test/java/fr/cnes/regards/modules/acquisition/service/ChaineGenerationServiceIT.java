@@ -32,6 +32,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.BeforeTransaction;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.builder.ChainGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
@@ -125,32 +126,33 @@ public class ChaineGenerationServiceIT {
         productRepository.deleteAll();
     }
 
-    private Product addProduct(MetaProduct metaProduct, String productName) {
+    private Product addProduct(MetaProduct metaProduct, String productName) throws ModuleException {
         Product product = productService.save(ProductBuilder.build(productName).withStatus(ProductStatus.ACQUIRING)
                 .withMetaProduct(metaProduct).get());
         // Link Product <-> MetaProduct
         metaProduct.addProduct(product);
-        metaProduct = metaProductService.save(metaProduct);
+        metaProduct = metaProductService.createOrUpdate(metaProduct);
         product.setMetaProduct(metaProduct);
         return productService.save(product);
     }
 
     @Test
-    public void createChaine() {
+    public void createChaine() throws ModuleException {
         // Create a first generation chain
         ChainGeneration chain = chainService
-                .save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME).get());
+                .createOrUpdate(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME).get());
         Assert.assertNotNull(chain);
         Assert.assertNotNull(chain.getId());
+        Assert.assertEquals(chainService.retrieveComplete(chain.getId()),chain);
 
         // Create a meta product
-        MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).get());
+        MetaProduct metaProduct = metaProductService.createOrUpdate(MetaProductBuilder.build(META_PRODUCT_NAME).get());
         Assert.assertNotNull(metaProduct);
         Assert.assertNotNull(metaProduct.getId());
 
         // Set the MetaProduct to the ChainGeneration
         chain.setMetaProduct(metaProduct);
-        chain = chainService.save(chain);
+        chain = chainService.createOrUpdate(chain);
         Assert.assertNotNull(chain.getId());
 
         // Create a Product for the uniq MetaProduct
@@ -166,21 +168,21 @@ public class ChaineGenerationServiceIT {
     }
 
     @Test
-    public void deleteAProduct() {
+    public void deleteAProduct() throws ModuleException {
         // Create a first generation chain
         ChainGeneration chain = chainService
-                .save(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME).get());
+                .createOrUpdate(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME).get());
         Assert.assertNotNull(chain);
         Assert.assertNotNull(chain.getId());
 
         // Create a meta product
-        MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).get());
+        MetaProduct metaProduct = metaProductService.createOrUpdate(MetaProductBuilder.build(META_PRODUCT_NAME).get());
         Assert.assertNotNull(metaProduct);
         Assert.assertNotNull(metaProduct.getId());
 
         // Set the MetaProduct to the ChainGeneration
         chain.setMetaProduct(metaProduct);
-        chain = chainService.save(chain);
+        chain = chainService.createOrUpdate(chain);
         Assert.assertNotNull(chain.getId());
 
         // Create a Product for the uniq MetaProduct

@@ -123,12 +123,14 @@ public class MetaProductController implements IResourceController<MetaProduct> {
      * Create a {@link MetaProduct}
      * @param metaproduct the {@link MetaProduct} to create
      * @return the created {@link MetaProduct}
+     * @throws ModuleException if error occurs!
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
     @ResourceAccess(description = "Add a metaproduct", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<MetaProduct>> save(@Valid @RequestBody MetaProduct metaproduct) {
-        return new ResponseEntity<>(toResource(metaproductService.save(metaproduct)), HttpStatus.CREATED);
+    public ResponseEntity<Resource<MetaProduct>> save(@Valid @RequestBody MetaProduct metaproduct)
+            throws ModuleException {
+        return new ResponseEntity<>(toResource(metaproductService.createOrUpdate(metaproduct)), HttpStatus.CREATED);
     }
 
     /**

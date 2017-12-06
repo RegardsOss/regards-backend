@@ -101,8 +101,7 @@ public class AcquisitionFile implements IIdentifiable<Long> {
      * The {@link Product} associated to the data file
      */
     @ManyToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "product_id", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "fk_acq_file_id"),
-            updatable = false)
+    @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_acq_file_id"), updatable = false)
     private Product product;
 
     /**

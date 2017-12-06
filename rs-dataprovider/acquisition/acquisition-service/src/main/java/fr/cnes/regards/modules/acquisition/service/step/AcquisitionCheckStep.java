@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Value;
 
 import com.google.common.io.Files;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
@@ -50,7 +49,6 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
  * @author Christophe Mertz
  *
  */
-@MultitenantTransactional
 public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCheckStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionCheckStep.class);

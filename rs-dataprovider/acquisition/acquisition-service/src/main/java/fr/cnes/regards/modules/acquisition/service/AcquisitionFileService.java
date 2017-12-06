@@ -28,6 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
@@ -72,12 +73,12 @@ public class AcquisitionFileService implements IAcquisitionFileService {
      * @param prService a {@link Product} service
      * @param chainGenService a {@link ChainGeneration} service
      */
-    public AcquisitionFileService(IAcquisitionFileRepository acqFileRepository, IProductService prService,
+    public AcquisitionFileService(IAcquisitionFileRepository acqFileRepository, IProductService productService,
             IChainGenerationService chainGenService) {
         super();
         this.acqfileRepository = acqFileRepository;
         this.chainGenerationService = chainGenService;
-        this.productService = prService;
+        this.productService = productService;
     }
 
     @Override
@@ -125,7 +126,8 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     }
 
     @Override
-    public void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, ChainGeneration chain) {
+    public void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, ChainGeneration chain)
+            throws ModuleException {
         for (AcquisitionFile af : acquisitionFiles) {
             List<AcquisitionFile> listAf = this.findByMetaFile(af.getMetaFile());
 
@@ -153,7 +155,7 @@ public class AcquisitionFileService implements IAcquisitionFileService {
         }
 
         // Save the ChainGeneration the last activation date as been modified 
-        chainGenerationService.save(chain);
+        chainGenerationService.createOrUpdate(chain);
     }
 
     @Override

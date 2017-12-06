@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
@@ -46,7 +45,6 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
  * @author Christophe Mertz
  *
  */
-@MultitenantTransactional
 public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateSipStep.class);

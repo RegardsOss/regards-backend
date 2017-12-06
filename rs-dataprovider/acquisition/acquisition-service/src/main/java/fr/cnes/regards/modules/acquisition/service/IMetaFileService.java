@@ -62,13 +62,6 @@ public interface IMetaFileService {
     MetaFile createOrUpdate(MetaFile metaFile) throws ModuleException;
 
     /**
-     * Save a {@link MetaFile}
-     * @param metaFile the {@link MetaFile} to save
-     * @return the saved {@link MetaFile}
-     */
-    MetaFile save(MetaFile metaFile);
-
-    /**
      * Update a {@link MetaFile}
      * @param metafileId the {@link MetaFile} identifier
      * @param metafile the {@link MetaFile} to update

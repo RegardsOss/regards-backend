@@ -82,6 +82,9 @@ public class ScanDirectoryPluginIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionFileServiceIT.class);
 
+    /**
+     * Static default tenant
+     */
     @Value("${regards.tenant}")
     private String tenant;
 
@@ -171,8 +174,8 @@ public class ScanDirectoryPluginIT {
 
     }
 
-    public void initData() {
-        chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL).withDataSet(DATASET_NAME)
+    public void initData() throws ModuleException {
+        chain = chainService.createOrUpdate(ChainGenerationBuilder.build(CHAINE_LABEL).withDataSet(DATASET_NAME)
                 .lastActivation(NOW.minusMinutes(75)).get());
     }
 
@@ -197,11 +200,12 @@ public class ScanDirectoryPluginIT {
             ff.setLastModified(1000 * NOW.minusMinutes(70).toEpochSecond());
         }
 
-        MetaFile metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withMediaType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
-                .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir).get());
+        MetaFile metaFile = metaFileService
+                .createOrUpdate(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
+                        .withMediaType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
+                        .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir).get());
 
-        MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
+        MetaProduct metaProduct = metaProductService.createOrUpdate(MetaProductBuilder.build(META_PRODUCT_NAME)
                 .addMetaFile(metaFile).withChecksumAlgorithm(CHECKUM_ALGO).get());
 
         Set<MetaFile> metaFiles = new HashSet<>();
@@ -234,11 +238,12 @@ public class ScanDirectoryPluginIT {
             ff.setLastModified(1000 * NOW.minusMinutes(76).toEpochSecond());
         }
 
-        MetaFile metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withMediaType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
-                .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir).get());
+        MetaFile metaFile = metaFileService
+                .createOrUpdate(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
+                        .withMediaType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
+                        .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir).get());
 
-        MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
+        MetaProduct metaProduct = metaProductService.createOrUpdate(MetaProductBuilder.build(META_PRODUCT_NAME)
                 .addMetaFile(metaFile).withChecksumAlgorithm(CHECKUM_ALGO).get());
 
         Set<MetaFile> metaFiles = new HashSet<>();
@@ -258,11 +263,12 @@ public class ScanDirectoryPluginIT {
     public void scanPluginTestUnknowDirectory() throws ModuleException {
         ScanDirectory scanDir = scandirService.save(new ScanDirectory("/tmp/regards/data/unknown"));
 
-        MetaFile metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withMediaType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
-                .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir).get());
+        MetaFile metaFile = metaFileService
+                .createOrUpdate(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
+                        .withMediaType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
+                        .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir).get());
 
-        MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
+        MetaProduct metaProduct = metaProductService.createOrUpdate(MetaProductBuilder.build(META_PRODUCT_NAME)
                 .addMetaFile(metaFile).withChecksumAlgorithm(CHECKUM_ALGO).get());
 
         Set<MetaFile> metaFiles = new HashSet<>();
@@ -285,11 +291,12 @@ public class ScanDirectoryPluginIT {
     public void scanPluginTestWrongChecksumAlgo() throws ModuleException {
         ScanDirectory scanDir = scandirService.save(new ScanDirectory(dataPath.getPath()));
 
-        MetaFile metaFile = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withMediaType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
-                .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir).get());
+        MetaFile metaFile = metaFileService
+                .createOrUpdate(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
+                        .withMediaType(MediaType.APPLICATION_JSON_VALUE).withFilePattern(PATTERN_FILTER)
+                        .comment("test scan directory comment").isMandatory().addScanDirectory(scanDir).get());
 
-        MetaProduct metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME)
+        MetaProduct metaProduct = metaProductService.createOrUpdate(MetaProductBuilder.build(META_PRODUCT_NAME)
                 .addMetaFile(metaFile).withChecksumAlgorithm("UNKNOW").get());
 
         Set<MetaFile> metaFiles = new HashSet<>();

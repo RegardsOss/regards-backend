@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -41,6 +43,11 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 @MultitenantTransactional
 @Service
 public class ProductService implements IProductService {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(ProductService.class);
 
     /**
      * {@link Product} repository
@@ -115,13 +122,19 @@ public class ProductService implements IProductService {
 
     @Override
     public void calcProductStatus(Product product) {
+        // At least one mandatory file is VALID
+        product.setStatus(ProductStatus.ACQUIRING);
+
+        if (product.getMetaProduct() == null) {
+            LOG.error("[{}] The meta product of the product {} <{}> should not be null", product.getSession(),
+                      product.getId(), product.getProductName());
+            return;
+        }
+
         int nbTotalMandatory = 0;
         int nbTotalOptional = 0;
         int nbActualMandatory = 0;
         int nbActualOptional = 0;
-
-        // At least one mandatory file is VALID
-        product.setStatus(ProductStatus.ACQUIRING);
 
         for (MetaFile mf : product.getMetaProduct().getMetaFiles()) {
             // Calculus the number of mandatory files

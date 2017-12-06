@@ -175,13 +175,28 @@ public class ChainGeneration implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((dataSetIpId == null) ? 0 : dataSetIpId.hashCode()); // NOSONAR
-        result = prime * result + ((label == null) ? 0 : label.hashCode()); // NOSONAR
+        result = prime * result + ((active == null) ? 0 : active.hashCode());
+        result = prime * result + ((checkAcquisitionParameter == null) ? 0 : checkAcquisitionParameter.hashCode());
+        result = prime * result + ((checkAcquisitionPluginConf == null) ? 0 : checkAcquisitionPluginConf.hashCode());
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
+        result = prime * result + ((dataSetIpId == null) ? 0 : dataSetIpId.hashCode());
+        result = prime * result + ((generateSipParameter == null) ? 0 : generateSipParameter.hashCode());
+        result = prime * result + ((generateSipPluginConf == null) ? 0 : generateSipPluginConf.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result + ((label == null) ? 0 : label.hashCode());
+        result = prime * result + ((lastDateActivation == null) ? 0 : lastDateActivation.hashCode());
+        result = prime * result + ((metaProduct == null) ? 0 : metaProduct.hashCode());
+        result = prime * result + ((periodicity == null) ? 0 : periodicity.hashCode());
+        result = prime * result + ((postProcessSipPluginConf == null) ? 0 : postProcessSipPluginConf.hashCode());
+        result = prime * result + ((running == null) ? 0 : running.hashCode());
+        result = prime * result + ((scanAcquisitionParameter == null) ? 0 : scanAcquisitionParameter.hashCode());
+        result = prime * result + ((scanAcquisitionPluginConf == null) ? 0 : scanAcquisitionPluginConf.hashCode());
+        result = prime * result + ((session == null) ? 0 : session.hashCode());
         return result;
     }
 
     @Override
-    public boolean equals(Object obj) { // NOSONAR
+    public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
@@ -192,6 +207,34 @@ public class ChainGeneration implements IIdentifiable<Long> {
             return false;
         }
         ChainGeneration other = (ChainGeneration) obj;
+        if (active == null) {
+            if (other.active != null) {
+                return false;
+            }
+        } else if (!active.equals(other.active)) {
+            return false;
+        }
+        if (checkAcquisitionParameter == null) {
+            if (other.checkAcquisitionParameter != null) {
+                return false;
+            }
+        } else if (!checkAcquisitionParameter.equals(other.checkAcquisitionParameter)) {
+            return false;
+        }
+        if (checkAcquisitionPluginConf == null) {
+            if (other.checkAcquisitionPluginConf != null) {
+                return false;
+            }
+        } else if (!checkAcquisitionPluginConf.equals(other.checkAcquisitionPluginConf)) {
+            return false;
+        }
+        if (comment == null) {
+            if (other.comment != null) {
+                return false;
+            }
+        } else if (!comment.equals(other.comment)) {
+            return false;
+        }
         if (dataSetIpId == null) {
             if (other.dataSetIpId != null) {
                 return false;
@@ -199,11 +242,88 @@ public class ChainGeneration implements IIdentifiable<Long> {
         } else if (!dataSetIpId.equals(other.dataSetIpId)) {
             return false;
         }
+        if (generateSipParameter == null) {
+            if (other.generateSipParameter != null) {
+                return false;
+            }
+        } else if (!generateSipParameter.equals(other.generateSipParameter)) {
+            return false;
+        }
+        if (generateSipPluginConf == null) {
+            if (other.generateSipPluginConf != null) {
+                return false;
+            }
+        } else if (!generateSipPluginConf.equals(other.generateSipPluginConf)) {
+            return false;
+        }
+        if (id == null) {
+            if (other.id != null) {
+                return false;
+            }
+        } else if (!id.equals(other.id)) {
+            return false;
+        }
         if (label == null) {
             if (other.label != null) {
                 return false;
             }
         } else if (!label.equals(other.label)) {
+            return false;
+        }
+        if (lastDateActivation == null) {
+            if (other.lastDateActivation != null) {
+                return false;
+            }
+        } else if (!lastDateActivation.equals(other.lastDateActivation)) {
+            return false;
+        }
+        if (metaProduct == null) {
+            if (other.metaProduct != null) {
+                return false;
+            }
+        } else if (!metaProduct.equals(other.metaProduct)) {
+            return false;
+        }
+        if (periodicity == null) {
+            if (other.periodicity != null) {
+                return false;
+            }
+        } else if (!periodicity.equals(other.periodicity)) {
+            return false;
+        }
+        if (postProcessSipPluginConf == null) {
+            if (other.postProcessSipPluginConf != null) {
+                return false;
+            }
+        } else if (!postProcessSipPluginConf.equals(other.postProcessSipPluginConf)) {
+            return false;
+        }
+        if (running == null) {
+            if (other.running != null) {
+                return false;
+            }
+        } else if (!running.equals(other.running)) {
+            return false;
+        }
+        if (scanAcquisitionParameter == null) {
+            if (other.scanAcquisitionParameter != null) {
+                return false;
+            }
+        } else if (!scanAcquisitionParameter.equals(other.scanAcquisitionParameter)) {
+            return false;
+        }
+        if (scanAcquisitionPluginConf == null) {
+            if (other.scanAcquisitionPluginConf != null) {
+                return false;
+            }
+        } else if (!scanAcquisitionPluginConf.equals(other.scanAcquisitionPluginConf)) {
+            return false;
+        }
+        if (session == null) {
+            if (other.session != null) {
+                return false;
+            }
+        } else if (!session.equals(other.session)) {
             return false;
         }
         return true;

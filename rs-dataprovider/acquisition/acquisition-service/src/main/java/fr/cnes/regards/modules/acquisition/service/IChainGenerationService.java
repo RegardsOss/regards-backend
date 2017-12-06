@@ -45,6 +45,14 @@ public interface IChainGenerationService {
     ChainGeneration save(ChainGeneration chain);
 
     /**
+     * Create or update a {@link ChainGeneration}
+     * @param chain the {@link ChainGeneration} to save
+     * @return the saved {@link ChainGeneration}
+     * @throws ModuleException if error occurs!
+     */
+    ChainGeneration createOrUpdate(ChainGeneration chain) throws ModuleException;
+
+    /**
      * Update a {@link ChainGeneration}
      * @param chainId the {@link ChainGeneration} identifier to update
      * @param chain the {@link ChainGeneration} to update

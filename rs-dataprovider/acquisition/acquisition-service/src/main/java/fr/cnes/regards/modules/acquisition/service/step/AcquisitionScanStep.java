@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
@@ -43,7 +42,6 @@ import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeE
  * @author Christophe Mertz
  *
  */
-@MultitenantTransactional
 public class AcquisitionScanStep extends AbstractStep implements IAcquisitionScanStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionScanStep.class);

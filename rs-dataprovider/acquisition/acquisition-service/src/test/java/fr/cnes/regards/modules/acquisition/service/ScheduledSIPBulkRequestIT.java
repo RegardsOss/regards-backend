@@ -30,6 +30,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.builder.ProcessGenerationBuilder;
 import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
@@ -54,13 +55,13 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
     private ProcessGeneration process;
 
     @Before
-    public void createProductsAndProcess() {
+    public void createProductsAndProcess() throws ModuleException {
         MetaProduct metaProduct001 = metaProductService
-                .save(MetaProductBuilder.build("meta-product-name-001").addMetaFile(metaFileOptional)
+                .createOrUpdate(MetaProductBuilder.build("meta-product-name-001").addMetaFile(metaFileOptional)
                         .addMetaFile(metaFileMandatory).withIngestProcessingChain("ingest-processing-chain-001").get());
-        MetaProduct metaProduct002 = metaProductService.save(MetaProductBuilder.build("meta-product-name-002")
+        MetaProduct metaProduct002 = metaProductService.createOrUpdate(MetaProductBuilder.build("meta-product-name-002")
                 .addMetaFile(metaFileMandatory).withIngestProcessingChain("ingest-processing-chain-002").get());
-        MetaProduct metaProduct003 = metaProductService.save(MetaProductBuilder.build("meta-product-name-003")
+        MetaProduct metaProduct003 = metaProductService.createOrUpdate(MetaProductBuilder.build("meta-product-name-003")
                 .addMetaFile(metaFileMandatory).withIngestProcessingChain("ingest-processing-chain-003").get());
 
         // Create Products
@@ -101,7 +102,7 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
         // the chain is not active to not activate it 
         chain.setActive(false);
         chain.setSession("session-001");
-        chainService.save(chain);
+        chainService.createOrUpdate(chain);
         process = processGenerationService.save(ProcessGenerationBuilder.build(chain.getSession()).withChain(chain)
                 .withStartDate(OffsetDateTime.now()).get());
     }

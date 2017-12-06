@@ -122,12 +122,13 @@ public class MetaFileController implements IResourceController<MetaFile> {
      * Create a {@link MetaFile}
      * @param metafile the {@link MetaFile} to create
      * @return the created {@link MetaFile}
+     * @throws ModuleException if error occurs!
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
     @ResourceAccess(description = "Add a metafile", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<MetaFile>> save(@Valid @RequestBody MetaFile metafile) {
-        return new ResponseEntity<>(toResource(metafileService.save(metafile)), HttpStatus.CREATED);
+    public ResponseEntity<Resource<MetaFile>> save(@Valid @RequestBody MetaFile metafile) throws ModuleException {
+        return new ResponseEntity<>(toResource(metafileService.createOrUpdate(metafile)), HttpStatus.CREATED);
     }
 
     /**

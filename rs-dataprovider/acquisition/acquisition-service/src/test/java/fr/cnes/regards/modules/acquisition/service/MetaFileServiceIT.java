@@ -33,7 +33,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.BeforeTransaction;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
 import com.google.common.net.MediaType;
@@ -57,6 +56,9 @@ import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionServiceConfig
 @DirtiesContext
 public class MetaFileServiceIT {
 
+    /**
+     * Static default tenant
+     */
     @Value("${regards.tenant}")
     private String tenant;
 
@@ -180,12 +182,12 @@ public class MetaFileServiceIT {
 
     @Test
     public void createAndUpdateOneMetaFile() throws ModuleException {
-        MetaFile metaFile1 = MetaFileBuilder.build().isMandatory().withFilePattern("pattern1").withMediaType("file type")
-                .withInvalidFolder("tmp/invalid1").get();
+        MetaFile metaFile1 = MetaFileBuilder.build().isMandatory().withFilePattern("pattern1")
+                .withMediaType("file type").withInvalidFolder("tmp/invalid1").get();
         MetaFile metaFile2 = MetaFileBuilder.build().withFilePattern("pattern2").withMediaType("file type")
                 .withInvalidFolder("tmp/invalid2").get();
-        MetaFile metaFile3 = MetaFileBuilder.build().isMandatory().withFilePattern("pattern3").withMediaType("file type")
-                .withInvalidFolder("tmp/invalid3").get();
+        MetaFile metaFile3 = MetaFileBuilder.build().isMandatory().withFilePattern("pattern3")
+                .withMediaType("file type").withInvalidFolder("tmp/invalid3").get();
         metaFileService.createOrUpdate(metaFile1);
         metaFileService.createOrUpdate(metaFile2);
         metaFileService.createOrUpdate(metaFile3);
@@ -221,12 +223,12 @@ public class MetaFileServiceIT {
         String dirName = "/var/log";
 
         // create a set of MetaFile
-        MetaFile metaFile1 = MetaFileBuilder.build().isMandatory().withFilePattern("pattern1").withMediaType("file type")
-                .withInvalidFolder("tmp/invalid1").get();
+        MetaFile metaFile1 = MetaFileBuilder.build().isMandatory().withFilePattern("pattern1")
+                .withMediaType("file type").withInvalidFolder("tmp/invalid1").get();
         MetaFile metaFile2 = MetaFileBuilder.build().withFilePattern("pattern2").withMediaType("file type")
                 .withInvalidFolder("tmp/invalid2").get();
-        MetaFile metaFile3 = MetaFileBuilder.build().isMandatory().withFilePattern("pattern3").withMediaType("file type")
-                .withInvalidFolder("tmp/invalid3").get();
+        MetaFile metaFile3 = MetaFileBuilder.build().isMandatory().withFilePattern("pattern3")
+                .withMediaType("file type").withInvalidFolder("tmp/invalid3").get();
 
         Set<MetaFile> metaFiles = new HashSet<>();
         metaFiles.add(metaFile1);

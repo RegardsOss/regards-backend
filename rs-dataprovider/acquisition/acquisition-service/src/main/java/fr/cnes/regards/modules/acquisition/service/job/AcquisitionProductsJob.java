@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -129,7 +130,13 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
 
         // the ChainGeneration is not running, it is available for a new scan
         chainGeneration.setRunning(false);
-        chainGenerationService.save(chainGeneration);
+        try {
+            chainGenerationService.createOrUpdate(chainGeneration);
+        } catch (ModuleException e) {
+            LOGGER.error("[{}] Error when try to save the chain {}", chainGeneration.getSession(),
+                         chainGeneration.getLabel());
+            LOGGER.error(e.getMessage(), e);
+        }
 
         LOGGER.info("[{}] {} AcquisitionGenerateSIPJob queued", chainGeneration.getSession(), n);
 

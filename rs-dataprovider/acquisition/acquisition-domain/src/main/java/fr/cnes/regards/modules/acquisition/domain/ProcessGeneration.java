@@ -70,8 +70,7 @@ public class ProcessGeneration implements IIdentifiable<Long> {
      * The {@link ChainGeneration} associate to the current {@link ProcessGeneration}
      */
     @ManyToOne(cascade = CascadeType.DETACH)
-    @JoinColumn(name = "chain_id", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "fk_acq_chain_id"),
-            updatable = false)
+    @JoinColumn(name = "chain_id", foreignKey = @ForeignKey(name = "fk_acq_chain_id"), updatable = false)
     private ChainGeneration chainGeneration;
 
     /**
@@ -183,7 +182,6 @@ public class ProcessGeneration implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((chainGeneration == null) ? 0 : chainGeneration.hashCode());
         result = prime * result + ((id == null) ? 0 : id.hashCode());
         result = prime * result + ((session == null) ? 0 : session.hashCode());
         return result;
@@ -201,13 +199,6 @@ public class ProcessGeneration implements IIdentifiable<Long> {
             return false;
         }
         ProcessGeneration other = (ProcessGeneration) obj;
-        if (chainGeneration == null) {
-            if (other.chainGeneration != null) {
-                return false;
-            }
-        } else if (!chainGeneration.equals(other.chainGeneration)) {
-            return false;
-        }
         if (id == null) {
             if (other.id != null) {
                 return false;

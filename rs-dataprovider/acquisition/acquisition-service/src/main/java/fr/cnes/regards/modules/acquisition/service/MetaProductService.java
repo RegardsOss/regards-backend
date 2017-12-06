@@ -63,11 +63,6 @@ public class MetaProductService implements IMetaProductService {
     }
 
     @Override
-    public MetaProduct save(MetaProduct metaProduct) {
-        return metaProductRepository.save(metaProduct);
-    }
-
-    @Override
     public MetaProduct update(Long metaproductId, MetaProduct metaProduct) throws ModuleException {
         if (!metaproductId.equals(metaProduct.getId())) {
             throw new EntityInconsistentIdentifierException(metaproductId, metaProduct.getId(), metaProduct.getClass());
@@ -87,45 +82,20 @@ public class MetaProductService implements IMetaProductService {
         if (metaProduct.getId() == null) {
             // It is a new MetaProduct --> create it
             metaProduct.setMetaFiles(metaFileService.createOrUpdate(metaProduct.getMetaFiles()));
-            return this.save(metaProduct);
+            return metaProductRepository.save(metaProduct);
         } else {
             MetaProduct existingMetaProduct = this.retrieveComplete(metaProduct.getId());
 
             metaProduct.setMetaFiles(metaFileService.createOrUpdate(metaProduct.getMetaFiles(),
                                                                     existingMetaProduct.getMetaFiles()));
+            metaProduct.setProducts(existingMetaProduct.getProducts());
 
             if (existingMetaProduct.equals(metaProduct)) {
                 // it is the same --> just return it
                 return metaProduct;
             } else {
                 // it is different --> update it
-                return this.save(metaProduct);
-            }
-        }
-    }
-
-    @Override
-    public MetaProduct createOrUpdate(MetaProduct newMetaProduct, MetaProduct existingMetaProduct)
-            throws ModuleException {
-        if (newMetaProduct == null) {
-            return null;
-        }
-        if (newMetaProduct.getId() == null || newMetaProduct.getId() != existingMetaProduct.getId()) {
-            metaProductRepository.delete(existingMetaProduct);
-        }
-        if (newMetaProduct.getId() == null) {
-            // It is a new MetaProdict --> create it
-            newMetaProduct.setMetaFiles(metaFileService.createOrUpdate(newMetaProduct.getMetaFiles()));
-            return createOrUpdate(newMetaProduct);
-        } else {
-            newMetaProduct.setMetaFiles(metaFileService.createOrUpdate(newMetaProduct.getMetaFiles(),
-                                                                       existingMetaProduct.getMetaFiles()));
-            if (existingMetaProduct.equals(newMetaProduct)) {
-                // it is the same --> just return it
-                return newMetaProduct;
-            } else {
-                // it is different --> update it
-                return this.save(newMetaProduct);
+                return metaProductRepository.save(metaProduct);
             }
         }
     }

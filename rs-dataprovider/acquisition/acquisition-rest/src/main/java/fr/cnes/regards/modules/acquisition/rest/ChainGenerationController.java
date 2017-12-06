@@ -129,7 +129,7 @@ public class ChainGenerationController implements IResourceController<ChainGener
     @ResourceAccess(description = "Add a chain", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<ChainGeneration>> create(@Valid @RequestBody ChainGeneration chainGeneration)
             throws ModuleException {
-        return new ResponseEntity<>(toResource(chainService.create(chainGeneration)), HttpStatus.CREATED);
+        return new ResponseEntity<>(toResource(chainService.createOrUpdate(chainGeneration)), HttpStatus.CREATED);
     }
 
     /**

@@ -61,6 +61,9 @@ import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionServiceConfig
 @DirtiesContext
 public class MetaProductServiceIT {
 
+    /**
+     * Static default tenant
+     */
     @Value("${regards.tenant}")
     private String tenant;
 
@@ -118,7 +121,7 @@ public class MetaProductServiceIT {
 
         MetaProduct metaProduct2 = MetaProductBuilder.build(labelMetaProduct + "two").withCleanOriginalFile(false)
                 .withIngestProcessingChain("ingest processing chain two").get();
-        metaProductService.save(metaProduct2);
+        metaProductService.createOrUpdate(metaProduct2);
         metaProductService.createOrUpdate(metaProduct2);
 
         Assert.assertEquals(2, metaProductRepository.count());

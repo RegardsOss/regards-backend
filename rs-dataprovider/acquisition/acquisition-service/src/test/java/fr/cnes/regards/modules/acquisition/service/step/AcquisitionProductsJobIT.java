@@ -138,12 +138,12 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
     @Test
     public void runActiveChainGenerationOneProductWithThreeAcquisitionFilesWithOptionalMissing()
             throws ModuleException, InterruptedException {
-        MetaFile secondMetaFileMandatory = metaFileService.save(MetaFileBuilder.build()
+        MetaFile secondMetaFileMandatory = metaFileRepository.save(MetaFileBuilder.build()
                 .withInvalidFolder("/var/regards/data/invalid").withMediaType(MediaType.APPLICATION_JSON_VALUE)
                 .withFilePattern("file pattern for the header file").comment("it is mandatory second").isMandatory()
                 .get());
         metaProduct.addMetaFile(secondMetaFileMandatory);
-        metaProductService.save(metaProduct);
+        metaProductService.createOrUpdate(metaProduct);
 
         // Scan plugin
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration(
@@ -185,13 +185,13 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
     @Test
     public void runActiveChainGenerationOneProductWithThreeAcquisitionFiles()
             throws ModuleException, InterruptedException {
-        MetaFile secondMetaFileMandatory = metaFileService.save(MetaFileBuilder.build()
+        MetaFile secondMetaFileMandatory = metaFileRepository.save(MetaFileBuilder.build()
                 .withInvalidFolder("/var/regards/data/invalid").withMediaType(MediaType.APPLICATION_JSON_VALUE)
                 .withFilePattern("file pattern for the header file").comment("it is mandatory second").isMandatory()
                 .get());
         metaProduct.addMetaFile(secondMetaFileMandatory);
         metaProduct.removeMetaFile(metaFileOptional);
-        metaProductService.save(metaProduct);
+        metaProductService.createOrUpdate(metaProduct);
 
         // Scan plugin
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration(
@@ -212,7 +212,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(3, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(2, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
         Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
@@ -225,13 +225,13 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
 
     @Test
     public void runActiveChainGenerationProductsWithTwoAcquisitions() throws ModuleException, InterruptedException {
-        MetaFile secondMetaFileMandatory = metaFileService.save(MetaFileBuilder.build()
+        MetaFile secondMetaFileMandatory = metaFileService.createOrUpdate(MetaFileBuilder.build()
                 .withInvalidFolder("/var/regards/data/invalid").withMediaType(MediaType.APPLICATION_JSON_VALUE)
                 .withFilePattern("file pattern for the header file").comment("it is mandatory second").isMandatory()
                 .get());
         metaProduct.addMetaFile(secondMetaFileMandatory);
         metaProduct.removeMetaFile(metaFileOptional);
-        metaProductService.save(metaProduct);
+        metaProductService.createOrUpdate(metaProduct);
 
         // Scan plugin : only the data file are acquired
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanProductsData",
@@ -251,7 +251,8 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(3, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(2, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
         Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
@@ -286,7 +287,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(3, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(2, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
         Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());

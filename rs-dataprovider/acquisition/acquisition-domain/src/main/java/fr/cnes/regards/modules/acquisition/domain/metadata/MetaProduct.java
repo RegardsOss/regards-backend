@@ -147,6 +147,10 @@ public class MetaProduct implements IIdentifiable<Long> {
         return products;
     }
 
+    public void setProducts(Set<Product> newProducts) {
+        products = newProducts;
+    }
+
     public void addProduct(Product product) {
         this.products.add(product);
     }

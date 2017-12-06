@@ -122,7 +122,8 @@ public class ChaineGenerationService implements IChainGenerationService {
         return chainRepository.save(createOrUpdate(chain));
     }
 
-    private ChainGeneration createOrUpdate(ChainGeneration chain) throws ModuleException {
+    @Override
+    public ChainGeneration createOrUpdate(ChainGeneration chain) throws ModuleException {
         if (chain == null) {
             return null;
         }
@@ -132,15 +133,18 @@ public class ChaineGenerationService implements IChainGenerationService {
         if (chain.getId() == null) {
             // It is a new Chain --> create it
             chain.setMetaProduct(metaProductService.createOrUpdate(chain.getMetaProduct()));
-            return this.save(chain);
+            return chainRepository.save(chain);
         } else {
-            ChainGeneration existingChain = this.retrieve(chain.getId());
-            chain.setMetaProduct(metaProductService.createOrUpdate(chain.getMetaProduct(),
-                                                                   existingChain.getMetaProduct()));
+            ChainGeneration existingChain = this.retrieveComplete(chain.getId());
+            chain.setMetaProduct(metaProductService.createOrUpdate(chain.getMetaProduct()));
+            if (existingChain.equals(chain)) {
+                // it is the same --> just return it
+                return chain;
+            } else {
+                // it is different --> update it
+                return chainRepository.save(chain);
+            }
         }
-
-        return chain;
-
     }
 
     /**
@@ -194,7 +198,9 @@ public class ChaineGenerationService implements IChainGenerationService {
     public ChainGeneration retrieveComplete(Long id) {
         ChainGeneration chain = this.retrieve(id);
 
-        chain.setMetaProduct(metaProductService.retrieveComplete(chain.getMetaProduct().getId()));
+        if (chain.getMetaProduct() != null) {
+            chain.setMetaProduct(metaProductService.retrieveComplete(chain.getMetaProduct().getId()));
+        }
 
         if (chain.getScanAcquisitionPluginConf() != null) {
             chain.setScanAcquisitionPluginConf(pluginService
@@ -248,7 +254,7 @@ public class ChaineGenerationService implements IChainGenerationService {
     public boolean run(ChainGeneration chain) {
         // the ChainGeneration must be active
         if (!chain.isActive()) {
-            LOGGER.warn("[{}] Unable to run a not active the chain generation", chain.getLabel());
+            LOGGER.warn("[{}] Unable to run a not active chain generation", chain.getLabel());
             return false;
         }
 

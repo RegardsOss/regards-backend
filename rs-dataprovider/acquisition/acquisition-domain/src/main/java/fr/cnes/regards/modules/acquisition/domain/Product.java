@@ -129,15 +129,14 @@ public class Product implements IIdentifiable<Long> {
      */
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "meta_product_id", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "fk_product_id"),
-            updatable = false)
+    @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_product_id"), updatable = false)
     private MetaProduct metaProduct;
 
     /**
      * {@link List} of file include in the {@link Product}
      */
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", referencedColumnName = "ID", foreignKey = @ForeignKey(name = "fk_product_id"))
+    @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
     private final Set<AcquisitionFile> fileList = new HashSet<AcquisitionFile>();
 
     @Column(columnDefinition = "jsonb", name = "json_sip")

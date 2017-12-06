@@ -24,6 +24,7 @@ import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
@@ -86,7 +87,7 @@ public interface IAcquisitionFileService {
      * @param acquisitionFiles a {@link Set} of {@link AcquisitionFile}
      * @param chain the current {@link ChainGeneration}
      */
-    void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, ChainGeneration chain);
+    void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, ChainGeneration chain) throws ModuleException;
 
     /**
      * Save the current {@link AcquisitionFile} and the associated {@link Product}.

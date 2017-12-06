@@ -50,6 +50,7 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
@@ -245,24 +246,29 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
         faileds = Collections.synchronizedSet(new HashSet<>());
     }
 
-    public void initData() {
+    public void initData() throws ModuleException {
         // Create 2 ScanDirectory
         ScanDirectory scanDir1 = scandirService.save(new ScanDirectory("/var/regards/data/input1"));
         ScanDirectory scanDir2 = scandirService.save(new ScanDirectory("/var/regards/data/input2"));
         ScanDirectory scanDir3 = scandirService.save(new ScanDirectory("/var/regards/data/input3"));
 
-        metaFileOptional = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withMediaType(MediaType.APPLICATION_JSON_UTF8_VALUE).withFilePattern("file pattern optional")
-                .comment("it is optional").addScanDirectory(scanDir1).addScanDirectory(scanDir2).get());
-        metaFileMandatory = metaFileService.save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withMediaType(MediaType.APPLICATION_PDF_VALUE).withFilePattern("one other file pattern mandatory")
-                .comment("it is mandatory").isMandatory().addScanDirectory(scanDir3).get());
+        // Create 2 MetaFile
+        metaFileOptional = metaFileRepository
+                .save(MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
+                        .withMediaType(MediaType.APPLICATION_JSON_UTF8_VALUE).withFilePattern("file pattern optional")
+                        .comment("it is optional").addScanDirectory(scanDir1).addScanDirectory(scanDir2).get());
+        metaFileMandatory = metaFileRepository.save(MetaFileBuilder.build()
+                .withInvalidFolder("/var/regards/data/invalid").withMediaType(MediaType.APPLICATION_PDF_VALUE)
+                .withFilePattern("one other file pattern mandatory").comment("it is mandatory").isMandatory()
+                .addScanDirectory(scanDir3).get());
 
         // Create a ChainGeneration and a MetaProduct
-        metaProduct = metaProductService.save(MetaProductBuilder.build(META_PRODUCT_NAME).addMetaFile(metaFileOptional)
-                .addMetaFile(metaFileMandatory).withIngestProcessingChain("ingest-processing-chain-id").get());
-        chain = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL + "-" + this.name.getMethodName())
-                .isActive().withDataSet(DATASET_IP_ID).withMetaProduct(metaProduct).periodicity(1L).get());
+        metaProduct = metaProductRepository
+                .save(MetaProductBuilder.build(META_PRODUCT_NAME).addMetaFile(metaFileOptional)
+                        .addMetaFile(metaFileMandatory).withIngestProcessingChain("ingest-processing-chain-id").get());
+        chain = chainGenerationRepository
+                .save(ChainGenerationBuilder.build(CHAINE_LABEL + "-" + this.name.getMethodName()).isActive()
+                        .withDataSet(DATASET_IP_ID).withMetaProduct(metaProduct).periodicity(1L).get());
     }
 
     @After

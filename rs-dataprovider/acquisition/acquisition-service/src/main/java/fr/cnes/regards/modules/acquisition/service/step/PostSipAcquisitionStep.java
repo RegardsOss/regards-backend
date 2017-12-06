@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
@@ -41,7 +40,6 @@ import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
  * @author Christophe Mertz
  *
  */
-@MultitenantTransactional
 public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisitionStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostSipAcquisitionStep.class);
@@ -106,7 +104,7 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
             } else if (sipEvent.getState().equals(SIPState.STORE_ERROR)) {
                 nbSipError = 1;
             }
-            
+
             processService.updateProcessGeneration(chainGeneration.getSession(), 0, nbSipStored, nbSipError);
 
         } catch (ModuleException e) {

@@ -29,6 +29,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceConfiguration;
 import fr.cnes.regards.modules.acquisition.service.conf.MockedFeignClientConf;
@@ -47,11 +48,11 @@ public class ScheduledStartChainIT extends AcquisitionITHelper {
     private String scheduledTasksDelay;
 
     @Test
-    public void startScheduledChainsAnyChainActive() throws InterruptedException {
+    public void startScheduledChainsAnyChainActive() throws InterruptedException, ModuleException {
         chain.setLastDateActivation(null);
         chain.setActive(false);
         chain.setRunning(false);
-        chainService.save(chain);
+        chainService.createOrUpdate(chain);
 
         Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(0, chainService.findByActiveTrueAndRunningFalse().size());
@@ -71,11 +72,11 @@ public class ScheduledStartChainIT extends AcquisitionITHelper {
     }
 
     @Test
-    public void startScheduledChainsChainAlreadyRunning() throws InterruptedException {
+    public void startScheduledChainsChainAlreadyRunning() throws InterruptedException, ModuleException {
         chain.setLastDateActivation(null);
         chain.setActive(true);
         chain.setRunning(true);
-        chainService.save(chain);
+        chainService.createOrUpdate(chain);
 
         Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(0, chainService.findByActiveTrueAndRunningFalse().size());
@@ -95,12 +96,12 @@ public class ScheduledStartChainIT extends AcquisitionITHelper {
     }
 
     @Test
-    public void startScheduledChainsLastAcqDateTooEarlier() throws InterruptedException {
+    public void startScheduledChainsLastAcqDateTooEarlier() throws InterruptedException, ModuleException {
         chain.setLastDateActivation(OffsetDateTime.now().minusMinutes(10));
         chain.setPeriodicity(610L);
         chain.setRunning(false);
         chain.setActive(true);
-        chainService.save(chain);
+        chainService.createOrUpdate(chain);
 
         Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(1, chainService.findByActiveTrueAndRunningFalse().size());
@@ -120,11 +121,11 @@ public class ScheduledStartChainIT extends AcquisitionITHelper {
     }
 
     @Test
-    public void startScheduledChainsOneChainActive() throws InterruptedException {
+    public void startScheduledChainsOneChainActive() throws InterruptedException, ModuleException {
         chain.setLastDateActivation(null);
         chain.setRunning(false);
         chain.setActive(true);
-        chainService.save(chain);
+        chainService.createOrUpdate(chain);
 
         Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(1, chainService.findByActiveTrueAndRunningFalse().size());

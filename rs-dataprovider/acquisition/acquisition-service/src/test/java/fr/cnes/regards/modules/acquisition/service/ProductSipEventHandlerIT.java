@@ -76,13 +76,13 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
     private ProcessGeneration process;
 
     @Before
-    public void init() {
+    public void init() throws ModuleException {
         metaProduct001 = metaProductService
-                .save(MetaProductBuilder.build("meta-product-name-001").addMetaFile(metaFileOptional)
+                .createOrUpdate(MetaProductBuilder.build("meta-product-name-001").addMetaFile(metaFileOptional)
                         .addMetaFile(metaFileMandatory).withIngestProcessingChain("ingest-processing-chain-001").get());
-        metaProduct002 = metaProductService.save(MetaProductBuilder.build("meta-product-name-002")
+        metaProduct002 = metaProductService.createOrUpdate(MetaProductBuilder.build("meta-product-name-002")
                 .addMetaFile(metaFileMandatory).withIngestProcessingChain("ingest-processing-chain-002").get());
-        metaProduct003 = metaProductService.save(MetaProductBuilder.build("meta-product-name-003")
+        metaProduct003 = metaProductService.createOrUpdate(MetaProductBuilder.build("meta-product-name-003")
                 .addMetaFile(metaFileMandatory).withIngestProcessingChain("ingest-processing-chain-003").get());
 
         // Create a Product
@@ -121,10 +121,10 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
         // the chain is not active to not activate it 
         chain.setActive(false);
         chain.setSession("session-001");
-        chainService.save(chain);
+        chainService.createOrUpdate(chain);
 
         // Create a generation chain for the ProcessGeneration
-        chainForProcessing = chainService.save(ChainGenerationBuilder.build(CHAINE_LABEL + "for processing")
+        chainForProcessing = chainService.createOrUpdate(ChainGenerationBuilder.build(CHAINE_LABEL + "for processing")
                 .withDataSet(DATASET_IP_ID).withSession("session-001").withMetaProduct(metaProduct001).get());
         process = processGenerationService.save(ProcessGenerationBuilder.build(chainForProcessing.getSession())
                 .withChain(chainForProcessing).withStartDate(OffsetDateTime.now()).get());
@@ -143,7 +143,7 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
 
         chainForProcessing.setPostProcessSipPluginConf(pluginService
                 .getPluginConfiguration("CleanOriginalFilePostPlugin", IPostProcessSipPlugin.class));
-        chainService.save(chainForProcessing);
+        chainService.createOrUpdate(chainForProcessing);
 
         String productName = "product-033";
         try {
@@ -189,7 +189,7 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
 
         chainForProcessing.setPostProcessSipPluginConf(pluginService
                 .getPluginConfiguration("CleanOriginalFilePostPlugin", IPostProcessSipPlugin.class));
-        chainService.save(chainForProcessing);
+        chainService.createOrUpdate(chainForProcessing);
 
         publishSipEvent("product-001", SIPState.STORED);
         publishSipEvent("product-002", SIPState.STORED);

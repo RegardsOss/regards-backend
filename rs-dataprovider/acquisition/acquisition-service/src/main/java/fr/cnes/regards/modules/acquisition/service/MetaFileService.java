@@ -66,11 +66,6 @@ public class MetaFileService implements IMetaFileService {
     }
 
     @Override
-    public MetaFile save(MetaFile metaFile) {
-        return metaFileRepository.save(metaFile);
-    }
-
-    @Override
     public MetaFile update(Long metafileId, MetaFile metafile) throws ModuleException {
         if (!metafileId.equals(metafile.getId())) {
             throw new EntityInconsistentIdentifierException(metafileId, metafile.getId(), metafile.getClass());
@@ -108,10 +103,10 @@ public class MetaFileService implements IMetaFileService {
         if (metaFile.getId() == null) {
             // It is a new MetaFile --> create it
             metaFile.setScanDirectories(scanDirectoryService.createOrUpdate(metaFile.getScanDirectories()));
-            return this.save(metaFile);
+            return metaFileRepository.save(metaFile);
         } else {
             MetaFile existingMetaFile = this.retrieve(metaFile.getId());
-            
+
             metaFile.setScanDirectories(scanDirectoryService.createOrUpdate(metaFile.getScanDirectories(),
                                                                             existingMetaFile.getScanDirectories()));
             if (existingMetaFile.equals(metaFile)) {
@@ -119,7 +114,7 @@ public class MetaFileService implements IMetaFileService {
                 return metaFile;
             } else {
                 // it is different --> update it
-                return this.save(metaFile);
+                return metaFileRepository.save(metaFile);
             }
         }
     }
