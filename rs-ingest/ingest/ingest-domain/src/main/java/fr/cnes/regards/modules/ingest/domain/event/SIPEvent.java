@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * AMQP Event to inform system for all {@link SIPEntity} state modification
  * @author Sébastien Binda
  */
-@Event(target = Target.ALL)
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public class SIPEvent implements ISubscribable {
 
     private SIPState state;
