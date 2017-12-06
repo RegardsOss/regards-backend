@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.acquisition.builder;
 
 import java.util.Set;
 
-import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
@@ -51,16 +50,6 @@ public final class MetaProductBuilder {
         final MetaProduct mp = new MetaProduct();
         mp.setLabel(label);
         return new MetaProductBuilder(mp);
-    }
-
-    /**
-     * Set the {@link Product} property to the current {@link MetaProduct}
-     * @param product the {@link MetaProduct}
-     * @return the current {@link MetaProductBuilder}
-     */
-    public MetaProductBuilder addProduct(Product product) {
-        metaProduct.addProduct(product);
-        return this;
     }
 
     /**

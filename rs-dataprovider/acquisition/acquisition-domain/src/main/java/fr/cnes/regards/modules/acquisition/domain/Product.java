@@ -74,7 +74,7 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
                         @NamedAttributeNode(value = "metaProduct", subgraph = "graph.metaproduct.complete.metafiles"),
                         @NamedAttributeNode(value = "fileList") },
                 subgraphs = { @NamedSubgraph(name = "graph.metaproduct.complete.metafiles", attributeNodes = {
-                        @NamedAttributeNode(value = "metaFiles"), @NamedAttributeNode(value = "products") }) })
+                        @NamedAttributeNode(value = "metaFiles") }) })
 
 })
 public class Product implements IIdentifiable<Long> {

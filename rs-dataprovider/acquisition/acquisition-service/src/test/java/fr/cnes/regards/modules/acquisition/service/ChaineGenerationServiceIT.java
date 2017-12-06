@@ -122,15 +122,13 @@ public class ChaineGenerationServiceIT {
         scanDirectoryRepository.deleteAll();
         acquisitionFileRepository.deleteAll();
         metaFileRepository.deleteAll();
-        metaProductRepository.deleteAll();
         productRepository.deleteAll();
+        metaProductRepository.deleteAll();
     }
 
     private Product addProduct(MetaProduct metaProduct, String productName) throws ModuleException {
         Product product = productService.save(ProductBuilder.build(productName).withStatus(ProductStatus.ACQUIRING)
                 .withMetaProduct(metaProduct).get());
-        // Link Product <-> MetaProduct
-        metaProduct.addProduct(product);
         metaProduct = metaProductService.createOrUpdate(metaProduct);
         product.setMetaProduct(metaProduct);
         return productService.save(product);
@@ -196,9 +194,6 @@ public class ChaineGenerationServiceIT {
         Assert.assertNotNull(bProduct);
         Assert.assertNotNull(bProduct.getId());
         Assert.assertEquals(2, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-
-        // Control the number of products from the MetaProduct
-        Assert.assertEquals(2, metaProductService.retrieveComplete(metaProduct.getId()).getProducts().size());
 
         // Delete a product
         productService.delete(aProduct.getId());

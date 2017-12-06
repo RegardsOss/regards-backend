@@ -42,9 +42,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
 
-import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.modules.acquisition.domain.Product;
 
 /**
  * This class represents a product type
@@ -56,8 +54,7 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 @Table(name = "t_acquisition_meta_product",
         indexes = { @Index(name = "idx_acq_meta_product_label", columnList = "label") },
         uniqueConstraints = @UniqueConstraint(name = "uk_acq_meta_product_label", columnNames = { "label" }))
-@NamedEntityGraph(name = "graph.product.complete",
-        attributeNodes = { @NamedAttributeNode(value = "products"), @NamedAttributeNode(value = "metaFiles") })
+@NamedEntityGraph(name = "graph.product.complete", attributeNodes = { @NamedAttributeNode(value = "metaFiles") })
 public class MetaProduct implements IIdentifiable<Long> {
 
     /**
@@ -76,11 +73,6 @@ public class MetaProduct implements IIdentifiable<Long> {
     @NotBlank
     @Column(name = "label", length = MAX_STRING_LENGTH, nullable = false)
     private String label;
-
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_meta_product_id"))
-    @GsonIgnore
-    private Set<Product> products = new HashSet<Product>();
 
     /**
      * Algorithm used to calculate the checksum
@@ -143,22 +135,6 @@ public class MetaProduct implements IIdentifiable<Long> {
         this.cleanOriginalFile = clean;
     }
 
-    public Set<Product> getProducts() {
-        return products;
-    }
-
-    public void setProducts(Set<Product> newProducts) {
-        products = newProducts;
-    }
-
-    public void addProduct(Product product) {
-        this.products.add(product);
-    }
-
-    public void removeProduct(Product product) {
-        this.products.remove(product);
-    }
-
     public Set<MetaFile> getMetaFiles() {
         return metaFiles;
     }
@@ -196,7 +172,6 @@ public class MetaProduct implements IIdentifiable<Long> {
         result = prime * result + ((ingestChain == null) ? 0 : ingestChain.hashCode());
         result = prime * result + ((label == null) ? 0 : label.hashCode());
         result = prime * result + ((metaFiles == null) ? 0 : metaFiles.hashCode());
-        result = prime * result + ((products == null) ? 0 : products.hashCode());
         return result;
     }
 
@@ -245,13 +220,6 @@ public class MetaProduct implements IIdentifiable<Long> {
                 return false;
             }
         } else if (!metaFiles.equals(other.metaFiles)) {
-            return false;
-        }
-        if (products == null) {
-            if (other.products != null) {
-                return false;
-            }
-        } else if (!products.equals(other.products)) {
             return false;
         }
         return true;

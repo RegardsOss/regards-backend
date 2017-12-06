@@ -30,5 +30,5 @@ alter table t_acquisition_file add constraint fk_meta_file_id foreign key (meta_
 alter table t_acquisition_file add constraint fk_product_id foreign key (product_id) references t_acquisition_product;
 alter table t_acquisition_meta_file add constraint fk_meta_product_id foreign key (meta_product_id) references t_acquisition_meta_product;
 alter table t_acquisition_process add constraint fk_acq_chain_id foreign key (chain_id) references t_acquisition_chain;
-alter table t_acquisition_product add constraint fk_meta_product_id foreign key (meta_product_id) references t_acquisition_meta_product;
+alter table t_acquisition_product add constraint fk_product_id foreign key (meta_product_id) references t_acquisition_meta_product;
 alter table t_acquisition_scan_directory add constraint fk_acq_directory foreign key (scan_directory_id) references t_acquisition_meta_file;

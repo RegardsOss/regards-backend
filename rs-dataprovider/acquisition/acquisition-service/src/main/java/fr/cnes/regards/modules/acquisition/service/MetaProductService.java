@@ -88,7 +88,6 @@ public class MetaProductService implements IMetaProductService {
 
             metaProduct.setMetaFiles(metaFileService.createOrUpdate(metaProduct.getMetaFiles(),
                                                                     existingMetaProduct.getMetaFiles()));
-            metaProduct.setProducts(existingMetaProduct.getProducts());
 
             if (existingMetaProduct.equals(metaProduct)) {
                 // it is the same --> just return it

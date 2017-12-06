@@ -135,15 +135,13 @@ public class AcquisitionFileServiceIT {
         scanDirectoryRepository.deleteAll();
         acquisitionFileRepository.deleteAll();
         metaFileRepository.deleteAll();
-        metaProductRepository.deleteAll();
         productRepository.deleteAll();
+        metaProductRepository.deleteAll();
     }
 
     private Product addProduct(MetaProduct metaProduct, String productName) throws ModuleException {
         Product product = productService.save(ProductBuilder.build(productName).withStatus(ProductStatus.ACQUIRING)
                 .withMetaProduct(metaProduct).get());
-        // Link Product <-> MetaProduct
-        metaProduct.addProduct(product);
         metaProduct = metaProductService.createOrUpdate(metaProduct);
         product.setMetaProduct(metaProduct);
         return productService.save(product);

@@ -32,8 +32,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -64,7 +62,6 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
-import fr.cnes.regards.modules.acquisition.service.AcquisitionFileServiceIT;
 import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
@@ -79,8 +76,6 @@ import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceCo
 @ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class })
 @DirtiesContext
 public class ScanDirectoryPluginIT {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionFileServiceIT.class);
 
     /**
      * Static default tenant
