@@ -77,6 +77,9 @@ public class FakeSipValidation implements ISipValidation {
     @PluginParameter(label = "Constraint map")
     private Map<String, Constraint> scMap;
 
+    @PluginParameter(label = "Embedded plugin")
+    private ISipValidation embedded;
+
     @Override
     public void validate(SIP sip, Errors errors) {
         // Nothing to do
