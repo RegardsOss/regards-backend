@@ -8,8 +8,8 @@ import java.nio.file.Path;
 
 import fr.cnes.regards.framework.staf.event.IClientCollectListener;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IProgressManager;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IWorkingSubset;
+import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
+import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 
 /**
  * Implementation of {@link IClientCollectListener} for {@link STAFDataStorage}.<br/>

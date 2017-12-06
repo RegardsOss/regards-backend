@@ -88,16 +88,17 @@ import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
-import fr.cnes.regards.modules.storage.plugin.allocation.strategy.IAllocationStrategy;
-import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageAccessModeEnum;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.INearlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IWorkingSubset;
+import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
+import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
+import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFDataStorage;
 import fr.cnes.regards.modules.storage.plugin.security.CatalogSecurityDelegation;
-import fr.cnes.regards.modules.storage.plugin.security.ISecurityDelegation;
+import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
 import fr.cnes.regards.modules.storage.service.job.DeleteDataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
@@ -273,6 +274,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
         pluginService.addPluginPackage(STAFDataStorage.class.getPackage().getName());
         pluginService.addPluginPackage(CatalogSecurityDelegation.class.getPackage().getName());
+        pluginService.addPluginPackage(DefaultAllocationStrategyPlugin.class.getPackage().getName());
     }
 
     @Override

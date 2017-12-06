@@ -1,7 +1,7 @@
 package fr.cnes.regards.modules.storage.plugin.allocation.strategy;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 
 /**
  * POJO allowing us to map a property value to a {@link IDataStorage} configuration id

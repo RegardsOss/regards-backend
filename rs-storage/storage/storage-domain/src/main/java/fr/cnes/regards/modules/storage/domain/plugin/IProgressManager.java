@@ -1,12 +1,13 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.storage.plugin.datastorage;
+package fr.cnes.regards.modules.storage.domain.plugin;
 
 import java.net.URL;
 import java.nio.file.Path;
 
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 
 /**
  * The ProgressManager is used by {@link INearlineDataStorage} plugins to notidy the upper service of storage action results :

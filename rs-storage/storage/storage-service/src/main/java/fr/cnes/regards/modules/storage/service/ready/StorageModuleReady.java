@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.module.ready.IModuleReady;
 import fr.cnes.regards.framework.module.ready.ModuleReadiness;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.storage.plugin.allocation.strategy.IAllocationStrategy;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 
 /**
  * Allows to know if module storage is ready or not.

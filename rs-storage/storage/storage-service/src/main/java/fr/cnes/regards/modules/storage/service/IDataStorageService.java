@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.PluginStorageInfo;
 
 /**

@@ -55,9 +55,9 @@ import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEventState;
-import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageAccessModeEnum;
-import fr.cnes.regards.modules.storage.plugin.datastorage.INearlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IWorkingSubset;
+import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
+import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
 import fr.cnes.regards.modules.storage.service.job.RestorationJob;
 

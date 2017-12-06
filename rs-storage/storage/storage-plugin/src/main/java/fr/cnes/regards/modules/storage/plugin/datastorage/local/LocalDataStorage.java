@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.storage.plugin.datastorage.local;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -23,9 +24,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageAccessModeEnum;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IProgressManager;
+import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
+import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -90,8 +91,8 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
      * Plugin init method
      */
     @PluginInit
-    public void init() {
-        baseStorageLocation = gson.fromJson(baseStorageLocationAsString, URL.class);
+    public void init() throws MalformedURLException {
+        baseStorageLocation = new URL(baseStorageLocationAsString);
     }
 
     @Override

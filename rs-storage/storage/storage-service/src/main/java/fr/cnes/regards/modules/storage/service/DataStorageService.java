@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
 import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageInfo;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.PluginStorageInfo;
 
 /**
@@ -134,7 +134,7 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
     }
 
     @Override
-    @Scheduled(fixedRateString = "${regards.storage.check.data.storage.disk.usage.rate:60000}")
+    @Scheduled(fixedRateString = "${regards.storage.check.data.storage.disk.usage.rate:60000}", initialDelay = 60*1000)
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void monitorDataStorages() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {

@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.storage.plugin.security;
+package fr.cnes.regards.modules.storage.domain.plugin;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;

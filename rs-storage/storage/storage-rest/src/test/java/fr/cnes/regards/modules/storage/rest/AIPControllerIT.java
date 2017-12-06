@@ -65,10 +65,10 @@ import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
-import fr.cnes.regards.modules.storage.plugin.security.ISecurityDelegation;
+import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.service.DataStorageEventHandler;
 
 /**
@@ -136,7 +136,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "9000000000000000").addParameter(
                         LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                        gson.toJson(baseStorageLocation)).getParameters();
+                        baseStorageLocation.toString()).getParameters();
         PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta,
                                                                       DATA_STORAGE_CONF_LABEL,
                                                                       parameters,

@@ -15,10 +15,9 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageAccessModeEnum;
-import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageInfo;
-import fr.cnes.regards.modules.storage.plugin.datastorage.INearlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IProgressManager;
+import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
+import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubset;
 
 @Plugin(author = "REGARDS Team", description = "SImple test plugin.", id = "SimpleTestNearLineStoragePlugin",
