@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.ingest.service.store;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +35,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
+import feign.FeignException;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -103,27 +103,35 @@ public class AIPStorageBulkRequestService
         aipsInRequest.forEach(aipId -> aipRepository.updateAIPEntityState(AIPState.QUEUED, aipId));
         if (!aipsInRequest.isEmpty()) {
             FeignSecurityManager.asSystem(); // as we are using this method into a schedule, we clearly use the
-            ResponseEntity<List<RejectedAip>> response = aipClient.store(aips);
+            ResponseEntity<List<RejectedAip>> response = null;
+            try {
+                response = aipClient.store(aips);
+            } catch (FeignException e) {
+                // Feign only throws exceptions in case the response status is neither 404 or one of the 2xx,
+                // so lets catch the exception and if it not one of our API normal status rethrow it
+                if (e.status() != HttpStatus.UNPROCESSABLE_ENTITY.value()) {
+                    throw e;
+                }
+                //set all aip to store_rejected
+                aips.getFeatures().forEach(aip -> rejectAip(aip.getId().toString()));
+            }
             FeignSecurityManager.reset();
-            // lets treat the response if it exists and the return code is coherent with the API standard return codes: 2xx or 422
-            if ((response != null) && (response.getStatusCode().is2xxSuccessful()
-                    || response.getStatusCode().value() == HttpStatus.UNPROCESSABLE_ENTITY.value())) {
+            if ((response != null) && (response.getStatusCode().is2xxSuccessful())) {
                 List<RejectedAip> rejectedAips = response.getBody();
                 // If there is rejected aips, remove them from the list of AIPEntity to set to QUEUED status.
                 if ((rejectedAips != null) && !rejectedAips.isEmpty()) {
-                    Set<String> resjectAipIds = rejectedAips.stream().map(r -> {
-                        LOGGER.warn(
-                                "Created AIP {}, has been rejected by archival storage microservice for store action",
-                                r.getIpId());
-                        return r.getIpId();
-                    }).collect(Collectors.toSet());
-                    resjectAipIds.forEach(aipId -> aipRepository.updateAIPEntityState(AIPState.STORE_REJECTED, aipId));
+                    rejectedAips.stream().map(RejectedAip::getIpId).forEach(aipId -> rejectAip(aipId));
                 }
             } else {
                 // Response error. Microservice may be not available at the time. Update all AIPs to CREATE state to be handle next time
                 aipsInRequest.forEach(aipId -> aipRepository.updateAIPEntityState(AIPState.CREATED, aipId));
             }
         }
+    }
+
+    private void rejectAip(String aipId) {
+        LOGGER.warn("Created AIP {}, has been rejected by archival storage microservice for store action", aipId);
+        aipRepository.updateAIPEntityState(AIPState.STORE_REJECTED, aipId);
     }
 
 }
