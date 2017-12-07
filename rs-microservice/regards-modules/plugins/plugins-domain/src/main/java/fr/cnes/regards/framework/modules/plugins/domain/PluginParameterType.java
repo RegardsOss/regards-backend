@@ -101,8 +101,7 @@ public class PluginParameterType {
         Assert.hasText(name, "Name is required");
         ppt.setName(name);
 
-        // FIXME to do set mandatory
-        // Assert.hasText(label, "Label is required");
+        Assert.hasText(label, "Label is required");
         ppt.setLabel(label);
 
         ppt.setDescription(description);

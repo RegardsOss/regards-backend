@@ -24,7 +24,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -268,9 +267,17 @@ public final class PluginParameterUtils {
      * @return an {@link Optional} {@link PrimitiveObject}
      */
     private static Optional<PrimitiveObject> isAPrimitiveType(Class<?> clazz) {
-        for (PrimitiveObject po : PrimitiveObject.values()) {
-            if (clazz.isAssignableFrom(po.getType())) {
-                return Optional.of(po);
+        if (clazz.isPrimitive()) {
+            for (PrimitiveObject po : PrimitiveObject.values()) {
+                if (clazz.isAssignableFrom(po.getPrimitive())) {
+                    return Optional.of(po);
+                }
+            }
+        } else {
+            for (PrimitiveObject po : PrimitiveObject.values()) {
+                if (clazz.isAssignableFrom(po.getType())) {
+                    return Optional.of(po);
+                }
             }
         }
         return Optional.empty();
@@ -472,20 +479,7 @@ public final class PluginParameterUtils {
                 LOGGER.debug(String.format("Object parameter json value : %s", paramValue));
             }
             // Deserialize object from JSON value
-            Type classType = field.getGenericType();
-
-            // FIXME run CI before remove
-            // Custom deserialization with GSON
-            // if (!Void.class.equals(plgParamAnnotation.rawtype()) || (plgParamAnnotation.argTypes().length > 0)) {
-            // // Raw type
-            // Type rawType = field.getType();
-            // if (!Void.class.equals(plgParamAnnotation.rawtype())) {
-            // rawType = plgParamAnnotation.rawtype();
-            // }
-            // // Manage generic arguments types
-            // classType = new ParameterizedTypeImpl(null, rawType, plgParamAnnotation.argTypes());
-            // }
-            Object objectParamValue = gson.fromJson(paramValue, classType);
+            Object objectParamValue = gson.fromJson(paramValue, field.getGenericType());
 
             if (objectParamValue != null) {
                 try {
@@ -648,57 +642,58 @@ public final class PluginParameterUtils {
      */
     public enum PrimitiveObject {
         /**
-         * A primitive of {@link String}
+         * A primitive of {@link String}. No primitive for string! Fallback to void!
          */
-        STRING(String.class),
+        STRING(String.class, void.class),
 
         /**
          * A primitive of {@link Byte}
          */
-        BYTE(Byte.class),
+        BYTE(Byte.class, byte.class),
 
         /**
          * A primitive of {@link Short}
          */
-        SHORT(Short.class),
+        SHORT(Short.class, short.class),
 
         /**
          * A primitive of {@link Integer}
          */
-        INT(Integer.class),
+        INT(Integer.class, int.class),
 
         /**
          * A primitive of {@link Long}
          */
-        LONG(Long.class),
+        LONG(Long.class, long.class),
 
         /**
          * A primitive of {@link Float}
          */
-        FLOAT(Float.class),
+        FLOAT(Float.class, float.class),
 
         /**
          * A primitive of {@link Double}
          */
-        DOUBLE(Double.class),
+        DOUBLE(Double.class, double.class),
 
         /**
          * A primitive of {@link Boolean}
          */
-        BOOLEAN(Boolean.class);
+        BOOLEAN(Boolean.class, boolean.class);
 
-        /**
-         * Type
-         */
         private final Class<?> type;
+
+        private final Class<?> primitive;
 
         /**
          * Constructor
          *
-         * @param pType primitive type
+         * @param type primitive object type
+         * @param primitive primitive class
          */
-        private PrimitiveObject(final Class<?> pType) {
-            type = pType;
+        private PrimitiveObject(final Class<?> type, Class<?> primitive) {
+            this.type = type;
+            this.primitive = primitive;
         }
 
         /**
@@ -708,6 +703,10 @@ public final class PluginParameterUtils {
          */
         public Class<?> getType() {
             return type;
+        }
+
+        public Class<?> getPrimitive() {
+            return primitive;
         }
     }
 }

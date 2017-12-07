@@ -44,6 +44,19 @@ public class PluginWithGenericsTest {
     private final Gson gson = new Gson();
 
     @Test
+    public void primitiveTest() {
+
+        List<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(PluginWithBoolean.FIELD_NAME_OBJECT, "true")
+                .addParameter(PluginWithBoolean.FIELD_NAME_PRIMITIVE, "false").getParameters();
+
+        IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithBoolean.class,
+                                                           Arrays.asList(this.getClass().getPackage().getName()), null);
+        Assert.assertNotNull(plugin);
+        plugin.doIt();
+    }
+
+    @Test
     public void stringCollectionTest() {
         List<String> infos = Arrays.asList("info 1", "info 2", "info 3");
 
