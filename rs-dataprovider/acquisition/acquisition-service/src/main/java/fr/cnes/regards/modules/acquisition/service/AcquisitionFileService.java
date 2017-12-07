@@ -106,6 +106,7 @@ public class AcquisitionFileService implements IAcquisitionFileService {
         acqfileRepository.delete(acquisitionFile);
     }
 
+    @Override
     public List<AcquisitionFile> findByMetaFile(MetaFile metaFile) {
         return acqfileRepository.findByMetaFile(metaFile);
     }

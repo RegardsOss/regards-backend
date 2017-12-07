@@ -78,6 +78,9 @@ import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainSe
 @RequestMapping(path = AcquisitionProcessingChainController.BASE_PATH)
 public class AcquisitionProcessingChainController implements IResourceController<AcquisitionProcessingChain> {
 
+    /**
+     * Controller base path
+     */
     public static final String BASE_PATH = "chains";
 
     /**

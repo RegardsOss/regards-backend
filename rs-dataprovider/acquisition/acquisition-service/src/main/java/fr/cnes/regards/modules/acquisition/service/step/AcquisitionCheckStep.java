@@ -61,7 +61,9 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
     @Autowired
     private IAcquisitionFileService acquisitionFileService;
 
-    // TODO CMZ à revoir invalidDataFolder peut être différent par chaine de génération
+    /**
+     * Base folder used to move the invalid scan files
+     */
     @Value("${regards.acquisition.invalid-data-folder:#{null}}")
     private String invalidDataFolder;
 

@@ -78,6 +78,9 @@ import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 @RequestMapping(path = MetaProductController.BASE_PATH)
 public class MetaProductController implements IResourceController<MetaProduct> {
 
+    /**
+     * Controller base path
+     */
     public static final String BASE_PATH = "metaproducts";
 
     /**

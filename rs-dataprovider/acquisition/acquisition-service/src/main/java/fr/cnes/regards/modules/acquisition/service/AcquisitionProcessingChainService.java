@@ -29,7 +29,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -94,7 +93,15 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
     @Autowired
     private IAuthenticationResolver authResolver;
 
-    public AcquisitionProcessingChainService(ISubscriber subscriber, IAcquisitionProcessingChainRepository processingChainRepository,
+    /**
+     * Constructor with the bean method's member as parameters
+     * @param processingChainRepository the {@link IAcquisitionProcessingChainRepository}
+     * @param execProcessingChainService the {@link IExecAcquisitionProcessingChainService}
+     * @param metaProductService the {@link IMetaProductService}
+     * @param jobInfoService the {@link IJobInfoService}
+     * @param pluginService the {@link IPluginService}
+     */
+    public AcquisitionProcessingChainService(IAcquisitionProcessingChainRepository processingChainRepository,
             IExecAcquisitionProcessingChainService execProcessingChainService, IMetaProductService metaProductService,
             IJobInfoService jobInfoService, IPluginService pluginService) {
         super();
@@ -111,9 +118,11 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
     }
 
     @Override
-    public AcquisitionProcessingChain update(Long chainId, AcquisitionProcessingChain acqProcessingChain) throws ModuleException {
+    public AcquisitionProcessingChain update(Long chainId, AcquisitionProcessingChain acqProcessingChain)
+            throws ModuleException {
         if (!chainId.equals(acqProcessingChain.getId())) {
-            throw new EntityInconsistentIdentifierException(chainId, acqProcessingChain.getId(), acqProcessingChain.getClass());
+            throw new EntityInconsistentIdentifierException(chainId, acqProcessingChain.getId(),
+                    acqProcessingChain.getClass());
         }
         if (!processingChainRepository.exists(chainId)) {
             throw new EntityNotFoundException(chainId, AcquisitionProcessingChain.class);
@@ -123,7 +132,8 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
     }
 
     @Override
-    public AcquisitionProcessingChain createOrUpdate(AcquisitionProcessingChain acqProcessingChain) throws ModuleException {
+    public AcquisitionProcessingChain createOrUpdate(AcquisitionProcessingChain acqProcessingChain)
+            throws ModuleException {
         if (acqProcessingChain == null) {
             return null;
         }

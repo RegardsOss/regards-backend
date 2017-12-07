@@ -39,10 +39,17 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
  */
 public interface IAcquisitionFileService {
 
+    /**
+     * Save a {@link AcquisitionFile}
+     * @param acqFile the {@link AcquisitionFile} to save
+     * @return the saved {@link AcquisitionFile}
+     */
     AcquisitionFile save(AcquisitionFile acqFile);
 
     /**
-     * @return a {@link List} of {@link AcquisitionFile}
+     * 
+     * @param page
+     * @return a {@link Page} of {@link AcquisitionFile}
      */
     Page<AcquisitionFile> retrieveAll(Pageable page);
 
@@ -66,16 +73,32 @@ public interface IAcquisitionFileService {
     void delete(AcquisitionFile acquisitionFile);
 
     /**
-     * Find the {@link AcquisitionFile} for a {@link MetaFile}
-     * @param metaFile
+     * Find a {@link List} of {@link AcquisitionFile} for a {@link MetaFile}
+     * @param metaFile the {@link MetaFile} to search
      * @return a {@link List} of {@link AcquisitionFile}
      */
     List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
 
+    /**
+     * Find a {@link List} of {@link AcquisitionFile} for with a {@link AcquisitionFileStatus}
+     * @param status the {@link AcquisitionFileStatus} to search
+     * @return a {@link List} of {@link AcquisitionFile}
+     */
     List<AcquisitionFile> findByStatus(AcquisitionFileStatus status);
 
+    /**
+     * Find a {@link List} of {@link AcquisitionFile} for with a {@link AcquisitionFileStatus} and a {@link MetaFile}
+     * @param status the {@link AcquisitionFileStatus} to search
+     * @param metaFile the {@link MetaFile} to search
+     * @return a {@link List} of {@link AcquisitionFile}
+     */
     List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileStatus status, MetaFile metaFile);
 
+    /**
+     * Find a {@link List} of {@link AcquisitionFile} for a {@link Product}
+     * @param product the {@link Product} to search
+     * @return a {@link List} of {@link AcquisitionFile}
+     */
     List<AcquisitionFile> findByProduct(Product product);
 
     /**
