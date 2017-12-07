@@ -32,6 +32,7 @@ import javax.validation.constraints.NotNull;
 public class ContentInformation {
 
     @Valid
+    @NotNull(message = "A representation information is required in content information")
     private RepresentationInformation representationInformation;
 
     @NotNull(message = "A data object is required in content information")

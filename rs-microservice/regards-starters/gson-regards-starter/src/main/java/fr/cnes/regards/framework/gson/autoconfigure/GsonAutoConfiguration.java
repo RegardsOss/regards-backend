@@ -36,13 +36,14 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.GsonHttpMessageConverter;
+import org.springframework.util.MimeType;
 
 import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
-
+import fr.cnes.regards.framework.gson.adapters.MimeTypeAdapter;
 import fr.cnes.regards.framework.gson.adapters.MultimapAdapter;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.gson.adapters.PathAdapter;
@@ -136,6 +137,7 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
     private void customizeBuilder(GsonBuilder pBuilder) {
         pBuilder.registerTypeHierarchyAdapter(Path.class, new PathAdapter().nullSafe());
         pBuilder.registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe());
+        pBuilder.registerTypeAdapter(MimeType.class, new MimeTypeAdapter().nullSafe());
         pBuilder.registerTypeHierarchyAdapter(Multimap.class, new MultimapAdapter());
         pBuilder.addSerializationExclusionStrategy(new GsonIgnoreExclusionStrategy());
 
@@ -176,11 +178,10 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
      */
     private void addBeanAdapters(GsonBuilder pBuilder) {
 
-        @SuppressWarnings("rawtypes")
-        Map<String, TypeAdapter> beanFactories = applicationContext.getBeansOfType(TypeAdapter.class);
+        @SuppressWarnings("rawtypes") Map<String, TypeAdapter> beanFactories = applicationContext
+                .getBeansOfType(TypeAdapter.class);
         if (beanFactories != null) {
-            for (@SuppressWarnings("rawtypes")
-            Map.Entry<String, TypeAdapter> beanFactory : beanFactories.entrySet()) {
+            for (@SuppressWarnings("rawtypes") Map.Entry<String, TypeAdapter> beanFactory : beanFactories.entrySet()) {
                 TypeAdapter<?> current = beanFactory.getValue();
                 // Retrieve custom annotation
                 GsonTypeAdapterBean annot = current.getClass().getAnnotation(GsonTypeAdapterBean.class);
