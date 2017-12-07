@@ -27,14 +27,24 @@ import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 
 /**
- * Classe pour creer les differents type d'attributs.
+ * Utility class to manage attribut's types 
  * 
  * @author Christophe Mertz
  *
  */
 public class AttributeFactory {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(AttributeFactory.class);
+
+    /**
+     * Non public constructor. Utility class that should not be instanciated.
+     */
+    private AttributeFactory() {
+        throw new IllegalAccessError("Utility class");
+    }
 
     /**
      * Cette methode permet de creer un attribut a partir de son type, de son nom et de son identifiant.

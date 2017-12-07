@@ -39,8 +39,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -167,8 +165,8 @@ public class ScanDirectoryPluginIT {
     }
 
     public void initData() throws ModuleException {
-        chain = acqProcessChainService.createOrUpdate(AcquisitionProcessingChainBuilder.build(CHAIN_LABEL).withDataSet(DATASET_NAME)
-                .lastActivation(NOW.minusMinutes(75)).get());
+        chain = acqProcessChainService.createOrUpdate(AcquisitionProcessingChainBuilder.build(CHAIN_LABEL)
+                .withDataSet(DATASET_NAME).lastActivation(NOW.minusMinutes(75)).get());
     }
 
     @After

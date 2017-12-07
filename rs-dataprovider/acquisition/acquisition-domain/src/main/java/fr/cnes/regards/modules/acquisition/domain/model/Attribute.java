@@ -162,7 +162,7 @@ public class Attribute {
             localBuffer.append(" label: " + metaAttribute.getName());
         }
         localBuffer.append(" value(s):");
-        if ((valueList != null) && !valueList.isEmpty()) {
+        if ((valueList != null) && !valueList.isEmpty()) { // NOSONAR
             for (Object o : valueList) {
                 localBuffer.append(" " + o);
             }

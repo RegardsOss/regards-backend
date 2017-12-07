@@ -133,7 +133,7 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
 
     @Override
     public AcquisitionProcessingChain createOrUpdate(AcquisitionProcessingChain acqProcessingChain)
-            throws ModuleException {
+            throws ModuleException { // NOSONAR
         if (acqProcessingChain == null) {
             return null;
         }
@@ -261,7 +261,7 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
     }
 
     @Override
-    public boolean run(AcquisitionProcessingChain chain) {
+    public boolean run(AcquisitionProcessingChain chain) { // NOSONAR
         // the AcquisitionProcessingChain must be active
         if (!chain.isActive()) {
             LOGGER.warn("[{}] Unable to run a not active chain generation", chain.getLabel());
