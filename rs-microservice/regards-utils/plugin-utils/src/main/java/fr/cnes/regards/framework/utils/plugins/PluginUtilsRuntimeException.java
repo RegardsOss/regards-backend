@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Exception for plugin utils package. It usually means that the plugin couldn't be instanciated.
- *
  * @author Christophe Mertz
  */
 public class PluginUtilsRuntimeException extends RuntimeException {
@@ -35,37 +34,29 @@ public class PluginUtilsRuntimeException extends RuntimeException {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginUtilsRuntimeException.class);
 
     /**
-     * serialVersionUID field.
-     */
-    private static final long serialVersionUID = 476540009609921511L;
-
-    /**
      * Constructor
-     *
-     * @param pMessage an error message
+     * @param message an error message
      */
-    public PluginUtilsRuntimeException(final String pMessage) {
-        super(pMessage);
-        LOGGER.error(pMessage);
+    public PluginUtilsRuntimeException(final String message) {
+        super(message);
+        LOGGER.error(message);
     }
 
     /**
      * Constructor
-     *
-     * @param pMessage an error message
-     * @param pCause the exception
+     * @param message an error message
+     * @param cause the exception
      */
-    public PluginUtilsRuntimeException(final String pMessage, final Throwable pCause) {
-        super(pMessage, pCause);
-        LOGGER.error(pMessage, pCause);
+    public PluginUtilsRuntimeException(final String message, final Throwable cause) {
+        super(message, cause);
+        LOGGER.error(message, cause);
     }
 
     /**
      * Constructor
-     *
-     * @param pCause the exception
+     * @param cause the exception
      */
-    public PluginUtilsRuntimeException(final Throwable pCause) {
-        super(pCause);
+    public PluginUtilsRuntimeException(final Throwable cause) {
+        super(cause);
     }
 }

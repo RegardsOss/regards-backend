@@ -22,12 +22,13 @@ package fr.cnes.regards.framework.modules.plugins.domain;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import com.google.gson.Gson;
+
 /**
- *
  * Utility class to manage a {@link List} of {@link PluginParameter}.
- *
  * @author Christophe Mertz
  */
 public class PluginParametersFactory {
@@ -39,7 +40,6 @@ public class PluginParametersFactory {
 
     /**
      * Constructor
-     *
      */
     public PluginParametersFactory() {
         parameters = new ArrayList<>();
@@ -47,9 +47,7 @@ public class PluginParametersFactory {
 
     /**
      * Constructor with the {@link List} of {@link PluginParameter}
-     * 
-     * @param pPluginParameters
-     *            the {@link List} of {@link PluginParameter}
+     * @param pPluginParameters the {@link List} of {@link PluginParameter}
      */
     public PluginParametersFactory(List<PluginParameter> pPluginParameters) {
         parameters = pPluginParameters;
@@ -57,7 +55,6 @@ public class PluginParametersFactory {
 
     /**
      * Build a new class
-     *
      * @return a factory
      */
     public static PluginParametersFactory build() {
@@ -66,9 +63,7 @@ public class PluginParametersFactory {
 
     /**
      * Build a new class and set the {@link List} of {@link PluginParameter}
-     * 
-     * @param pPluginParameters
-     *            the {@link List} of {@link PluginParameter}
+     * @param pPluginParameters the {@link List} of {@link PluginParameter}
      * @return a factory
      */
     public static PluginParametersFactory build(List<PluginParameter> pPluginParameters) {
@@ -77,11 +72,8 @@ public class PluginParametersFactory {
 
     /**
      * Chained addParameter method
-     *
-     * @param pParameterName
-     *            the name parameter
-     * @param pParameterValue
-     *            the value parameter
+     * @param pParameterName the name parameter
+     * @param pParameterValue the value parameter
      * @return the factory
      */
     public PluginParametersFactory addParameter(String pParameterName, String pParameterValue) {
@@ -90,12 +82,22 @@ public class PluginParametersFactory {
     }
 
     /**
+     * Chained addParameter method
+     * @param parameterName the name parameter
+     * @param paramValue the value parameter (a map)
+     * @return the factory
+     */
+    public PluginParametersFactory addParameter(String parameterName, Map<?, ?> paramValue) {
+        // TODO Please, clean that shit
+        Gson gson = new Gson();
+        parameters.add(new PluginParameter(parameterName, gson.toJson(paramValue)));
+        return this;
+    }
+
+    /**
      * Chained addParameterDynamic method
-     *
-     * @param pParameterName
-     *            the name parameter
-     * @param pParameterValue
-     *            the value parameter
+     * @param pParameterName the name parameter
+     * @param pParameterValue the value parameter
      * @return the factory
      */
     public PluginParametersFactory addParameterDynamic(String pParameterName, String pParameterValue) {
@@ -107,13 +109,9 @@ public class PluginParametersFactory {
 
     /**
      * Chained addParameterDynamic method
-     *
-     * @param pParameterName
-     *            the name parameter
-     * @param pParameterValue
-     *            the value parameter
-     * @param pDynamicValues
-     *            the set of possible values for the dynamic parameter
+     * @param pParameterName the name parameter
+     * @param pParameterValue the value parameter
+     * @param pDynamicValues the set of possible values for the dynamic parameter
      * @return the factory
      */
     public PluginParametersFactory addParameterDynamic(String pParameterName, String pParameterValue,
@@ -133,11 +131,8 @@ public class PluginParametersFactory {
 
     /**
      * Chained set method
-     *
-     * @param pParameterName
-     *            the name parameter
-     * @param pPluginConfiguration
-     *            the plugin configuration
+     * @param pParameterName the name parameter
+     * @param pPluginConfiguration the plugin configuration
      * @return the factory
      */
     public PluginParametersFactory addParameterPluginConfiguration(String pParameterName,
@@ -148,9 +143,7 @@ public class PluginParametersFactory {
 
     /**
      * Remove a {@link PluginParameter} from the {@link List}
-     * 
-     * @param pPluginParameter
-     *            the {@link PluginParameter} to remove
+     * @param pPluginParameter the {@link PluginParameter} to remove
      * @return the factory
      */
     public PluginParametersFactory removeParameter(PluginParameter pPluginParameter) {
