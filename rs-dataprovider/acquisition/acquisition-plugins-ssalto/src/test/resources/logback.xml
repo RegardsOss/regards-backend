@@ -32,7 +32,8 @@
 	<logger name="com.mchange.v2.c3p0.impl" level="INFO" />
 	<logger name="org.apache" level="INFO" />
 	<logger name="org.hibernate" level="INFO" />
-	
+	<logger name="fr.cnes.regards.framework.jpa.multitenant.resolver" level="INFO" />
+	<logger name="fr.cnes.regards.modules.acquisition.plugins.ssalto.chain" level="INFO" />
 
 	<root level="debug">
 		<appender-ref ref="STDOUT" />

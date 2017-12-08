@@ -44,6 +44,8 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
+import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
+import fr.cnes.regards.modules.acquisition.domain.model.CompositeAttribute;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.AttributeFinder;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
@@ -127,26 +129,27 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             for (AttributeFinder finder : finderList) {
                 finder.setAttributProperties(pluginConfProperties);
                 Attribute attribute = finder.buildAttribute(fileMap, attributeValueMap);
-                registerAttribute(finder.getName(), attributeMap, attribute);
+                registerAttribute(attributeMap, finder.getName(), attribute);
             }
         }
 
         // then do specific attributs which can depend on other attribute value
         doCreateDependantSpecificAttributes(fileMap, attributeMap);
 
+        logAttributeMap(attributeMap);
+
         return attributeMap;
     }
 
-    //    public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
-    //        return new TreeMap<>();
-    //    }
+    public void logAttributeMap(SortedMap<Integer, Attribute> mapAttrs) throws ModuleException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("nb attributes={}", mapAttrs.size());
 
-    //    @Override
-    //    public SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId) throws ModuleException {
-    //        // TODO CMZ createMetaDataPlugin à compléter
-    //
-    //        return null;
-    //    }
+            for (Attribute att : mapAttrs.values()) {
+                LOGGER.debug(att.toString());
+            }
+        }
+    }
 
     /**
      * parse le fichier de configuration pour remplir les properties, et initialise la map de l'ordre des attributs.
@@ -218,13 +221,11 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
 
     /**
      * enregistre l'attribut dans la map des attributs
-     *
-     * @param attributeMap
-     *            la map des attributs
-     * @param attribute
-     *            l'attribut a enregistrer.
+     * @param attributeMap la map des attributs
+     * @param attrName le nom de l'attribute
+     * @param attribute l'attribute à enregister
      */
-    protected void registerAttribute(String attrName, Map<Integer, Attribute> attributeMap, Attribute attribute) {
+    protected void registerAttribute(Map<Integer, Attribute> attributeMap, String attrName, Attribute attribute) {
         attributeMap.put(Integer.valueOf(attributeOrderProperties.getProperty(attrName)), attribute);
     }
 
@@ -263,12 +264,12 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
 
         for (AcquisitionFile acqFile : acqFiles) {
             // get the original file from supplyDirectory
+
             File originalFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
                     acqFile.getFileName());
 
             if (acqFile.getStatus().equals(AcquisitionFileStatus.VALID)) {
-                File newFile = new File(acqFile.getAcquisitionInformations().getWorkingDirectory(),
-                        acqFile.getFileName());
+                File newFile = acqFile.getFile();
                 fileMap.put(newFile, originalFile);
             }
 
@@ -292,22 +293,53 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     @Override
     protected void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
             throws AcquisitionException {
-        // TODO Auto-generated method stub
-        mapAttrs.forEach((k, v) -> {
-            switch (v.getAttributeKey()) {
-                default:
-                    sipBuilder.getPDIBuilder().addContextInformation(v.getAttributeKey(), v.getValueList().get(0));
-                    break;
-            }
-        });
+        for (Attribute att : mapAttrs.values()) {
+            LOGGER.debug(att.toString());
 
+            if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_STRING)) {
+                if (att.getClass().equals(CompositeAttribute.class)) {
+                    // CompositeAttribute
+                    // à traiter pour aller voir le contenu, notamment ceux avec geometry
+                    // sipBuilder.setGeometry(geometry);
+                } else {
+                    // Attribute
+                }
+            } else if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_GEO_LOCATION)) {
+
+            } else if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_LONG_STRING)) {
+
+            } else if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_DATE)) {
+
+            } else if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_DATE_TIME)) {
+
+            } else if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_INTEGER)) {
+
+            } else if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_REAL)) {
+
+            } else if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_URL)) {
+
+            }
+
+        }
+
+        //        mapAttrs.forEach((k, v) -> {
+        //            if (v != null && v.getAttributeKey() != null) {
+        //                switch (v.getAttributeKey()) {
+        //                    default:
+        //                        if (v.getValueList() != null && !v.getValueList().isEmpty()) {
+        //                            sipBuilder.getPDIBuilder().addContextInformation(v.getAttributeKey(),
+        //                                                                             v.getValueList().get(0));
+        //                        }
+        //                        break;
+        //                }
+        //            }
+        //        });
+        //
     }
 
     @Override
     protected void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles)
             throws AcquisitionException {
-        // TODO Auto-generated method stub
-
         for (AcquisitionFile af : acqFiles) {
             try {
                 sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, af.getFile().toURI().toURL(),

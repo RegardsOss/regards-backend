@@ -87,7 +87,7 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
             LOGGER.error(msg);
             throw new PluginAcquisitionException(msg, e);
         }
-        registerAttribute(PRODUCT_OPTION, attributeMap, optionAttribute);
+        registerAttribute(attributeMap, PRODUCT_OPTION, optionAttribute);
         LOGGER.info("END building attribute " + PRODUCT_OPTION);
     }
 

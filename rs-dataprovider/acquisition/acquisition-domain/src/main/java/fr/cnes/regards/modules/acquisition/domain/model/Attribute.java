@@ -157,18 +157,23 @@ public class Attribute {
     @Override
     public String toString() {
         StringBuffer localBuffer = new StringBuffer();
-        localBuffer.append("Attribute description:");
+        localBuffer.append("attribute[");
         if (metaAttribute != null) {
-            localBuffer.append(" label: " + metaAttribute.getName());
+            localBuffer.append(metaAttribute.getName());
+            localBuffer.append("-");
+            localBuffer.append(metaAttribute.getValueType());
         }
-        localBuffer.append(" value(s):");
+        localBuffer.append(":");
+        localBuffer.append(getType().toString());
+        localBuffer.append(":{");
         if ((valueList != null) && !valueList.isEmpty()) { // NOSONAR
             for (Object o : valueList) {
-                localBuffer.append(" " + o);
+                localBuffer.append(o);
             }
         } else {
             localBuffer.append(" none...");
         }
+        localBuffer.append("}]");
         return localBuffer.toString();
     }
 

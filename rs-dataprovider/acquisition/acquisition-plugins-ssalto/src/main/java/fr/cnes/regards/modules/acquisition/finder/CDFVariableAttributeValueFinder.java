@@ -76,7 +76,7 @@ public class CDFVariableAttributeValueFinder extends CdfFileFinder {
                 LOGGER.debug("value" + value.toString() + " found for last variable " + variableName);
                 translatedValueList.add(value);
             } else {
-                // apply the caculus class transformation
+                // apply the calculus class transformation
                 for (Object value : values) {
                     // launch calculation if needed
                     if (calculationClass != null) {

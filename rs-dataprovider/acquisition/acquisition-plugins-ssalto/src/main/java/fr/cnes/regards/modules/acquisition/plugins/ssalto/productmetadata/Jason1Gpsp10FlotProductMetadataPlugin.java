@@ -123,7 +123,7 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
             throw new PluginAcquisitionException(msg, e);
         }
 
-        registerAttribute(TIME_PERIOD, attributeMap, timePeriodAttribute);
+        registerAttribute(attributeMap, TIME_PERIOD, timePeriodAttribute);
 
         LOGGER.info("END building attribute " + TIME_PERIOD);
     }

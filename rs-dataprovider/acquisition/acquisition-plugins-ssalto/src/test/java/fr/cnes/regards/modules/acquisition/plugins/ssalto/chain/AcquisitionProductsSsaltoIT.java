@@ -38,7 +38,10 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -57,6 +60,9 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginParameterRepository;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.acquisition.builder.AcquisitionProcessingChainBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
@@ -73,12 +79,14 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
+import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.chain.conf.AcquisitionSsaltoProductsConfiguration;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.chain.conf.MockedFeignSsaltoClientConf;
+import fr.cnes.regards.modules.acquisition.service.AcquisitionFileService;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
-import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
-import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
-import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
+import fr.cnes.regards.modules.entities.client.IDatasetClient;
+import fr.cnes.regards.modules.entities.domain.Dataset;
 
 /**
  * @author Christophe Mertz
@@ -90,18 +98,16 @@ import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
 @DirtiesContext
 public class AcquisitionProductsSsaltoIT {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProductsSsaltoIT.class);
 
-    protected static final String DEFAULT_USER = "John Doe";
+    private static final String DEFAULT_USER = "John Doe";
 
-    @Autowired
-    private IMetaProductService metaProductService;
+    private static final String BASE_DATA_DIR = "src/test/resources/income/data";
 
-    @Autowired
-    private IMetaFileService metaFileService;
-
-    @Autowired
-    private IScanDirectoryService scandirService;
+    private static final String DATASET_SIP_ID = "DA_TC_JASON2_IGDR";
 
     @Autowired
     private IAcquisitionProcessingChainService acqProcessChainService;
@@ -152,6 +158,9 @@ public class AcquisitionProductsSsaltoIT {
     protected IJobInfoRepository jobInfoRepository;
 
     @Autowired
+    private IDatasetClient datasetClient;
+
+    @Autowired
     protected ISubscriber subscriber;
 
     protected Set<UUID> runnings;
@@ -164,7 +173,7 @@ public class AcquisitionProductsSsaltoIT {
 
     private AcquisitionProcessingChain currentChain;
 
-    private static final String BASE_DATA_DIR = "income/data";
+    private String dataSetIpId;
 
     @Rule
     public TestName name = new TestName();
@@ -172,6 +181,13 @@ public class AcquisitionProductsSsaltoIT {
     @Before
     public void setUp() throws Exception {
         cleanDb();
+
+        Dataset dataSet = new Dataset();
+        final UniformResourceName aipUrn = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, "SSALTO",
+                UUID.randomUUID(), 1);
+        dataSetIpId = aipUrn.toString();
+        dataSet.setIpId(aipUrn);
+        dataSet.setSipId(DATASET_SIP_ID);
 
         initAmqp();
 
@@ -181,6 +197,8 @@ public class AcquisitionProductsSsaltoIT {
 
         Mockito.when(authenticationResolver.getUser()).thenReturn(DEFAULT_USER);
 
+        Mockito.when(datasetClient.retrieveDataset(Mockito.anyString()))
+                .thenReturn(new ResponseEntity<>(new Resource<Dataset>(dataSet), HttpStatus.OK));
     }
 
     @After
@@ -205,7 +223,7 @@ public class AcquisitionProductsSsaltoIT {
     }
 
     public void initProcessingChain() throws ModuleException, IOException {
-        File file = new File(getClass().getClassLoader().getResource(BASE_DATA_DIR + "/JASON2/IGDR").getFile());
+        File file = new File(BASE_DATA_DIR + "/JASON2/IGDR");
         ScanDirectory scanDir = new ScanDirectory(file.getCanonicalPath());
         MetaFile metaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
                 .withMediaType(MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -214,7 +232,7 @@ public class AcquisitionProductsSsaltoIT {
         MetaProduct metaProduct = MetaProductBuilder.build("JASON2_IGDR").addMetaFile(metaFile)
                 .withIngestProcessingChain("ingest-processing-chain-id").get();
         currentChain = acqProcessChainService.createOrUpdate(AcquisitionProcessingChainBuilder.build("JASON2_IGDR")
-                .isActive().withDataSet("URN:AIP:DATASET:ssalto:DA_TC_JASON2_IGDR").withMetaProduct(metaProduct).get());
+                .isActive().withDataSet(dataSetIpId).withMetaProduct(metaProduct).get());
     }
 
     public void initJobQueue() {
@@ -236,9 +254,10 @@ public class AcquisitionProductsSsaltoIT {
     public void runActiveProcessingChain() throws ModuleException, InterruptedException {
         currentChain.setScanAcquisitionPluginConf(pluginService
                 .getPluginConfiguration("ScanDirectoryPlugin", IAcquisitionScanDirectoryPlugin.class));
-
         currentChain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("BasicCheckFilePlugin",
                                                                                         ICheckFilePlugin.class));
+        currentChain.setGenerateSipPluginConf(pluginService.getPluginConfiguration("Jason2ProductMetadataPlugin",
+                                                                                   IGenerateSIPPlugin.class));
 
         Assert.assertTrue(acqProcessChainService.run(currentChain));
 
@@ -250,13 +269,10 @@ public class AcquisitionProductsSsaltoIT {
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(3, acquisitionFileRepository.count());
+        Assert.assertEquals(3, productRepository.count());
         Assert.assertEquals(1, execAcquisitionProcessingChainRepository.count());
         Assert.assertEquals(1, processingChainRepository.count());
-
-        // 3 fichiers acquis
-
-        // 1 exec chain
-
+        Assert.assertNotNull(productRepository.findAll().get(0).getSip());
     }
 
     private void waitJobEvent() throws InterruptedException {

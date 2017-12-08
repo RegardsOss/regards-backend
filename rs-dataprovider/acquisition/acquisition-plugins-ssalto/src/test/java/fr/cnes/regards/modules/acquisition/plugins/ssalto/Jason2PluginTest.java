@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -41,6 +42,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
  *
  */
 @ContextConfiguration(classes = { PluginsSsaltoTestsConfiguration.class })
+@ActiveProfiles({"disableDataProviderTask"})
 @EnableAutoConfiguration
 public class Jason2PluginTest extends AbstractProductMetadataPluginTest {
 
@@ -149,8 +151,7 @@ public class Jason2PluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public void initTestSoloList() {
-        addPluginTestDef("DA_TC_JASON2_FREQAJ_BALPUB", "COMMUN/BALISES_PUBLIQUES/FA",
-                "JA2_FBP_AXXCNE20080703_120400_20080701_235951_20080702_235551");
+        addPluginTestDef("DA_TC_JASON2_IGDR", "JASON2/IGDR", "JA2_IPN_2PcP016_166_20081214_053324_20081214_062937");
     }
 
     @Override

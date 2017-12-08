@@ -23,8 +23,6 @@ import java.util.List;
 
 import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
 
-
-
 /**
  * Cette classe represente un bloc d'attributs: c'est à dire une instance d'atribut compose. Un attribut compose peut
  * etre n fois definie au niveau d'une entite cette classe correspond a un bloc definissant l'attribut compose. Un
@@ -33,7 +31,7 @@ import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
  * @author Christophe Mertz
  *
  */
-public class CompositeAttribute extends Attribute{
+public class CompositeAttribute extends Attribute {
 
     /**
      * Le nom de l'attribut compose
@@ -91,4 +89,33 @@ public class CompositeAttribute extends Attribute{
     public void setName(String pName) {
         name = pName;
     }
+
+    @Override
+    public String toString() {
+        StringBuffer localBuffer = new StringBuffer("composite attribute");
+
+        for (Attribute attr : attributeList) {
+            localBuffer.append("[");
+            if (attr.getMetaAttribute().getName() != null) {
+                localBuffer.append(attr.getMetaAttribute().getName());
+            }
+            localBuffer.append(":");
+            localBuffer.append(attr.getType().toString());
+
+            if (attr.getMetaAttribute().getComputationRule() != null) {
+                localBuffer.append(":");
+                localBuffer.append(attr.getMetaAttribute().getComputationRule());
+            }
+
+            localBuffer.append(":{");
+            for (Object o : attr.getValueList()) {
+                localBuffer.append(o.toString());
+            }
+            localBuffer.append("}");
+            localBuffer.append("]");
+        }
+
+        return localBuffer.toString();
+    }
+
 }
