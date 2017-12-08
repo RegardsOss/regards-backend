@@ -42,10 +42,6 @@ public class Jason2CheckingPlugin implements ICheckFilePlugin {
 
     private String productName;
 
-    public Jason2CheckingPlugin() {
-        super();
-    }
-
     @Override
     public boolean runPlugin(File fileToCheck, String datasetId) throws ModuleException {
 

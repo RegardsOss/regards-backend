@@ -40,13 +40,9 @@ public class CheckInPlugin implements ICheckFilePlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CheckInPlugin.class);
 
-    protected static final int PRODUCT_NAME_MAX_SIZE = 128;
+    private static final int PRODUCT_NAME_MAX_SIZE = 128;
 
-    protected String productName;
-
-    public CheckInPlugin() {
-        super();
-    }
+    private String productName;
 
     @Override
     public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {

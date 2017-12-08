@@ -30,10 +30,6 @@ public class CheckInPluginFalse implements ICheckFilePlugin {
 
     private String productName;
 
-    public CheckInPluginFalse() {
-        super();
-    }
-
     @Override
     public String getProductName() {
         return productName;

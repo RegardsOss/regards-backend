@@ -462,8 +462,8 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     protected String createMetaData(List<AcquisitionFile> acqFiles, PluginTestDef pluginTestDef,
             IGenerateSIPPlugin pluginGenerateSIP) throws ModuleException {
 
-        SortedMap<Integer, Attribute> attrMaps = pluginGenerateSIP.createMetadataPlugin(acqFiles,
-                                                                                        Optional.of(pluginTestDef.getDataSetName()));
+        SortedMap<Integer, Attribute> attrMaps = pluginGenerateSIP
+                .createMetadataPlugin(acqFiles, Optional.of(pluginTestDef.getDataSetName()));
 
         String xml;
         try {

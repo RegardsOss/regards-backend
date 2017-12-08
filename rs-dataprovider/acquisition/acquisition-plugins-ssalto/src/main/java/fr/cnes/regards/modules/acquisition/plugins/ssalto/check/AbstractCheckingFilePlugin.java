@@ -29,8 +29,8 @@ import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
- * This {@link Plugin} checks that the file exists and is accessible.<br>
- * The {@link Product} name is the the file name less the extension file.
+ * This {@link Plugin} checks that the file exists and is accessible and that the extension file is authorized.<br>
+ * The {@link Product} name is the file name less the extension file.
  * 
  * @author Christophe Mertz
  *

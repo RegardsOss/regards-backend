@@ -76,10 +76,6 @@
 			<artifactId>commons-digester</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>plugins-regards-starter</artifactId>
-		</dependency>
-		<dependency>
     		<groupId>junit</groupId>
     		<artifactId>junit</artifactId>
     		<scope>test</scope>
@@ -92,6 +88,14 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework.utils</groupId>
 			<artifactId>file-utils</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules</groupId>
+			<artifactId>acquisition-service</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+			<artifactId>plugins-service</artifactId>
 		</dependency>
 	</dependencies>
 </project>

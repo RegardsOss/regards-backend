@@ -54,10 +54,10 @@ public class TestScanDirectoryPlugin extends TestAcquisitionScanUtility implemen
 
     public static final String PARAM_2_NAME = "param-2";
 
-    @PluginParameter(name = PARAM_1_NAME, optional = true)
+    @PluginParameter(label=PARAM_1_NAME, optional = true)
     private String param1;
 
-    @PluginParameter(name = PARAM_2_NAME, optional = true)
+    @PluginParameter(label=PARAM_2_NAME, optional = true)
     private String param2;
 
     @Override

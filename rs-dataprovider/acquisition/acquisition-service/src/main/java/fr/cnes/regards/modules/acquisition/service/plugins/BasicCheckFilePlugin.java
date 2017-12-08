@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
  * This {@link Plugin} checks that the {@link File} exists and can be read.<br>
+ * The product name is the file name without the extension file.
  *
  * @author Christophe Mertz
  */
@@ -39,9 +40,7 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicCheckFilePlugin.class);
 
-    protected String productName;
-
-    protected String nodeIdentifier;
+    private String productName;
 
     @Override
     public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
@@ -49,7 +48,6 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
         boolean result = false;
 
         productName = fileToCheck.getName();
-        nodeIdentifier = dataSetId + " - " + productName;
 
         // Check file exists
         if (fileToCheck.exists() && fileToCheck.canRead()) {
@@ -61,7 +59,6 @@ public class BasicCheckFilePlugin implements ICheckFilePlugin {
                 name = name.substring(0, indexExtension);
             }
             productName = name;
-            nodeIdentifier = fileToCheck.getName();
             result = true;
         } else {
             LOGGER.error("Can't read file <{}>", fileToCheck.getAbsolutePath());

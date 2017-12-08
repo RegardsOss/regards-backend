@@ -48,6 +48,9 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
  */
 public class AcquisitionScanPluginHelper {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionScanPluginHelper.class);
 
     /**
@@ -74,14 +77,14 @@ public class AcquisitionScanPluginHelper {
     }
 
     /**
-     * Transforme le pattern indique dans la fourniture en pattern Java.<br>
-     * Les correspondances implementees sont presentees dans le tableau suivant.<br>
-     * Il est primordial de ne pas modifier l'ordre de prise en compte.<br>
+     * Converts a a pattern to a Java pattern.<br>
+     * The table below shows the conversions that are applied.<br>
+     * The order of this 2 conversions is important, it should be not modified.<br>  
      * <table border=1 cellpadding=2>
      * <tr>
-     * <th>Ordre de prise en compte</th>
-     * <th>Original</th>
-     * <th>Adapte</th>
+     * <th>Order</th>
+     * <th>Original pattern</th>
+     * <th>Java pattern</th>
      * </tr>
      * <tr>
      * <td>1</td>
@@ -95,8 +98,8 @@ public class AcquisitionScanPluginHelper {
      * </tr>
      * </table>
      * 
-     * @param originalPattern
-     * @return
+     * @param originalPattern a pattern to converts to a Java pattern
+     * @return the Java pattern
      */
     protected String getAdaptedPattern(String originalPattern) {
 
@@ -112,9 +115,9 @@ public class AcquisitionScanPluginHelper {
      * Replace a pattern by a replacement value in a {@link String}
      * 
      * @param patternToReplace the {@link String} to replace
-     * @param replacement
-     * @param target
-     * @return a new {@link String} where the pattern is replaced by a replacement value
+     * @param replacement the replacement value 
+     * @param target the {@link String} in that apply the replacement 
+     * @return a new {@link String} where a the pattern is replaced by a replacement value
      */
     protected String replacePattern(String patternToReplace, String replacement, String target) {
         Pattern pattern = Pattern.compile(patternToReplace);

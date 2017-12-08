@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -48,14 +49,17 @@ import fr.cnes.regards.modules.acquisition.finder.AttributeFinder;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
-import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
+import fr.cnes.regards.modules.acquisition.service.plugins.AbstractGenerateSIPPlugin;
+import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 
 /**
- * PlugIn generic de creation de metadonnees d'un produit. Cette classe possède une specification pour chaque produit.
+ * Plugin generic de creation de metadonnees d'un produit.<br>
+ * Cette classe possède une specification pour chaque produit.
  *
  * @author Christophe Mertz
  */
-public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugin {
+public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
 
     /**
      * Nom du fichier de configuration des plugins
@@ -66,6 +70,9 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
 
     private static final String ATTRIBUTE_ORDER_PROP_FILE = "ssalto/domain/plugins/impl/tools/attributeOrder.properties";
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProductMetadataPlugin.class);
 
     /**
@@ -130,16 +137,16 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
         return attributeMap;
     }
 
-//    public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
-//        return new TreeMap<>();
-//    }
+    //    public SortedMap<Integer, Attribute> createMetaDataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
+    //        return new TreeMap<>();
+    //    }
 
-    @Override
-    public SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId) throws ModuleException {
-        // TODO CMZ createMetaDataPlugin à compléter
-
-        return null;
-    }
+    //    @Override
+    //    public SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId) throws ModuleException {
+    //        // TODO CMZ createMetaDataPlugin à compléter
+    //
+    //        return null;
+    //    }
 
     /**
      * parse le fichier de configuration pour remplir les properties, et initialise la map de l'ordre des attributs.
@@ -280,6 +287,40 @@ public abstract class AbstractProductMetadataPlugin implements IGenerateSIPPlugi
         }
 
         return fileMap;
+    }
+
+    @Override
+    protected void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
+            throws AcquisitionException {
+        // TODO Auto-generated method stub
+        mapAttrs.forEach((k, v) -> {
+            switch (v.getAttributeKey()) {
+                default:
+                    sipBuilder.getPDIBuilder().addContextInformation(v.getAttributeKey(), v.getValueList().get(0));
+                    break;
+            }
+        });
+
+    }
+
+    @Override
+    protected void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles)
+            throws AcquisitionException {
+        // TODO Auto-generated method stub
+
+        for (AcquisitionFile af : acqFiles) {
+            try {
+                sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, af.getFile().toURI().toURL(),
+                                                                        af.getChecksumAlgorithm(), af.getChecksum());
+                sipBuilder.getContentInformationBuilder().setSyntax("Mime name", "Mime Description",
+                                                                    af.getMetaFile().getMediaType());
+                sipBuilder.addContentInformation();
+            } catch (MalformedURLException e) {
+                LOGGER.error(e.getMessage(), e);
+                throw new AcquisitionException(e.getMessage());
+            }
+        }
+
     }
 
 }

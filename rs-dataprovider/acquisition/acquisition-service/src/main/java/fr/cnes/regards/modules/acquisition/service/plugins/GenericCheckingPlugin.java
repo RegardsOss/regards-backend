@@ -28,7 +28,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
- * plugin de verification des fichiers generic. Verifi uniquement la taille du nom du fichier
+ * This {@link Plugin} checks that the {@link File} exists and can be read.<br>
+ * The product name is the file name is the length is less that 128 chars.<br>
+ * If the file name length is more that 128 chars the product is the file name truncate to 128 chars.<br>
  * 
  * @author Christophe Mertz
  *
@@ -42,10 +44,6 @@ public class GenericCheckingPlugin implements ICheckFilePlugin {
     private static final int PRODUCT_NAME_MAX_SIZE = 128;
 
     private String productName;
-
-    public GenericCheckingPlugin() {
-        super();
-    }
 
     @Override
     public boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException {
@@ -65,6 +63,8 @@ public class GenericCheckingPlugin implements ICheckFilePlugin {
         } else {
             LOGGER.error("Can't read file <{}>", fileToCheck.getAbsolutePath());
         }
+
+        LOGGER.info("End check file <{}>", fileToCheck.getAbsoluteFile());
 
         return result;
     }

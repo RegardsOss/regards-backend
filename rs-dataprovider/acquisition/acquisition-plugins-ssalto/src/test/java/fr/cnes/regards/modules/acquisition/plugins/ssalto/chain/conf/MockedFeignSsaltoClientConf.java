@@ -16,32 +16,31 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.cnes.regards.modules.acquisition.plugins.ssalto.chain.conf;
 
-package fr.cnes.regards.modules.acquisition.plugins.ssalto;
+import org.mockito.Mockito;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import fr.cnes.regards.modules.entities.client.IDatasetClient;
+import fr.cnes.regards.modules.ingest.client.IIngestClient;
 
 /**
  * 
  * @author Christophe Mertz
  *
  */
-public interface IDoris1BPlugin {
+@Configuration
+public class MockedFeignSsaltoClientConf {
 
-    /*
-     * Liste des prefixes pour donnees DORIS1B
-     */
-    public static final String PREFIX_MOE_CDDIS = "MOE_CDDIS_";
-
-    public static final String PREFIX_MOE_CDDIS_COM = "MOE_CDDIS_COM_";
-
-    public static final String PREFIX_POE_CDDIS_COM = "POE_CDDIS_COM_";
+    @Bean
+    public IIngestClient ingestClient() {
+        return Mockito.mock(IIngestClient.class);
+    }
     
-    /**
-     * Initialise la table de correspondance datasetName => prefix pour les
-     * donnees Doris1B<br>
-     * La methode utilise la methode <code>addDatasetNamePrexif</code> pour ce faire.
-     * 
-     * @since 1.4
-     */
-    void initPrefixMap();
-    
+    @Bean
+    public IDatasetClient datasetClient() {
+        return Mockito.mock(IDatasetClient.class);
+    }
+
 }
