@@ -18,17 +18,17 @@
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
 	<groupId>fr.cnes.regards</groupId>
 	<artifactId>regards-parent</artifactId>
-	<version>1.1.0</version>
+	<version>2.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Regards Parent</name>
 	<description>Aggregates business modules, regards-boot-parent-project and regards-frontend-project</description>
-	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+    <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
 	<licenses>
 		<license>
@@ -49,53 +49,53 @@
 		</developer>
 	</developers>
 
-	<properties>
-		<!-- Generics -->
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>1.8</java.version>
-		<resource.delimiter>@</resource.delimiter> <!-- delimiter that doesn't clash with Spring ${} placeholders -->
-		<maven.compiler.source>${java.version}</maven.compiler.source>
-		<maven.compiler.target>${java.version}</maven.compiler.target>
+    <properties>
+        <!-- Generics -->
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.8</java.version>
+        <resource.delimiter>@</resource.delimiter> <!-- delimiter that doesn't clash with Spring ${} placeholders -->
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
         <docker.registry.host>172.26.46.158</docker.registry.host>
-		<sonar.language>java</sonar.language>
-		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
-		<jacoco.outputDir>${project.basedir}/target/coverage-reports</jacoco.outputDir>
-		<!-- Jacoco output file for UTs -->
-		<jacoco.out.ut.file>jacoco-ut.exec</jacoco.out.ut.file>
-		<!-- Tells Sonar where the Jacoco coverage result file is located for UT -->
-		<sonar.jacoco.reportPath>${jacoco.outputDir}/${jacoco.out.ut.file}</sonar.jacoco.reportPath>
-		<!-- Jacoco output file for ITs -->
-		<jacoco.out.it.file>jacoco-it.exec</jacoco.out.it.file>
-		<!-- Tells Sonar where the Jacoco coverage result file is located for IT -->
-		<sonar.jacoco.itReportPath>${jacoco.outputDir}/${jacoco.out.it.file}</sonar.jacoco.itReportPath>
-		<spring.hibernate.version>5.0.9.Final</spring.hibernate.version>
-		<regards.bom.version>1.1.0</regards.bom.version>
-	</properties>
+        <sonar.language>java</sonar.language>
+        <sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
+        <jacoco.outputDir>${project.basedir}/target/coverage-reports</jacoco.outputDir>
+        <!-- Jacoco output file for UTs -->
+        <jacoco.out.ut.file>jacoco-ut.exec</jacoco.out.ut.file>
+        <!-- Tells Sonar where the Jacoco coverage result file is located for UT -->
+        <sonar.jacoco.reportPath>${jacoco.outputDir}/${jacoco.out.ut.file}</sonar.jacoco.reportPath>
+        <!-- Jacoco output file for ITs -->
+        <jacoco.out.it.file>jacoco-it.exec</jacoco.out.it.file>
+        <!-- Tells Sonar where the Jacoco coverage result file is located for IT -->
+        <sonar.jacoco.itReportPath>${jacoco.outputDir}/${jacoco.out.it.file}</sonar.jacoco.itReportPath>
+        <spring.hibernate.version>5.0.9.Final</spring.hibernate.version>
+        <regards.bom.version>2.0.1-SNAPSHOT</regards.bom.version>
+    </properties>
 
-	<dependencies>
-		<!-- logging -->
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>jcl-over-slf4j</artifactId>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <!-- logging -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+        </dependency>
+    </dependencies>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>fr.cnes.regards</groupId>
-				<artifactId>regards-dependencies</artifactId>
-				<version>${regards.bom.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>fr.cnes.regards</groupId>
+                <artifactId>regards-dependencies</artifactId>
+                <version>${regards.bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 	<distributionManagement>
 		<repository>
@@ -118,7 +118,7 @@
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
-	<build>
+            <build>
                 <testResources>
                     <testResource>
                         <directory>${basedir}/src/test/resources</directory>
@@ -138,7 +138,8 @@
         </profile>
         <profile>
             <id>CI</id>
-	<build>
+            <build>
+                <directory>${basedir}/${cmdLineTarget}</directory>
                 <testResources>
                     <testResource>
                         <directory>${basedir}/src/test/resources</directory>
@@ -152,33 +153,33 @@
                     </resource>
                 </resources>
                 <filters>
-                    <filter>${env.MAVEN_M2}/CI.properties</filter>
+                    <filter>${env.MAVEN_HOME}/conf/CI.properties</filter>
                 </filters>
             </build>
         </profile>
     </profiles>
 
     <build>
-		<!-- Turn on filtering by default for application properties -->
-		<resources>
-			<resource>
-				<directory>${basedir}/src/main/resources</directory>
-				<filtering>true</filtering>
-				<includes>
-					<include>**/application*.yml</include>
-					<include>**/application*.properties</include>
-				</includes>
-			</resource>
-			<resource>
-				<directory>${basedir}/src/main/resources</directory>
-				<excludes>
-					<exclude>**/application*.yml</exclude>
-					<exclude>**/application*.properties</exclude>
-				</excludes>
-			</resource>
-		</resources>
-		<pluginManagement>
-			<plugins>
+        <!-- Turn on filtering by default for application properties -->
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/application*.yml</include>
+                    <include>**/application*.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <excludes>
+                    <exclude>**/application*.yml</exclude>
+                    <exclude>**/application*.properties</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <pluginManagement>
+            <plugins>
                 <!-- docker image generator -->
                 <plugin>
                     <groupId>com.spotify</groupId>
@@ -188,243 +189,243 @@
                         <skipDockerBuild>true</skipDockerBuild>
                     </configuration>
                 </plugin>
-				<!-- Plugin used to check versions -->
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>versions-maven-plugin</artifactId>
-					<version>2.3</version>
-				</plugin>
-				<!-- Apply more sensible defaults for user projects -->
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>exec-maven-plugin</artifactId>
-					<configuration>
-						<mainClass>${start-class}</mainClass>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-resources-plugin</artifactId>
-					<version>2.6</version>
-					<configuration>
-						<delimiters>
-							<delimiter>${resource.delimiter}</delimiter>
-						</delimiters>
-						<useDefaultDelimiters>false</useDefaultDelimiters>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-war-plugin</artifactId>
-					<version>2.5</version>
-					<configuration>
-						<failOnMissingWebXml>false</failOnMissingWebXml>
-						<archive>
-							<manifest>
-								<mainClass>${start-class}</mainClass>
-								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-							</manifest>
-						</archive>
-					</configuration>
-				</plugin>
-				<!-- Support spring boot plugin -->
-				<plugin>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-maven-plugin</artifactId>
-					<version>1.4.0.RELEASE</version>
-					<executions>
-						<execution>
-							<goals>
-								<goal>repackage</goal>
-							</goals>
-						</execution>
-					</executions>
-					<configuration>
-						<mainClass>${start-class}</mainClass>
-						<layout>ZIP</layout>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-failsafe-plugin</artifactId>
-					<version>2.18.1</version>
-					<configuration>
-						<!-- Sets the VM argument line used when integration tests are run. -->
-						<argLine>${jacoco.agent.it.arg}</argLine>
-						<properties>
-							<property>
-								<name>listener</name>
-								<value>fr.cnes.regards.framework.test.report.RequirementMatrixReportListener</value>
-							</property>
-						</properties>
-						<!-- Let's put failsafe reports with surefire to have access to tests 
-							failures/success reports in sonar -->
-						<reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-					</configuration>
-					<executions>
-						<execution>
-							<goals>
-								<goal>integration-test</goal>
-								<goal>verify</goal>
-							</goals>
-							<configuration>
-								<!-- Sets the VM argument line used when integration tests are run. -->
-								<argLine>${jacoco.agent.it.arg}</argLine>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-				<plugin>
-					<groupId>org.jacoco</groupId>
-					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>0.7.7.201606060606</version>
-					<executions>
-						<!-- Prepares the property pointing to the JaCoCo runtime agent which 
-							is passed as VM argument when Maven the Surefire plugin is executed. -->
-						<execution>
-							<id>pre-unit-test</id>
-							<goals>
-								<goal>prepare-agent</goal>
-							</goals>
-							<configuration>
-								<!-- Sets the path to the file which contains the execution data. -->
-								<destFile>${sonar.jacoco.reportPath}</destFile>
-								<!-- Sets the name of the property containing the settings for JaCoCo 
-									runtime agent. -->
-								<propertyName>jacoco.agent.ut.arg</propertyName>
-								<append>true</append>
-							</configuration>
-						</execution>
-						<!-- Prepares the property pointing to the JaCoCo runtime agent which 
-							is passed as VM argument when Maven the Failsafe plugin is executed. -->
-						<execution>
-							<id>pre-integration-test</id>
-							<phase>pre-integration-test</phase>
-							<goals>
-								<goal>prepare-agent</goal>
-							</goals>
-							<configuration>
-								<!-- Sets the path to the file which contains the execution data. -->
-								<destFile>${sonar.jacoco.itReportPath}</destFile>
-								<!-- Sets the name of the property containing the settings for JaCoCo 
-									runtime agent. -->
-								<propertyName>jacoco.agent.it.arg</propertyName>
-								<append>true</append>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-jar-plugin</artifactId>
-					<version>2.6</version>
-					<configuration>
-						<archive>
-							<manifest>
-								<mainClass>${start-class}</mainClass>
-								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-							</manifest>
-						</archive>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.18.1</version>
-					<configuration>
-						<!-- Sets the VM argument line used when unit tests are run. -->
-						<argLine>${jacoco.agent.ut.arg}</argLine>
-						<properties>
-							<property>
-								<name>listener</name>
-								<value>fr.cnes.regards.framework.test.report.RequirementMatrixReportListener</value>
-							</property>
-						</properties>
-						<includes>
-							<include>**/*Tests.java</include>
-							<include>**/*Test.java</include>
-						</includes>
-						<excludes>
-							<exclude>**/Abstract*.java</exclude>
-						</excludes>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>fr.cnes.regards.microservices</groupId>
-					<artifactId>report-maven-plugin</artifactId>
-					<version>1.1.0</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-plugin-plugin</artifactId>
-					<version>3.5</version>
-					<executions>
-						<execution>
-							<id>default-descriptor</id>
-							<phase>process-classes</phase>
-						</execution>
-					</executions>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.1</version>
-					<configuration>
-						<source>${java.version}</source>
-						<target>${java.version}</target>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-source-plugin</artifactId>
-					<version>3.0.1</version>
-					<executions>
-						<execution>
-							<id>attach-sources</id>
-							<phase>verify</phase>
-							<goals>
-								<goal>jar-no-fork</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-assembly-plugin</artifactId>
-					<version>3.0.0</version>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>versions-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+                <!-- Plugin used to check versions -->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>2.3</version>
+                </plugin>
+                <!-- Apply more sensible defaults for user projects -->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <configuration>
+                        <mainClass>${start-class}</mainClass>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>2.6</version>
+                    <configuration>
+                        <delimiters>
+                            <delimiter>${resource.delimiter}</delimiter>
+                        </delimiters>
+                        <useDefaultDelimiters>false</useDefaultDelimiters>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>2.5</version>
+                    <configuration>
+                        <failOnMissingWebXml>false</failOnMissingWebXml>
+                        <archive>
+                            <manifest>
+                                <mainClass>${start-class}</mainClass>
+                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            </manifest>
+                        </archive>
+                    </configuration>
+                </plugin>
+                <!-- Support spring boot plugin -->
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>1.4.0.RELEASE</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <mainClass>${start-class}</mainClass>
+                        <layout>ZIP</layout>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>2.18.1</version>
+                    <configuration>
+                        <!-- Sets the VM argument line used when integration tests are run. -->
+                        <argLine>${jacoco.agent.it.arg}</argLine>
+                        <properties>
+                            <property>
+                                <name>listener</name>
+                                <value>fr.cnes.regards.framework.test.report.RequirementMatrixReportListener</value>
+                            </property>
+                        </properties>
+                        <!-- Let's put failsafe reports with surefire to have access to tests
+                            failures/success reports in sonar -->
+                        <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>integration-test</goal>
+                                <goal>verify</goal>
+                            </goals>
+                            <configuration>
+                                <!-- Sets the VM argument line used when integration tests are run. -->
+                                <argLine>${jacoco.agent.it.arg}</argLine>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.7.7.201606060606</version>
+                    <executions>
+                        <!-- Prepares the property pointing to the JaCoCo runtime agent which
+                            is passed as VM argument when Maven the Surefire plugin is executed. -->
+                        <execution>
+                            <id>pre-unit-test</id>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                            <configuration>
+                                <!-- Sets the path to the file which contains the execution data. -->
+                                <destFile>${sonar.jacoco.reportPath}</destFile>
+                                <!-- Sets the name of the property containing the settings for JaCoCo
+                                    runtime agent. -->
+                                <propertyName>jacoco.agent.ut.arg</propertyName>
+                                <append>true</append>
+                            </configuration>
+                        </execution>
+                        <!-- Prepares the property pointing to the JaCoCo runtime agent which
+                            is passed as VM argument when Maven the Failsafe plugin is executed. -->
+                        <execution>
+                            <id>pre-integration-test</id>
+                            <phase>pre-integration-test</phase>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                            <configuration>
+                                <!-- Sets the path to the file which contains the execution data. -->
+                                <destFile>${sonar.jacoco.itReportPath}</destFile>
+                                <!-- Sets the name of the property containing the settings for JaCoCo
+                                    runtime agent. -->
+                                <propertyName>jacoco.agent.it.arg</propertyName>
+                                <append>true</append>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.6</version>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <mainClass>${start-class}</mainClass>
+                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            </manifest>
+                        </archive>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.18.1</version>
+                    <configuration>
+                        <!-- Sets the VM argument line used when unit tests are run. -->
+                        <argLine>${jacoco.agent.ut.arg}</argLine>
+                        <properties>
+                            <property>
+                                <name>listener</name>
+                                <value>fr.cnes.regards.framework.test.report.RequirementMatrixReportListener</value>
+                            </property>
+                        </properties>
+                        <includes>
+                            <include>**/*Tests.java</include>
+                            <include>**/*Test.java</include>
+                        </includes>
+                        <excludes>
+                            <exclude>**/Abstract*.java</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>fr.cnes.regards.microservices</groupId>
+                    <artifactId>report-maven-plugin</artifactId>
+					<version>2.0.0-SNAPSHOT</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-plugin-plugin</artifactId>
+                    <version>3.5</version>
+                    <executions>
+                        <execution>
+                            <id>default-descriptor</id>
+                            <phase>process-classes</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.1</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.0.1</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.0.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
