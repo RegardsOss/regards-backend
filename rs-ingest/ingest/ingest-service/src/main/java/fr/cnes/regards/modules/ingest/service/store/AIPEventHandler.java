@@ -100,7 +100,7 @@ public class AIPEventHandler implements IHandler<AIPEvent> {
     }
 
     private void handleStorageError(String tenant, String ipId) {
-        // AIP Successfully stored
+        // AIP Unsuccessfully stored
         runtimeTenantResolver.forceTenant(tenant);
         // Retrieve aip and set the new status to stored
         Optional<AIPEntity> oAip = aipRepository.findByIpId(ipId);
@@ -113,7 +113,6 @@ public class AIPEventHandler implements IHandler<AIPEvent> {
             sip.setState(SIPState.STORE_ERROR);
             sipRepository.updateSIPEntityState(SIPState.STORE_ERROR, sip.getId());
             publisher.publish(new SIPEvent(sip));
-
         }
         runtimeTenantResolver.clearTenant();
     }
