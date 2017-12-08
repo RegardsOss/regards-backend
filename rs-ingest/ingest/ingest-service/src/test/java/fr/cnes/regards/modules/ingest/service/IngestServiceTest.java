@@ -73,7 +73,7 @@ public class IngestServiceTest extends AbstractSIPTest {
     @Override
     public void doInit() throws ModuleException {
         sipSessionRepository.deleteAll();
-        // ingestProcessingService.initDefaultServiceConfiguration();
+        ingestProcessingService.initDefaultServiceConfiguration();
     }
 
     /**
