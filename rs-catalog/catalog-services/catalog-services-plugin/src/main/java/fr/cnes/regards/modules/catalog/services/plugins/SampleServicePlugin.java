@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.catalog.services.plugins;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.util.List;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +31,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import com.google.gson.GsonBuilder;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -85,7 +83,7 @@ public class SampleServicePlugin implements ISampleServicePlugin {
      * A {@link String} parameter
      */
     @PluginParameter(description = "Response type", name = RESPONSE_TYPE_PARAMETER, defaultValue = RESPONSE_TYPE_JSON,
-            optional = false)
+            optional = false, label = "Response type")
     private String responseType;
 
     /**
