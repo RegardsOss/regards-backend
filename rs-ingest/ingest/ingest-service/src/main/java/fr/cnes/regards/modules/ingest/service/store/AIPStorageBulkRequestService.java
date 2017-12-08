@@ -110,10 +110,12 @@ public class AIPStorageBulkRequestService
                 // Feign only throws exceptions in case the response status is neither 404 or one of the 2xx,
                 // so lets catch the exception and if it not one of our API normal status rethrow it
                 if (e.status() != HttpStatus.UNPROCESSABLE_ENTITY.value()) {
+                    // Response error. Microservice may be not available at the time. Update all AIPs to CREATE state to be handle next time
+                    aipsInRequest.forEach(aipId -> aipRepository.updateAIPEntityState(AIPState.CREATED, aipId));
                     throw e;
                 }
                 //set all aip to store_rejected
-                aips.getFeatures().forEach(aip -> rejectAip(aip.getId().toString()));
+                aipsInRequest.forEach(aipId -> rejectAip(aipId));
             }
             FeignSecurityManager.reset();
             if ((response != null) && (response.getStatusCode().is2xxSuccessful())) {
@@ -122,9 +124,6 @@ public class AIPStorageBulkRequestService
                 if ((rejectedAips != null) && !rejectedAips.isEmpty()) {
                     rejectedAips.stream().map(RejectedAip::getIpId).forEach(aipId -> rejectAip(aipId));
                 }
-            } else {
-                // Response error. Microservice may be not available at the time. Update all AIPs to CREATE state to be handle next time
-                aipsInRequest.forEach(aipId -> aipRepository.updateAIPEntityState(AIPState.CREATED, aipId));
             }
         }
     }
