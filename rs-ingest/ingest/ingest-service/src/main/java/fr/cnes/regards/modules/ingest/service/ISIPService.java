@@ -61,11 +61,11 @@ public interface ISIPService {
      * @return
      * @throws EntityNotFoundException
      */
-    SIPEntity getSIPEntity(String ipId) throws ModuleException;
+    SIPEntity getSIPEntity(String ipId) throws EntityNotFoundException;
 
     /**
      * Delete one {@link SIPEntity} for the given ipId
-     * @param ipId
+     * @param ipIds
      * @return rejected or undeletable {@link SIPEntity}s
      * @throws EntityNotFoundException
      */
@@ -118,7 +118,7 @@ public interface ISIPService {
 
     /**
      * Set to SIPEntity to DELETED state and delete associated AIPs if there is.
-     * @param s{@link SIPEntity} to delete;
+     * @param sip {@link SIPEntity} to delete;
      */
     void deleteSIPEntity(SIPEntity sip);
 

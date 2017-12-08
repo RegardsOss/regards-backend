@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -47,6 +48,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
 
@@ -59,6 +61,9 @@ import fr.cnes.regards.modules.storage.domain.RejectedSip;
 public class SIPService implements ISIPService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPService.class);
+
+    @Autowired
+    private IPublisher publisher;
 
     @Autowired
     private ISIPRepository sipRepository;
@@ -80,7 +85,7 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public SIPEntity getSIPEntity(String ipId) throws ModuleException {
+    public SIPEntity getSIPEntity(String ipId) throws EntityNotFoundException {
         Optional<SIPEntity> sipEntity = sipRepository.findOneByIpId(ipId);
         if (sipEntity.isPresent()) {
             return sipEntity.get();
@@ -174,6 +179,7 @@ public class SIPService implements ISIPService {
         session.setLastActivationDate(OffsetDateTime.now());
         session = sipSessionRepository.save(session);
         savedSip.setSession(session);
+        publisher.publish(new SIPEvent(savedSip));
         return savedSip;
     }
 

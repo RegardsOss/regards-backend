@@ -83,7 +83,7 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
      * @param id {@link AIPEntity} to update
      */
     @Modifying
-    @Query("UPDATE AIPEntity a set a.state = ?1 where a.ipId = ?2")
-    void updateAIPEntityState(AIPState state, String ipId);
+    @Query("UPDATE AIPEntity a set a.state = ?1, a.errorMessage = ?3 where a.ipId = ?2")
+    void updateAIPEntityStateAndErrorMessage(AIPState state, String ipId, String errorMessage);
 
 }
