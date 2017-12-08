@@ -201,7 +201,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
     }
 
     /**
-     * Set <b>optional</b> syntax representation
+     * Set syntax representation
      * @param mimeName MIME name
      * @param mimeDescription MIME description
      * @param mimeType MIME type
@@ -221,7 +221,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
     }
 
     /**
-     * Set <b>optional</b> syntax and semantic representations
+     * Set syntax and <b>optional</b> semantic representations
      * @param mimeName MIME name
      * @param mimeDescription MIME description
      * @param mimeType MIME type

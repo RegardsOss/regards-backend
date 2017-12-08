@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.feign;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -41,5 +43,5 @@ public interface IHelloClient {
     ResponseEntity<Hello> getHello404();
 
     @RequestMapping(method = RequestMethod.GET, value = "/hello503")
-    ResponseEntity<Hello> getHello503();
+    ResponseEntity<List<Hello>> getHello503();
 }
