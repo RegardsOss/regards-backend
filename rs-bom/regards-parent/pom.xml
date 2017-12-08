@@ -139,6 +139,7 @@
         <profile>
             <id>CI</id>
 	<build>
+                <directory>${basedir}/${cmdLineTarget}</directory>
                 <testResources>
                     <testResource>
                         <directory>${basedir}/src/test/resources</directory>
@@ -152,7 +153,7 @@
                     </resource>
                 </resources>
                 <filters>
-                    <filter>${env.MAVEN_M2}/CI.properties</filter>
+                    <filter>${env.MAVEN_HOME}/conf/CI.properties</filter>
                 </filters>
             </build>
         </profile>
