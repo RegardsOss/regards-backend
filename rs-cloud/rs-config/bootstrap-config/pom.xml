@@ -39,8 +39,7 @@
 		<sonar.language>java</sonar.language>
 		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
 		<fr.cnes.regards.docker.image.name>rs-config</fr.cnes.regards.docker.image.name>
-		<docker.entryPoint>["/bin/bash", "-c", "chmod +x prestart.sh &amp;&amp; /prestart.sh &amp;&amp; java -Xmx128m -Djava.security.egd=file:/dev/./urandom -jar /${project.build.finalName}.${project.packaging}"]
-		</docker.entryPoint>
+		<docker.entryPoint>["/bin/bash", "-c", "chmod +x prestart.sh &amp;&amp; /prestart.sh &amp;&amp; java -Xmx128m -Djava.security.egd=file:/dev/./urandom -jar /${project.build.finalName}.${project.packaging}"]</docker.entryPoint>
 	</properties>
 
 	<dependencies>
