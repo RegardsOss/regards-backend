@@ -261,6 +261,12 @@ public class Product implements IIdentifiable<Long> {
         strBuilder.append(productName);
         strBuilder.append(" - ");
         strBuilder.append(status);
+        strBuilder.append(" - ");
+        strBuilder.append(sended);
+        strBuilder.append(" - ");
+        strBuilder.append(session);
+        strBuilder.append(" - ");
+        strBuilder.append(ingestChain);
         return strBuilder.toString();
     }
 

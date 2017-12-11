@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -34,10 +35,17 @@ import java.util.TreeMap;
 
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.xmlrules.DigesterLoader;
+import org.bouncycastle.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import com.google.gson.JsonObject;
+
+import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
+import fr.cnes.regards.framework.geojson.coordinates.Position;
+import fr.cnes.regards.framework.geojson.coordinates.Positions;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
@@ -53,6 +61,7 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.plugins.AbstractGenerateSIPPlugin;
+import fr.cnes.regards.modules.entities.domain.geometry.Geometry;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 
 /**
@@ -71,6 +80,26 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     private static final String RULE_FILE = "ssalto/domain/plugins/impl/tools/pluginFinderDigesterRules.xml";
 
     private static final String ATTRIBUTE_ORDER_PROP_FILE = "ssalto/domain/plugins/impl/tools/attributeOrder.properties";
+
+    protected static final String GEO_COORDINATES = "GEO_COORDINATES";
+
+    protected static final String LONGITUDE_MIN = "LONGITUDE_MIN";
+
+    protected static final String LONGITUDE_MAX = "LONGITUDE_MAX";
+
+    protected static final String LATITUDE_MIN = "LATITUDE_MIN";
+
+    protected static final String LATITUDE_MAX = "LATITUDE_MAX";
+
+    protected static final String RANGE = "RANGE";
+
+    protected static final String TIME_PERIOD = "TIME_PERIOD";
+
+    protected static final String START_DATE = "START_DATE";
+
+    protected static final String STOP_DATE = "STOP_DATE";
+
+    protected static final String MISSION = "mission";
 
     /**
      * Class logger
@@ -133,7 +162,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             }
         }
 
-        // then do specific attributs which can depend on other attribute value
+        // then do specific attributes which can depend on other attribute value
         doCreateDependantSpecificAttributes(fileMap, attributeMap);
 
         logAttributeMap(attributeMap);
@@ -273,18 +302,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
                 fileMap.put(newFile, originalFile);
             }
 
-            // TODO CMZ à confirmer que la condition du if est toujours VRAI
-            //            else if ((ssaltoFile.getStatus().equals(AcquisitionFileStatus.ACQUIRED))
-            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.TO_ARCHIVE))
-            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.ARCHIVED))
-            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.TAR_CURRENT))
-            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.IN_CATALOGUE))) {
-            //                File newFile = new File(
-            //                        LocalArchive.getInstance().getDataFolder() + "/" + ssaltoFile.getArchivingInformations()
-            //                                .getLocalPhysicalLocation().getPhysicalFile().getArchivingDirectory(),
-            //                        ssaltoFile.getFileName());
-            //                fileMap.put(newFile, originalFile);
-            //            }
         }
 
         return fileMap;
@@ -293,48 +310,160 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     @Override
     protected void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
             throws AcquisitionException {
+
+        sipBuilder.getPDIBuilder().setFacility("CNES");
+        sipBuilder.addDescriptiveInformation(Strings.toLowerCase(MISSION), getProjectName());
+
         for (Attribute att : mapAttrs.values()) {
-            LOGGER.debug(att.toString());
 
-            if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_STRING)) {
-                if (att.getClass().equals(CompositeAttribute.class)) {
-                    // CompositeAttribute
-                    // à traiter pour aller voir le contenu, notamment ceux avec geometry
-                    // sipBuilder.setGeometry(geometry);
-                } else {
-                    // Attribute
-                }
-            } else if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_GEO_LOCATION)) {
+            if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_STRING)
+                    && att.getClass().equals(CompositeAttribute.class)) {
+                // CompositeAttribute
 
-            } else if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_LONG_STRING)) {
+                addSip(sipBuilder, (CompositeAttribute) att);
 
-            } else if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_DATE)) {
-
-            } else if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_DATE_TIME)) {
-
-            } else if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_INTEGER)) {
-
-            } else if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_REAL)) {
-
-            } else if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_URL)) {
-
+            } else {
+                addSip(sipBuilder, att);
             }
 
         }
+    }
 
-        //        mapAttrs.forEach((k, v) -> {
-        //            if (v != null && v.getAttributeKey() != null) {
-        //                switch (v.getAttributeKey()) {
-        //                    default:
-        //                        if (v.getValueList() != null && !v.getValueList().isEmpty()) {
-        //                            sipBuilder.getPDIBuilder().addContextInformation(v.getAttributeKey(),
-        //                                                                             v.getValueList().get(0));
-        //                        }
-        //                        break;
-        //                }
-        //            }
-        //        });
-        //
+    /**
+     * Add descriptive information to the {@link SIPBuilder} for a {@link CompositeAttribute}
+     * @param sipBuilder the current {@link SIPBuilder}
+     * @param compAttr a {@link CompositeAttribute} 
+     */
+    private void addSip(SIPBuilder sipBuilder, CompositeAttribute compAttr) {
+        LOGGER.debug("build SIP : add composite attribute [{}]", compAttr.getName());
+        if (compAttr.getName().equals(GEO_COORDINATES)) {
+            addSipGeo(sipBuilder, compAttr);
+        } else if (compAttr.getName().endsWith(RANGE)) {
+            addSipRange(sipBuilder, compAttr);
+
+        } else if (compAttr.getName().endsWith(TIME_PERIOD)) {
+            addSipTime(sipBuilder, compAttr);
+
+        } else {
+            for (Attribute attr : compAttr.getAttributeList()) {
+                LOGGER.debug("attribute {}", attr.getMetaAttribute().getName());
+                addSip(sipBuilder, attr);
+            }
+        }
+
+    }
+
+    /**
+     * Add descriptive information of a range values to the {@link SIPBuilder}
+     * @param sipBuilder the current {@link SIPBuilder}
+     * @param compAttr a {@link CompositeAttribute} 
+     */
+    private void addSipRange(SIPBuilder sipBuilder, CompositeAttribute compAttr) {
+        LOGGER.debug("build SIP : add Range [{}]", compAttr.getName());
+        JsonObject jsonRange = new JsonObject();
+
+        for (Attribute attr : compAttr.getAttributeList()) {
+            LOGGER.debug("build SIP : attribute [{}]", attr.getMetaAttribute().getName());
+            Object objValue = attr.getValueList().get(0);
+            jsonRange.addProperty(Strings.toLowerCase(attr.getMetaAttribute().getName()), objValue.toString());
+        }
+        sipBuilder.addDescriptiveInformation(Strings.toLowerCase(compAttr.getName()), jsonRange);
+    }
+
+    /**
+     * Add descriptive information of time period to the {@link SIPBuilder}
+     * @param sipBuilder the current {@link SIPBuilder}
+     * @param compAttr a {@link CompositeAttribute}
+     */
+    private void addSipTime(SIPBuilder sipBuilder, CompositeAttribute compAttr) {
+        LOGGER.debug("build SIP : add Time [{}]", compAttr.getName());
+        OffsetDateTime startDate = null;
+        OffsetDateTime stopDate = null;
+        JsonObject jsonStartStop = new JsonObject();
+
+        for (Attribute attr : compAttr.getAttributeList()) {
+            LOGGER.debug("build SIP : attribute [{}]", attr.getMetaAttribute().getName());
+            switch (attr.getMetaAttribute().getName()) {
+                case START_DATE:
+                    startDate = (OffsetDateTime) attr.getValueList().get(0);
+                    jsonStartStop.addProperty(Strings.toLowerCase(START_DATE), startDate.toString());
+                    break;
+                case STOP_DATE:
+                    stopDate = (OffsetDateTime) attr.getValueList().get(0);
+                    jsonStartStop.addProperty(Strings.toLowerCase(STOP_DATE), stopDate.toString());
+                    break;
+            }
+        }
+
+        if (startDate != null && stopDate != null) {
+            sipBuilder.addDescriptiveInformation(Strings.toLowerCase(compAttr.getName()), jsonStartStop);
+        }
+    }
+
+    /**
+     * Add a {@link Geometry} information to the {@link SIPBuilder}
+     * @param sipBuilder the current {@link SIPBuilder}
+     * @param compAttr a {@link CompositeAttribute}
+     */
+    private void addSipGeo(SIPBuilder sipBuilder, CompositeAttribute compAttr) {
+        Double latMin = null;
+        Double lonMin = null;
+        Double latMax = null;
+        Double lonMax = null;
+
+        LOGGER.debug("build SIP : add Geo [{}]", compAttr.getName());
+
+        for (Attribute attr : compAttr.getAttributeList()) {
+            LOGGER.debug("build SIP : attribute [{}]", attr.getMetaAttribute().getName());
+            switch (attr.getMetaAttribute().getName()) {
+                case LATITUDE_MIN:
+                    latMin = (Double) attr.getValueList().get(0);
+                    break;
+                case LATITUDE_MAX:
+                    latMax = (Double) attr.getValueList().get(0);
+                    break;
+                case LONGITUDE_MIN:
+                    lonMin = (Double) attr.getValueList().get(0);
+                    break;
+                case LONGITUDE_MAX:
+                    lonMax = (Double) attr.getValueList().get(0);
+                    break;
+            }
+        }
+
+        if (latMin != null && latMax != null && lonMin != null && lonMax != null) {
+            Position pos0 = IGeometry.position(lonMin, latMin);
+            Position pos1 = IGeometry.position(lonMax, latMin);
+            Position pos2 = IGeometry.position(lonMax, latMax);
+            Position pos3 = IGeometry.position(lonMin, latMax);
+            Positions pos = new Positions();
+            pos.add(pos0);
+            pos.add(pos1);
+            pos.add(pos2);
+            pos.add(pos3);
+            pos.add(pos0);
+            PolygonPositions pp = new PolygonPositions();
+            pp.add(pos);
+
+            // Add Geometry to SIP
+            sipBuilder.setGeometry(IGeometry.polygon(pp));
+        }
+    }
+
+    /**
+     * Add descriptive information to the {@link SIPBuilder} 
+     * @param sipBuilder the current {@link SIPBuilder}
+     * @param attr a {@link Attribute}
+     */
+    private void addSip(SIPBuilder sipBuilder, Attribute attr) {
+        LOGGER.debug("build SIP : add attribute [{}]", attr.getMetaAttribute().getName());
+        if (attr.getValueList().size() == 1) {
+
+            sipBuilder.addDescriptiveInformation(Strings.toLowerCase(attr.getAttributeKey()),
+                                                 attr.getValueList().get(0));
+        } else {
+            sipBuilder.addDescriptiveInformation(Strings.toLowerCase(attr.getAttributeKey()), attr.getValueList());
+        }
     }
 
     @Override

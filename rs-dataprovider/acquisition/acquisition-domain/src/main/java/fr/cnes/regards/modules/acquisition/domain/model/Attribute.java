@@ -157,14 +157,16 @@ public class Attribute {
     @Override
     public String toString() {
         StringBuffer localBuffer = new StringBuffer();
-        localBuffer.append("attribute[");
+        localBuffer.append("[");
         if (metaAttribute != null) {
             localBuffer.append(metaAttribute.getName());
-            localBuffer.append("-");
-            localBuffer.append(metaAttribute.getValueType());
         }
         localBuffer.append(":");
         localBuffer.append(getType().toString());
+        if (metaAttribute.getComputationRule() != null) {
+            localBuffer.append(":");
+            localBuffer.append(metaAttribute.getComputationRule());
+        }
         localBuffer.append(":{");
         if ((valueList != null) && !valueList.isEmpty()) { // NOSONAR
             for (Object o : valueList) {

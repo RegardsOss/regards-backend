@@ -92,27 +92,12 @@ public class CompositeAttribute extends Attribute {
 
     @Override
     public String toString() {
-        StringBuffer localBuffer = new StringBuffer("composite attribute");
+        StringBuffer localBuffer = new StringBuffer("composite:");
+        localBuffer.append(this.getName());
+        localBuffer.append("-");
 
         for (Attribute attr : attributeList) {
-            localBuffer.append("[");
-            if (attr.getMetaAttribute().getName() != null) {
-                localBuffer.append(attr.getMetaAttribute().getName());
-            }
-            localBuffer.append(":");
-            localBuffer.append(attr.getType().toString());
-
-            if (attr.getMetaAttribute().getComputationRule() != null) {
-                localBuffer.append(":");
-                localBuffer.append(attr.getMetaAttribute().getComputationRule());
-            }
-
-            localBuffer.append(":{");
-            for (Object o : attr.getValueList()) {
-                localBuffer.append(o.toString());
-            }
-            localBuffer.append("}");
-            localBuffer.append("]");
+            localBuffer.append(attr.toString());
         }
 
         return localBuffer.toString();
