@@ -15,6 +15,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 
@@ -104,6 +105,28 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      */
     @EntityGraph("graph.aip.tags")
     Page<AIPEntity> findAllByLastEventDateBefore(OffsetDateTime pTo, Pageable pPageable);
+
+    /**
+     * Retrieve a page of aip which state is the one provided and contains the provided tags and which last event occurred after the given date
+     * @param state
+     * @param tags
+     * @param fromLastUpdateDate
+     * @param pageable
+     * @return a page of aip which state is the one provided and contains the provided tags and which last event occurred after the given date
+     */
+    @EntityGraph("graph.aip.tags")
+    Page<AIPEntity> findAllByStateAndTagsInAndLastEventDateAfter(AIPState state, Set<String> tags,
+            OffsetDateTime fromLastUpdateDate, Pageable pageable);
+
+    /**
+     * Retrieve a page of aip which state is the one provided and contains the provided tags
+     * @param state
+     * @param tags
+     * @param pageable
+     * @return a page of aip which state is the one provided and contains the provided tags
+     */
+    @EntityGraph("graph.aip.tags")
+    Page<AIPEntity> findAllByStateAndTagsIn(AIPState state, Set<String> tags, Pageable pageable);
 
     /**
      * Retrieve all aips which ip id starts with the provided string

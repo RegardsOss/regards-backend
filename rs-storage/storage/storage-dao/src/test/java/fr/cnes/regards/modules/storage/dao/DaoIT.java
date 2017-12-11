@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.EventType;
@@ -85,6 +86,8 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         dao = new AIPDao(repo);
         aip1 = generateRandomAIP();
         aip1.setState(AIPState.VALID);
+        aip1.getProperties().getPdi().getTags().add("aip");
+        aip1.getProperties().getPdi().getTags().add("aip1");
         setSubmissionDate(aip1, OffsetDateTime.now().minusMinutes(10));
         aip1.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(10));
         aip1 = dao.save(aip1);
@@ -92,26 +95,33 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         UniformResourceName version2 = UniformResourceName.fromString(aip12.getId().toString());
         version2.setVersion(2);
         aip12.setId(version2);
+        aip12.getProperties().getPdi().getTags().add("aip");
+        aip12.getProperties().getPdi().getTags().add("aip1");
+        aip12.getProperties().getPdi().getTags().add("aip12");
         aip12 = dao.save(aip12);
         aip2 = generateRandomAIP();
         aip2.setState(AIPState.PENDING);
         setSubmissionDate(aip2, OffsetDateTime.now().minusMinutes(20));
         aip2.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(20));
+        aip2.getProperties().getPdi().getTags().add("aip");
         aip2 = dao.save(aip2);
         aip3 = generateRandomAIP();
         aip3.setState(AIPState.DELETED);
         setSubmissionDate(aip3, OffsetDateTime.now().minusMinutes(30));
         aip3.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(30));
+        aip3.getProperties().getPdi().getTags().add("aip");
         aip3 = dao.save(aip3);
         aip4 = generateRandomAIP();
         aip4.setState(AIPState.STORAGE_ERROR);
         setSubmissionDate(aip4, OffsetDateTime.now().minusMinutes(40));
         aip4.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(40));
+        aip4.getProperties().getPdi().getTags().add("aip");
         aip4 = dao.save(aip4);
         aip5 = generateRandomAIP();
         aip5.setState(AIPState.STORED);
         setSubmissionDate(aip5, OffsetDateTime.now().minusMinutes(50));
         aip5.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(50));
+        aip5.getProperties().getPdi().getTags().add("aip");
         aip5 = dao.save(aip5);
     }
 
@@ -475,6 +485,18 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertFalse(aips.contains(aip3));
         Assert.assertFalse(aips.contains(aip4));
         Assert.assertTrue(aips.contains(aip5));
+    }
+
+    @Test
+    public void testFindAllByStateAndTagsInAndLastEventDateAfter() {
+        Page<AIP> aips = dao.findAllByStateAndTagsInAndLastEventDateAfter(AIPState.VALID, Sets.newHashSet("aip", "aip1"), aip1.getLastEvent().getDate().minusHours(1),
+                                                         new PageRequest(0, 10));
+        Assert.assertTrue(aips.getContent().contains(aip1));
+        Assert.assertTrue(aips.getContent().contains(aip12));
+        Assert.assertFalse(aips.getContent().contains(aip2));
+        Assert.assertFalse(aips.getContent().contains(aip3));
+        Assert.assertFalse(aips.getContent().contains(aip4));
+        Assert.assertFalse(aips.getContent().contains(aip5));
     }
 
 }

@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
@@ -104,6 +105,17 @@ public interface IAIPService {
      */
     Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, Pageable pPageable)
             throws ModuleException;
+
+    /**
+     * Retrieve pages of AIP with files public information filtered according to the parameters
+     *
+     * @param state
+     * @param tags
+     * @param fromLastUpdateDate
+     * @param pageable
+     * @return {@link AIP}s corresponding to parameters given.
+     */
+    Page<AipDataFiles> retrieveAipDataFiles(AIPState state, Set<String> tags, OffsetDateTime fromLastUpdateDate, Pageable pageable);
 
     /**
      * Retrieve the files metadata associated to an aip

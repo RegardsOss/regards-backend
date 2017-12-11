@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -77,6 +79,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
@@ -424,6 +427,28 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             return aipDao.findAllByLastEventDateBefore(pTo.plusSeconds(1), pPageable);
         }
         return aipDao.findAll(pPageable);
+    }
+
+    @Override
+    public Page<AipDataFiles> retrieveAipDataFiles(AIPState state, Set<String> tags, OffsetDateTime fromLastUpdateDate,
+            Pageable pageable) {
+        //first lets get the page of aips
+        //we have two cases: there is a date or not
+        Page<AIP> aips;
+        if(fromLastUpdateDate == null) {
+            aips = aipDao.findAllByStateAndTagsIn(state, tags, pageable);
+        } else {
+            aips = aipDao.findAllByStateAndTagsInAndLastEventDateAfter(state, tags, fromLastUpdateDate, pageable);
+        }
+        // now lets get the data files for each aip which are the aip metadata itself
+        List<AipDataFiles> aipDataFiles = new ArrayList<>();
+        for(AIP aip: aips.getContent()) {
+            Set<DataFile> dataFiles = dataFileDao.findAllByAip(aip);
+            // lets eliminate the metadata data file
+            dataFiles = dataFiles.stream().filter(dataFile -> dataFile.getDataType() != DataType.AIP).collect(Collectors.toSet());
+            aipDataFiles.add(new AipDataFiles(aip, dataFiles.toArray(new DataFile[dataFiles.size()])));
+        }
+        return new PageImpl<>(aipDataFiles, pageable, aips.getTotalElements());
     }
 
     @Override
@@ -874,8 +899,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 updatingBuilder.addDescriptiveInformation(descriptiveEntry.getKey(), descriptiveEntry.getValue());
             }
         }
-        // not that all updates are set into the builder, lets build and save the updatedAip. Update event is added
-        // thanks once the metadata are stored
+        // now that all updates are set into the builder, lets build and save the updatedAip. Update event is added
+        // once the metadata are stored
         AIP updatedAip = updatingBuilder.build();
         updatedAip.setState(AIPState.UPDATED);
         LOG.debug(String.format("[METADATA UPDATE] Update of aip %s metadata done", ipId));

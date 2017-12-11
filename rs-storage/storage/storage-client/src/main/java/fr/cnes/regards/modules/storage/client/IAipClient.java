@@ -8,6 +8,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
@@ -17,15 +18,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import feign.Response;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
@@ -46,6 +50,11 @@ public interface IAipClient {
      * Client base path
      */
     String AIP_PATH = "/aips";
+
+    /**
+     * Client path for indexing
+     */
+    String INDEXING_PATH = "/indexing";
 
     /**
      * Client path to retry the storage of multiple aips
@@ -98,6 +107,20 @@ public interface IAipClient {
             @RequestParam(name = "from", required = false) OffsetDateTime pFrom,
             @RequestParam(name = "to", required = false) OffsetDateTime pTo, @RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
+
+    /**
+     * Retrieve a page of aip with indexing information on associated files according to the given parameters
+     * @param state
+     * @param tags
+     * @param fromLastUpdateDate
+     * @param page
+     * @param size
+     * @return page of aip with indexing information on associated files respecting the constraints
+     */
+    @RequestMapping(method = RequestMethod.GET, path = INDEXING_PATH)
+    ResponseEntity<Page<AipDataFiles>> retrieveAipDataFiles(@RequestParam(name = "state") AIPState state,
+            @RequestParam("tags") Set<String> tags,
+            @RequestParam(name = "last_update", required = false) OffsetDateTime fromLastUpdateDate, @RequestParam("page") int page, @RequestParam("size") int size);
 
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     ResponseEntity<List<RejectedAip>> store(@RequestBody @Valid AIPCollection aips);

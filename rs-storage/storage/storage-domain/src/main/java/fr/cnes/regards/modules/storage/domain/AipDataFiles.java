@@ -19,10 +19,15 @@ public class AipDataFiles {
     private AIP aip;
 
     /**
-     * its public file information
+     * its file public information
      */
     private Set<DataFileDto> dataFiles;
 
+    /**
+     * Constructor providing the aip and data files to extract the public information
+     * @param aip
+     * @param dataFiles
+     */
     public AipDataFiles(AIP aip, DataFile... dataFiles) {
         this.aip = aip;
         //only set files public information if there is information to set
