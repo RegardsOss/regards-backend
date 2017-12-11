@@ -34,13 +34,15 @@
 
 	<modules>
 		<module>project</module>
-		<module>bootstrap-administration</module>
+		<module>bootstrap-administration-project</module>
+		<module>bootstrap-administration-instance</module>
 		<module>accessrights</module>
 		<module>emails</module>
 		<module>notification</module>
 		<module>metrics</module>
 		<module>remote-tenant-resolver</module>
 		<module>local-tenant-resolver</module>
+		<module>accessrights-instance</module>
 	</modules>
 
 </project>
