@@ -248,7 +248,7 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     @ResponseBody
     @ResourceAccess(description = "validate and storeAndCreate the specified AIP")
-    public ResponseEntity<List<RejectedAip>> store(@RequestBody @Valid AIPCollection aips) throws ModuleException {
+    public ResponseEntity<List<RejectedAip>> store(@RequestBody AIPCollection aips) throws ModuleException {
         //lets validate the inputs and get those in error
         List<RejectedAip> rejectedAips = aipService.applyCreationChecks(aips);
         //if there is some errors, lets handle the issues
