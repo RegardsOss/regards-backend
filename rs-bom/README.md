@@ -13,5 +13,5 @@ Build relies on :
 ## Build
 
 ```shell
-mvn clean install -DskipTests
+mvn clean install
 ```

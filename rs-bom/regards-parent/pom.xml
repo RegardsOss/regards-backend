@@ -50,6 +50,9 @@
 	</developers>
 
 	<properties>
+		<!-- Default compilation parameters -->
+		<!-- Skip executing tests -->
+		<skipTests>true</skipTests>
 		<!-- Generics -->
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -250,6 +253,7 @@
 					<artifactId>maven-failsafe-plugin</artifactId>
 					<version>2.18.1</version>
 					<configuration>
+						<skipTests>${skipTests}</skipTests>
 						<!-- Sets the VM argument line used when integration tests are run. -->
 						<argLine>${jacoco.agent.it.arg}</argLine>
 						<properties>
@@ -333,6 +337,7 @@
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>2.18.1</version>
 					<configuration>
+						<skipTests>${skipTests}</skipTests>
 						<!-- Sets the VM argument line used when unit tests are run. -->
 						<argLine>${jacoco.agent.ut.arg}</argLine>
 						<properties>
