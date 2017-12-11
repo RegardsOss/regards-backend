@@ -58,6 +58,9 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginParameterRepository;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.modules.acquisition.builder.AcquisitionFileBuilder;
 import fr.cnes.regards.modules.acquisition.builder.AcquisitionProcessingChainBuilder;
@@ -228,7 +231,11 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
         Mockito.when(authenticationResolver.getUser()).thenReturn(DEFAULT_USER);
 
         Dataset dataSet = new Dataset();
-        dataSet.setLabel("dataset-hello-CSSI");
+        final UniformResourceName aipUrn = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, "SSALTO",
+                UUID.randomUUID(), 1);
+        dataSet.setIpId(aipUrn);
+        dataSet.setSipId("dataset-hello-CSSI");
+
         Mockito.when(datasetClient.retrieveDataset(Mockito.anyString()))
                 .thenReturn(new ResponseEntity<>(new Resource<Dataset>(dataSet), HttpStatus.OK));
     }

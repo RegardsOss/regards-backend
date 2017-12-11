@@ -129,28 +129,30 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     @Override
     public void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, AcquisitionProcessingChain chain)
             throws ModuleException {
-        for (AcquisitionFile af : acquisitionFiles) {
-            List<AcquisitionFile> listAf = this.findByMetaFile(af.getMetaFile());
+        if (acquisitionFiles != null) {
+            for (AcquisitionFile af : acquisitionFiles) {
+                List<AcquisitionFile> listAf = this.findByMetaFile(af.getMetaFile());
 
-            if (listAf.contains(af)) {
-                // if the AcquisitionFile already exists in database
-                // update his status and his date acquisition
-                AcquisitionFile afExisting = listAf.get(listAf.indexOf(af));
-                afExisting.setAcqDate(af.getAcqDate());
-                afExisting.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-                this.save(afExisting);
-            } else {
-                af.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-                this.save(af);
-            }
+                if (listAf.contains(af)) {
+                    // if the AcquisitionFile already exists in database
+                    // update his status and his date acquisition
+                    AcquisitionFile afExisting = listAf.get(listAf.indexOf(af));
+                    afExisting.setAcqDate(af.getAcqDate());
+                    afExisting.setStatus(AcquisitionFileStatus.IN_PROGRESS);
+                    this.save(afExisting);
+                } else {
+                    af.setStatus(AcquisitionFileStatus.IN_PROGRESS);
+                    this.save(af);
+                }
 
-            // for the first activation of the AcquisitionProcessingChain
-            // set the last activation date with the activation date of the current AcquisitionFile
-            if (chain.getLastDateActivation() == null) {
-                chain.setLastDateActivation(af.getAcqDate());
-            } else {
-                if (af.getAcqDate() != null && chain.getLastDateActivation().isBefore(af.getAcqDate())) {
+                // for the first activation of the AcquisitionProcessingChain
+                // set the last activation date with the activation date of the current AcquisitionFile
+                if (chain.getLastDateActivation() == null) {
                     chain.setLastDateActivation(af.getAcqDate());
+                } else {
+                    if (af.getAcqDate() != null && chain.getLastDateActivation().isBefore(af.getAcqDate())) {
+                        chain.setLastDateActivation(af.getAcqDate());
+                    }
                 }
             }
         }
