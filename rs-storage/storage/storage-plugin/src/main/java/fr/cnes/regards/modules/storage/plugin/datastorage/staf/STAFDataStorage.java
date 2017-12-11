@@ -101,19 +101,19 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     /**
      * Plugin parameter containing STAF archive connection informations
      */
-    @PluginParameter(name = STAF_ARCHIVE_PARAMETER_NAME)
+    @PluginParameter(name = STAF_ARCHIVE_PARAMETER_NAME, label = "Archive parameters")
     private STAFArchive stafArchive;
 
     /**
      * Can this data storage delete files or not?
      */
-    @PluginParameter(name = STAF_STORAGE_DELETE_OPTION, defaultValue = "true")
+    @PluginParameter(name = STAF_STORAGE_DELETE_OPTION, defaultValue = "true", label = "Deletion option")
     private Boolean canDelete;
 
     /**
      * Total space, in byte, this data storage is allowed to use
      */
-    @PluginParameter(name = STAF_STORAGE_TOTAL_SPACE, description = "total space, in byte, this data storage is allowed to use")
+    @PluginParameter(name = STAF_STORAGE_TOTAL_SPACE, description = "total space, in byte, this data storage is allowed to use", label = "Total allocated space")
     private Long totalSpace;
 
     /**
@@ -124,7 +124,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     /**
      * STAF Plugin working directory.
      */
-    @PluginParameter(name = STAF_WORKSPACE_PATH)
+    @PluginParameter(name = STAF_WORKSPACE_PATH, label = "Workspace directory")
     private String workspaceDirectory;
 
     public static Path getStafNode(DataFile pFile) {
