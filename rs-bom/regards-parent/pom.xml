@@ -52,7 +52,7 @@
 	<properties>
 		<!-- Default compilation parameters -->
 		<!-- Skip executing tests -->
-		<skipTests>true</skipTests>
+		<skipTests>false</skipTests>
 		<!-- Generics -->
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
