@@ -20,5 +20,5 @@ Dependency :
 ## Build
 
 ```shell
-mvn clean install -DskipTests
+mvn clean install
 ```
