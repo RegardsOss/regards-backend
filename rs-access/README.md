@@ -1,23 +1,23 @@
-# Compilation de tous les projets
+# REGARDS access
 
-`mvn clean package`
+This is the backend for frontend repository.
 
-# Compilation backend
+For now, this version has not yet been tested under operational conditions and is considered as **beta**.
 
-`cd backend/backend-mock/ && mvn clean package`
+## Build requirement
 
-# Start backend
+Build relies on :
+* Maven 3+
+* OpenJDK 8
 
-`java -jar -Xms100m -Xmx100m backend/backend-mock/target/backend-mock-1.0-SNAPSHOT.jar`
+Dependencies : 
+* REGARDS Bill Of Materials
+* REGARDS microservice framework
+* REGARDS administration
 
-# Start frontend
+## Build
 
-``` bash
-cd frontend/frontend-webapp/src/main/webapp
-npm install
-npm start
+```shell
+mvn clean install
 ```
 
-or
-
-`java -jar frontend/frontend-boot/target/frontend-boot-0.0.1-SNAPSHOT.war`
