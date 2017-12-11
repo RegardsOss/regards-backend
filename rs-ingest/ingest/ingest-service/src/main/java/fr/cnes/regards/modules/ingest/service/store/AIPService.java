@@ -34,20 +34,19 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.feign.FeignResponseDecodedException;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.client.IAipEntityClient;
@@ -80,6 +79,9 @@ public class AIPService implements IAIPService {
     @Autowired
     private IAipClient aipClient;
 
+    @Autowired
+    private Gson gson;
+
     @Value("${regards.ingest.aips.bulk.request.limit:10000}")
     private Integer bulkRequestLimit;
 
@@ -106,7 +108,7 @@ public class AIPService implements IAIPService {
             ResponseEntity<List<RejectedAip>> response = null;
             try {
                 response = aipClient.store(aips);
-            } catch (FeignResponseDecodedException e) {
+            } catch (HttpClientErrorException e) {
                 // Feign only throws exceptions in case the response status is neither 404 or one of the 2xx,
                 // so lets catch the exception and if it not one of our API normal status rethrow it
                 if (e.getStatusCode() != HttpStatus.UNPROCESSABLE_ENTITY) {
@@ -115,9 +117,13 @@ public class AIPService implements IAIPService {
                             .updateAIPEntityStateAndErrorMessage(AIPState.CREATED, aipId, null));
                     throw e;
                 }
-                //set all aip to store_rejected
-                ((List<RejectedAip>) e.getBody())
-                        .forEach(rejectedAip -> rejectAip(rejectedAip.getIpId(), rejectedAip.getRejectionCauses()));
+                // first lets get the string from the body then lets deserialize it using gson
+                TypeToken<List<RejectedAip>> bodyTypeToken = new TypeToken<List<RejectedAip>>() {
+
+                };
+                List<RejectedAip> rejectedAips = gson.fromJson(e.getResponseBodyAsString(), bodyTypeToken.getType());
+                //set all aips to store_rejected
+                rejectedAips.forEach(rejectedAip -> rejectAip(rejectedAip.getIpId(), rejectedAip.getRejectionCauses()));
             }
             FeignSecurityManager.reset();
             if ((response != null) && (response.getStatusCode().is2xxSuccessful())) {
@@ -186,7 +192,7 @@ public class AIPService implements IAIPService {
                 .retrieveAIPEntities(sipIpId, 0, 100);
         if (result.getStatusCode().equals(HttpStatus.OK) && (result.getBody() != null)) {
             Optional<SIPEntity> oSip = sipRepository.findOneByIpId(sipIpId);
-            if(oSip.isPresent()) {
+            if (oSip.isPresent()) {
                 SIPEntity sip = oSip.get();
                 // If all AIPs are deleted, update sip to DELETED state
                 if (result.getBody().getContent().stream()
