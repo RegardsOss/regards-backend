@@ -41,6 +41,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpServerErrorException;
 
 import com.google.gson.Gson;
 import feign.FeignException;
@@ -140,8 +141,7 @@ public class FeignClientTests {
         try {
             helloClient.getHello503();
             Assert.fail("Feign exception should be thrown");
-        } catch (FeignResponseDecodedException e) {
-            LOG.info(gson.toJson(e.getBody()));
+        } catch (HttpServerErrorException e) {
             Assert.assertEquals(HttpStatus.SERVICE_UNAVAILABLE.value(), e.getRawStatusCode());
         }
     }
