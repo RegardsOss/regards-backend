@@ -98,7 +98,7 @@ public class LockedState extends AbstractDeletableState {
             IAccountUnlockTokenService pAccountUnlockTokenService, IAccountService pAccountService,
             ITemplateService pTemplateService, IEmailClient pEmailClient) {
         super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
-              pPasswordResetTokenService, pEmailVerificationTokenService, pAccountUnlockTokenService);
+              pPasswordResetTokenService, pAccountUnlockTokenService);
         accountService = pAccountService;
         templateService = pTemplateService;
         emailClient = pEmailClient;

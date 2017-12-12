@@ -160,7 +160,7 @@ public interface IAccountTransitions {
     }
 
     /**
-     * Can we delete this account?
+     * Can we delete this account? An account is considered deletable if there is no project user linked to it
      * @param pAccount the account
      * @return <code>true</code> if we can, else <code>false</code>
      */

@@ -23,6 +23,7 @@ import javax.validation.Valid;
 
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +33,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformResetPasswordDto;
@@ -44,9 +48,19 @@ import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.Reques
  * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
-@RestClient(name = "rs-admin")
+@RestClient(name = "rs-admin-instance")
 @RequestMapping(path = "/accounts", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IAccountsClient {
+
+    /**
+     * Path for account acceptance
+     */
+    String ACCEPT_ACCOUNT_RELATIVE_PATH = "/{account_email}/accept";
+
+    /**
+     * Path for account refusal
+     */
+    String REFUSE_ACCOUNT_RELATIVE_PATH = "/{account_email}/refuse";
 
     /**
      * Retrieve the list of all {@link Account}s.
@@ -178,4 +192,24 @@ public interface IAccountsClient {
     @RequestMapping(value = "/{account_email}/validate", method = RequestMethod.GET)
     ResponseEntity<Boolean> validatePassword(@PathVariable("account_email") String pEmail,
             @RequestParam("password") String pPassword);
+
+    /**
+     * Grants access to the project user
+     *
+     * @param pAccountEmail
+     *            account email
+     * @return <code>void</code> wrapped in a {@link ResponseEntity}
+     */
+    @RequestMapping(value = ACCEPT_ACCOUNT_RELATIVE_PATH, method = RequestMethod.PUT)
+    ResponseEntity<Void> acceptAccount(@PathVariable("account_email") final String pAccountEmail);
+
+    /**
+     * Refuse the account request
+     *
+     * @param pAccountEmail
+     *            account email
+     * @return <code>void</code> wrapped in a {@link ResponseEntity}
+     */
+    @RequestMapping(value = REFUSE_ACCOUNT_RELATIVE_PATH, method = RequestMethod.PUT)
+    ResponseEntity<Void> refuseAccount(@PathVariable("account_email") final String pAccountEmail);
 }

@@ -25,12 +25,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 
 /**
- * Unit test for {@link PerformResetPasswordDto}
+ * Unit test for {@link AccessRequestDto}
  *
  * @author Maxime Bouveron
  */

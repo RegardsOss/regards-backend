@@ -50,16 +50,16 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.utils.Validity;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.PerformUnlockAccountDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.RequestAccountUnlockDto;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.RequestResetPasswordDto;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
-import fr.cnes.regards.modules.accessrights.service.account.passwordreset.IPasswordResetService;
-import fr.cnes.regards.modules.accessrights.service.account.passwordreset.OnPasswordResetEvent;
-import fr.cnes.regards.modules.accessrights.service.account.workflow.state.IAccountTransitions;
+import fr.cnes.regards.modules.accessrights.instance.service.IAccountService;
+import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.OnPasswordResetEvent;
+import fr.cnes.regards.modules.accessrights.instance.service.workflow.state.IAccountTransitions;
 
 /**
  * Endpoints to manage REGARDS Accounts. Accounts are transverse to all projects and so are persisted in an instance
@@ -107,6 +107,16 @@ public class AccountsController implements IResourceController<Account> {
      * Root mapping for requests of this rest controller
      */
     public static final String TYPE_MAPPING = "/accounts";
+
+    /**
+     * Path for account acceptance
+     */
+    public static final String ACCEPT_ACCOUNT_RELATIVE_PATH = "/{account_email}/accept";
+
+    /**
+     * Path for account refusal
+     */
+    public static final String REFUSE_ACCOUNT_RELATIVE_PATH = "/{account_email}/refuse";
 
     @Autowired
     private IAccountService accountService;
@@ -458,6 +468,49 @@ public class AccountsController implements IResourceController<Account> {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    /**
+     * Grants access to the project user
+     *
+     * @param pAccountEmail
+     *            account email
+     * @return <code>void</code> wrapped in a {@link ResponseEntity}
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityTransitionForbiddenException} if no project user could be found<br>
+     *             {@link EntityNotFoundException} if project user is in illegal status for denial<br>
+     */
+    @RequestMapping(value = ACCEPT_ACCOUNT_RELATIVE_PATH, method = RequestMethod.PUT)
+    @ResourceAccess(description = "Accepts the access request", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> acceptAccount(@PathVariable("account_email") final String pAccountEmail)
+            throws EntityException {
+        // Retrieve the account
+        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+
+        // Accept it
+        accountWorkflowManager.acceptAccount(account);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * Refuse the account request
+     *
+     * @param pAccountEmail
+     *            account email
+     * @return <code>void</code> wrapped in a {@link ResponseEntity}
+     * @throws EntityException
+     */
+    @RequestMapping(value = REFUSE_ACCOUNT_RELATIVE_PATH, method = RequestMethod.PUT)
+    @ResourceAccess(description = "Accepts the access request", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> refuseAccount(@PathVariable("account_email") final String pAccountEmail)
+            throws EntityException {
+        // Retrieve the account
+        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+
+        // Accept it
+        accountWorkflowManager.refuseAccount(account);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @Override
     public Resource<Account> toResource(final Account pElement, final Object... pExtras) {
         Resource<Account> resource = null;
@@ -480,12 +533,12 @@ public class AccountsController implements IResourceController<Account> {
             }
             // Accept link, only if the account is in PENDING state
             if (AccountStatus.PENDING.equals(pElement.getStatus())) {
-                resourceService.addLink(resource, RegistrationController.class, "acceptAccount", "accept",
+                resourceService.addLink(resource, this.getClass(), "acceptAccount", "accept",
                                         MethodParamFactory.build(String.class, pElement.getEmail()));
             }
             // Refuse link, only if the account is in PENDING state
             if (AccountStatus.PENDING.equals(pElement.getStatus())) {
-                resourceService.addLink(resource, RegistrationController.class, "refuseAccount", "refuse",
+                resourceService.addLink(resource, this.getClass(), "refuseAccount", "refuse",
                                         MethodParamFactory.build(String.class, pElement.getEmail()));
             }
             // Inactive link, only if the account is in ACTIVE state

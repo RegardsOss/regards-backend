@@ -34,7 +34,7 @@
 
 	<modules>
 		<module>project</module>
-		<module>bootstrap-administration-project</module>
+		<module>bootstrap-administration</module>
 		<module>bootstrap-administration-instance</module>
 		<module>accessrights</module>
 		<module>emails</module>

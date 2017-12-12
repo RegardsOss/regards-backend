@@ -54,7 +54,7 @@ public class InactiveState extends AbstractDeletableState {
             IEmailVerificationTokenService pEmailVerificationTokenService,
             IAccountUnlockTokenService pAccountUnlockTokenService) {
         super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
-              pPasswordResetTokenService, pEmailVerificationTokenService, pAccountUnlockTokenService);
+              pPasswordResetTokenService, pAccountUnlockTokenService);
     }
 
     @Override

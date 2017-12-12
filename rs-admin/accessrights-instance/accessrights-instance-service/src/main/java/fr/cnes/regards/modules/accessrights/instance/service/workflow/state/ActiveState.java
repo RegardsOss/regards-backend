@@ -58,9 +58,7 @@ public class ActiveState extends AbstractDeletableState {
               pAccountRepository,
               pTenantResolver,
               pRuntimeTenantResolver,
-              pPasswordResetTokenService,
-              pEmailVerificationTokenService,
-              pAccountUnlockTokenService);
+              pPasswordResetTokenService, pAccountUnlockTokenService);
     }
 
     @Override

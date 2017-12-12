@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.accessrights.service.projectuser;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 
 /**
@@ -30,22 +29,22 @@ import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 public interface IAccessSettingsService {
 
     /**
-     * Retrieve the {@link AccountSettings}.
+     * Retrieve the {@link AccessSettings}.
      *
-     * @return The {@link AccountSettings}
+     * @return The {@link AccessSettings}
      * @throws EntityNotFoundException
-     *             hrown when an {@link AccountSettings} with passed id could not be found
+     *             hrown when an {@link AccessSettings} with passed id could not be found
      */
     AccessSettings retrieve() throws EntityNotFoundException;
 
     /**
-     * Update the {@link AccountSettings}.
+     * Update the {@link AccessSettings}.
      *
      * @param pAccessSettings
-     *            The {@link AccountSettings}
+     *            The {@link AccessSettings}
      * @return The updated access settings
      * @throws EntityNotFoundException
-     *             Thrown when an {@link AccountSettings} with passed id could not be found
+     *             Thrown when an {@link AccessSettings} with passed id could not be found
      */
     AccessSettings update(AccessSettings pAccessSettings) throws EntityNotFoundException;
 }

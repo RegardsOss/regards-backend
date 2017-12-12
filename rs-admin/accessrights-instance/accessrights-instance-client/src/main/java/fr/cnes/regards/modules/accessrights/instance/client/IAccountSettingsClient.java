@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 
 /**
  * Feign client for rs-admin Accounts controller.
@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
  * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
-@RestClient(name = "rs-admin")
+@RestClient(name = "rs-admin-instance")
 @RequestMapping(path = "/accounts/settings", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IAccountSettingsClient {
 
@@ -54,7 +54,7 @@ public interface IAccountSettingsClient {
     /**
      * Update the {@link AccountSettings} for the instance.
      *
-     * @param pSettings
+     * @param pUpdatedAccountSetting
      *            The {@link AccountSettings}
      * @return The updated account settings
      */

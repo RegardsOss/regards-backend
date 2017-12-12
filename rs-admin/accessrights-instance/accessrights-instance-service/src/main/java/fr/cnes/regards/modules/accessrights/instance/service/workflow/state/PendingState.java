@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactiona
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
@@ -49,22 +50,20 @@ public class PendingState extends AbstractDeletableState {
     private final ApplicationEventPublisher eventPublisher;
 
     /**
-     * @param pProjectUserService
+     * @param projectUsersClient
      * @param pAccountRepository
      * @param pTenantResolver
      * @param pRuntimeTenantResolver
      * @param pPasswordResetTokenService
-     * @param pEmailVerificationTokenService
      * @param pAccountUnlockTokenService
      * @param pEventPublisher
      */
-    public PendingState(IProjectUserService pProjectUserService, IAccountRepository pAccountRepository,
+    public PendingState(IProjectUsersClient projectUsersClient, IAccountRepository pAccountRepository,
             ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
             IPasswordResetService pPasswordResetTokenService,
-            IEmailVerificationTokenService pEmailVerificationTokenService,
             IAccountUnlockTokenService pAccountUnlockTokenService, ApplicationEventPublisher pEventPublisher) {
-        super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
-              pPasswordResetTokenService, pEmailVerificationTokenService, pAccountUnlockTokenService);
+        super(projectUsersClient, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
+              pPasswordResetTokenService, pAccountUnlockTokenService);
         eventPublisher = pEventPublisher;
     }
 
@@ -79,16 +78,16 @@ public class PendingState extends AbstractDeletableState {
     public void acceptAccount(final Account pAccount) throws EntityException {
         String email = pAccount.getEmail();
         pAccount.setStatus(AccountStatus.ACTIVE);
-        getAccountRepository().save(pAccount);
+        accountRepository.save(pAccount);
         try {
-            for (String tenant : getTenantResolver().getAllActiveTenants()) {
-                getRuntimeTenantResolver().forceTenant(tenant);
-                if (getProjectUserService().existUser(email)) {
+            for (String tenant : tenantResolver.getAllActiveTenants()) {
+                runtimeTenantResolver.forceTenant(tenant);
+                if (projectUsersClient.existUser(email)) {
                     eventPublisher.publishEvent(new OnAcceptAccountEvent(email));
                 }
             }
         } finally {
-            getRuntimeTenantResolver().clearTenant();
+            runtimeTenantResolver.clearTenant();
         }
     }
 

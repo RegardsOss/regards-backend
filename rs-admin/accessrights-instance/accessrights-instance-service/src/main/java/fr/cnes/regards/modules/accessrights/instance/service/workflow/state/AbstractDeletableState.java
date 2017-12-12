@@ -20,13 +20,19 @@ package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
+import feign.FeignException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
@@ -49,59 +55,50 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     /**
      * Service managing {@link ProjectUser}s. Autowired by Spring.
      */
-    private final IProjectUserService projectUserService;
+    protected final IProjectUsersClient projectUsersClient;
 
     /**
      * Account Repository
      */
-    private final IAccountRepository accountRepository;
+    protected final IAccountRepository accountRepository;
 
     /**
      * Tenant resolver
      */
-    private final ITenantResolver tenantResolver;
+    protected final ITenantResolver tenantResolver;
 
     /**
      * Runtime tenant resolver
      */
-    private final IRuntimeTenantResolver runtimeTenantResolver;
+    protected final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Service to manage reset tokens for accounts.
      */
-    private final IPasswordResetService passwordResetTokenService;
-
-    /**
-     * Service to manage email verification tokens for project users.
-     */
-    private final IEmailVerificationTokenService emailVerificationTokenService;
+    protected final IPasswordResetService passwordResetTokenService;
 
     /**
      * Service to manage unlock tokens for accounts.
      */
-    private final IAccountUnlockTokenService accountUnlockTokenService;
+    protected final IAccountUnlockTokenService accountUnlockTokenService;
 
     /**
-     * @param pProjectUserService
+     * @param projectUsersClient
      * @param pAccountRepository
      * @param pTenantResolver
      * @param pRuntimeTenantResolver
      * @param pPasswordResetTokenService
-     * @param pEmailVerificationTokenService
      * @param pAccountUnlockTokenService
      */
-    public AbstractDeletableState(IProjectUserService pProjectUserService, IAccountRepository pAccountRepository,
+    public AbstractDeletableState(IProjectUsersClient projectUsersClient, IAccountRepository pAccountRepository,
             ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
-            IPasswordResetService pPasswordResetTokenService,
-            IEmailVerificationTokenService pEmailVerificationTokenService,
-            IAccountUnlockTokenService pAccountUnlockTokenService) {
+            IPasswordResetService pPasswordResetTokenService, IAccountUnlockTokenService pAccountUnlockTokenService) {
         super();
-        projectUserService = pProjectUserService;
+        this.projectUsersClient = projectUsersClient;
         accountRepository = pAccountRepository;
         tenantResolver = pTenantResolver;
         runtimeTenantResolver = pRuntimeTenantResolver;
         passwordResetTokenService = pPasswordResetTokenService;
-        emailVerificationTokenService = pEmailVerificationTokenService;
         accountUnlockTokenService = pAccountUnlockTokenService;
     }
 
@@ -115,8 +112,10 @@ abstract class AbstractDeletableState implements IAccountTransitions {
                 doDelete(pAccount);
                 break;
             default:
-                throw new EntityTransitionForbiddenException(pAccount.getId().toString(), ProjectUser.class,
-                        pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
+                throw new EntityTransitionForbiddenException(pAccount.getId().toString(),
+                                                             ProjectUser.class,
+                                                             pAccount.getStatus().toString(),
+                                                             Thread.currentThread().getStackTrace()[1].getMethodName());
         }
     }
 
@@ -131,7 +130,16 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         try {
             for (String tenant : tenantResolver.getAllActiveTenants()) {
                 runtimeTenantResolver.forceTenant(tenant);
-                if (projectUserService.existUser(pAccount.getEmail())) {
+                try {
+                    ResponseEntity<Resource<ProjectUser>> projectUserResponse = projectUsersClient
+                            .retrieveProjectUserByEmail(pAccount.getEmail());
+                    if (projectUserResponse.getStatusCode() != HttpStatus.NOT_FOUND) {
+                        return false;
+                    }
+                } catch (FeignException e) {
+                    // in case admin project microservice has a problem, lets just log the issue and continue for the next tenant
+                    LOGGER.warn("There was an issue while trying to determine if an account is deletable.", e);
+                    // in case of issues, the tenant might be in maintenance or the microservice down, so lets assume there is a project user linked to this account
                     return false;
                 }
             }
@@ -153,8 +161,8 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         // Fail if not allowed to delete
         if (!canDelete(pAccount)) {
             final String message = String.format(
-                                                 "Cannot remove account %s because it is linked to at least one project.",
-                                                 pAccount.getEmail());
+                    "Cannot remove account %s because it is linked to at least one project.",
+                    pAccount.getEmail());
             LOGGER.error(message);
             throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class, message);
         }
@@ -177,50 +185,17 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         try {
             for (String tenant : tenantResolver.getAllActiveTenants()) {
                 runtimeTenantResolver.forceTenant(tenant);
-                if (projectUserService.existUser(email)) {
-                    ProjectUser projectUser = projectUserService.retrieveOneByEmail(email);
-                    emailVerificationTokenService.deleteTokenForProjectUser(projectUser);
-                    projectUserService.deleteByEmail(pAccount.getEmail());
+                //lets get the project user
+                ResponseEntity<Resource<ProjectUser>> projectUserResponse = projectUsersClient
+                        .retrieveProjectUserByEmail(email);
+                if (projectUserResponse.getStatusCode() != HttpStatus.NOT_FOUND) {
+                    ProjectUser projectUser = projectUserResponse.getBody().getContent();
+                    projectUsersClient.removeProjectUser(projectUser.getId());
                 }
             }
         } finally {
             runtimeTenantResolver.clearTenant();
         }
-    }
-
-    /**
-     * @return the projectUserService
-     */
-    protected IProjectUserService getProjectUserService() {
-        return projectUserService;
-    }
-
-    /**
-     * @return the accountRepository
-     */
-    protected IAccountRepository getAccountRepository() {
-        return accountRepository;
-    }
-
-    /**
-     * @return the tenantResolver
-     */
-    protected ITenantResolver getTenantResolver() {
-        return tenantResolver;
-    }
-
-    /**
-     * @return the runtimeTenantResolver
-     */
-    public IRuntimeTenantResolver getRuntimeTenantResolver() {
-        return runtimeTenantResolver;
-    }
-
-    /**
-     * @return the accountUnlockTokenService
-     */
-    public IAccountUnlockTokenService getAccountUnlockTokenService() {
-        return accountUnlockTokenService;
     }
 
 }

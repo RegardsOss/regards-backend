@@ -19,11 +19,13 @@
 package fr.cnes.regards.modules.accessrights.service.registration;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -36,6 +38,11 @@ import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerifi
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.encryption.EncryptionUtils;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
@@ -55,9 +62,14 @@ public class RegistrationService implements IRegistrationService {
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationService.class);
 
     /**
-     * CRUD repository handling {@link Account}s. Autowired by Spring.
+     * {@link IAccountsClient} instance
      */
-    private final IAccountRepository accountRepository;
+    private final IAccountsClient accountsClient;
+
+    /**
+     * {@link IAccountSettingsClient} instance
+     */
+    private final IAccountSettingsClient accountSettingsClient;
 
     /**
      * CRUD repository handling {@link ProjectUser}s. Autowired by Spring.
@@ -75,41 +87,28 @@ public class RegistrationService implements IRegistrationService {
     private final IEmailVerificationTokenService tokenService;
 
     /**
-     * CRUD repository handling {@link AccountSettingst}s. Autowired by Spring.
-     */
-    private final IAccountSettingsService accountSettingsService;
-
-    /**
-     * Account workflow manager. Autowired by Spring.
-     */
-    private final AccountWorkflowManager accountWorkflowManager;
-
-    /**
      * Use this to publish Spring application events
      */
     private final ApplicationEventPublisher eventPublisher;
 
     /**
-     * @param pAccountRepository
      * @param pProjectUserRepository
      * @param pRoleService
      * @param pTokenService
-     * @param pAccountSettingsService
-     * @param pAccountWorkflowManager
      * @param pEventPublisher
+     * @param accountSettingsClient
+     * @param accountsClient
      */
-    public RegistrationService(IAccountRepository pAccountRepository, IProjectUserRepository pProjectUserRepository,
-            IRoleService pRoleService, IEmailVerificationTokenService pTokenService,
-            IAccountSettingsService pAccountSettingsService, AccountWorkflowManager pAccountWorkflowManager,
-            ApplicationEventPublisher pEventPublisher) {
+    public RegistrationService(IProjectUserRepository pProjectUserRepository, IRoleService pRoleService,
+            IEmailVerificationTokenService pTokenService, ApplicationEventPublisher pEventPublisher,
+            IAccountSettingsClient accountSettingsClient, IAccountsClient accountsClient) {
         super();
-        accountRepository = pAccountRepository;
         projectUserRepository = pProjectUserRepository;
         roleService = pRoleService;
         tokenService = pTokenService;
-        accountSettingsService = pAccountSettingsService;
-        accountWorkflowManager = pAccountWorkflowManager;
         eventPublisher = pEventPublisher;
+        this.accountsClient = accountsClient;
+        this.accountSettingsClient = accountSettingsClient;
     }
 
     @Override
@@ -130,27 +129,30 @@ public class RegistrationService implements IRegistrationService {
      */
     private void requestAccountIfNecessary(final AccessRequestDto pDto) throws EntityException {
         // Check existence
-        if (accountRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
+        ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(pDto.getEmail());
+        if(accountResponse.getStatusCode() != HttpStatus.NOT_FOUND) {
             LOG.info("Requesting access with an existing account. Ok, no account created");
             return;
         }
 
         // Create the new account
-        final Account account = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(),
-                EncryptionUtils.encryptPassword(pDto.getPassword()));
+        Account account = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(),
+                                            EncryptionUtils.encryptPassword(pDto.getPassword()));
 
         // Check status
         Assert.isTrue(AccountStatus.PENDING.equals(account.getStatus()),
                       "Trying to create an Account with other status than PENDING.");
 
-        // Auto-accept if configured so
-        final AccountSettings settings = accountSettingsService.retrieve();
-        if (AccountSettings.AUTO_ACCEPT_MODE.equals(settings.getMode())) {
-            accountWorkflowManager.acceptAccount(account);
-        }
-
         // Create
-        accountRepository.save(account);
+        account = accountsClient.createAccount(account).getBody().getContent();
+
+        // Auto-accept if configured so
+        ResponseEntity<Resource<AccountSettings>> accountSettingsResponse = accountSettingsClient
+                .retrieveAccountSettings();
+        if(accountSettingsResponse.getStatusCode().is2xxSuccessful() && AccountSettings.AUTO_ACCEPT_MODE.equals(accountSettingsResponse.getBody().getContent())) {
+            // in case the microservice does not answer properly to us, lets decide its manual
+            accountsClient.acceptAccount(account.getEmail());
+        }
     }
 
     /**
@@ -161,10 +163,11 @@ public class RegistrationService implements IRegistrationService {
      */
     private void requestProjectUser(final AccessRequestDto pDto) throws EntityException {
         // Check that an associated account exists
-        Optional<Account> optionalAccount = accountRepository.findOneByEmail(pDto.getEmail());
-        if (!optionalAccount.isPresent()) {
+        ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(pDto.getEmail());
+        if(accountResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
             throw new EntityNotFoundException(pDto.getEmail(), Account.class);
         }
+        Account account = accountResponse.getBody().getContent();
 
         // Check that no project user with same email exists
         if (projectUserRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
@@ -184,7 +187,7 @@ public class RegistrationService implements IRegistrationService {
         tokenService.create(projectUser, pDto.getOriginUrl(), pDto.getRequestLink());
 
         // Check the status
-        if (AccountStatus.ACTIVE.equals(optionalAccount.get().getStatus())) {
+        if (AccountStatus.ACTIVE.equals(account.getStatus())) {
             eventPublisher.publishEvent(new OnAcceptAccountEvent(pDto.getEmail()));
         }
     }

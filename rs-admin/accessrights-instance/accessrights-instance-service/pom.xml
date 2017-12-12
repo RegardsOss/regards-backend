@@ -45,6 +45,7 @@
 			<artifactId>templates-service</artifactId>
 		</dependency>
 		<dependency>
+			<!-- Added so we can handle link between project users and accounts -->
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
 			<artifactId>accessrights-client</artifactId>
 		</dependency>

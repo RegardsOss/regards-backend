@@ -148,10 +148,10 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     }
 
     /**
-     * Retrieve the {@link ProjectUser} of passed <code>email</code>.
+     * Retrieve the {@link ProjectUser} of passed <code>id</code>.
      *
-     * @param pUserEmail
-     *            The {@link ProjectUser}'s <code>email</code>
+     * @param pUserId
+     *            The {@link ProjectUser}'s <code>id</code>
      * @return a {@link ProjectUser}
      * @throws EntityNotFoundException
      */

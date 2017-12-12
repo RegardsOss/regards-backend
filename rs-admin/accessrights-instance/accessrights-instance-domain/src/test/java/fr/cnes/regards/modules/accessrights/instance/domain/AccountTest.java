@@ -16,13 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.accessrights.domain.instance;
+package fr.cnes.regards.modules.accessrights.instance.domain;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 
 /**
  * Unit test for {@link Account}
@@ -32,19 +30,14 @@ import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 public class AccountTest {
 
     /**
-     * Test account
+     * Test email
      */
-    private Account accountTest;
+    private final String email = "mail";
     //
     // /**
     // * Test id
     // */
     // private final Long id = 0L;
-
-    /**
-     * Test email
-     */
-    private final String email = "mail";
 
     /**
      * Test firstName
@@ -62,14 +55,19 @@ public class AccountTest {
     private final String password = "password";
 
     /**
-     * Test status
-     */
-    private AccountStatus status;
-
-    /**
      * Test code
      */
     private final String code = "code";
+
+    /**
+     * Test account
+     */
+    private Account accountTest;
+
+    /**
+     * Test status
+     */
+    private AccountStatus status;
 
     @Before
     public void setUp() {
@@ -78,7 +76,7 @@ public class AccountTest {
     }
 
     // /**
-    // * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#Account()}.
+    // * Test method for {@link Account#Account()}.
     // */
     // @Test
     // public void testAccountDefault() {
@@ -95,7 +93,7 @@ public class AccountTest {
     // }
 
     // /**
-    // * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#Account(java.lang.String)}.
+    // * Test method for {@link Account#Account(java.lang.String)}.
     // */
     // @Test
     // public void testAccountEmail() {
@@ -146,7 +144,7 @@ public class AccountTest {
     // }
 
     /**
-     * Test method for {@link Account#Account(Long, String, String, String, String, jString, AccountStatus, String)}.
+     * Test method for {@link Account#Account(String, String, String, String)}.
      */
     @Test
     public void testAccountFull() {
@@ -162,7 +160,7 @@ public class AccountTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#getEmail()}.
+     * Test method for {@link Account#getEmail()}.
      */
     @Test
     public void testGetEmail() {
@@ -170,7 +168,7 @@ public class AccountTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#setEmail(java.lang.String)}.
+     * Test method for {@link Account#setEmail(java.lang.String)}.
      */
     @Test
     public void testSetEmail() {
@@ -180,7 +178,7 @@ public class AccountTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#getFirstName()}.
+     * Test method for {@link Account#getFirstName()}.
      */
     @Test
     public void testGetFirstName() {
@@ -189,7 +187,7 @@ public class AccountTest {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#setFirstName(java.lang.String)}.
+     * {@link Account#setFirstName(java.lang.String)}.
      */
     @Test
     public void testSetFirstName() {
@@ -199,7 +197,7 @@ public class AccountTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#getLastName()}.
+     * Test method for {@link Account#getLastName()}.
      */
     @Test
     public void testGetLastName() {
@@ -208,7 +206,7 @@ public class AccountTest {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#setLastName(java.lang.String)}.
+     * {@link Account#setLastName(java.lang.String)}.
      */
     @Test
     public void testSetLastName() {
@@ -218,7 +216,7 @@ public class AccountTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#getPassword()}.
+     * Test method for {@link Account#getPassword()}.
      */
     @Test
     public void testGetPassword() {
@@ -227,7 +225,7 @@ public class AccountTest {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#setPassword(java.lang.String)}.
+     * {@link Account#setPassword(java.lang.String)}.
      */
     @Test
     public void testSetPassword() {
@@ -237,7 +235,7 @@ public class AccountTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#getStatus()}.
+     * Test method for {@link Account#getStatus()}.
      */
     @Test
     public void testGetStatus() {
@@ -245,7 +243,7 @@ public class AccountTest {
     }
 
     /**
-     * Test method for {@link Account#setStatus(fr.cnes.regards.modules.accessrights.domain.AccountStatus)}.
+     * Test method for {@link Account#setStatus(AccountStatus)}.
      */
     @Test
     public void testSetStatus() {
@@ -254,7 +252,7 @@ public class AccountTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#getId()}.
+     * Test method for {@link Account#getId()}.
      */
     @Test
     public void testGetId() {
@@ -262,7 +260,7 @@ public class AccountTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#setId(java.lang.Long)}.
+     * Test method for {@link Account#setId(java.lang.Long)}.
      */
     @Test
     public void testSetId() {
@@ -272,7 +270,7 @@ public class AccountTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.instance.Account#equals(java.lang.Object)}.
+     * Test method for {@link Account#equals(java.lang.Object)}.
      */
     @Test
     public void testEqualsObject() {
