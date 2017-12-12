@@ -64,7 +64,7 @@ public class MultipleFileNameFinder extends FileNameFinder {
         for (File fileToProceed : fileToProceedList) {
             Matcher matcher = pattern.matcher(fileToProceed.getName());
             if (matcher.matches()) {
-                StringBuffer value = new StringBuffer();
+                StringBuilder value = new StringBuilder();
                 
                 // la valeur finale peut etre composée de plusieurs groupes
                 for (Integer groupNumber : groupNumberList) {

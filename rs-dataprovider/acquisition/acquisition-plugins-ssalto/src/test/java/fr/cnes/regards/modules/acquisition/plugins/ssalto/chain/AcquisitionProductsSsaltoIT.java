@@ -21,8 +21,6 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.chain;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.Security;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -84,8 +82,6 @@ import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.chain.conf.AcquisitionSsaltoProductsConfiguration;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.chain.conf.MockedFeignSsaltoClientConf;
-import fr.cnes.regards.modules.acquisition.service.AcquisitionFileService;
-import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
 import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.entities.domain.Dataset;
@@ -231,8 +227,8 @@ public class AcquisitionProductsSsaltoIT {
                 .withMediaType(MediaType.APPLICATION_OCTET_STREAM_VALUE)
                 .withFilePattern("JA2_IP(N|S|R)_2P[a-zA-Z]{1}P[0-9]{3}_[0-9]{3,4}(_[0-9]{8}_[0-9]{6}){2}(.nc){0,1}")
                 .addScanDirectory(scanDir).get();
-        MetaProduct metaProduct = MetaProductBuilder.build("JASON2_IGDR").addMetaFile(metaFile).withChecksumAlgorithm("MD5")
-                .withIngestProcessingChain("ingest-processing-chain-id").get();
+        MetaProduct metaProduct = MetaProductBuilder.build("JASON2_IGDR").addMetaFile(metaFile)
+                .withChecksumAlgorithm("MD5").withIngestProcessingChain("ingest-processing-chain-id").get();
         currentChain = acqProcessChainService.createOrUpdate(AcquisitionProcessingChainBuilder.build("JASON2_IGDR")
                 .isActive().withDataSet(dataSetIpId).withMetaProduct(metaProduct).get());
     }

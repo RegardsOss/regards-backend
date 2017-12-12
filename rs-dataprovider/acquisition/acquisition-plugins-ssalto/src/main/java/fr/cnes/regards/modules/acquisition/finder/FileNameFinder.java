@@ -87,7 +87,7 @@ public class FileNameFinder extends AttributeFinder {
             Matcher matcher = pattern.matcher(fileToProceed.getName());
             LOGGER.debug("testing file " + fileToProceed.getName());
             if (matcher.matches()) {
-                StringBuffer value = new StringBuffer();
+                StringBuilder value = new StringBuilder();
 
                 // la valeur finale peut etre compose de plusieurs groupes
                 for (Object element : groupNumberList) {

@@ -156,7 +156,7 @@ public class Attribute {
      */
     @Override
     public String toString() {
-        StringBuffer localBuffer = new StringBuffer();
+        StringBuilder localBuffer = new StringBuilder();
         localBuffer.append("[");
         if (metaAttribute != null) {
             localBuffer.append(metaAttribute.getName());

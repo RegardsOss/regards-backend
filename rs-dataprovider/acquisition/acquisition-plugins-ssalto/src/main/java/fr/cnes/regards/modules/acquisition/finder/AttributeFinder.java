@@ -349,7 +349,6 @@ public abstract class AttributeFinder {
      * @return une liste de java.io.File
      */
     private Collection<File> unzip(File file) throws PluginAcquisitionException {
-        Collection<File> unzippedFileList = new HashSet<>();
 
         File temporaryDir = getTemporaryUnzippedDir(file);
         try {
@@ -362,7 +361,8 @@ public abstract class AttributeFinder {
             LOGGER.error(e.getMessage());
             throw new PluginAcquisitionException(e);
         }
-
+        
+        Collection<File> unzippedFileList = new HashSet<>();
         Files.fileTreeTraverser().children(temporaryDir).forEach(a -> unzippedFileList.add(a));
 
         return unzippedFileList;
@@ -467,7 +467,7 @@ public abstract class AttributeFinder {
         return valueType;
     }
 
-    public void setCalculationClass(String newCalculationClass) throws Exception {
+    public void setCalculationClass(String newCalculationClass) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         calculationClass = (ICalculationClass) Class.forName(newCalculationClass).newInstance();
     }
 

@@ -52,16 +52,13 @@ public class TranslatedAttributeFromArcFile extends FileNameFinder {
     private static final String STOP_DATE = "STOP_DATE";
 
     // Charset and decoder for ISO-8859-15
-    private static Charset charset_ = Charset.forName("ISO-8859-15");
+    private static final Charset CHARSET = Charset.forName("ISO-8859-15");
 
-    private final CharsetDecoder decoder = charset_.newDecoder();
+    private static final CharsetDecoder DECODER = CHARSET.newDecoder();
 
     @Override
     public List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
-
-        List<String> resultList = new ArrayList<>();
-
         // Get arc value from name
         @SuppressWarnings("unchecked")
         List<Integer> arcList = (List<Integer>) super.getValueList(fileMap, attributeValueMap);
@@ -101,6 +98,7 @@ public class TranslatedAttributeFromArcFile extends FileNameFinder {
         }
 
         // Get date
+        List<String> resultList = new ArrayList<>();
         Date tmp = CNESJulianDate.toDate(julianDay, secondInDay);
         resultList.add(DateFormatter.getDateRepresentation(tmp, DateFormatter.XS_DATE_TIME_FORMAT));
 
@@ -117,7 +115,7 @@ public class TranslatedAttributeFromArcFile extends FileNameFinder {
     private CharBuffer readFile(String filePath) throws IOException {
         FileChannel fc = null;
         CharBuffer cb = null;
-        
+
         // Open the file and then get a channel from the stream
         try (FileInputStream fis = new FileInputStream(filePath)) {
             fc = fis.getChannel();
@@ -127,7 +125,7 @@ public class TranslatedAttributeFromArcFile extends FileNameFinder {
             MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, sz);
 
             // Decode the file into a char buffer
-            cb = decoder.decode(bb);
+            cb = DECODER.decode(bb);
 
         } catch (IOException e) {
             if (fc != null) {

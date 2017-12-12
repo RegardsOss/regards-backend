@@ -92,7 +92,7 @@ public class CompositeAttribute extends Attribute {
 
     @Override
     public String toString() {
-        StringBuffer localBuffer = new StringBuffer("composite:");
+        StringBuilder localBuffer = new StringBuilder("composite:");
         localBuffer.append(this.getName());
         localBuffer.append("-");
 

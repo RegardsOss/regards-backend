@@ -47,6 +47,7 @@ import fr.cnes.regards.framework.geojson.coordinates.Position;
 import fr.cnes.regards.framework.geojson.coordinates.Positions;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
@@ -65,9 +66,8 @@ import fr.cnes.regards.modules.entities.domain.geometry.Geometry;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 
 /**
- * Plugin generic de creation de metadonnees d'un produit.<br>
- * Cette classe possède une specification pour chaque produit.
- *
+ * Abstract class for {@link Plugin} of metadata {@link Product}.
+ * 
  * @author Christophe Mertz
  */
 public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
@@ -107,17 +107,17 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProductMetadataPlugin.class);
 
     /**
-     * map contenant pour chaque attribut la valeur correspondante
+     * {@link Map} contenant pour chaque attribut la valeur correspondante
      */
     protected Map<String, List<? extends Object>> attributeValueMap;
 
     /**
-     * map qui permet d'ordonner les attributs dans le fichier descripteur
+     * {@link Map} qui permet d'ordonner les attributs dans le fichier descripteur
      */
     protected Properties attributeOrderProperties;
 
     /**
-     * proprietes contenant la configuration du plugin, notamment, la liste des finder a utiliser pour chaque attribut.
+     * proprietes contenant la configuration du plugin, notamment, la liste des finder a utiliser pour chaque attribut
      */
     protected PluginConfigurationProperties pluginConfProperties;
 
@@ -165,19 +165,19 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
         // then do specific attributes which can depend on other attribute value
         doCreateDependantSpecificAttributes(fileMap, attributeMap);
 
-        logAttributeMap(attributeMap);
+        // log the calculated attributes
+        LOGGER.info("[{}] {} attributes calcultated for {} AcquisitionFile", datasetName.get(), attributeMap.size(),
+                    acqFiles.size());
+        if (LOGGER.isDebugEnabled()) {
+            for (Attribute att : attributeMap.values()) {
+                LOGGER.debug(att.toString());
+            }
+        }
 
         return attributeMap;
     }
 
     public void logAttributeMap(SortedMap<Integer, Attribute> mapAttrs) throws ModuleException {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("nb attributes={}", mapAttrs.size());
-
-            for (Attribute att : mapAttrs.values()) {
-                LOGGER.debug(att.toString());
-            }
-        }
     }
 
     /**
@@ -292,8 +292,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
         Map<File, File> fileMap = new HashMap<>();
 
         for (AcquisitionFile acqFile : acqFiles) {
-            // get the original file from supplyDirectory
-
             File originalFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
                     acqFile.getFileName());
 
@@ -319,9 +317,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_STRING)
                     && att.getClass().equals(CompositeAttribute.class)) {
                 // CompositeAttribute
-
                 addSip(sipBuilder, (CompositeAttribute) att);
-
             } else {
                 addSip(sipBuilder, att);
             }
@@ -377,27 +373,15 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      */
     private void addSipTime(SIPBuilder sipBuilder, CompositeAttribute compAttr) {
         LOGGER.debug("build SIP : add Time [{}]", compAttr.getName());
-        OffsetDateTime startDate = null;
-        OffsetDateTime stopDate = null;
         JsonObject jsonStartStop = new JsonObject();
 
         for (Attribute attr : compAttr.getAttributeList()) {
             LOGGER.debug("build SIP : attribute [{}]", attr.getMetaAttribute().getName());
-            switch (attr.getMetaAttribute().getName()) {
-                case START_DATE:
-                    startDate = (OffsetDateTime) attr.getValueList().get(0);
-                    jsonStartStop.addProperty(Strings.toLowerCase(START_DATE), startDate.toString());
-                    break;
-                case STOP_DATE:
-                    stopDate = (OffsetDateTime) attr.getValueList().get(0);
-                    jsonStartStop.addProperty(Strings.toLowerCase(STOP_DATE), stopDate.toString());
-                    break;
-            }
+            OffsetDateTime ofDate = (OffsetDateTime) attr.getValueList().get(0);
+            jsonStartStop.addProperty(Strings.toLowerCase(attr.getMetaAttribute().getName()), ofDate.toString());
         }
 
-        if (startDate != null && stopDate != null) {
-            sipBuilder.addDescriptiveInformation(Strings.toLowerCase(compAttr.getName()), jsonStartStop);
-        }
+        sipBuilder.addDescriptiveInformation(Strings.toLowerCase(compAttr.getName()), jsonStartStop);
     }
 
     /**
@@ -406,6 +390,8 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      * @param compAttr a {@link CompositeAttribute}
      */
     private void addSipGeo(SIPBuilder sipBuilder, CompositeAttribute compAttr) {
+        LOGGER.debug("build SIP : add Geo [{}]", compAttr.getName());
+
         Double latMin = null;
         Double lonMin = null;
         Double latMax = null;
@@ -415,33 +401,27 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
 
         for (Attribute attr : compAttr.getAttributeList()) {
             LOGGER.debug("build SIP : attribute [{}]", attr.getMetaAttribute().getName());
-            switch (attr.getMetaAttribute().getName()) {
-                case LATITUDE_MIN:
-                    latMin = (Double) attr.getValueList().get(0);
-                    break;
-                case LATITUDE_MAX:
-                    latMax = (Double) attr.getValueList().get(0);
-                    break;
-                case LONGITUDE_MIN:
-                    lonMin = (Double) attr.getValueList().get(0);
-                    break;
-                case LONGITUDE_MAX:
-                    lonMax = (Double) attr.getValueList().get(0);
-                    break;
+            if (attr.getMetaAttribute().getName().equals(LATITUDE_MIN)) {
+                latMin = (Double) attr.getValueList().get(0);
+            } else if (attr.getMetaAttribute().getName().equals(LATITUDE_MAX)) {
+                latMax = (Double) attr.getValueList().get(0);
+            } else if (attr.getMetaAttribute().getName().equals(LONGITUDE_MIN)) {
+                lonMin = (Double) attr.getValueList().get(0);
+            } else if (attr.getMetaAttribute().getName().equals(LONGITUDE_MAX)) {
+                lonMax = (Double) attr.getValueList().get(0);
             }
         }
 
         if (latMin != null && latMax != null && lonMin != null && lonMax != null) {
-            Position pos0 = IGeometry.position(lonMin, latMin);
-            Position pos1 = IGeometry.position(lonMax, latMin);
-            Position pos2 = IGeometry.position(lonMax, latMax);
-            Position pos3 = IGeometry.position(lonMin, latMax);
             Positions pos = new Positions();
+
+            Position pos0 = IGeometry.position(lonMin, latMin);
             pos.add(pos0);
-            pos.add(pos1);
-            pos.add(pos2);
-            pos.add(pos3);
+            pos.add(IGeometry.position(lonMax, latMin));
+            pos.add(IGeometry.position(lonMax, latMax));
+            pos.add(IGeometry.position(lonMin, latMax));
             pos.add(pos0);
+
             PolygonPositions pp = new PolygonPositions();
             pp.add(pos);
 
