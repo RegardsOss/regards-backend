@@ -70,7 +70,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     // Charset and decoder_ for ISO-8859-15
     private static final Charset CHARSET = Charset.forName("ISO-8859-15");
 
-    private final CharsetDecoder decoder = CHARSET.newDecoder();
+    private static final CharsetDecoder decoder = CHARSET.newDecoder();
 
     /**
      * Pattern de date dans un fichier de cycle
