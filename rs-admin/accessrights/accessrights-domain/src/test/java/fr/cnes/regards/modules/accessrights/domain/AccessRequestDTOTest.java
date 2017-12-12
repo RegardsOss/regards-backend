@@ -25,7 +25,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.cnes.regards.modules.accessrights.domain.passwordreset.PerformResetPasswordDto;
+import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 

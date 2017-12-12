@@ -34,7 +34,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
-import fr.cnes.regards.modules.accessrights.domain.accountunlock.AccountUnlockToken;
+import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.AccountUnlockToken;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
