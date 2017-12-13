@@ -6,7 +6,7 @@ This is the microservice infrastructure repository. It manages :
 * Microservice registry for load balancing (relying on Netflix Eureka),
 * Configuration (relying on Spring Cloud Config).
 
-For now, this version has not yet been tested under operational conditions and is considered as **beta**.
+REGARDS is still under heavy development. Operational version V1.0.0 is planed for 2018.
 
 ## Build requirement
 
