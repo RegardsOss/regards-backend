@@ -18,8 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.service.store;
 
-public interface IAIPStorageBulkRequestService {
+import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
+
+public interface IAIPService {
 
     void postAIPStorageBulkRequest();
 
+    void setAipInError(String ipId, AIPState storeError, String failureCause);
+
+    void deleteAip(String ipId, String sipIpId);
+
+    void setAipToStored(String ipId);
 }

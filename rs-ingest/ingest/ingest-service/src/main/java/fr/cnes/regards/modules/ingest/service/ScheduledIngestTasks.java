@@ -31,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
-import fr.cnes.regards.modules.ingest.service.store.IAIPStorageBulkRequestService;
+import fr.cnes.regards.modules.ingest.service.store.IAIPService;
 
 /**
  * Scheduled actions to process new CREATED SIPS by applying the associated processing chain
@@ -60,7 +60,7 @@ public class ScheduledIngestTasks {
     private IIngestProcessingService ingestProcessingService;
 
     @Autowired
-    private IAIPStorageBulkRequestService aipBulkRequestService;
+    private IAIPService aipBulkRequestService;
 
     @Scheduled(fixedRateString = "${regards.ingest.process.new.sips.delay:60000}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)

@@ -233,7 +233,7 @@ public class ScheduledIngestTaskTest extends AbstractRegardsServiceIT {
         Assert.assertEquals(AIPState.STORE_REJECTED, aip.getState());
 
         sip = sipRepository.findOneByIpId(ipId).get();
-        Assert.assertEquals(SIPState.AIP_CREATED, sip.getState());
+        Assert.assertEquals(SIPState.STORE_ERROR, sip.getState());
 
         // 7. Verify that a new storage request is not sent to archival storage during the time when aip is in queued
         // state
