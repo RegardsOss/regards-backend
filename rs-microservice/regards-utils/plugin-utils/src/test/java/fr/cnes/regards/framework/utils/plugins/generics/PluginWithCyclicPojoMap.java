@@ -38,7 +38,7 @@ public class PluginWithCyclicPojoMap implements IPluginWithGenerics {
     // Attribute name
     public static final String FIELD_NAME = "infos";
 
-    @PluginParameter(label = "Informations", description = "Map of infos as POJO")
+    @PluginParameter(keylabel = "Key", label = "Cyclic information", description = "Map of infos as POJO")
     private Map<String, CyclicInfo> infos;
 
     @Override

@@ -16,12 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.modules.plugins.domain;
+package fr.cnes.regards.framework.utils.plugins.domain;
 
 import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.collect.Sets;
+
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 
 /***
  * Constants and datas for unit testing of plugin's Domain.
@@ -109,8 +114,8 @@ public class PluginDomainUtility {
      * A {@link PluginParameter}
      */
     protected static final List<PluginParameter> DYNAMICPARAMETERS = PluginParametersFactory.build()
-            .addParameter("param11", "value11").addParameterDynamic("coeff", "0")
-            .addParameter(PARAM_IS_ACTIVE, Boolean.TRUE.toString()).addParameterDynamic("suffix", RED, DYNAMICVALUES)
+            .addParameter("param11", "value11").addDynamicParameter("coeff", "0")
+            .addParameter(PARAM_IS_ACTIVE, Boolean.TRUE.toString()).addDynamicParameter("suffix", RED, DYNAMICVALUES)
             .getParameters();
 
     /**
@@ -118,7 +123,7 @@ public class PluginDomainUtility {
      */
     protected static final List<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
             .addParameter("param31", "value31").addParameter("param32", "value32").addParameter("param33", "value33")
-            .addParameter("param34", "value34").addParameter("param35", "value35").addParameterDynamic("Koeff", "3")
+            .addParameter("param34", "value34").addParameter("param35", "value35").addDynamicParameter("Koeff", "3")
             .addParameter(PARAM_IS_ACTIVE, Boolean.TRUE.toString()).addParameter("suffixe", "Toulouse").getParameters();
 
     /**

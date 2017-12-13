@@ -26,10 +26,8 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 
@@ -41,14 +39,12 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
  */
 public class PluginWithGenericsTest {
 
-    private final Gson gson = new Gson();
-
     @Test
     public void primitiveTest() {
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(PluginWithBoolean.FIELD_NAME_OBJECT, "true")
-                .addParameter(PluginWithBoolean.FIELD_NAME_PRIMITIVE, "false").getParameters();
+                .addParameter(PluginWithBoolean.FIELD_NAME_OBJECT, true)
+                .addParameter(PluginWithBoolean.FIELD_NAME_PRIMITIVE, false).getParameters();
 
         IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithBoolean.class,
                                                            Arrays.asList(this.getClass().getPackage().getName()), null);
@@ -61,7 +57,7 @@ public class PluginWithGenericsTest {
         List<String> infos = Arrays.asList("info 1", "info 2", "info 3");
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(PluginWithStringCollection.FIELD_NAME, gson.toJson(infos)).getParameters();
+                .addParameter(PluginWithStringCollection.FIELD_NAME, infos).getParameters();
 
         IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithStringCollection.class,
                                                            Arrays.asList(this.getClass().getPackage().getName()), null);
@@ -82,7 +78,7 @@ public class PluginWithGenericsTest {
         List<Info> infos = Arrays.asList(info1, info2, info3);
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(PluginWithPojoCollection.FIELD_NAME, gson.toJson(infos)).getParameters();
+                .addParameter(PluginWithPojoCollection.FIELD_NAME, infos).getParameters();
 
         IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithPojoCollection.class,
                                                            Arrays.asList(this.getClass().getPackage().getName()), null);
@@ -99,7 +95,7 @@ public class PluginWithGenericsTest {
         infos.put("info3", "info 3");
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(PluginWithStringMap.FIELD_NAME, gson.toJson(infos)).getParameters();
+                .addParameter(PluginWithStringMap.FIELD_NAME, infos).getParameters();
 
         IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithStringMap.class,
                                                            Arrays.asList(this.getClass().getPackage().getName()), null);
@@ -122,7 +118,7 @@ public class PluginWithGenericsTest {
         infos.put("info3", info3);
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(PluginWithPojoMap.PARAMETER_NAME, gson.toJson(infos)).getParameters();
+                .addParameter(PluginWithPojoMap.PARAMETER_NAME, infos).getParameters();
 
         IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithPojoMap.class,
                                                            Arrays.asList(this.getClass().getPackage().getName()), null);

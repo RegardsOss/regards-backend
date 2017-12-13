@@ -38,7 +38,7 @@ public class PluginWithStringMap implements IPluginWithGenerics {
     // Attribute name
     public static final String FIELD_NAME = "infos";
 
-    @PluginParameter(label = "Informations", description = "Map of infos as string")
+    @PluginParameter(keylabel = "Key", label = "String information", description = "Map of infos as string")
     private Map<String, String> infos;
 
     @Override

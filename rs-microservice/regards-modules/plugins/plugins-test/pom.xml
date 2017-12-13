@@ -39,6 +39,10 @@
 			<artifactId>plugins-dao</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.framework.utils</groupId>
+			<artifactId>plugin-utils</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>

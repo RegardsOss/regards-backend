@@ -31,10 +31,10 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterUtils.PrimitiveObject;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 
@@ -133,7 +133,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
          */
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
-                .addParameterDynamic(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
+                .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
                 .addParameter(SamplePlugin.FIELD_NAME_SUFFIX, "suffix").getParameters();
         // init a dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
@@ -165,7 +165,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
          */
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
-                .addParameterDynamic(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
+                .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
                 .addParameter(SamplePlugin.FIELD_NAME_SUFFIX, "a suffix").getParameters();
         // instantiate plugin
         samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE),
@@ -200,7 +200,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
-                .addParameterDynamic(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED, dynamicValues)
+                .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED, dynamicValues)
                 .getParameters();
         // init a dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
@@ -237,7 +237,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
-                .addParameterDynamic(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED, dynamicValues)
+                .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED, dynamicValues)
                 .getParameters();
         // instantiate plugin
         samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE),
@@ -267,7 +267,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         final List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
-                .addParameterDynamic(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED, dynamicValues)
+                .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED, dynamicValues)
                 .getParameters();
 
         // init a dynamic parameter

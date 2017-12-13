@@ -39,7 +39,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.plugins.ISamplePlugin;
@@ -48,6 +47,8 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -95,7 +96,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         tenantResolver.forceTenant(DEFAULT_TENANT);
 
         pluginParameters = PluginParametersFactory.build()
-                .addParameterDynamic("param31", "value31", Arrays.asList("red", "green", "blue"))
+                .addDynamicParameter("param31", "value31", Arrays.asList("red", "green", "blue"))
                 .addParameter("param32", "value32").addParameter("param33", "value33")
                 .addParameter("param34", "value34").addParameter("param35", "value35").getParameters();
 

@@ -23,6 +23,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Map;
 
 /**
  *
@@ -56,7 +57,14 @@ public @interface PluginParameter {
     String name() default "";
 
     /**
-     * @return a required human readable label
+     * @return a human readable label for map key. This value is only required and useful for {@link Map} type
+     *         parameters. See {@link #label()} for map value label.
+     */
+    String keylabel() default "";
+
+    /**
+     * @return a required human readable label. For {@link Map} type parameters, this label is used for map value.
+     *         See {@link #keylabel()} for map key label.
      */
     String label();
 

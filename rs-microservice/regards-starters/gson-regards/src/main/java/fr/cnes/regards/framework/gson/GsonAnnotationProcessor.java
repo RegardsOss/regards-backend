@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.gson.reflection;
+package fr.cnes.regards.framework.gson;
 
 import java.lang.reflect.Field;
 import java.util.Set;
@@ -37,16 +37,13 @@ import fr.cnes.regards.framework.gson.annotation.Gsonable;
 import fr.cnes.regards.framework.gson.utils.GSONUtils;
 
 /**
- * Dynamic {@link Gsonable} annotation processor
+ * Dynamic custom Gson annotation processor
  *
  * @author Marc Sordi
  *
  */
 public final class GsonAnnotationProcessor {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(GsonAnnotationProcessor.class);
 
     private GsonAnnotationProcessor() {

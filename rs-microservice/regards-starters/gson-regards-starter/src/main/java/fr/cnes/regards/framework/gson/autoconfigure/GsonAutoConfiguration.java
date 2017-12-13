@@ -18,9 +18,7 @@
  */
 package fr.cnes.regards.framework.gson.autoconfigure;
 
-import java.nio.file.Path;
-import java.time.OffsetDateTime;
-import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,23 +34,13 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.GsonHttpMessageConverter;
-import org.springframework.util.MimeType;
 
-import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
-import fr.cnes.regards.framework.gson.adapters.MimeTypeAdapter;
-import fr.cnes.regards.framework.gson.adapters.MultimapAdapter;
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.framework.gson.adapters.PathAdapter;
-import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
-import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterBean;
-import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
-import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactoryBean;
-import fr.cnes.regards.framework.gson.reflection.GsonAnnotationProcessor;
-import fr.cnes.regards.framework.gson.strategy.GsonIgnoreExclusionStrategy;
+
+import fr.cnes.regards.framework.gson.GsonCustomizer;
+import fr.cnes.regards.framework.gson.GsonProperties;
 
 /**
  * GSON support auto configuration
@@ -82,15 +70,6 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
      */
     private ApplicationContext applicationContext;
 
-    public GsonBuilder gsonBuilder() {
-        final GsonBuilder builder = new GsonBuilder();
-        customizeBuilder(builder);
-        addTypeAdapters(builder);
-        addBeanFactories(builder);
-        addBeanAdapters(builder);
-        return builder;
-    }
-
     /**
      * Configure a builder with GSON adapter for Sprinfox swagger Json object
      *
@@ -100,7 +79,7 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
     @ConditionalOnClass(name = SPRINGFOX_GSON_FACTORY)
     public GsonBuilder configureWithSwagger() {
         LOGGER.info("GSON auto configuration enabled with SpringFox support");
-        GsonBuilder builder = gsonBuilder();
+        GsonBuilder builder = GsonCustomizer.gsonBuilder(Optional.of(properties), Optional.of(applicationContext));
         try {
             builder.registerTypeAdapterFactory((TypeAdapterFactory) Class.forName(SPRINGFOX_GSON_FACTORY)
                     .newInstance());
@@ -116,87 +95,25 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
     @ConditionalOnMissingClass(SPRINGFOX_GSON_FACTORY)
     public GsonBuilder configure() {
         LOGGER.info("GSON auto configuration enabled");
-        return gsonBuilder();
+        return GsonCustomizer.gsonBuilder(Optional.of(properties), Optional.of(applicationContext));
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public Gson gson(GsonBuilder pBuilder) {
-        return pBuilder.create();
+    public Gson gson(GsonBuilder builder) {
+        return builder.create();
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public GsonHttpMessageConverter gsonConverter(Gson pGson) {
+    public GsonHttpMessageConverter gsonConverter(Gson gson) {
         final GsonHttpMessageConverter gsonHttpMessageConverter = new GsonHttpMessageConverter();
-        gsonHttpMessageConverter.setGson(pGson);
-
+        gsonHttpMessageConverter.setGson(gson);
         return gsonHttpMessageConverter;
     }
 
-    private void customizeBuilder(GsonBuilder pBuilder) {
-        pBuilder.registerTypeHierarchyAdapter(Path.class, new PathAdapter().nullSafe());
-        pBuilder.registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe());
-        pBuilder.registerTypeAdapter(MimeType.class, new MimeTypeAdapter().nullSafe());
-        pBuilder.registerTypeHierarchyAdapter(Multimap.class, new MultimapAdapter());
-        pBuilder.addSerializationExclusionStrategy(new GsonIgnoreExclusionStrategy());
-
-    }
-
-    /**
-     * Add {@link TypeAdapterFactory} annotated with {@link GsonTypeAdapterFactory} and {@link TypeAdapter} annotated
-     * with {@link GsonTypeAdapter}
-     *
-     * @param pBuilder
-     *            GSON builder to customize
-     */
-    private void addTypeAdapters(GsonBuilder pBuilder) {
-        GsonAnnotationProcessor.process(pBuilder, properties.getScanPrefix());
-    }
-
-    /**
-     * Add {@link TypeAdapterFactory} annotated with {@link GsonTypeAdapterFactoryBean} with Spring support.
-     *
-     * @param pBuilder
-     *            GSON builder to customize
-     */
-    private void addBeanFactories(GsonBuilder pBuilder) {
-
-        Map<String, TypeAdapterFactory> beanFactories = applicationContext.getBeansOfType(TypeAdapterFactory.class);
-        if (beanFactories != null) {
-            for (Map.Entry<String, TypeAdapterFactory> beanFactory : beanFactories.entrySet()) {
-                pBuilder.registerTypeAdapterFactory(beanFactory.getValue());
-            }
-        }
-    }
-
-    /**
-     * Add {@link TypeAdapter} annotated with {@link GsonTypeAdapterBean} to GSON
-     *
-     * @param pBuilder
-     *            GSON builder to customize
-     */
-    private void addBeanAdapters(GsonBuilder pBuilder) {
-
-        @SuppressWarnings("rawtypes") Map<String, TypeAdapter> beanFactories = applicationContext
-                .getBeansOfType(TypeAdapter.class);
-        if (beanFactories != null) {
-            for (@SuppressWarnings("rawtypes") Map.Entry<String, TypeAdapter> beanFactory : beanFactories.entrySet()) {
-                TypeAdapter<?> current = beanFactory.getValue();
-                // Retrieve custom annotation
-                GsonTypeAdapterBean annot = current.getClass().getAnnotation(GsonTypeAdapterBean.class);
-                if (annot != null) {
-                    pBuilder.registerTypeAdapter(annot.type(), beanFactory.getValue());
-                } else {
-                    LOGGER.debug("No annotation found on type adapter bean {}, skipping registration",
-                                 beanFactory.getKey());
-                }
-            }
-        }
-    }
-
     @Override
-    public void setApplicationContext(ApplicationContext pApplicationContext) {
-        applicationContext = pApplicationContext;
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 }

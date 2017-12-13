@@ -35,7 +35,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -143,7 +142,6 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @RequestMapping(value = PluginController.PLUGINS, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResourceAccess(
             description = "Get all the class annotaded with @Plugin or only the one that implemented an optional pluginType",
             role = DefaultRole.PUBLIC)
@@ -179,7 +177,6 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @RequestMapping(value = PluginController.PLUGIN_TYPES, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResourceAccess(description = "Get all the plugin types (ie interface annotated with @PluginInterface)")
     public ResponseEntity<List<Resource<String>>> getPluginTypes() {
         final List<String> types = pluginService.getPluginTypes();
@@ -199,7 +196,6 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @RequestMapping(value = PluginController.PLUGINS_PLUGINID, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResourceAccess(description = "Get the plugin Meta data for a specific plugin id", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<PluginMetaData>> getPluginMetaDataById(
             @PathVariable("pluginId") final String pPluginId) {
@@ -218,7 +214,6 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @RequestMapping(value = PluginController.PLUGINS_PLUGINID_CONFIGS, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResourceAccess(description = "Get all the plugin configuration for a specific plugin id",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<List<Resource<PluginConfiguration>>> getPluginConfigurations(
@@ -240,7 +235,6 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @RequestMapping(value = PluginController.PLUGINS_CONFIGS, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResourceAccess(description = "Get all the plugin configuration for a specific type", role = DefaultRole.PUBLIC)
     public ResponseEntity<List<Resource<PluginConfiguration>>> getPluginConfigurationsByType(
             @RequestParam(value = "pluginType", required = false) final String pPluginType)
@@ -277,7 +271,6 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @RequestMapping(value = PluginController.PLUGINS_PLUGINID_CONFIGS, method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResourceAccess(description = "Create a plugin configuration")
     public ResponseEntity<Resource<PluginConfiguration>> savePluginConfiguration(
             @Valid @RequestBody final PluginConfiguration pPluginConfiguration) throws ModuleException {
@@ -308,7 +301,6 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @RequestMapping(value = PluginController.PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResourceAccess(description = "Get a the plugin configuration of a specific plugin", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<PluginConfiguration>> getPluginConfiguration(
             @PathVariable("pluginId") final String pPluginId, @PathVariable("configId") final Long pConfigId)
@@ -329,7 +321,6 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @RequestMapping(value = PluginController.PLUGINS_CONFIGID, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResourceAccess(description = "Get a the plugin configuration", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<PluginConfiguration>> getPluginConfigurationDirectAccess(
             @PathVariable("configId") final Long pConfigId) throws ModuleException {
@@ -357,7 +348,6 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @RequestMapping(value = PluginController.PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResourceAccess(description = "Update a plugin configuration")
     public ResponseEntity<Resource<PluginConfiguration>> updatePluginConfiguration(
             @PathVariable("pluginId") final String pPluginId, @PathVariable("configId") final Long pConfigId,
@@ -401,7 +391,6 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @RequestMapping(value = PluginController.PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResourceAccess(description = "Delete a plugin configuration")
     public ResponseEntity<Void> deletePluginConfiguration(@PathVariable("pluginId") final String pPluginId,
             @PathVariable("configId") final Long pConfigId) throws ModuleException {

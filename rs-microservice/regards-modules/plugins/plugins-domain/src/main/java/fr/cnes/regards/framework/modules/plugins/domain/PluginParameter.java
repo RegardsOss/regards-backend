@@ -39,8 +39,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.Type;
-
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
 /**
@@ -71,8 +69,8 @@ public class PluginParameter implements IIdentifiable<Long> {
      * Parameter value
      */
     @Column
-    @Type(type = "text")
-    private String value;
+    // @Type(type = "text") - Cannot be used with a Converter and is not even used with Flyway DB tool so comment it!
+    private PluginParameterValue value;
 
     /**
      * {@link PluginConfiguration} parameter is optional This is used when a plugin parameter leads to a plugin
@@ -89,7 +87,7 @@ public class PluginParameter implements IIdentifiable<Long> {
     private Boolean dynamic = false;
 
     /**
-     * The list of values for a dynamic parameters
+     * The set of possible values for the dynamic parameter
      */
     @ElementCollection
     @CollectionTable(name = "t_plugin_param_dyn_value", joinColumns = @JoinColumn(name = "id"),
@@ -104,16 +102,10 @@ public class PluginParameter implements IIdentifiable<Long> {
         name = "undefined";
     }
 
-    /**
-     * Constructor
-     *
-     * @param pName the parameter name
-     * @param pValue the parameter value
-     */
-    public PluginParameter(final String pName, final String pValue) {
+    public PluginParameter(String name, String value) {
         super();
-        name = pName;
-        value = pValue;
+        this.name = name;
+        this.value = PluginParameterValue.create(value);
     }
 
     /**
@@ -134,14 +126,6 @@ public class PluginParameter implements IIdentifiable<Long> {
 
     public final void setName(final String pName) {
         name = pName;
-    }
-
-    public final String getValue() {
-        return value;
-    }
-
-    public final void setValue(String pValue) {
-        value = pValue;
     }
 
     public final Boolean isDynamic() {
@@ -183,6 +167,18 @@ public class PluginParameter implements IIdentifiable<Long> {
 
     public void setId(Long pId) {
         id = pId;
+    }
+
+    public String getValue() {
+        return value == null ? null : value.getValue();
+    }
+
+    public void setValue(String value) {
+        if (value != null) {
+            this.value = PluginParameterValue.create(value);
+        } else {
+            this.value = null;
+        }
     }
 
     @Override
@@ -237,8 +233,7 @@ public class PluginParameter implements IIdentifiable<Long> {
      * @return
      */
     public int compareTo(PluginParameter parameter) {
-        return Comparator.comparing(PluginParameter::getName).thenComparing(PluginParameter::getValue)
-                .thenComparing(PluginParameter::isDynamic).compare(this, parameter);
+        return Comparator.comparing(PluginParameter::getName).thenComparing(PluginParameter::isDynamic)
+                .compare(this, parameter);
     }
-
 }

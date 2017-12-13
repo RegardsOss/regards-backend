@@ -33,7 +33,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 
 /***
  * Unit testing of {@link PluginConfiguration} persistence.
@@ -209,11 +209,11 @@ public class PluginConfigurationIT extends PluginDaoUtility {
                             paramRepository.count());
 
         // Create PluginParameter
-        List<PluginParameter> params1 = PluginParametersFactory.build()
-                .addParameterPluginConfiguration(RED, pluginConf1).getParameters();
+        List<PluginParameter> params1 = PluginParametersFactory.build().addPluginConfiguration(RED, pluginConf1)
+                .getParameters();
 
-        List<PluginParameter> params2 = PluginParametersFactory.build()
-                .addParameterPluginConfiguration(BLUE, pluginConf2).getParameters();
+        List<PluginParameter> params2 = PluginParametersFactory.build().addPluginConfiguration(BLUE, pluginConf2)
+                .getParameters();
 
         // Create 2 PluginConfiguration with the 2 PluginParameter above
         plgRepository.save(new PluginConfiguration(getPluginMetaData(), "third configuration", params1, 0));
@@ -239,8 +239,8 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         Assert.assertEquals(nbPlgConfs, plgRepository.count());
 
         // Create PluginParameter
-        List<PluginParameter> params1 = PluginParametersFactory.build()
-                .addParameterPluginConfiguration(RED, pluginConf1).getParameters();
+        List<PluginParameter> params1 = PluginParametersFactory.build().addPluginConfiguration(RED, pluginConf1)
+                .getParameters();
 
         // Create 2 PluginConfiguration with the same PluginParameter
         plgRepository.save(new PluginConfiguration(getPluginMetaData(), "third configuration", params1, 0));

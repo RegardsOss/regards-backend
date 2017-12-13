@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 
 /***
  * Constants and datas for unit testing of plugin's DAO.
@@ -93,8 +93,8 @@ public class PluginDaoUtility extends AbstractDaoTest {
      * A {@link List} of {@link PluginParameter}
      */
     static final List<PluginParameter> LIST_PARAMETERS = PluginParametersFactory.build()
-            .addParameterDynamic("param-dyn21", RED, DYNAMICVALUES)
-            .addParameterDynamic("param-dyn31", GREEN, DYNAMICVALUES).addParameter("param31", "value31")
+            .addDynamicParameter("param-dyn21", RED, DYNAMICVALUES)
+            .addDynamicParameter("param-dyn31", GREEN, DYNAMICVALUES).addParameter("param31", "value31")
             .addParameter("param51", "value51").addParameter("param61", "value61").getParameters();
 
     /**

@@ -26,9 +26,9 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.plugins.IComplexInterfacePlugin;
 import fr.cnes.regards.framework.plugins.SamplePlugin;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 
 /***
  * Constants and datas for unit testing of plugin's Service.
@@ -111,17 +111,17 @@ public class PluginServiceUtility {
      * A {@link PluginParameter}
      */
     protected static final List<PluginParameter> DYNAMICPARAMETERS = PluginParametersFactory.build()
-            .addParameter("param11", "value11").addParameterDynamic(SamplePlugin.FIELD_NAME_COEF, "0")
+            .addParameter("param11", "value11").addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, "0")
             .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE.toString())
-            .addParameterDynamic(SamplePlugin.FIELD_NAME_SUFFIX, RED, DYNAMICVALUES).getParameters();
+            .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, RED, DYNAMICVALUES).getParameters();
 
     /**
      * A {@link PluginParameter}
      */
     protected static final List<PluginParameter> DYNAMICPARAMETERS_TO_UPDATE = PluginParametersFactory.build()
-            .addParameter("param11", "value11").addParameterDynamic(SamplePlugin.FIELD_NAME_COEF, "0")
+            .addParameter("param11", "value11").addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, "0")
             .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE.toString())
-            .addParameterDynamic(SamplePlugin.FIELD_NAME_SUFFIX, RED, DYNAMICVALUES).getParameters();
+            .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, RED, DYNAMICVALUES).getParameters();
 
     /**
      * A list of {@link PluginParameter}
@@ -129,7 +129,7 @@ public class PluginServiceUtility {
     protected static final List<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
             .addParameter("param31", "value31").addParameter("param32", "value32").addParameter("param33", "value33")
             .addParameter("param34", "value34").addParameter("param35", "value35")
-            .addParameterDynamic(SamplePlugin.FIELD_NAME_COEF, "3")
+            .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, "3")
             .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE.toString())
             .addParameter(SamplePlugin.FIELD_NAME_SUFFIX, "Toulouse").getParameters();
 

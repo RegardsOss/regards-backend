@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
@@ -54,17 +53,10 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType.Para
  */
 public final class PluginParameterUtils {
 
-    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-
     /**
      * Logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginParameterUtils.class);
-
-    /**
-     * Gson object used to deserialize configuration parameters
-     */
-    private static final Gson localGson = new GsonBuilder().setDateFormat(DATE_TIME_FORMAT).create();
 
     /**
      * Retrieve {@link List} of {@link PluginParameterType} by reflection on class fields
@@ -169,6 +161,8 @@ public final class PluginParameterUtils {
         // Do in depth discovery for MAP and register parameterized sub types
         else if (ParamType.MAP.equals(paramType)) {
             ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
+            // Set key label
+            result.setKeyLabel(pluginParameter.keylabel());
             // Get parameter types
             Class<?> keyType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
             Class<?> valueType = (Class<?>) parameterizedType.getActualTypeArguments()[1];
@@ -353,7 +347,7 @@ public final class PluginParameterUtils {
         for (final Field field : returnPlugin.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(PluginParameter.class)) {
                 PluginParameter plgParamAnnotation = field.getAnnotation(PluginParameter.class);
-                Gson gsonProcessor = gson.isPresent() ? gson.get() : localGson;
+                Gson gsonProcessor = gson.isPresent() ? gson.get() : PluginGsonUtils.getInstance();
                 processPluginParameter(gsonProcessor, returnPlugin, plgConf, field, plgParamAnnotation, prefixes,
                                        instantiatedPluginMap, plgParameters);
             }

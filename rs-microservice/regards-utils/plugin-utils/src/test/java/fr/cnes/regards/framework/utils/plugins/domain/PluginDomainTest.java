@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.plugins.domain;
+package fr.cnes.regards.framework.utils.plugins.domain;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,7 +9,13 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginDynamicValue;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType.ParamType;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 
 /**
  *
@@ -44,7 +50,7 @@ public class PluginDomainTest extends PluginDomainUtility {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();
         Assert.assertNotNull(aPluginConfiguration);
 
-        PluginParametersFactory.build().addParameterDynamic("param", RED, new ArrayList<String>()).getParameters();
+        PluginParametersFactory.build().addDynamicParameter("param", RED, new ArrayList<String>()).getParameters();
     }
 
     /**
@@ -79,7 +85,7 @@ public class PluginDomainTest extends PluginDomainUtility {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         final String parameterName = "paramWithPluginConf1";
         final List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameterPluginConfiguration(parameterName, aPluginConfiguration)
+                .addPluginConfiguration(parameterName, aPluginConfiguration)
                 .addParameter("paramIdentifier1", BLUE).getParameters();
         parameters.get(0).setId(AN_ID);
 
@@ -102,7 +108,7 @@ public class PluginDomainTest extends PluginDomainUtility {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         final int n = aPluginConfiguration.getParameters().size();
         final List<PluginParameter> parameters = PluginParametersFactory.build(aPluginConfiguration.getParameters())
-                .addParameterPluginConfiguration("paramWithPluginConf1", aPluginConfiguration)
+                .addPluginConfiguration("paramWithPluginConf1", aPluginConfiguration)
                 .addParameter("paramIdentifier1", BLUE).removeParameter(aPluginConfiguration.getParameters().get(0))
                 .getParameters();
         Assert.assertEquals(n + 1, parameters.size());
@@ -113,7 +119,7 @@ public class PluginDomainTest extends PluginDomainUtility {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         final String parameterName = "paramWithPluginConf2";
         final List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameterPluginConfiguration(parameterName, aPluginConfiguration)
+                .addPluginConfiguration(parameterName, aPluginConfiguration)
                 .addParameter("paramIdentifier2", BLUE).getParameters();
         parameters.get(0).setId(AN_ID);
 

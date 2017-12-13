@@ -38,7 +38,8 @@ public class PluginWithPojoMap implements IPluginWithGenerics {
     // Attribute name
     public static final String PARAMETER_NAME = "param_infos";
 
-    @PluginParameter(name = PARAMETER_NAME, label = "Informations", description = "Map of infos as POJO")
+    @PluginParameter(name = PARAMETER_NAME, keylabel = "Key", label = "Information",
+            description = "Map of infos as POJO")
     private Map<String, Info> infos;
 
     @Override

@@ -36,7 +36,6 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginServiceAction;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -45,6 +44,7 @@ import fr.cnes.regards.framework.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.plugins.SamplePlugin;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 
 /**
  * Unit testing of {@link PluginService}.
@@ -467,7 +467,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         // the argument for the dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
-                .addParameterDynamic(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().get(0);
+                .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().get(0);
 
         pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class,
@@ -502,7 +502,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         // the argument for the dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
-                .addParameterDynamic(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().get(0);
+                .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().get(0);
 
         pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
@@ -541,7 +541,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         // the argument for the dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
-                .addParameterDynamic(SamplePlugin.FIELD_NAME_COEF, "-1").getParameters().get(0);
+                .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, "-1").getParameters().get(0);
 
         pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class,
@@ -612,7 +612,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         // the argument for the dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
-                .addParameterDynamic(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().get(0);
+                .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().get(0);
 
         pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class,

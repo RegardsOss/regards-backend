@@ -38,7 +38,13 @@ public class PluginParameterType {
     private String name;
 
     /**
-     * The parameter label, a required human readable information
+     * A human readable label for map key. This value is only required and useful for {@link Map} type
+     * parameters.
+     */
+    private String keyLabel;
+
+    /**
+     * A required human readable label. For {@link Map} type parameters, this label is used for map value.
      */
     private String label;
 
@@ -84,6 +90,7 @@ public class PluginParameterType {
      * <li>{@link #setDefaultValue(String)}</li>
      * <li>{@link #setParameters(List)}</li>
      * <li>{@link #setParameterizedSubTypes(String...)}</li>
+     * <li>{@link #setKeyLabel(String)}</li>
      * </ul>
      * @param name parameter's name used as a key for database registration
      * @param label a required human readable information
@@ -194,6 +201,15 @@ public class PluginParameterType {
 
     public void setParameterizedSubTypes(String... parameterizedSubTypes) {
         this.parameterizedSubTypes = parameterizedSubTypes;
+    }
+
+    public String getKeyLabel() {
+        return keyLabel;
+    }
+
+    public void setKeyLabel(String keyLabel) {
+        Assert.hasText(keyLabel, "Key label is required");
+        this.keyLabel = keyLabel;
     }
 
     /**
