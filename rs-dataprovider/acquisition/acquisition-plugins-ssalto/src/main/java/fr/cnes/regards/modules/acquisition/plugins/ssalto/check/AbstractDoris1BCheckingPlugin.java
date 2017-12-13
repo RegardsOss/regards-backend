@@ -26,21 +26,41 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.IDoris1BPlugin;
+import fr.cnes.regards.modules.entities.domain.Dataset;
 
 /**
- * Manage Doris1B data prefixs.<br>
- * This {@link Plugin} checks that the file exists and is accessible and that the extension file is authorized.
+ * Manage Doris1B data.<br>
+ * This {@link Plugin} checks that the file exists and is accessible and add a prefix to the product name.
  * 
  * @author Christophe Mertz
  *
  */
-public abstract class AbstractDoris1BCheckingPlugin implements ICheckFilePlugin, IDoris1BPlugin {
+public abstract class AbstractDoris1BCheckingPlugin implements ICheckFilePlugin {
 
     protected String productName;
 
     /**
-     * {@link Map} of dataset name prefixs
+     * The prefix "MOE_CDDIS_"
+     */
+    public static final String PREFIX_MOE_CDDIS = "MOE_CDDIS_";
+
+    /**
+     * The prefix "MOE_CDDIS_COM_"
+     */
+    public static final String PREFIX_MOE_CDDIS_COM = "MOE_CDDIS_COM_";
+
+    /**
+     * The prefix "POE_CDDIS_COM_"
+     */
+    public static final String PREFIX_POE_CDDIS_COM = "POE_CDDIS_COM_";
+
+    /**
+     * Initialize the {@link Map} for the association {@link Dataset} name, prefix.
+     */
+    public abstract void initPrefixMap();
+
+    /**
+     * {@link Map} of {@link Dataset} name prefixes
      */
     protected Map<String, String> prefixMap = null;
 
@@ -52,6 +72,7 @@ public abstract class AbstractDoris1BCheckingPlugin implements ICheckFilePlugin,
 
         // Check file exists
         if (fileToCheck.exists() && fileToCheck.canRead()) {
+            // Add the prefix to the product name
             if ((prefixMap != null) && prefixMap.containsKey(datasetId)) {
                 String prefix = prefixMap.get(datasetId);
                 productName = prefix + fileToCheck.getName();
@@ -70,6 +91,11 @@ public abstract class AbstractDoris1BCheckingPlugin implements ICheckFilePlugin,
         return productName;
     }
 
+    /**
+     * Add a element to to {@link Map} {@link AbstractDoris1BCheckingPlugin#prefixMap}
+     * @param datasetName the {@link Dataset} name
+     * @param prefix the prefix to add for te current {@link Dataset}
+     */
     protected void addDatasetNamePrexif(String datasetName, String prefix) {
         if (prefixMap == null) {
             prefixMap = new HashMap<>();

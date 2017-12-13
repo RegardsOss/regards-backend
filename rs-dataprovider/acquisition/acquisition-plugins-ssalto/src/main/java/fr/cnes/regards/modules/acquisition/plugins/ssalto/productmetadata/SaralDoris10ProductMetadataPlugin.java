@@ -44,7 +44,6 @@ import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.MultipleFileNameFinder;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.SaralProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 /**

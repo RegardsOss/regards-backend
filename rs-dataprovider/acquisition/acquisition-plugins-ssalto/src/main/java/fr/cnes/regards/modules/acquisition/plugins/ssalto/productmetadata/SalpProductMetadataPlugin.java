@@ -20,18 +20,22 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
-@Plugin(description = "Spot4Doris1BProductMetadataPlugin", id = "Spot4Doris1BProductMetadataPlugin", version = "1.0.0",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
-public class Spot4Doris1BProductMetadataPlugin extends AbstractDoris1BProductMetadataPlugin {
+/**
+ * 
+ * @author Christophe Mertz
+ */
+public class SalpProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
-    private static final String PROJECT_NAME = "SPOT4";
+    private static final String PROJECT_NAME = "SALP";
 
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
+
+    public SalpProductMetadataPlugin() {
+        super();
+    }
 
     @Override
     protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
@@ -42,15 +46,9 @@ public class Spot4Doris1BProductMetadataPlugin extends AbstractDoris1BProductMet
         return PROJECT_NAME;
     }
 
-    public void initPrefixMap() {
-        addDatasetNamePrexif("DA_TC_SPOT4_DORIS1B_MOE_CDDIS", PREFIX_MOE_CDDIS);
-        addDatasetNamePrexif("DA_TC_SPOT4_DORIS1B_MOE_CDDIS_COM", PREFIX_MOE_CDDIS_COM);
-        addDatasetNamePrexif("DA_TC_SPOT4_DORIS1B_POE_CDDIS_COM", PREFIX_POE_CDDIS_COM);
-    }
-
     @Override
     public String getProjectProperties() {
-        return "ssalto/domain/plugins/impl/spot4plugin.properties";
+        return "ssalto/domain/plugins/impl/salpplugin.properties";
     }
 
 }

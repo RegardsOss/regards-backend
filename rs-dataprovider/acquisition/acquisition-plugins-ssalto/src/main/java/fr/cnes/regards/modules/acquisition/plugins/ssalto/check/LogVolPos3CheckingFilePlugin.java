@@ -22,8 +22,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 
 /**
- * Manage LOG_VOL_POS3 de JASON2 data prefixs.<br>
- * The {@link Product} name is the the file name less the extension file.
+ * Manage LOG_VOL_POS3 de JASON2 data.<br>
+ * This {@link Plugin} checks that the file exists and is accessible.<br>
+ * The {@link Product} name is the file name less the extension file.<br>
  * 
  * @author Christophe Mertz
  *
@@ -33,10 +34,19 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
         url = "https://github.com/RegardsOss")
 public class LogVolPos3CheckingFilePlugin extends AbstractCheckingFilePlugin {
 
+    /**
+     * The extension file BIN
+     */
     private static String EXTENSION_BIN = "_BIN";
 
+    /**
+     * The extension file HDR
+     */
     private static String EXTENSION_HDR = "_HDR";
 
+    /**
+     * Initialize the extension file to remove from the file name
+     */
     protected void initExtensionList() {
         extensionList.add(EXTENSION_BIN);
         extensionList.add(EXTENSION_HDR);

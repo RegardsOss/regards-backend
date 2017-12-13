@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
- * Manage Jason3 data prefixs for the {@link Product} LTM.<br>
+ * Manage Jason3 data for the {@link Product} LTM.<br>
  * The {@link Product} name is the the file name less the extension file. 
  *
  * @author Christophe Mertz
@@ -38,6 +38,9 @@ import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
         url = "https://github.com/RegardsOss")
 public class Jason3LtmP3CheckingFilePlugin implements ICheckFilePlugin {
 
+    /**
+     * The product name
+     */
     private String productName;
 
     @Override

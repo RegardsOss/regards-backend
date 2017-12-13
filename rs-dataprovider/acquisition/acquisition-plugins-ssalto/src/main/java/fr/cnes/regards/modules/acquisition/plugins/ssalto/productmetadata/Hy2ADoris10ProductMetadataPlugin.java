@@ -43,7 +43,6 @@ import fr.cnes.regards.modules.acquisition.domain.model.CompositeAttribute;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.Hy2AProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 /**

@@ -16,25 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.plugins.ssalto;
+package fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.AbstractProductMetadataPlugin;
 
-/**
- * 
- * @author Christophe Mertz
- *
- */
-@Plugin(description = "Hy2AProductMetadataPlugin", id = "Hy2AProductMetadataPlugin", version = "1.0.0",
+@Plugin(description = "Spot4ProductMetadataPlugin", id = "Spot4ProductMetadataPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class Hy2AProductMetadataPlugin extends AbstractProductMetadataPlugin {
+public class Spot4ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
-    private static final String PROJECT_NAME = "HY2A";
+    private static final String PROJECT_NAME = "SPOT4";
 
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
@@ -50,6 +44,8 @@ public class Hy2AProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     @Override
     public String getProjectProperties() {
-        return "ssalto/domain/plugins/impl/hy2aplugin.properties";
+
+        return "ssalto/domain/plugins/impl/spot4plugin.properties";
     }
+
 }

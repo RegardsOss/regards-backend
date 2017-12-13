@@ -56,6 +56,9 @@ import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
         url = "https://github.com/RegardsOss")
 public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadataPlugin {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Jason1Gpsp10FlotProductMetadataPlugin.class);
 
     private static final String TIME_PERIOD = "TIME_PERIOD";

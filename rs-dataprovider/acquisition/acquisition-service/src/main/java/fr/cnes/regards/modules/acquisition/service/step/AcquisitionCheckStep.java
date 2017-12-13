@@ -44,6 +44,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionRuntimeException;
+import fr.cnes.regards.modules.entities.client.IDatasetClient;
 
 /**
  * @author Christophe Mertz
@@ -60,6 +61,9 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
 
     @Autowired
     private IAcquisitionFileService acquisitionFileService;
+
+    @Autowired
+    private IDatasetClient datasetClient;
 
     /**
      * Base folder used to move the invalid scan files
@@ -110,10 +114,13 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
                     .getPlugin(this.acqProcessingChain.getCheckAcquisitionPluginConf().getId(),
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
+            String datasetName = datasetClient.retrieveDataset(acqProcessingChain.getDataSet()).getBody().getContent()
+                    .getSipId();
+
             // for each AcquisitionFile
             for (AcquisitionFile acqFile : inProgressFileList) {
                 // execute the check plugin
-                boolean result = checkPlugin.runPlugin(acqFile.getFile(), acqProcessingChain.getDataSet());
+                boolean result = checkPlugin.runPlugin(acqFile.getFile(), datasetName);
 
                 // Check file status and link the AcquisitionFile to the Product
                 acquisitionFileService.checkFileStatus(result, acqProcessingChain.getSession(), acqFile,

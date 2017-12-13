@@ -16,25 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.plugins.ssalto;
+package fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.AbstractProductMetadataPlugin;
 
-/**
- * Plugin de generation des metadonnees produit pour la mission SARAL
- * 
- * @author Christophe Mertz
- */
-@Plugin(description = "SaralProductMetadataPlugin", id = "SaralProductMetadataPlugin", version = "1.0.0",
+@Plugin(description = "Spot2ProductMetadataPlugin", id = "Spot2ProductMetadataPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class SaralProductMetadataPlugin extends AbstractProductMetadataPlugin {
+public class Spot2ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
-    private static final String PROJECT_NAME = "SARAL";
+    private static final String PROJECT_NAME = "SPOT2";
 
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
@@ -50,7 +44,7 @@ public class SaralProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
     @Override
     public String getProjectProperties() {
-        return "ssalto/domain/plugins/impl/saralplugin.properties";
+        return "ssalto/domain/plugins/impl/spot2plugin.properties";
     }
 
 }

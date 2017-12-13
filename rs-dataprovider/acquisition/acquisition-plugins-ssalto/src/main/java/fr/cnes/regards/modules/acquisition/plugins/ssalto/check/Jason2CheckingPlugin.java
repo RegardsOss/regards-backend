@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
- * Manage Jason2 data prefixs.<br>
+ * Manage Jason2 data.<br>
  * This {@link Plugin} checks that the file exists and it's accessible.<br>
  * The {@link Product} name is the file name truncate to 128 characters. 
  * 
@@ -40,6 +40,9 @@ public class Jason2CheckingPlugin implements ICheckFilePlugin {
 
     private static final int PRODUCT_NAME_MAX_SIZE = 128;
 
+    /**
+     * The product name
+     */
     private String productName;
 
     @Override

@@ -18,13 +18,26 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import java.util.Map;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.entities.domain.Dataset;
+
+/**
+ * Manage Spot4 Doris1B data prefixes.<br>
+ * This {@link Plugin} checks that the file exists and is accessible and add a prefix to the product name.
+ * 
+ * @author Christophe Mertz
+ *
+ */
 @Plugin(description = "Spot4Doris1BCheckingPlugin", id = "Spot4Doris1BCheckingPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Spot4Doris1BCheckingPlugin extends AbstractDoris1BCheckingPlugin {
 
+    /**
+     * Initialize the {@link Map} for the association {@link Dataset} name, prefix.
+     */
     public void initPrefixMap() {
         addDatasetNamePrexif("DA_TC_SPOT4_DORIS1B_MOE_CDDIS", PREFIX_MOE_CDDIS);
         addDatasetNamePrexif("DA_TC_SPOT4_DORIS1B_MOE_CDDIS_COM", PREFIX_MOE_CDDIS_COM);

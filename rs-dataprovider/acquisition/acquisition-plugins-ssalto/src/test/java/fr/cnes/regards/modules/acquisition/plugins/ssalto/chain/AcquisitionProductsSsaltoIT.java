@@ -105,7 +105,9 @@ public class AcquisitionProductsSsaltoIT {
 
     private static final String BASE_DATA_DIR = "src/test/resources/income/data";
 
-    private static final String DATASET_SIP_ID = "DA_TC_JASON2_IGDR";
+    private static final String DATASET_JASON2_IGDR = "DA_TC_JASON2_IGDR";
+
+    private static final String DATASET_SPOT2_DORIS1B_MOE_CDDIS = "DA_TC_SPOT2_DORIS1B_MOE_CDDIS";
 
     @Autowired
     private IAcquisitionProcessingChainService acqProcessChainService;
@@ -169,9 +171,9 @@ public class AcquisitionProductsSsaltoIT {
 
     protected Set<UUID> faileds;
 
-    private AcquisitionProcessingChain currentChain;
-
-    private String dataSetIpId;
+    //    private AcquisitionProcessingChain chainJason2Igdr;
+    //
+    //    private AcquisitionProcessingChain chainSpot2Doris1b;
 
     @Rule
     public TestName name = new TestName();
@@ -180,23 +182,12 @@ public class AcquisitionProductsSsaltoIT {
     public void setUp() throws Exception {
         cleanDb();
 
-        Dataset dataSet = new Dataset();
-        final UniformResourceName aipUrn = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, "SSALTO",
-                UUID.randomUUID(), 1);
-        dataSetIpId = aipUrn.toString();
-        dataSet.setIpId(aipUrn);
-        dataSet.setSipId(DATASET_SIP_ID);
-
         initAmqp();
 
         initJobQueue();
 
-        initProcessingChain();
-
         Mockito.when(authenticationResolver.getUser()).thenReturn(DEFAULT_USER);
 
-        Mockito.when(datasetClient.retrieveDataset(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(new Resource<Dataset>(dataSet), HttpStatus.OK));
     }
 
     @After
@@ -220,19 +211,6 @@ public class AcquisitionProductsSsaltoIT {
         LOGGER.info("Clean the DB : {}", name.getMethodName());
     }
 
-    public void initProcessingChain() throws ModuleException, IOException {
-        File file = new File(BASE_DATA_DIR + "/JASON2/IGDR");
-        ScanDirectory scanDir = new ScanDirectory(file.getCanonicalPath());
-        MetaFile metaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
-                .withMediaType(MediaType.APPLICATION_OCTET_STREAM_VALUE)
-                .withFilePattern("JA2_IP(N|S|R)_2P[a-zA-Z]{1}P[0-9]{3}_[0-9]{3,4}(_[0-9]{8}_[0-9]{6}){2}(.nc){0,1}")
-                .addScanDirectory(scanDir).get();
-        MetaProduct metaProduct = MetaProductBuilder.build("JASON2_IGDR").addMetaFile(metaFile)
-                .withChecksumAlgorithm("MD5").withIngestProcessingChain("ingest-processing-chain-id").get();
-        currentChain = acqProcessChainService.createOrUpdate(AcquisitionProcessingChainBuilder.build("JASON2_IGDR")
-                .isActive().withDataSet(dataSetIpId).withMetaProduct(metaProduct).get());
-    }
-
     public void initJobQueue() {
         runnings = Collections.synchronizedSet(new HashSet<>());
         succeededs = Collections.synchronizedSet(new HashSet<>());
@@ -249,15 +227,18 @@ public class AcquisitionProductsSsaltoIT {
     }
 
     @Test
-    public void runActiveProcessingChain() throws ModuleException, InterruptedException {
-        currentChain.setScanAcquisitionPluginConf(pluginService
-                .getPluginConfiguration("ScanDirectoryPlugin", IAcquisitionScanDirectoryPlugin.class));
-        currentChain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("BasicCheckFilePlugin",
-                                                                                        ICheckFilePlugin.class));
-        currentChain.setGenerateSipPluginConf(pluginService.getPluginConfiguration("Jason2ProductMetadataPlugin",
-                                                                                   IGenerateSIPPlugin.class));
+    public void runJason2IgdrProcessingChain() throws ModuleException, InterruptedException, IOException {
 
-        Assert.assertTrue(acqProcessChainService.run(currentChain));
+        AcquisitionProcessingChain chainJason2Igdr = initJason2IgdrProcessingChain();
+
+        chainJason2Igdr.setScanAcquisitionPluginConf(pluginService
+                .getPluginConfiguration("ScanDirectoryPlugin", IAcquisitionScanDirectoryPlugin.class));
+        chainJason2Igdr.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("BasicCheckFilePlugin",
+                                                                                           ICheckFilePlugin.class));
+        chainJason2Igdr.setGenerateSipPluginConf(pluginService.getPluginConfiguration("Jason2ProductMetadataPlugin",
+                                                                                      IGenerateSIPPlugin.class));
+
+        Assert.assertTrue(acqProcessChainService.run(chainJason2Igdr));
 
         waitJobEvent();
 
@@ -271,6 +252,84 @@ public class AcquisitionProductsSsaltoIT {
         Assert.assertEquals(1, execAcquisitionProcessingChainRepository.count());
         Assert.assertEquals(1, processingChainRepository.count());
         Assert.assertNotNull(productRepository.findAll().get(0).getSip());
+    }
+
+    private AcquisitionProcessingChain initJason2IgdrProcessingChain() throws ModuleException, IOException {
+        Dataset dataSet = initJason2IGDRDataset();
+        File file = new File(BASE_DATA_DIR + "/JASON2/IGDR");
+        ScanDirectory scanDir = new ScanDirectory(file.getCanonicalPath());
+        MetaFile metaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
+                .withMediaType(MediaType.APPLICATION_OCTET_STREAM_VALUE)
+                .withFilePattern("JA2_IP(N|S|R)_2P[a-zA-Z]{1}P[0-9]{3}_[0-9]{3,4}(_[0-9]{8}_[0-9]{6}){2}(.nc){0,1}")
+                .addScanDirectory(scanDir).get();
+        MetaProduct metaProduct = MetaProductBuilder.build("JASON2_IGDR").addMetaFile(metaFile)
+                .withChecksumAlgorithm("MD5").withIngestProcessingChain("ingest-processing-chain-id").get();
+        return acqProcessChainService.createOrUpdate(AcquisitionProcessingChainBuilder.build("JASON2_IGDR").isActive()
+                .withDataSet(dataSet.getIpId().toString()).withMetaProduct(metaProduct).get());
+    }
+
+    private Dataset initJason2IGDRDataset() {
+        Dataset dataSet = new Dataset();
+        final UniformResourceName aipUrn = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, "SSALTO",
+                UUID.randomUUID(), 1);
+        dataSet.setIpId(aipUrn);
+        dataSet.setSipId(DATASET_JASON2_IGDR);
+        Mockito.when(datasetClient.retrieveDataset(Mockito.anyString()))
+                .thenReturn(new ResponseEntity<>(new Resource<Dataset>(dataSet), HttpStatus.OK));
+        return dataSet;
+    }
+
+    @Test
+    public void runSpot2Doris1bProcessingChain() throws ModuleException, InterruptedException, IOException {
+
+        AcquisitionProcessingChain chainSpot2Doris1b = initSpot2Doris1bProcessingChain();
+
+        chainSpot2Doris1b.setScanAcquisitionPluginConf(pluginService
+                .getPluginConfiguration("ScanDirectoryPlugin", IAcquisitionScanDirectoryPlugin.class));
+        chainSpot2Doris1b.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("Spot2Doris1BCheckingPlugin",
+                                                                                             ICheckFilePlugin.class));
+        chainSpot2Doris1b.setGenerateSipPluginConf(pluginService
+                .getPluginConfiguration("Spot2ProductMetadataPlugin", IGenerateSIPPlugin.class));
+
+        Assert.assertTrue(acqProcessChainService.run(chainSpot2Doris1b));
+
+        waitJobEvent();
+
+        Assert.assertFalse(runnings.isEmpty());
+        Assert.assertFalse(succeededs.isEmpty());
+        Assert.assertTrue(faileds.isEmpty());
+        Assert.assertTrue(aborteds.isEmpty());
+
+        Assert.assertEquals(1, acquisitionFileRepository.count());
+        Assert.assertEquals(1, productRepository.count());
+        Assert.assertEquals(1, execAcquisitionProcessingChainRepository.count());
+        Assert.assertEquals(1, processingChainRepository.count());
+        Assert.assertNotNull(productRepository.findAll().get(0).getSip());
+        Assert.assertTrue(productRepository.findAll().get(0).getProductName().startsWith("MOE_CDDIS_"));
+    }
+
+    private AcquisitionProcessingChain initSpot2Doris1bProcessingChain() throws ModuleException, IOException {
+        Dataset dataSet = initSpot2Doris1bDataset();
+        File file = new File(BASE_DATA_DIR + "/spot2/doris1b_moe_cddis");
+        ScanDirectory scanDir = new ScanDirectory(file.getCanonicalPath());
+        MetaFile metaFile = MetaFileBuilder.build().withInvalidFolder("/var/regards/data/invalid")
+                .withMediaType(MediaType.APPLICATION_OCTET_STREAM_VALUE).withFilePattern("DORDATA_[0-9]{6}.SP2")
+                .addScanDirectory(scanDir).get();
+        MetaProduct metaProduct = MetaProductBuilder.build("JASON2_IGDR").addMetaFile(metaFile)
+                .withChecksumAlgorithm("MD5").withIngestProcessingChain("ingest-processing-chain-id").get();
+        return acqProcessChainService.createOrUpdate(AcquisitionProcessingChainBuilder.build("JASON2_IGDR").isActive()
+                .withDataSet(dataSet.getIpId().toString()).withMetaProduct(metaProduct).get());
+    }
+
+    private Dataset initSpot2Doris1bDataset() {
+        Dataset dataSet = new Dataset();
+        final UniformResourceName aipUrn = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, "SSALTO",
+                UUID.randomUUID(), 1);
+        dataSet.setIpId(aipUrn);
+        dataSet.setSipId(DATASET_SPOT2_DORIS1B_MOE_CDDIS);
+        Mockito.when(datasetClient.retrieveDataset(Mockito.anyString()))
+                .thenReturn(new ResponseEntity<>(new Resource<Dataset>(dataSet), HttpStatus.OK));
+        return dataSet;
     }
 
     private void waitJobEvent() throws InterruptedException {
