@@ -10,7 +10,6 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * Dto associating an {@link AIP} to the public information of its files
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class AipDataFiles {
@@ -27,13 +26,11 @@ public class AipDataFiles {
 
     /**
      * Constructor providing the aip and data files to extract the public information
-     * @param aip
-     * @param dataFiles
      */
     public AipDataFiles(AIP aip, StorageDataFile... dataFiles) {
         this.aip = aip;
-        //only set files public information if there is information to set
-        if(dataFiles != null && dataFiles.length != 0) {
+        // only set files public information if there is information to set
+        if (dataFiles != null && dataFiles.length != 0) {
             this.dataFiles.addAll(Arrays.stream(dataFiles).map(DataFileDto::fromDataFile).collect(Collectors.toSet()));
         }
     }
@@ -47,7 +44,6 @@ public class AipDataFiles {
 
     /**
      * Set the aip
-     * @param aip
      */
     public void setAip(AIP aip) {
         this.aip = aip;
@@ -62,7 +58,6 @@ public class AipDataFiles {
 
     /**
      * Set the files public information
-     * @param dataFiles
      */
     public void setDataFiles(Set<DataFileDto> dataFiles) {
         this.dataFiles = dataFiles;
