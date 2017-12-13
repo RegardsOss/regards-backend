@@ -179,7 +179,7 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
     /**
      * @param checkAcquisitionPluginConf
      * @return
-     * @throws ModuleException 
+     * @throws ModuleException
      */
     private PluginConfiguration createOrUpdatePluginConfiguration(PluginConfiguration pluginConfiguration)
             throws ModuleException {
@@ -277,7 +277,7 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
         // the difference between the previous activation date and current time must be greater than the periodicity
         if ((chain.getLastDateActivation() != null)
                 && chain.getLastDateActivation().plusSeconds(chain.getPeriodicity()).isAfter(OffsetDateTime.now())) {
-            LOGGER.warn("[{}] Unable to run the chain generation : the last activation date is to close from now with the periodicity {}.",
+            LOGGER.warn("[{}] Unable to run the chain generation : the last activation date is too close from now with the periodicity {}.",
                         chain.getLabel(), chain.getPeriodicity());
             return false;
         }

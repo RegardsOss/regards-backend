@@ -29,8 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
@@ -74,7 +74,7 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
             // build the plugin parameters
             PluginParametersFactory factory = PluginParametersFactory.build();
             for (Map.Entry<String, String> entry : this.acqProcessingChain.getScanAcquisitionParameter().entrySet()) {
-                factory.addParameterDynamic(entry.getKey(), entry.getValue());
+                factory.addDynamicParameter(entry.getKey(), entry.getValue());
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Add parameter <{}> with value : {}", entry.getKey(), entry.getValue());
                 }
@@ -87,7 +87,7 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
 
             // launch the plugin to get the AcquisitionFile
             // c'est le plugin qui met la Date d'acquisition du fichier
-            // c'est plugin qui calcule le checksum si c'est configuré dans la chaine   
+            // c'est plugin qui calcule le checksum si c'est configuré dans la chaine
             Set<AcquisitionFile> acquisitionFiles = scanPlugin
                     .getAcquisitionFiles(this.acqProcessingChain.getLabel(), this.acqProcessingChain.getMetaProduct(),
                                          this.acqProcessingChain.getLastDateActivation());
@@ -103,7 +103,7 @@ public class AcquisitionScanStep extends AbstractStep implements IAcquisitionSca
     }
 
     private void reportBadFiles(Set<File> badFiles) {
-        if (badFiles == null || badFiles.isEmpty()) {
+        if ((badFiles == null) || badFiles.isEmpty()) {
             return;
         }
         badFiles.forEach(f -> LOGGER.info("Unexpected file <{}> for the chain <{}>", f.getAbsoluteFile(),

@@ -34,8 +34,8 @@ import com.google.common.io.Files;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
@@ -87,7 +87,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
             throw new AcquisitionRuntimeException(msg);
         }
 
-        if (inProgressFileList == null || inProgressFileList.isEmpty()) {
+        if ((inProgressFileList == null) || inProgressFileList.isEmpty()) {
             LOGGER.info("Any file to process for the acquisition chain <{}>", this.acqProcessingChain.getLabel());
             return;
         }
@@ -103,7 +103,7 @@ public class AcquisitionCheckStep extends AbstractStep implements IAcquisitionCh
             // build the plugin parameters
             PluginParametersFactory factory = PluginParametersFactory.build();
             for (Map.Entry<String, String> entry : this.acqProcessingChain.getCheckAcquisitionParameter().entrySet()) {
-                factory.addParameterDynamic(entry.getKey(), entry.getValue());
+                factory.addDynamicParameter(entry.getKey(), entry.getValue());
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Add parameter <{}> with value : {}", entry.getKey(), entry.getValue());
                 }

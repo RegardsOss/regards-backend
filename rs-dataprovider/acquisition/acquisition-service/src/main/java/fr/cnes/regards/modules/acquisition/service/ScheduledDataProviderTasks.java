@@ -65,20 +65,27 @@ public class ScheduledDataProviderTasks {
     public void processNewSIPBulkRequest() {
         LOG.debug("Process new SIP bulk request to ingest");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            productBulkRequestService.runBulkRequest();
-            runtimeTenantResolver.clearTenant();
+            try {
+                runtimeTenantResolver.forceTenant(tenant);
+                productBulkRequestService.runBulkRequest();
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+
         }
     }
-    
+
     @Scheduled(fixedRateString = "${regards.acquisition.process.run.chains.delay:60000}", initialDelay = 10000)
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processRunActiveChains() {
         LOG.debug("Process run active chains");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            productBulkRequestService.runActiveChains();
-            runtimeTenantResolver.clearTenant();
+            try {
+                runtimeTenantResolver.forceTenant(tenant);
+                productBulkRequestService.runActiveChains();
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
         }
     }
 
