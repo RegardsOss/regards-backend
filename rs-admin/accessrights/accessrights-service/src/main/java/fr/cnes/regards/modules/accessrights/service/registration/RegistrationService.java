@@ -22,7 +22,6 @@ import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +44,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.encryption.EncryptionUtils;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
@@ -87,28 +87,28 @@ public class RegistrationService implements IRegistrationService {
     private final IEmailVerificationTokenService tokenService;
 
     /**
-     * Use this to publish Spring application events
+     * Account workflow manager
      */
-    private final ApplicationEventPublisher eventPublisher;
+    private final ProjectUserWorkflowManager projectUserWorkflowManager;
 
     /**
      * @param pProjectUserRepository
      * @param pRoleService
      * @param pTokenService
-     * @param pEventPublisher
+     * @param projectUserWorkflowManager
      * @param accountSettingsClient
      * @param accountsClient
      */
     public RegistrationService(IProjectUserRepository pProjectUserRepository, IRoleService pRoleService,
-            IEmailVerificationTokenService pTokenService, ApplicationEventPublisher pEventPublisher,
+            IEmailVerificationTokenService pTokenService, ProjectUserWorkflowManager projectUserWorkflowManager,
             IAccountSettingsClient accountSettingsClient, IAccountsClient accountsClient) {
         super();
         projectUserRepository = pProjectUserRepository;
         roleService = pRoleService;
         tokenService = pTokenService;
-        eventPublisher = pEventPublisher;
         this.accountsClient = accountsClient;
         this.accountSettingsClient = accountSettingsClient;
+        this.projectUserWorkflowManager = projectUserWorkflowManager;
     }
 
     @Override
@@ -178,17 +178,17 @@ public class RegistrationService implements IRegistrationService {
         final Role role = roleService.getDefaultRole();
 
         // Create a new project user
-        final ProjectUser projectUser = new ProjectUser(pDto.getEmail(), role, new ArrayList<>(), pDto.getMetadata());
+        ProjectUser projectUser = new ProjectUser(pDto.getEmail(), role, new ArrayList<>(), pDto.getMetadata());
 
         // Create
-        projectUserRepository.save(projectUser);
+        projectUser = projectUserRepository.save(projectUser);
 
         // Init the email verification token
         tokenService.create(projectUser, pDto.getOriginUrl(), pDto.getRequestLink());
 
         // Check the status
         if (AccountStatus.ACTIVE.equals(account.getStatus())) {
-            eventPublisher.publishEvent(new OnAcceptAccountEvent(pDto.getEmail()));
+            projectUserWorkflowManager.grantAccess(projectUser);
         }
     }
 

@@ -36,22 +36,15 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
-import fr.cnes.regards.modules.accessrights.service.account.accountunlock.IAccountUnlockTokenService;
-import fr.cnes.regards.modules.accessrights.service.account.passwordreset.IPasswordResetService;
-import fr.cnes.regards.modules.accessrights.service.account.workflow.state.AccountStateProvider;
-import fr.cnes.regards.modules.accessrights.service.account.workflow.state.AccountWorkflowManager;
-import fr.cnes.regards.modules.accessrights.service.account.workflow.state.PendingState;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 import fr.cnes.regards.modules.accessrights.service.encryption.EncryptionUtils;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
@@ -118,16 +111,11 @@ public class RegistrationServiceTest {
      */
     private IRegistrationService registrationService;
 
-    /**
-     * Mock account repository
-     */
-    private IAccountRepository accountRepository;
 
     private IProjectUserRepository projectUserRepository;
 
     private IRoleService roleService;
 
-    private IAccountSettingsService accountSettingsService;
 
     private AccessRequestDto dto;
 
@@ -135,26 +123,18 @@ public class RegistrationServiceTest {
 
     private Account account;
 
-    private AccountSettings accountSettings;
-
     /**
      * Do some setup before each test
      */
     @Before
     public void setUp() {
-        accountRepository = Mockito.mock(IAccountRepository.class);
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
         roleService = Mockito.mock(IRoleService.class);
         IEmailVerificationTokenService tokenService = Mockito.mock(IEmailVerificationTokenService.class);
-        accountSettingsService = Mockito.mock(IAccountSettingsService.class);
-        AccountWorkflowManager accountWorkflowManager = Mockito.mock(AccountWorkflowManager.class);
-        AccountStateProvider accountStateProvider = Mockito.mock(AccountStateProvider.class);
         IProjectUserService projectUserService = Mockito.mock(IProjectUserService.class);
         ITenantResolver tenantResolver = Mockito.mock(ITenantResolver.class);
         IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
-        IPasswordResetService passwordResetTokenService = Mockito.mock(IPasswordResetService.class);
         ApplicationEventPublisher eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
-        IAccountUnlockTokenService accountUnlockTokenService = Mockito.mock(IAccountUnlockTokenService.class);
 
         // Mock
         Mockito.when(roleService.getDefaultRole()).thenReturn(ROLE);
@@ -165,7 +145,7 @@ public class RegistrationServiceTest {
 
         // Create the tested service
         registrationService = new RegistrationService(projectUserRepository, roleService,
-                                                      tokenService, eventPublisher, , );
+                                                      tokenService, projectUserWorkflowManager, accountSettingsClient, accountsClient);
 
         // Prepare the access request
         dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), META_DATA, PASSOWRD, ORIGIN_URL,

@@ -32,10 +32,8 @@ public interface IAccessSettingsService {
      * Retrieve the {@link AccessSettings}.
      *
      * @return The {@link AccessSettings}
-     * @throws EntityNotFoundException
-     *             hrown when an {@link AccessSettings} with passed id could not be found
      */
-    AccessSettings retrieve() throws EntityNotFoundException;
+    AccessSettings retrieve();
 
     /**
      * Update the {@link AccessSettings}.

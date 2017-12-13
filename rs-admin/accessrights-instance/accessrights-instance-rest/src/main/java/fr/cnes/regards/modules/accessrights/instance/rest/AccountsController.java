@@ -70,7 +70,7 @@ import fr.cnes.regards.modules.accessrights.instance.service.workflow.state.IAcc
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+@ModuleInfo(name = "accessrigths-instance", version = "2.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")
 @RequestMapping(AccountsController.TYPE_MAPPING)
 public class AccountsController implements IResourceController<Account> {
