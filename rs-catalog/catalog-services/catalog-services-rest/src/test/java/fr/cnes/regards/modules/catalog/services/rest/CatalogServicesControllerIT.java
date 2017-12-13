@@ -37,12 +37,12 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
@@ -50,6 +50,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
@@ -102,14 +103,13 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         conf = pluginService.savePluginConfiguration(conf);
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameterDynamic(SampleServicePlugin.RESPONSE_TYPE_PARAMETER,
-                                     SampleServicePlugin.RESPONSE_TYPE_JSON).getParameters();
-        samplePlgConf = new PluginConfiguration(PluginUtils.createPluginMetaData(SampleServicePlugin.class,
-                                                                                 Arrays.asList(SampleServicePlugin.class
-                                                                                                       .getPackage()
-                                                                                                       .getName())),
-                                                "SampleServicePlugin",
-                                                parameters);
+                .addDynamicParameter(SampleServicePlugin.RESPONSE_TYPE_PARAMETER,
+                                     SampleServicePlugin.RESPONSE_TYPE_JSON)
+                .getParameters();
+        samplePlgConf = new PluginConfiguration(
+                PluginUtils.createPluginMetaData(SampleServicePlugin.class,
+                                                 Arrays.asList(SampleServicePlugin.class.getPackage().getName())),
+                "SampleServicePlugin", parameters);
         pluginService.savePluginConfiguration(samplePlgConf);
 
         linkService.updateLink(DATA_SET_NAME,
@@ -125,8 +125,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.customizeRequestParam().param("dataset_id", DATA_SET_NAME)
                 .param("service_scope", ServiceScope.MANY.toString());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES,
-                          requestBuilderCustomizer,
+        performDefaultGet(CatalogServicesController.PATH_SERVICES, requestBuilderCustomizer,
                           "there should not be any error");
     }
 
@@ -139,8 +138,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.customizeRequestParam().param("dataset_id", DATA_SET_NAME)
                 .param("service_scope", ServiceScope.ONE.toString());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES,
-                          requestBuilderCustomizer,
+        performDefaultGet(CatalogServicesController.PATH_SERVICES, requestBuilderCustomizer,
                           "there should not be any error");
     }
 
@@ -152,43 +150,34 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.pluginId",
                                                                                Matchers.is("tata")));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                                                        .jsonPath(JSON_PATH_ROOT + "[0].content.applicationModes",
-                                                                  Matchers.containsInAnyOrder("MANY", "ONE")));
+                .jsonPath(JSON_PATH_ROOT + "[0].content.applicationModes", Matchers.containsInAnyOrder("MANY", "ONE")));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                                                        .jsonPath(JSON_PATH_ROOT + "[0].content.entityTypes",
-                                                                  Matchers.contains("DATA")));
+                .jsonPath(JSON_PATH_ROOT + "[0].content.entityTypes", Matchers.contains("DATA")));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.pluginId",
                                                                                Matchers.is("aSampleServicePlugin")));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                                                        .jsonPath(JSON_PATH_ROOT + "[1].content.applicationModes",
-                                                                  Matchers.containsInAnyOrder("MANY", "ONE")));
+                .jsonPath(JSON_PATH_ROOT + "[1].content.applicationModes", Matchers.containsInAnyOrder("MANY", "ONE")));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                                                        .jsonPath(JSON_PATH_ROOT + "[1].content.entityTypes",
-                                                                  Matchers.contains(EntityType.DATA.toString())));
+                .jsonPath(JSON_PATH_ROOT + "[1].content.entityTypes", Matchers.contains(EntityType.DATA.toString())));
         requestBuilderCustomizer.customizeRequestParam().param("dataset_id", DATA_SET_NAME)
                 .param("service_scope", ServiceScope.ONE.toString());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
-        performDefaultGet(CatalogServicesController.PATH_SERVICES,
-                          requestBuilderCustomizer,
+        performDefaultGet(CatalogServicesController.PATH_SERVICES, requestBuilderCustomizer,
                           "There should be plugin configurations augmented with meta data");
     }
 
     @Test
     @Requirement("REGARDS_DSL_DAM_ARC_030")
     @Requirement("REGARDS_DSL_DAM_ARC_010")
-    @Purpose(
-            "System has a joinpoint \"Service\" that allows to apply treatment on a dataset, or one of its subset. Those treatments are applied to informations contained into the catalog. A plugin \"Service\" can have as parameters: parameters defined at configuration by an administrator, parameters dynamicly defined at each request, parameters to select objects from a dataset.")
+    @Purpose("System has a joinpoint \"Service\" that allows to apply treatment on a dataset, or one of its subset. Those treatments are applied to informations contained into the catalog. A plugin \"Service\" can have as parameters: parameters defined at configuration by an administrator, parameters dynamicly defined at each request, parameters to select objects from a dataset.")
     public void testApplyService() {
 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put("q", "truc");
         dynamicParameters.put("para", TestService.EXPECTED_VALUE);
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID",
-                                                                         null,
-                                                                         null,
-                                                                         null,
-                                                                         dynamicParameters);
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+                dynamicParameters);
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
@@ -196,10 +185,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters,
-                           requestBuilderCustomizer,
-                           "there should not be any error",
-                           conf.getId());
+                           parameters, requestBuilderCustomizer, "there should not be any error", conf.getId());
     }
 
     @Test
@@ -213,18 +199,12 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isEmpty());
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID",
-                                                                         null,
-                                                                         null,
-                                                                         null,
-                                                                         dynamicParameters);
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+                dynamicParameters);
 
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters,
-                           requestBuilderCustomizer,
-                           "there should not be any error",
-                           conf.getId());
+                           parameters, requestBuilderCustomizer, "there should not be any error", conf.getId());
     }
 
     @Test
@@ -233,11 +213,8 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_JSON);
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID",
-                                                                         null,
-                                                                         null,
-                                                                         null,
-                                                                         dynamicParameters);
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+                dynamicParameters);
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
@@ -246,9 +223,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
                 .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters,
-                           requestBuilderCustomizer,
-                           "there should not be any error",
+                           parameters, requestBuilderCustomizer, "there should not be any error",
                            samplePlgConf.getId());
     }
 
@@ -258,20 +233,15 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_XML);
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID",
-                                                                         null,
-                                                                         null,
-                                                                         null,
-                                                                         dynamicParameters);
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+                dynamicParameters);
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters,
-                           requestBuilderCustomizer,
-                           "there should not be any error",
+                           parameters, requestBuilderCustomizer, "there should not be any error",
                            samplePlgConf.getId());
     }
 
@@ -281,20 +251,15 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_IMG);
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID",
-                                                                         null,
-                                                                         null,
-                                                                         null,
-                                                                         dynamicParameters);
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+                dynamicParameters);
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.IMAGE_PNG));
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters,
-                           requestBuilderCustomizer,
-                           "there should not be any error",
+                           parameters, requestBuilderCustomizer, "there should not be any error",
                            samplePlgConf.getId());
     }
 
@@ -304,11 +269,8 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_OTHER);
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID",
-                                                                         null,
-                                                                         null,
-                                                                         null,
-                                                                         dynamicParameters);
+        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+                dynamicParameters);
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
@@ -316,9 +278,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
                 .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_OCTET_STREAM));
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters,
-                           requestBuilderCustomizer,
-                           "there should not be any error",
+                           parameters, requestBuilderCustomizer, "there should not be any error",
                            samplePlgConf.getId());
     }
 

@@ -38,8 +38,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
@@ -128,7 +128,7 @@ public class ServiceManager implements IServiceManager {
         // Build dynamic parameters
         PluginParametersFactory factory = PluginParametersFactory.build();
         if (pServicePluginParameters.getDynamicParameters() != null) {
-            pServicePluginParameters.getDynamicParameters().forEach(factory::addParameterDynamic);
+            pServicePluginParameters.getDynamicParameters().forEach(factory::addDynamicParameter);
         }
 
         IService toExecute = (IService) pluginService
