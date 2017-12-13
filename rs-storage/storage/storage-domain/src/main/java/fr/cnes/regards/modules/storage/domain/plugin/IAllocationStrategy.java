@@ -8,7 +8,7 @@ import java.util.Collection;
 import com.google.common.collect.Multimap;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * Those plugins are meant to decide which plugin IDataStorage should be use for a given aip and file.
@@ -25,5 +25,5 @@ public interface IAllocationStrategy {
      * @param dataFilesToHandle
      * @return Multimap associating DataFiles to their respecting IDataStorage
      */
-    Multimap<Long, DataFile> dispatch(Collection<DataFile> dataFilesToHandle);
+    Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle);
 }

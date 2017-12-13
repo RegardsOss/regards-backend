@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
 
 /**
@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
 public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 
     @Autowired
-    private IDataFileRepository dataFileRepository;
+    private IStorageDataFileRepository dataFileRepository;
 
     @Autowired
     private IAIPEntityRepository aipEntityRepository;
@@ -98,9 +98,9 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         // lets get some aips and dataFiles
         AIP aip1 = generateRandomAIP();
         aip1 = aipDao.save(aip1);
-        List<DataFile> dataFiles = Lists.newArrayList();
-        Set<DataFile> dataFilesAip = DataFile.extractDataFiles(aip1);
-        for (DataFile df : dataFilesAip) {
+        List<StorageDataFile> dataFiles = Lists.newArrayList();
+        Set<StorageDataFile> dataFilesAip = StorageDataFile.extractDataFiles(aip1);
+        for (StorageDataFile df : dataFilesAip) {
             df.setDataStorageUsed(dataStorage1);
             dataStorage1Id = dataStorage1.getId();
             dataStorage1UsedSize += df.getFileSize();
@@ -108,8 +108,8 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         dataFiles.addAll(dataFilesAip);
         AIP aip2 = generateRandomAIP();
         aip2 = aipDao.save(aip2);
-        dataFilesAip = DataFile.extractDataFiles(aip2);
-        for (DataFile df : dataFilesAip) {
+        dataFilesAip = StorageDataFile.extractDataFiles(aip2);
+        for (StorageDataFile df : dataFilesAip) {
             df.setDataStorageUsed(dataStorage2);
             dataStorage2Id = dataStorage2.getId();
             dataStorage2UsedSize += df.getFileSize();
@@ -117,8 +117,8 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         dataFiles.addAll(dataFilesAip);
         AIP aip3 = generateRandomAIP();
         aip3 = aipDao.save(aip3);
-        dataFilesAip = DataFile.extractDataFiles(aip3);
-        for (DataFile df : dataFilesAip) {
+        dataFilesAip = StorageDataFile.extractDataFiles(aip3);
+        for (StorageDataFile df : dataFilesAip) {
             df.setDataStorageUsed(dataStorage3);
             dataStorage3Id = dataStorage3.getId();
             dataStorage3UsedSize += df.getFileSize();

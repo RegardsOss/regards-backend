@@ -3,10 +3,10 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
- * Association between old AIP metadata file {@link DataFile} and the new one for update.<br/>
+ * Association between old AIP metadata file {@link StorageDataFile} and the new one for update.<br/>
  * Update of an AIP metadata file means the deletion of the old one and the creation of the new one.
  * @author Sylvain VISSIERE-GUERINET
  * @author Sébastien Binda
@@ -14,33 +14,33 @@ import fr.cnes.regards.modules.storage.domain.database.DataFile;
 public class UpdatableMetadataFile {
 
     /**
-     * Previous {@link DataFile} metadata file to replace.
+     * Previous {@link StorageDataFile} metadata file to replace.
      */
-    private DataFile oldOne;
+    private StorageDataFile oldOne;
 
     /**
-     * New {@link DataFile} metadata file.
+     * New {@link StorageDataFile} metadata file.
      */
-    private DataFile newOne;
+    private StorageDataFile newOne;
 
-    public UpdatableMetadataFile(DataFile oldOne, DataFile newOne) {
+    public UpdatableMetadataFile(StorageDataFile oldOne, StorageDataFile newOne) {
         this.oldOne = oldOne;
         this.newOne = newOne;
     }
 
-    public DataFile getOldOne() {
+    public StorageDataFile getOldOne() {
         return oldOne;
     }
 
-    public void setOldOne(DataFile oldOne) {
+    public void setOldOne(StorageDataFile oldOne) {
         this.oldOne = oldOne;
     }
 
-    public DataFile getNewOne() {
+    public StorageDataFile getNewOne() {
         return newOne;
     }
 
-    public void setNewOne(DataFile newOne) {
+    public void setNewOne(StorageDataFile newOne) {
         this.newOne = newOne;
     }
 }

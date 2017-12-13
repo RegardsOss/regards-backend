@@ -12,7 +12,7 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
 import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
@@ -48,14 +48,14 @@ public class StorageJobProgressManager implements IProgressManager {
     private boolean errorStatus = false;
 
     /**
-     * List of {@link DataFile} in error during {@link IDataStorage} plugin action.
+     * List of {@link StorageDataFile} in error during {@link IDataStorage} plugin action.
      */
-    private final Collection<DataFile> failedDataFile = Sets.newConcurrentHashSet();
+    private final Collection<StorageDataFile> failedDataFile = Sets.newConcurrentHashSet();
 
     /**
      * Collection of data files that has been handled
      */
-    private final Collection<DataFile> handledDataFile = Sets.newConcurrentHashSet();
+    private final Collection<StorageDataFile> handledDataFile = Sets.newConcurrentHashSet();
 
     public StorageJobProgressManager(IPublisher publisher, IJob<?> job) {
         this.publisher = publisher;
@@ -63,7 +63,7 @@ public class StorageJobProgressManager implements IProgressManager {
     }
 
     @Override
-    public void storageSucceed(DataFile dataFile, URL storedUrl, Long storedFileSize) {
+    public void storageSucceed(StorageDataFile dataFile, URL storedUrl, Long storedFileSize) {
         dataFile.setUrl(storedUrl);
         dataFile.setFileSize(storedFileSize);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
@@ -75,7 +75,7 @@ public class StorageJobProgressManager implements IProgressManager {
     }
 
     @Override
-    public void storageFailed(DataFile dataFile, String cause) {
+    public void storageFailed(StorageDataFile dataFile, String cause) {
         failureCauses.add(cause);
         errorStatus = true;
         failedDataFile.add(dataFile);
@@ -91,7 +91,7 @@ public class StorageJobProgressManager implements IProgressManager {
     }
 
     @Override
-    public void deletionFailed(DataFile dataFile, String failureCause) {
+    public void deletionFailed(StorageDataFile dataFile, String failureCause) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.DELETION,
                 StorageEventType.FAILED);
         handledDataFile.add(dataFile);
@@ -102,7 +102,7 @@ public class StorageJobProgressManager implements IProgressManager {
     }
 
     @Override
-    public void deletionSucceed(DataFile dataFile) {
+    public void deletionSucceed(StorageDataFile dataFile) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.DELETION,
                 StorageEventType.SUCCESSFULL);
         handledDataFile.add(dataFile);
@@ -111,7 +111,7 @@ public class StorageJobProgressManager implements IProgressManager {
     }
 
     @Override
-    public void restoreSucceed(DataFile dataFile, Path restoredFilePath) {
+    public void restoreSucceed(StorageDataFile dataFile, Path restoredFilePath) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION,
                 StorageEventType.SUCCESSFULL);
         dataStorageEvent.setRestorationPath(restoredFilePath);
@@ -121,7 +121,7 @@ public class StorageJobProgressManager implements IProgressManager {
     }
 
     @Override
-    public void restoreFailed(DataFile dataFile, String failureCause) {
+    public void restoreFailed(StorageDataFile dataFile, String failureCause) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION,
                 StorageEventType.FAILED);
         failureCauses.add(failureCause);
@@ -141,14 +141,14 @@ public class StorageJobProgressManager implements IProgressManager {
     /**
      * @return the failed data files
      */
-    public Collection<DataFile> getFailedDataFile() {
+    public Collection<StorageDataFile> getFailedDataFile() {
         return failedDataFile;
     }
 
     /**
      * @return the handled data files
      */
-    public Collection<DataFile> getHandledDataFile() {
+    public Collection<StorageDataFile> getHandledDataFile() {
         return handledDataFile;
     }
 }

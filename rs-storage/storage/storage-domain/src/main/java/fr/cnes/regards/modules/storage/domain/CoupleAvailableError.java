@@ -2,7 +2,7 @@ package fr.cnes.regards.modules.storage.domain;
 
 import java.util.Set;
 
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * POJO allowing us to know which data files are in the cache and which data files could not be set into the cache
@@ -14,12 +14,12 @@ public class CoupleAvailableError {
     /**
      * Data files that are already in cache
      */
-    private Set<DataFile> availables;
+    private Set<StorageDataFile> availables;
 
     /**
      * Data files that could not be set in cache
      */
-    private Set<DataFile> errors;
+    private Set<StorageDataFile> errors;
 
     /**
      * Default constructor
@@ -32,7 +32,7 @@ public class CoupleAvailableError {
      * @param availables
      * @param errors
      */
-    public CoupleAvailableError(Set<DataFile> availables, Set<DataFile> errors) {
+    public CoupleAvailableError(Set<StorageDataFile> availables, Set<StorageDataFile> errors) {
         this.availables = availables;
         this.errors = errors;
     }
@@ -40,7 +40,7 @@ public class CoupleAvailableError {
     /**
      * @return the availables
      */
-    public Set<DataFile> getAvailables() {
+    public Set<StorageDataFile> getAvailables() {
         return availables;
     }
 
@@ -48,14 +48,14 @@ public class CoupleAvailableError {
      * Set the availables
      * @param availables
      */
-    public void setAvailables(Set<DataFile> availables) {
+    public void setAvailables(Set<StorageDataFile> availables) {
         this.availables = availables;
     }
 
     /**
      * @return the errors
      */
-    public Set<DataFile> getErrors() {
+    public Set<StorageDataFile> getErrors() {
         return errors;
     }
 
@@ -63,7 +63,7 @@ public class CoupleAvailableError {
      * Set the errors
      * @param errors
      */
-    public void setErrors(Set<DataFile> errors) {
+    public void setErrors(Set<StorageDataFile> errors) {
         this.errors = errors;
     }
 }

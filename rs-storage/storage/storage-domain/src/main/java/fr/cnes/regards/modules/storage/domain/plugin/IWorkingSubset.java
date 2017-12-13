@@ -5,12 +5,11 @@ package fr.cnes.regards.modules.storage.domain.plugin;
 
 import java.util.Set;
 
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
- * Represents a subset of {@link DataFile} prepared by {@link INearlineDataStorage} plugins. <br>
- * Only the implementation of the plugin can dispatch storage action by bucket of {@link DataFile} to handle.<br>
+ * Represents a subset of {@link StorageDataFile} prepared by {@link INearlineDataStorage} plugins. <br>
+ * Only the implementation of the plugin can dispatch storage action by bucket of {@link StorageDataFile} to handle.<br>
  * AIP service uses those subsets to run an asynchronous storage job for each one.
  * @author Sébastien Binda
  */
@@ -18,9 +17,9 @@ import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 public interface IWorkingSubset {
 
     /**
-     * Return the subset of {@link DataFile}s to handle.
-     * @return {@link Set}<{@link DataFile}>
+     * Return the subset of {@link StorageDataFile}s to handle.
+     * @return {@link Set}<{@link StorageDataFile}>
      */
-    Set<DataFile> getDataFiles();
+    Set<StorageDataFile> getDataFiles();
 
 }

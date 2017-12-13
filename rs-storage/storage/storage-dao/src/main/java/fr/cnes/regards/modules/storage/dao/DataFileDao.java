@@ -11,7 +11,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
 
@@ -22,10 +22,10 @@ import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
 public class DataFileDao implements IDataFileDao {
 
     /**
-     * {@link IDataFileRepository} instance
+     * {@link IStorageDataFileRepository} instance
      */
     @Autowired
-    private IDataFileRepository repository;
+    private IStorageDataFileRepository repository;
 
     /**
      * {@link IAIPEntityRepository} instance
@@ -38,13 +38,13 @@ public class DataFileDao implements IDataFileDao {
      * @param repository
      * @param aipRepo
      */
-    public DataFileDao(IDataFileRepository repository, IAIPEntityRepository aipRepo) {
+    public DataFileDao(IStorageDataFileRepository repository, IAIPEntityRepository aipRepo) {
         this.repository = repository;
         this.aipRepo = aipRepo;
     }
 
     @Override
-    public Set<DataFile> findAllByStateAndAip(DataFileState stored, AIP aip) {
+    public Set<StorageDataFile> findAllByStateAndAip(DataFileState stored, AIP aip) {
         Optional<AIPEntity> aipDatabase = getAipDataBase(aip);
         if (aipDatabase.isPresent()) {
             return repository.findAllByStateAndAipEntity(stored, aipDatabase.get());
@@ -54,7 +54,7 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
-    public Set<DataFile> findAllByStateAndAipIn(DataFileState dataFileState, Collection<AIP> aips) {
+    public Set<StorageDataFile> findAllByStateAndAipIn(DataFileState dataFileState, Collection<AIP> aips) {
         Set<AIPEntity> aipDataBases = Sets.newHashSet();
         for (AIP aip : aips) {
             Optional<AIPEntity> aipDatabase = getAipDataBase(aip);
@@ -70,7 +70,7 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
-    public Set<DataFile> findAllByAip(AIP aip) {
+    public Set<StorageDataFile> findAllByAip(AIP aip) {
         Optional<AIPEntity> aipDatabase = getAipDataBase(aip);
         if (aipDatabase.isPresent()) {
             return repository.findAllByAipEntity(aipDatabase.get());
@@ -80,7 +80,7 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
-    public DataFile save(DataFile prepareFailed) {
+    public StorageDataFile save(StorageDataFile prepareFailed) {
         Optional<AIPEntity> aipDatabase = getAipDataBase(prepareFailed);
         if (aipDatabase.isPresent()) {
             prepareFailed.setAipEntity(aipDatabase.get());
@@ -89,8 +89,8 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
-    public Collection<DataFile> save(Collection<DataFile> dataFiles) {
-        for (DataFile dataFile : dataFiles) {
+    public Collection<StorageDataFile> save(Collection<StorageDataFile> dataFiles) {
+        for (StorageDataFile dataFile : dataFiles) {
             Optional<AIPEntity> aipDatabase = getAipDataBase(dataFile);
             if (aipDatabase.isPresent()) {
                 dataFile.setAipEntity(aipDatabase.get());
@@ -100,7 +100,7 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
-    public Optional<DataFile> findByAipAndType(AIP aip, DataType dataType) {
+    public Optional<StorageDataFile> findByAipAndType(AIP aip, DataType dataType) {
         Optional<AIPEntity> aipDatabase = getAipDataBase(aip);
         if (aipDatabase.isPresent()) {
             return repository.findByAipEntityAndDataType(aipDatabase.get(), dataType);
@@ -115,17 +115,17 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
-    public Optional<DataFile> findOneById(Long dataFileId) {
+    public Optional<StorageDataFile> findOneById(Long dataFileId) {
         return repository.findOneById(dataFileId);
     }
 
     @Override
-    public Set<DataFile> findAllByChecksumIn(Set<String> checksums) {
+    public Set<StorageDataFile> findAllByChecksumIn(Set<String> checksums) {
         return repository.findAllByChecksumIn(checksums);
     }
 
     @Override
-    public void remove(DataFile data) {
+    public void remove(StorageDataFile data) {
         repository.delete(data.getId());
     }
 
@@ -138,7 +138,7 @@ public class DataFileDao implements IDataFileDao {
         return aipRepo.findOneByIpId(aip.getId().toString());
     }
 
-    private Optional<AIPEntity> getAipDataBase(DataFile dataFile) {
+    private Optional<AIPEntity> getAipDataBase(StorageDataFile dataFile) {
         return aipRepo.findOneByIpId(dataFile.getAipEntity().getIpId());
     }
 }

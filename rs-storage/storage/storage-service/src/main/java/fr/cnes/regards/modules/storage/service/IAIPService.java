@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
@@ -45,8 +45,8 @@ public interface IAIPService {
      * This process handle :
      * <ul>
      * <li>Storage in db of {@link AIP}</li>
-     * <li>Storage in db of each {@link DataFile} associated</li>
-     * <li>Physical storage of each {@link DataFile} through {@link IDataStorage} plugins</li>
+     * <li>Storage in db of each {@link StorageDataFile} associated</li>
+     * <li>Physical storage of each {@link StorageDataFile} through {@link IDataStorage} plugins</li>
      * <li>Creation of physical file containing AIP metadata informations and storage through {@link IDataStorage}
      * plugins</li>
      * </ul>
@@ -138,15 +138,15 @@ public interface IAIPService {
     void updateAlreadyStoredMetadata();
 
     /**
-     * Retrieve the local {@link Path} of the {@link DataFile} associated to the given {@link AIP} and matching the
+     * Retrieve the local {@link Path} of the {@link StorageDataFile} associated to the given {@link AIP} and matching the
      * given checksum.<br/>
-     * Return Optional.empty if the {@link DataFile} is not accesible localy.<br/>
+     * Return Optional.empty if the {@link StorageDataFile} is not accesible localy.<br/>
      * @param pAipId
      * @param pChecksum
      * @return
-     * @throw EntityNotFoundException if the request {@link DataFile} does not exists.
+     * @throw EntityNotFoundException if the request {@link StorageDataFile} does not exists.
      */
-    Optional<DataFile> getAIPDataFile(String pAipId, String pChecksum) throws ModuleException;
+    Optional<StorageDataFile> getAIPDataFile(String pAipId, String pChecksum) throws ModuleException;
 
     /**
      * Retrieve the history of event that occurred to an aip, represented by its ip id
@@ -223,11 +223,11 @@ public interface IAIPService {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Schedule new {@link UpdateDataFilesJob}s for all {@link DataFile} of AIP metadata files given
+     * Schedule new {@link UpdateDataFilesJob}s for all {@link StorageDataFile} of AIP metadata files given
      * and set there state to STORING_METADATA.
-     * @param metadataToStore List of {@link DataFile} of new AIP metadata files mapped to old ones.
+     * @param metadataToStore List of {@link StorageDataFile} of new AIP metadata files mapped to old ones.
      */
-    void scheduleStorageMetadata(Set<DataFile> metadataToStore);
+    void scheduleStorageMetadata(Set<StorageDataFile> metadataToStore);
 
     /**
      * Schedule the storage of metadata update
@@ -245,5 +245,5 @@ public interface IAIPService {
      * Prepare the aip metadata that are not yet stored
      * @return data files to store
      */
-    Set<DataFile> prepareNotFullyStored();
+    Set<StorageDataFile> prepareNotFullyStored();
 }

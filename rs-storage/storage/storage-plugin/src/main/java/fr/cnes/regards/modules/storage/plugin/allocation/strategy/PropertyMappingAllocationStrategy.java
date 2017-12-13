@@ -18,7 +18,7 @@ import com.jayway.jsonpath.PathNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 
@@ -78,12 +78,12 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
     }
 
     @Override
-    public Multimap<Long, DataFile> dispatch(Collection<DataFile> dataFilesToHandle) {
-        Multimap<Long, DataFile> dispatch = HashMultimap.create();
+    public Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle) {
+        Multimap<Long, StorageDataFile> dispatch = HashMultimap.create();
         // First lets construct a map, which is way better to manipulate
         Map<String, Long> valueConfIdMap = propertyDataStorageMappings.stream().collect(Collectors
                 .toMap(PropertyDataStorageMapping::getPropertyValue, PropertyDataStorageMapping::getDataStorageConfId));
-        for (DataFile dataFile : dataFilesToHandle) {
+        for (StorageDataFile dataFile : dataFilesToHandle) {
             // now lets extract the property value from the AIP
             try {
                 String propertyValue = JsonPath.read(gson.toJson(dataFile.getAip()), propertyPath);

@@ -62,7 +62,7 @@ import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
@@ -206,7 +206,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         Thread.sleep(4000);
         // get the datafiles checksum
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
-        Set<DataFile> dataFiles = dataFileDao.findAllByAip(aip);
+        Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(aip);
         Set<String> dataFilesChecksum = dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
         // ask for availability
         AvailabilityRequest availabilityRequest = new AvailabilityRequest(OffsetDateTime.now().plusDays(2),
@@ -228,8 +228,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // lets ask for download now
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         // lets get the hand of a datafile checksum
-        Set<DataFile> dataFiles = dataFileDao.findAllByAip(aip);
-        DataFile dataFile = dataFiles.toArray(new DataFile[dataFiles.size()])[0];
+        Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(aip);
+        StorageDataFile dataFile = dataFiles.toArray(new StorageDataFile[dataFiles.size()])[0];
         // now lets download it!
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());

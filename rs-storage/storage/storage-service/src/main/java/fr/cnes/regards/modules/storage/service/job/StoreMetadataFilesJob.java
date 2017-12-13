@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.storage.service.job;
 import java.util.Map;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * This job is executed by JobService while its scheduling is handled by an IAIPService. This means that the job context is prepared by an IAIPService.
@@ -24,7 +24,7 @@ public class StoreMetadataFilesJob extends AbstractStoreFilesJob {
     }
 
     @Override
-    protected void handleNotHandledDataFile(DataFile notHandled) {
+    protected void handleNotHandledDataFile(StorageDataFile notHandled) {
         progressManager.storageFailed(notHandled, NOT_HANDLED_MSG);
     }
 }

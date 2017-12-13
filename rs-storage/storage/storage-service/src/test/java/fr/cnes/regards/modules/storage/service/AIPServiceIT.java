@@ -65,7 +65,7 @@ import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
@@ -186,7 +186,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         Assert.assertNotEquals(MAX_WAIT_TEST, wait);
         Assert.assertEquals(AIPState.STORED, aipFromDB.get().getState());
         LOG.info("AIP {} stored", aip.getId().toString());
-        Set<DataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
+        Set<StorageDataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
         Assert.assertEquals(2, dataFiles.size());
     }
 
@@ -217,7 +217,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         Assert.assertNotEquals(MAX_WAIT_TEST, wait);
         Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
         LOG.info("AIP {} is in ERROR State", aip.getId().toString());
-        Set<DataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip);
+        Set<StorageDataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip);
         Assert.assertEquals(1, dataFiles.size());
     }
 
@@ -245,7 +245,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                 wait = wait + 1000;
             }
             Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
-            Set<DataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
+            Set<StorageDataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
             Assert.assertEquals(1, dataFiles.size());
         } finally {
             // to avoid issues with following tests, lets set back the permissions
@@ -262,7 +262,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         aip = aipDao.findOneByIpId(aip.getId().toString()).get();
         aip.getTags().add("Exemple Tag For Fun");
         aipService.updateAip(aip.getId().toString(), aip);
-        Optional<DataFile> oldDataFile = dataFileDao.findByAipAndType(aip, DataType.AIP);
+        Optional<StorageDataFile> oldDataFile = dataFileDao.findByAipAndType(aip, DataType.AIP);
         Assert.assertTrue("The old data file should exists !",
                           Files.exists(Paths.get(oldDataFile.get().getUrl().toURI())));
         // now lets launch the method without scheduling
@@ -289,7 +289,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
             count++;
         }
         // After job is done, the new AIP metadata file should be present in local datastorage
-        DataFile file = dataFileDao.findByAipAndType(newAIP, DataType.AIP).get();
+        StorageDataFile file = dataFileDao.findByAipAndType(newAIP, DataType.AIP).get();
         Assert.assertTrue("The new data file should exist!", Files.exists(Paths.get(file.getUrl().toURI())));
     }
 
@@ -298,7 +298,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         createSuccessTest();
         String aipIpId = aip.getId().toString();
         // lets get all the dataFile before deleting them for further verification
-        Set<DataFile> aipFiles = dataFileDao.findAllByAip(aip);
+        Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(aip);
         Set<UUID> jobIds = aipService.deleteAip(aipIpId);
         aip = aipDao.findOneByIpId(aipIpId).get();
         Assert.assertEquals("AIP state should be DELETED now", AIPState.DELETED, aip.getState());
@@ -317,7 +317,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         Thread.sleep(1000);
 
         Assert.assertFalse("AIP should not be referenced in the database", aipDao.findOneByIpId(aipIpId).isPresent());
-        for (DataFile df : aipFiles) {
+        for (StorageDataFile df : aipFiles) {
             if (df.getDataType() == DataType.AIP) {
                 Assert.assertFalse("AIP metadata should not be on disk anymore",
                                    Files.exists(Paths.get(df.getUrl().toURI())));

@@ -4,7 +4,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * POJO allowing to know which files are already available and which one could not be requested to be available
@@ -35,9 +35,9 @@ public class AvailabilityResponse {
      * @param onlineFiles
      * @param nearlineAvailable
      */
-    public AvailabilityResponse(Set<String> errors, Set<DataFile> onlineFiles, Set<DataFile> nearlineAvailable) {
+    public AvailabilityResponse(Set<String> errors, Set<StorageDataFile> onlineFiles, Set<StorageDataFile> nearlineAvailable) {
         this.errors = errors;
-        Set<DataFile> alreadyAvailableData = Sets.newHashSet(onlineFiles);
+        Set<StorageDataFile> alreadyAvailableData = Sets.newHashSet(onlineFiles);
         alreadyAvailableData.addAll(nearlineAvailable);
         this.alreadyAvailable = alreadyAvailableData.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
     }

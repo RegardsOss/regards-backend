@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.storage.plugin.datastorage.staf;
 import java.nio.file.Path;
 import java.util.Set;
 
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * STAF set of files to handle for next store action.
@@ -20,12 +20,12 @@ public class STAFStoreWorkingSubset extends STAFWorkingSubset {
 
     private final Path stafNode;
 
-    public STAFStoreWorkingSubset(Set<DataFile> pDatafiles, Path pSTAFNode) {
+    public STAFStoreWorkingSubset(Set<StorageDataFile> pDatafiles, Path pSTAFNode) {
         super(pDatafiles);
         stafNode = pSTAFNode;
     }
 
-    public STAFStoreWorkingSubset(Set<DataFile> pDatafiles, Path pSTAFNode, boolean pFilesAlreadyStored) {
+    public STAFStoreWorkingSubset(Set<StorageDataFile> pDatafiles, Path pSTAFNode, boolean pFilesAlreadyStored) {
         super(pDatafiles);
         filesAleadyStored = pFilesAlreadyStored;
         stafNode = pSTAFNode;

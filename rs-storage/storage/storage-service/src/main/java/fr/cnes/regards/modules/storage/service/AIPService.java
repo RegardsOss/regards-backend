@@ -87,7 +87,7 @@ import fr.cnes.regards.modules.storage.domain.FileCorruptedException;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
@@ -111,8 +111,8 @@ import fr.cnes.regards.modules.templates.service.ITemplateService;
 import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
- * Service to handle {@link AIP} and associated {@link DataFile}s entities from all data straoge systems.<br/>
- * An {@link AIP} can be associated to many {@link DataFile}s but only one of type {@link DataType#AIP}.<br/>
+ * Service to handle {@link AIP} and associated {@link StorageDataFile}s entities from all data straoge systems.<br/>
+ * An {@link AIP} can be associated to many {@link StorageDataFile}s but only one of type {@link DataType#AIP}.<br/>
  * Available data storage systems are defined by the available {@link IDataStorage} plugins<br/>
  * Stored files can be stored with :
  * <ul>
@@ -121,14 +121,14 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
  * </ul>
  *
  * At startup, this service subscribe to all {@link DataStorageEvent}s to handle physical actions
- * (storeAndCreate, retrieve and deletion) on {@link DataFile}s.<br/>
+ * (storeAndCreate, retrieve and deletion) on {@link StorageDataFile}s.<br/>
  * See {@link DataStorageEventHandler} class to understand more about actions done on physical files changes.<br/>
  * <br/>
  * This service also run scheduled actions :
  * <ul>
  * <li>{@link #storeMetadata} : This cron action executed every minutes handle
- * update of {@link AIP} state by looking for all associated {@link DataFile} states.
- * An {@link AIP} is STORED when all his {@link DataFile}s are STORED</li>
+ * update of {@link AIP} state by looking for all associated {@link StorageDataFile} states.
+ * An {@link AIP} is STORED when all his {@link StorageDataFile}s are STORED</li>
  * </ul>
  * <br/>
  * The cache system to make nearline files accessible is handled by the {@link ICachedFileService}.<br/>
@@ -162,7 +162,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     private IAIPDao aipDao;
 
     /**
-     * DAO to access {@link DataFile} entities.
+     * DAO to access {@link StorageDataFile} entities.
      */
     @Autowired
     private IDataFileDao dataFileDao;
@@ -266,7 +266,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        // Subscribe to events on {@link DataFile} changes.
+        // Subscribe to events on {@link StorageDataFile} changes.
         subscriber.subscribeTo(DataStorageEvent.class, dataStorageEventHandler);
 
         pluginService.addPluginPackage(IAllocationStrategy.class.getPackage().getName());
@@ -284,15 +284,15 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     public Set<UUID> storeAndCreate(Set<AIP> aips) throws ModuleException {
         LOG.trace("Entering method storeAndCreate(Set<AIP>) with {} aips", aips.size());
         Set<AIP> aipsInDb = Sets.newHashSet();
-        Set<DataFile> dataFilesToStore = Sets.newHashSet();
+        Set<StorageDataFile> dataFilesToStore = Sets.newHashSet();
         // 1. Create each AIP into database with VALID state.
-        // 2. Create each DataFile of each AIP into database with PENDING state.
+        // 2. Create each StorageDataFile of each AIP into database with PENDING state.
         for (AIP aip : aips) {
             // Can not create an existing AIP.
             aip.setState(AIPState.VALID);
             aip.addEvent(EventType.SUBMISSION.name(), "Submission to REGARDS");
             aipsInDb.add(aipDao.save(aip));
-            Collection<DataFile> dataFiles = dataFileDao.save(DataFile.extractDataFiles(aip));
+            Collection<StorageDataFile> dataFiles = dataFileDao.save(StorageDataFile.extractDataFiles(aip));
             dataFiles.forEach(df -> df.setState(DataFileState.PENDING));
             dataFilesToStore.addAll(dataFiles);
             // Notify system for new VALID AIP created.
@@ -315,12 +315,12 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * @return job ids scheduled for the storage
      * @throws ModuleException
      */
-    protected Set<UUID> store(Set<DataFile> dataFilesToStore) throws ModuleException {
+    protected Set<UUID> store(Set<StorageDataFile> dataFilesToStore) throws ModuleException {
         IAllocationStrategy allocationStrategy = getAllocationStrategy();
         // FIXME: should probably set the tenant into maintenance in case of module exception
 
         // 3. Now lets ask to the strategy to dispatch dataFiles between possible DataStorages
-        Multimap<Long, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToStore);
+        Multimap<Long, StorageDataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToStore);
         LOG.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
                   dataFilesToStore.size(),
                   storageWorkingSetMap.keySet().size());
@@ -333,14 +333,14 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     public Set<UUID> storeRetry(Set<String> aipIpIds) throws ModuleException {
         // lets get the data file which are in storage error state and ask for their storage, once again
         Set<AIP> failedAips = aipDao.findAllByIpIdIn(aipIpIds);
-        Set<DataFile> failedDataFiles = dataFileDao.findAllByStateAndAipIn(DataFileState.ERROR, failedAips);
+        Set<StorageDataFile> failedDataFiles = dataFileDao.findAllByStateAndAipIn(DataFileState.ERROR, failedAips);
         return store(failedDataFiles);
     }
 
     @Override
     public AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest) throws ModuleException {
         Set<String> requestedChecksums = availabilityRequest.getChecksums();
-        Set<DataFile> dataFiles = dataFileDao.findAllByChecksumIn(requestedChecksums);
+        Set<StorageDataFile> dataFiles = dataFileDao.findAllByChecksumIn(requestedChecksums);
         Set<String> errors = Sets.newHashSet();
 
         // 1. Check for invalid files.
@@ -352,17 +352,17 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     .forEach(cs -> LOG.error("File to restore with checksum {} is not stored by REGARDS.", cs));
         }
 
-        Set<DataFile> dataFilesWithAccess = checkLoadFilesAccessRights(dataFiles);
+        Set<StorageDataFile> dataFilesWithAccess = checkLoadFilesAccessRights(dataFiles);
 
         errors.addAll(Sets.difference(dataFiles, dataFilesWithAccess).stream().map(df -> df.getChecksum())
                               .collect(Collectors.toSet()));
 
-        Set<DataFile> onlineFiles = Sets.newHashSet();
-        Set<DataFile> nearlineFiles = Sets.newHashSet();
+        Set<StorageDataFile> onlineFiles = Sets.newHashSet();
+        Set<StorageDataFile> nearlineFiles = Sets.newHashSet();
 
         // 2. Check for online files. Online files doesn't need to be stored in the cache
         // they can be access directly where they are stored.
-        for (DataFile df : dataFilesWithAccess) {
+        for (StorageDataFile df : dataFilesWithAccess) {
             if (df.getDataStorageUsed() != null) {
                 if (df.getDataStorageUsed().getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
                     onlineFiles.add(df);
@@ -376,16 +376,16 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // now lets ask the cache service to handle nearline restoration and give us the already available ones
         CoupleAvailableError nearlineAvailableAndError = cachedFileService
                 .restore(nearlineFiles, availabilityRequest.getExpirationDate());
-        for (DataFile inError : nearlineAvailableAndError.getErrors()) {
+        for (StorageDataFile inError : nearlineAvailableAndError.getErrors()) {
             errors.add(inError.getChecksum());
         }
         // lets construct the result
         return new AvailabilityResponse(errors, onlineFiles, nearlineAvailableAndError.getAvailables());
     }
 
-    private Set<DataFile> checkLoadFilesAccessRights(Set<DataFile> dataFiles) throws ModuleException {
-        Set<DataFile> dataFilesWithAccess = Sets.newHashSet(dataFiles);
-        for (DataFile df : dataFiles) {
+    private Set<StorageDataFile> checkLoadFilesAccessRights(Set<StorageDataFile> dataFiles) throws ModuleException {
+        Set<StorageDataFile> dataFilesWithAccess = Sets.newHashSet(dataFiles);
+        for (StorageDataFile df : dataFiles) {
             AIP aip = df.getAip();
             if (!getSecurityDelegationPlugin().hasAccess(aip.getId().toString())) {
                 dataFilesWithAccess.remove(df);
@@ -443,10 +443,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // now lets get the data files for each aip which are the aip metadata itself
         List<AipDataFiles> aipDataFiles = new ArrayList<>();
         for(AIP aip: aips.getContent()) {
-            Set<DataFile> dataFiles = dataFileDao.findAllByAip(aip);
+            Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(aip);
             // lets eliminate the metadata data file
             dataFiles = dataFiles.stream().filter(dataFile -> dataFile.getDataType() != DataType.AIP).collect(Collectors.toSet());
-            aipDataFiles.add(new AipDataFiles(aip, dataFiles.toArray(new DataFile[dataFiles.size()])));
+            aipDataFiles.add(new AipDataFiles(aip, dataFiles.toArray(new StorageDataFile[dataFiles.size()])));
         }
         return new PageImpl<>(aipDataFiles, pageable, aips.getTotalElements());
     }
@@ -458,7 +458,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             if (!getSecurityDelegationPlugin().hasAccess(pIpId.toString())) {
                 throw new EntityOperationForbiddenException(pIpId.toString(), AIP.class, AIP_ACCESS_FORBIDDEN);
             }
-            Set<DataFile> dataFiles = dataFileDao.findAllByAip(aip.get());
+            Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(aip.get());
             return dataFiles.stream().map(df -> {
                 OAISDataObject dataObject = new OAISDataObject();
                 dataObject.setRegardsDataType(df.getDataType());
@@ -483,19 +483,19 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     /**
-     * Check that all given {@link DataFile}s are dispatch into the given {@link Multimap}.<br/>
+     * Check that all given {@link StorageDataFile}s are dispatch into the given {@link Multimap}.<br/>
      * If it's true, nothing is done.<br/>
-     * If not, the associated {@link AIP}s of given {@link DataFile}s are set to {@link AIPState#STORAGE_ERROR} status.
-     * @param dataFilesToStore {@link DataFile}s
-     * @param storageWorkingSetMap {@link Multimap}<{@link PluginConfiguration}, {@link DataFile}>
+     * If not, the associated {@link AIP}s of given {@link StorageDataFile}s are set to {@link AIPState#STORAGE_ERROR} status.
+     * @param dataFilesToStore {@link StorageDataFile}s
+     * @param storageWorkingSetMap {@link Multimap}<{@link PluginConfiguration}, {@link StorageDataFile}>
      */
-    private void checkDispatch(Set<DataFile> dataFilesToStore, Multimap<Long, DataFile> storageWorkingSetMap) {
-        Set<DataFile> dataFilesInSubSet = storageWorkingSetMap.entries().stream().map(entry -> entry.getValue())
+    private void checkDispatch(Set<StorageDataFile> dataFilesToStore, Multimap<Long, StorageDataFile> storageWorkingSetMap) {
+        Set<StorageDataFile> dataFilesInSubSet = storageWorkingSetMap.entries().stream().map(entry -> entry.getValue())
                 .collect(Collectors.toSet());
         if (dataFilesToStore.size() != dataFilesInSubSet.size()) {
-            Set<DataFile> notSubSetDataFiles = Sets.newHashSet(dataFilesToStore);
+            Set<StorageDataFile> notSubSetDataFiles = Sets.newHashSet(dataFilesToStore);
             notSubSetDataFiles.removeAll(dataFilesInSubSet);
-            for (DataFile prepareFailed : notSubSetDataFiles) {
+            for (StorageDataFile prepareFailed : notSubSetDataFiles) {
                 prepareFailed.setState(DataFileState.ERROR);
                 AIP aip = prepareFailed.getAip();
                 aip.setState(AIPState.STORAGE_ERROR);
@@ -534,14 +534,14 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     /**
      * This method schedules {@link StoreDataFilesJob} or {@link StoreMetadataFilesJob} to storeAndCreate given
-     * {@link DataFile}s.<br/>
+     * {@link StorageDataFile}s.<br/>
      * A Job is scheduled for each {@link IWorkingSubset} of each {@link PluginConfiguration}.<br/>
-     * @param storageWorkingSetMap List of {@link DataFile} to storeAndCreate per {@link PluginConfiguration}.
-     * @param storingData FALSE to storeAndCreate {@link DataType#AIP}, or TRUE for all other type of {@link DataFile}.
+     * @param storageWorkingSetMap List of {@link StorageDataFile} to storeAndCreate per {@link PluginConfiguration}.
+     * @param storingData FALSE to storeAndCreate {@link DataType#AIP}, or TRUE for all other type of {@link StorageDataFile}.
      * @return List of {@link UUID} of jobs scheduled.
      * @throws ModuleException
      */
-    public Set<UUID> scheduleStorage(Multimap<Long, DataFile> storageWorkingSetMap, boolean storingData)
+    public Set<UUID> scheduleStorage(Multimap<Long, StorageDataFile> storageWorkingSetMap, boolean storingData)
             throws ModuleException {
         Set<JobInfo> jobsToSchedule = Sets.newHashSet();
         for (Long dataStorageConfId : storageWorkingSetMap.keySet()) {
@@ -578,13 +578,13 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     /**
      * Call the {@link IDataStorage} plugins associated to the given {@link PluginConfiguration}s to storeAndCreate
      * {@link IWorkingSubset}
-     * of {@link DataFile}s.
-     * @param dataFilesToSubSet List of {@link DataFile} to prepare.
+     * of {@link StorageDataFile}s.
+     * @param dataFilesToSubSet List of {@link StorageDataFile} to prepare.
      * @param dataStorageConfId {@link PluginConfiguration}
      * @return {@link IWorkingSubset}s
      * @throws ModuleException
      */
-    protected Set<IWorkingSubset> getWorkingSubsets(Collection<DataFile> dataFilesToSubSet, Long dataStorageConfId)
+    protected Set<IWorkingSubset> getWorkingSubsets(Collection<StorageDataFile> dataFilesToSubSet, Long dataStorageConfId)
             throws ModuleException {
         IDataStorage<IWorkingSubset> storage = pluginService.getPlugin(dataStorageConfId);
         LOG.trace("Getting working subsets for data storage of id {}", dataStorageConfId);
@@ -593,12 +593,12 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                   dataFilesToSubSet.size(),
                   workingSubSets.size());
         // as we are trusty people, we check that the prepare gave us back all DataFiles into the WorkingSubSets
-        Set<DataFile> subSetDataFiles = workingSubSets.stream().flatMap(wss -> wss.getDataFiles().stream())
+        Set<StorageDataFile> subSetDataFiles = workingSubSets.stream().flatMap(wss -> wss.getDataFiles().stream())
                 .collect(Collectors.toSet());
         if (subSetDataFiles.size() != dataFilesToSubSet.size()) {
-            Set<DataFile> notSubSetDataFiles = Sets.newHashSet(dataFilesToSubSet);
+            Set<StorageDataFile> notSubSetDataFiles = Sets.newHashSet(dataFilesToSubSet);
             notSubSetDataFiles.removeAll(subSetDataFiles);
-            for (DataFile prepareFailed : notSubSetDataFiles) {
+            for (StorageDataFile prepareFailed : notSubSetDataFiles) {
                 prepareFailed.setState(DataFileState.ERROR);
                 AIP aip = prepareFailed.getAip();
                 aip.setState(AIPState.STORAGE_ERROR);
@@ -667,17 +667,17 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     @Override
-    public void scheduleStorageMetadata(Set<DataFile> metadataToStore) {
+    public void scheduleStorageMetadata(Set<StorageDataFile> metadataToStore) {
         try {
             IAllocationStrategy allocationStrategy = getAllocationStrategy();
 
             // we need to listen to those jobs event to clean up the workspace
-            Multimap<Long, DataFile> storageWorkingSetMap = allocationStrategy.dispatch(metadataToStore);
+            Multimap<Long, StorageDataFile> storageWorkingSetMap = allocationStrategy.dispatch(metadataToStore);
             checkDispatch(metadataToStore, storageWorkingSetMap);
             scheduleStorage(storageWorkingSetMap, false);
             // to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to
             // STORING_METADATA
-            for (DataFile dataFile : metadataToStore) {
+            for (StorageDataFile dataFile : metadataToStore) {
                 AIP aip = dataFile.getAip();
                 aip.setState(AIPState.STORING_METADATA);
                 aipDao.save(aip);
@@ -693,8 +693,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     /**
      * This cron action executed every minutes handle update of {@link AIP} state by
-     * looking for all associated {@link DataFile} states. An {@link AIP} is STORED
-     * when all his {@link DataFile}s are STORED.
+     * looking for all associated {@link StorageDataFile} states. An {@link AIP} is STORED
+     * when all his {@link StorageDataFile}s are STORED.
      */
     @Scheduled(fixedDelayString = "${regards.storage.check.aip.metadata.delay:60000}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -702,7 +702,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         LOG.debug(" ------------------------> Update AIP storage informations - START<---------------------------- ");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            Set<DataFile> metadataToStore = Sets.newHashSet();
+            Set<StorageDataFile> metadataToStore = Sets.newHashSet();
             // first lets get AIP that are not fully stored(at least metadata are not stored)
             metadataToStore.addAll(self.prepareNotFullyStored());
             if (metadataToStore.isEmpty()) {
@@ -717,16 +717,16 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     @Override
-    public Set<DataFile> prepareNotFullyStored() {
-        Set<DataFile> metadataToStore = Sets.newHashSet();
+    public Set<StorageDataFile> prepareNotFullyStored() {
+        Set<StorageDataFile> metadataToStore = Sets.newHashSet();
         Set<AIP> notFullyStored = aipDao.findAllByStateInService(AIPState.PENDING, AIPState.STORAGE_ERROR);
         // first lets handle the case where every dataFiles of an AIP are successfully stored.
         for (AIP aip : notFullyStored) {
-            Set<DataFile> storedDataFile = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
-            if (storedDataFile.containsAll(DataFile.extractDataFiles(aip))) {
-                // that means all DataFile of this AIP has been stored, lets prepare the metadata storage,
+            Set<StorageDataFile> storedDataFile = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
+            if (storedDataFile.containsAll(StorageDataFile.extractDataFiles(aip))) {
+                // that means all StorageDataFile of this AIP has been stored, lets prepare the metadata storage,
                 // first we need to write the metadata into a file
-                DataFile meta;
+                StorageDataFile meta;
                 try {
                     meta = writeMetaToWorkspace(aip);
                     // now if we have a meta to storeAndCreate, lets add it
@@ -912,12 +912,12 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     public Set<UUID> deleteAip(String ipId) throws ModuleException {
         Optional<AIP> toBeDeleted = aipDao.findOneByIpId(ipId);
         if (toBeDeleted.isPresent()) {
-            Set<DataFile> dataFilesToDelete = Sets.newHashSet();
+            Set<StorageDataFile> dataFilesToDelete = Sets.newHashSet();
             // check if data file are use by any other aip
-            Set<DataFile> dataFiles = dataFileDao.findAllByAip(toBeDeleted.get());
-            for (DataFile dataFile : dataFiles) {
+            Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(toBeDeleted.get());
+            for (StorageDataFile dataFile : dataFiles) {
                 // we order deletion of a file if and only if no other aip references the same file
-                Set<DataFile> dataFilesWithSameFile = dataFileDao
+                Set<StorageDataFile> dataFilesWithSameFile = dataFileDao
                         .findAllByChecksumIn(Sets.newHashSet(dataFile.getChecksum()));
                 // well lets remove ourselves of course!
                 dataFilesWithSameFile.remove(dataFile);
@@ -964,11 +964,11 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         updateAip(ipId, toUpdate);
     }
 
-    private Set<UUID> scheduleDeletion(Set<DataFile> dataFilesToDelete) throws ModuleException {
+    private Set<UUID> scheduleDeletion(Set<StorageDataFile> dataFilesToDelete) throws ModuleException {
         IAllocationStrategy allocationStrategy = getAllocationStrategy();
         // FIXME: should probably set the tenant into maintenance in case of module exception
 
-        Multimap<Long, DataFile> deletionWorkingSetMap = allocationStrategy.dispatch(dataFilesToDelete);
+        Multimap<Long, StorageDataFile> deletionWorkingSetMap = allocationStrategy.dispatch(dataFilesToDelete);
         LOG.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
                   dataFilesToDelete.size(),
                   deletionWorkingSetMap.keySet().size());
@@ -1002,12 +1002,12 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     /**
      * Write on disk the asscoiated metadata file of the given {@link AIP}.
      * @param aip {@link AIP}
-     * @return {@link DataFile} of the {@link AIP} metadata file.
+     * @return {@link StorageDataFile} of the {@link AIP} metadata file.
      * @throws IOException Impossible to write {@link AIP} metadata file to disk.
      */
-    private DataFile writeMetaToWorkspace(AIP aip) throws IOException, FileCorruptedException {
+    private StorageDataFile writeMetaToWorkspace(AIP aip) throws IOException, FileCorruptedException {
 
-        DataFile metadataAipFile;
+        StorageDataFile metadataAipFile;
         String checksumAlgorithm = "MD5";
         MessageDigest md5;
         try {
@@ -1026,14 +1026,14 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 URL urlToMetadata = new URL("file",
                                             "localhost",
                                             workspaceService.getFilePath(metadataName).toAbsolutePath().toString());
-                metadataAipFile = new DataFile(urlToMetadata,
-                                               checksum,
-                                               checksumAlgorithm,
-                                               DataType.AIP,
-                                               urlToMetadata.openConnection().getContentLengthLong(),
-                                               new MimeType("application", "json"),
-                                               aip,
-                                               aip.getId().toString() + JSON_FILE_EXT);
+                metadataAipFile = new StorageDataFile(urlToMetadata,
+                                                      checksum,
+                                                      checksumAlgorithm,
+                                                      DataType.AIP,
+                                                      urlToMetadata.openConnection().getContentLengthLong(),
+                                                      new MimeType("application", "json"),
+                                                      aip,
+                                                      aip.getId().toString() + JSON_FILE_EXT);
             } else {
                 workspaceService.removeFromWorkspace(metadataName);
                 LOG.error(String.format(
@@ -1080,9 +1080,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * Prepare all AIP in UPDATED state in order to storeAndCreate and storeAndCreate the new AIP metadata file
      * (descriptor file)
      * asscoiated.<br/>
-     * After an AIP is updated in database, this method write the new {@link DataFile} of the AIP metadata on disk
-     * and return the list of created {@link DataFile} mapped to the old {@link DataFile} of the updated AIPs.
-     * @return {@link Set}<{@link UpdatableMetadataFile}> The list of {@link DataFile} to storeAndCreate.
+     * After an AIP is updated in database, this method write the new {@link StorageDataFile} of the AIP metadata on disk
+     * and return the list of created {@link StorageDataFile} mapped to the old {@link StorageDataFile} of the updated AIPs.
+     * @return {@link Set}<{@link UpdatableMetadataFile}> The list of {@link StorageDataFile} to storeAndCreate.
      */
     @Override
     public Set<UpdatableMetadataFile> prepareUpdatedAIP() {
@@ -1090,14 +1090,14 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Set<AIP> updatedAips = aipDao.findAllByStateService(AIPState.UPDATED);
         for (AIP updatedAip : updatedAips) {
             // Store the associated dataFile.
-            Optional<DataFile> optionalExistingAIPMetadataFile = dataFileDao.findByAipAndType(updatedAip, DataType.AIP);
+            Optional<StorageDataFile> optionalExistingAIPMetadataFile = dataFileDao.findByAipAndType(updatedAip, DataType.AIP);
             if (optionalExistingAIPMetadataFile.isPresent()) {
                 // Create new AIP file (descriptor file) for the given updated AIP.
-                DataFile existingAIPMetadataFile = optionalExistingAIPMetadataFile.get();
-                DataFile newAIPMetadataFile;
+                StorageDataFile existingAIPMetadataFile = optionalExistingAIPMetadataFile.get();
+                StorageDataFile newAIPMetadataFile;
                 try {
-                    // To ensure that at any time there is only one DataFile of AIP type, we do not storeAndCreate
-                    // a new DataFile for the newAIPMetadataFile.
+                    // To ensure that at any time there is only one StorageDataFile of AIP type, we do not storeAndCreate
+                    // a new StorageDataFile for the newAIPMetadataFile.
                     // The newAIPMetadataFile get the id of the old one and so only replace it when it is stored.
                     newAIPMetadataFile = writeMetaToWorkspace(updatedAip);
                     newAIPMetadataFile.setId(existingAIPMetadataFile.getId());
@@ -1141,15 +1141,15 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     /**
-     * Schedule new {@link UpdateDataFilesJob}s to storeAndCreate given updated {@link DataFile}.
+     * Schedule new {@link UpdateDataFilesJob}s to storeAndCreate given updated {@link StorageDataFile}.
      *
-     * To do so, this method dispatch all {@link DataFile} of new AIP metadata files to storeAndCreate
-     * by {@link PluginConfiguration} of storage plugin used to storeAndCreate associated {@link DataFile}
+     * To do so, this method dispatch all {@link StorageDataFile} of new AIP metadata files to storeAndCreate
+     * by {@link PluginConfiguration} of storage plugin used to storeAndCreate associated {@link StorageDataFile}
      * of old AIP metadata.<br/>
      * Then, a new job si scheduled for each {@link IWorkingSubset} returned by
      * the associated {@link PluginConfiguration}s.<br/>
      *
-     * @param metadataToUpdate List of {@link DataFile} of new AIP metadata files mapped to old ones.
+     * @param metadataToUpdate List of {@link StorageDataFile} of new AIP metadata files mapped to old ones.
      * @return {@link Set}<{@link UUID}> List of all Jobs id scheduled.
      * @throws ModuleException
      */
@@ -1158,8 +1158,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // This is an update so we don't use the allocation strategy and we directly use the PluginConf used to
         // storeAndCreate
         // the file.
-        // Lets construct the Multimap<PluginConf, DataFile> allowing us to then storeAndCreate IWorkingSubSets
-        Multimap<Long, DataFile> toPrepareMap = HashMultimap.create();
+        // Lets construct the Multimap<PluginConf, StorageDataFile> allowing us to then storeAndCreate IWorkingSubSets
+        Multimap<Long, StorageDataFile> toPrepareMap = HashMultimap.create();
         for (UpdatableMetadataFile oldNew : metadataToUpdate) {
             toPrepareMap.put(oldNew.getOldOne().getDataStorageUsed().getId(), oldNew.getNewOne());
         }
@@ -1170,7 +1170,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                                                                    dataStorageConfId);
             for (IWorkingSubset workingSubset : workingSubsets) {
                 // for each workingSubset lets get the corresponding old metadata to remove
-                Set<DataFile> oldOneCorrespondingToWorkingSubset = metadataToUpdate.stream()
+                Set<StorageDataFile> oldOneCorrespondingToWorkingSubset = metadataToUpdate.stream()
                         .filter(oldNew -> workingSubset.getDataFiles().contains(oldNew.getNewOne()))
                         .map(oldNew -> oldNew.getOldOne()).collect(Collectors.toSet());
                 Set<JobParameter> parameters = Sets.newHashSet();
@@ -1178,7 +1178,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
                 parameters.add(new JobParameter(UpdateDataFilesJob.OLD_DATA_FILES_PARAMETER_NAME,
                                                 oldOneCorrespondingToWorkingSubset
-                                                        .toArray(new DataFile[oldOneCorrespondingToWorkingSubset
+                                                        .toArray(new StorageDataFile[oldOneCorrespondingToWorkingSubset
                                                                 .size()])));
                 jobsToSchedule
                         .add(new JobInfo(0, parameters, authResolver.getUser(), UpdateDataFilesJob.class.getName()));
@@ -1193,7 +1193,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     @Override
-    public Optional<DataFile> getAIPDataFile(String pAipId, String pChecksum) throws ModuleException {
+    public Optional<StorageDataFile> getAIPDataFile(String pAipId, String pChecksum) throws ModuleException {
 
         // First find the AIP
         Optional<AIP> oaip = aipDao.findOneByIpId(pAipId);
@@ -1202,11 +1202,11 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             if (!getSecurityDelegationPlugin().hasAccess(pAipId)) {
                 throw new EntityOperationForbiddenException(pAipId, AIP.class, AIP_ACCESS_FORBIDDEN);
             }
-            // Now get requested DataFile
-            Set<DataFile> aipDataFiles = dataFileDao.findAllByAip(aip);
-            Optional<DataFile> odf = aipDataFiles.stream().filter(df -> pChecksum.equals(df.getChecksum())).findFirst();
+            // Now get requested StorageDataFile
+            Set<StorageDataFile> aipDataFiles = dataFileDao.findAllByAip(aip);
+            Optional<StorageDataFile> odf = aipDataFiles.stream().filter(df -> pChecksum.equals(df.getChecksum())).findFirst();
             if (odf.isPresent()) {
-                DataFile dataFile = odf.get();
+                StorageDataFile dataFile = odf.get();
                 if (dataFile.getDataStorageUsed() != null) {
                     if (dataFile.getDataStorageUsed().getInterfaceNames()
                             .contains(IOnlineDataStorage.class.getName())) {
@@ -1225,7 +1225,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     throw new EntityNotFoundException("Storage plugin used to storeAndCreate datafile is unknown.");
                 }
             } else {
-                throw new EntityNotFoundException(pChecksum, DataFile.class);
+                throw new EntityNotFoundException(pChecksum, StorageDataFile.class);
             }
 
         } else {

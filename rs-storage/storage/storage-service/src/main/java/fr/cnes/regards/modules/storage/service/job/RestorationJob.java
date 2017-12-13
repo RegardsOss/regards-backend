@@ -11,7 +11,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 
@@ -55,7 +55,7 @@ public class RestorationJob extends AbstractStoreFilesJob {
             // before storage on file system, lets update the DataFiles by setting which data storage is used to storeAndCreate
             // them.
             PluginConfiguration storagePluginConf = pluginService.getPluginConfiguration(confIdToUse);
-            for (DataFile data : workingSubset.getDataFiles()) {
+            for (StorageDataFile data : workingSubset.getDataFiles()) {
                 data.setDataStorageUsed(storagePluginConf);
             }
             logger.debug("Plugin {} - Running restoration for {}files", storagePlugin.getClass().getName(),
@@ -68,7 +68,7 @@ public class RestorationJob extends AbstractStoreFilesJob {
     }
 
     @Override
-    protected void handleNotHandledDataFile(DataFile notHandled) {
+    protected void handleNotHandledDataFile(StorageDataFile notHandled) {
         progressManager.restoreFailed(notHandled, NOT_HANDLED_MSG);
     }
 

@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * Dto associating an {@link AIP} to the public information of its files
@@ -28,7 +28,7 @@ public class AipDataFiles {
      * @param aip
      * @param dataFiles
      */
-    public AipDataFiles(AIP aip, DataFile... dataFiles) {
+    public AipDataFiles(AIP aip, StorageDataFile... dataFiles) {
         this.aip = aip;
         //only set files public information if there is information to set
         if(dataFiles != null && dataFiles.length != 0) {

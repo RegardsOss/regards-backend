@@ -16,7 +16,7 @@ import java.net.URL;
 import java.time.OffsetDateTime;
 
 /**
- * Representation of a DataFile which is in the cache
+ * Representation of a StorageDataFile which is in the cache
  *
  * @author Sylvain VISSIERE-GUERINET
  */
@@ -90,7 +90,7 @@ public class CachedFile {
      * @param expirationDate
      * @param fileState
      */
-    public CachedFile(DataFile df, OffsetDateTime expirationDate, CachedFileState fileState) {
+    public CachedFile(StorageDataFile df, OffsetDateTime expirationDate, CachedFileState fileState) {
         checksum = df.getChecksum();
         fileSize = df.getFileSize();
         expiration = expirationDate;

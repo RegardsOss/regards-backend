@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
 
@@ -19,7 +19,7 @@ import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-public interface IDataFileRepository extends JpaRepository<DataFile, Long> {
+public interface IStorageDataFileRepository extends JpaRepository<StorageDataFile, Long> {
 
     /**
      * Find all data files which state is the given one and which are associated to the provided aip entity
@@ -28,15 +28,15 @@ public interface IDataFileRepository extends JpaRepository<DataFile, Long> {
      * @return data files which state is the given one and which are associated to the provided aip entity
      */
     @EntityGraph(value = "graph.datafile.full")
-    Set<DataFile> findAllByStateAndAipEntity(DataFileState stored, AIPEntity aipEntity);
+    Set<StorageDataFile> findAllByStateAndAipEntity(DataFileState stored, AIPEntity aipEntity);
 
     /**
-     * Find all {@link DataFile}s associated to the given aip entity
+     * Find all {@link StorageDataFile}s associated to the given aip entity
      * @param aipEntity
-     * @return {@link DataFile}s
+     * @return {@link StorageDataFile}s
      */
     @EntityGraph(value = "graph.datafile.full")
-    Set<DataFile> findAllByAipEntity(AIPEntity aipEntity);
+    Set<StorageDataFile> findAllByAipEntity(AIPEntity aipEntity);
 
     /**
      * Find the data file associated to the given aip entity and which type the provided one
@@ -45,7 +45,7 @@ public interface IDataFileRepository extends JpaRepository<DataFile, Long> {
      * @return the data file wrapped into an optional to avoid nulls
      */
     @EntityGraph(value = "graph.datafile.full")
-    Optional<DataFile> findByAipEntityAndDataType(AIPEntity aipEntity, DataType dataType);
+    Optional<StorageDataFile> findByAipEntityAndDataType(AIPEntity aipEntity, DataType dataType);
 
     /**
      * Retrieve a data file by its id
@@ -53,7 +53,7 @@ public interface IDataFileRepository extends JpaRepository<DataFile, Long> {
      * @return the data file wrapped into an optional to avoid nulls
      */
     @EntityGraph(value = "graph.datafile.full")
-    Optional<DataFile> findOneById(Long dataFileId);
+    Optional<StorageDataFile> findOneById(Long dataFileId);
 
     /**
      * Find all data files which checksum is one of the provided ones
@@ -61,7 +61,7 @@ public interface IDataFileRepository extends JpaRepository<DataFile, Long> {
      * @return data files which checksum is one of the provided ones
      */
     @EntityGraph(value = "graph.datafile.full")
-    Set<DataFile> findAllByChecksumIn(Set<String> checksums);
+    Set<StorageDataFile> findAllByChecksumIn(Set<String> checksums);
 
     /**
      * Find all data files which state is the provided one and that are associated to at least one of the provided aip entities
@@ -70,12 +70,12 @@ public interface IDataFileRepository extends JpaRepository<DataFile, Long> {
      * @return data files which state is the provided one and that are associated to at least one of the provided aip entities
      */
     @EntityGraph(value = "graph.datafile.full")
-    Set<DataFile> findAllByStateAndAipEntityIn(DataFileState dataFileState, Collection<AIPEntity> aipEntities);
+    Set<StorageDataFile> findAllByStateAndAipEntityIn(DataFileState dataFileState, Collection<AIPEntity> aipEntities);
 
     /**
      * Calculate the monitoring information on all data files of the database
      * @return the monitoring aggregation
      */
-    @Query("SELECT df.dataStorageUsed.id as dataStorageUsedId, sum(df.fileSize) as usedSize FROM DataFile df GROUP BY df.dataStorageUsed.id")
+    @Query("SELECT df.dataStorageUsed.id as dataStorageUsedId, sum(df.fileSize) as usedSize FROM StorageDataFile df GROUP BY df.dataStorageUsed.id")
     Collection<MonitoringAggregation> getMonitoringAggregation();
 }

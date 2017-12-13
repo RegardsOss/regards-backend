@@ -52,7 +52,7 @@ import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
 import fr.cnes.regards.modules.storage.domain.StorageException;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEventState;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
@@ -62,7 +62,7 @@ import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
 import fr.cnes.regards.modules.storage.service.job.RestorationJob;
 
 /**
- * Service to manage temporary accessibility of {@link DataFile} stored with a {@link INearlineDataStorage}
+ * Service to manage temporary accessibility of {@link StorageDataFile} stored with a {@link INearlineDataStorage}
  * plugin.<br/>
  * When a file is requested by {@link #restore} method this service retrieve the file from the
  * nearline datastorage plugin and copy it into his internal cache (Local disk)<br/>
@@ -220,13 +220,13 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     }
 
     @Override
-    public CoupleAvailableError restore(Set<DataFile> dataFilesToRestore, OffsetDateTime cacheExpirationDate) {
+    public CoupleAvailableError restore(Set<StorageDataFile> dataFilesToRestore, OffsetDateTime cacheExpirationDate) {
         LOG.debug("CachedFileService : run restoration process for {} files.", dataFilesToRestore.size());
         // Get files already in cache
         Set<String> dataFilesToRestoreChecksums = dataFilesToRestore.stream().map(df -> df.getChecksum())
                 .collect(Collectors.toSet());
         Set<CachedFile> cachedFiles = cachedFileRepository.findAllByChecksumIn(dataFilesToRestoreChecksums);
-        Set<DataFile> alreadyCachedData = dataFileDao
+        Set<StorageDataFile> alreadyCachedData = dataFileDao
                 .findAllByChecksumIn(cachedFiles.stream().map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
         // Update expiration to the new cacheExpirationDate if above the last one.
         for (CachedFile cachedFile : cachedFiles) {
@@ -239,27 +239,27 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         // Get cached files available
         Set<CachedFile> availableCachedFiles = cachedFiles.stream()
                 .filter(cf -> CachedFileState.AVAILABLE.equals(cf.getState())).collect(Collectors.toSet());
-        Set<DataFile> alreadyAvailableData = dataFileDao.findAllByChecksumIn(availableCachedFiles.stream()
+        Set<StorageDataFile> alreadyAvailableData = dataFileDao.findAllByChecksumIn(availableCachedFiles.stream()
                 .map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
         // Get cached files queued
         Set<CachedFile> queuedCachedFiles = cachedFiles.stream()
                 .filter(cf -> CachedFileState.QUEUED.equals(cf.getState())).collect(Collectors.toSet());
-        Set<DataFile> queuedData = dataFileDao.findAllByChecksumIn(queuedCachedFiles.stream()
+        Set<StorageDataFile> queuedData = dataFileDao.findAllByChecksumIn(queuedCachedFiles.stream()
                 .map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
 
         // Create the list of data files not handle by cache and needed to be restored
-        Set<DataFile> toRetrieve = Sets.newHashSet(dataFilesToRestore);
+        Set<StorageDataFile> toRetrieve = Sets.newHashSet(dataFilesToRestore);
         // Remove all files already availables in cache.
         toRetrieve.removeAll(alreadyCachedData);
         // Try to retrieve queued files if possible
         toRetrieve.addAll(queuedData);
 
         // Dispatch each Datafile by storage plugin.
-        Multimap<Long, DataFile> toRetrieveByStorage = HashMultimap.create();
-        for (DataFile df : toRetrieve) {
+        Multimap<Long, StorageDataFile> toRetrieveByStorage = HashMultimap.create();
+        for (StorageDataFile df : toRetrieve) {
             toRetrieveByStorage.put(df.getDataStorageUsed().getId(), df);
         }
-        Set<DataFile> errors = Sets.newHashSet();
+        Set<StorageDataFile> errors = Sets.newHashSet();
         for (Long storageConfId : toRetrieveByStorage.keySet()) {
             scheduleDataFileRestoration(storageConfId, toRetrieveByStorage.get(storageConfId), cacheExpirationDate);
         }
@@ -298,7 +298,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             LOG.debug("{} queued files to restore in cache for tenant {}", queuedFilesToCache.size(), tenant);
             Set<String> checksums = queuedFilesToCache.stream().map(CachedFile::getChecksum)
                     .collect(Collectors.toSet());
-            Set<DataFile> dataFiles = dataFileDao.findAllByChecksumIn(checksums);
+            Set<StorageDataFile> dataFiles = dataFileDao.findAllByChecksumIn(checksums);
             // Set an expiration date minimum of 24hours
             restore(dataFiles, OffsetDateTime.now().plusDays(1));
             LOG.debug(" -----------------> Handle queued cache restoration files for tenant {} END <-----------------------",
@@ -308,7 +308,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     }
 
     @Override
-    public void handleRestorationSuccess(DataFile data, Path restorationPath) {
+    public void handleRestorationSuccess(StorageDataFile data, Path restorationPath) {
         // lets set the restorationPath to the cached file and change its state
         Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum(data.getChecksum());
         try {
@@ -332,7 +332,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     }
 
     @Override
-    public void handleRestorationFailure(DataFile data) {
+    public void handleRestorationFailure(StorageDataFile data) {
         // Delete cached file as restoraion failed.
         Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum(data.getChecksum());
         if (ocf.isPresent()) {
@@ -447,12 +447,12 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     }
 
     /**
-     * Caclulate the {@link DataFile}s restorable to not over the max cache size limit {@link #maxCacheSizeKo}.
-     * @param dataFilesToRestore {@link DataFile}s to restore
+     * Caclulate the {@link StorageDataFile}s restorable to not over the max cache size limit {@link #maxCacheSizeKo}.
+     * @param dataFilesToRestore {@link StorageDataFile}s to restore
      * @param expirationDate {@link OffsetDateTime} Expiration date of the {@link CachedFile} to restore in cache.
-     * @return the {@link DataFile}s restorable
+     * @return the {@link StorageDataFile}s restorable
      */
-    private Set<DataFile> getRestorableDataFiles(Collection<DataFile> dataFilesToRestore,
+    private Set<StorageDataFile> getRestorableDataFiles(Collection<StorageDataFile> dataFilesToRestore,
             OffsetDateTime expirationDate) {
         // 2.2 Caculate total size of files to restore
         Long totalFilesSize = dataFilesToRestore.stream().mapToLong(df -> df.getFileSize()).sum();
@@ -460,7 +460,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         Long cacheMaxSizeInOctets = maxCacheSizeKo * 1024;
         Long availableCacheSize = cacheMaxSizeInOctets - currentCacheTotalSize;
 
-        final Set<DataFile> restorableFiles = Sets.newHashSet();
+        final Set<StorageDataFile> restorableFiles = Sets.newHashSet();
         // Check if there is enought space left in cache to restore all files into.
         if (totalFilesSize < availableCacheSize) {
             restorableFiles.addAll(dataFilesToRestore);
@@ -469,7 +469,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             // Return maximum number of files to restore.
             Set<String> checksums = Sets.newHashSet();
             Long totalFileSizesToHandle = 0L;
-            for (DataFile fileToRestore : dataFilesToRestore) {
+            for (StorageDataFile fileToRestore : dataFilesToRestore) {
                 Long fileSize = fileToRestore.getFileSize();
                 boolean fileAlreadyHandled = checksums.contains(fileToRestore.getChecksum());
                 if (fileAlreadyHandled || ((totalFileSizesToHandle + fileSize) < availableCacheSize)) {
@@ -483,7 +483,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         }
 
         // Initialize all files in cache
-        for (DataFile dataFileToRestore : dataFilesToRestore) {
+        for (StorageDataFile dataFileToRestore : dataFilesToRestore) {
             Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum(dataFileToRestore.getChecksum());
             // If cached file already exists do not storeAndCreate a new one.
             if (!ocf.isPresent()) {
@@ -500,18 +500,18 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     }
 
     /**
-     * Do schedule {@link DataFile}s restoration {@link PluginConfiguration} to restore files.
+     * Do schedule {@link StorageDataFile}s restoration {@link PluginConfiguration} to restore files.
      * @param pluginConfId {@link PluginConfiguration} Plugin to use to restore files.
-     * @param dataFilesToRestore {@link DataFile}s to restore.
+     * @param dataFilesToRestore {@link StorageDataFile}s to restore.
      * @param expirationDate {@link OffsetDateTime} Expiration date of the {@link CachedFile} to restore in cache.
-     * @return {@link DataFile}s that can not be restored.
+     * @return {@link StorageDataFile}s that can not be restored.
      */
-    private Set<DataFile> scheduleDataFileRestoration(Long pluginConfId, Collection<DataFile> dataFilesToRestore,
+    private Set<StorageDataFile> scheduleDataFileRestoration(Long pluginConfId, Collection<StorageDataFile> dataFilesToRestore,
             OffsetDateTime expirationDate) {
         LOG.debug("CachedFileService : Init restoration job for {} files.", dataFilesToRestore.size());
-        Set<DataFile> restorabledataFiles = getRestorableDataFiles(dataFilesToRestore, expirationDate);
+        Set<StorageDataFile> restorabledataFiles = getRestorableDataFiles(dataFilesToRestore, expirationDate);
         LOG.debug("CachedFileService : Schedule restoration job for {} files.", restorabledataFiles.size());
-        Set<DataFile> nonRestoredFiles = Sets.newHashSet();
+        Set<StorageDataFile> nonRestoredFiles = Sets.newHashSet();
         if (!restorabledataFiles.isEmpty()) {
             try {
                 INearlineDataStorage<IWorkingSubset> storageToUse = pluginService.getPlugin(pluginConfId);
@@ -533,8 +533,8 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
 
     /**
      * Do schedule @{link RestorationJob}s for each {@link IWorkingSubset} (more specialy for
-     * the associated {@link DataFile}s) using the given {@link PluginConfiguration} to restore files.
-     * @param workingSubsets Subsets containing {@link DataFile}s to restore.
+     * the associated {@link StorageDataFile}s) using the given {@link PluginConfiguration} to restore files.
+     * @param workingSubsets Subsets containing {@link StorageDataFile}s to restore.
      * @param storageConfId {@link PluginConfiguration} Plugin to use to restore files.
      * @return {@link JobInfo}s of the scheduled jobs
      */
@@ -565,16 +565,16 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
      * @param workingSubSets
      * @return files contained into dataFilesToSubSet and not into workingSubSets
      */
-    private Set<DataFile> checkPrepareResult(Collection<DataFile> dataFilesToSubSet,
+    private Set<StorageDataFile> checkPrepareResult(Collection<StorageDataFile> dataFilesToSubSet,
             Set<IWorkingSubset> workingSubSets) {
-        Set<DataFile> result = Sets.newHashSet();
-        Set<DataFile> subSetDataFiles = workingSubSets.stream().flatMap(wss -> wss.getDataFiles().stream())
+        Set<StorageDataFile> result = Sets.newHashSet();
+        Set<StorageDataFile> subSetDataFiles = workingSubSets.stream().flatMap(wss -> wss.getDataFiles().stream())
                 .collect(Collectors.toSet());
         if (subSetDataFiles.size() != dataFilesToSubSet.size()) {
-            Set<DataFile> notSubSetDataFiles = Sets.newHashSet(dataFilesToSubSet);
+            Set<StorageDataFile> notSubSetDataFiles = Sets.newHashSet(dataFilesToSubSet);
             notSubSetDataFiles.removeAll(subSetDataFiles);
             notSubSetDataFiles.stream().peek(df -> LOG.error(String
-                    .format("DataFile %s with checksum %s could not be restored because it was not assign to a working subset by its DataStorage used to storeAndCreate it!",
+                    .format("StorageDataFile %s with checksum %s could not be restored because it was not assign to a working subset by its DataStorage used to storeAndCreate it!",
                             df.getId(), df.getChecksum())))
                     .forEach(result::add);
         }

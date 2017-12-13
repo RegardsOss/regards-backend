@@ -58,7 +58,7 @@ import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubset;
@@ -86,7 +86,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
 
     private Set<JobParameter> parameters;
 
-    private DataFile df;
+    private StorageDataFile df;
 
     @Autowired
     private IPluginConfigurationRepository pluginRepo;
@@ -134,8 +134,8 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         URL source = new URL("file", "", "src/test/resources/data.txt");
         AIP aip = getAipFromFile();
         aip.addEvent(EventType.SUBMISSION.name(), "submission into our beautiful system");
-        df = new DataFile(source, "de89a907d33a9716d11765582102b2e0", "MD5", DataType.OTHER, 0L,
-                new MimeType("text", "plain"), aip, "data.txt");
+        df = new StorageDataFile(source, "de89a907d33a9716d11765582102b2e0", "MD5", DataType.OTHER, 0L,
+                                 new MimeType("text", "plain"), aip, "data.txt");
         workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
         // now that we have some parameters, lets storeAndCreate the job
         parameters = Sets.newHashSet();

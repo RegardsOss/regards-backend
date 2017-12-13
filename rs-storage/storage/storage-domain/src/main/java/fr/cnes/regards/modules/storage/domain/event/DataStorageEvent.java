@@ -7,7 +7,7 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * This is a subscribable event but not on a full broadcast mode: full broadcast means that it will be sent to EVERY
@@ -71,7 +71,7 @@ public class DataStorageEvent implements ISubscribable {
      * @param storageAction
      * @param type
      */
-    public DataStorageEvent(DataFile dataFile, StorageAction storageAction, StorageEventType type) {
+    public DataStorageEvent(StorageDataFile dataFile, StorageAction storageAction, StorageEventType type) {
         this.dataFileId = dataFile.getId();
         this.newUrl = dataFile.getUrl();
         this.storageAction = storageAction;

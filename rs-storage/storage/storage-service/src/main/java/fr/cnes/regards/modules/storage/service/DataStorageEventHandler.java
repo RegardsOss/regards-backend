@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.storage.service.job.StorageJobProgressManager;
 
 /**
  * Handler for DataStorageEvent events. This events are sent by the {@link StorageJobProgressManager} associated
- * to the {@link IDataStorage} plugins. After each {@link DataFile} stored, deleted or restored a {@link DataStorageEvent}
+ * to the {@link IDataStorage} plugins. After each {@link StorageDataFile} stored, deleted or restored a {@link DataStorageEvent}
  * should be sent thought the {@link StorageJobProgressManager}.
  *
  * @author Sylvain Vissiere-Guerinet
@@ -82,7 +82,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     * DAO to access {@link DataFile} entities.
+     * DAO to access {@link StorageDataFile} entities.
      */
     @Autowired
     private IDataFileDao dataFileDao;
@@ -143,7 +143,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
      * @param event {@link DataStorageEvent}
      */
     private void handleRestorationAction(StorageEventType type, DataStorageEvent event) {
-        Optional<DataFile> data = dataFileDao.findOneById(event.getDataFileId());
+        Optional<StorageDataFile> data = dataFileDao.findOneById(event.getDataFileId());
         if (data.isPresent()) {
             Path restorationPath = event.getRestorationPath();
             switch (type) {
@@ -159,7 +159,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                     break;
             }
         } else {
-            LOG.warn("[DATA STORAGE EVENT] restoration of non existing DataFile id {}", event.getDataFileId());
+            LOG.warn("[DATA STORAGE EVENT] restoration of non existing StorageDataFile id {}", event.getDataFileId());
         }
     }
 
@@ -169,8 +169,8 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
      * @param event {@link DataStorageEvent}
      */
     private void handleDeletionAction(StorageEventType type, DataStorageEvent event) {
-        // Check that the given DataFile id is associated to an existing DataFile from db.
-        Optional<DataFile> data = dataFileDao.findOneById(event.getDataFileId());
+        // Check that the given StorageDataFile id is associated to an existing StorageDataFile from db.
+        Optional<StorageDataFile> data = dataFileDao.findOneById(event.getDataFileId());
         if (data.isPresent()) {
             switch (type) {
                 case SUCCESSFULL:
@@ -185,27 +185,27 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
             }
         } else {
             LOG.error(
-                    "[DATAFILE DELETION EVENT] Invalid DataFile deletion event. DataFile does not exists in db for id {}",
+                    "[DATAFILE DELETION EVENT] Invalid StorageDataFile deletion event. StorageDataFile does not exists in db for id {}",
                     event.getDataFileId());
         }
     }
 
     /**
      * Method called when a SUCCESSFULL {@link DataStorageEvent} {@link StorageAction#DELETION} event is received.
-     * @param dataFileDeleted {@link DataFile} deleted.
-     * @param checksumOfDeletedFile {@link String} checksum of the deleted {@link DataFile}
+     * @param dataFileDeleted {@link StorageDataFile} deleted.
+     * @param checksumOfDeletedFile {@link String} checksum of the deleted {@link StorageDataFile}
      */
-    private void handleDeletionSuccess(DataFile dataFileDeleted, String checksumOfDeletedFile) {
-        // Get the associated AIP of the deleted DataFile from db
+    private void handleDeletionSuccess(StorageDataFile dataFileDeleted, String checksumOfDeletedFile) {
+        // Get the associated AIP of the deleted StorageDataFile from db
         Optional<AIP> optionalAssociatedAIP = aipDao.findOneByIpId(dataFileDeleted.getAip().getId().toString());
         if (optionalAssociatedAIP.isPresent() && dataFileDeleted.getChecksum().equals(checksumOfDeletedFile)) {
             AIP associatedAIP = optionalAssociatedAIP.get();
-            Optional<DataFile> metadataAIPFile = dataFileDao.findByAipAndType(associatedAIP, DataType.AIP);
+            Optional<StorageDataFile> metadataAIPFile = dataFileDao.findByAipAndType(associatedAIP, DataType.AIP);
             // If deleted file is not an AIP metadata file
             // Set the AIP to UPDATED state.
             if (!DataType.AIP.equals(dataFileDeleted.getDataType())) {
                 // Get from the AIP all the content informations to remove. All content informations to remove are the content informations with the same checksum that
-                // the deleted DataFile.
+                // the deleted StorageDataFile.
                 // @formatter:off
                 Set<ContentInformation> cisToRemove =
                         associatedAIP.getProperties().getContentInformations()
@@ -230,7 +230,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                 } else {
                     // Do not delete the dataFileDeleted from db. At this time in db the file is the new one that has been
                     // stored previously to replace the deleted one. This is a special case for AIP metadata file because,
-                    // at any time we want to ensure that there is only one DataFile of AIP type for a given AIP.
+                    // at any time we want to ensure that there is only one StorageDataFile of AIP type for a given AIP.
                     LOG.debug("[DELETE FILE SUCCESS] AIP metadata file replaced.",
                               dataFileDeleted.getAip().getId().toString());
                     associatedAIP.addEvent(EventType.UPDATE.name(), METADATA_UPDATED_SUCCESSFULLY);
@@ -246,9 +246,9 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
      * @param event {@link DataStorageEvent}
      */
     private void handleStoreAction(StorageEventType type, DataStorageEvent event) {
-        Optional<DataFile> optionalData = dataFileDao.findOneById(event.getDataFileId());
+        Optional<StorageDataFile> optionalData = dataFileDao.findOneById(event.getDataFileId());
         if (optionalData.isPresent()) {
-            DataFile data = optionalData.get();
+            StorageDataFile data = optionalData.get();
             Optional<AIP> optionalAssociatedAip = aipDao.findOneByIpId(data.getAip().getId().toString());
             if (optionalAssociatedAip.isPresent()) {
                 AIP associatedAIP = optionalAssociatedAip.get();
@@ -265,20 +265,20 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                         break;
                 }
             } else {
-                LOG.warn("[DATA STORAGE EVENT] DataFile stored {} is not associated to an existing AIP",
+                LOG.warn("[DATA STORAGE EVENT] StorageDataFile stored {} is not associated to an existing AIP",
                          event.getDataFileId());
             }
         } else {
-            LOG.warn("[DATA STORAGE EVENT] DataFile stored {} does not exists", event.getDataFileId());
+            LOG.warn("[DATA STORAGE EVENT] StorageDataFile stored {} does not exists", event.getDataFileId());
         }
     }
 
     /**
      * Method called when a SUCCESSFULL {@link DataStorageEvent} {@link StorageAction#STORE} event is received.
-     * @param storedDataFile {@link DataFile} successfully stored
-     * @param associatedAIP {@link AIP} associated to the given {@link DataFile} successfully stored
+     * @param storedDataFile {@link StorageDataFile} successfully stored
+     * @param associatedAIP {@link AIP} associated to the given {@link StorageDataFile} successfully stored
      */
-    private void handleStoreSuccess(DataFile storedDataFile, String storedFileChecksum, URL storedFileNewURL,
+    private void handleStoreSuccess(StorageDataFile storedDataFile, String storedFileChecksum, URL storedFileNewURL,
             Long storedFileSize, Long dataStoragePluginConfId, AIP associatedAIP) {
         // update data status
         PluginConfiguration dataStorageUsed = null;
@@ -314,7 +314,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
             publisher.publish(new AIPEvent(associatedAIP));
         } else {
             // if it is not the AIP metadata then the AIP metadata are not even scheduled for storage,
-            // just let set the new information about this DataFile
+            // just let set the new information about this StorageDataFile
             // @formatter:off
             Optional<ContentInformation> ci =
                     associatedAIP.getProperties().getContentInformations()
@@ -339,11 +339,11 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
 
     /**
      * Method called when a FAILURE {@link DataStorageEvent} {@link StorageAction#STORE} event is received.
-     * @param storeFailFile {@link DataFile} not deleted.
-     * @param associatedAIP {@link AIP} Associated to the {@link DataFile} in error.
-     * @param newUrl {@link URL} new URL of the {@link DataFile}
+     * @param storeFailFile {@link StorageDataFile} not deleted.
+     * @param associatedAIP {@link AIP} Associated to the {@link StorageDataFile} in error.
+     * @param newUrl {@link URL} new URL of the {@link StorageDataFile}
      */
-    private void handleStoreFailed(DataFile storeFailFile, AIP associatedAIP, URL newUrl) {
+    private void handleStoreFailed(StorageDataFile storeFailFile, AIP associatedAIP, URL newUrl) {
         // update data status
         storeFailFile.setState(DataFileState.ERROR);
         storeFailFile.setUrl(newUrl);

@@ -72,7 +72,7 @@ import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
@@ -708,9 +708,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     private void fillCache(AIP aip, String fileName, String checksum, Long fileSize, OffsetDateTime expiration,
             OffsetDateTime lastRequestDate, String location) throws MalformedURLException {
         // Simulate cache files to force cache limit size reached before restoring new files.
-        // First create DataFile
-        DataFile df = new DataFile(new URL("file://test/" + fileName), checksum, "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), aip, fileName);
+        // First create StorageDataFile
+        StorageDataFile df = new StorageDataFile(new URL("file://test/" + fileName), checksum, "MD5", DataType.RAWDATA, fileSize,
+                                                 MimeType.valueOf("application/text"), aip, fileName);
         df.setDataStorageUsed(nearLineConf);
         dataFileDao.save(df);
         // Then create cached file associated
@@ -727,7 +727,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     }
 
     /**
-     * Test method to simulate ceration of 3 new {@link DataFile} in Db as there where stored with a online storage
+     * Test method to simulate ceration of 3 new {@link StorageDataFile} in Db as there where stored with a online storage
      * plugin.
      * @param fileSize
      * @throws MalformedURLException
@@ -735,27 +735,27 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     private void fillOnlineDataFileDb(Long fileSize) throws MalformedURLException {
         AIP aip = getAIP();
         aipDao.save(aip);
-        Set<DataFile> datafiles = Sets.newHashSet();
+        Set<StorageDataFile> datafiles = Sets.newHashSet();
         URL url = new URL(Paths.get(baseStorageLocation.toString(), "file1.test").toString());
-        DataFile df = new DataFile(url, "1", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"),
-                aip, "file1.test");
+        StorageDataFile df = new StorageDataFile(url, "1", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"),
+                                                 aip, "file1.test");
         df.setDataStorageUsed(dataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
-        df = new DataFile(url, "2", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip,
-                "file2.test");
+        df = new StorageDataFile(url, "2", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip,
+                                 "file2.test");
         df.setDataStorageUsed(dataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
-        df = new DataFile(url, "3", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip,
-                "file3.test");
+        df = new StorageDataFile(url, "3", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip,
+                                 "file3.test");
         df.setDataStorageUsed(dataStorageConf);
         datafiles.add(df);
         dataFileDao.save(datafiles);
     }
 
     /**
-     * Test method to simulate ceration of 3 new {@link DataFile} in Db as there where stored with a nearline storage
+     * Test method to simulate ceration of 3 new {@link StorageDataFile} in Db as there where stored with a nearline storage
      * plugin.
      * @param fileSize
      * @throws MalformedURLException
@@ -763,20 +763,20 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     private AIP fillNearlineDataFileDb(Long fileSize, String checksumPrefix) throws MalformedURLException {
         AIP aip = getAIP();
         aipDao.save(aip);
-        Set<DataFile> datafiles = Sets.newHashSet();
+        Set<StorageDataFile> datafiles = Sets.newHashSet();
         URL url = new URL("file://PLOP/Node/file10.test");
-        DataFile df = new DataFile(url, checksumPrefix + "10", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), aip, "file10.test");
+        StorageDataFile df = new StorageDataFile(url, checksumPrefix + "10", "MD5", DataType.RAWDATA, fileSize,
+                                                 MimeType.valueOf("application/text"), aip, "file10.test");
         df.setDataStorageUsed(nearLineConf);
         datafiles.add(df);
         url = new URL("file://PLOP/Node/file20.test");
-        df = new DataFile(url, checksumPrefix + "20", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), aip, "file20.test");
+        df = new StorageDataFile(url, checksumPrefix + "20", "MD5", DataType.RAWDATA, fileSize,
+                                 MimeType.valueOf("application/text"), aip, "file20.test");
         df.setDataStorageUsed(nearLineConf);
         datafiles.add(df);
         url = new URL("file://PLOP/Node/file30.test");
-        df = new DataFile(url, checksumPrefix + "30", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), aip, "file30.test");
+        df = new StorageDataFile(url, checksumPrefix + "30", "MD5", DataType.RAWDATA, fileSize,
+                                 MimeType.valueOf("application/text"), aip, "file30.test");
         df.setDataStorageUsed(nearLineConf);
         datafiles.add(df);
         dataFileDao.save(datafiles);

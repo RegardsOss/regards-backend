@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
                 @NamedAttributeNode(value = "parameters", subgraph = "graph.datafile.dataStorageUsed.parameters") }),
         @NamedSubgraph(name = "graph.datafile.dataStorageUsed.parameters",
                 attributeNodes = { @NamedAttributeNode("dynamicsValues") }) })
-public class DataFile {
+public class StorageDataFile {
 
     /**
      * length used as the checksum column definition. Why 128? it allows to use sha-512. That should limit issues with checksum length for a few years
@@ -134,7 +134,7 @@ public class DataFile {
     /**
      * Default constructor
      */
-    private DataFile() {
+    private StorageDataFile() {
         // serialization
     }
 
@@ -144,7 +144,7 @@ public class DataFile {
      * @param mimeType
      * @param aip
      */
-    public DataFile(OAISDataObject file, MimeType mimeType, AIP aip) {
+    public StorageDataFile(OAISDataObject file, MimeType mimeType, AIP aip) {
         this(file.getUrl(),
              file.getChecksum(),
              file.getAlgorithm(),
@@ -172,7 +172,7 @@ public class DataFile {
      * @param aip
      * @param name
      */
-    public DataFile(URL url, String checksum, String algorithm, DataType type, Long fileSize, MimeType mimeType,
+    public StorageDataFile(URL url, String checksum, String algorithm, DataType type, Long fileSize, MimeType mimeType,
             AIP aip, String name) {
         this.url = url;
         this.checksum = checksum;
@@ -189,12 +189,12 @@ public class DataFile {
      * @param aip
      * @return extracted data files
      */
-    public static Set<DataFile> extractDataFiles(AIP aip) {
-        Set<DataFile> dataFiles = Sets.newHashSet();
+    public static Set<StorageDataFile> extractDataFiles(AIP aip) {
+        Set<StorageDataFile> dataFiles = Sets.newHashSet();
         for (ContentInformation ci : aip.getProperties().getContentInformations()) {
             OAISDataObject file = ci.getDataObject();
             MimeType mimeType = MimeType.valueOf(ci.getRepresentationInformation().getSyntax().getMimeType());
-            dataFiles.add(new DataFile(file, mimeType, aip));
+            dataFiles.add(new StorageDataFile(file, mimeType, aip));
         }
         return dataFiles;
     }
@@ -388,7 +388,7 @@ public class DataFile {
             return false;
         }
 
-        DataFile dataFile = (DataFile) o;
+        StorageDataFile dataFile = (StorageDataFile) o;
 
         if (checksum != null ? !checksum.equals(dataFile.checksum) : dataFile.checksum != null) {
             return false;

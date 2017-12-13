@@ -10,7 +10,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 
 /**
- * Biggest granularity information event on what's happening on an AIP. If you need informations on each DataFile,
+ * Biggest granularity information event on what's happening on an AIP. If you need informations on each StorageDataFile,
  * {@link DataFileEvent}.
  *
  * @author Sylvain Vissiere-Guerinet

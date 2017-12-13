@@ -4,7 +4,7 @@ import java.util.Map;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 
@@ -28,7 +28,7 @@ public class DeleteDataFilesJob extends AbstractStoreFilesJob {
     }
 
     @Override
-    protected void handleNotHandledDataFile(DataFile notHandled) {
+    protected void handleNotHandledDataFile(StorageDataFile notHandled) {
         progressManager.deletionFailed(notHandled, NOT_HANDLED_MSG);
     }
 }

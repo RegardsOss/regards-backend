@@ -4,23 +4,23 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 
 public class STAFWorkingSubset implements IWorkingSubset {
 
     /**
-     * Raw {@link DataFile}s associate
+     * Raw {@link StorageDataFile}s associate
      */
-    private Set<DataFile> datafiles = Sets.newHashSet();
+    private Set<StorageDataFile> datafiles = Sets.newHashSet();
 
-    public STAFWorkingSubset(Set<DataFile> pDatafiles) {
+    public STAFWorkingSubset(Set<StorageDataFile> pDatafiles) {
         super();
         datafiles = pDatafiles;
     }
 
     @Override
-    public Set<DataFile> getDataFiles() {
+    public Set<StorageDataFile> getDataFiles() {
         return datafiles;
     }
 

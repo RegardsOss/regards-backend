@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.staf.domain.STAFArchive;
 import fr.cnes.regards.framework.staf.domain.STAFArchiveModeEnum;
 import fr.cnes.regards.framework.staf.exception.STAFException;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
@@ -127,8 +127,8 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     @PluginParameter(name = STAF_WORKSPACE_PATH, label = "Workspace directory")
     private String workspaceDirectory;
 
-    public static Path getStafNode(DataFile pFile) {
-        // TODO : How to calculate staf node from DataFile or AIP ?
+    public static Path getStafNode(StorageDataFile pFile) {
+        // TODO : How to calculate staf node from StorageDataFile or AIP ?
         return Paths.get("common/default");
     }
 
@@ -148,10 +148,10 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
 
     /**
      * Generate three working subsets divided by STAF archiving mode {@link STAFArchiveModeEnum}
-     * @param dataFiles {@link Collection} of {@link DataFile} to dispatch
+     * @param dataFiles {@link Collection} of {@link StorageDataFile} to dispatch
      */
     @Override
-    public Set<STAFWorkingSubset> prepare(Collection<DataFile> dataFiles, DataStorageAccessModeEnum pMode) {
+    public Set<STAFWorkingSubset> prepare(Collection<StorageDataFile> dataFiles, DataStorageAccessModeEnum pMode) {
         switch (pMode) {
             case RETRIEVE_MODE:
                 return prepareRetrieveWorkingsubsets(dataFiles);
@@ -168,7 +168,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         return canDelete;
     }
 
-    public Set<STAFWorkingSubset> prepareStoreWorkingsubsets(Collection<DataFile> dataFiles) {
+    public Set<STAFWorkingSubset> prepareStoreWorkingsubsets(Collection<StorageDataFile> dataFiles) {
         LOG.info("[STAFDataStorage Plugin] {} - Prepare STORE action - Start", stafArchive.getArchiveName());
         Set<STAFWorkingSubset> workingSubsets = new HashSet<>();
         // Create workingSubset for file to stored dispatching by archive mode
@@ -186,7 +186,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         return workingSubsets;
     }
 
-    public Set<STAFWorkingSubset> prepareRetrieveWorkingsubsets(Collection<DataFile> dataFiles) {
+    public Set<STAFWorkingSubset> prepareRetrieveWorkingsubsets(Collection<StorageDataFile> dataFiles) {
         LOG.info("[STAFDataStorage Plugin] {} - Prepare RETRIEVE action - Start", stafArchive.getArchiveName());
         Set<STAFWorkingSubset> workingSubsets = new HashSet<>();
         Set<URL> urls = dataFiles.stream().map(df -> df.getUrl()).collect(Collectors.toSet());
@@ -206,8 +206,8 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             LOG.info("[STAFDataStorage Plugin] {} - Store action - Start with Working subset for STAF Node : {}",
                      stafArchive.getArchiveName(),
                      ws.getStafNode());
-            Set<DataFile> alreadyStoredFiles = Sets.newHashSet();
-            Set<DataFile> filesToStore = Sets.newHashSet();
+            Set<StorageDataFile> alreadyStoredFiles = Sets.newHashSet();
+            Set<StorageDataFile> filesToStore = Sets.newHashSet();
             // Check if files are already stored
             dispatchAlreadyStoredFiles(pSubset.getDataFiles(), alreadyStoredFiles, filesToStore);
             // Files already stored in STAF. Only send stored event to listeners
@@ -240,9 +240,9 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     }
 
     @Override
-    public void delete(Set<DataFile> pDataFiles, IProgressManager pProgressManager) {
+    public void delete(Set<StorageDataFile> pDataFiles, IProgressManager pProgressManager) {
         // 1. Prepare files
-        Map<URL, DataFile> urls = Maps.newHashMap();
+        Map<URL, StorageDataFile> urls = Maps.newHashMap();
         pDataFiles.stream().forEach(f -> urls.put(f.getUrl(), f));
         Set<AbstractPhysicalFile> filesToDelete = stafController.prepareFilesToDelete(urls.keySet());
         // 2. Delete prepared files
@@ -257,17 +257,17 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     }
 
     /**
-     * Do the store action for the given {@link DataFile}s
-     * @param pFilesToStore Set of {@link DataFile} of file to store.
+     * Do the store action for the given {@link StorageDataFile}s
+     * @param pFilesToStore Set of {@link StorageDataFile} of file to store.
      * @param pReplaceMode {@link Path} of the STAF Node where to store files.
      * @param pProgressManager{@link Boolean} replace if files exists into STAF ?
      */
-    private void doStore(Set<DataFile> pFilesToStore, Path pSTAFNode, Boolean pReplaceMode,
+    private void doStore(Set<StorageDataFile> pFilesToStore, Path pSTAFNode, Boolean pReplaceMode,
             IProgressManager pProgressManager) {
 
         // 1. Dispatch files to store by stafNode
         Map<Path, Set<Path>> filesToPrepare = Maps.newHashMap();
-        for (DataFile file : pFilesToStore) {
+        for (StorageDataFile file : pFilesToStore) {
             Path filePath;
             try {
                 filePath = Paths.get(getPhysicalFile(file).getPath());
@@ -324,13 +324,13 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
 
     /**
      * Dispatch the given files into two categories : Already stored files and files to store.
-     * A {@link DataFile} is identified as stored if his url use the staf protocol.
-     * @param pDataFiles {@link Collection} of {@link DataFile} to dispatch
-     * @param pAlreadyStoredFiles {@link Set} of already stored {@link DataFile}
-     * @param pFilesToStore {@link Set} of {@link DataFile} to store
+     * A {@link StorageDataFile} is identified as stored if his url use the staf protocol.
+     * @param pDataFiles {@link Collection} of {@link StorageDataFile} to dispatch
+     * @param pAlreadyStoredFiles {@link Set} of already stored {@link StorageDataFile}
+     * @param pFilesToStore {@link Set} of {@link StorageDataFile} to store
      */
-    private void dispatchAlreadyStoredFiles(Collection<DataFile> pDataFiles, Set<DataFile> pAlreadyStoredFiles,
-            Set<DataFile> pFilesToStore) {
+    private void dispatchAlreadyStoredFiles(Collection<StorageDataFile> pDataFiles, Set<StorageDataFile> pAlreadyStoredFiles,
+            Set<StorageDataFile> pFilesToStore) {
         pDataFiles.forEach(file -> {
             if (STAFController.STAF_PROTOCOLE.equals(file.getUrl().getProtocol())) {
                 pAlreadyStoredFiles.add(file);
@@ -341,12 +341,12 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     }
 
     /**
-     * Dispatch the given {@link Set} of {@link DataFile} into STAF archive mode {@link STAFArchiveModeEnum}
-     * @param pFiles {@link Collection}<{@link DataFile}>
-     * @return {@link Map}<{@link STAFArchiveModeEnum}, {@link Set}<{@link DataFile}>
+     * Dispatch the given {@link Set} of {@link StorageDataFile} into STAF archive mode {@link STAFArchiveModeEnum}
+     * @param pFiles {@link Collection}<{@link StorageDataFile}>
+     * @return {@link Map}<{@link STAFArchiveModeEnum}, {@link Set}<{@link StorageDataFile}>
      */
-    private Map<Path, Set<DataFile>> dispatchFilesToArchiveBySTAFNode(Collection<DataFile> pFiles) {
-        Map<Path, Set<DataFile>> dispatchedFiles = Maps.newHashMap();
+    private Map<Path, Set<StorageDataFile>> dispatchFilesToArchiveBySTAFNode(Collection<StorageDataFile> pFiles) {
+        Map<Path, Set<StorageDataFile>> dispatchedFiles = Maps.newHashMap();
         pFiles.forEach(file -> {
             Path stafNode;
             stafNode = getStafNode(file);
@@ -361,10 +361,10 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
 
     /**
      * Check that the physical file is accessible. If not, the file is retrieve from his origine url.
-     * @param file {@link DataFile} to retrieve file
+     * @param file {@link StorageDataFile} to retrieve file
      * @throws STAFException If the file is not accessible
      */
-    private File getPhysicalFile(DataFile file) throws IOException {
+    private File getPhysicalFile(StorageDataFile file) throws IOException {
         File physicalFile;
         if (!FILE_PROTOCOLE.equals(file.getUrl().getProtocol())) {
             // File to transfert locally is temporarelly named with the file checksum to ensure unicity

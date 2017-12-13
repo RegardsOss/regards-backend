@@ -10,7 +10,7 @@ import java.util.Set;
 
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * Interface for {@link CachedFile}s entities management.
@@ -26,20 +26,20 @@ public interface ICachedFileService {
      * @param cacheExpirationDate date until which files should be kept into the cache
      * @return already available or in error files
      */
-    CoupleAvailableError restore(Set<DataFile> nearlineFiles, OffsetDateTime cacheExpirationDate);
+    CoupleAvailableError restore(Set<StorageDataFile> nearlineFiles, OffsetDateTime cacheExpirationDate);
 
     /**
      * Handle a successful restoration of a file from a data storage
      * @param data
      * @param restorationPath
      */
-    void handleRestorationSuccess(DataFile data, Path restorationPath);
+    void handleRestorationSuccess(StorageDataFile data, Path restorationPath);
 
     /**
      * Handle a failed restoration of a file from a data storage
      * @param data
      */
-    void handleRestorationFailure(DataFile data);
+    void handleRestorationFailure(StorageDataFile data);
 
     /**
      * Retrieve a {@link CachedFile} if exists and is AVAILABLED.

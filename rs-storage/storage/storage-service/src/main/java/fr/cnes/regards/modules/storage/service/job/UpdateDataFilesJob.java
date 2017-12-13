@@ -15,7 +15,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storage.domain.StorageException;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 
@@ -36,9 +36,9 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
         // lets see if old data files has been given or not
         JobParameter oldDataFiles;
         if (((oldDataFiles = parameters.get(OLD_DATA_FILES_PARAMETER_NAME)) == null)
-                || !(oldDataFiles.getValue() instanceof DataFile[])) {
+                || !(oldDataFiles.getValue() instanceof StorageDataFile[])) {
             JobParameterMissingException e = new JobParameterMissingException(
-                    String.format(PARAMETER_MISSING, this.getClass().getName(), DataFile[].class.getName(),
+                    String.format(PARAMETER_MISSING, this.getClass().getName(), StorageDataFile[].class.getName(),
                                   OLD_DATA_FILES_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
@@ -56,7 +56,7 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
             IWorkingSubset workingSubset = parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
             // to do updates, first we storeAndCreate the new one ...
             PluginConfiguration storagePluginConf = pluginService.getPluginConfiguration(confIdToUse);
-            for (DataFile df : workingSubset.getDataFiles()) {
+            for (StorageDataFile df : workingSubset.getDataFiles()) {
                 df.setDataStorageUsed(storagePluginConf);
             }
             storagePlugin.store(workingSubset, true, progressManager);
@@ -64,8 +64,8 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
             afterRun();
             // ... then we delete the old ones, that has been updated:
             // first lets get the all the data files that should have been updated
-            Set<DataFile> oldDataFiles = Sets
-                    .newHashSet((DataFile[]) parameterMap.get(OLD_DATA_FILES_PARAMETER_NAME).getValue());
+            Set<StorageDataFile> oldDataFiles = Sets
+                    .newHashSet((StorageDataFile[]) parameterMap.get(OLD_DATA_FILES_PARAMETER_NAME).getValue());
             // then lets remove the ones that failed
             oldDataFiles.removeAll(progressManager.getFailedDataFile());
             // now we hvae the old data files that have been replaced
@@ -80,13 +80,13 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
     }
 
     @Override
-    protected void handleNotHandledDataFile(DataFile notHandled) {
+    protected void handleNotHandledDataFile(StorageDataFile notHandled) {
         progressManager.storageFailed(notHandled, NOT_HANDLED_MSG);
     }
 
     @Override
     public int getCompletionCount() {
         return ((IWorkingSubset) parameters.get(WORKING_SUB_SET_PARAMETER_NAME).getValue()).getDataFiles().size()
-                + ((DataFile[]) parameters.get(OLD_DATA_FILES_PARAMETER_NAME).getValue()).length;
+                + ((StorageDataFile[]) parameters.get(OLD_DATA_FILES_PARAMETER_NAME).getValue()).length;
     }
 }

@@ -60,7 +60,7 @@ import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 
 /**
@@ -477,7 +477,7 @@ public class AIPController implements IResourceController<AIP> {
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("ip_id") String aipId,
             @PathVariable("checksum") String checksum) throws ModuleException, IOException {
         // Retrieve file locale path
-        Optional<DataFile> dataFile = aipService.getAIPDataFile(aipId, checksum);
+        Optional<StorageDataFile> dataFile = aipService.getAIPDataFile(aipId, checksum);
         if (dataFile.isPresent()) {
             File file = new File(dataFile.get().getUrl().getPath());
             InputStreamResource isr = new InputStreamResource(new FileInputStream(file));

@@ -44,7 +44,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
 import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFDataStorage;
@@ -61,11 +61,11 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
     private static Logger LOG = LoggerFactory.getLogger(STAFDataStorageTest.class);
 
-    private final Set<DataFile> filesToArchive = Sets.newHashSet();
+    private final Set<StorageDataFile> filesToArchive = Sets.newHashSet();
 
-    private final Set<DataFile> filesToArchiveWithoutInvalides = Sets.newHashSet();
+    private final Set<StorageDataFile> filesToArchiveWithoutInvalides = Sets.newHashSet();
 
-    private final Set<DataFile> filesToArchiveMultiplesMode = Sets.newHashSet();
+    private final Set<StorageDataFile> filesToArchiveMultiplesMode = Sets.newHashSet();
 
     private final static Path WORKSPACE = Paths.get(new File("target/STAF/workspace").getAbsolutePath());
 
@@ -101,54 +101,54 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
                                                               OffsetDateTime.now());
         AIP aip = builder.build();
 
-        filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_1.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                "file_test_1.txt"));
+        filesToArchiveWithoutInvalides.add(new StorageDataFile(new URL("file", "", incomTestSourcesDir + "/file_test_1.txt"),
+                                                               "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                                                               "file_test_1.txt"));
 
-        filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_2.txt"),
-                "8e3d5e32119c70881316a1a2b17a64d1", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                "file_test_2.txt"));
-        filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_3.txt"),
-                "1f4add9aecfc4c623cdda55771f4b984", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                "file_test_3.txt"));
-        filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_4.txt"),
-                "955fd5652aadd97329a50e029163f3a9", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                "file_test_4.txt"));
-        filesToArchiveWithoutInvalides.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/file_test_5.txt"),
-                "61142380c96f899eaea71b229dcc4247", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                "file_test_5.txt"));
-        filesToArchiveWithoutInvalides.add(new DataFile(
+        filesToArchiveWithoutInvalides.add(new StorageDataFile(new URL("file", "", incomTestSourcesDir + "/file_test_2.txt"),
+                                                               "8e3d5e32119c70881316a1a2b17a64d1", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                                                               "file_test_2.txt"));
+        filesToArchiveWithoutInvalides.add(new StorageDataFile(new URL("file", "", incomTestSourcesDir + "/file_test_3.txt"),
+                                                               "1f4add9aecfc4c623cdda55771f4b984", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                                                               "file_test_3.txt"));
+        filesToArchiveWithoutInvalides.add(new StorageDataFile(new URL("file", "", incomTestSourcesDir + "/file_test_4.txt"),
+                                                               "955fd5652aadd97329a50e029163f3a9", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                                                               "file_test_4.txt"));
+        filesToArchiveWithoutInvalides.add(new StorageDataFile(new URL("file", "", incomTestSourcesDir + "/file_test_5.txt"),
+                                                               "61142380c96f899eaea71b229dcc4247", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                                                               "file_test_5.txt"));
+        filesToArchiveWithoutInvalides.add(new StorageDataFile(
                 new URL("http", "172.26.47.52", 80, "/conf/staticConfiguration.js"), "eadcc622739d58e8a78170b67c6ff9f3",
                 "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "staticConfiguration.js"));
 
         filesToArchive.addAll(filesToArchiveWithoutInvalides);
-        filesToArchive.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/invalid_test_file.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f2", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                "invalid_test_file.txt"));
+        filesToArchive.add(new StorageDataFile(new URL("file", "", incomTestSourcesDir + "/invalid_test_file.txt"),
+                                               "eadcc622739d58e8a78170b67c6ff9f2", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                                               "invalid_test_file.txt"));
         filesToArchive
-                .add(new DataFile(new URL("ftp", "177.7.7.7", "/path/file.txt"), "eadcc622739d58e8a78170b67c6ff9f1",
-                        "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file.txt"));
+                .add(new StorageDataFile(new URL("ftp", "177.7.7.7", "/path/file.txt"), "eadcc622739d58e8a78170b67c6ff9f1",
+                                         "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file.txt"));
 
         filesToArchiveMultiplesMode.addAll(filesToArchive);
 
-        filesToArchiveMultiplesMode.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/big_file_test_1.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f0", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip,
-                "big_file_test_1.txt"));
-        filesToArchiveMultiplesMode.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/big_file_test_2.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip,
-                "big_file_test_2.txt"));
-        filesToArchiveMultiplesMode.add(new DataFile(new URL("file", "", incomTestSourcesDir + "/big_file_test_3.txt"),
-                "eadcc622739d58e8a78170b67c6ff9f8", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip,
-                "big_file_test_3.txt"));
+        filesToArchiveMultiplesMode.add(new StorageDataFile(new URL("file", "", incomTestSourcesDir + "/big_file_test_1.txt"),
+                                                            "eadcc622739d58e8a78170b67c6ff9f0", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip,
+                                                            "big_file_test_1.txt"));
+        filesToArchiveMultiplesMode.add(new StorageDataFile(new URL("file", "", incomTestSourcesDir + "/big_file_test_2.txt"),
+                                                            "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip,
+                                                            "big_file_test_2.txt"));
+        filesToArchiveMultiplesMode.add(new StorageDataFile(new URL("file", "", incomTestSourcesDir + "/big_file_test_3.txt"),
+                                                            "eadcc622739d58e8a78170b67c6ff9f8", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip,
+                                                            "big_file_test_3.txt"));
 
         filesToArchiveMultiplesMode
-                .add(new DataFile(new URL("file", "", incomTestSourcesDir + "/normal_file_test_1.txt"),
-                        "eadcc622739d58e8a78170b67c6ff9f9", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN,
-                        aip, "normal_file_test_1.txt"));
+                .add(new StorageDataFile(new URL("file", "", incomTestSourcesDir + "/normal_file_test_1.txt"),
+                                         "eadcc622739d58e8a78170b67c6ff9f9", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN,
+                                         aip, "normal_file_test_1.txt"));
         filesToArchiveMultiplesMode
-                .add(new DataFile(new URL("file", "", incomTestSourcesDir + "/normal_file_test_2.txt"),
-                        "eadcc622739d58e8a78170b67c6ff9g4", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN,
-                        aip, "normal_file_test_2.txt"));
+                .add(new StorageDataFile(new URL("file", "", incomTestSourcesDir + "/normal_file_test_2.txt"),
+                                         "eadcc622739d58e8a78170b67c6ff9g4", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN,
+                                         aip, "normal_file_test_2.txt"));
     }
 
     /**
@@ -291,7 +291,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         String fileName = "file.txt";
         String cutFileName = "cut_file.txt";
         String tarFileName = "file2.txt";
-        Set<DataFile> dataFilesToRestore = Sets.newHashSet();
+        Set<StorageDataFile> dataFilesToRestore = Sets.newHashSet();
 
         AIPBuilder builder = new AIPBuilder(
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null,
@@ -300,14 +300,14 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
                                                               OffsetDateTime.now());
         AIP aip = builder.build();
 
-        dataFilesToRestore.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                fileName));
-        dataFilesToRestore.add(new DataFile(
+        dataFilesToRestore.add(new StorageDataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
+                                                   "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                                                   fileName));
+        dataFilesToRestore.add(new StorageDataFile(
                 new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName),
                 "eadcc622739d58e8a78170b67c6ff9f6", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
                 tarFileName));
-        dataFilesToRestore.add(new DataFile(
+        dataFilesToRestore.add(new StorageDataFile(
                 new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + cutFileName + "?parts=12"),
                 "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
                 cutFileName));
@@ -374,7 +374,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Test to retrieve a file from a tar that does not exists in the TAR. (see file.tar in
         // src/test/resources/staf/mock
         String tarFileName = "fileNotInTar.txt";
-        Set<DataFile> dataFilesToRestore = Sets.newHashSet();
+        Set<StorageDataFile> dataFilesToRestore = Sets.newHashSet();
 
         AIPBuilder builder = new AIPBuilder(
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null,
@@ -383,14 +383,14 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
                                                               OffsetDateTime.now());
         AIP aip = builder.build();
 
-        dataFilesToRestore.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                fileName));
-        dataFilesToRestore.add(new DataFile(
+        dataFilesToRestore.add(new StorageDataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
+                                                   "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                                                   fileName));
+        dataFilesToRestore.add(new StorageDataFile(
                 new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName),
                 "eadcc622739d58e8a78170b67c6ff9f6", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
                 tarFileName));
-        dataFilesToRestore.add(new DataFile(
+        dataFilesToRestore.add(new StorageDataFile(
                 new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + cutFileName + "?parts=12"),
                 "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
                 cutFileName));
@@ -457,7 +457,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         String fileName = "error.txt";
         String cutFileName = "cut_file.txt";
         String tarFileName = "fileNotInTar.txt";
-        Set<DataFile> dataFilesToRestore = Sets.newHashSet();
+        Set<StorageDataFile> dataFilesToRestore = Sets.newHashSet();
 
         AIPBuilder builder = new AIPBuilder(
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null,
@@ -466,14 +466,14 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
                                                               OffsetDateTime.now());
         AIP aip = builder.build();
 
-        dataFilesToRestore.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                fileName));
-        dataFilesToRestore.add(new DataFile(
+        dataFilesToRestore.add(new StorageDataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
+                                                   "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                                                   fileName));
+        dataFilesToRestore.add(new StorageDataFile(
                 new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName),
                 "eadcc622739d58e8a78170b67c6ff9f6", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
                 tarFileName));
-        dataFilesToRestore.add(new DataFile(
+        dataFilesToRestore.add(new StorageDataFile(
                 new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + cutFileName + "?parts=12"),
                 "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
                 cutFileName));
@@ -537,7 +537,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         String fileName = "file.txt";
         String cutFileName = "cut_file.txt";
         String tarFileName = "file2.txt";
-        Set<DataFile> dataFilesToDelete = Sets.newHashSet();
+        Set<StorageDataFile> dataFilesToDelete = Sets.newHashSet();
 
         AIPBuilder builder = new AIPBuilder(
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "tenant", UUID.randomUUID(), 1), null,
@@ -546,14 +546,14 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
                                                               OffsetDateTime.now());
         AIP aip = builder.build();
 
-        dataFilesToDelete.add(new DataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
-                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                fileName));
-        dataFilesToDelete.add(new DataFile(
+        dataFilesToDelete.add(new StorageDataFile(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName),
+                                                  "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                                                  fileName));
+        dataFilesToDelete.add(new StorageDataFile(
                 new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName),
                 "eadcc622739d58e8a78170b67c6ff9f6", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
                 tarFileName));
-        dataFilesToDelete.add(new DataFile(
+        dataFilesToDelete.add(new StorageDataFile(
                 new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + cutFileName + "?parts=12"),
                 "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
                 cutFileName));

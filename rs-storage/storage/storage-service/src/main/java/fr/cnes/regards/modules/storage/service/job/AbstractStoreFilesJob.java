@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeExcepti
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.storage.domain.StorageException;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 
@@ -181,14 +181,14 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
      * Decides if the job should fail or not
      */
     protected void afterRun() {
-        // before we make the job fail, lets check if all DataFile have been handled
-        Collection<DataFile> handled = progressManager.getHandledDataFile();
+        // before we make the job fail, lets check if all StorageDataFile have been handled
+        Collection<StorageDataFile> handled = progressManager.getHandledDataFile();
         IWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
         if (!handled.containsAll(workingSubset.getDataFiles())) {
             // not all data files have been handled, lets get the difference and make the not handled fail
-            Sets.SetView<DataFile> notHandledFiles = Sets
+            Sets.SetView<StorageDataFile> notHandledFiles = Sets
                     .difference(workingSubset.getDataFiles(), Sets.newHashSet(handled));
-            for (DataFile notHandled : notHandledFiles) {
+            for (StorageDataFile notHandled : notHandledFiles) {
                 handleNotHandledDataFile(notHandled);
             }
         }
@@ -204,7 +204,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
      * Method called when the job detects files that have not been handled by the storage plugin.
      * @param notHandled a data file that have not been handled by the storage plugin
      */
-    protected abstract void handleNotHandledDataFile(DataFile notHandled);
+    protected abstract void handleNotHandledDataFile(StorageDataFile notHandled);
 
     /**
      * Store files thanks to the parametrized data storage. Indicated to the data storage if the file should be replaced or not
@@ -223,7 +223,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
             // before storage on file system, lets update the DataFiles by setting which data storage is used to storeAndCreate
             // them.
             PluginConfiguration storagePluginConf = pluginService.getPluginConfiguration(confIdToUse);
-            for (DataFile data : workingSubset.getDataFiles()) {
+            for (StorageDataFile data : workingSubset.getDataFiles()) {
                 data.setDataStorageUsed(storagePluginConf);
             }
             storagePlugin.store(workingSubset, replaceMode, progressManager);

@@ -6,12 +6,12 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 
 /**
- * DTO used to extract public useful information about files of an aip. To get instances of this class use {@link DataFileDto#fromDataFile(DataFile)}.
+ * DTO used to extract public useful information about files of an aip. To get instances of this class use {@link DataFileDto#fromDataFile(StorageDataFile)}.
  *
  * @author Sylvain VISSIERE-GUERINET
  */
@@ -53,16 +53,16 @@ public class DataFileDto {
     private MimeType mimeType;
 
     /**
-     * Is the DataFile stored online?
+     * Is the StorageDataFile stored online?
      */
     private boolean online = false;
 
     /**
-     * Transform a {@link DataFile} to a {@link DataFileDto}.
+     * Transform a {@link StorageDataFile} to a {@link DataFileDto}.
      * @param dataFile origin data file
      * @return dto
      */
-    public static DataFileDto fromDataFile(DataFile dataFile) {
+    public static DataFileDto fromDataFile(StorageDataFile dataFile) {
         if (dataFile.getState() != DataFileState.STORED) {
             throw new IllegalArgumentException("DataFileDto cannot be created unless the data file is already stored");
         }

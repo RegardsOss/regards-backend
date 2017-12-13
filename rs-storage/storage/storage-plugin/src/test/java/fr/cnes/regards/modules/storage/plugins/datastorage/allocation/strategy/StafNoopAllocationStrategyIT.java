@@ -16,7 +16,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
@@ -40,7 +39,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.StafNoopAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
@@ -77,11 +76,11 @@ public class StafNoopAllocationStrategyIT extends AbstractRegardsTransactionalIT
 
     private PluginConfiguration stafNoopAllocationConf;
 
-    private Collection<DataFile> dataFiles;
+    private Collection<StorageDataFile> dataFiles;
 
-    private DataFile stafDataFile;
+    private StorageDataFile stafDataFile;
 
-    private DataFile otherDataFile;
+    private StorageDataFile otherDataFile;
 
     @Before
     public void init() throws ModuleException, MalformedURLException {
@@ -92,23 +91,23 @@ public class StafNoopAllocationStrategyIT extends AbstractRegardsTransactionalIT
     private void initDataFiles() throws MalformedURLException {
         dataFiles = Sets.newHashSet();
         AIP aip = getAIP();
-        stafDataFile = new DataFile(new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, "truc.json"),
-                                    "checksum",
-                                    "MD5",
-                                    DataType.OTHER,
-                                    666L,
-                                    MediaType.APPLICATION_JSON,
-                                    aip,
-                                    "truc");
+        stafDataFile = new StorageDataFile(new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, "truc.json"),
+                                           "checksum",
+                                           "MD5",
+                                           DataType.OTHER,
+                                           666L,
+                                           MediaType.APPLICATION_JSON,
+                                           aip,
+                                           "truc");
         dataFiles.add(stafDataFile);
-        otherDataFile = new DataFile(new URL("file", "", "local.json"),
-                                     "checksum2",
-                                     "MD5",
-                                     DataType.OTHER,
-                                     666L,
-                                     MediaType.APPLICATION_JSON,
-                                     aip,
-                                     "local");
+        otherDataFile = new StorageDataFile(new URL("file", "", "local.json"),
+                                            "checksum2",
+                                            "MD5",
+                                            DataType.OTHER,
+                                            666L,
+                                            MediaType.APPLICATION_JSON,
+                                            aip,
+                                            "local");
         dataFiles.add(otherDataFile);
     }
 
@@ -191,7 +190,7 @@ public class StafNoopAllocationStrategyIT extends AbstractRegardsTransactionalIT
     @Test
     public void testOk() throws ModuleException {
         StafNoopAllocationStrategy stafNoopAllocationStrategy = pluginService.getPlugin(stafNoopAllocationConf.getId());
-        Multimap<Long, DataFile> result = stafNoopAllocationStrategy.dispatch(dataFiles);
+        Multimap<Long, StorageDataFile> result = stafNoopAllocationStrategy.dispatch(dataFiles);
         Assert.assertTrue(result.containsEntry(stafDataStorage.getId(), stafDataFile));
         Assert.assertTrue(result.containsEntry(defaultDataStorage.getId(), otherDataFile));
     }

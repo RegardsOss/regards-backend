@@ -35,7 +35,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.PropertyDataStorageMapping;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.PropertyMappingAllocationStrategy;
@@ -56,15 +56,15 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
 
     private static final String PROPERTY_MAPPING_ALLOC_STRAT_LABEL = "PROPERTY_MAPPING_ALLOC_STRAT_LABEL";
 
-    private Collection<DataFile> dataFiles;
+    private Collection<StorageDataFile> dataFiles;
 
     private PluginConfiguration propertyMappingAllocStratConf;
 
-    private DataFile propertyDataFile;
+    private StorageDataFile propertyDataFile;
 
-    private DataFile otherDataFile;
+    private StorageDataFile otherDataFile;
 
-    private DataFile propertyWrongValDataFile;
+    private StorageDataFile propertyWrongValDataFile;
 
     @Autowired
     private IPluginService pluginService;
@@ -84,36 +84,36 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
         AIP aipWithProperty = getAIP();
         AIPBuilder builder = new AIPBuilder(aipWithProperty);
         builder.getPDIBuilder().addAdditionalProvenanceInformation("property", PROPERTY_VALUE);
-        propertyDataFile = new DataFile(new URL("file", "", "truc.json"),
-                                        "checksum",
-                                        "MD5",
-                                        DataType.OTHER,
-                                        666L,
-                                        MediaType.APPLICATION_JSON,
-                                        aipWithProperty,
-                                        "truc");
+        propertyDataFile = new StorageDataFile(new URL("file", "", "truc.json"),
+                                               "checksum",
+                                               "MD5",
+                                               DataType.OTHER,
+                                               666L,
+                                               MediaType.APPLICATION_JSON,
+                                               aipWithProperty,
+                                               "truc");
         dataFiles.add(propertyDataFile);
         AIP aipWithoutProperty = getAIP();
-        otherDataFile = new DataFile(new URL("file", "", "local.json"),
-                                     "checksum2",
-                                     "MD5",
-                                     DataType.OTHER,
-                                     666L,
-                                     MediaType.APPLICATION_JSON,
-                                     aipWithoutProperty,
-                                     "local");
+        otherDataFile = new StorageDataFile(new URL("file", "", "local.json"),
+                                            "checksum2",
+                                            "MD5",
+                                            DataType.OTHER,
+                                            666L,
+                                            MediaType.APPLICATION_JSON,
+                                            aipWithoutProperty,
+                                            "local");
         dataFiles.add(otherDataFile);
         AIP aipWithPropertyWrongVal = getAIP();
         builder = new AIPBuilder(aipWithPropertyWrongVal);
         builder.getPDIBuilder().addAdditionalProvenanceInformation("property", PROPERTY_VALUE + 3);
-        propertyWrongValDataFile = new DataFile(new URL("file", "", "truc.json"),
-                                                "checksum3",
-                                                "MD5",
-                                                DataType.OTHER,
-                                                666L,
-                                                MediaType.APPLICATION_JSON,
-                                                aipWithPropertyWrongVal,
-                                                "truc");
+        propertyWrongValDataFile = new StorageDataFile(new URL("file", "", "truc.json"),
+                                                       "checksum3",
+                                                       "MD5",
+                                                       DataType.OTHER,
+                                                       666L,
+                                                       MediaType.APPLICATION_JSON,
+                                                       aipWithPropertyWrongVal,
+                                                       "truc");
         dataFiles.add(propertyWrongValDataFile);
     }
 
@@ -161,7 +161,7 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
     @Test
     public void testOk() throws ModuleException {
         PropertyMappingAllocationStrategy allocStrat = pluginService.getPlugin(propertyMappingAllocStratConf.getId());
-        Multimap<Long, DataFile> result = allocStrat.dispatch(dataFiles);
+        Multimap<Long, StorageDataFile> result = allocStrat.dispatch(dataFiles);
         Assert.assertTrue("dispatch should have mapped propertyDataFile to the data storage conf id",
                           result.containsEntry(MAPPED_DATA_STORAGE_CONF_ID, propertyDataFile));
         Assert.assertFalse("dispatch should not have mapped otherDataFile to any data storage conf id",

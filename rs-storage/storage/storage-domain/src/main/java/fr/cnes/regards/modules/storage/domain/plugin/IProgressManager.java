@@ -6,8 +6,7 @@ package fr.cnes.regards.modules.storage.domain.plugin;
 import java.net.URL;
 import java.nio.file.Path;
 
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * The ProgressManager is used by {@link INearlineDataStorage} plugins to notidy the upper service of storage action results :
@@ -24,44 +23,44 @@ import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 public interface IProgressManager {
 
     /**
-     * Notify system that the given {@link DataFile} is stored.
-     * @param dataFile {@link DataFile} stored.
+     * Notify system that the given {@link StorageDataFile} is stored.
+     * @param dataFile {@link StorageDataFile} stored.
      * @param storedUrl {@link URL} new URL of the successfuly stored file.
      */
-    public void storageSucceed(DataFile storedDataFile, URL storedUrl, Long storedFileSize);
+    public void storageSucceed(StorageDataFile storedDataFile, URL storedUrl, Long storedFileSize);
 
     /**
-     * Notify the system that the given {@link DataFile} couldn't be stored.
-     * @param dataFile {@link DataFile} not stored.
+     * Notify the system that the given {@link StorageDataFile} couldn't be stored.
+     * @param dataFile {@link StorageDataFile} not stored.
      * @param cause {@link String} error message.
      */
-    public void storageFailed(DataFile dataFileFailed, String cause);
+    public void storageFailed(StorageDataFile dataFileFailed, String cause);
 
     /**
-     * Notify system that the given {@link DataFile} is deleted.
-     * @param dataFile {@link DataFile} deleted.
+     * Notify system that the given {@link StorageDataFile} is deleted.
+     * @param dataFile {@link StorageDataFile} deleted.
      */
-    public void deletionSucceed(DataFile dataFileDeleted);
+    public void deletionSucceed(StorageDataFile dataFileDeleted);
 
     /**
-     * Notify the system that the given {@link DataFile} couldn't be deleted.
-     * @param dataFile {@link DataFile} not deleted.
+     * Notify the system that the given {@link StorageDataFile} couldn't be deleted.
+     * @param dataFile {@link StorageDataFile} not deleted.
      * @param cause {@link String} error message.
      */
-    public void deletionFailed(DataFile dataFileFailed, String failureCause);
+    public void deletionFailed(StorageDataFile dataFileFailed, String failureCause);
 
     /**
-     * Notify system that the given {@link DataFile} is restored.
-     * @param dataFile {@link DataFile} restored.
+     * Notify system that the given {@link StorageDataFile} is restored.
+     * @param dataFile {@link StorageDataFile} restored.
      * @param storedUrl {@link Path} of the restored file.
      */
-    public void restoreSucceed(DataFile dataFile, Path restoredFilePath);
+    public void restoreSucceed(StorageDataFile dataFile, Path restoredFilePath);
 
     /**
-     * Notify the system that the given {@link DataFile} couldn't be restored.
-     * @param dataFile {@link DataFile} not restored.
+     * Notify the system that the given {@link StorageDataFile} couldn't be restored.
+     * @param dataFile {@link StorageDataFile} not restored.
      * @param cause {@link String} error message.
      */
-    public void restoreFailed(DataFile dataFile, String failureCause);
+    public void restoreFailed(StorageDataFile dataFile, String failureCause);
 
 }

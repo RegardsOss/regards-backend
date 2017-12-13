@@ -5,7 +5,7 @@ package fr.cnes.regards.modules.storage.plugin.datastorage.local;
 
 import java.util.Set;
 
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 
 /**
@@ -17,7 +17,7 @@ public class LocalWorkingSubset implements IWorkingSubset {
     /**
      * Data files from this working subset
      */
-    private Set<DataFile> dataFiles;
+    private Set<StorageDataFile> dataFiles;
 
     /**
      * Default constructor
@@ -29,12 +29,12 @@ public class LocalWorkingSubset implements IWorkingSubset {
      * Constructor setting the parameter as attribute
      * @param dataFiles
      */
-    public LocalWorkingSubset(Set<DataFile> dataFiles) {
+    public LocalWorkingSubset(Set<StorageDataFile> dataFiles) {
         this.dataFiles = dataFiles;
     }
 
     @Override
-    public Set<DataFile> getDataFiles() {
+    public Set<StorageDataFile> getDataFiles() {
         return dataFiles;
     }
 
@@ -42,7 +42,7 @@ public class LocalWorkingSubset implements IWorkingSubset {
      * Set the data files
      * @param dataFiles
      */
-    public void setDataFiles(Set<DataFile> dataFiles) {
+    public void setDataFiles(Set<StorageDataFile> dataFiles) {
         this.dataFiles = dataFiles;
     }
 }

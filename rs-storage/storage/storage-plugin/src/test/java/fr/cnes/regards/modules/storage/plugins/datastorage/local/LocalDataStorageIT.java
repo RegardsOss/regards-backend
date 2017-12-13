@@ -46,7 +46,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
@@ -161,20 +161,20 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
         aip.addEvent(EventType.SUBMISSION.name(), "just for fun", OffsetDateTime.now());
         LocalDataStorage storagePlugin = pluginService.getPlugin(localStorageConf.getId());
         // valid file to get a call to progressManager.storageSucceed
-        DataFile validDF = new DataFile(
+        StorageDataFile validDF = new StorageDataFile(
                 new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt"),
                 "538b3f98063b77e50f78b51f1a6acd8c", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip,
                 "data.txt");
         // file that does not exist to get a call to progressManager.storageFailed
-        DataFile ghostDF = new DataFile(
+        StorageDataFile ghostDF = new StorageDataFile(
                 new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data_do_not_exist.txt"),
                 "unknown", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip, "data_do_not_exist.txt");
         // invalid checksum to check call to progressManager.storageFailed
-        DataFile invalidDF = new DataFile(
+        StorageDataFile invalidDF = new StorageDataFile(
                 new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt"),
                 "01234567890123456789012345678901", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip,
                 "data.txt");
-        Set<DataFile> dataFiles = Sets.newHashSet(validDF, ghostDF, invalidDF);
+        Set<StorageDataFile> dataFiles = Sets.newHashSet(validDF, ghostDF, invalidDF);
         LocalWorkingSubset workingSubSet = new LocalWorkingSubset(dataFiles);
         storagePlugin.store(workingSubSet, false, progressManager);
         Mockito.verify(progressManager).storageSucceed(Mockito.eq(validDF), Mockito.any(), Mockito.any());

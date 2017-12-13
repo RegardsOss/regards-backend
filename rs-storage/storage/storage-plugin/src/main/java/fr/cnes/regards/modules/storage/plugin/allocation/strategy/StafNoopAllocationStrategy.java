@@ -18,14 +18,14 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.staf.domain.STAFArchive;
 import fr.cnes.regards.framework.staf.protocol.STAFURLFactory;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFDataStorage;
 
 /**
- * Allocation Strategy that analyse the {@link DataFile} url to determine which {@link IDataStorage} should handle it:
+ * Allocation Strategy that analyse the {@link StorageDataFile} url to determine which {@link IDataStorage} should handle it:
  * <ul>
  *     <li>in case the url protocol is staf: extract the staf archive name and maps it to the corresponding {@link STAFDataStorage} configuration.</li>
  *     <li>otherwise, maps it to the provided "default" {@link IDataStorage}</li>
@@ -69,8 +69,8 @@ public class StafNoopAllocationStrategy implements IAllocationStrategy {
     private Long dataStorageConfigurationId;
 
     @Override
-    public Multimap<Long, DataFile> dispatch(Collection<DataFile> dataFilesToHandle) {
-        Multimap<Long, DataFile> dispatch = HashMultimap.create();
+    public Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle) {
+        Multimap<Long, StorageDataFile> dispatch = HashMultimap.create();
         // Lets prepare the different staf configuration we have by staf archive name
         // First we get the Nearline type
         List<PluginConfiguration> nearlineDataStorages = pluginService
@@ -83,7 +83,7 @@ public class StafNoopAllocationStrategy implements IAllocationStrategy {
                                                                             .getValue(),STAFArchive.class).getArchiveName(),
                                           stafConf -> stafConf.getId()));
         // @formatter:on
-        for (DataFile dataFile : dataFilesToHandle) {
+        for (StorageDataFile dataFile : dataFilesToHandle) {
             String urlProtocol = dataFile.getUrl().getProtocol();
             switch (urlProtocol) {
                 case STAFURLFactory.STAF_URL_PROTOCOLE:

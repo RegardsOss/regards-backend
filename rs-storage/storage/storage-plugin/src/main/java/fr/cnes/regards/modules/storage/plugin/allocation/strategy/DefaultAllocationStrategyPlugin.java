@@ -14,7 +14,7 @@ import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 
@@ -37,14 +37,14 @@ public class DefaultAllocationStrategyPlugin implements IAllocationStrategy {
     private IPluginService pluginService;
 
     @Override
-    public Multimap<Long, DataFile> dispatch(Collection<DataFile> dataFilesToHandle) {
+    public Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle) {
         //first lets get the plugin configuration of type IDataStorage, then lets get only the active ones,
         // eventually order them and choose the one with the highest priority
         PluginConfiguration dataStorageConfToUse = pluginService.getPluginConfigurationsByType(IDataStorage.class)
                 .stream().filter(pc -> pc.isActive())
                 .sorted(Comparator.comparing(PluginConfiguration::getPriorityOrder)).findFirst().orElseThrow(
                         () -> new MaintenanceException("There is no active plugin configuration of type IDataStorage"));
-        HashMultimap<Long, DataFile> result = HashMultimap.create(1, dataFilesToHandle.size());
+        HashMultimap<Long, StorageDataFile> result = HashMultimap.create(1, dataFilesToHandle.size());
         result.putAll(dataStorageConfToUse.getId(), dataFilesToHandle);
         return result;
     }
