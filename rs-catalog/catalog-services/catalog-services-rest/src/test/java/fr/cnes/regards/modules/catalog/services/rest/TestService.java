@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.catalog.services.rest;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.util.LinkedHashSet;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.assertj.core.util.Sets;
 import org.springframework.core.io.InputStreamResource;
@@ -31,7 +30,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import com.google.gson.GsonBuilder;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -52,7 +50,7 @@ public class TestService implements IService {
 
     public static final String EXPECTED_VALUE = "skydiving";
 
-    @PluginParameter(name = "para")
+    @PluginParameter(name = "para", label = "para label")
     private String para;
 
     @Override

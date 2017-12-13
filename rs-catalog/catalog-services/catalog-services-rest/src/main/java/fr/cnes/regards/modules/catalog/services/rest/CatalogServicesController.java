@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.catalog.services.rest;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -60,6 +59,9 @@ public class CatalogServicesController {
 
     public static final String PATH_SERVICE_NAME = "/{pluginConfigurationId}/apply";
 
+    /**
+     * {@link IServiceManager} instance
+     */
     @Autowired
     private IServiceManager serviceManager;
 

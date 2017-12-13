@@ -104,6 +104,9 @@ public class LinkPluginsDatasets {
         datasetId = pDatasetId;
     }
 
+    /**
+     * @return the services plugin configurations
+     */
     public Set<PluginConfiguration> getServices() {
         return services;
     }

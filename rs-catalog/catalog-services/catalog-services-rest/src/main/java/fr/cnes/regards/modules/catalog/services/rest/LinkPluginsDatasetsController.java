@@ -44,8 +44,14 @@ import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDataset
 @RequestMapping(path = LinkPluginsDatasetsController.PATH_LINK)
 public class LinkPluginsDatasetsController {
 
+    /**
+     * Controller base path
+     */
     public static final String PATH_LINK = "/linkplugindataset/{datasetId}";
 
+    /**
+     * {@link ILinkPluginsDatasetsService} instance
+     */
     @Autowired
     private ILinkPluginsDatasetsService linkService;
 

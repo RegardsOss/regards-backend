@@ -64,9 +64,9 @@ public class MarkdownRepresentation implements IRepresentation {
     }
 
     @Override
-    public byte[] transform(Collection<AbstractEntity> pEntity, Charset pCharset) {
+    public byte[] transform(Collection<AbstractEntity> entities, Charset pCharset) {
         StringJoiner sj = new StringJoiner("\n-");
-        for (AbstractEntity entity : pEntity) {
+        for (AbstractEntity entity : entities) {
             sj.add(stringify(entity));
         }
         return sj.toString().getBytes(pCharset);
