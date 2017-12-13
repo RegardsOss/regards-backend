@@ -36,6 +36,9 @@ import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
  */
 public class Spot2PluginTest extends AbstractProductMetadataPluginTest {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Spot2Doris1bPluginTest.class);
 
     @Autowired
@@ -63,7 +66,6 @@ public class Spot2PluginTest extends AbstractProductMetadataPluginTest {
         addPluginTestDef("DA_TC_SPOT2_HISTO_COM", "spot2/com");
         addPluginTestDef("DA_TC_SPOT2_DORIS10_COM", "spot2/commerciales_10");
         addPluginTestDef("DA_TC_SPOT2_DORIS10_PUB", "spot2/publiques_10");
-        // FIXME TEST pas de rep doris1b_poe_cddis
         // addPluginTestDef("DA_TC_SPOT2_DORIS1B_POE_CDDIS", "spot2/doris1b_poe_cddis");
         addPluginTestDef("DA_TC_SPOT2_MOE", "spot2/moe");
         addPluginTestDef("DA_TC_SPOT2_POE", "spot2/poe");
@@ -77,7 +79,6 @@ public class Spot2PluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public void initTestSoloList() {
-        addPluginTestDef("DA_TC_SPOT2_LOGVOL_DORIS_1G", "spot2/logvol");
     }
 
     @Override

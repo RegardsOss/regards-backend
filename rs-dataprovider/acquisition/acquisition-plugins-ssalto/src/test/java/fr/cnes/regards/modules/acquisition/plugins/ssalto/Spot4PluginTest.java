@@ -40,6 +40,9 @@ import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 @EnableAutoConfiguration
 public class Spot4PluginTest extends AbstractProductMetadataPluginTest {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Jason2OgdrPluginTest.class);
 
     @Autowired
@@ -67,7 +70,6 @@ public class Spot4PluginTest extends AbstractProductMetadataPluginTest {
         addPluginTestDef("DA_TC_SPOT4_HISTO_COM", "spot4/com");
         addPluginTestDef("DA_TC_SPOT4_DORIS10_COM", "spot4/commerciales_10");
         addPluginTestDef("DA_TC_SPOT4_DORIS10_PUB", "spot4/publiques_10");
-        // FIXME TEST, pas de répertoire doris1b_poe_cddis
         // addPluginTestDef("DA_TC_SPOT4_DORIS1B_POE_CDDIS", "spot4/doris1b_poe_cddis");
         addPluginTestDef("DA_TC_SPOT4_MOE", "spot4/moe");
         addPluginTestDef("DA_TC_SPOT4_POE", "spot4/poe");
@@ -77,14 +79,12 @@ public class Spot4PluginTest extends AbstractProductMetadataPluginTest {
         addPluginTestDef("DA_TC_SPOT4_FREQAJ_BALPUB", "COMMUN/BALISES_PUBLIQUES/FA",
                          "SP4_FBP_AXXCNE20090620_134800_20090619_020807_20090620_015847");
         addPluginTestDef("DA_TC_SPOT4_LOGVOL_DORIS_1G", "spot4/logvol");
-        // TODO : Pas de données
+        // no data available
         // addPluginTestDef("DA_TC_SPOT4_POE_SP3", "spot4/logvol");
-
     }
 
     @Override
     public void initTestSoloList() {
-        addPluginTestDef("DA_TC_SPOT4_LOGVOL_DORIS_1G", "spot4/logvol");
     }
 
     @Override

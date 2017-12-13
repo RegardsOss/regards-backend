@@ -35,6 +35,9 @@ import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 @EnableAutoConfiguration
 public class Spot4Doris1bPluginTest extends AbstractProductMetadataPluginTest {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Jason2OgdrPluginTest.class);
 
     @Autowired
@@ -50,18 +53,15 @@ public class Spot4Doris1bPluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public IGenerateSIPPlugin buildPlugin() throws ModuleException {
-        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Spot4Doris1BProductMetadataPlugin");
+        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Spot4ProductMetadataPlugin");
 
         return pluginService.getPlugin(pluginConfiguration.getId());
     }
 
     @Override
     public void initTestList() {
-        // FIXME TEST, il n'y a plus le prefix dans DATA_OBJECT_IDENTIFIER
         // addPluginTestDef("DA_TC_SPOT4_DORIS1B_MOE_CDDIS", "spot4/doris1b_moe_cddis");
-        // FIXME TEST, il n'y a plus le prefix dans DATA_OBJECT_IDENTIFIER
         // addPluginTestDef("DA_TC_SPOT4_DORIS1B_MOE_CDDIS_COM", "spot4/doris1b_moe_cddis_com");
-        // FIXME TEST, il n'y a plus le prefix dans DATA_OBJECT_IDENTIFIER
         // addPluginTestDef("DA_TC_SPOT4_DORIS1B_POE_CDDIS_COM", "spot4/doris1b_poe_cddis_com");
     }
 

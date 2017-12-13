@@ -48,6 +48,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -79,6 +80,7 @@ import fr.cnes.regards.modules.acquisition.tools.xsd.XMLValidatorFactory;
  *
  * @author Christophe Mertz
  */
+@ActiveProfiles({ "disableDataProviderTask" })
 public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsIT
         implements IProductMetadataPluginTest {
 

@@ -35,6 +35,9 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.SaralP
  */
 public class Sentinel3APluginTest extends AbstractProductMetadataPluginTest {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(SaralProductMetadataPlugin.class);
 
     @Autowired
@@ -57,8 +60,8 @@ public class Sentinel3APluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public void initTestList() {
-        // addPluginTestDef("DA_TC_SENT3A_COM", "sent3A/com_brut"); KO
-        // addPluginTestDef("DA_TC_SENT3A_HISTO_FOUS_ESA", "sent3A/fous_pdgs"); // KO
+        // addPluginTestDef("DA_TC_SENT3A_COM", "sent3A/com_brut");
+        // addPluginTestDef("DA_TC_SENT3A_HISTO_FOUS_ESA", "sent3A/fous_pdgs");
 
         addPluginTestDef("DA_TC_SENT3A_HISTO_ORF", "sent3A/orf_historique");
         addPluginTestDef("DA_TC_SENT3A_DORIS_NAV", "sent3A/pltm");
@@ -66,7 +69,6 @@ public class Sentinel3APluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public void initTestSoloList() {
-        addPluginTestDef("DA_TC_SENT3A_DORIS_NAV", "sent3A/pltm");
     }
 
     @Override

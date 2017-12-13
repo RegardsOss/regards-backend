@@ -31,22 +31,21 @@ public class Jason2DorisPluginTest extends Jason2PluginTest {
 
     @Override
     public void initTestList() {
-        // TODO CMZ : corriger failed tests
-//        addPluginTestDef("DA_TC_JASON2_DORIS10_FLAG", "JASON2/DOR10_INVALIDES",
-//                         "DJ2_FLA_1PaP20090117_113657_20090117_000010_20090117_102444");
-//        addPluginTestDef("DA_TC_JASON2_DORIS10_FLAG", "JASON2/DOR10_INVALIDES", "DJ2_FLA_1PaD20081203_000051");
-//        addPluginTestDef("DA_TC_JASON2_DORIS10_COM", "JASON2/COMMERCIALES_10",
-//                         "DJ2_MEC_1PaP20081226_113759_20081225_235951_20081226_100205");
-//        addPluginTestDef("DA_TC_JASON2_DORIS10_COM", "JASON2/COMMERCIALES_10", "DJ2_MEC_1PaD20081202_235951");
-//        addPluginTestDef("DA_TC_JASON2_DORIS10_PUB", "JASON2/PUBLIQUES_10", "DJ2_MEP_1PaD20081015_235951");
-//        addPluginTestDef("DA_TC_JASON2_DORIS10_PUB", "JASON2/PUBLIQUES_10",
-//                         "DJ2_MEP_1PaP20081017_113759_20081016_235951_20081017_102515");
+        //        addPluginTestDef("DA_TC_JASON2_DORIS10_FLAG", "JASON2/DOR10_INVALIDES",
+        //                         "DJ2_FLA_1PaP20090117_113657_20090117_000010_20090117_102444");
+        //        addPluginTestDef("DA_TC_JASON2_DORIS10_FLAG", "JASON2/DOR10_INVALIDES", "DJ2_FLA_1PaD20081203_000051");
+        //        addPluginTestDef("DA_TC_JASON2_DORIS10_COM", "JASON2/COMMERCIALES_10",
+        //                         "DJ2_MEC_1PaP20081226_113759_20081225_235951_20081226_100205");
+        //        addPluginTestDef("DA_TC_JASON2_DORIS10_COM", "JASON2/COMMERCIALES_10", "DJ2_MEC_1PaD20081202_235951");
+        //        addPluginTestDef("DA_TC_JASON2_DORIS10_PUB", "JASON2/PUBLIQUES_10", "DJ2_MEP_1PaD20081015_235951");
+        //        addPluginTestDef("DA_TC_JASON2_DORIS10_PUB", "JASON2/PUBLIQUES_10",
+        //                         "DJ2_MEP_1PaP20081017_113759_20081016_235951_20081017_102515");
     }
 
     @Override
     public void initTestSoloList() {
-//        addPluginTestDef("DA_TC_JASON2_DORIS10_FLAG", "JASON2/DOR10_INVALIDES",
-//                         "DJ2_FLA_1PaP20090117_113657_20090117_000010_20090117_102444");
+        //        addPluginTestDef("DA_TC_JASON2_DORIS10_FLAG", "JASON2/DOR10_INVALIDES",
+        //                         "DJ2_FLA_1PaP20090117_113657_20090117_000010_20090117_102444");
     }
 
 }

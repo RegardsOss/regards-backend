@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import org.junit.Before;
-import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.ContextConfiguration;
@@ -54,7 +53,7 @@ public class Jason3Pltm1PluginTest extends Jason3PluginTest {
     @Override
     public IGenerateSIPPlugin buildPlugin() throws ModuleException {
         PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Jason3Pltm1ProductMetadataPlugin");
-    
+
         return pluginService.getPlugin(pluginConfiguration.getId());
     }
 
@@ -63,7 +62,6 @@ public class Jason3Pltm1PluginTest extends Jason3PluginTest {
         addPluginTestDef("DA_TC_JASON3_PLTM1", "JASON3/PLTM1",
                          "JA3_PLTM1_P_1025_20141202_102029_20141202_075614_20141202_095124");
         addPluginTestDef("DA_TC_JASON3_PLTM1", "JASON3/PLTM1", "JA3_PLTM1_P_1280_20141202_102029__");
-
     }
 
     @Override

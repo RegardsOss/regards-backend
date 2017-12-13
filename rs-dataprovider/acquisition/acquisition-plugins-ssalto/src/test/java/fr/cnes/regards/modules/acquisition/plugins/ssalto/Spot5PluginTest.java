@@ -40,6 +40,9 @@ import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 @EnableAutoConfiguration
 public class Spot5PluginTest extends AbstractProductMetadataPluginTest {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Spot5PluginTest.class);
 
     @Autowired
@@ -59,7 +62,6 @@ public class Spot5PluginTest extends AbstractProductMetadataPluginTest {
 
         return pluginService.getPlugin(pluginConfiguration.getId());
     }
-
 
     @Override
     public void initTestList() {
@@ -83,14 +85,13 @@ public class Spot5PluginTest extends AbstractProductMetadataPluginTest {
         addPluginTestDef("DA_TC_SPOT5_LOGVOL_DORIS_2GM", "spot5/logvol");
         addPluginTestDef("DA_TC_SPOT5_ZQS_DIODE_2GM", "spot5/logvol/z_quasi");
 
-        // TODO : pas de données
+        // no data available
         // addPluginTestDef("DA_TC_SPOT5_POE_SP3", "spot5/poe_sp3");
-
     }
 
     @Override
     public void initTestSoloList() {
-        //        addPluginTestDef("DA_TC_SPOT5_ZQS_DIODE_2GM", "spot5/logvol/z_quasi", "z_quasi_stat_DIODE_SPOT5_12");
+        // addPluginTestDef("DA_TC_SPOT5_ZQS_DIODE_2GM", "spot5/logvol/z_quasi", "z_quasi_stat_DIODE_SPOT5_12");
     }
 
     @Override
@@ -103,5 +104,4 @@ public class Spot5PluginTest extends AbstractProductMetadataPluginTest {
         return LOGGER;
     }
 
-    
 }

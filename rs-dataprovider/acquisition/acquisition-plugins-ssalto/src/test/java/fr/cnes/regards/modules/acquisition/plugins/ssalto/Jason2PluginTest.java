@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -42,15 +41,16 @@ import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
  *
  */
 @ContextConfiguration(classes = { PluginsSsaltoTestsConfiguration.class })
-@ActiveProfiles({"disableDataProviderTask"})
 @EnableAutoConfiguration
 public class Jason2PluginTest extends AbstractProductMetadataPluginTest {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Jason2PluginTest.class);
 
     @Autowired
     IPluginService pluginService;
-
 
     @Autowired
     IRuntimeTenantResolver runtimeTenantResoler;
@@ -124,7 +124,6 @@ public class Jason2PluginTest extends AbstractProductMetadataPluginTest {
         addPluginTestDef("DA_TC_JASON2_TC_LOGBOOK_PASSMC", "JASON2/LOG_PASSMC",
                          "R_TCLOG_JA2_CARMEN2MC_2008_12_04_11_55_34.zip");
         addPluginTestDef("DA_TC_JASON2_GDR", "JASON2/GDR", "JA2_GPN_2PaP184_254_20050914_100022_20490603_082321");
-        addPluginTestDef("DA_TC_JASON2_OGDR", "JASON2/OGDR", "JA2_OPN_2PcS015_184_20081205_003016_20081205_020223");
 
         addPluginTestDef("DA_TC_JASON2_SAT_ATTITUDE", "JASON2/EXPERT_ATTITUDE", "spa_satatt_jason2.txt");
 

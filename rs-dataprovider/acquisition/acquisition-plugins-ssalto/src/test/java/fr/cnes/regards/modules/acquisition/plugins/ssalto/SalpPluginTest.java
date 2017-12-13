@@ -36,6 +36,9 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.SaralP
 @EnableAutoConfiguration
 public class SalpPluginTest extends AbstractProductMetadataPluginTest {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(SaralProductMetadataPlugin.class);
 
     @Autowired
@@ -58,7 +61,8 @@ public class SalpPluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public void initTestList() {
-        // TODO CMZ KO dans SIPAD-NG addPluginTestDef("DA_TC_CCI_ARCHIVE", "salp/cci");
+        // KO dans SIPAD-NG
+        // addPluginTestDef("DA_TC_CCI_ARCHIVE", "salp/cci");
     }
 
     @Override
