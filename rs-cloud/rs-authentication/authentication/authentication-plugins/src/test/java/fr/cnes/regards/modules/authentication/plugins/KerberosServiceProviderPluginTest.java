@@ -38,10 +38,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.authentication.plugins.domain.ExternalAuthenticationInformations;
@@ -120,9 +120,8 @@ public class KerberosServiceProviderPluginTest {
                 .addParameter(KerberosSPParameters.KEYTAB_FILEPATH_PARAMETER, keytabFilePath.getPath()).getParameters();
         try {
             // instantiate plugin
-            plugin = PluginUtils.getPlugin(parameters, KerberosServiceProviderPlugin.class,
-                                           Arrays.asList("fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"),
-                                           new HashMap<>());
+            plugin = PluginUtils.getPlugin(parameters, KerberosServiceProviderPlugin.class, Arrays
+                    .asList("fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"), new HashMap<>());
             Assert.assertNotNull(plugin);
         } catch (final PluginUtilsRuntimeException e) {
             Assert.fail();
