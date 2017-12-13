@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.storage.plugin.datastorage.local;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -23,9 +24,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageAccessModeEnum;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IProgressManager;
+import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
+import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -65,20 +66,20 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     /**
      * Base storage location url
      */
-    @PluginParameter(name = BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, description = "Base storage location url")
+    @PluginParameter(name = BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, description = "Base storage location url to use", label = "Base storage location url")
     private String baseStorageLocationAsString;
 
     /**
      * can this data storage delete files or not?
      */
-    @PluginParameter(name = LOCAL_STORAGE_DELETE_OPTION, defaultValue = "true")
+    @PluginParameter(name = LOCAL_STORAGE_DELETE_OPTION, defaultValue = "true", description = "Can this data storage delete files or not?", label = "Deletion option")
     private Boolean canDelete;
 
     /**
      * Total space, in byte, this data storage is allowed to use
      */
     @PluginParameter(name = LOCAL_STORAGE_TOTAL_SPACE,
-            description = "total space, in byte, this data storage is allowed to use")
+            description = "Total space, in byte, this data storage is allowed to use", label = "Total allocated space")
     private Long totalSpace;
 
     /**
@@ -90,8 +91,8 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
      * Plugin init method
      */
     @PluginInit
-    public void init() {
-        baseStorageLocation = gson.fromJson(baseStorageLocationAsString, URL.class);
+    public void init() throws MalformedURLException {
+        baseStorageLocation = new URL(baseStorageLocationAsString);
     }
 
     @Override

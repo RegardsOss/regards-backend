@@ -5,7 +5,7 @@ import java.util.Set;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IWorkingSubset;
+import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 
 public class STAFWorkingSubset implements IWorkingSubset {
 

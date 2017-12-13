@@ -112,6 +112,20 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
+    public Page<AIP> findAllByStateAndTagsInAndLastEventDateAfter(AIPState state, Set<String> tags,
+            OffsetDateTime fromLastUpdateDate, Pageable pageable) {
+        return repo.findAllByStateAndTagsInAndLastEventDateAfter(state, tags, fromLastUpdateDate, pageable)
+                .map(this::buildAipFromAIPDataBase);
+    }
+
+    @Override
+    public Page<AIP> findAllByStateAndTagsIn(AIPState state, Set<String> tags,
+            Pageable pageable) {
+        return repo.findAllByStateAndTagsIn(state, tags, pageable)
+                .map(this::buildAipFromAIPDataBase);
+    }
+
+    @Override
     public Set<AIP> findAllByStateService(AIPState state) {
         return repo.findAllByStateIn(state).stream().map(this::buildAipFromAIPDataBase).collect(Collectors.toSet());
     }

@@ -16,8 +16,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeExcepti
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storage.domain.StorageException;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IWorkingSubset;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 
 /**
  * @author Sylvain VISSIERE-GUERINET

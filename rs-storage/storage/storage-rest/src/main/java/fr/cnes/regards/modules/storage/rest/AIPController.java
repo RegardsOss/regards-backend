@@ -55,6 +55,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
@@ -83,6 +84,11 @@ public class AIPController implements IResourceController<AIP> {
      * Controller base path
      */
     public static final String AIP_PATH = "/aips";
+
+    /**
+     * Controller path for indexing
+     */
+    public static final String INDEXING_PATH = "/indexing";
 
     /**
      * Controller path for bulk aip requests
@@ -158,12 +164,12 @@ public class AIPController implements IResourceController<AIP> {
      * @param pTo date before which the aip should have been added to the system
      * @param pPageable
      * @param pAssembler
-     * @return page of aip metadata respecting the constrains
+     * @return page of aip metadata respecting the constraints
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "send the list of all aips")
+    @ResourceAccess(description = "send a page of aips")
     public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState pState,
             @RequestParam(name = "from", required = false) OffsetDateTime pFrom,
@@ -171,6 +177,24 @@ public class AIPController implements IResourceController<AIP> {
             final PagedResourcesAssembler<AIP> pAssembler) throws ModuleException {
         Page<AIP> aips = aipService.retrieveAIPs(pState, pFrom, pTo, pPageable);
         return new ResponseEntity<>(toPagedResources(aips, pAssembler), HttpStatus.OK);
+    }
+
+    /**
+     * Retrieve a page of aip with indexing information on associated files according to the given parameters
+     * @param state
+     * @param tags
+     * @param fromLastUpdateDate
+     * @param pageable
+     * @return page of aip with indexing information on associated files respecting the constraints
+     */
+    @RequestMapping(method = RequestMethod.GET, path = INDEXING_PATH)
+    @ResponseBody
+    @ResourceAccess(description = "send a page of aips with indexing information on associated files")
+    public ResponseEntity<Page<AipDataFiles>> retrieveAipDataFiles(@RequestParam(name = "state") AIPState state,
+            @RequestParam("tags") Set<String> tags,
+            @RequestParam(name = "last_update", required = false) OffsetDateTime fromLastUpdateDate, final Pageable pageable) {
+        Page<AipDataFiles> aipDataFiles = aipService.retrieveAipDataFiles(state, tags, fromLastUpdateDate, pageable);
+        return new ResponseEntity<>(aipDataFiles, HttpStatus.OK);
     }
 
     /**
@@ -224,7 +248,7 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     @ResponseBody
     @ResourceAccess(description = "validate and storeAndCreate the specified AIP")
-    public ResponseEntity<List<RejectedAip>> store(@RequestBody @Valid AIPCollection aips) throws ModuleException {
+    public ResponseEntity<List<RejectedAip>> store(@RequestBody AIPCollection aips) throws ModuleException {
         //lets validate the inputs and get those in error
         List<RejectedAip> rejectedAips = aipService.applyCreationChecks(aips);
         //if there is some errors, lets handle the issues
@@ -351,7 +375,7 @@ public class AIPController implements IResourceController<AIP> {
      * @throws EntityInconsistentIdentifierException
      */
     @RequestMapping(value = TAG_PATH, method = RequestMethod.POST)
-    @ResourceAccess(description = "allows to add multiple tags to a given aip" )
+    @ResourceAccess(description = "allows to add multiple tags to a given aip")
     @ResponseBody
     public ResponseEntity<Void> addTags(@PathVariable(name = "ip_id") String ipId, @RequestBody Set<String> tagsToAdd)
             throws EntityNotFoundException, EntityOperationForbiddenException, EntityInconsistentIdentifierException {
@@ -368,9 +392,10 @@ public class AIPController implements IResourceController<AIP> {
      * @throws EntityInconsistentIdentifierException
      */
     @RequestMapping(value = TAG_PATH, method = RequestMethod.DELETE)
-    @ResourceAccess(description = "allows to remove multiple tags to a given aip" )
+    @ResourceAccess(description = "allows to remove multiple tags to a given aip")
     @ResponseBody
-    public ResponseEntity<Void> removeTags(@PathVariable(name = "ip_id") String ipId, @RequestBody Set<String> tagsToRemove)
+    public ResponseEntity<Void> removeTags(@PathVariable(name = "ip_id") String ipId,
+            @RequestBody Set<String> tagsToRemove)
             throws EntityNotFoundException, EntityOperationForbiddenException, EntityInconsistentIdentifierException {
         aipService.removeTags(ipId, tagsToRemove);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

@@ -6,7 +6,7 @@ package fr.cnes.regards.modules.storage.plugin.datastorage.local;
 import java.util.Set;
 
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IWorkingSubset;
+import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 
 /**
  * {@link IWorkingSubset} implementation for {@link LocalDataStorage}

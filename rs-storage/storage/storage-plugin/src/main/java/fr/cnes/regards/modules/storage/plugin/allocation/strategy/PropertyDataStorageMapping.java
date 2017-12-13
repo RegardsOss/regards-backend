@@ -1,7 +1,7 @@
 package fr.cnes.regards.modules.storage.plugin.allocation.strategy;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 
 /**
  * POJO allowing us to map a property value to a {@link IDataStorage} configuration id
@@ -23,14 +23,14 @@ public class PropertyDataStorageMapping {
     /**
      * Value of the property into the aip
      */
-    @PluginParameter(name = PROPERTY_VALUE, description = "value of the property into the aip")
+    @PluginParameter(name = PROPERTY_VALUE, description = "value of the property into the aip", label = "Property value")
     private String propertyValue;
 
     /**
      * Plugin configuration id of the data storage to use if the property value in the aip correspond to the one provided
      */
     @PluginParameter(name = DATA_STORAGE_CONF_ID_PARAMETER_NAME,
-            description = "Configuration id of the data storage to use if the property value in the aip correspond to the one provided")
+            description = "Configuration id of the data storage to use if the property value in the aip correspond to the one provided", label = "Data storage configuration id")
     private Long dataStorageConfId;
 
     /**

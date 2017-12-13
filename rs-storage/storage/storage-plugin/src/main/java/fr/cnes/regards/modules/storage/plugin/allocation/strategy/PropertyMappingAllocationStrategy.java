@@ -19,7 +19,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 
 /**
  * Allocation strategy that map a given property value to a {@link IDataStorage}
@@ -55,14 +56,14 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
      * Json path to the property from the AIP which value should discriminate data storages to use
      */
     @PluginParameter(name = PROPERTY_PATH,
-            description = "Json path to the property from the AIP which value should discriminate data storages to use")
+            description = "Json path to the property from the AIP which value should discriminate data storages to use", label = "Property path")
     private String propertyPath;
 
     /**
      * Collection representing the mapping between a value and the data storage to use
      */
     @PluginParameter(name = PROPERTY_VALUE_DATA_STORAGE_MAPPING,
-            description = "Collection representing the mapping between a value and the data storage to use")
+            description = "Collection representing the mapping between a value and the data storage to use", label = "Property value - Data storage mappings")
     private List<PropertyDataStorageMapping> propertyDataStorageMappings;
 
     /**

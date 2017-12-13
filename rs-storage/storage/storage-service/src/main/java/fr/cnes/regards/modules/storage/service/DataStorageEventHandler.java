@@ -5,9 +5,7 @@ package fr.cnes.regards.modules.storage.service;
 
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -15,7 +13,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -42,7 +39,7 @@ import fr.cnes.regards.modules.storage.domain.event.DataFileEventState;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
 import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.service.job.StorageJobProgressManager;
 
 /**

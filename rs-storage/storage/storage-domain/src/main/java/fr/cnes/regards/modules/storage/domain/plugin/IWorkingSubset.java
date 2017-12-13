@@ -1,11 +1,12 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.storage.plugin.datastorage;
+package fr.cnes.regards.modules.storage.domain.plugin;
 
 import java.util.Set;
 
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
+import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 
 /**
  * Represents a subset of {@link DataFile} prepared by {@link INearlineDataStorage} plugins. <br>

@@ -59,7 +59,7 @@ import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubset;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
@@ -123,7 +123,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> pluginParameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              gson.toJson(baseStorageLocation))
+                              baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "9000000000000")
                 .getParameters();
         // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT

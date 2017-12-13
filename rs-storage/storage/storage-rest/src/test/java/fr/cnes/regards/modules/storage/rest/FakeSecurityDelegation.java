@@ -2,7 +2,7 @@ package fr.cnes.regards.modules.storage.rest;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.storage.plugin.security.ISecurityDelegation;
+import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 
 /**
  * @author Sylvain VISSIERE-GUERINET

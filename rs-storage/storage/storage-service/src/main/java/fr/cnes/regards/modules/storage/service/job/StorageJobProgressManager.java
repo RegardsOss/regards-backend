@@ -16,8 +16,8 @@ import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
 import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IProgressManager;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
 
 /**
  * Implementaion of {@link IProgressManager} used by {@link IDataStorage} plugins.<br/>

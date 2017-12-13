@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.search.client.ISearchClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.plugin.security.CatalogSecurityDelegation;
-import fr.cnes.regards.modules.storage.plugin.security.ISecurityDelegation;
+import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.plugins.datastorage.local.MockingResourceServiceConfiguration;
 
 /**

@@ -32,8 +32,10 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.PagedResources;
@@ -77,11 +79,11 @@ import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
-import fr.cnes.regards.modules.storage.plugin.allocation.strategy.IAllocationStrategy;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
-import fr.cnes.regards.modules.storage.plugin.security.ISecurityDelegation;
+import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 
 /**
  * Run client IT scenario tests for storeAndCreate and restore files from rs-storage microservice.
@@ -138,6 +140,9 @@ public class AipClientIT extends AbstractRegardsWebIT {
 
     private PluginConfiguration catalogSecuDelegConf;
 
+    @Autowired
+    private ObjectFactory<HttpMessageConverters> messageConverters;
+
     @BeforeClass
     public static void initAll() throws IOException {
         if (Paths.get(workspace).toFile().exists()) {
@@ -157,6 +162,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
             FileUtils.deleteDirectory(downloadDir.toFile());
         }
         Files.createDirectories(downloadDir);
+        FeignClientBuilder.setMessageConverters(messageConverters);
         client = FeignClientBuilder.build(new TokenClientProvider<>(IAipClient.class,
                                                                     "http://" + serverAddress + ":" + getPort(),
                                                                     feignSecurityManager), gson);
@@ -197,7 +203,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              gson.toJson(baseStorageLocation))
+                              baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "90000000000000").getParameters();
         PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, "dsLabel", parameters, 0);
         dataStorageConf.setIsActive(true);

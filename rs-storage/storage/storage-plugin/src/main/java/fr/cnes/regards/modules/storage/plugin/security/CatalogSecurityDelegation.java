@@ -18,6 +18,7 @@ import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.search.client.ISearchClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 
 /**
  * Default {@link ISecurityDelegation} implementation using rs-catalog to check access rights

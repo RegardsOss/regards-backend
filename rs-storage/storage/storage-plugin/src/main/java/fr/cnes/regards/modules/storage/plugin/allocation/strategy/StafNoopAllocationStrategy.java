@@ -19,8 +19,9 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.staf.domain.STAFArchive;
 import fr.cnes.regards.framework.staf.protocol.STAFURLFactory;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.INearlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFDataStorage;
 
 /**
@@ -64,7 +65,7 @@ public class StafNoopAllocationStrategy implements IAllocationStrategy {
      * Default data storage to use if the file to retrieve is not in the staf
      */
     @PluginParameter(name = DEFAULT_DATA_STORAGE_CONFIGURATION_ID,
-            description = "Default data storage to use if the file to retrieve is not in the staf")
+            description = "Default data storage to use if the file to retrieve is not in the staf", label = "Default data storage configuration id")
     private Long dataStorageConfigurationId;
 
     @Override

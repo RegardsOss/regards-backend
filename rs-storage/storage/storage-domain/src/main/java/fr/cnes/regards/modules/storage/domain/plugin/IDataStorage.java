@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.storage.plugin.datastorage;
+package fr.cnes.regards.modules.storage.domain.plugin;
 
 import java.util.Collection;
 import java.util.Set;

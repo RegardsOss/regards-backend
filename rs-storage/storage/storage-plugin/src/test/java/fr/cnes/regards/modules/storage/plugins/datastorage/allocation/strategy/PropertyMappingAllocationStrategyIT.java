@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.plugin.allocation.strategy.IAllocationStrategy;
+import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.PropertyDataStorageMapping;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.PropertyMappingAllocationStrategy;
 
@@ -145,7 +145,7 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
                 PropertyMappingAllocationStrategy.class,
                 PropertyMappingAllocationStrategy.class.getPackage().getName(),
                 IAllocationStrategy.class.getPackage().getName());
-        //before getting the alloc strat plg params, lets make some mapping
+        // before getting the alloc strat plg params, lets make some mapping
         Set<PropertyDataStorageMapping> mappings = Sets.newHashSet();
         mappings.add(new PropertyDataStorageMapping(PROPERTY_VALUE, MAPPED_DATA_STORAGE_CONF_ID));
         List<PluginParameter> propertyMappingAllocStratParam = PluginParametersFactory.build()

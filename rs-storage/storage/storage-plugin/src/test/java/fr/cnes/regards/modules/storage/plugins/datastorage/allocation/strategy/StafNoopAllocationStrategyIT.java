@@ -41,11 +41,11 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
-import fr.cnes.regards.modules.storage.plugin.allocation.strategy.IAllocationStrategy;
+import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.StafNoopAllocationStrategy;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.INearlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFDataStorage;
 
@@ -133,13 +133,14 @@ public class StafNoopAllocationStrategyIT extends AbstractRegardsTransactionalIT
         return aipBuilder.build();
     }
 
-    protected void initPlugins() throws ModuleException {
-        pluginService.addPluginPackage(STAFDataStorage.class.getPackage().getName());
+    protected void initPlugins() throws ModuleException, MalformedURLException {
+        pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
         pluginService.addPluginPackage(INearlineDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
         pluginService.addPluginPackage(IOnlineDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(StafNoopAllocationStrategy.class.getPackage().getName());
         pluginService.addPluginPackage(IAllocationStrategy.class.getPackage().getName());
+        pluginService.addPluginPackage(STAFDataStorage.class.getPackage().getName());
+        pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
+        pluginService.addPluginPackage(StafNoopAllocationStrategy.class.getPackage().getName());
         // lets get a staf data storage conf
         // Init STAF archive parameters for plugin
         STAFArchive archive = new STAFArchive();
@@ -149,6 +150,8 @@ public class StafNoopAllocationStrategyIT extends AbstractRegardsTransactionalIT
 
         PluginMetaData stafDataStorageMeta = PluginUtils.createPluginMetaData(STAFDataStorage.class,
                                                                               STAFDataStorage.class.getPackage()
+                                                                                      .getName(),
+                                                                              IDataStorage.class.getPackage()
                                                                                       .getName(),
                                                                               INearlineDataStorage.class.getPackage()
                                                                                       .getName());
@@ -160,11 +163,13 @@ public class StafNoopAllocationStrategyIT extends AbstractRegardsTransactionalIT
         stafDataStorage = pluginService.savePluginConfiguration(stafDataStorage);
         // lets get a local data storage conf as default
         List<PluginParameter> defaultParam = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, gson.toJson(WORKSPACE))
+                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, new URL("file", "", WORKSPACE.toString()).toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "900000000000").getParameters();
         // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
         PluginMetaData defaultMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
                                                                       LocalDataStorage.class.getPackage().getName(),
+                                                                      IOnlineDataStorage.class.getPackage()
+                                                                              .getName(),
                                                                       IDataStorage.class.getPackage().getName());
         defaultDataStorage = new PluginConfiguration(defaultMeta, LOCAL_STORAGE_LABEL, defaultParam);
         defaultDataStorage = pluginService.savePluginConfiguration(defaultDataStorage);

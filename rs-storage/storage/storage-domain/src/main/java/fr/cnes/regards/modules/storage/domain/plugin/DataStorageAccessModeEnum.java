@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.storage.plugin.datastorage;
+package fr.cnes.regards.modules.storage.domain.plugin;
 
 /**
  * Access mode to a IDataStorage plugin.
