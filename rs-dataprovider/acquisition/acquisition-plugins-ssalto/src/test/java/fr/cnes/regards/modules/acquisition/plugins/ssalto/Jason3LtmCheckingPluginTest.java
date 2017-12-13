@@ -24,6 +24,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.check.Jason3LtmP3CheckingFilePlugin;
 
 /**
@@ -44,6 +45,18 @@ public class Jason3LtmCheckingPluginTest {
         File testFile = new File("src/test/resources/income/data/JASON3/LTM", fileNameTest);
         Assert.assertTrue(plugin.runPlugin(testFile, "DA_TC_JASON3_LTM"));
         Assert.assertEquals(ProductNameTest, plugin.getProductName());
+    }
+
+    @Test(expected = ReadFileException.class)
+    public void testProductFailed() throws ModuleException {
+        Jason3LtmP3CheckingFilePlugin plugin = new Jason3LtmP3CheckingFilePlugin();
+
+        String fileNameTest = "PJ3_FI1_AXXCNE20081202_110021_20080615_115927_20081201_129999";
+
+        File testFile = new File("src/test/resources/income/data/JASON3/LTM", fileNameTest);
+        Assert.assertTrue(plugin.runPlugin(testFile, "DA_TC_JASON3_LTM"));
+        Assert.fail();
+        ;
     }
 
 }

@@ -25,38 +25,37 @@ import org.junit.Test;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.check.Jason1Doris1BCheckingFilePlugin;
-
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.check.Jason2CheckingPlugin;
 
 /**
  * 
  * @author Christophe Mertz
  *
  */
-public class Doris1BCheckingPluginTest {
+public class Jason2CheckingPluginTest {
 
     @Test
-    public void testJason1Doris1B() throws ModuleException {
+    public void testJason2Igdr() throws ModuleException {
 
         // Parameters
-        String fileName = "src/test/resources/income/data/spot2/doris1b_moe_cddis/DORDATA_090526.SP2";
-        String dataSetId = "DA_TC_JASON1_DORIS1B_MOE_CDDIS";
+        String fileName = "src/test/resources/income/data/JASON2/IGDR/JA2_IPN_2PcP016_166_20081214_053324_20081214_062937";
+        String dataSetId = "DA_TC_JASON2_IGDR";
         // Launch plugin
-        Jason1Doris1BCheckingFilePlugin plugin = new Jason1Doris1BCheckingFilePlugin();
-            Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
-            Assert.assertEquals("MOE_CDDIS_DORDATA_090526.SP2", plugin.getProductName());
+        Jason2CheckingPlugin plugin = new Jason2CheckingPlugin();
+        Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
+        Assert.assertEquals("JA2_IPN_2PcP016_166_20081214_053324_20081214_062937", plugin.getProductName());
     }
-    
-    @Test(expected=ReadFileException.class)
-    public void testJason1Doris1BFailed() throws ModuleException {
+
+    @Test(expected = ReadFileException.class)
+    public void testJason2IgdrFailed() throws ModuleException {
 
         // Parameters
-        String fileName = "src/test/resources/income/data/spot2/doris1b_moe_cddis/DORDATA_099999.SP2";
-        String dataSetId = "DA_TC_JASON1_DORIS1B_MOE_CDDIS";
+        String fileName = "src/test/resources/income/data/JASON2/IGDR/JA2_IPN_2PcP016_166_20081214_053324_20081214_099999";
+        String dataSetId = "DA_TC_JASON2_IGDR";
         // Launch plugin
-        Jason1Doris1BCheckingFilePlugin plugin = new Jason1Doris1BCheckingFilePlugin();
-            Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
-            Assert.fail();;
+        Jason2CheckingPlugin plugin = new Jason2CheckingPlugin();
+        Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
+        Assert.fail();
     }
 
 }
