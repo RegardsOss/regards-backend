@@ -65,7 +65,8 @@ public class FakeSipValidation implements ISipValidation {
     @PluginParameter(label = "List of string", description = "List of string description")
     private List<String> sList;
 
-    @PluginParameter(label = "Map string to string", description = "Map string to string description")
+    @PluginParameter(keylabel = "Map string to string key", label = "Map string to string value",
+            description = "Map string to string description")
     private Map<String, String> ssMap;
 
     @PluginParameter(label = "Pojo containing string")
@@ -74,7 +75,7 @@ public class FakeSipValidation implements ISipValidation {
     @PluginParameter(label = "Constraint pojo wrapper")
     private Constraints constraints;
 
-    @PluginParameter(label = "Constraint map")
+    @PluginParameter(keylabel = "scMap key", label = "scMap value")
     private Map<String, Constraint> scMap;
 
     @PluginParameter(label = "Embedded plugin")
