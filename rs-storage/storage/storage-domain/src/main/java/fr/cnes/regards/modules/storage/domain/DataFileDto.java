@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.storage.domain;
 
 import java.net.URL;
+import java.util.Objects;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.MimeType;
@@ -78,7 +79,7 @@ public class DataFileDto {
     /**
      * Default constructor
      */
-    private DataFileDto() {}
+    public DataFileDto() {}
 
     /**
      * @return the url
@@ -198,5 +199,23 @@ public class DataFileDto {
      */
     public void setOnline(boolean online) {
         this.online = online;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        DataFileDto that = (DataFileDto) o;
+        return Objects.equals(url, that.url);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(url);
     }
 }
