@@ -52,10 +52,12 @@ import fr.cnes.regards.modules.acquisition.service.step.IStep;
 /**
  * This class runs a set of step :<br>
  * <li>a step {@link AcquisitionScanStep} to scan and identify the {@link AcquisitionFile} to acquired
- * <li>a step {@link AcquisitionCheckStep} to check the {@link AcquisitionFile} and to determines the {@link Product} associated<br>
- * And for each scanned {@link Product} not already send to Ingest microservice, and with his status equals to {@link ProductStatus#COMPLETED} or {@link ProductStatus#FINISHED},
- * a new {@link JobInfo} of class {@link AcquisitionGenerateSIPJob} is create and queued. 
- *  
+ * <li>a step {@link AcquisitionCheckStep} to check the {@link AcquisitionFile} and to determines the {@link Product}
+ * associated<br>
+ * And for each scanned {@link Product} not already send to Ingest microservice, and with its status equals to
+ * {@link ProductStatus#COMPLETED} or {@link ProductStatus#FINISHED},
+ * a new {@link JobInfo} of class {@link AcquisitionGenerateSIPJob} is create and queued.
+ * 
  * @author Christophe Mertz
  *
  */
@@ -145,7 +147,8 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
     }
 
     /**
-     * Create and queued a {@link JobInfo} of class {@link AcquisitionGenerateSIPJob} for each {@link Product} not already send to Ingest microservice,<br>
+     * Create and queued a {@link JobInfo} of class {@link AcquisitionGenerateSIPJob} for each {@link Product} not
+     * already send to Ingest microservice,<br>
      * and with his status equals to {@link ProductStatus#COMPLETED} or {@link ProductStatus#FINISHED}.
      * @return the number of {@link JobInfo} create and queued
      */
@@ -177,7 +180,7 @@ public class AcquisitionProductsJob extends AbstractJob<Void> {
                                   new ProductJobParameter(product.getProductName()));
         acquisition.setClassName(AcquisitionGenerateSIPJob.class.getName());
         acquisition.setOwner(authResolver.getUser());
-        acquisition.setPriority(50); //TODO CMZ priority ?
+        acquisition.setPriority(50); // TODO CMZ priority ?
 
         acquisition = jobInfoService.createAsQueued(acquisition);
 

@@ -30,8 +30,8 @@ import org.springframework.beans.factory.annotation.Value;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -102,7 +102,7 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
             // build the plugin parameters
             PluginParametersFactory factory = PluginParametersFactory.build();
             for (Map.Entry<String, String> entry : this.chainGeneration.getGenerateSipParameter().entrySet()) {
-                factory.addParameterDynamic(entry.getKey(), entry.getValue());
+                factory.addDynamicParameter(entry.getKey(), entry.getValue());
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("[{}] Add parameter <{}> with value : {}", chainGeneration.getSession(),
                                  entry.getKey(), entry.getValue());

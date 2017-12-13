@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProductsJob;
 
 /**
  * Manage global {@link ChainGeneration} life cycle
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -169,7 +169,7 @@ public class ChaineGenerationService implements IChainGenerationService {
     /**
      * @param checkAcquisitionPluginConf
      * @return
-     * @throws ModuleException 
+     * @throws ModuleException
      */
     private PluginConfiguration createOrUpdatePluginConfiguration(PluginConfiguration pluginConfiguration)
             throws ModuleException {
@@ -267,12 +267,12 @@ public class ChaineGenerationService implements IChainGenerationService {
         // the difference between the previous activation date and current time must be greater than the periodicity
         if ((chain.getLastDateActivation() != null)
                 && chain.getLastDateActivation().plusSeconds(chain.getPeriodicity()).isAfter(OffsetDateTime.now())) {
-            LOGGER.warn("[{}] Unable to run the chain generation : the last activation date is to close from now with the periodicity {}.",
+            LOGGER.warn("[{}] Unable to run the chain generation : the last activation date is too close from now with the periodicity {}.",
                         chain.getLabel(), chain.getPeriodicity());
             return false;
         }
 
-        // the ChainGeneration is ready to be started 
+        // the ChainGeneration is ready to be started
         chain.setRunning(true);
         chain.setSession(chain.getLabel() + ":" + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + ":"
                 + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
@@ -289,7 +289,7 @@ public class ChaineGenerationService implements IChainGenerationService {
         acquisition.setParameters(new ChainGenerationJobParameter(chain));
         acquisition.setClassName(AcquisitionProductsJob.class.getName());
         acquisition.setOwner(authResolver.getUser());
-        acquisition.setPriority(50); //TODO CMZ priority ?
+        acquisition.setPriority(50); // TODO CMZ priority ?
 
         acquisition = jobInfoService.createAsQueued(acquisition);
 
