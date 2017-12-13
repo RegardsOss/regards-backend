@@ -1,9 +1,11 @@
 package fr.cnes.regards.modules.storage.domain;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
@@ -21,7 +23,7 @@ public class AipDataFiles {
     /**
      * its file public information
      */
-    private Set<DataFileDto> dataFiles;
+    private Set<DataFileDto> dataFiles = new HashSet<>();
 
     /**
      * Constructor providing the aip and data files to extract the public information
@@ -32,7 +34,7 @@ public class AipDataFiles {
         this.aip = aip;
         //only set files public information if there is information to set
         if(dataFiles != null && dataFiles.length != 0) {
-            this.dataFiles = Arrays.stream(dataFiles).map(DataFileDto::fromDataFile).collect(Collectors.toSet());
+            this.dataFiles.addAll(Arrays.stream(dataFiles).map(DataFileDto::fromDataFile).collect(Collectors.toSet()));
         }
     }
 
