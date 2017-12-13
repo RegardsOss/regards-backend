@@ -39,15 +39,22 @@ public class PluginWithBoolean implements IPluginWithGenerics {
 
     public static final String FIELD_NAME_PRIMITIVE = "pfield";
 
+    public static final String FIELD_NAME_STRING = "sfield";
+
     @PluginParameter(name = FIELD_NAME_OBJECT, label = "Object")
     private Boolean ofield;
 
     @PluginParameter(name = FIELD_NAME_PRIMITIVE, label = "Primitive")
     private boolean pfield;
 
+    @PluginParameter(name = FIELD_NAME_STRING, label = "String")
+    private String sfield;
+
     @Override
     public void doIt() {
         Assert.assertNotNull(ofield);
         Assert.assertNotNull(pfield);
+        Assert.assertNotNull(sfield);
+        Assert.assertEquals(6, sfield.length());
     }
 }

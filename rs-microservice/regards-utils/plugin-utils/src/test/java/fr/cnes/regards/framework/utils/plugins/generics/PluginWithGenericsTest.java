@@ -49,7 +49,8 @@ public class PluginWithGenericsTest {
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(PluginWithBoolean.FIELD_NAME_OBJECT, true)
-                .addParameter(PluginWithBoolean.FIELD_NAME_PRIMITIVE, false).getParameters();
+                .addParameter(PluginWithBoolean.FIELD_NAME_PRIMITIVE, false)
+                .addParameter(PluginWithBoolean.FIELD_NAME_STRING, "string").getParameters();
 
         IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithBoolean.class,
                                                            Arrays.asList(this.getClass().getPackage().getName()), null);

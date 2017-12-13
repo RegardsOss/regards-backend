@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
@@ -387,7 +388,7 @@ public final class PluginParameterUtils {
         switch (paramType) {
             case PRIMITIVE:
                 LOGGER.debug(String.format("primitive parameter : %s --> %s", field.getName(), field.getType()));
-                postProcessPrimitiveType(pluginInstance, plgConf, field, typeWrapper, plgParamAnnotation,
+                postProcessPrimitiveType(gson, pluginInstance, plgConf, field, typeWrapper, plgParamAnnotation,
                                          plgParameters);
                 break;
             case PLUGIN:
@@ -491,6 +492,7 @@ public final class PluginParameterUtils {
      * Use configured values to set field values for a parameter of type {@link PrimitiveObject}
      *
      * @param <T> a {@link Plugin} type
+     * @param gson GSON JSON engine
      * @param pluginInstance the {@link Plugin} instance
      * @param plgConf the {@link PluginConfiguration} to used
      * @param field the parameter
@@ -499,8 +501,8 @@ public final class PluginParameterUtils {
      * @param plgParameters an optional set of
      *            {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter} @ if any error occurs
      */
-    private static <T> void postProcessPrimitiveType(T pPluginInstance, PluginConfiguration plgConf, Field field,
-            final Optional<PrimitiveObject> typeWrapper, PluginParameter plgParamAnnotation,
+    private static <T> void postProcessPrimitiveType(Gson gson, T pluginInstance, PluginConfiguration plgConf,
+            Field field, final Optional<PrimitiveObject> typeWrapper, PluginParameter plgParamAnnotation,
             fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... plgParameters) {
 
         if (LOGGER.isDebugEnabled()) {
@@ -544,18 +546,20 @@ public final class PluginParameterUtils {
         try {
             Object effectiveVal;
             if (typeWrapper.get().getType().equals(PrimitiveObject.STRING.getType())) {
-                effectiveVal = paramValue;
+                // Strip quotes using Gson
+                JsonElement el = gson.fromJson(paramValue, JsonElement.class);
+                effectiveVal = el.getAsString();
             } else {
                 final Method method = typeWrapper.get().getType().getDeclaredMethod("valueOf", String.class);
                 effectiveVal = method.invoke(null, paramValue);
             }
-            field.set(pPluginInstance, effectiveVal);
+            field.set(pluginInstance, effectiveVal);
         } catch (final IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException
                 | InvocationTargetException e) {
             // Propagate exception
             throw new PluginUtilsRuntimeException(
                     String.format("Exception while processing param <%s> in plugin class <%s> with value <%s>.",
-                                  plgParamAnnotation.label(), pPluginInstance.getClass(), paramValue),
+                                  plgParamAnnotation.label(), pluginInstance.getClass(), paramValue),
                     e);
         }
 
