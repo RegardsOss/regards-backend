@@ -548,7 +548,7 @@ public final class PluginParameterUtils {
             if (typeWrapper.get().getType().equals(PrimitiveObject.STRING.getType())) {
                 // Strip quotes using Gson
                 JsonElement el = gson.fromJson(paramValue, JsonElement.class);
-                effectiveVal = el.getAsString();
+                effectiveVal = el == null ? null : el.getAsString();
             } else {
                 final Method method = typeWrapper.get().getType().getDeclaredMethod("valueOf", String.class);
                 effectiveVal = method.invoke(null, paramValue);
