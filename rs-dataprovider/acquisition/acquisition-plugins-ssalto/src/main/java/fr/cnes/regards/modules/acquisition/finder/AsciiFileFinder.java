@@ -63,7 +63,7 @@ public class AsciiFileFinder extends DataFileFinder {
         List<Object> valueList = new ArrayList<>();
         for (File file : buildFileList(fileMap)) {
             RinexFileHelper helper = new RinexFileHelper(file);
-            StringBuffer value = new StringBuffer();
+            StringBuilder value = new StringBuilder();
             for (Object element : groupNumberList) {
                 Integer groupNumber = (Integer) element;
                 value.append(helper.getValue(lineNumber, pattern, groupNumber.intValue()));

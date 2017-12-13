@@ -16,20 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.plugins.ssalto;
+package fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.AbstractProductMetadataPlugin;
 
-@Plugin(description = "Spot4ProductMetadataPlugin", id = "Spot4ProductMetadataPlugin", version = "1.0.0",
+/**
+ *
+ * Plugin de generation des metadonnees produit pour la mission SENTINEL-3
+ *
+ * @author Christophe Mertz
+ */
+@Plugin(description = "Sent3aProductMetadataPlugin", id = "Sent3aProductMetadataPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class Spot4ProductMetadataPlugin extends AbstractProductMetadataPlugin {
+public class Sent3aProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
-    private static final String PROJECT_NAME = "SPOT4";
+    private static final String PROJECT_NAME = "SENT3A";
 
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
@@ -39,14 +44,13 @@ public class Spot4ProductMetadataPlugin extends AbstractProductMetadataPlugin {
         return pluginsRepositoryProperties;
     }
 
+    @Override
     protected String getProjectName() {
         return PROJECT_NAME;
     }
 
     @Override
     public String getProjectProperties() {
-
-        return "ssalto/domain/plugins/impl/spot4plugin.properties";
+        return "ssalto/domain/plugins/impl/sentinal3plugin.properties";
     }
-
 }

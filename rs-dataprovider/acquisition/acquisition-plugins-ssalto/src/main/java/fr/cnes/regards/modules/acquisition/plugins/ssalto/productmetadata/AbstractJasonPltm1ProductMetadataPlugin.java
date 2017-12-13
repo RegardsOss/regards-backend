@@ -192,7 +192,7 @@ public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJa
             Attribute radicalAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_STRING, RADICAL,
                                                                           getRadicalValue(fileMap.keySet()));
             if ((radicalAttribute.getValueList() != null) && (radicalAttribute.getValueList().size() != 0)) {
-                registerAttribute(RADICAL, attributeMap, radicalAttribute);
+                registerAttribute(attributeMap, RADICAL, radicalAttribute);
                 attributeValueMap.put(RADICAL, radicalAttribute.getValueList());
             } else {
                 LOGGER.info("Attribute " + RADICAL + " is not defined");

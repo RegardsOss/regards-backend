@@ -31,7 +31,7 @@ import org.springframework.test.context.ContextConfiguration;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
-import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceConfiguration;
+import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionProcessingChainConfiguration;
 import fr.cnes.regards.modules.acquisition.service.conf.MockedFeignClientConf;
 import fr.cnes.regards.modules.acquisition.service.step.AcquisitionITHelper;
 
@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.acquisition.service.step.AcquisitionITHelper;
  * @author Christophe Mertz
  *
  */
-@ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class, MockedFeignClientConf.class })
+@ContextConfiguration(classes = { AcquisitionProcessingChainConfiguration.class, MockedFeignClientConf.class })
 @ActiveProfiles({ "test" })
 @DirtiesContext
 public class ScheduledStartChainIT extends AcquisitionITHelper {
@@ -52,18 +52,18 @@ public class ScheduledStartChainIT extends AcquisitionITHelper {
         chain.setLastDateActivation(null);
         chain.setActive(false);
         chain.setRunning(false);
-        chainService.createOrUpdate(chain);
+        acqProcessChainService.createOrUpdate(chain);
 
-        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(0, chainService.findByActiveTrueAndRunningFalse().size());
-        Assert.assertFalse(chainService.retrieve(chain.getId()).isActive());
-        Assert.assertFalse(chainService.retrieve(chain.getId()).isRunning());
+        Assert.assertEquals(1, acqProcessChainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(0, acqProcessChainService.findByActiveTrueAndRunningFalse().size());
+        Assert.assertFalse(acqProcessChainService.retrieve(chain.getId()).isActive());
+        Assert.assertFalse(acqProcessChainService.retrieve(chain.getId()).isRunning());
 
         Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
 
-        Assert.assertEquals(0, chainService.findByActiveTrueAndRunningFalse().size());
-        Assert.assertFalse(chainService.retrieve(chain.getId()).isActive());
-        Assert.assertFalse(chainService.retrieve(chain.getId()).isRunning());
+        Assert.assertEquals(0, acqProcessChainService.findByActiveTrueAndRunningFalse().size());
+        Assert.assertFalse(acqProcessChainService.retrieve(chain.getId()).isActive());
+        Assert.assertFalse(acqProcessChainService.retrieve(chain.getId()).isRunning());
 
         Assert.assertTrue(runnings.isEmpty());
         Assert.assertTrue(succeededs.isEmpty());
@@ -76,18 +76,18 @@ public class ScheduledStartChainIT extends AcquisitionITHelper {
         chain.setLastDateActivation(null);
         chain.setActive(true);
         chain.setRunning(true);
-        chainService.createOrUpdate(chain);
+        acqProcessChainService.createOrUpdate(chain);
 
-        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(0, chainService.findByActiveTrueAndRunningFalse().size());
-        Assert.assertTrue(chainService.retrieve(chain.getId()).isActive());
-        Assert.assertTrue(chainService.retrieve(chain.getId()).isRunning());
+        Assert.assertEquals(1, acqProcessChainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(0, acqProcessChainService.findByActiveTrueAndRunningFalse().size());
+        Assert.assertTrue(acqProcessChainService.retrieve(chain.getId()).isActive());
+        Assert.assertTrue(acqProcessChainService.retrieve(chain.getId()).isRunning());
 
         Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
 
-        Assert.assertEquals(0, chainService.findByActiveTrueAndRunningFalse().size());
-        Assert.assertTrue(chainService.retrieve(chain.getId()).isActive());
-        Assert.assertTrue(chainService.retrieve(chain.getId()).isRunning());
+        Assert.assertEquals(0, acqProcessChainService.findByActiveTrueAndRunningFalse().size());
+        Assert.assertTrue(acqProcessChainService.retrieve(chain.getId()).isActive());
+        Assert.assertTrue(acqProcessChainService.retrieve(chain.getId()).isRunning());
 
         Assert.assertTrue(runnings.isEmpty());
         Assert.assertTrue(succeededs.isEmpty());
@@ -101,18 +101,18 @@ public class ScheduledStartChainIT extends AcquisitionITHelper {
         chain.setPeriodicity(610L);
         chain.setRunning(false);
         chain.setActive(true);
-        chainService.createOrUpdate(chain);
+        acqProcessChainService.createOrUpdate(chain);
 
-        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(1, chainService.findByActiveTrueAndRunningFalse().size());
-        Assert.assertTrue(chainService.retrieve(chain.getId()).isActive());
-        Assert.assertFalse(chainService.retrieve(chain.getId()).isRunning());
+        Assert.assertEquals(1, acqProcessChainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(1, acqProcessChainService.findByActiveTrueAndRunningFalse().size());
+        Assert.assertTrue(acqProcessChainService.retrieve(chain.getId()).isActive());
+        Assert.assertFalse(acqProcessChainService.retrieve(chain.getId()).isRunning());
 
         Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
 
-        Assert.assertEquals(1, chainService.findByActiveTrueAndRunningFalse().size());
-        Assert.assertTrue(chainService.retrieve(chain.getId()).isActive());
-        Assert.assertFalse(chainService.retrieve(chain.getId()).isRunning());
+        Assert.assertEquals(1, acqProcessChainService.findByActiveTrueAndRunningFalse().size());
+        Assert.assertTrue(acqProcessChainService.retrieve(chain.getId()).isActive());
+        Assert.assertFalse(acqProcessChainService.retrieve(chain.getId()).isRunning());
 
         Assert.assertTrue(runnings.isEmpty());
         Assert.assertTrue(succeededs.isEmpty());
@@ -125,12 +125,12 @@ public class ScheduledStartChainIT extends AcquisitionITHelper {
         chain.setLastDateActivation(null);
         chain.setRunning(false);
         chain.setActive(true);
-        chainService.createOrUpdate(chain);
+        acqProcessChainService.createOrUpdate(chain);
 
-        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(1, chainService.findByActiveTrueAndRunningFalse().size());
-        Assert.assertTrue(chainService.retrieve(chain.getId()).isActive());
-        Assert.assertFalse(chainService.retrieve(chain.getId()).isRunning());
+        Assert.assertEquals(1, acqProcessChainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(1, acqProcessChainService.findByActiveTrueAndRunningFalse().size());
+        Assert.assertTrue(acqProcessChainService.retrieve(chain.getId()).isActive());
+        Assert.assertFalse(acqProcessChainService.retrieve(chain.getId()).isRunning());
         Assert.assertEquals(0,
                             productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING,
                                                                    ProductStatus.COMPLETED, ProductStatus.FINISHED)
@@ -142,9 +142,9 @@ public class ScheduledStartChainIT extends AcquisitionITHelper {
                             productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING,
                                                                    ProductStatus.COMPLETED, ProductStatus.FINISHED)
                                     .size());
-        Assert.assertEquals(1, chainService.findByActiveTrueAndRunningFalse().size());
-        Assert.assertTrue(chainService.retrieve(chain.getId()).isActive());
-        Assert.assertFalse(chainService.retrieve(chain.getId()).isRunning());
+        Assert.assertEquals(1, acqProcessChainService.findByActiveTrueAndRunningFalse().size());
+        Assert.assertTrue(acqProcessChainService.retrieve(chain.getId()).isActive());
+        Assert.assertFalse(acqProcessChainService.retrieve(chain.getId()).isRunning());
     }
 
 }

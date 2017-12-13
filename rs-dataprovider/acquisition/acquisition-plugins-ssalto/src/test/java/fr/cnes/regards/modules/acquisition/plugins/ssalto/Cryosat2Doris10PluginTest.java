@@ -35,6 +35,9 @@ import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
  */
 public class Cryosat2Doris10PluginTest extends AbstractProductMetadataPluginTest {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Jason2PluginTest.class);
 
     @Autowired
@@ -56,7 +59,7 @@ public class Cryosat2Doris10PluginTest extends AbstractProductMetadataPluginTest
     @Override
     public IGenerateSIPPlugin buildPlugin() throws ModuleException {
         PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Cryosat2Doris10ProductMetadataPlugin");
-    
+
         return pluginService.getPlugin(pluginConfiguration.getId());
     }
 
@@ -69,7 +72,6 @@ public class Cryosat2Doris10PluginTest extends AbstractProductMetadataPluginTest
 
     @Override
     public void initTestSoloList() {
-        addPluginTestDef("DA_TC_CRYOSAT2_DORIS10_FLAG", "cryosat2/dor10_invalides");
     }
 
     @Override

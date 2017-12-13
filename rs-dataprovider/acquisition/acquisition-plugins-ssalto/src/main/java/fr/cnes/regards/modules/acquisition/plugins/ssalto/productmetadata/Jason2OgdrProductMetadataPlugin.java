@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeFactory;
@@ -67,6 +68,12 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
         return pluginsRepositoryProperties;
     }
 
+    @Override
+    protected void doCreateDependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
+            throws ModuleException {
+        registerOptionAttribute(pFileMap, pAttributeMap);
+    }
+
     /**
      *
      * @param fileMap
@@ -87,7 +94,7 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
             LOGGER.error(msg);
             throw new PluginAcquisitionException(msg, e);
         }
-        registerAttribute(PRODUCT_OPTION, attributeMap, optionAttribute);
+        registerAttribute(attributeMap, PRODUCT_OPTION, optionAttribute);
         LOGGER.info("END building attribute " + PRODUCT_OPTION);
     }
 

@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.acquisition.plugins;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 
 /**
@@ -30,5 +30,5 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 @PluginInterface(description = "Plugin to process treatement after the SIP is stored")
 public interface IPostProcessSipPlugin {
 
-    void runPlugin(Product product, ChainGeneration chain) throws ModuleException;
+    void runPlugin(Product product, AcquisitionProcessingChain chain) throws ModuleException;
 }

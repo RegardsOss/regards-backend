@@ -23,20 +23,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
- * This {@link Plugin} checks that the file exists and is accessible.<br>
- * The {@link Product} name is the the file name less the extension file.
+ * Checks that the file exists and is accessible.<br>
+ * The {@link Product} name is the file name less the extension file.
  * 
  * @author Christophe Mertz
  *
  */
 public abstract class AbstractCheckingFilePlugin implements ICheckFilePlugin {
 
+    /**
+     * The {@link Product} name
+     */
     private String productName;
 
     /**
@@ -49,6 +51,9 @@ public abstract class AbstractCheckingFilePlugin implements ICheckFilePlugin {
         initExtensionList();
     }
 
+    /**
+     * Initialize the extension file to remove from the file name
+     */
     protected abstract void initExtensionList();
 
     /**
@@ -56,7 +61,7 @@ public abstract class AbstractCheckingFilePlugin implements ICheckFilePlugin {
      * The {@link Product} name is the file name less the extension if the extension is presents in a {@link List}.
      */
     @Override
-    public boolean runPlugin(String chainLabel, File fileToCheck, String datasetId) throws ModuleException {
+    public boolean runPlugin(File fileToCheck, String datasetId) throws ModuleException {
         boolean result = false;
 
         // Check file exists

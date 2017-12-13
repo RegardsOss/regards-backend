@@ -36,6 +36,9 @@ import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
  */
 public class Spot2Doris1bPluginTest extends AbstractProductMetadataPluginTest {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Spot2Doris1bPluginTest.class);
 
     @Autowired
@@ -51,24 +54,20 @@ public class Spot2Doris1bPluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public IGenerateSIPPlugin buildPlugin() throws ModuleException {
-        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Spot2Doris1BProductMetadataPlugin");
+        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Spot2ProductMetadataPlugin");
 
         return pluginService.getPlugin(pluginConfiguration.getId());
     }
 
     @Override
     public void initTestList() {
-        // TODO CMZ, il n'y a plus le prefix dans DATA_OBJECT_IDENTIFIER
-        // addPluginTestDef("DA_TC_SPOT2_DORIS1B_MOE_CDDIS", "spot2/doris1b_moe_cddis");
-        // addPluginTestDef("DA_TC_SPOT2_DORIS1B_MOE_CDDIS_COM", "spot2/doris1b_moe_cddis_com");
-        // addPluginTestDef("DA_TC_SPOT2_DORIS1B_POE_CDDIS_COM", "spot2/doris1b_poe_cddis_com");
-
+        //        addPluginTestDef("DA_TC_SPOT2_DORIS1B_MOE_CDDIS", "spot2/doris1b_moe_cddis");
+        //        addPluginTestDef("DA_TC_SPOT2_DORIS1B_MOE_CDDIS_COM", "spot2/doris1b_moe_cddis_com");
+        //        addPluginTestDef("DA_TC_SPOT2_DORIS1B_POE_CDDIS_COM", "spot2/doris1b_poe_cddis_com");
     }
 
     @Override
     public void initTestSoloList() {
-        // TODO CMZ, il n'y a plus le prefix dans DATA_OBJECT_IDENTIFIER
-        // addPluginTestDef("DA_TC_SPOT2_DORIS1B_MOE_CDDIS", "spot2/doris1b_moe_cddis");
     }
 
     @Override

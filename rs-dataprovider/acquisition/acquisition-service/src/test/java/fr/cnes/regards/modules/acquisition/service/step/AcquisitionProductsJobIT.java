@@ -32,13 +32,13 @@ import org.springframework.test.context.ContextConfiguration;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
-import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceConfiguration;
+import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionProcessingChainConfiguration;
 import fr.cnes.regards.modules.acquisition.service.conf.MockedFeignClientConf;
 import fr.cnes.regards.modules.acquisition.service.plugins.TestScanDirectoryPlugin;
 
@@ -46,13 +46,13 @@ import fr.cnes.regards.modules.acquisition.service.plugins.TestScanDirectoryPlug
  * @author Christophe Mertz
  *
  */
-@ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class, MockedFeignClientConf.class })
+@ContextConfiguration(classes = { AcquisitionProcessingChainConfiguration.class, MockedFeignClientConf.class })
 @ActiveProfiles({ "test", "disableDataProviderTask", "testAmqp" })
 @DirtiesContext
 public class AcquisitionProductsJobIT extends AcquisitionITHelper {
 
     @Test
-    public void runActiveChainGeneration() throws ModuleException, InterruptedException {
+    public void runActiveProcessingChain() throws ModuleException, InterruptedException {
         chain.setLastDateActivation(OffsetDateTime.now().minusDays(10));
         chain.setScanAcquisitionPluginConf(pluginService.getPluginConfiguration("TestScanDirectoryPlugin",
                                                                                 IAcquisitionScanDirectoryPlugin.class));
@@ -63,7 +63,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("BasicCheckFilePlugin",
                                                                                  ICheckFilePlugin.class));
 
-        Assert.assertTrue(chainService.run(chain));
+        Assert.assertTrue(acqProcessChainService.run(chain));
 
         waitJobEvent();
 
@@ -72,7 +72,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
-        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(1, acqProcessChainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(2, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(7, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
@@ -82,12 +82,12 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertEquals(4, productService.findByStatus(ProductStatus.COMPLETED).size());
         Assert.assertEquals(0, productService.findByStatus(ProductStatus.ERROR).size());
 
-        chain = chainService.retrieve(chain.getId());
+        chain = acqProcessChainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
     }
 
     @Test
-    public void runActiveChainGenerationAcquireSameFilesWithSameChecksum()
+    public void runActiveProcessingChainAcquireSameFilesWithSameChecksum()
             throws ModuleException, InterruptedException {
         this.chain.setPeriodicity(1L);
 
@@ -96,7 +96,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.PARAM_1_NAME, "Hello param one");
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.PARAM_2_NAME, "Hello param two");
 
-        Assert.assertTrue(chainService.run(chain));
+        Assert.assertTrue(acqProcessChainService.run(chain));
 
         waitJobEvent();
 
@@ -106,12 +106,12 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertTrue(aborteds.isEmpty());
 
         // Repeat the activation of the same chain
-        chain = chainService.retrieveComplete(chain.getId());
+        chain = acqProcessChainService.retrieveComplete(chain.getId());
 
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.PARAM_1_NAME, "Hello param one");
         chain.addScanAcquisitionParameter(TestScanDirectoryPlugin.PARAM_2_NAME, "Hello param two");
 
-        Assert.assertTrue(chainService.run(chain));
+        Assert.assertTrue(acqProcessChainService.run(chain));
 
         waitJobEvent();
 
@@ -120,13 +120,13 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
-        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(1, acqProcessChainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(2, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         // 6 mandatory and 1 optional
         Assert.assertEquals(7, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(7, acquisitionFileService.findByStatus(AcquisitionFileStatus.IN_PROGRESS).size());
 
-        chain = chainService.retrieve(chain.getId());
+        chain = acqProcessChainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
     }
 
@@ -136,7 +136,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
      * @throws InterruptedException
      */
     @Test
-    public void runActiveChainGenerationOneProductWithThreeAcquisitionFilesWithOptionalMissing()
+    public void runActiveProcessingChainOneProductWithThreeAcquisitionFilesWithOptionalMissing()
             throws ModuleException, InterruptedException {
         MetaFile secondMetaFileMandatory = metaFileRepository.save(MetaFileBuilder.build()
                 .withInvalidFolder("/var/regards/data/invalid").withMediaType(MediaType.APPLICATION_JSON_VALUE)
@@ -154,7 +154,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("CheckInPlugin",
                                                                                  ICheckFilePlugin.class));
 
-        Assert.assertTrue(chainService.run(chain));
+        Assert.assertTrue(acqProcessChainService.run(chain));
 
         waitJobEvent();
 
@@ -163,7 +163,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
-        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(1, acqProcessChainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
@@ -171,9 +171,9 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, productService.findByStatus(ProductStatus.COMPLETED).size());
 
-        Assert.assertEquals(1, processGenerationService.retrieveAll(new PageRequest(0, 10)).getNumberOfElements());
+        Assert.assertEquals(1, execProcessingChainService.retrieveAll(new PageRequest(0, 10)).getNumberOfElements());
 
-        chain = chainService.retrieve(chain.getId());
+        chain = acqProcessChainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
     }
 
@@ -183,7 +183,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
      * @throws InterruptedException
      */
     @Test
-    public void runActiveChainGenerationOneProductWithThreeAcquisitionFiles()
+    public void runActiveProcessingChainOneProductWithThreeAcquisitionFiles()
             throws ModuleException, InterruptedException {
         MetaFile secondMetaFileMandatory = metaFileRepository.save(MetaFileBuilder.build()
                 .withInvalidFolder("/var/regards/data/invalid").withMediaType(MediaType.APPLICATION_JSON_VALUE)
@@ -202,7 +202,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("CheckInPlugin",
                                                                                  ICheckFilePlugin.class));
 
-        Assert.assertTrue(chainService.run(chain));
+        Assert.assertTrue(acqProcessChainService.run(chain));
 
         waitJobEvent();
 
@@ -211,7 +211,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
-        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(1, acqProcessChainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(2, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
@@ -219,12 +219,12 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, productService.findByStatus(ProductStatus.FINISHED).size());
 
-        chain = chainService.retrieve(chain.getId());
+        chain = acqProcessChainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
     }
 
     @Test
-    public void runActiveChainGenerationProductsWithTwoAcquisitions() throws ModuleException, InterruptedException {
+    public void runActiveProcessingChainProductsWithTwoAcquisitions() throws ModuleException, InterruptedException {
         MetaFile secondMetaFileMandatory = metaFileService.createOrUpdate(MetaFileBuilder.build()
                 .withInvalidFolder("/var/regards/data/invalid").withMediaType(MediaType.APPLICATION_JSON_VALUE)
                 .withFilePattern("file pattern for the header file").comment("it is mandatory second").isMandatory()
@@ -241,7 +241,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         chain.setCheckAcquisitionPluginConf(pluginService.getPluginConfiguration("CheckInPlugin",
                                                                                  ICheckFilePlugin.class));
 
-        Assert.assertTrue(chainService.run(chain));
+        Assert.assertTrue(acqProcessChainService.run(chain));
 
         waitJobEvent();
 
@@ -250,7 +250,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
-        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(1, acqProcessChainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(2, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
@@ -266,7 +266,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
             Assert.assertFalse(product.isSended());
         }
 
-        ChainGeneration chainLastAcqDate = chainService.retrieve(chain.getId());
+        AcquisitionProcessingChain chainLastAcqDate = acqProcessChainService.retrieve(chain.getId());
         Assert.assertNotNull(chainLastAcqDate.getLastDateActivation());
 
         Thread.sleep(WAIT_TIME);
@@ -277,7 +277,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
 
         // Repeat the activation of the same chain
         chain.setRunning(false);
-        Assert.assertTrue(chainService.run(chain));
+        Assert.assertTrue(acqProcessChainService.run(chain));
 
         waitJobEvent();
 
@@ -286,7 +286,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertTrue(faileds.isEmpty());
         Assert.assertTrue(aborteds.isEmpty());
 
-        Assert.assertEquals(1, chainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
+        Assert.assertEquals(1, acqProcessChainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(2, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
@@ -299,8 +299,8 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
     }
 
     @Test
-    public void runActiveChainGenerationWithoutScanPlugin() throws InterruptedException {
-        Assert.assertTrue(chainService.run(chain));
+    public void runActiveProcessingChainWithoutScanPlugin() throws InterruptedException {
+        Assert.assertTrue(acqProcessChainService.run(chain));
 
         waitJobEvent();
 
@@ -314,14 +314,14 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
     public void runNoActiveChainGeneration() throws InterruptedException {
         this.chain.setActive(false);
 
-        Assert.assertFalse(chainService.run(chain));
+        Assert.assertFalse(acqProcessChainService.run(chain));
     }
 
     @Test
     public void runActiveChainGenerationWithoutMetaProduct() throws InterruptedException {
         this.chain.setMetaProduct(null);
 
-        Assert.assertTrue(chainService.run(chain));
+        Assert.assertTrue(acqProcessChainService.run(chain));
 
         waitJobEvent();
 
@@ -337,7 +337,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         this.chain.setLastDateActivation(OffsetDateTime.now().minusHours(1));
         this.chain.setPeriodicity(3650L);
 
-        Assert.assertFalse(chainService.run(chain));
+        Assert.assertFalse(acqProcessChainService.run(chain));
     }
 
 }

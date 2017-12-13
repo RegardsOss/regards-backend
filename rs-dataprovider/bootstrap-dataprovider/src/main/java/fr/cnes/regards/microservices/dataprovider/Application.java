@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 /**
  * 
  * Start microservice dataprovider
- * @author TODO
+ * @author Christophe Mertz
  *
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
@@ -36,11 +36,11 @@ public class Application {
     /**
      * Microservice bootstrap method
      *
-     * @param pArgs
+     * @param args
      *            microservice bootstrap arguments
      */
-    public static void main(final String[] pArgs) {
-        SpringApplication.run(Application.class, pArgs); // NOSONAR
+    public static void main(final String[] args) {
+        SpringApplication.run(Application.class, args); // NOSONAR
     }
 
 }

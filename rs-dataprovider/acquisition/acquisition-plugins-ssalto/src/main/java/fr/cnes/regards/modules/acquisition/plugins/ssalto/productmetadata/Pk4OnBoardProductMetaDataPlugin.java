@@ -103,7 +103,7 @@ public class Pk4OnBoardProductMetaDataPlugin extends AbstractProductMetadataPlug
         }
 
         // 3. Register attribute
-        registerAttribute(DISK_ID_ATTRIBUTE, pAttributeMap, diskAttribute);
+        registerAttribute(pAttributeMap, DISK_ID_ATTRIBUTE, diskAttribute);
     }
 
     @Override

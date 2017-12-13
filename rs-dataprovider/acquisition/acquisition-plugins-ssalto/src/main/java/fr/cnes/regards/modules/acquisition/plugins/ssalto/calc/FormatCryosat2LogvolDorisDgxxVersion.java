@@ -25,23 +25,23 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
 
 public class FormatCryosat2LogvolDorisDgxxVersion implements ICalculationClass {
 
-    private static String DELIM = "_";
+    private static final  String DELIM = "_";
 
-    private static int VERSION_DIGIT_LENGTH = 1;
+    private static final  int VERSION_DIGIT_LENGTH = 1;
 
-    private static String POINT = ".";
+    private static final  String POINT = ".";
 
     public Object calculateValue(Object value, AttributeTypeEnum type, PluginConfigurationProperties properties) {
 
         // Parse XYY_abb_ aaaammjj_hhmmss_MEM.REF
-        // to DORIS=X.YY  DIODE=a.bb
+        // to DORIS=X.YY DIODE=a.bb
         String str = (String) value;
         int index = str.indexOf(DELIM);
         String dorisInfo = str.substring(0, index);
         String diodeInfo = str.substring(index + 1);
 
         // Construct the result string
-        StringBuffer buffer = new StringBuffer(24);
+        StringBuilder buffer = new StringBuilder(24);
         buffer.append("DORIS=");
         buffer.append(dorisInfo.substring(0, VERSION_DIGIT_LENGTH));
         buffer.append(POINT);

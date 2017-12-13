@@ -33,7 +33,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
@@ -58,7 +58,7 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
     @Autowired
     private IProductService productService;
 
-    private ChainGeneration chainGeneration;
+    private AcquisitionProcessingChain acqProcessingChain;
 
     private Product product;
 
@@ -73,7 +73,7 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
     @Override
     public void proceedStep() throws AcquisitionRuntimeException, AcquisitionException {
 
-        if (chainGeneration == null) {
+        if (acqProcessingChain == null) {
             String msg = "The chain generation is mandatory";
             LOGGER.error(msg);
             throw new AcquisitionRuntimeException(msg);
@@ -83,41 +83,41 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
             throw new AcquisitionException("The product is mandatory");
         }
 
-        LOGGER.info("[{}] Start generate SIP step for the product <{}>", chainGeneration.getSession(),
+        LOGGER.info("[{}] Start generate SIP step for the product <{}>", acqProcessingChain.getSession(),
                     product.getProductName());
 
         if (this.acqFiles.isEmpty()) {
-            LOGGER.info("Any file to process for the acquisition chain <{}>", this.chainGeneration.getLabel());
+            LOGGER.info("Any file to process for the acquisition chain <{}>", this.acqProcessingChain.getLabel());
             return;
         }
 
         // A plugin for the generate SIP configuration is required
-        if (this.chainGeneration.getGenerateSipPluginConf() == null) {
+        if (this.acqProcessingChain.getGenerateSipPluginConf() == null) {
             throw new AcquisitionException(
-                    "[" + this.chainGeneration.getLabel() + "] The required IGenerateSIPPlugin is missing");
+                    "[" + this.acqProcessingChain.getLabel() + "] The required IGenerateSIPPlugin is missing");
         }
 
         // Launch the generate plugin
         try {
             // build the plugin parameters
             PluginParametersFactory factory = PluginParametersFactory.build();
-            for (Map.Entry<String, String> entry : this.chainGeneration.getGenerateSipParameter().entrySet()) {
+            for (Map.Entry<String, String> entry : this.acqProcessingChain.getGenerateSipParameter().entrySet()) {
                 factory.addDynamicParameter(entry.getKey(), entry.getValue());
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("[{}] Add parameter <{}> with value : {}", chainGeneration.getSession(),
+                    LOGGER.debug("[{}] Add parameter <{}> with value : {}", acqProcessingChain.getSession(),
                                  entry.getKey(), entry.getValue());
                 }
             }
 
             // get an instance of the plugin
             IGenerateSIPPlugin generateSipPlugin = pluginService
-                    .getPlugin(this.chainGeneration.getGenerateSipPluginConf().getId(),
+                    .getPlugin(this.acqProcessingChain.getGenerateSipPluginConf().getId(),
                                factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
 
             // TODO CMZ attention à ne calculer le SIP que si c'est nécessaire
             // si pas saved dans ingest, mais avec le SIP déjà calculé, il faut essayer de l'envoyer sans le recalculer
             // Calc the SIP and save the Product
-            product.setSip(generateSipPlugin.runPlugin(this.acqFiles, Optional.of(chainGeneration.getDataSet())));
+            product.setSip(generateSipPlugin.runPlugin(this.acqFiles, Optional.of(acqProcessingChain.getDataSet())));
             productService.save(product);
 
         } catch (ModuleException e) {
@@ -125,13 +125,13 @@ public class GenerateSipStep extends AbstractStep implements IGenerateSipStep {
             throw new AcquisitionException(e.getMessage());
         }
 
-        LOGGER.info("[{}] Stop  generate SIP step for the product <{}>", chainGeneration.getSession(),
+        LOGGER.info("[{}] Stop  generate SIP step for the product <{}>", acqProcessingChain.getSession(),
                     product.getProductName());
     }
 
     @Override
     public void getResources() throws AcquisitionException {
-        this.chainGeneration = process.getChainGeneration();
+        this.acqProcessingChain = process.getChainGeneration();
         this.product = process.getProduct();
         this.acqFiles = acquisitionFileService.findByProduct(this.product);
     }

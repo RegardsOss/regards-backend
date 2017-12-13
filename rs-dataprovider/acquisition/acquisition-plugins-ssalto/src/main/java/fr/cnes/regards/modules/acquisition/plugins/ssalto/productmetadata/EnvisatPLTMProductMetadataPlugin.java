@@ -134,7 +134,7 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
             LOGGER.error(msg);
             throw new PluginAcquisitionException(msg, e);
         }
-        registerAttribute(GEO_COORDINATES, attributeMap, coordinates);
+        registerAttribute(attributeMap, GEO_COORDINATES, coordinates);
         LOGGER.info("END building attribute " + GEO_COORDINATES);
     }
 

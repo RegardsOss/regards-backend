@@ -73,8 +73,8 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
                 attributeNodes = {
                         @NamedAttributeNode(value = "metaProduct", subgraph = "graph.metaproduct.complete.metafiles"),
                         @NamedAttributeNode(value = "fileList") },
-                subgraphs = { @NamedSubgraph(name = "graph.metaproduct.complete.metafiles", attributeNodes = {
-                        @NamedAttributeNode(value = "metaFiles") }) })
+                subgraphs = { @NamedSubgraph(name = "graph.metaproduct.complete.metafiles",
+                        attributeNodes = { @NamedAttributeNode(value = "metaFiles") }) })
 
 })
 public class Product implements IIdentifiable<Long> {
@@ -152,7 +152,7 @@ public class Product implements IIdentifiable<Long> {
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode() { // NOSONAR
         final int prime = 31;
         int result = 1;
         result = prime * result + ((productName == null) ? 0 : productName.hashCode()); // NOSONAR
@@ -261,6 +261,12 @@ public class Product implements IIdentifiable<Long> {
         strBuilder.append(productName);
         strBuilder.append(" - ");
         strBuilder.append(status);
+        strBuilder.append(" - ");
+        strBuilder.append(sended);
+        strBuilder.append(" - ");
+        strBuilder.append(session);
+        strBuilder.append(" - ");
+        strBuilder.append(ingestChain);
         return strBuilder.toString();
     }
 

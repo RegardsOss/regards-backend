@@ -16,44 +16,31 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.domain.metadata.dto;
+package fr.cnes.regards.modules.acquisition.plugins.ssalto.chain.conf;
 
-import org.springframework.beans.BeanUtils;
+import org.mockito.Mockito;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
+import fr.cnes.regards.modules.entities.client.IDatasetClient;
+import fr.cnes.regards.modules.ingest.client.IIngestClient;
 
 /**
- * {@link ScanDirectory} Dto
  * 
  * @author Christophe Mertz
  *
  */
-public class ScanDirectoryDto {
+@Configuration
+public class MockedFeignSsaltoClientConf {
 
-    private Long id;
-
-    private String scanDir;
-
-    public Long getId() {
-        return id;
+    @Bean
+    public IIngestClient ingestClient() {
+        return Mockito.mock(IIngestClient.class);
     }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getScanDir() {
-        return scanDir;
-    }
-
-    public void setScanDir(String scanDir) {
-        this.scanDir = scanDir;
-    }
-
-    public static ScanDirectoryDto fromScanDirectory(ScanDirectory scanDirectory) {
-        ScanDirectoryDto dto = new ScanDirectoryDto();
-        BeanUtils.copyProperties(scanDirectory, dto);
-        return dto;
+    
+    @Bean
+    public IDatasetClient datasetClient() {
+        return Mockito.mock(IDatasetClient.class);
     }
 
 }

@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 @PluginInterface(description = "Plugin to validate a product")
 public interface ICheckFilePlugin {
     
-    boolean runPlugin(String chainLabel, File fileToCheck, String dataSetId) throws ModuleException;
+    boolean runPlugin(File fileToCheck, String dataSetId) throws ModuleException;
     
     String getProductName();
 }

@@ -83,7 +83,6 @@ public class MetaProduct implements IIdentifiable<Long> {
 
     /**
      * <code>true</code> clean the original file
-     * TODO CMZ : cleanOriginalFile : à exploiter dans la tache asynchrone qui gère l'évènement SIP_STORED 
      */
     @NotNull
     @Column(name = "cleanOriginalFile")

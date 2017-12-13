@@ -20,10 +20,12 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 
 /**
- * Manage Cryosat2 data prefixs.<br>
- * This {@link Plugin} checks that the file exists and is accessible and that the extension file is authorized.
+ * Manage Cryosat2 data.<br>
+ * This {@link Plugin} checks that the file exists and is accessible.<br>
+ * The {@link Product} name is the file name less the extension file.<br>
  * 
  * @author Christophe Mertz
  *
@@ -33,10 +35,19 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
         url = "https://github.com/RegardsOss")
 public class Cryosat2ExtCheckingFilePlugin extends AbstractCheckingFilePlugin {
 
+    /**
+     * The extension file HDR
+     */
     private static String EXTENSION_HDR = ".HDR";
 
+    /**
+     * The extension file DBL
+     */
     private static String EXTENSION_DBL = ".DBL";
 
+    /**
+     * Initialize the extension file to remove from the file name
+     */
     protected void initExtensionList() {
         extensionList.add(EXTENSION_HDR);
         extensionList.add(EXTENSION_DBL);

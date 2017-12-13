@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.modules.acquisition.builder;
 
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
  *
- * {@link ChainGeneration} builder
+ * {@link AcquisitionProcessingChain} builder
  *
  * @author Christophe Mertz
  *

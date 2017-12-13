@@ -30,17 +30,13 @@ public class CheckInPluginFalse implements ICheckFilePlugin {
 
     private String productName;
 
-    public CheckInPluginFalse() {
-        super();
-    }
-
     @Override
     public String getProductName() {
         return productName;
     }
 
     @Override
-    public boolean runPlugin(String chainLabel, File filetoCheck, String dataSetId) throws ModuleException {
+    public boolean runPlugin(File filetoCheck, String dataSetId) throws ModuleException {
         return false;
     }
 

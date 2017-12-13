@@ -75,7 +75,6 @@ public class FileNameFinder extends AttributeFinder {
     @Override
     public List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
-        LOGGER.debug("begin");
         // List<Object> le type des objets depend du type AttributeTypeEnum
         List<Object> valueList = new ArrayList<>();
         // extrait les fichiers a partir des ssalto File
@@ -88,7 +87,7 @@ public class FileNameFinder extends AttributeFinder {
             Matcher matcher = pattern.matcher(fileToProceed.getName());
             LOGGER.debug("testing file " + fileToProceed.getName());
             if (matcher.matches()) {
-                StringBuffer value = new StringBuffer();
+                StringBuilder value = new StringBuilder();
 
                 // la valeur finale peut etre compose de plusieurs groupes
                 for (Object element : groupNumberList) {
@@ -110,7 +109,6 @@ public class FileNameFinder extends AttributeFinder {
             String msg = "No filename matching the pattern " + filePattern;
             LOGGER.warn(msg);
         }
-        LOGGER.debug("end");
         return valueList;
     }
 

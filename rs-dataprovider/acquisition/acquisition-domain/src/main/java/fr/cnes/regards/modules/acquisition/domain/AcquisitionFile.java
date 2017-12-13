@@ -140,7 +140,7 @@ public class AcquisitionFile implements IIdentifiable<Long> {
     private String checksumAlgorithm;
 
     @Override
-    public int hashCode() {
+    public int hashCode() { // NOSONAR
         final int prime = 31;
         int result = 1;
         result = prime * result + ((checksum == null) ? 0 : checksum.hashCode()); //NOSONAR

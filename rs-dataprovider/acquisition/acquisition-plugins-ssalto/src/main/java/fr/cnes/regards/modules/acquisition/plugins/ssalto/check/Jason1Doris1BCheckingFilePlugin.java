@@ -18,10 +18,13 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 
+import java.util.Map;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.entities.domain.Dataset;
 
 /**
- * Manage Jason1 - Doris1B data prefixs.<br>
+ * Manage Jason1 - Doris1B data prefixes.<br>
  * This {@link Plugin} checks that the file exists and is accessible and that the extension file is authorized.
  * 
  * @author Christophe Mertz
@@ -32,15 +35,12 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
         url = "https://github.com/RegardsOss")
 public class Jason1Doris1BCheckingFilePlugin extends AbstractDoris1BCheckingPlugin {
 
-    private static final String DATASETNAME_JASON1_DORIS1B_MOE_CDDIS = "DA_TC_JASON1_DORIS1B_MOE_CDDIS";
-
-    private static final String DATASETNAME_JASON1_DORIS1B_MOE_CDDIS_COM = "DA_TC_JASON1_DORIS1B_MOE_CDDIS_COM";
-
-    private static final String DATASETNAME_JASON1_DORIS1B_POE_CDDIS_COM = "DA_TC_JASON1_DORIS1B_POE_CDDIS_COM";
-
+    /**
+     * Initialize the {@link Map} for the association {@link Dataset} name, prefix.
+     */
     public void initPrefixMap() {
-        addDatasetNamePrexif(DATASETNAME_JASON1_DORIS1B_MOE_CDDIS, PREFIX_MOE_CDDIS);
-        addDatasetNamePrexif(DATASETNAME_JASON1_DORIS1B_MOE_CDDIS_COM, PREFIX_MOE_CDDIS_COM);
-        addDatasetNamePrexif(DATASETNAME_JASON1_DORIS1B_POE_CDDIS_COM, PREFIX_POE_CDDIS_COM);
+        addDatasetNamePrexif("DA_TC_JASON1_DORIS1B_MOE_CDDIS", PREFIX_MOE_CDDIS);
+        addDatasetNamePrexif("DA_TC_JASON1_DORIS1B_MOE_CDDIS_COM", PREFIX_MOE_CDDIS_COM);
+        addDatasetNamePrexif("DA_TC_JASON1_DORIS1B_POE_CDDIS_COM", PREFIX_POE_CDDIS_COM);
     }
 }

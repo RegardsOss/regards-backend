@@ -156,19 +156,26 @@ public class Attribute {
      */
     @Override
     public String toString() {
-        StringBuffer localBuffer = new StringBuffer();
-        localBuffer.append("Attribute description:");
+        StringBuilder localBuffer = new StringBuilder();
+        localBuffer.append("[");
         if (metaAttribute != null) {
-            localBuffer.append(" label: " + metaAttribute.getName());
+            localBuffer.append(metaAttribute.getName());
         }
-        localBuffer.append(" value(s):");
-        if ((valueList != null) && !valueList.isEmpty()) {
+        localBuffer.append(":");
+        localBuffer.append(getType().toString());
+        if (metaAttribute.getComputationRule() != null) {
+            localBuffer.append(":");
+            localBuffer.append(metaAttribute.getComputationRule());
+        }
+        localBuffer.append(":{");
+        if ((valueList != null) && !valueList.isEmpty()) { // NOSONAR
             for (Object o : valueList) {
-                localBuffer.append(" " + o);
+                localBuffer.append(o);
             }
         } else {
             localBuffer.append(" none...");
         }
+        localBuffer.append("}]");
         return localBuffer.toString();
     }
 

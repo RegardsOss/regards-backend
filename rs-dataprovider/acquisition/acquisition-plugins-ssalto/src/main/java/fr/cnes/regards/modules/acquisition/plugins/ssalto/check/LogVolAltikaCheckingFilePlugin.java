@@ -19,9 +19,12 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 
 /**
- * Manage LOG_VOL_ALTIKA data prefixs.<br>
+ * Manage LOG_VOL_ALTIKA data.<br>
+ * This {@link Plugin} checks that the file exists and is accessible.<br>
+ * The {@link Product} name is the file name less the extension file.<br>
  * 
  * @author Christophe Mertz
  *
@@ -31,12 +34,24 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
         url = "https://github.com/RegardsOss")
 public class LogVolAltikaCheckingFilePlugin extends AbstractCheckingFilePlugin {
 
+    /**
+     * The extension file HDR
+     */
     private static String EXTENSION_HDR = "_HDR";
 
+    /**
+     * The extension file BIN
+     */
     private static String EXTENSION_BIN = "_BIN";
 
+    /**
+     * The extension file TCH
+     */
     private static String EXTENSION_TCH = "_TCH";
 
+    /**
+     * Initialize the extension file to remove from the file name
+     */
     protected void initExtensionList() {
         extensionList.add(EXTENSION_BIN);
         extensionList.add(EXTENSION_HDR);

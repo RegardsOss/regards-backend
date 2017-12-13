@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
- * Plugin POLDER pour les produits composes de 2 fichiers
+ * Manage POLDER data.
  * 
  * @author Christophe Mertz
  *
@@ -36,12 +36,15 @@ import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
         url = "https://github.com/RegardsOss")
 public class PolderCompCheckingFilePlugin implements ICheckFilePlugin {
 
-    protected static final int PRODUCT_NAME_MAX_SIZE = 15;
+    private static final int PRODUCT_NAME_MAX_SIZE = 15;
 
+    /**
+     * The product name
+     */
     private String productName;
 
     @Override
-    public boolean runPlugin(String chainLabel, File fileToCheck, String datasetId) throws ModuleException {
+    public boolean runPlugin(File fileToCheck, String datasetId) throws ModuleException {
         boolean result = false;
 
         // Check file exists

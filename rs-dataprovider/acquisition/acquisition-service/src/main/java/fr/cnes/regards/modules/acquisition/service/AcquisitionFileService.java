@@ -32,7 +32,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -57,9 +57,9 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     private final IAcquisitionFileRepository acqfileRepository;
 
     /**
-     * {@link ChainGeneration} service
+     * {@link AcquisitionProcessingChain} service
      */
-    private final IChainGenerationService chainGenerationService;
+    private final IAcquisitionProcessingChainService acqProcessingChainService;
 
     /**
      * {@link Product} service
@@ -71,13 +71,13 @@ public class AcquisitionFileService implements IAcquisitionFileService {
      * 
      * @param acqFileRepository a {@link AcquisitionFile} repository
      * @param prService a {@link Product} service
-     * @param chainGenService a {@link ChainGeneration} service
+     * @param acqProcessChainService a {@link AcquisitionProcessingChain} service
      */
     public AcquisitionFileService(IAcquisitionFileRepository acqFileRepository, IProductService productService,
-            IChainGenerationService chainGenService) {
+            IAcquisitionProcessingChainService acqProcessChainService) {
         super();
         this.acqfileRepository = acqFileRepository;
-        this.chainGenerationService = chainGenService;
+        this.acqProcessingChainService = acqProcessChainService;
         this.productService = productService;
     }
 
@@ -106,6 +106,7 @@ public class AcquisitionFileService implements IAcquisitionFileService {
         acqfileRepository.delete(acquisitionFile);
     }
 
+    @Override
     public List<AcquisitionFile> findByMetaFile(MetaFile metaFile) {
         return acqfileRepository.findByMetaFile(metaFile);
     }
@@ -126,36 +127,38 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     }
 
     @Override
-    public void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, ChainGeneration chain)
+    public void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, AcquisitionProcessingChain chain)
             throws ModuleException {
-        for (AcquisitionFile af : acquisitionFiles) {
-            List<AcquisitionFile> listAf = this.findByMetaFile(af.getMetaFile());
+        if (acquisitionFiles != null) {
+            for (AcquisitionFile af : acquisitionFiles) {
+                List<AcquisitionFile> listAf = this.findByMetaFile(af.getMetaFile());
 
-            if (listAf.contains(af)) {
-                // if the AcquisitionFile already exists in database
-                // update his status and his date acquisition
-                AcquisitionFile afExisting = listAf.get(listAf.indexOf(af));
-                afExisting.setAcqDate(af.getAcqDate());
-                afExisting.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-                this.save(afExisting);
-            } else {
-                af.setStatus(AcquisitionFileStatus.IN_PROGRESS);
-                this.save(af);
-            }
+                if (listAf.contains(af)) {
+                    // if the AcquisitionFile already exists in database
+                    // update his status and his date acquisition
+                    AcquisitionFile afExisting = listAf.get(listAf.indexOf(af));
+                    afExisting.setAcqDate(af.getAcqDate());
+                    afExisting.setStatus(AcquisitionFileStatus.IN_PROGRESS);
+                    this.save(afExisting);
+                } else {
+                    af.setStatus(AcquisitionFileStatus.IN_PROGRESS);
+                    this.save(af);
+                }
 
-            // for the first activation of the ChainGeneration
-            // set the last activation date with the activation date of the current AcquisitionFile
-            if (chain.getLastDateActivation() == null) {
-                chain.setLastDateActivation(af.getAcqDate());
-            } else {
-                if (af.getAcqDate() != null && chain.getLastDateActivation().isBefore(af.getAcqDate())) {
+                // for the first activation of the AcquisitionProcessingChain
+                // set the last activation date with the activation date of the current AcquisitionFile
+                if (chain.getLastDateActivation() == null) {
                     chain.setLastDateActivation(af.getAcqDate());
+                } else {
+                    if (af.getAcqDate() != null && chain.getLastDateActivation().isBefore(af.getAcqDate())) {
+                        chain.setLastDateActivation(af.getAcqDate());
+                    }
                 }
             }
         }
 
-        // Save the ChainGeneration the last activation date as been modified 
-        chainGenerationService.createOrUpdate(chain);
+        // Save the AcquisitionProcessingChain the last activation date as been modified 
+        acqProcessingChainService.createOrUpdate(chain);
     }
 
     @Override

@@ -44,11 +44,13 @@ import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 @EnableAutoConfiguration
 public class Jason2PluginTest extends AbstractProductMetadataPluginTest {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Jason2PluginTest.class);
 
     @Autowired
     IPluginService pluginService;
-
 
     @Autowired
     IRuntimeTenantResolver runtimeTenantResoler;
@@ -122,7 +124,6 @@ public class Jason2PluginTest extends AbstractProductMetadataPluginTest {
         addPluginTestDef("DA_TC_JASON2_TC_LOGBOOK_PASSMC", "JASON2/LOG_PASSMC",
                          "R_TCLOG_JA2_CARMEN2MC_2008_12_04_11_55_34.zip");
         addPluginTestDef("DA_TC_JASON2_GDR", "JASON2/GDR", "JA2_GPN_2PaP184_254_20050914_100022_20490603_082321");
-        addPluginTestDef("DA_TC_JASON2_OGDR", "JASON2/OGDR", "JA2_OPN_2PcS015_184_20081205_003016_20081205_020223");
 
         addPluginTestDef("DA_TC_JASON2_SAT_ATTITUDE", "JASON2/EXPERT_ATTITUDE", "spa_satatt_jason2.txt");
 
@@ -149,8 +150,7 @@ public class Jason2PluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public void initTestSoloList() {
-        addPluginTestDef("DA_TC_JASON2_FREQAJ_BALPUB", "COMMUN/BALISES_PUBLIQUES/FA",
-                "JA2_FBP_AXXCNE20080703_120400_20080701_235951_20080702_235551");
+        addPluginTestDef("DA_TC_JASON2_IGDR", "JASON2/IGDR", "JA2_IPN_2PcP016_166_20081214_053324_20081214_062937");
     }
 
     @Override

@@ -20,12 +20,12 @@ package fr.cnes.regards.modules.acquisition.builder;
 
 import org.omg.CORBA.Current;
 
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 
 /**
  *
- * {@link ChainGeneration} builder
+ * {@link AcquisitionProcessingChain} builder
  *
  * @author Christophe Mertz
  *

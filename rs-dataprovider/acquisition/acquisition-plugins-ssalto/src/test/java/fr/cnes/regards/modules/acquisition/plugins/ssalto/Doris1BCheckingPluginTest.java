@@ -42,7 +42,7 @@ public class Doris1BCheckingPluginTest {
         String dataSetId = "DA_TC_JASON1_DORIS1B_MOE_CDDIS";
         // Launch plugin
         Jason1Doris1BCheckingFilePlugin plugin = new Jason1Doris1BCheckingFilePlugin();
-            Assert.assertTrue(plugin.runPlugin("chain label", new File(fileName), dataSetId));
+            Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
             Assert.assertEquals("MOE_CDDIS_DORDATA_090526.SP2", plugin.getProductName());
     }
 

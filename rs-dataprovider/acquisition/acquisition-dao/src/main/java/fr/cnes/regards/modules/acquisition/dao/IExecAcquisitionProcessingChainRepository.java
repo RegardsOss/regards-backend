@@ -28,25 +28,25 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
-import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
 
 /**
- * {@link ProcessGeneration} repository
+ * {@link ExecAcquisitionProcessingChain} repository
  *
  * @author Christophe Mertz
  */
 @Repository
-public interface IProcessGenerationRepository extends JpaRepository<ProcessGeneration, Long> {
+public interface IExecAcquisitionProcessingChainRepository extends JpaRepository<ExecAcquisitionProcessingChain, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_READ)
-    ProcessGeneration findBySession(String session);
+    ExecAcquisitionProcessingChain findBySession(String session);
     
-    Page<ProcessGeneration> findByChainGeneration(ChainGeneration chainGeneration, Pageable pageable);
+    Page<ExecAcquisitionProcessingChain> findByChainGeneration(AcquisitionProcessingChain chainGeneration, Pageable pageable);
     
-    Page<ProcessGeneration> findByStartDateBetween(OffsetDateTime start, OffsetDateTime stop, Pageable pageable);
+    Page<ExecAcquisitionProcessingChain> findByStartDateBetween(OffsetDateTime start, OffsetDateTime stop, Pageable pageable);
     
-    Page<ProcessGeneration> findByStartDateAfterAndStopDateBefore(OffsetDateTime start, OffsetDateTime stop, Pageable pageable);
+    Page<ExecAcquisitionProcessingChain> findByStartDateAfterAndStopDateBefore(OffsetDateTime start, OffsetDateTime stop, Pageable pageable);
     
-    Page<ProcessGeneration> findByStartDateAfter(OffsetDateTime start, Pageable pageable);
+    Page<ExecAcquisitionProcessingChain> findByStartDateAfter(OffsetDateTime start, Pageable pageable);
 }

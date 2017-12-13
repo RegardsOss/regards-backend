@@ -95,7 +95,6 @@ public class ProductSipEventHandler implements ApplicationListener<ApplicationRe
             acquisition.setParameters(new SIPEventJobParameter(event));
             acquisition.setClassName(PostAcquisitionJob.class.getName());
             acquisition.setOwner(authResolver.getUser());
-            acquisition.setPriority(50); //TODO CMZ priority ?
 
             acquisition = jobInfoService.createAsQueued(acquisition);
         }

@@ -126,7 +126,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
             throw new PluginAcquisitionException(msg, e);
         }
 
-        registerAttribute(TIME_PERIOD, attributeMap, timePeriodAttribute);
+        registerAttribute( attributeMap, TIME_PERIOD,timePeriodAttribute);
 
         LOGGER.info("END building attribute " + TIME_PERIOD);
     }
@@ -145,7 +145,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
             Attribute fileCreationDateAttribute = AttributeFactory
                     .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, CREATION_DATE,
                                      getCreationDateValue(fileMap.keySet()));
-            registerAttribute(CREATION_DATE, attributeMap, fileCreationDateAttribute);
+            registerAttribute(attributeMap, CREATION_DATE,fileCreationDateAttribute);
             attributeValueMap.put(CREATION_DATE, fileCreationDateAttribute.getValueList());
         } catch (DomainModelException e) {
             String msg = "unable to create attribute" + CREATION_DATE;

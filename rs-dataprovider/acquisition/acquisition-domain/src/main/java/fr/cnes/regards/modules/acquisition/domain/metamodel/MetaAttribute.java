@@ -142,9 +142,9 @@ public class MetaAttribute {
     public int hashCode() { // NOSONAR
         // getName() is consistent and ValueType is an Enum which Object.hashcode point to a static reference
         // the hashcode is thus consistent
-        if ((getName() != null) && (getValueType() != null)) {
+        if ((getName() != null) && (getValueType() != null)) { // NOSONAR
             return getName().hashCode() + getValueType().hashCode();
-        } else if (getName() != null) {
+        } else if (getName() != null) { // NOSONAR
             return getName().hashCode();
         } else {
             return 0;

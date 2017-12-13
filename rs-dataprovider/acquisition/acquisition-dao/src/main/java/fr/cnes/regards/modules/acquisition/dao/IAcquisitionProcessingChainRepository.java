@@ -24,34 +24,34 @@ import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
- * {@link ChainGeneration} repository
+ * {@link AcquisitionProcessingChain} repository
  *
  * @author Christophe Mertz
  */
 @Repository
-public interface IChainGenerationRepository extends JpaRepository<ChainGeneration, Long> {
+public interface IAcquisitionProcessingChainRepository extends JpaRepository<AcquisitionProcessingChain, Long> {
 
     /**
-     * Find a {@link ChainGeneration} by label
-     * @param name the {@link ChainGeneration} label to find
-     * @return an {@link Optional} {@link ChainGeneration}
+     * Find a {@link AcquisitionProcessingChain} by label
+     * @param name the {@link AcquisitionProcessingChain} label to find
+     * @return an {@link Optional} {@link AcquisitionProcessingChain}
      */
-    Optional<ChainGeneration> findOneByLabel(String name);
+    Optional<AcquisitionProcessingChain> findOneByLabel(String name);
 
     /**
-     * Find a {@link ChainGeneration} by {@link MetaProduct}
+     * Find a {@link AcquisitionProcessingChain} by {@link MetaProduct}
      * @param metaProduct the {@link MetaProduct} to find
-     * @return the finded {@link ChainGeneration}
+     * @return the finded {@link AcquisitionProcessingChain}
      */
-    ChainGeneration findByMetaProduct(MetaProduct metaProduct);
+    AcquisitionProcessingChain findByMetaProduct(MetaProduct metaProduct);
 
     /**
-     * Find all the {@link ChainGeneration} tahat are active and not running
-     * @return the {@link Set} of finded {@link ChainGeneration} 
+     * Find all the {@link AcquisitionProcessingChain} tahat are active and not running
+     * @return the {@link Set} of finded {@link AcquisitionProcessingChain} 
      */
-    Set<ChainGeneration> findByActiveTrueAndRunningFalse();
+    Set<AcquisitionProcessingChain> findByActiveTrueAndRunningFalse();
 }

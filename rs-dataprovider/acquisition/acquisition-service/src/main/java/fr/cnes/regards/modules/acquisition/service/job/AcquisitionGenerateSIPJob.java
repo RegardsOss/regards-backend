@@ -30,9 +30,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
+import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionProcessingChainJobParameter;
 import fr.cnes.regards.modules.acquisition.domain.job.ProductJobParameter;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.step.GenerateSipStep;
@@ -58,15 +58,15 @@ public class AcquisitionGenerateSIPJob extends AbstractJob<Void> {
     @Autowired
     private IProductService productService;
 
-    private ChainGeneration chainGeneration;
+    private AcquisitionProcessingChain acqProcessingChain;
 
     private String productName;
 
     @Override
     public void run() {
-        LOGGER.info("[{}] Start generate SIP job for the product <{}>", chainGeneration.getSession(), productName);
+        LOGGER.info("[{}] Start generate SIP job for the product <{}>", acqProcessingChain.getSession(), productName);
 
-        AcquisitionProcess process = new AcquisitionProcess(chainGeneration, productService.retrieve(productName));
+        AcquisitionProcess process = new AcquisitionProcess(acqProcessingChain, productService.retrieve(productName));
 
         // IAcquisitionScanStep is the first step
         IStep genSipStep = new GenerateSipStep();
@@ -88,14 +88,14 @@ public class AcquisitionGenerateSIPJob extends AbstractJob<Void> {
         }
 
         for (JobParameter jp : parameters.values()) {
-            if (ChainGenerationJobParameter.isCompatible(jp)) {
-                chainGeneration = jp.getValue();
+            if (AcquisitionProcessingChainJobParameter.isCompatible(jp)) {
+                acqProcessingChain = jp.getValue();
             } else {
                 if (ProductJobParameter.isCompatible(jp)) {
                     productName = jp.getValue();
                 } else {
                     throw new JobParameterInvalidException(
-                            "Please use ChainGenerationJobParameter or ProductJobParameter in place of JobParameter");
+                            "Please use AcquisitionProcessingChainJobParameter or ProductJobParameter in place of JobParameter");
                 }
             }
         }

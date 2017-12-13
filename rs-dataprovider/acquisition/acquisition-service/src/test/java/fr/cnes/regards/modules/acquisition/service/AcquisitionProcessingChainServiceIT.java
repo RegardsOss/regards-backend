@@ -34,17 +34,17 @@ import org.springframework.test.context.transaction.BeforeTransaction;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.acquisition.builder.ChainGenerationBuilder;
+import fr.cnes.regards.modules.acquisition.builder.AcquisitionProcessingChainBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.builder.ProductBuilder;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
-import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
-import fr.cnes.regards.modules.acquisition.dao.IProcessGenerationRepository;
+import fr.cnes.regards.modules.acquisition.dao.IExecAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -59,7 +59,7 @@ import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionServiceConfig
 @ContextConfiguration(classes = { AcquisitionServiceConfiguration.class })
 @ActiveProfiles({ "test", "disableDataProviderTask" })
 @DirtiesContext
-public class ChaineGenerationServiceIT {
+public class AcquisitionProcessingChainServiceIT {
 
     /**
      * Static default tenant
@@ -67,7 +67,7 @@ public class ChaineGenerationServiceIT {
     @Value("${regards.tenant}")
     private String tenant;
 
-    private static final String CHAINE_LABEL = "chaine label";
+    private static final String CHAIN_LABEL = "the chain label";
 
     private static final String DATASET_NAME = "dataset name";
 
@@ -81,7 +81,7 @@ public class ChaineGenerationServiceIT {
     private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
-    private IChainGenerationService chainService;
+    private IAcquisitionProcessingChainService acqProcessChainService;
 
     @Autowired
     private IMetaProductService metaProductService;
@@ -99,10 +99,10 @@ public class ChaineGenerationServiceIT {
     private IMetaFileRepository metaFileRepository;
 
     @Autowired
-    private IProcessGenerationRepository processGenerationRepository;
+    private IExecAcquisitionProcessingChainRepository execProcessingChainRepository;
 
     @Autowired
-    private IChainGenerationRepository chainGenerationRepository;
+    private IAcquisitionProcessingChainRepository processingChainRepository;
 
     @Autowired
     private IMetaProductRepository metaProductRepository;
@@ -117,8 +117,8 @@ public class ChaineGenerationServiceIT {
 
     @Before
     public void cleanDb() {
-        processGenerationRepository.deleteAll();
-        chainGenerationRepository.deleteAll();
+        execProcessingChainRepository.deleteAll();
+        processingChainRepository.deleteAll();
         scanDirectoryRepository.deleteAll();
         acquisitionFileRepository.deleteAll();
         metaFileRepository.deleteAll();
@@ -137,39 +137,39 @@ public class ChaineGenerationServiceIT {
     @Test
     public void createChaine() throws ModuleException {
         // Create a first generation chain
-        ChainGeneration chain = chainService
-                .createOrUpdate(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME).get());
+        AcquisitionProcessingChain chain = acqProcessChainService
+                .createOrUpdate(AcquisitionProcessingChainBuilder.build(CHAIN_LABEL).isActive().withDataSet(DATASET_NAME).get());
         Assert.assertNotNull(chain);
         Assert.assertNotNull(chain.getId());
-        Assert.assertEquals(chainService.retrieveComplete(chain.getId()),chain);
+        Assert.assertEquals(acqProcessChainService.retrieveComplete(chain.getId()),chain);
 
         // Create a meta product
         MetaProduct metaProduct = metaProductService.createOrUpdate(MetaProductBuilder.build(META_PRODUCT_NAME).get());
         Assert.assertNotNull(metaProduct);
         Assert.assertNotNull(metaProduct.getId());
 
-        // Set the MetaProduct to the ChainGeneration
+        // Set the MetaProduct to the AcquisitionProcessingChain
         chain.setMetaProduct(metaProduct);
-        chain = chainService.createOrUpdate(chain);
+        chain = acqProcessChainService.createOrUpdate(chain);
         Assert.assertNotNull(chain.getId());
 
         // Create a Product for the uniq MetaProduct
         Product aProduct = addProduct(metaProduct, PRODUCT_NAME_1);
         Assert.assertNotNull(aProduct);
 
-        // Get the ChainGeneration
-        Page<ChainGeneration> chains = chainService.retrieveAll(new PageRequest(0, 10));
+        // Get the AcquisitionProcessingChain
+        Page<AcquisitionProcessingChain> chains = acqProcessChainService.retrieveAll(new PageRequest(0, 10));
         Assert.assertNotNull(chains.getContent());
         Assert.assertEquals(1, chains.getContent().size());
-        Assert.assertEquals(CHAINE_LABEL, chains.getContent().get(0).getLabel());
+        Assert.assertEquals(CHAIN_LABEL, chains.getContent().get(0).getLabel());
         Assert.assertEquals(DATASET_NAME, chains.getContent().get(0).getDataSet());
     }
 
     @Test
     public void deleteAProduct() throws ModuleException {
         // Create a first generation chain
-        ChainGeneration chain = chainService
-                .createOrUpdate(ChainGenerationBuilder.build(CHAINE_LABEL).isActive().withDataSet(DATASET_NAME).get());
+        AcquisitionProcessingChain chain = acqProcessChainService
+                .createOrUpdate(AcquisitionProcessingChainBuilder.build(CHAIN_LABEL).isActive().withDataSet(DATASET_NAME).get());
         Assert.assertNotNull(chain);
         Assert.assertNotNull(chain.getId());
 
@@ -178,9 +178,9 @@ public class ChaineGenerationServiceIT {
         Assert.assertNotNull(metaProduct);
         Assert.assertNotNull(metaProduct.getId());
 
-        // Set the MetaProduct to the ChainGeneration
+        // Set the MetaProduct to the AcquisitionProcessingChain
         chain.setMetaProduct(metaProduct);
-        chain = chainService.createOrUpdate(chain);
+        chain = acqProcessChainService.createOrUpdate(chain);
         Assert.assertNotNull(chain.getId());
 
         // Create a Product for the uniq MetaProduct

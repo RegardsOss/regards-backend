@@ -32,11 +32,11 @@ import org.springframework.test.context.ContextConfiguration;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
-import fr.cnes.regards.modules.acquisition.builder.ProcessGenerationBuilder;
-import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
+import fr.cnes.regards.modules.acquisition.builder.ExecAcquisitionProcessingChainBuilder;
+import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
-import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceConfiguration;
+import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionProcessingChainConfiguration;
 import fr.cnes.regards.modules.acquisition.service.conf.MockedFeignClientConf;
 import fr.cnes.regards.modules.acquisition.service.step.AcquisitionITHelper;
 
@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.acquisition.service.step.AcquisitionITHelper;
  * @author Christophe Mertz
  *
  */
-@ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class, MockedFeignClientConf.class })
+@ContextConfiguration(classes = { AcquisitionProcessingChainConfiguration.class, MockedFeignClientConf.class })
 @ActiveProfiles({ "test", "disableDataProviderTask" })
 @DirtiesContext
 public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
@@ -52,7 +52,7 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
     @Autowired
     private IProductBulkRequestService productBulkRequestService;
 
-    private ProcessGeneration process;
+    private ExecAcquisitionProcessingChain process;
 
     @Before
     public void createProductsAndProcess() throws ModuleException {
@@ -102,8 +102,8 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
         // the chain is not active to not activate it 
         chain.setActive(false);
         chain.setSession("session-001");
-        chainService.createOrUpdate(chain);
-        process = processGenerationService.save(ProcessGenerationBuilder.build(chain.getSession()).withChain(chain)
+        acqProcessChainService.createOrUpdate(chain);
+        process = execProcessingChainService.save(ExecAcquisitionProcessingChainBuilder.build(chain.getSession()).withChain(chain)
                 .withStartDate(OffsetDateTime.now()).get());
     }
 
@@ -119,12 +119,12 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
         Assert.assertEquals(2, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
-        Assert.assertNotNull(processGenerationService.findBySession(chain.getSession()));
-        Assert.assertEquals(process, processGenerationService.findBySession(chain.getSession()));
+        Assert.assertNotNull(execProcessingChainService.findBySession(chain.getSession()));
+        Assert.assertEquals(process, execProcessingChainService.findBySession(chain.getSession()));
 
         productBulkRequestService.runBulkRequest();
 
-        Assert.assertEquals(1, processGenerationRepository.findAll().size());
+        Assert.assertEquals(1, execProcessingChainRepository.findAll().size());
 
         Assert.assertEquals(0, productService
                 .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
@@ -132,7 +132,7 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
 
-        ProcessGeneration processLoad = processGenerationService.findBySession(chain.getSession());
+        ExecAcquisitionProcessingChain processLoad = execProcessingChainService.findBySession(chain.getSession());
         Assert.assertEquals(16, processLoad.getNbSipCreated()); // 16 products created cf mock
         Assert.assertEquals(0, processLoad.getNbSipError());
         Assert.assertEquals(0, processLoad.getNbSipStored());
@@ -151,7 +151,7 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
 
         productBulkRequestService.runBulkRequest();
 
-        Assert.assertEquals(1, processGenerationRepository.findAll().size());
+        Assert.assertEquals(1, execProcessingChainRepository.findAll().size());
 
         // Nothing should be change
         Assert.assertEquals(14, productService
@@ -177,7 +177,7 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
 
         productBulkRequestService.runBulkRequest();
 
-        Assert.assertEquals(1, processGenerationRepository.findAll().size());
+        Assert.assertEquals(1, execProcessingChainRepository.findAll().size());
 
         // 2 products in error are not sended
         Assert.assertEquals(2, productService.findBySendedAndStatusIn(false, ProductStatus.ERROR).size());
@@ -185,7 +185,7 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
         Assert.assertEquals(14, productService
                 .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
 
-        ProcessGeneration processLoad = processGenerationService.findBySession(chain.getSession());
+        ExecAcquisitionProcessingChain processLoad = execProcessingChainService.findBySession(chain.getSession());
         Assert.assertEquals(14, processLoad.getNbSipCreated()); // 14 products created cf mock
         Assert.assertEquals(2, processLoad.getNbSipError());
         Assert.assertEquals(0, processLoad.getNbSipStored());

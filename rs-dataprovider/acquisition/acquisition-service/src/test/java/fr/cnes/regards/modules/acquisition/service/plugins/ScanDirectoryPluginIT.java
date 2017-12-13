@@ -39,41 +39,39 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.acquisition.builder.ChainGenerationBuilder;
+import fr.cnes.regards.modules.acquisition.builder.AcquisitionProcessingChainBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
-import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
-import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
-import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceConfiguration;
+import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionProcessingChainConfiguration;
 
 /**
  * @author Christophe Mertz
  *
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class })
+@ContextConfiguration(classes = { AcquisitionProcessingChainConfiguration.class })
 @DirtiesContext
 public class ScanDirectoryPluginIT {
 
@@ -83,7 +81,7 @@ public class ScanDirectoryPluginIT {
     @Value("${regards.tenant}")
     private String tenant;
 
-    private static final String CHAINE_LABEL = "the chain label";
+    private static final String CHAIN_LABEL = "the chain label";
 
     private static final String DATASET_NAME = "the dataset name";
 
@@ -110,7 +108,7 @@ public class ScanDirectoryPluginIT {
     private IScanDirectoryService scandirService;
 
     @Autowired
-    private IChainGenerationService chainService;
+    private IAcquisitionProcessingChainService acqProcessChainService;
 
     @Autowired
     private IPluginService pluginService;
@@ -134,7 +132,7 @@ public class ScanDirectoryPluginIT {
     private IScanDirectoryRepository scanDirectoryRepository;
 
     @Autowired
-    private IChainGenerationRepository chainGenerationRepository;
+    private IAcquisitionProcessingChainRepository processingChainRepository;
 
     @Autowired
     private IAcquisitionFileRepository acquisitionFileRepository;
@@ -142,10 +140,7 @@ public class ScanDirectoryPluginIT {
     @Autowired
     private IMetaFileRepository metaFileRepository;
 
-    @Autowired
-    private Gson gson;
-
-    private ChainGeneration chain;
+    private AcquisitionProcessingChain chain;
 
     private final URL dataPath = getClass().getResource("/data");
 
@@ -170,8 +165,8 @@ public class ScanDirectoryPluginIT {
     }
 
     public void initData() throws ModuleException {
-        chain = chainService.createOrUpdate(ChainGenerationBuilder.build(CHAINE_LABEL).withDataSet(DATASET_NAME)
-                .lastActivation(NOW.minusMinutes(75)).get());
+        chain = acqProcessChainService.createOrUpdate(AcquisitionProcessingChainBuilder.build(CHAIN_LABEL)
+                .withDataSet(DATASET_NAME).lastActivation(NOW.minusMinutes(75)).get());
     }
 
     @After
@@ -179,7 +174,7 @@ public class ScanDirectoryPluginIT {
         scanDirectoryRepository.deleteAll();
         productRepository.deleteAll();
         acquisitionFileRepository.deleteAll();
-        chainGenerationRepository.deleteAll();
+        processingChainRepository.deleteAll();
         metaProductRepository.deleteAll();
         metaFileRepository.deleteAll();
     }

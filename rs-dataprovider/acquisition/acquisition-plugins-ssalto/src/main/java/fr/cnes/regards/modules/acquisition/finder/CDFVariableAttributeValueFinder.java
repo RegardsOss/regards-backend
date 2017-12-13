@@ -65,7 +65,7 @@ public class CDFVariableAttributeValueFinder extends CdfFileFinder {
                 if (calculationClass != null) {
                     value = calculationClass.calculateValue(value, getValueType(), confProperties);
                 }
-                LOGGER.debug("value" + value.toString() + " found for first variable " + variableName);
+                LOGGER.debug("[{}] first value found {}", variableName, value.toString());
                 translatedValueList.add(value);
                 break;
             } else if (Calculus.equals(CalculusTypeEnum.LAST)) {
@@ -73,10 +73,10 @@ public class CDFVariableAttributeValueFinder extends CdfFileFinder {
                 if (calculationClass != null) {
                     value = calculationClass.calculateValue(value, getValueType(), confProperties);
                 }
-                LOGGER.debug("value" + value.toString() + " found for last variable " + variableName);
+                LOGGER.debug("[{}] last value found {}", variableName, value.toString());
                 translatedValueList.add(value);
             } else {
-                // apply the caculus class transformation
+                // apply the calculus class transformation
                 for (Object value : values) {
                     // launch calculation if needed
                     if (calculationClass != null) {

@@ -68,9 +68,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     private static final String STOP_DATE = "STOP_DATE";
 
     // Charset and decoder_ for ISO-8859-15
-    private static Charset charset = Charset.forName("ISO-8859-15");
+    private static final Charset CHARSET = Charset.forName("ISO-8859-15");
 
-    private final CharsetDecoder decoder = charset.newDecoder();
+    private static final CharsetDecoder decoder = CHARSET.newDecoder();
 
     /**
      * Pattern de date dans un fichier de cycle
@@ -81,7 +81,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     /**
      * Pattern pour les lignes dans le fichier cycle
      */
-    private final Pattern CYCLE_LINE_PATTERN = Pattern
+    private static final Pattern CYCLE_LINE_PATTERN = Pattern
             .compile("-\\s*(\\d{3})\\s*(" + CYCLE_DATE_PATTERN + ")\\s*(-|" + CYCLE_DATE_PATTERN + ")\\s*");
 
     /**
@@ -114,7 +114,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     /**
      * Pattern pour les lignes dans le fichier orf
      */
-    private final Pattern ORF_LINE_PATTERN = Pattern
+    private static final Pattern ORF_LINE_PATTERN = Pattern
             .compile("(" + ORF_DATE_PATTERN + "\\p{Blank}" + ORF_TIME_PATTERN + ")\\p{Blank}(\\d{3}).*");
 
     /**

@@ -23,8 +23,8 @@ import java.time.OffsetDateTime;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
-import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
@@ -32,32 +32,32 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * @author Christophe Mertz
  * 
  */
-public interface IProcessGenerationService {
+public interface IExecAcquisitionProcessingChainService {
 
-    ProcessGeneration save(ProcessGeneration chain);
+    ExecAcquisitionProcessingChain save(ExecAcquisitionProcessingChain execProcessingChain);
 
-    void delete(ProcessGeneration processGeneration);
+    void delete(ExecAcquisitionProcessingChain execProcessingChain);
 
-    ProcessGeneration findBySession(String session);
+    ExecAcquisitionProcessingChain findBySession(String session);
 
-    Page<ProcessGeneration> retrieveAll(Pageable pageable);
+    Page<ExecAcquisitionProcessingChain> retrieveAll(Pageable pageable);
 
-    Page<ProcessGeneration> findByChainGeneration(ChainGeneration chainGeneration, Pageable pageable);
+    Page<ExecAcquisitionProcessingChain> findByChainGeneration(AcquisitionProcessingChain chainGeneration, Pageable pageable);
 
-    Page<ProcessGeneration> findByStartDateBetween(OffsetDateTime start, OffsetDateTime stop, Pageable pageable);
+    Page<ExecAcquisitionProcessingChain> findByStartDateBetween(OffsetDateTime start, OffsetDateTime stop, Pageable pageable);
 
-    Page<ProcessGeneration> findByStartDateAfterAndStopDateBefore(OffsetDateTime start, OffsetDateTime stop,
+    Page<ExecAcquisitionProcessingChain> findByStartDateAfterAndStopDateBefore(OffsetDateTime start, OffsetDateTime stop,
             Pageable pageable);
 
-    Page<ProcessGeneration> findByStartDateAfter(OffsetDateTime start, Pageable pageable);
+    Page<ExecAcquisitionProcessingChain> findByStartDateAfter(OffsetDateTime start, Pageable pageable);
 
     /**
-     * Update the {@link ProcessGeneration}
+     * Update the {@link ExecAcquisitionProcessingChain}
      * @param session a current session identifier
      * @param nbSipCreated the number of SIP that are in {@link SIPState#CREATED}
      * @param nbSipStored the number of SIP that are in {@link SIPState#STORED}
      * @param nbSipError the number of SIP that are in {@link SIPState#REJECTED} or {@link SIPState#STORE_ERROR} 
      */
-    void updateProcessGeneration(String session, int nbSipCreated, int nbSipStored, int nbSipError);
+    void updateExecProcessingChain(String session, int nbSipCreated, int nbSipStored, int nbSipError);
 
 }

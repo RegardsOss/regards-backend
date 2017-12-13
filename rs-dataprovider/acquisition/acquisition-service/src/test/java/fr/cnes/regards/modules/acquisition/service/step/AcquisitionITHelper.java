@@ -58,21 +58,24 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginParameterRepository;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.modules.acquisition.builder.AcquisitionFileBuilder;
-import fr.cnes.regards.modules.acquisition.builder.ChainGenerationBuilder;
+import fr.cnes.regards.modules.acquisition.builder.AcquisitionProcessingChainBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.builder.ProductBuilder;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
-import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
-import fr.cnes.regards.modules.acquisition.dao.IProcessGenerationRepository;
+import fr.cnes.regards.modules.acquisition.dao.IExecAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
@@ -80,10 +83,10 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
-import fr.cnes.regards.modules.acquisition.service.IChainGenerationService;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
-import fr.cnes.regards.modules.acquisition.service.IProcessGenerationService;
+import fr.cnes.regards.modules.acquisition.service.IExecAcquisitionProcessingChainService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
 import fr.cnes.regards.modules.entities.client.IDatasetClient;
@@ -109,7 +112,7 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
     @Value("${regards.tenant}")
     protected String tenant;
 
-    protected static final String CHAINE_LABEL = "the chain label";
+    protected static final String CHAIN_LABEL = "the chain label";
 
     protected static final String DATASET_IP_ID = "URN:DATASET:the dataset internal identifier";
 
@@ -124,7 +127,7 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
     protected static final String DEFAULT_ROLE = "ROLE_DEFAULT";
 
     @Autowired
-    protected IChainGenerationService chainService;
+    protected IAcquisitionProcessingChainService acqProcessChainService;
 
     @Autowired
     protected IMetaProductService metaProductService;
@@ -148,7 +151,7 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
     protected IPluginService pluginService;
 
     @Autowired
-    protected IProcessGenerationService processGenerationService;
+    protected IExecAcquisitionProcessingChainService execProcessingChainService;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -169,7 +172,7 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
     protected IScanDirectoryRepository scanDirectoryRepository;
 
     @Autowired
-    protected IChainGenerationRepository chainGenerationRepository;
+    protected IAcquisitionProcessingChainRepository processingChainRepository;
 
     @Autowired
     protected IAcquisitionFileRepository acquisitionFileRepository;
@@ -178,7 +181,7 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
     protected IMetaFileRepository metaFileRepository;
 
     @Autowired
-    protected IProcessGenerationRepository processGenerationRepository;
+    protected IExecAcquisitionProcessingChainRepository execProcessingChainRepository;
 
     @Autowired
     protected IPluginParameterRepository pluginParameterRepository;
@@ -195,7 +198,7 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
     @Autowired
     protected ISubscriber subscriber;
 
-    protected ChainGeneration chain;
+    protected AcquisitionProcessingChain chain;
 
     protected MetaFile metaFileOptional;
 
@@ -228,7 +231,11 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
         Mockito.when(authenticationResolver.getUser()).thenReturn(DEFAULT_USER);
 
         Dataset dataSet = new Dataset();
-        dataSet.setLabel("dataset-hello-CSSI");
+        final UniformResourceName aipUrn = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, "SSALTO",
+                UUID.randomUUID(), 1);
+        dataSet.setIpId(aipUrn);
+        dataSet.setSipId("dataset-hello-CSSI");
+
         Mockito.when(datasetClient.retrieveDataset(Mockito.anyString()))
                 .thenReturn(new ResponseEntity<>(new Resource<Dataset>(dataSet), HttpStatus.OK));
     }
@@ -262,12 +269,12 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
                 .withFilePattern("one other file pattern mandatory").comment("it is mandatory").isMandatory()
                 .addScanDirectory(scanDir3).get());
 
-        // Create a ChainGeneration and a MetaProduct
+        // Create a AcquisitionProcessingChain and a MetaProduct
         metaProduct = metaProductRepository
                 .save(MetaProductBuilder.build(META_PRODUCT_NAME).addMetaFile(metaFileOptional)
                         .addMetaFile(metaFileMandatory).withIngestProcessingChain("ingest-processing-chain-id").get());
-        chain = chainGenerationRepository
-                .save(ChainGenerationBuilder.build(CHAINE_LABEL + "-" + this.name.getMethodName()).isActive()
+        chain = processingChainRepository
+                .save(AcquisitionProcessingChainBuilder.build(CHAIN_LABEL + "-" + this.name.getMethodName()).isActive()
                         .withDataSet(DATASET_IP_ID).withMetaProduct(metaProduct).periodicity(1L).get());
     }
 
@@ -279,8 +286,8 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
         scanDirectoryRepository.deleteAll();
         productRepository.deleteAll();
         acquisitionFileRepository.deleteAll();
-        processGenerationRepository.deleteAll();
-        chainGenerationRepository.deleteAll();
+        execProcessingChainRepository.deleteAll();
+        processingChainRepository.deleteAll();
         metaProductRepository.deleteAll();
         metaFileRepository.deleteAll();
 

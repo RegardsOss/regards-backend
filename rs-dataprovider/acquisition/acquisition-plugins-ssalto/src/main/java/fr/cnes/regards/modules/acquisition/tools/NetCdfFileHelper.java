@@ -40,8 +40,14 @@ import ucar.nc2.Variable;
  */
 public class NetCdfFileHelper {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(NetCdfFileHelper.class);
 
+    /**
+     * Read-only scientific datasets that are accessible through the netCDF API
+     */
     private NetcdfFile netCfdFile;
 
     public NetCdfFileHelper(File pNetCdfFile) {
@@ -69,8 +75,7 @@ public class NetCdfFileHelper {
     }
 
     /**
-     * renvoie la liste des valeurs (chaine de caracteres) de l'attribut pAttributeName de toutes les variables du
-     * fichier
+     * renvoie la liste des valeurs (chaine de caracteres) de l'attribut pAttributeName de toutes les variables du fichier
      * 
      * @param pAttributeName
      *            le nom de l'attribut a recuperer dans les variables.
@@ -112,7 +117,6 @@ public class NetCdfFileHelper {
         }
         try {
             Array longArray = longitude.read();
-            LOGGER.debug(longArray.getElementType().getName());
             IndexIterator iter = longArray.getIndexIterator();
             for (; iter.hasNext();) {
                 if (pValueType.equals(AttributeTypeEnum.TYPE_INTEGER)

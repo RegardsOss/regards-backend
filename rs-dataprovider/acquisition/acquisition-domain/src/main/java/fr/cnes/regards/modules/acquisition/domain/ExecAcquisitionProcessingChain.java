@@ -43,9 +43,9 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
  * @author Christophe Mertz
  */
 @Entity
-@Table(name = "t_acquisition_process", indexes = { @Index(name = "idx_acq_process_session", columnList = "session") },
-        uniqueConstraints = @UniqueConstraint(name = "uk_acq_process_session", columnNames = { "session" }))
-public class ProcessGeneration implements IIdentifiable<Long> {
+@Table(name = "t_acquisition_exec_chain", indexes = { @Index(name = "idx_acq_exec_session", columnList = "session") },
+        uniqueConstraints = @UniqueConstraint(name = "uk_acq_exec_session", columnNames = { "session" }))
+public class ExecAcquisitionProcessingChain implements IIdentifiable<Long> {
 
     /**
      * A constant used to define a {@link String} constraint with length 255
@@ -56,51 +56,51 @@ public class ProcessGeneration implements IIdentifiable<Long> {
      * entity id for SGBD purpose mainly and REST request
      */
     @Id
-    @SequenceGenerator(name = "ProcessSequence", initialValue = 1, sequenceName = "seq_process")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ProcessSequence")
+    @SequenceGenerator(name = "ExecSequence", initialValue = 1, sequenceName = "seq_exec_chain")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ExecSequence")
     private Long id;
 
     /**
-     * If a {@link ProcessGeneration} is running, the current session identifier must be defined and unique
+     * If a {@link ExecAcquisitionProcessingChain} is running, the current session identifier must be defined and unique
      */
     @Column(length = MAX_STRING_LENGTH)
     private String session;
 
     /**
-     * The {@link ChainGeneration} associate to the current {@link ProcessGeneration}
+     * The {@link AcquisitionProcessingChain} associate to the current {@link ExecAcquisitionProcessingChain}
      */
     @ManyToOne(cascade = CascadeType.DETACH)
-    @JoinColumn(name = "chain_id", foreignKey = @ForeignKey(name = "fk_acq_chain_id"), updatable = false)
-    private ChainGeneration chainGeneration;
+    @JoinColumn(name = "chain_id", foreignKey = @ForeignKey(name = "fk_acq_exec_chain_id"), updatable = false)
+    private AcquisitionProcessingChain chainGeneration;
 
     /**
-     * The start date of the {@link ProcessGeneration}
+     * The start date of the {@link ExecAcquisitionProcessingChain}
      */
     @Column(name = "start_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime startDate;
 
     /**
-     * The stop date of the {@link ProcessGeneration}
+     * The stop date of the {@link ExecAcquisitionProcessingChain}
      */
     @Column(name = "stop_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime stopDate;
 
     /**
-     * The number of SIP created for the current {@link ProcessGeneration}
+     * The number of SIP created for the current {@link ExecAcquisitionProcessingChain}
      */
     @Column(name = "nb_sip_created", nullable = false)
     private int nbSipCreated = 0;
 
     /**
-     * The number of SIP in error for the current {@link ProcessGeneration}
+     * The number of SIP in error for the current {@link ExecAcquisitionProcessingChain}
      */
     @Column(name = "nb_sip_in_error", nullable = false)
     private int nbSipError = 0;
 
     /**
-     * The number of SIP stored for the current {@link ProcessGeneration}
+     * The number of SIP stored for the current {@link ExecAcquisitionProcessingChain}
      */
     @Column(name = "nb_sip_stored", nullable = false)
     private int nbSipStored = 0;
@@ -118,11 +118,11 @@ public class ProcessGeneration implements IIdentifiable<Long> {
         this.session = session;
     }
 
-    public ChainGeneration getChainGeneration() {
+    public AcquisitionProcessingChain getChainGeneration() {
         return chainGeneration;
     }
 
-    public void setChainGeneration(ChainGeneration chainGeneration) {
+    public void setChainGeneration(AcquisitionProcessingChain chainGeneration) {
         this.chainGeneration = chainGeneration;
     }
 
@@ -179,7 +179,7 @@ public class ProcessGeneration implements IIdentifiable<Long> {
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode() { // NOSONAR
         final int prime = 31;
         int result = 1;
         result = prime * result + ((id == null) ? 0 : id.hashCode());
@@ -188,7 +188,7 @@ public class ProcessGeneration implements IIdentifiable<Long> {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object obj) { // NOSONAR
         if (this == obj) {
             return true;
         }
@@ -198,7 +198,7 @@ public class ProcessGeneration implements IIdentifiable<Long> {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        ProcessGeneration other = (ProcessGeneration) obj;
+        ExecAcquisitionProcessingChain other = (ExecAcquisitionProcessingChain) obj;
         if (id == null) {
             if (other.id != null) {
                 return false;

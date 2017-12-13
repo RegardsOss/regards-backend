@@ -35,14 +35,14 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
-import fr.cnes.regards.modules.acquisition.service.conf.ChainGenerationServiceConfiguration;
+import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionProcessingChainConfiguration;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProcess;
 
 /**
  * @author Christophe Mertz
  *
  */
-@ContextConfiguration(classes = { ChainGenerationServiceConfiguration.class })
+@ContextConfiguration(classes = { AcquisitionProcessingChainConfiguration.class })
 @ActiveProfiles({ "test", "disableDataProviderTask" })
 @DirtiesContext
 public class GenerateSIPStepIT extends AcquisitionITHelper {

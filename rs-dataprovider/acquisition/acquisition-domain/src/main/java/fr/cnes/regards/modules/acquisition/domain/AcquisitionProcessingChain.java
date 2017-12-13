@@ -58,7 +58,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
 @Entity
 @Table(name = "t_acquisition_chain", indexes = { @Index(name = "idx_acq_chain_label", columnList = "label") },
         uniqueConstraints = @UniqueConstraint(name = "uk_acq_chain_label", columnNames = { "label" }))
-public class ChainGeneration implements IIdentifiable<Long> {
+public class AcquisitionProcessingChain implements IIdentifiable<Long> {
 
     /**
      * A constant used to define a {@link String} constraint with length 255
@@ -74,20 +74,20 @@ public class ChainGeneration implements IIdentifiable<Long> {
     private Long id;
 
     /**
-     * Label to identify the {@link ChainGeneration}
+     * Label to identify the {@link AcquisitionProcessingChain}
      */
     @NotBlank
     @Column(name = "label", length = MAX_STRING_LENGTH, nullable = false)
     private String label;
 
     /**
-     * <code>true</code> if the {@link ChainGeneration} is active, <code>false</code> otherwise
+     * <code>true</code> if the {@link AcquisitionProcessingChain} is active, <code>false</code> otherwise
      */
     @Column
     private Boolean active = false;
 
     /**
-     * <code>true</code> if the {@link ChainGeneration} is currently running, <code>false</code> otherwise
+     * <code>true</code> if the {@link AcquisitionProcessingChain} is currently running, <code>false</code> otherwise
      */
     @Column
     private Boolean running = false;
@@ -106,9 +106,7 @@ public class ChainGeneration implements IIdentifiable<Long> {
     private Long periodicity;
 
     /**
-     * The {@link MetaProduct} used for this {@link ChainGeneration}
-     * 
-     * TODO CMZ : nullable = true ? non
+     * The {@link MetaProduct} used for this {@link AcquisitionProcessingChain}
      */
     @OneToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_metaproduct_id"), nullable = true,
@@ -122,7 +120,7 @@ public class ChainGeneration implements IIdentifiable<Long> {
     private String dataSetIpId;
 
     /**
-     * If a {@link ChainGeneration} is running, the current session identifier must be defined and unique
+     * If a {@link AcquisitionProcessingChain} is running, the current session identifier must be defined and unique
      */
     @Column(length = MAX_STRING_LENGTH)
     private String session;
@@ -172,7 +170,7 @@ public class ChainGeneration implements IIdentifiable<Long> {
     private final Map<String, String> generateSipParameter = new HashMap<>();
 
     @Override
-    public int hashCode() {
+    public int hashCode() { // NOSONAR
         final int prime = 31;
         int result = 1;
         result = prime * result + ((active == null) ? 0 : active.hashCode());
@@ -196,7 +194,7 @@ public class ChainGeneration implements IIdentifiable<Long> {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object obj) { // NOSONAR
         if (this == obj) {
             return true;
         }
@@ -206,7 +204,7 @@ public class ChainGeneration implements IIdentifiable<Long> {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        ChainGeneration other = (ChainGeneration) obj;
+        AcquisitionProcessingChain other = (AcquisitionProcessingChain) obj;
         if (active == null) {
             if (other.active != null) {
                 return false;

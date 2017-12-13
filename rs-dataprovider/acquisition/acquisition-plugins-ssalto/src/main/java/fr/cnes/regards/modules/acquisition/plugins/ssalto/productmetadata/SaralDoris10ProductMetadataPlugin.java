@@ -44,7 +44,6 @@ import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.MultipleFileNameFinder;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.SaralProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 /**
@@ -148,7 +147,7 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
             throw new PluginAcquisitionException(msg, e);
         }
 
-        registerAttribute(TIME_PERIOD, pAttributeMap, timePeriodAttribute);
+        registerAttribute(pAttributeMap, TIME_PERIOD, timePeriodAttribute);
 
         LOGGER.info("END building attribute " + TIME_PERIOD);
     }
@@ -167,7 +166,7 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
             Attribute fileCreationDateAttribute = AttributeFactory
                     .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, CREATION_DATE,
                                      getCreationDateValue(fileMap.keySet()));
-            registerAttribute(CREATION_DATE, attributeMap, fileCreationDateAttribute);
+            registerAttribute(attributeMap, CREATION_DATE, fileCreationDateAttribute);
             attributeValueMap.put(CREATION_DATE, fileCreationDateAttribute.getValueList());
         } catch (DomainModelException e) {
             String msg = "unable to create attribute" + CREATION_DATE;

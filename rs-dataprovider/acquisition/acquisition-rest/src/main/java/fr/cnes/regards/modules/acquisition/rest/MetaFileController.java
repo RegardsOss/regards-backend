@@ -78,6 +78,9 @@ import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 @RequestMapping(path = MetaFileController.BASE_PATH)
 public class MetaFileController implements IResourceController<MetaFile> {
 
+    /**
+     * Controller base path
+     */
     public static final String BASE_PATH = "metafiles";
 
     /**

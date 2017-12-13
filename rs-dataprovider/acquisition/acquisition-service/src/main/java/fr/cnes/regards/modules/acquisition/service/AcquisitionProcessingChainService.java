@@ -29,7 +29,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -40,33 +39,33 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.acquisition.builder.ProcessGenerationBuilder;
-import fr.cnes.regards.modules.acquisition.dao.IChainGenerationRepository;
-import fr.cnes.regards.modules.acquisition.domain.ChainGeneration;
-import fr.cnes.regards.modules.acquisition.domain.ProcessGeneration;
-import fr.cnes.regards.modules.acquisition.domain.job.ChainGenerationJobParameter;
+import fr.cnes.regards.modules.acquisition.builder.ExecAcquisitionProcessingChainBuilder;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionProcessingChainJobParameter;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProductsJob;
 
 /**
- * Manage global {@link ChainGeneration} life cycle
- *
+ * Manage global {@link AcquisitionProcessingChain} life cycle
+ * 
  * @author Christophe Mertz
  *
  */
 @MultitenantTransactional
 @Service
-public class ChaineGenerationService implements IChainGenerationService {
+public class AcquisitionProcessingChainService implements IAcquisitionProcessingChainService {
 
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChaineGenerationService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingChainService.class);
 
     /**
-     * {@link ChainGeneration} repository
+     * {@link AcquisitionProcessingChain} repository
      */
-    private final IChainGenerationRepository chainRepository;
+    private final IAcquisitionProcessingChainRepository processingChainRepository;
 
     /**
      * {@link JobInfo} service
@@ -79,9 +78,9 @@ public class ChaineGenerationService implements IChainGenerationService {
     private final IMetaProductService metaProductService;
 
     /**
-     * {@link ProcessGeneration} service
+     * {@link ExecAcquisitionProcessingChain} service
      */
-    private final IProcessGenerationService processService;
+    private final IExecAcquisitionProcessingChainService execProcessingChainService;
 
     /**
      * {@link Plugin} service
@@ -94,65 +93,76 @@ public class ChaineGenerationService implements IChainGenerationService {
     @Autowired
     private IAuthenticationResolver authResolver;
 
-    public ChaineGenerationService(ISubscriber subscriber, IChainGenerationRepository repository,
-            IProcessGenerationService processService, IMetaProductService metaProductService,
+    /**
+     * Constructor with the bean method's member as parameters
+     * @param processingChainRepository the {@link IAcquisitionProcessingChainRepository}
+     * @param execProcessingChainService the {@link IExecAcquisitionProcessingChainService}
+     * @param metaProductService the {@link IMetaProductService}
+     * @param jobInfoService the {@link IJobInfoService}
+     * @param pluginService the {@link IPluginService}
+     */
+    public AcquisitionProcessingChainService(IAcquisitionProcessingChainRepository processingChainRepository,
+            IExecAcquisitionProcessingChainService execProcessingChainService, IMetaProductService metaProductService,
             IJobInfoService jobInfoService, IPluginService pluginService) {
         super();
-        this.chainRepository = repository;
-        this.processService = processService;
+        this.processingChainRepository = processingChainRepository;
+        this.execProcessingChainService = execProcessingChainService;
         this.metaProductService = metaProductService;
         this.jobInfoService = jobInfoService;
         this.pluginService = pluginService;
     }
 
     @Override
-    public ChainGeneration save(ChainGeneration chain) {
-        return chainRepository.save(chain);
+    public AcquisitionProcessingChain save(AcquisitionProcessingChain acqProcessingChain) {
+        return processingChainRepository.save(acqProcessingChain);
     }
 
     @Override
-    public ChainGeneration update(Long chainId, ChainGeneration chain) throws ModuleException {
-        if (!chainId.equals(chain.getId())) {
-            throw new EntityInconsistentIdentifierException(chainId, chain.getId(), chain.getClass());
+    public AcquisitionProcessingChain update(Long chainId, AcquisitionProcessingChain acqProcessingChain)
+            throws ModuleException {
+        if (!chainId.equals(acqProcessingChain.getId())) {
+            throw new EntityInconsistentIdentifierException(chainId, acqProcessingChain.getId(),
+                    acqProcessingChain.getClass());
         }
-        if (!chainRepository.exists(chainId)) {
-            throw new EntityNotFoundException(chainId, ChainGeneration.class);
+        if (!processingChainRepository.exists(chainId)) {
+            throw new EntityNotFoundException(chainId, AcquisitionProcessingChain.class);
         }
 
-        return chainRepository.save(createOrUpdate(chain));
+        return processingChainRepository.save(createOrUpdate(acqProcessingChain));
     }
 
     @Override
-    public ChainGeneration createOrUpdate(ChainGeneration chain) throws ModuleException {
-        if (chain == null) {
+    public AcquisitionProcessingChain createOrUpdate(AcquisitionProcessingChain acqProcessingChain)
+            throws ModuleException { // NOSONAR
+        if (acqProcessingChain == null) {
             return null;
         }
 
-        createOrUpdatePluginConfigurations(chain);
+        createOrUpdatePluginConfigurations(acqProcessingChain);
 
-        if (chain.getId() == null) {
+        if (acqProcessingChain.getId() == null) {
             // It is a new Chain --> create it
-            chain.setMetaProduct(metaProductService.createOrUpdate(chain.getMetaProduct()));
-            return chainRepository.save(chain);
+            acqProcessingChain.setMetaProduct(metaProductService.createOrUpdate(acqProcessingChain.getMetaProduct()));
+            return processingChainRepository.save(acqProcessingChain);
         } else {
-            ChainGeneration existingChain = this.retrieveComplete(chain.getId());
-            chain.setMetaProduct(metaProductService.createOrUpdate(chain.getMetaProduct()));
-            if (existingChain.equals(chain)) {
+            AcquisitionProcessingChain existingChain = this.retrieveComplete(acqProcessingChain.getId());
+            acqProcessingChain.setMetaProduct(metaProductService.createOrUpdate(acqProcessingChain.getMetaProduct()));
+            if (existingChain.equals(acqProcessingChain)) {
                 // it is the same --> just return it
-                return chain;
+                return acqProcessingChain;
             } else {
                 // it is different --> update it
-                return chainRepository.save(chain);
+                return processingChainRepository.save(acqProcessingChain);
             }
         }
     }
 
     /**
-     * Creates or updates {@link PluginConfiguration} of each {@link Plugin} of the {@link ChainGeneration}
-     * @param chain {@link ChainGeneration}
+     * Creates or updates {@link PluginConfiguration} of each {@link Plugin} of the {@link AcquisitionProcessingChain}
+     * @param chain {@link AcquisitionProcessingChain}
      * @throws ModuleException if error occurs!
      */
-    private void createOrUpdatePluginConfigurations(ChainGeneration chain) throws ModuleException {
+    private void createOrUpdatePluginConfigurations(AcquisitionProcessingChain chain) throws ModuleException {
         // Save new plugins conf, and update existing ones if they changed
         if (chain.getCheckAcquisitionPluginConf() != null) {
             chain.setCheckAcquisitionPluginConf(createOrUpdatePluginConfiguration(chain
@@ -185,18 +195,18 @@ public class ChaineGenerationService implements IChainGenerationService {
     }
 
     @Override
-    public Page<ChainGeneration> retrieveAll(Pageable page) {
-        return chainRepository.findAll(page);
+    public Page<AcquisitionProcessingChain> retrieveAll(Pageable page) {
+        return processingChainRepository.findAll(page);
     }
 
     @Override
-    public ChainGeneration retrieve(Long id) {
-        return chainRepository.findOne(id);
+    public AcquisitionProcessingChain retrieve(Long id) {
+        return processingChainRepository.findOne(id);
     }
 
     @Override
-    public ChainGeneration retrieveComplete(Long id) {
-        ChainGeneration chain = this.retrieve(id);
+    public AcquisitionProcessingChain retrieveComplete(Long id) {
+        AcquisitionProcessingChain chain = this.retrieve(id);
 
         if (chain.getMetaProduct() != null) {
             chain.setMetaProduct(metaProductService.retrieveComplete(chain.getMetaProduct().getId()));
@@ -227,22 +237,22 @@ public class ChaineGenerationService implements IChainGenerationService {
 
     @Override
     public void delete(Long id) {
-        chainRepository.delete(id);
+        processingChainRepository.delete(id);
     }
 
     @Override
-    public void delete(ChainGeneration chainGeneration) {
-        chainRepository.delete(chainGeneration);
+    public void delete(AcquisitionProcessingChain acqProcessingChain) {
+        processingChainRepository.delete(acqProcessingChain);
     }
 
     @Override
-    public ChainGeneration findByMetaProduct(MetaProduct metaProduct) {
-        return chainRepository.findByMetaProduct(metaProduct);
+    public AcquisitionProcessingChain findByMetaProduct(MetaProduct metaProduct) {
+        return processingChainRepository.findByMetaProduct(metaProduct);
     }
 
     @Override
-    public Set<ChainGeneration> findByActiveTrueAndRunningFalse() {
-        return chainRepository.findByActiveTrueAndRunningFalse();
+    public Set<AcquisitionProcessingChain> findByActiveTrueAndRunningFalse() {
+        return processingChainRepository.findByActiveTrueAndRunningFalse();
     }
 
     @Override
@@ -251,14 +261,14 @@ public class ChaineGenerationService implements IChainGenerationService {
     }
 
     @Override
-    public boolean run(ChainGeneration chain) {
-        // the ChainGeneration must be active
+    public boolean run(AcquisitionProcessingChain chain) { // NOSONAR
+        // the AcquisitionProcessingChain must be active
         if (!chain.isActive()) {
             LOGGER.warn("[{}] Unable to run a not active chain generation", chain.getLabel());
             return false;
         }
 
-        // the ChainGeneration must not be already running
+        // the AcquisitionProcessingChain must not be already running
         if (chain.isRunning()) {
             LOGGER.warn("[{}] Unable to run an already running chain generation", chain.getLabel());
             return false;
@@ -272,24 +282,23 @@ public class ChaineGenerationService implements IChainGenerationService {
             return false;
         }
 
-        // the ChainGeneration is ready to be started
+        // the AcquisitionProcessingChain is ready to be started 
         chain.setRunning(true);
         chain.setSession(chain.getLabel() + ":" + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + ":"
                 + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
-        chainRepository.save(chain);
+        processingChainRepository.save(chain);
 
-        // Create the ProcessGeneration
-        processService.save(ProcessGenerationBuilder.build(chain.getSession()).withChain(chain)
+        // Create the ExecAcquisitionProcessingChain
+        execProcessingChainService.save(ExecAcquisitionProcessingChainBuilder.build(chain.getSession()).withChain(chain)
                 .withStartDate(OffsetDateTime.now()).get());
 
         LOGGER.info("[{}] a new session is created : {}", chain.getLabel(), chain.getSession());
 
         // Create a ScanJob
         JobInfo acquisition = new JobInfo();
-        acquisition.setParameters(new ChainGenerationJobParameter(chain));
+        acquisition.setParameters(new AcquisitionProcessingChainJobParameter(chain));
         acquisition.setClassName(AcquisitionProductsJob.class.getName());
         acquisition.setOwner(authResolver.getUser());
-        acquisition.setPriority(50); // TODO CMZ priority ?
 
         acquisition = jobInfoService.createAsQueued(acquisition);
 

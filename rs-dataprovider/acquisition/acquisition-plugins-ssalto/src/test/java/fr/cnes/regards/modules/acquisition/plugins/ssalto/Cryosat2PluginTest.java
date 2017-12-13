@@ -42,6 +42,9 @@ import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 @EnableAutoConfiguration
 public class Cryosat2PluginTest extends AbstractProductMetadataPluginTest {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Jason2PluginTest.class);
 
     @Autowired
@@ -55,7 +58,7 @@ public class Cryosat2PluginTest extends AbstractProductMetadataPluginTest {
     @Override
     public IGenerateSIPPlugin buildPlugin() throws ModuleException {
         PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Cryosat2ProductMetadataPlugin");
-    
+
         return pluginService.getPlugin(pluginConfiguration.getId());
     }
 
@@ -225,11 +228,6 @@ public class Cryosat2PluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public void initTestSoloList() {
-        List<String> fileList = new ArrayList<>(2);
-        fileList.add("CS_OPER_AUX_SUNACT_19910101T000000_20110201T000000_0001.DBL");
-        fileList.add("CS_OPER_AUX_SUNACT_19910101T000000_20110201T000000_0001.HDR");
-        addPluginTestDef("DA_TC_CRYOSAT2_HISTO_SOLEIL", "COMMUN/SOLEIL/HISTORIQUE", fileList,
-                         "CS_OPER_AUX_SUNACT_19910101T000000_20110201T000000_0001");
     }
 
     @Override

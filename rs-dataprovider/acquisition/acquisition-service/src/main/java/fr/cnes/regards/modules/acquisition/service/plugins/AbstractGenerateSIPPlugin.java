@@ -66,7 +66,7 @@ public abstract class AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
         Optional<String> datasetName = Optional.empty();
         if (datasetIpId.isPresent()) {
             datasetName = Optional
-                    .of(datasetClient.retrieveDataset(datasetIpId.get()).getBody().getContent().getLabel());
+                    .of(datasetClient.retrieveDataset(datasetIpId.get()).getBody().getContent().getSipId());
         }
 
         // Extracts the meta-attributes
@@ -76,13 +76,14 @@ public abstract class AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
 
         // Add the SIP to the SIPCollection
         SIP aSip = sipBuilder.build();
+
+        // If a dataSet is defined, add a tag to the PreservationDescriptionInformation
+        addDatasetTag(aSip, datasetIpId);
+
         if (LOGGER.isDebugEnabled()) {
             Gson gson = new Gson();
             LOGGER.debug(gson.toJson(aSip));
         }
-
-        // If a dataSet is defined, add a tag to the PreservationDescriptionInformation
-        addDatasetTag(aSip, datasetIpId);
 
         LOGGER.info("End SIP generation for product <{}>", productName);
 
@@ -92,16 +93,9 @@ public abstract class AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
     protected void addDatasetTag(SIP aSip, Optional<String> datasetIpId) {
         // If a dataSet is defined, add a tag to the PreservationDescriptionInformation
         if (datasetIpId.isPresent()) {
-
             PDIBuilder pdiBuilder = new PDIBuilder(aSip.getProperties().getPdi());
             pdiBuilder.addTags(datasetIpId.get());
             aSip.getProperties().setPdi(pdiBuilder.build());
-
-            if (LOGGER.isDebugEnabled()) {
-                Gson gson = new Gson();
-                LOGGER.debug(gson.toJson(aSip));
-            }
-
         }
     }
 

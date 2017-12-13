@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.SaralProductMetadataPlugin;
 
 /**
  * @author Christophe Mertz
