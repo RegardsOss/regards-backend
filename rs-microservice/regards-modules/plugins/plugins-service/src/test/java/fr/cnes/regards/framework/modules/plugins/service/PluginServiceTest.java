@@ -402,7 +402,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
         pluginServiceMocked.addPluginPackage(pluginsPackage);
-        final SamplePlugin aSamplePlugin = pluginServiceMocked.getPlugin(aPluginConfiguration);
+        final SamplePlugin aSamplePlugin = pluginServiceMocked.getPlugin(aPluginConfiguration.getId());
 
         Assert.assertNotNull(aSamplePlugin);
 
@@ -541,7 +541,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         // the argument for the dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
-                .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, "-1").getParameters().get(0);
+                .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, -1).getParameters().get(0);
 
         pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class,

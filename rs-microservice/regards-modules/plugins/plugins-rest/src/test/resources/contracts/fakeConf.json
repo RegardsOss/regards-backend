@@ -8,7 +8,7 @@
     "parameters": [
         {
             "dynamic": false,
-            "value": "sept",
+            "value": "file:/home/msordi/git/rs-storage/storage/storage-service/target/AIPServiceIT",
             "type": "java.lang.String",
             "name": "pString"
         },

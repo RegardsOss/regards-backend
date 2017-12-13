@@ -111,10 +111,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Use the plugin
          */
-        Assert.assertEquals(Integer.parseInt(PluginUtilsTest.TROIS)
-                * (Integer.parseInt(PluginUtilsTest.QUATRE) + Integer.parseInt(PluginUtilsTest.CINQ)),
-                            samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE),
-                                             Integer.parseInt(PluginUtilsTest.CINQ)));
+        Assert.assertEquals(PluginUtilsTest.TROIS * (PluginUtilsTest.QUATRE + PluginUtilsTest.CINQ),
+                            samplePlugin.add(PluginUtilsTest.QUATRE, PluginUtilsTest.CINQ));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
         LOGGER.debug(ENDING + toString());
     }
@@ -137,7 +135,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.FIELD_NAME_SUFFIX, "suffix").getParameters();
         // init a dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
-                .addParameter(SamplePlugin.FIELD_NAME_COEF, "-1").getParameters().stream().findAny().get();
+                .addParameter(SamplePlugin.FIELD_NAME_COEF, -1).getParameters().stream().findAny().get();
 
         // instantiate plugin
         samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE),
@@ -148,8 +146,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Use the plugin
          */
-        Assert.assertTrue(0 > samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE),
-                                               Integer.parseInt(PluginUtilsTest.CINQ)));
+        Assert.assertTrue(0 > samplePlugin.add(PluginUtilsTest.QUATRE, PluginUtilsTest.CINQ));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
         LOGGER.debug(ENDING + toString());
     }
@@ -176,8 +173,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Use the plugin
          */
-        Assert.assertTrue(0 < samplePlugin.add(Integer.parseInt(PluginUtilsTest.QUATRE),
-                                               Integer.parseInt(PluginUtilsTest.CINQ)));
+        Assert.assertTrue(0 < samplePlugin.add(PluginUtilsTest.QUATRE, PluginUtilsTest.CINQ));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
         LOGGER.debug(ENDING + toString());
     }
@@ -291,7 +287,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
         // Set parameters : Missing coeff parameter
         final List<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory
-                .build().addParameter(SamplePlugin.FIELD_NAME_ACTIVE, "true")
+                .build().addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED).getParameters();
 
         // instantiate plugin
@@ -313,7 +309,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
         // Set parameters : Missing suffix parameter
         final List<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory
-                .build().addParameter(SamplePlugin.FIELD_NAME_ACTIVE, "true")
+                .build().addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.CINQ).getParameters();
 
         // instantiate plugin

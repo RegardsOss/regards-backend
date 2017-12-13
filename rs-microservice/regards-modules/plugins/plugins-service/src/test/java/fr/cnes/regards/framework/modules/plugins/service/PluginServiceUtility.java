@@ -111,16 +111,16 @@ public class PluginServiceUtility {
      * A {@link PluginParameter}
      */
     protected static final List<PluginParameter> DYNAMICPARAMETERS = PluginParametersFactory.build()
-            .addParameter("param11", "value11").addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, "0")
-            .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE.toString())
+            .addParameter("param11", "value11").addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, 0)
+            .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
             .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, RED, DYNAMICVALUES).getParameters();
 
     /**
      * A {@link PluginParameter}
      */
     protected static final List<PluginParameter> DYNAMICPARAMETERS_TO_UPDATE = PluginParametersFactory.build()
-            .addParameter("param11", "value11").addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, "0")
-            .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE.toString())
+            .addParameter("param11", "value11").addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, 0)
+            .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
             .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, RED, DYNAMICVALUES).getParameters();
 
     /**
@@ -129,8 +129,8 @@ public class PluginServiceUtility {
     protected static final List<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
             .addParameter("param31", "value31").addParameter("param32", "value32").addParameter("param33", "value33")
             .addParameter("param34", "value34").addParameter("param35", "value35")
-            .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, "3")
-            .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE.toString())
+            .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, 3)
+            .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
             .addParameter(SamplePlugin.FIELD_NAME_SUFFIX, "Toulouse").getParameters();
 
     /**

@@ -124,13 +124,7 @@ public class PluginParametersFactory {
      * @return {@link String} value
      */
     private String normalize(Object value) {
-        String strVal = null;
-        if (value instanceof String) {
-            strVal = (String) value;
-        } else {
-            strVal = PluginGsonUtils.getInstance().toJson(value);
-        }
-        return strVal;
+        return PluginGsonUtils.getInstance().toJson(value);
     }
 
     /**

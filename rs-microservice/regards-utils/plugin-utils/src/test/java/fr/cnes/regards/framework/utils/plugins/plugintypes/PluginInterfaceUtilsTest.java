@@ -170,8 +170,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                                               Arrays.asList(PLUGIN_CURRENT_PACKAGE), instantiatedPluginMap);
         Assert.assertNotNull(complexPlugin);
 
-        Assert.assertTrue(complexPlugin.add(Integer.parseInt(PluginInterfaceUtilsTest.CINQ),
-                                            Integer.parseInt(PluginInterfaceUtilsTest.QUATRE)) > 0);
+        Assert.assertTrue(complexPlugin.add(PluginInterfaceUtilsTest.CINQ, PluginInterfaceUtilsTest.QUATRE) > 0);
         Assert.assertTrue(complexPlugin.echo(PluginInterfaceUtilsTest.HELLO_WORLD)
                 .contains(PluginInterfaceUtilsTest.HELLO_WORLD));
 

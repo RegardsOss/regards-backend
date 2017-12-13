@@ -28,12 +28,9 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
@@ -50,9 +47,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 public class CycleDetectionTest {
 
     private static final String PLUGIN_PACKAGE = "fr.cnes.regards.framework.utils.plugins";
-
-    @Autowired
-    Gson gson;
 
     @Test
     public void cycleDetectionOK() {
@@ -74,9 +68,9 @@ public class CycleDetectionTest {
          * Set all parameters
          */
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SamplePluginWithPojo.FIELD_NAME_ACTIVE, "true")
-                .addParameter(SamplePluginWithPojo.FIELD_NAME_COEF, "12345")
-                .addParameter(SamplePluginWithPojo.FIELD_NAME_POJO, gson.toJson(pojoParam))
+                .addParameter(SamplePluginWithPojo.FIELD_NAME_ACTIVE, true)
+                .addParameter(SamplePluginWithPojo.FIELD_NAME_COEF, 12345)
+                .addParameter(SamplePluginWithPojo.FIELD_NAME_POJO, pojoParam)
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_SUFFIX, "chris_test_1").getParameters();
 
         // instantiate plugin
@@ -134,10 +128,9 @@ public class CycleDetectionTest {
          * Set all parameters
          */
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SamplePluginWithPojoCycleDetected.FIELD_NAME_ACTIVE, "true")
-                .addParameter(SamplePluginWithPojoCycleDetected.FIELD_NAME_COEF, "12345")
-                .addParameter(SamplePluginWithPojoCycleDetected.FIELD_NAME_POJO, gson.toJson(pojoParent))
-                .getParameters();
+                .addParameter(SamplePluginWithPojoCycleDetected.FIELD_NAME_ACTIVE, true)
+                .addParameter(SamplePluginWithPojoCycleDetected.FIELD_NAME_COEF, 12345)
+                .addParameter(SamplePluginWithPojoCycleDetected.FIELD_NAME_POJO, pojoParent).getParameters();
 
         // instantiate plugin
         PluginUtils.getPlugin(parameters, SamplePluginWithPojoCycleDetected.class, Arrays.asList(PLUGIN_PACKAGE),
@@ -163,9 +156,9 @@ public class CycleDetectionTest {
          * Set all parameters
          */
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SamplePluginWithPojo.FIELD_NAME_ACTIVE, "true")
-                .addParameter(SamplePluginWithPojo.FIELD_NAME_COEF, "12345")
-                .addParameter(SamplePluginWithPojo.FIELD_NAME_POJO, gson.toJson(pojoParent)).getParameters();
+                .addParameter(SamplePluginWithPojo.FIELD_NAME_ACTIVE, true)
+                .addParameter(SamplePluginWithPojo.FIELD_NAME_COEF, 12345)
+                .addParameter(SamplePluginWithPojo.FIELD_NAME_POJO, pojoParent).getParameters();
 
         // instantiate plugin
         SamplePluginWithPojoWithSet samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojoWithSet.class,
@@ -226,9 +219,9 @@ public class CycleDetectionTest {
          * Set all parameters
          */
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SamplePluginWithPojoCycleDetectedLevelThree.FIELD_NAME_ACTIVE, "true")
-                .addParameter(SamplePluginWithPojoCycleDetectedLevelThree.FIELD_NAME_COEF, "12345")
-                .addParameter(SamplePluginWithPojoCycleDetectedLevelThree.FIELD_NAME_POJO, gson.toJson(pojoGrandParent))
+                .addParameter(SamplePluginWithPojoCycleDetectedLevelThree.FIELD_NAME_ACTIVE, true)
+                .addParameter(SamplePluginWithPojoCycleDetectedLevelThree.FIELD_NAME_COEF, 12345)
+                .addParameter(SamplePluginWithPojoCycleDetectedLevelThree.FIELD_NAME_POJO, pojoGrandParent)
                 .getParameters();
 
         // instantiate plugin

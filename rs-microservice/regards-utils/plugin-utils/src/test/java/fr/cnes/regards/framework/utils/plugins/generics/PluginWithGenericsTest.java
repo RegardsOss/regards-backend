@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
@@ -38,6 +40,9 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
  *
  */
 public class PluginWithGenericsTest {
+
+    @SuppressWarnings("unused")
+    private static final Logger LOGGER = LoggerFactory.getLogger(PluginWithGenericsTest.class);
 
     @Test
     public void primitiveTest() {
