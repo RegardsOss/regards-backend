@@ -42,7 +42,6 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.EventType;
@@ -53,6 +52,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
@@ -64,11 +64,11 @@ import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
-import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
+import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
+import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.service.DataStorageEventHandler;
 
 /**
@@ -121,9 +121,9 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // first of all, lets get an AIP with accessible dataObjects and real checksums
         aip = getAIP();
         // second, lets storeAndCreate a plugin configuration for IAllocationStrategy
-        PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class,
-                                                                         DefaultAllocationStrategyPlugin.class
-                                                                                 .getPackage().getName());
+        PluginMetaData allocationMeta = PluginUtils
+                .createPluginMetaData(DefaultAllocationStrategyPlugin.class,
+                                      DefaultAllocationStrategyPlugin.class.getPackage().getName());
         PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, ALLOCATION_CONF_LABEL);
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
@@ -134,24 +134,20 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         baseStorageLocation = new URL("file", "", Paths.get("target/AIPControllerIT").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "9000000000000000").addParameter(
-                        LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                        baseStorageLocation.toString()).getParameters();
-        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta,
-                                                                      DATA_STORAGE_CONF_LABEL,
-                                                                      parameters,
-                                                                      0);
+                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "9000000000000000")
+                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
+                .getParameters();
+        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, DATA_STORAGE_CONF_LABEL, parameters,
+                0);
         dataStorageConf.setIsActive(true);
         pluginService.savePluginConfiguration(dataStorageConf);
         // forth, lets configure a plugin for security checks
         pluginService.addPluginPackage(FakeSecurityDelegation.class.getPackage().getName());
-        PluginMetaData catalogSecuDelegMeta = PluginUtils.createPluginMetaData(FakeSecurityDelegation.class,
-                                                                               FakeSecurityDelegation.class.getPackage()
-                                                                                       .getName(),
-                                                                               ISecurityDelegation.class.getPackage()
-                                                                                       .getName());
+        PluginMetaData catalogSecuDelegMeta = PluginUtils
+                .createPluginMetaData(FakeSecurityDelegation.class, FakeSecurityDelegation.class.getPackage().getName(),
+                                      ISecurityDelegation.class.getPackage().getName());
         PluginConfiguration catalogSecuDelegConf = new PluginConfiguration(catalogSecuDelegMeta,
-                                                                           CATALOG_SECURITY_DELEGATION_LABEL);
+                CATALOG_SECURITY_DELEGATION_LABEL);
         pluginService.savePluginConfiguration(catalogSecuDelegConf);
     }
 
@@ -162,9 +158,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
         // perform request
-        performDefaultPost(AIPController.AIP_PATH,
-                           new AIPCollection(aip),
-                           requestBuilderCustomizer,
+        performDefaultPost(AIPController.AIP_PATH, new AIPCollection(aip), requestBuilderCustomizer,
                            "AIP storage should have been schedule properly");
     }
 
@@ -177,9 +171,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
         // perform request
-        performDefaultPost(AIPController.AIP_PATH,
-                           new AIPCollection(aip),
-                           requestBuilderCustomizer,
+        performDefaultPost(AIPController.AIP_PATH, new AIPCollection(aip), requestBuilderCustomizer,
                            "Same AIP cannot be stored twice");
     }
 
@@ -194,9 +186,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         AIP aip2 = getAIP();
 
         // perform request
-        performDefaultPost(AIPController.AIP_PATH,
-                           new AIPCollection(aip, aip2),
-                           requestBuilderCustomizer,
+        performDefaultPost(AIPController.AIP_PATH, new AIPCollection(aip, aip2), requestBuilderCustomizer,
                            "Success should be partial, aip cannot be re stored but aip2 can be stored");
     }
 
@@ -220,17 +210,12 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         Set<String> dataFilesChecksum = dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
         // ask for availability
         AvailabilityRequest availabilityRequest = new AvailabilityRequest(OffsetDateTime.now().plusDays(2),
-                                                                          dataFilesChecksum
-                                                                                  .toArray(new String[dataFilesChecksum
-                                                                                          .size()]));
+                dataFilesChecksum.toArray(new String[dataFilesChecksum.size()]));
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content()
-                                                        .json(gson.toJson(new AvailabilityResponse(Sets.newHashSet(),
-                                                                                                   dataFiles,
-                                                                                                   Sets.newHashSet()))));
-        performDefaultPost(AIPController.AIP_PATH + AIPController.PREPARE_DATA_FILES,
-                           availabilityRequest,
+                .json(gson.toJson(new AvailabilityResponse(Sets.newHashSet(), dataFiles, Sets.newHashSet()))));
+        performDefaultPost(AIPController.AIP_PATH + AIPController.PREPARE_DATA_FILES, availabilityRequest,
                            requestBuilderCustomizer,
                            "data should already be available as they are in an online data storage");
     }
@@ -249,11 +234,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(AIPController.AIP_PATH + AIPController.DOWLOAD_AIP_FILE,
-                          requestBuilderCustomizer,
-                          "We should be downloading the data file",
-                          aip.getId().toString(),
-                          dataFile.getChecksum());
+        performDefaultGet(AIPController.AIP_PATH + AIPController.DOWLOAD_AIP_FILE, requestBuilderCustomizer,
+                          "We should be downloading the data file", aip.getId().toString(), dataFile.getChecksum());
     }
 
     @After
@@ -272,21 +254,19 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
     private AIP getAIP() throws MalformedURLException {
 
-        AIPBuilder aipBuilder = new AIPBuilder(new UniformResourceName(OAISIdentifier.AIP,
-                                                                       EntityType.DATA,
-                                                                       DEFAULT_TENANT,
-                                                                       UUID.randomUUID(),
-                                                                       1), null, EntityType.DATA);
+        AIPBuilder aipBuilder = new AIPBuilder(
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
+                null, EntityType.DATA);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder()
-                .setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5", "de89a907d33a9716d11765582102b2e0");
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
+                                                                "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", "text/plain");
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
-        aipBuilder.getPDIBuilder()
-                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event", OffsetDateTime.now());
+        aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
+                                                                 OffsetDateTime.now());
 
         return aipBuilder.build();
     }

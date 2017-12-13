@@ -50,7 +50,6 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.EventType;
@@ -59,6 +58,7 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.models.domain.Model;
@@ -75,13 +75,13 @@ import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
 import fr.cnes.regards.modules.storage.domain.database.DataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
-import fr.cnes.regards.modules.storage.plugin.SimpleNearLineStoragePlugin;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
+import fr.cnes.regards.modules.storage.plugin.SimpleNearLineStoragePlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.security.CatalogSecurityDelegation;
-import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.service.DataStorageEventHandler;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 import fr.cnes.regards.modules.storage.service.RestoreJobEventHandler;
@@ -296,7 +296,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                           handler.getJobSucceeds().size() == 1);
         Assert.assertFalse("There shouldn't be a FAIL jobEvent. Cause : All files nearLine are available !",
                            handler.isFailed());
-        //just add a sleep of one sec so event should have been handled
+        // just add a sleep of one sec so event should have been handled
         Thread.sleep(1000);
         Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum("10");
         Assert.assertTrue("The nearLine file 10 should be present in db as a cachedFile", ocf.isPresent());

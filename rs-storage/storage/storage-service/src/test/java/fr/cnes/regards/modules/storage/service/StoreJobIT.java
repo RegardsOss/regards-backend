@@ -47,12 +47,12 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
@@ -122,10 +122,8 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/StoreJobIT");
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> pluginParameters = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              baseStorageLocation.toString())
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "9000000000000")
-                .getParameters();
+                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
+                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "9000000000000").getParameters();
         // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
         PluginMetaData localStorageMeta = PluginUtils
                 .createPluginMetaData(LocalDataStorage.class, LocalDataStorage.class.getPackage().getName(),

@@ -47,6 +47,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+
 import feign.Response;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
@@ -57,7 +58,6 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.EventType;
@@ -68,6 +68,7 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
@@ -78,12 +79,12 @@ import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
-import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
+import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
+import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 
 /**
  * Run client IT scenario tests for storeAndCreate and restore files from rs-storage microservice.
@@ -163,9 +164,10 @@ public class AipClientIT extends AbstractRegardsWebIT {
         }
         Files.createDirectories(downloadDir);
         FeignClientBuilder.setMessageConverters(messageConverters);
-        client = FeignClientBuilder.build(new TokenClientProvider<>(IAipClient.class,
-                                                                    "http://" + serverAddress + ":" + getPort(),
-                                                                    feignSecurityManager), gson);
+        client = FeignClientBuilder.build(
+                                          new TokenClientProvider<>(IAipClient.class,
+                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
+                                          gson);
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         FeignSecurityManager.asSystem();
         initDb();
@@ -183,16 +185,15 @@ public class AipClientIT extends AbstractRegardsWebIT {
         pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
         pluginService.addPluginPackage(ISecurityDelegation.class.getPackage().getName());
         pluginService.addPluginPackage(FalseSecurityDelegation.class.getPackage().getName());
-        PluginMetaData catalogSecuDelegMeta = PluginUtils.createPluginMetaData(FalseSecurityDelegation.class,
-                                                                               FalseSecurityDelegation.class
-                                                                                       .getPackage().getName(),
-                                                                               ISecurityDelegation.class.getPackage()
-                                                                                       .getName());
+        PluginMetaData catalogSecuDelegMeta = PluginUtils
+                .createPluginMetaData(FalseSecurityDelegation.class,
+                                      FalseSecurityDelegation.class.getPackage().getName(),
+                                      ISecurityDelegation.class.getPackage().getName());
         catalogSecuDelegConf = new PluginConfiguration(catalogSecuDelegMeta, CATALOG_SECURITY_DELEGATION_LABEL);
         catalogSecuDelegConf = pluginService.savePluginConfiguration(catalogSecuDelegConf);
-        PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class,
-                                                                         DefaultAllocationStrategyPlugin.class
-                                                                                 .getPackage().getName());
+        PluginMetaData allocationMeta = PluginUtils
+                .createPluginMetaData(DefaultAllocationStrategyPlugin.class,
+                                      DefaultAllocationStrategyPlugin.class.getPackage().getName());
         PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, "allocation");
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
@@ -202,8 +203,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
                                                                       IOnlineDataStorage.class.getPackage().getName());
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              baseStorageLocation.toString())
+                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "90000000000000").getParameters();
         PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, "dsLabel", parameters, 0);
         dataStorageConf.setIsActive(true);
@@ -240,11 +240,9 @@ public class AipClientIT extends AbstractRegardsWebIT {
     @Test
     public void testCreateAIP() throws IOException, NoSuchAlgorithmException {
         // Create new AIP
-        AIPBuilder builder = new AIPBuilder(new UniformResourceName(OAISIdentifier.AIP,
-                                                                    EntityType.DATASET,
-                                                                    DEFAULT_TENANT,
-                                                                    UUID.randomUUID(),
-                                                                    1), "clientAipTest", EntityType.DATA);
+        AIPBuilder builder = new AIPBuilder(
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, DEFAULT_TENANT, UUID.randomUUID(), 1),
+                "clientAipTest", EntityType.DATA);
         // Init a test file to add with the new AIP.
         Path file = initTestFile();
 
@@ -254,8 +252,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
         }
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA,
                                                              new URL("file://" + file.toFile().getAbsolutePath()),
-                                                             "MD5",
-                                                             fileChecksum);
+                                                             "MD5", fileChecksum);
         builder.getContentInformationBuilder().setSyntax("application/text", "text", "application/text");
         builder.addContentInformation();
 
@@ -291,9 +288,9 @@ public class AipClientIT extends AbstractRegardsWebIT {
         Assert.assertTrue("Http response should be OK adter retrieveAIPFiles.",
                           HttpStatus.OK.equals(resp3.getStatusCode()));
         Assert.assertTrue("There should be one DataObject from the AIP.", resp3.getBody() != null);
-        Assert.assertTrue(String.format(
-                "There should be two DataObjects from the AIP(stored file and metadata file) not %s.",
-                resp3.getBody().size()), resp3.getBody().size() == 2);
+        Assert.assertTrue(String
+                .format("There should be two DataObjects from the AIP(stored file and metadata file) not %s.",
+                        resp3.getBody().size()), resp3.getBody().size() == 2);
         // 4. Make file available for download
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(2), fileChecksum);
         ResponseEntity<AvailabilityResponse> response = client.makeFilesAvailable(request);
@@ -307,7 +304,8 @@ public class AipClientIT extends AbstractRegardsWebIT {
 
         // 5. Download file
         Response downloadResponse = client.downloadFile(aip.getId().toString(), fileChecksum);
-        // Assert.assertTrue("Http response should be OK for download.", HttpStatus.OK.equals(downloadResponse.status()));
+        // Assert.assertTrue("Http response should be OK for download.",
+        // HttpStatus.OK.equals(downloadResponse.status()));
 
         Map<String, Collection<String>> headers = downloadResponse.headers();
         Collection<String> cds = headers.get("content-disposition");
