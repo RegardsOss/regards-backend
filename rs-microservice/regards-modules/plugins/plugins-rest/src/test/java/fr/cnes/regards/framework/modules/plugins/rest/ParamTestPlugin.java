@@ -61,7 +61,8 @@ public class ParamTestPlugin implements IParamTestPlugin {
     @PluginParameter(label = "List of string", description = "List of string description")
     private List<String> sList;
 
-    @PluginParameter(label = "Map string to string", description = "Map string to string description")
+    @PluginParameter(keylabel = "ssMapKey", label = "Map string to string",
+            description = "Map string to string description")
     private Map<String, String> ssMap;
 
     @PluginParameter(label = "Pojo containing string")
@@ -70,11 +71,8 @@ public class ParamTestPlugin implements IParamTestPlugin {
     @PluginParameter(label = "Constraint pojo wrapper")
     private Constraints constraints;
 
-    @PluginParameter(label = "Constraint map")
+    @PluginParameter(keylabel = "scMapKey", label = "Constraint map")
     private Map<String, Constraint> scMap;
-
-    @PluginParameter(label = "Embedded plugin")
-    private IParamTestPlugin embedded;
 
     @Override
     public void doIt() {

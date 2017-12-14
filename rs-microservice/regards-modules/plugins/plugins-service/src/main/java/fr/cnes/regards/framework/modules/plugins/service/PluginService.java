@@ -387,9 +387,9 @@ public class PluginService implements IPluginService {
         // Check if all parameters are really dynamic
         for (PluginParameter dynamicParameter : dynamicPluginParameters) {
             if (!dynamicParameter.isDynamic()) {
-                String errorMessage = String.format(
-                                                    "The parameter \"%s\" is not identified as dynamic. Plugin instanciation is cancelled.",
-                                                    dynamicParameter.getName());
+                String errorMessage = String
+                        .format("The parameter \"%s\" is not identified as dynamic. Plugin instanciation is cancelled.",
+                                dynamicParameter.getName());
                 LOGGER.error(errorMessage);
                 throw new UnexpectedDynamicParameter(errorMessage);
             }
@@ -672,6 +672,7 @@ public class PluginService implements IPluginService {
                 PluginParameter plgParam = new PluginParameter(param.getName(), param.getDefaultValue());
                 plgParam.setName(param.getName());
                 plgParam.setValue(param.getDefaultValue());
+                // FIXME bizarre! lien entre dynamic et optional?
                 plgParam.setIsDynamic(param.isOptional());
                 plgParams.add(plgParam);
             }

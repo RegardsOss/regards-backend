@@ -1,8 +1,8 @@
 {
     "label": "sebbbbb",
     "active": true,
-    "pluginId": "FakeSipValidation",
-    "pluginClassName": "fr.cnes.regards.modules.ingest.service.plugin.FakeSipValidation",
+    "pluginId": "ParamTestPlugin",
+    "pluginClassName": "fr.cnes.regards.framework.modules.plugins.rest.ParamTestPlugin",
     "version": "1.0.0",
     "priorityOrder": 1,
     "parameters": [
@@ -14,13 +14,13 @@
         },
         {
             "dynamic": false,
-            "value": "6",
+            "value": 6,
             "type": "java.lang.Byte",
             "name": "pByte"
         },
         {
             "dynamic": false,
-            "value": "5",
+            "value": 5,
             "type": "java.lang.Short",
             "name": "pShort"
         },
@@ -32,19 +32,19 @@
         },
         {
             "dynamic": false,
-            "value": "3",
+            "value": 3,
             "type": "java.lang.Long",
             "name": "pLong"
         },
         {
             "dynamic": false,
-            "value": "4",
+            "value": 4.0,
             "type": "java.lang.Float",
             "name": "pFloat"
         },
         {
             "dynamic": false,
-            "value": "1",
+            "value": 1.0,
             "type": "java.lang.Double",
             "name": "pDouble"
         },
@@ -101,14 +101,6 @@
             },
             "type": "java.util.Map",
             "name": "scMap"
-        },
-        {
-            "dynamic": false,
-            "value": {
-                "value": "1"
-            },
-            "type": "fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation",
-            "name": "embedded"
         }
     ]
 }

@@ -18,11 +18,16 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 
@@ -36,13 +41,26 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=plugin_it" })
 public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
+    @Autowired
+    private IPluginService pluginService;
+
+    @Autowired
+    private IRuntimeTenantResolver resolver;
+
     @Test
-    public void savePluginConfigurationTest() {
+    public void savePluginConfigurationTest() throws ModuleException {
+
+        pluginService.addPluginPackage(this.getClass().getPackage().getName());
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
 
         performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, readJsonContract("fakeConf.json"), customizer,
                            "Configuration should be saved!", "ParamTestPlugin");
+
+        // Instanciate plugin
+        resolver.forceTenant(DEFAULT_TENANT);
+        IParamTestPlugin plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class);
+        Assert.assertNotNull(plugin);
     }
 }

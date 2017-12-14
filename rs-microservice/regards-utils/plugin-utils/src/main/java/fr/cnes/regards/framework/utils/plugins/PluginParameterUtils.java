@@ -583,8 +583,7 @@ public final class PluginParameterUtils {
         LOGGER.debug("Starting postProcessInterface :" + plgParamAnnotation.label());
 
         // Get setup value
-        final PluginConfiguration paramValue = plgConf
-                .getParameterConfiguration(getFieldName(field, plgParamAnnotation));
+        PluginConfiguration paramValue = plgConf.getParameterConfiguration(getFieldName(field, plgParamAnnotation));
 
         LOGGER.debug(String.format("interface parameter value : %s", paramValue));
 
