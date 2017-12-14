@@ -88,8 +88,8 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
 
     @Before
     public void init() throws ModuleException {
-        final PluginParameter parameter = new PluginParameter("para", "never used");
-        parameter.setIsDynamic(true);
+        List<PluginParameter> parameters = PluginParametersFactory.build().addDynamicParameter("para", "never used")
+                .getParameters();
         final PluginMetaData metaData = new PluginMetaData();
         metaData.setPluginId("tata");
         metaData.setAuthor("toto");
@@ -97,14 +97,12 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         metaData.setVersion("tutu");
         metaData.getInterfaceNames().add(IService.class.getName());
         metaData.setPluginClassName(TestService.class.getName());
-        conf = new PluginConfiguration(metaData, "testConf");
-        conf.setParameters(Lists.newArrayList(parameter));
+        conf = new PluginConfiguration(metaData, "testConf", parameters);
         pluginService.addPluginPackage(TestService.class.getPackage().getName());
         conf = pluginService.savePluginConfiguration(conf);
 
-        List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addDynamicParameter(SampleServicePlugin.RESPONSE_TYPE_PARAMETER,
-                                     SampleServicePlugin.RESPONSE_TYPE_JSON)
+        parameters = PluginParametersFactory.build().addDynamicParameter(SampleServicePlugin.RESPONSE_TYPE_PARAMETER,
+                                                                         SampleServicePlugin.RESPONSE_TYPE_JSON)
                 .getParameters();
         samplePlgConf = new PluginConfiguration(
                 PluginUtils.createPluginMetaData(SampleServicePlugin.class,
