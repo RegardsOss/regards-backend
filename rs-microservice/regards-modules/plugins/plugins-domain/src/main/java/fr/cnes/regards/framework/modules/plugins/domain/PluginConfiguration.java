@@ -258,8 +258,13 @@ public class PluginConfiguration implements IIdentifiable<Long> {
             Optional<PluginParameter> pluginParameter = parameters.stream()
                     .filter(s -> s.getName().equals(parameterName)).findFirst();
             if (pluginParameter.isPresent()) {
-                JsonElement el = gson.fromJson(pluginParameter.get().getValue(), JsonElement.class);
-                value = el == null ? null : el.getAsString();
+                String tmp = pluginParameter.get().getValue();
+                if (tmp.startsWith("\"")) {
+                    JsonElement el = gson.fromJson(pluginParameter.get().getValue(), JsonElement.class);
+                    value = el == null ? null : el.getAsString();
+                } else {
+                    value = tmp;
+                }
             }
         }
         return value;
