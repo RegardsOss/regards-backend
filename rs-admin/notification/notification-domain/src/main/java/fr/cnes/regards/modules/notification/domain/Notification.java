@@ -18,14 +18,17 @@
  */
 package fr.cnes.regards.modules.notification.domain;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.SequenceGenerator;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
@@ -72,24 +75,20 @@ public class Notification implements IIdentifiable<Long> {
      * The project user recipients represented by their email
      */
     @NotNull
-    //    @ManyToMany(fetch = FetchType.LAZY) FIXME
-    //    @JoinTable(name = "ta_notification_projectuser",
-    //            joinColumns = @JoinColumn(name = "notification_id", referencedColumnName = "id",
-    //                    foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_projectuser")),
-    //            inverseJoinColumns = @JoinColumn(name = "projectuser_id", referencedColumnName = "id",
-    //                    foreignKey = @javax.persistence.ForeignKey(name = "fk_projectuser_notification")))
+    @ElementCollection
+    @CollectionTable(name = "ta_notification_projectuser_email", joinColumns = @JoinColumn(name = "notification_id"),
+            foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_projectuser_email_notification_id"))
+    @Column(name = "projectuser_email", length = 200)
     private Set<String> projectUserRecipients;
 
     /**
      * The role recipients represented by their name
      */
     @NotNull
-    //    @ManyToMany(fetch = FetchType.LAZY) FIXME
-    //    @JoinTable(name = "ta_notification_role",
-    //            joinColumns = @JoinColumn(name = "notification_id", referencedColumnName = "id",
-    //                    foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_role")),
-    //            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id",
-    //                    foreignKey = @javax.persistence.ForeignKey(name = "fk_role_notification")))
+    @ElementCollection
+    @CollectionTable(name = "ta_notification_role_name", joinColumns = @JoinColumn(name = "notification_id"),
+            foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_role_name_notification_id"))
+    @Column(name = "role_name", length = 200)
     private Set<String> roleRecipients;
 
     /**

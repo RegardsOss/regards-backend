@@ -63,16 +63,6 @@ public class RegistrationController {
     public static final String REQUEST_MAPPING_ROOT = "/accesses";
 
     /**
-     * Relative path to the endpoint accepting accounts
-     */
-    public static final String ACCEPT_ACCOUNT_RELATIVE_PATH = "/acceptAccount/{account_email}";
-
-    /**
-     * Relative path to the endpoint refusing an account
-     */
-    public static final String REFUSE_ACCOUNT_RELATIVE_PATH = "/refuseAccount/{account_email}";
-
-    /**
      * Relative path to the endpoint accepting accesses (project users)
      */
     public static final String ACCEPT_ACCESS_RELATIVE_PATH = "/{access_id}/accept";

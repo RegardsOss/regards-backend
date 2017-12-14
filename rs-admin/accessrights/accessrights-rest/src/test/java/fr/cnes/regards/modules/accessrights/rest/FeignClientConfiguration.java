@@ -22,6 +22,8 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 
 /**
@@ -34,5 +36,15 @@ public class FeignClientConfiguration {
     @Bean
     public IEmailClient emailClient() {
         return Mockito.mock(IEmailClient.class);
+    }
+
+    @Bean
+    public IAccountsClient accountsClient() {
+        return Mockito.mock(IAccountsClient.class);
+    }
+
+    @Bean
+    public IAccountSettingsClient accountSettingsClient() {
+        return Mockito.mock(IAccountSettingsClient.class);
     }
 }

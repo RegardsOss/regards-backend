@@ -43,8 +43,14 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-instance-regards-starter</artifactId>
+			<groupId>fr.cnes.regards.modules.accessrights</groupId>
+			<artifactId>accessrights-dao</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>fr.cnes.regards.framework</groupId>
+					<artifactId>jpa-instance-regards-starter</artifactId>
+				</exclusion>
+			</exclusions>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

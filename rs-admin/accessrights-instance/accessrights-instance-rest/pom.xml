@@ -64,5 +64,10 @@
             <artifactId>regards-integration-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-instance-regards-starter</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

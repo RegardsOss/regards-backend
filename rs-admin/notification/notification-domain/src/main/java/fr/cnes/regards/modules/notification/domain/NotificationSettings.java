@@ -82,8 +82,7 @@ public class NotificationSettings implements IIdentifiable<Long> {
      * The settings are specific to a project user represented by its email
      */
     @NotNull
-//    @OneToOne FIXME
-//    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_notification_settings_user"))
+    @Column(name = "user_email")
     private String projectUserEmail;
 
     /**

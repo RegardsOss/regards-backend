@@ -256,6 +256,7 @@ public class NotificationServiceTest {
 
         // Mock methods
         Mockito.when(authenticationResolver.getUser()).thenReturn(RECIPIENT_0);
+        Mockito.when(authenticationResolver.getRole()).thenReturn(ROLE_NAME_0);
         Mockito.when(notificationRepository.findByRecipientsContaining(RECIPIENT_0, ROLE_NAME_0)).thenReturn(expected);
 
         // Call tested method

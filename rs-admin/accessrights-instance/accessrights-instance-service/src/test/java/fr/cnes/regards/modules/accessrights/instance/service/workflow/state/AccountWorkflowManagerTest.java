@@ -225,7 +225,7 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(tenantResolver.getAllActiveTenants()).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
-                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .thenReturn(new ResponseEntity<>(new Resource<>(new ProjectUser()), HttpStatus.OK));
         Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUsersClient,
                                                                                         accountRepository,
                                                                                         tenantResolver,
@@ -254,7 +254,7 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(tenantResolver.getAllActiveTenants()).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
-                .thenReturn(new ResponseEntity<>(new Resource<>(new ProjectUser()), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUsersClient,
                                                                                         accountRepository,
                                                                                         tenantResolver,

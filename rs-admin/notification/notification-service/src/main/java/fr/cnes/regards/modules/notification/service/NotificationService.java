@@ -35,6 +35,8 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -43,6 +45,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.event.RoleEvent;
@@ -252,7 +255,7 @@ public class NotificationService implements INotificationService, ApplicationLis
                                                                                         pageable -> retrieveRoleProjectUserList(
                                                                                                 r,
                                                                                                 pageable)).stream().map(ProjectUser::getEmail))
-                                         .distinct());
+                                         ).distinct();
         }
     }
 
@@ -284,6 +287,7 @@ public class NotificationService implements INotificationService, ApplicationLis
     }
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onApplicationEvent(ApplicationReadyEvent event) {
         if (notificationMode == NotificationMode.MULTITENANT) {
             subscriber.subscribeTo(ProjectUserEvent.class, new ProjectUserEventListener(this, runtimeTenantResolver));

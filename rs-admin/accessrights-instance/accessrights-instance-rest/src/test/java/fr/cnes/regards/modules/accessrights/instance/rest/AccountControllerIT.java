@@ -25,6 +25,7 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -199,6 +200,8 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Purpose("Check that the system allows to retrieve all users for an instance.")
     public void getAllAccounts() {
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDefaultGet(apiAccounts, expectations, errorMessage);
@@ -344,6 +347,8 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         account.setStatus(AccountStatus.INACTIVE);
         accountRepository.save(account);
 
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(account.getEmail())).thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isNoContent());
         performDefaultDelete(apiAccountId, expectations, errorMessage, account.getId());
@@ -455,6 +460,8 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         account.setStatus(AccountStatus.INACTIVE);
         accountRepository.save(account);
 
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(account.getEmail())).thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.links.[*].rel", Matchers.hasItem("delete")));
@@ -467,6 +474,8 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         // Prepare the account
         account.setStatus(AccountStatus.LOCKED);
         accountRepository.save(account);
+
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(account.getEmail())).thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -551,6 +560,8 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         account.setStatus(AccountStatus.ACTIVE);
         accountRepository.save(account);
 
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(account.getEmail())).thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.links.[*].rel", Matchers.hasItem("inactive")));
@@ -607,6 +618,8 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         // Prepare the account
         account.setStatus(AccountStatus.INACTIVE);
         accountRepository.save(account);
+
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(account.getEmail())).thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
