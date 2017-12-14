@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.rest;
 
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
+import fr.cnes.regards.modules.accessrights.instance.service.IAccountSettingsService;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
@@ -33,8 +35,6 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
 
 /**
  * Integration tests for accounts global settings

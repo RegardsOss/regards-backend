@@ -339,6 +339,28 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
         return new ResponseEntity<>(toPagedResources(projectUserList, pPagedResourcesAssembler), HttpStatus.OK);
     }
 
+
+    /**
+     * Define the endpoint for retrieving the {@link List} of {@link ProjectUser} for the {@link Role} of passed
+     * <code>name</code> by crawling through parents' hierarachy.
+     *
+     * @param pRole
+     *            The {@link Role}'s <code>name</code>
+     * @return The {@link List} of {@link ProjectUser} wrapped in an {@link ResponseEntity}
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Role} with passed <code>id</code> could be found
+     */
+    @ResponseBody
+    @ResourceAccess(
+            description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_name",
+            role = DefaultRole.PROJECT_ADMIN)
+    @RequestMapping(value = "/roles", method = RequestMethod.GET)
+    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUsersList(@RequestParam("role_name")String pRole, final Pageable pPageable,
+            final PagedResourcesAssembler<ProjectUser> pPagedResourcesAssembler) throws EntityNotFoundException {
+        final Page<ProjectUser> projectUserList = roleService.retrieveRoleProjectUserList(pRole, pPageable);
+        return new ResponseEntity<>(toPagedResources(projectUserList, pPagedResourcesAssembler), HttpStatus.OK);
+    }
+
     @Override
     public Resource<ProjectUser> toResource(final ProjectUser pElement, final Object... pExtras) {
         Resource<ProjectUser> resource = resourceService.toResource(pElement);

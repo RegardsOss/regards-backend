@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
@@ -80,24 +81,22 @@ public class LockedState extends AbstractDeletableState {
     private final IEmailClient emailClient;
 
     /**
-     * @param pProjectUserService
+     * @param projectUsersClient
      * @param pAccountRepository
      * @param pTenantResolver
      * @param pRuntimeTenantResolver
      * @param pPasswordResetTokenService
-     * @param pEmailVerificationTokenService
      * @param pAccountUnlockTokenService
      * @param pAccountService
      * @param pTemplateService
      * @param pEmailClient
      */
-    public LockedState(IProjectUserService pProjectUserService, IAccountRepository pAccountRepository,
+    public LockedState(IProjectUsersClient projectUsersClient, IAccountRepository pAccountRepository,
             ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
             IPasswordResetService pPasswordResetTokenService,
-            IEmailVerificationTokenService pEmailVerificationTokenService,
             IAccountUnlockTokenService pAccountUnlockTokenService, IAccountService pAccountService,
             ITemplateService pTemplateService, IEmailClient pEmailClient) {
-        super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
+        super(projectUsersClient, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
               pPasswordResetTokenService, pAccountUnlockTokenService);
         accountService = pAccountService;
         templateService = pTemplateService;
@@ -115,7 +114,7 @@ public class LockedState extends AbstractDeletableState {
     public void requestUnlockAccount(final Account pAccount, final String pOriginUrl, final String pRequestLink)
             throws EntityOperationForbiddenException {
         // Create the token
-        final String token = getAccountUnlockTokenService().create(pAccount);
+        final String token = accountUnlockTokenService.create(pAccount);
 
         // Build the list of recipients
         final String[] recipients = { pAccount.getEmail() };
@@ -166,7 +165,7 @@ public class LockedState extends AbstractDeletableState {
         account.setStatus(AccountStatus.ACTIVE);
         accountService.updateAccount(account.getId(), account);
         accountService.resetAuthenticationFailedCounter(account.getId());
-        getAccountUnlockTokenService().deleteAllByAccount(account);
+        accountUnlockTokenService.deleteAllByAccount(account);
     }
 
     /**
@@ -184,7 +183,7 @@ public class LockedState extends AbstractDeletableState {
      */
     private void validateToken(final String pAccountEmail, final String pToken) throws EntityException {
         // Retrieve the token object
-        final AccountUnlockToken token = getAccountUnlockTokenService().findByToken(pToken);
+        final AccountUnlockToken token = accountUnlockTokenService.findByToken(pToken);
 
         // Check same account
         if (!token.getAccount().getEmail().equals(pAccountEmail)) {

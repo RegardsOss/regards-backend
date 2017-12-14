@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactiona
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
@@ -40,27 +41,25 @@ import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPass
 public class InactiveState extends AbstractDeletableState {
 
     /**
-     * @param pProjectUserService
+     * @param projectUsersClient
      * @param pAccountRepository
      * @param pTenantResolver
      * @param pRuntimeTenantResolver
      * @param pPasswordResetTokenService
-     * @param pEmailVerificationTokenService
      * @param pAccountUnlockTokenService
      */
-    public InactiveState(IProjectUserService pProjectUserService, IAccountRepository pAccountRepository,
+    public InactiveState(IProjectUsersClient projectUsersClient, IAccountRepository pAccountRepository,
             ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
             IPasswordResetService pPasswordResetTokenService,
-            IEmailVerificationTokenService pEmailVerificationTokenService,
             IAccountUnlockTokenService pAccountUnlockTokenService) {
-        super(pProjectUserService, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
+        super(projectUsersClient, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
               pPasswordResetTokenService, pAccountUnlockTokenService);
     }
 
     @Override
     public void activeAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         pAccount.setStatus(AccountStatus.ACTIVE);
-        getAccountRepository().save(pAccount);
+        accountRepository.save(pAccount);
     }
 
 }

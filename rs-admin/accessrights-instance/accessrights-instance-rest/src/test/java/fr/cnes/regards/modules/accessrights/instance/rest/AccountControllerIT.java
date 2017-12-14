@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.rest;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +30,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -43,22 +44,23 @@ import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsExcept
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
+import fr.cnes.regards.modules.accessrights.instance.dao.IPasswordResetTokenRepository;
 import fr.cnes.regards.modules.accessrights.instance.dao.accountunlock.IAccountUnlockTokenRepository;
-import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
-import fr.cnes.regards.modules.accessrights.dao.instance.IPasswordResetTokenRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.AccountUnlockToken;
 import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.PerformUnlockAccountDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.RequestAccountUnlockDto;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PasswordResetToken;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.RequestResetPasswordDto;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
+import fr.cnes.regards.modules.accessrights.instance.service.IAccountSettingsService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests for accounts.
@@ -104,6 +106,10 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
      */
     private static final String PASSWORD = "password";
 
+    private final String apiUnlockAccount = "/accounts/{account_email}/unlockAccount";
+
+    private final String apiChangePassword = "/accounts/{account_email}/resetPassword";
+
     private String apiAccounts;
 
     private String apiAccountId;
@@ -111,10 +117,6 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     private String apiAccountEmail;
 
     private String apiAccountSetting;
-
-    private final String apiUnlockAccount = "/accounts/{account_email}/unlockAccount";
-
-    private final String apiChangePassword = "/accounts/{account_email}/resetPassword";
 
     private String errorMessage;
 
@@ -133,12 +135,6 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Autowired
     private IAccountRepository accountRepository;
-
-    /**
-     * Project user repository
-     */
-    @Autowired
-    private IProjectUserRepository projectUserRepository;
 
     /**
      * Account setting repository
@@ -161,6 +157,9 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IEmailClient emailClient;
 
+    @Autowired
+    private IProjectUsersClient projectUsersClient;
+
     @Value("${regards.accounts.root.user.login}")
     private String rootAdminInstanceLogin;
 
@@ -182,13 +181,17 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         // Insert some authorizations
         setAuthorities(apiAccountId, RequestMethod.DELETE, DEFAULT_ROLE);
-        setAuthorities(RegistrationController.REQUEST_MAPPING_ROOT
-                + RegistrationController.ACCEPT_ACCOUNT_RELATIVE_PATH, RequestMethod.PUT, DEFAULT_ROLE);
-        setAuthorities(RegistrationController.REQUEST_MAPPING_ROOT
-                + RegistrationController.REFUSE_ACCOUNT_RELATIVE_PATH, RequestMethod.PUT, DEFAULT_ROLE);
-        setAuthorities(AccountsController.TYPE_MAPPING + AccountsController.PATH_INACTIVE_ACCOUNT, RequestMethod.PUT,
+        setAuthorities(AccountsController.TYPE_MAPPING + AccountsController.ACCEPT_ACCOUNT_RELATIVE_PATH,
+                       RequestMethod.PUT,
                        DEFAULT_ROLE);
-        setAuthorities(AccountsController.TYPE_MAPPING + AccountsController.PATH_ACTIVE_ACCOUNT, RequestMethod.PUT,
+        setAuthorities(AccountsController.TYPE_MAPPING + AccountsController.REFUSE_ACCOUNT_RELATIVE_PATH,
+                       RequestMethod.PUT,
+                       DEFAULT_ROLE);
+        setAuthorities(AccountsController.TYPE_MAPPING + AccountsController.PATH_INACTIVE_ACCOUNT,
+                       RequestMethod.PUT,
+                       DEFAULT_ROLE);
+        setAuthorities(AccountsController.TYPE_MAPPING + AccountsController.PATH_ACTIVE_ACCOUNT,
+                       RequestMethod.PUT,
                        DEFAULT_ROLE);
     }
 
@@ -356,9 +359,8 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         account.setStatus(AccountStatus.LOCKED);
         accountRepository.save(account);
 
-        final ProjectUser projectUser = projectUserRepository.findOneByEmail(email).orElse(new ProjectUser());
-        projectUser.setEmail(email);
-        projectUserRepository.save(projectUser);
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(email))
+                .thenReturn(new ResponseEntity<>(new Resource<>(new ProjectUser()), HttpStatus.OK));
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isForbidden());
@@ -404,20 +406,25 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.validity", Matchers.is(true)));
         performDefaultPost(AccountsController.TYPE_MAPPING + AccountsController.PATH_PASSWORD,
-                           new AccountsController.Password(PASSWORD), expectations, errorMessage);
+                           new AccountsController.Password(PASSWORD),
+                           expectations,
+                           errorMessage);
         expectations.clear();
         // test invalid password
         expectations.add(status().isOk());
         expectations.add(MockMvcResultMatchers.jsonPath("$.validity", Matchers.is(false)));
         performDefaultPost(AccountsController.TYPE_MAPPING + AccountsController.PATH_PASSWORD,
-                           new AccountsController.Password(PASSWORD + "ZE"), expectations, errorMessage);
+                           new AccountsController.Password(PASSWORD + "ZE"),
+                           expectations,
+                           errorMessage);
     }
 
     @Test
     public void getPasswordRules() {
         final List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(status().isOk());
-        performDefaultGet(AccountsController.TYPE_MAPPING + AccountsController.PATH_PASSWORD, expectations,
+        performDefaultGet(AccountsController.TYPE_MAPPING + AccountsController.PATH_PASSWORD,
+                          expectations,
                           errorMessage);
     }
 
@@ -430,9 +437,8 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
         account.setStatus(AccountStatus.ACTIVE);
         accountRepository.save(account);
 
-        final ProjectUser projectUser = projectUserRepository.findOneByEmail(email).orElse(new ProjectUser());
-        projectUser.setEmail(email);
-        projectUserRepository.save(projectUser);
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(email))
+                .thenReturn(new ResponseEntity<>(new Resource<>(new ProjectUser()), HttpStatus.OK));
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
@@ -503,8 +509,11 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultPut(AccountsController.TYPE_MAPPING + AccountsController.PATH_INACTIVE_ACCOUNT, null,
-                          expectations, "Should deactivate the account", account.getEmail());
+        performDefaultPut(AccountsController.TYPE_MAPPING + AccountsController.PATH_INACTIVE_ACCOUNT,
+                          null,
+                          expectations,
+                          "Should deactivate the account",
+                          account.getEmail());
     }
 
     @Test
@@ -515,8 +524,10 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isForbidden());
-        performDefaultPut(AccountsController.TYPE_MAPPING + AccountsController.PATH_INACTIVE_ACCOUNT, null,
-                          expectations, "Should fail because the account is not in INACTIVE status",
+        performDefaultPut(AccountsController.TYPE_MAPPING + AccountsController.PATH_INACTIVE_ACCOUNT,
+                          null,
+                          expectations,
+                          "Should fail because the account is not in INACTIVE status",
                           account.getEmail());
     }
 
@@ -554,8 +565,11 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isForbidden());
-        performDefaultPut(AccountsController.TYPE_MAPPING + AccountsController.PATH_ACTIVE_ACCOUNT, null, expectations,
-                          "Should fail because the account is not in ACTIVE status", account.getEmail());
+        performDefaultPut(AccountsController.TYPE_MAPPING + AccountsController.PATH_ACTIVE_ACCOUNT,
+                          null,
+                          expectations,
+                          "Should fail because the account is not in ACTIVE status",
+                          account.getEmail());
     }
 
     @Test
@@ -567,8 +581,11 @@ public class AccountControllerIT extends AbstractRegardsTransactionalIT {
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        performDefaultPut(AccountsController.TYPE_MAPPING + AccountsController.PATH_ACTIVE_ACCOUNT, null, expectations,
-                          "Should activate the account", account.getEmail());
+        performDefaultPut(AccountsController.TYPE_MAPPING + AccountsController.PATH_ACTIVE_ACCOUNT,
+                          null,
+                          expectations,
+                          "Should activate the account",
+                          account.getEmail());
     }
 
     @Test

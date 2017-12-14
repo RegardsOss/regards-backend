@@ -16,16 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.accessrights.service.account.workflow.listener;
+package fr.cnes.regards.modules.accessrights.instance.service.workflow.listener;
 
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.mail.SimpleMailMessage;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.service.account.workflow.events.OnRefuseAccountEvent;
-import fr.cnes.regards.modules.accessrights.service.account.workflow.listeners.SendAccountRefusedEmailListener;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.service.workflow.events.OnRefuseAccountEvent;
+import fr.cnes.regards.modules.accessrights.instance.service.workflow.listeners.SendAccountRefusedEmailListener;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 
@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.templates.service.ITemplateService;
 public class SendAccountRefusedEmailListenerTest {
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.service.account.workflow.listeners.SendAccountRefusedEmailListener#onApplicationEvent(fr.cnes.regards.modules.accessrights.service.account.workflow.events.OnRefuseAccountEvent)}.
+     * Test method for {@link SendAccountRefusedEmailListener#onApplicationEvent(OnRefuseAccountEvent)}.
      * @throws EntityNotFoundException
      */
     @SuppressWarnings("unchecked")
@@ -57,7 +57,7 @@ public class SendAccountRefusedEmailListenerTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.service.account.workflow.listeners.SendAccountRefusedEmailListener#onApplicationEvent(fr.cnes.regards.modules.accessrights.service.account.workflow.events.OnRefuseAccountEvent)}.
+     * Test method for {@link SendAccountRefusedEmailListener#onApplicationEvent(OnRefuseAccountEvent)}.
      * @throws EntityNotFoundException
      */
     @SuppressWarnings("unchecked")

@@ -176,6 +176,19 @@ public interface IRoleService {
     Page<ProjectUser> retrieveRoleProjectUserList(Long pRoleId, Pageable pPageable) throws EntityNotFoundException;
 
     /**
+     * Retrieve the {@link List} of {@link ProjectUser} for the {@link Role} of passed <code>name</code>.
+     *
+     * @param roleName
+     *            The {@link Role}'s <code>id</code>
+     * @param pPageable
+     *            the paging information
+     * @return The {@link List} of {@link ProjectUser} for the {@link Role}
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Role} with passed <code>id</code> could be found
+     */
+    Page<ProjectUser> retrieveRoleProjectUserList(String roleName, Pageable pPageable) throws EntityNotFoundException;
+
+    /**
      * Return true when {@link Role} of passed <code>id</code> exists in db.
      *
      * @param pRoleId

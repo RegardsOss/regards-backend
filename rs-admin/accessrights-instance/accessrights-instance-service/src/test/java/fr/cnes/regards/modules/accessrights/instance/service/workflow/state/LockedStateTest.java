@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.accessrights.service.account.workflow.state;
+package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,36 +32,24 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
-import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.AccountUnlockToken;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
-import fr.cnes.regards.modules.accessrights.service.account.accountunlock.IAccountUnlockTokenService;
-import fr.cnes.regards.modules.accessrights.service.account.passwordreset.IPasswordResetService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
+import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.AccountUnlockToken;
+import fr.cnes.regards.modules.accessrights.instance.service.IAccountService;
+import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
+import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 
 /**
- * Test class for {@link ProjectUserService}.
+ * Test class for {@link LockedState}.
  *
  * @author Xavier-Alexandre Brochard
  */
 public class LockedStateTest {
-
-    /**
-     * A dummy account
-     */
-    private static Account account;
-
-    /**
-     * A dummy account unlock token
-     */
-    private static AccountUnlockToken accountUnlockToken;
 
     /**
      * Dummy id
@@ -94,6 +82,16 @@ public class LockedStateTest {
     private static final String TOKEN = "token";
 
     /**
+     * A dummy account
+     */
+    private static Account account;
+
+    /**
+     * A dummy account unlock token
+     */
+    private static AccountUnlockToken accountUnlockToken;
+
+    /**
      * Tested service
      */
     private AccountWorkflowManager accountWorkflowManager;
@@ -106,7 +104,7 @@ public class LockedStateTest {
     /**
      * Mocked service managing {@link ProjectUser}s
      */
-    private IProjectUserService projectUserService;
+    private IProjectUsersClient projectUsersClient;
 
     /**
      * Mocked tenant resolver
@@ -136,8 +134,6 @@ public class LockedStateTest {
      */
     private IPasswordResetService passwordResetService;
 
-    private IEmailVerificationTokenService emailVerificationTokenService;
-
     /**
      * Do some setup before each test
      */
@@ -149,7 +145,7 @@ public class LockedStateTest {
 
         // Mock dependencies
         accountRepository = Mockito.mock(IAccountRepository.class);
-        projectUserService = Mockito.mock(IProjectUserService.class);
+        projectUsersClient = Mockito.mock(IProjectUsersClient.class);
         tenantResolver = Mockito.mock(ITenantResolver.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         accountStateProvider = Mockito.mock(AccountStateProvider.class);
@@ -158,7 +154,6 @@ public class LockedStateTest {
         templateService = Mockito.mock(ITemplateService.class);
         emailClient = Mockito.mock(IEmailClient.class);
         passwordResetService = Mockito.mock(IPasswordResetService.class);
-        emailVerificationTokenService = Mockito.mock(IEmailVerificationTokenService.class);
 
         // Mock authentication
         final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
@@ -186,10 +181,12 @@ public class LockedStateTest {
         // Mock
         Mockito.when(accountRepository.exists(ID)).thenReturn(true);
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(accountStateProvider.getState(account))
-                .thenReturn(new ActiveState(projectUserService, accountRepository, tenantResolver,
-                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService,
-                        accountUnlockTokenService));
+        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUsersClient,
+                                                                                        accountRepository,
+                                                                                        tenantResolver,
+                                                                                        runtimeTenantResolver,
+                                                                                        passwordResetService,
+                                                                                        accountUnlockTokenService));
         Mockito.when(accountUnlockTokenService.findByToken(TOKEN)).thenReturn(accountUnlockToken);
 
         // Trigger exception
@@ -212,10 +209,15 @@ public class LockedStateTest {
         // Mock
         Mockito.when(accountRepository.exists(ID)).thenReturn(true);
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(accountStateProvider.getState(account))
-                .thenReturn(new LockedState(projectUserService, accountRepository, tenantResolver,
-                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService,
-                        accountUnlockTokenService, accountService, templateService, emailClient));
+        Mockito.when(accountStateProvider.getState(account)).thenReturn(new LockedState(projectUsersClient,
+                                                                                        accountRepository,
+                                                                                        tenantResolver,
+                                                                                        runtimeTenantResolver,
+                                                                                        passwordResetService,
+                                                                                        accountUnlockTokenService,
+                                                                                        accountService,
+                                                                                        templateService,
+                                                                                        emailClient));
         Mockito.when(accountUnlockTokenService.findByToken(wrongToken))
                 .thenThrow(new EntityNotFoundException(ID, AccountUnlockToken.class));
 
@@ -235,10 +237,15 @@ public class LockedStateTest {
         // Mock
         Mockito.when(accountRepository.exists(ID)).thenReturn(true);
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(accountStateProvider.getState(account))
-                .thenReturn(new LockedState(projectUserService, accountRepository, tenantResolver,
-                        runtimeTenantResolver, passwordResetService, emailVerificationTokenService,
-                        accountUnlockTokenService, accountService, templateService, emailClient));
+        Mockito.when(accountStateProvider.getState(account)).thenReturn(new LockedState(projectUsersClient,
+                                                                                        accountRepository,
+                                                                                        tenantResolver,
+                                                                                        runtimeTenantResolver,
+                                                                                        passwordResetService,
+                                                                                        accountUnlockTokenService,
+                                                                                        accountService,
+                                                                                        templateService,
+                                                                                        emailClient));
         Mockito.when(accountUnlockTokenService.findByToken(TOKEN)).thenReturn(accountUnlockToken);
 
         // Prepare the case

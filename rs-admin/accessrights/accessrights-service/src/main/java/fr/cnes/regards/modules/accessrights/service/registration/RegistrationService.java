@@ -28,6 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -129,29 +130,37 @@ public class RegistrationService implements IRegistrationService {
      */
     private void requestAccountIfNecessary(final AccessRequestDto pDto) throws EntityException {
         // Check existence
-        ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(pDto.getEmail());
-        if(accountResponse.getStatusCode() != HttpStatus.NOT_FOUND) {
-            LOG.info("Requesting access with an existing account. Ok, no account created");
-            return;
-        }
+        try {
+            FeignSecurityManager.asSystem();
+            ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(pDto.getEmail());
+            if (accountResponse.getStatusCode() != HttpStatus.NOT_FOUND) {
+                LOG.info("Requesting access with an existing account. Ok, no account created");
+                return;
+            }
 
-        // Create the new account
-        Account account = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(),
-                                            EncryptionUtils.encryptPassword(pDto.getPassword()));
+            // Create the new account
+            Account account = new Account(pDto.getEmail(),
+                                          pDto.getFirstName(),
+                                          pDto.getLastName(),
+                                          EncryptionUtils.encryptPassword(pDto.getPassword()));
 
-        // Check status
-        Assert.isTrue(AccountStatus.PENDING.equals(account.getStatus()),
-                      "Trying to create an Account with other status than PENDING.");
+            // Check status
+            Assert.isTrue(AccountStatus.PENDING.equals(account.getStatus()),
+                          "Trying to create an Account with other status than PENDING.");
 
-        // Create
-        account = accountsClient.createAccount(account).getBody().getContent();
+            // Create
+            account = accountsClient.createAccount(account).getBody().getContent();
 
-        // Auto-accept if configured so
-        ResponseEntity<Resource<AccountSettings>> accountSettingsResponse = accountSettingsClient
-                .retrieveAccountSettings();
-        if(accountSettingsResponse.getStatusCode().is2xxSuccessful() && AccountSettings.AUTO_ACCEPT_MODE.equals(accountSettingsResponse.getBody().getContent())) {
-            // in case the microservice does not answer properly to us, lets decide its manual
-            accountsClient.acceptAccount(account.getEmail());
+            // Auto-accept if configured so
+            ResponseEntity<Resource<AccountSettings>> accountSettingsResponse = accountSettingsClient
+                    .retrieveAccountSettings();
+            if (accountSettingsResponse.getStatusCode().is2xxSuccessful() && AccountSettings.AUTO_ACCEPT_MODE
+                    .equals(accountSettingsResponse.getBody().getContent())) {
+                // in case the microservice does not answer properly to us, lets decide its manual
+                accountsClient.acceptAccount(account.getEmail());
+            }
+        } finally {
+            FeignSecurityManager.reset();
         }
     }
 
@@ -162,33 +171,38 @@ public class RegistrationService implements IRegistrationService {
      * @throws EntityException
      */
     private void requestProjectUser(final AccessRequestDto pDto) throws EntityException {
-        // Check that an associated account exists
-        ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(pDto.getEmail());
-        if(accountResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
-            throw new EntityNotFoundException(pDto.getEmail(), Account.class);
-        }
-        Account account = accountResponse.getBody().getContent();
+        try {
+            FeignSecurityManager.asSystem();
+            // Check that an associated account exists
+            ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(pDto.getEmail());
+            if (accountResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
+                throw new EntityNotFoundException(pDto.getEmail(), Account.class);
+            }
+            Account account = accountResponse.getBody().getContent();
 
-        // Check that no project user with same email exists
-        if (projectUserRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
-            throw new EntityAlreadyExistsException("The email " + pDto.getEmail() + "is already in use.");
-        }
+            // Check that no project user with same email exists
+            if (projectUserRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
+                throw new EntityAlreadyExistsException("The email " + pDto.getEmail() + "is already in use.");
+            }
 
-        // Init with default role
-        final Role role = roleService.getDefaultRole();
+            // Init with default role
+            final Role role = roleService.getDefaultRole();
 
-        // Create a new project user
-        ProjectUser projectUser = new ProjectUser(pDto.getEmail(), role, new ArrayList<>(), pDto.getMetadata());
+            // Create a new project user
+            ProjectUser projectUser = new ProjectUser(pDto.getEmail(), role, new ArrayList<>(), pDto.getMetadata());
 
-        // Create
-        projectUser = projectUserRepository.save(projectUser);
+            // Create
+            projectUser = projectUserRepository.save(projectUser);
 
-        // Init the email verification token
-        tokenService.create(projectUser, pDto.getOriginUrl(), pDto.getRequestLink());
+            // Init the email verification token
+            tokenService.create(projectUser, pDto.getOriginUrl(), pDto.getRequestLink());
 
-        // Check the status
-        if (AccountStatus.ACTIVE.equals(account.getStatus())) {
-            projectUserWorkflowManager.grantAccess(projectUser);
+            // Check the status
+            if (AccountStatus.ACTIVE.equals(account.getStatus())) {
+                projectUserWorkflowManager.grantAccess(projectUser);
+            }
+        } finally {
+            FeignSecurityManager.reset();
         }
     }
 

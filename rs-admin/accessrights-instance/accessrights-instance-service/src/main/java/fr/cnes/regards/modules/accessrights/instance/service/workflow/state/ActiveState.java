@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactiona
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
@@ -41,20 +42,18 @@ import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPass
 public class ActiveState extends AbstractDeletableState {
 
     /**
-     * @param pProjectUserService
+     * @param projectUsersClient
      * @param pAccountRepository
      * @param pTenantResolver
      * @param pRuntimeTenantResolver
      * @param pPasswordResetTokenService
-     * @param pEmailVerificationTokenService
      * @param pAccountUnlockTokenService
      */
-    public ActiveState(IProjectUserService pProjectUserService, IAccountRepository pAccountRepository,
+    public ActiveState(IProjectUsersClient projectUsersClient, IAccountRepository pAccountRepository,
             ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
             IPasswordResetService pPasswordResetTokenService,
-            IEmailVerificationTokenService pEmailVerificationTokenService,
             IAccountUnlockTokenService pAccountUnlockTokenService) {
-        super(pProjectUserService,
+        super(projectUsersClient,
               pAccountRepository,
               pTenantResolver,
               pRuntimeTenantResolver,
@@ -64,13 +63,13 @@ public class ActiveState extends AbstractDeletableState {
     @Override
     public void lockAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         pAccount.setStatus(AccountStatus.LOCKED);
-        getAccountRepository().save(pAccount);
+        accountRepository.save(pAccount);
     }
 
     @Override
     public void inactiveAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         pAccount.setStatus(AccountStatus.INACTIVE);
-        getAccountRepository().save(pAccount);
+        accountRepository.save(pAccount);
     }
 
 }

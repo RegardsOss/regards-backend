@@ -43,7 +43,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -78,10 +77,10 @@ public class UserResourceController implements IResourceController<ResourcesAcce
     private IResourceService hateoasService;
 
     /**
-     * Retrieve the {@link List} of {@link ResourcesAccess} for the {@link Account} of passed <code>id</code>.
+     * Retrieve the {@link List} of {@link ResourcesAccess} for the account given threw its <code>email</code>.
      *
      * @param pUserLogin
-     *            The {@link Account}'s <code>id</code>
+     *            The account <code>email</code>
      * @param pBorrowedRoleName
      *            The borrowed {@link Role} <code>name</code> if the user is connected with a borrowed role. Optional.
      * @return the {@link List} list of resources access
