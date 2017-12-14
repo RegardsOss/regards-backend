@@ -63,7 +63,7 @@ public class DefaultAIPTagging implements IAipTagging {
     @PluginParameter(label = "Tags", description = "List of tags", optional = true)
     private List<String> tags;
 
-    @PluginParameter(label = "Links", description = "List of links", optional = true)
+    @PluginParameter(keylabel = "Link tag", label = "Link", description = "List of links", optional = true)
     private Map<String, String> links;
 
     @PluginInit

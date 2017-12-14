@@ -28,8 +28,6 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -65,13 +63,11 @@ public class DefaultAipTaggingTest {
         return links;
     }
 
-    private final Gson gson = new Gson();
-
     @Test
     public void addOnlyTags() throws TagAIPException {
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(DefaultAIPTagging.FIELD_NAME_TAGS, gson.toJson(TAGS)).getParameters();
+                .addParameter(DefaultAIPTagging.FIELD_NAME_TAGS, TAGS).getParameters();
 
         DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class,
                                                          Arrays.asList(MODULE_PACKAGE), null);
@@ -83,7 +79,7 @@ public class DefaultAipTaggingTest {
     public void addOnlyLinks() throws TagAIPException {
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(DefaultAIPTagging.FIELD_NAME_LINKS, gson.toJson(LINKS)).getParameters();
+                .addParameter(DefaultAIPTagging.FIELD_NAME_LINKS, LINKS).getParameters();
 
         DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class,
                                                          Arrays.asList(MODULE_PACKAGE), null);
@@ -94,8 +90,8 @@ public class DefaultAipTaggingTest {
     @Test
     public void addTagsAndLinks() throws TagAIPException {
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(DefaultAIPTagging.FIELD_NAME_TAGS, gson.toJson(TAGS))
-                .addParameter(DefaultAIPTagging.FIELD_NAME_LINKS, gson.toJson(LINKS)).getParameters();
+                .addParameter(DefaultAIPTagging.FIELD_NAME_TAGS, TAGS)
+                .addParameter(DefaultAIPTagging.FIELD_NAME_LINKS, LINKS).getParameters();
 
         DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class,
                                                          Arrays.asList(MODULE_PACKAGE), null);
