@@ -32,7 +32,7 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTransactional
 
         SIPSession session = sipSessionRepository.save(SIPSessionBuilder.build("sessionId"));
         SIPSession session2 = sipSessionRepository.save(SIPSessionBuilder.build("sessionId2"));
-        SIPSession session3 = sipSessionRepository.save(SIPSessionBuilder.build("otherSession"));
+        sipSessionRepository.save(SIPSessionBuilder.build("otherSession"));
 
         SIPEntity sip1 = new SIPEntity();
         SIPBuilder b = new SIPBuilder("SIP_001");
