@@ -33,6 +33,7 @@ import org.springframework.util.MimeType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -68,10 +69,10 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
     private IPluginService pluginService;
 
     @Autowired
-    private Gson gson;
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    private Gson gson;
 
     private PluginConfiguration localStorageConf;
 
@@ -89,10 +90,8 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
         baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/LocalDataStorageIT");
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              baseStorageLocation.toString())
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "9000000000")
-                .getParameters();
+                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
+                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000L).getParameters();
         // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
         PluginMetaData localStorageMeta = PluginUtils
                 .createPluginMetaData(LocalDataStorage.class, LocalDataStorage.class.getPackage().getName(),

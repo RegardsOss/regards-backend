@@ -20,7 +20,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Multimap;
-import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -41,10 +41,10 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
-import fr.cnes.regards.modules.storage.plugin.allocation.strategy.StafNoopAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.plugin.allocation.strategy.StafNoopAllocationStrategy;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFDataStorage;
 
@@ -92,42 +92,28 @@ public class StafNoopAllocationStrategyIT extends AbstractRegardsTransactionalIT
         dataFiles = Sets.newHashSet();
         AIP aip = getAIP();
         stafDataFile = new StorageDataFile(new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, "truc.json"),
-                                           "checksum",
-                                           "MD5",
-                                           DataType.OTHER,
-                                           666L,
-                                           MediaType.APPLICATION_JSON,
-                                           aip,
-                                           "truc");
+                "checksum", "MD5", DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, "truc");
         dataFiles.add(stafDataFile);
-        otherDataFile = new StorageDataFile(new URL("file", "", "local.json"),
-                                            "checksum2",
-                                            "MD5",
-                                            DataType.OTHER,
-                                            666L,
-                                            MediaType.APPLICATION_JSON,
-                                            aip,
-                                            "local");
+        otherDataFile = new StorageDataFile(new URL("file", "", "local.json"), "checksum2", "MD5", DataType.OTHER, 666L,
+                MediaType.APPLICATION_JSON, aip, "local");
         dataFiles.add(otherDataFile);
     }
 
     private AIP getAIP() throws MalformedURLException {
 
-        AIPBuilder aipBuilder = new AIPBuilder(new UniformResourceName(OAISIdentifier.AIP,
-                                                                       EntityType.DATA,
-                                                                       DEFAULT_TENANT,
-                                                                       UUID.randomUUID(),
-                                                                       1), null, EntityType.DATA);
+        AIPBuilder aipBuilder = new AIPBuilder(
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
+                null, EntityType.DATA);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder()
-                .setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5", "de89a907d33a9716d11765582102b2e0");
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
+                                                                "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", "text/plain");
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
-        aipBuilder.getPDIBuilder()
-                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event", OffsetDateTime.now());
+        aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
+                                                                 OffsetDateTime.now());
 
         return aipBuilder.build();
     }
@@ -145,45 +131,39 @@ public class StafNoopAllocationStrategyIT extends AbstractRegardsTransactionalIT
         STAFArchive archive = new STAFArchive();
         archive.setArchiveName(STAF_ARCHIVE_NAME);
         archive.setPassword("");
-        Gson gson = gsonBuilder.create();
 
-        PluginMetaData stafDataStorageMeta = PluginUtils.createPluginMetaData(STAFDataStorage.class,
-                                                                              STAFDataStorage.class.getPackage()
-                                                                                      .getName(),
-                                                                              IDataStorage.class.getPackage()
-                                                                                      .getName(),
-                                                                              INearlineDataStorage.class.getPackage()
-                                                                                      .getName());
+        PluginMetaData stafDataStorageMeta = PluginUtils
+                .createPluginMetaData(STAFDataStorage.class, STAFDataStorage.class.getPackage().getName(),
+                                      IDataStorage.class.getPackage().getName(),
+                                      INearlineDataStorage.class.getPackage().getName());
         List<PluginParameter> stafDataStorageParams = PluginParametersFactory.build()
-                .addParameter("workspaceDirectory", WORKSPACE.toString())
-                .addParameter("archiveParameters", gson(archive))
-                .addParameter(STAFDataStorage.STAF_STORAGE_TOTAL_SPACE, "9000000000000").getParameters();
+                .addParameter("workspaceDirectory", WORKSPACE.toString()).addParameter("archiveParameters", archive)
+                .addParameter(STAFDataStorage.STAF_STORAGE_TOTAL_SPACE, 9000000000000L).getParameters();
         stafDataStorage = new PluginConfiguration(stafDataStorageMeta, STAF_NOOP_CONF_LABEL, stafDataStorageParams);
         stafDataStorage = pluginService.savePluginConfiguration(stafDataStorage);
         // lets get a local data storage conf as default
         List<PluginParameter> defaultParam = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, new URL("file", "", WORKSPACE.toString()).toString())
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "900000000000").getParameters();
+                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                              new URL("file", "", WORKSPACE.toString()).toString())
+                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 900000000000L).getParameters();
         // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
         PluginMetaData defaultMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
                                                                       LocalDataStorage.class.getPackage().getName(),
-                                                                      IOnlineDataStorage.class.getPackage()
-                                                                              .getName(),
+                                                                      IOnlineDataStorage.class.getPackage().getName(),
                                                                       IDataStorage.class.getPackage().getName());
         defaultDataStorage = new PluginConfiguration(defaultMeta, LOCAL_STORAGE_LABEL, defaultParam);
         defaultDataStorage = pluginService.savePluginConfiguration(defaultDataStorage);
         // lets get a StafNoopAllocationStrategy
-        PluginMetaData stafNoopAllocationMeta = PluginUtils.createPluginMetaData(StafNoopAllocationStrategy.class,
-                                                                                 StafNoopAllocationStrategy.class
-                                                                                         .getPackage().getName(),
-                                                                                 IAllocationStrategy.class.getPackage()
-                                                                                         .getName());
-        List<PluginParameter> stafNoopAllocationParam = PluginParametersFactory.build().addParameter(
-                StafNoopAllocationStrategy.DEFAULT_DATA_STORAGE_CONFIGURATION_ID,
-                defaultDataStorage.getId().toString()).getParameters();
-        stafNoopAllocationConf = new PluginConfiguration(stafNoopAllocationMeta,
-                                                         STAF_NOOP_ALLOCATION_LABEL,
-                                                         stafNoopAllocationParam);
+        PluginMetaData stafNoopAllocationMeta = PluginUtils
+                .createPluginMetaData(StafNoopAllocationStrategy.class,
+                                      StafNoopAllocationStrategy.class.getPackage().getName(),
+                                      IAllocationStrategy.class.getPackage().getName());
+        List<PluginParameter> stafNoopAllocationParam = PluginParametersFactory.build()
+                .addParameter(StafNoopAllocationStrategy.DEFAULT_DATA_STORAGE_CONFIGURATION_ID,
+                              defaultDataStorage.getId().toString())
+                .getParameters();
+        stafNoopAllocationConf = new PluginConfiguration(stafNoopAllocationMeta, STAF_NOOP_ALLOCATION_LABEL,
+                stafNoopAllocationParam);
         stafNoopAllocationConf = pluginService.savePluginConfiguration(stafNoopAllocationConf);
     }
 
