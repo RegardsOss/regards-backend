@@ -134,7 +134,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         baseStorageLocation = new URL("file", "", Paths.get("target/AIPControllerIT").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "9000000000000000")
+                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000000L)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .getParameters();
         PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, DATA_STORAGE_CONF_LABEL, parameters,

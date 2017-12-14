@@ -77,6 +77,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final String LOCAL_STORAGE_LABEL = "StoreJobIT";
 
+    @SuppressWarnings("unused")
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -123,7 +124,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> pluginParameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, "9000000000000").getParameters();
+                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L).getParameters();
         // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
         PluginMetaData localStorageMeta = PluginUtils
                 .createPluginMetaData(LocalDataStorage.class, LocalDataStorage.class.getPackage().getName(),
@@ -135,7 +136,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         AIP aip = getAipFromFile();
         aip.addEvent(EventType.SUBMISSION.name(), "submission into our beautiful system");
         df = new StorageDataFile(source, "de89a907d33a9716d11765582102b2e0", "MD5", DataType.OTHER, 0L,
-                                 new MimeType("text", "plain"), aip, "data.txt");
+                new MimeType("text", "plain"), aip, "data.txt");
         workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
         // now that we have some parameters, lets storeAndCreate the job
         parameters = Sets.newHashSet();

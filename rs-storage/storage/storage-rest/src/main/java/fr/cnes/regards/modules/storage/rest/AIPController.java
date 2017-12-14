@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
-import javax.validation.Valid;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,6 +11,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.validation.Valid;
 
 import org.assertj.core.util.Lists;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -192,7 +194,8 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "send a page of aips with indexing information on associated files")
     public ResponseEntity<Page<AipDataFiles>> retrieveAipDataFiles(@RequestParam(name = "state") AIPState state,
             @RequestParam("tags") Set<String> tags,
-            @RequestParam(name = "last_update", required = false) OffsetDateTime fromLastUpdateDate, final Pageable pageable) {
+            @RequestParam(name = "last_update", required = false) OffsetDateTime fromLastUpdateDate,
+            final Pageable pageable) {
         Page<AipDataFiles> aipDataFiles = aipService.retrieveAipDataFiles(state, tags, fromLastUpdateDate, pageable);
         return new ResponseEntity<>(aipDataFiles, HttpStatus.OK);
     }
@@ -230,7 +233,7 @@ public class AIPController implements IResourceController<AIP> {
     @ResponseBody
     @ResourceAccess(description = "Retry to store given aip, threw its ip id")
     public ResponseEntity<RejectedAip> storeRetryUnit(@PathVariable("ip_id") String ipId) throws ModuleException {
-        //we ask for one AIP to be stored, so we can only have one rejected aip in counter part
+        // we ask for one AIP to be stored, so we can only have one rejected aip in counter part
         ResponseEntity<List<RejectedAip>> listResponse = storeRetry(Sets.newHashSet(ipId));
         if (listResponse.getBody().isEmpty()) {
             return new ResponseEntity<>(listResponse.getStatusCode());
@@ -249,16 +252,16 @@ public class AIPController implements IResourceController<AIP> {
     @ResponseBody
     @ResourceAccess(description = "validate and storeAndCreate the specified AIP")
     public ResponseEntity<List<RejectedAip>> store(@RequestBody AIPCollection aips) throws ModuleException {
-        //lets validate the inputs and get those in error
+        // lets validate the inputs and get those in error
         List<RejectedAip> rejectedAips = aipService.applyCreationChecks(aips);
-        //if there is some errors, lets handle the issues
+        // if there is some errors, lets handle the issues
         if (!rejectedAips.isEmpty()) {
-            //now lets remove the inputs in error from aips to store
+            // now lets remove the inputs in error from aips to store
             Set<String> rejectedIpIds = rejectedAips.stream().map(ra -> ra.getIpId()).collect(Collectors.toSet());
             Set<AIP> aipNotToBeStored = aips.getFeatures().stream()
                     .filter(aip -> rejectedIpIds.contains(aip.getId().toString())).collect(Collectors.toSet());
             aips.getFeatures().removeAll(aipNotToBeStored);
-            //if there is nothing more to be stored, UNPROCESABLE ENTITY
+            // if there is nothing more to be stored, UNPROCESABLE ENTITY
             if (aips.getFeatures().isEmpty()) {
                 return new ResponseEntity<>(rejectedAips, HttpStatus.UNPROCESSABLE_ENTITY);
             }
@@ -348,7 +351,7 @@ public class AIPController implements IResourceController<AIP> {
         if (aips.stream().map(aip -> aip.getId().toString()).collect(Collectors.toSet()).containsAll(ipIds)) {
             return new ResponseEntity<>(aipCollection, HttpStatus.OK);
         } else {
-            //Otherwise, HttpStatus PARTIAL_CONTENT(206)
+            // Otherwise, HttpStatus PARTIAL_CONTENT(206)
             return new ResponseEntity<>(aipCollection, HttpStatus.PARTIAL_CONTENT);
         }
     }
@@ -495,22 +498,14 @@ public class AIPController implements IResourceController<AIP> {
     @Override
     public Resource<AIP> toResource(AIP pElement, Object... pExtras) {
         Resource<AIP> resource = resourceService.toResource(pElement);
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "retrieveAIPs",
-                                LinkRels.LIST,
-                                MethodParamFactory.build(AIPState.class),
-                                MethodParamFactory.build(OffsetDateTime.class),
-                                MethodParamFactory.build(OffsetDateTime.class));
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "retrieveAip",
-                                LinkRels.SELF,
+        resourceService
+                .addLink(resource, this.getClass(), "retrieveAIPs", LinkRels.LIST,
+                         MethodParamFactory.build(AIPState.class), MethodParamFactory.build(OffsetDateTime.class),
+                         MethodParamFactory.build(OffsetDateTime.class), MethodParamFactory.build(Pageable.class),
+                         MethodParamFactory.build(PagedResourcesAssembler.class));
+        resourceService.addLink(resource, this.getClass(), "retrieveAip", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "storeRetryUnit",
-                                "retry",
+        resourceService.addLink(resource, this.getClass(), "storeRetryUnit", "retry",
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
         return resource;
     }
