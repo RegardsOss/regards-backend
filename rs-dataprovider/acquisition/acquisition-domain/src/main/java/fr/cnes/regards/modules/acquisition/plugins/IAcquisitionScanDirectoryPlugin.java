@@ -18,12 +18,15 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
+ * {@link Plugin} to scan data file in folders.
+ * 
  * @author Christophe Mertz
  *
  */
-@PluginInterface(description = "Plugin to detect file to acquire in some directories")
+@PluginInterface(description = "Plugin to detect file to acquire in folders")
 public interface IAcquisitionScanDirectoryPlugin extends IAcquisitionScanPlugin {
 }

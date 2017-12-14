@@ -19,18 +19,30 @@
 
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
+import java.io.File;
+import java.io.IOException;
+import java.time.OffsetDateTime;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
 
 /**
- * A default {@link Plugin} of type {@link IPostProcessSipPlugin}.
+ * A {@link Plugin} of type {@link IPostProcessSipPlugin}.<br>
+ * The original file is deleted from the input folder.<br>
+ * An acknowledgement of succesful completion of SIP saved by the ingest microservice can be created.<br>
+ * For this three optional parameters can be used:<br>
+ * <li> createAck : <code>true</code> if the acknowledgement should be created. The default value is <b><code>false</code></b>.
+ * <li> folderAck : the sub folder where the acknowledgement is created. The default value is <b>ack_regards</b>.
+ * <li> extensionAck : the extension added to the data file to create the acknowledgement file. The default value is <b>.regards</b>. 
+ * 
  *
  * @author Christophe Mertz
  */
@@ -39,7 +51,37 @@ import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
         url = "https://github.com/RegardsOss")
 public class CleanOriginalFilePostPlugin implements IPostProcessSipPlugin {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(CleanOriginalFilePostPlugin.class);
+
+    /**
+     * A constant for the {@link Plugin} parameter  {@link CleanOriginalFilePostPlugin#createAck} 
+     */
+    public static final String CREATE_ACK_PARAM = "createAck";
+
+    /**
+     * A constant for the {@link Plugin} parameter {@link CleanOriginalFilePostPlugin#folderAck}
+     */
+    public static final String FOLDER_ACK_PARAM = "folderAck";
+
+    /**
+     * A constant for the {@link Plugin} parameter {@link CleanOriginalFilePostPlugin#extensionAck}
+     */
+    public static final String EXTENSION_ACK_PARAM = "extensionAck";
+
+    @PluginParameter(label = "An acknowledgement of succesful completion of SIP saved by the ingest microservice",
+            defaultValue = "false", optional = true)
+    public Boolean createAck;
+
+    @PluginParameter(label = "The sub folder where the acknowledgement is created", defaultValue = "ack_regards",
+            optional = true)
+    public String folderAck;
+
+    @PluginParameter(label = "The extension added to the data file to create the acknowledgement file",
+            defaultValue = ".regards", optional = true)
+    public String extensionAck;
 
     @Override
     public void runPlugin(Product product, AcquisitionProcessingChain chain) throws ModuleException {
@@ -47,12 +89,40 @@ public class CleanOriginalFilePostPlugin implements IPostProcessSipPlugin {
 
         if (product.getMetaProduct().getCleanOriginalFile()) {
             for (AcquisitionFile acqFile : product.getAcquisitionFile()) {
+
+                createAck(acqFile);
+
                 acqFile.getFile().delete();
                 LOGGER.debug("[{}] The file {} has been deleted", chain.getSession(), acqFile.getFileName());
             }
         }
 
         LOGGER.info("[{}] End  post processing for the product : {}", chain.getSession(), product.getProductName());
+    }
+
+    /**
+     * Create 
+     * @param acqFile
+     */
+    private void createAck(AcquisitionFile acqFile) {
+        if (!createAck) {
+            return;
+        }
+
+        final File acqRepository = new File(acqFile.getFile().getParentFile(), folderAck);
+        final File ackFile = new File(acqRepository, acqFile.getFileName() + extensionAck);
+
+        if (!ackFile.getParentFile().exists()) {
+            ackFile.mkdirs();
+        }
+        try {
+            if (!ackFile.createNewFile()) {
+                ackFile.setLastModified(OffsetDateTime.now().toInstant().getEpochSecond());
+            }
+        } catch (IOException e) {
+            LOGGER.error("error");
+        }
+
     }
 
 }

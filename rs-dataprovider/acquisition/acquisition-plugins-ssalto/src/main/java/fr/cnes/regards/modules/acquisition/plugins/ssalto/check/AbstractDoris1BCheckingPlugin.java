@@ -40,6 +40,11 @@ public abstract class AbstractDoris1BCheckingPlugin implements ICheckFilePlugin 
     protected String productName;
 
     /**
+     * {@link Map} of {@link Dataset} name prefixes
+     */
+    protected Map<String, String> prefixMap = null;
+
+    /**
      * The prefix "MOE_CDDIS_"
      */
     public static final String PREFIX_MOE_CDDIS = "MOE_CDDIS_";
@@ -58,11 +63,6 @@ public abstract class AbstractDoris1BCheckingPlugin implements ICheckFilePlugin 
      * Initialize the {@link Map} for the association {@link Dataset} name, prefix.
      */
     public abstract void initPrefixMap();
-
-    /**
-     * {@link Map} of {@link Dataset} name prefixes
-     */
-    protected Map<String, String> prefixMap = null;
 
     @Override
     public boolean runPlugin(File fileToCheck, String datasetId) throws ModuleException {

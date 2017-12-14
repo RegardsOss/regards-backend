@@ -171,10 +171,6 @@ public class AcquisitionProductsSsaltoIT {
 
     protected Set<UUID> faileds;
 
-    //    private AcquisitionProcessingChain chainJason2Igdr;
-    //
-    //    private AcquisitionProcessingChain chainSpot2Doris1b;
-
     @Rule
     public TestName name = new TestName();
 

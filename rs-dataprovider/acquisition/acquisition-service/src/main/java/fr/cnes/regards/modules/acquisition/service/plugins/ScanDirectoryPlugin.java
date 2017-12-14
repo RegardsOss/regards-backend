@@ -37,7 +37,8 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 
 /**
- * A default {@link Plugin} of type {@link IAcquisitionScanDirectoryPlugin}.
+ * A {@link Plugin} of type {@link IAcquisitionScanDirectoryPlugin}.<br>
+ * This {@link Plugin} scan the {@link MetaFile} for one {@link MetaProduct}.
  *
  * @author Christophe Mertz
  */

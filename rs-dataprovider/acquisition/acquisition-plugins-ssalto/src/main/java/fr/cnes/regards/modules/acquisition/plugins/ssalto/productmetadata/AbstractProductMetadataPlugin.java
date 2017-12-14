@@ -177,9 +177,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
         return attributeMap;
     }
 
-    public void logAttributeMap(SortedMap<Integer, Attribute> mapAttrs) throws ModuleException {
-    }
-
     /**
      * parse le fichier de configuration pour remplir les properties, et initialise la map de l'ordre des attributs.
      *
