@@ -47,6 +47,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
@@ -239,6 +241,25 @@ public class PluginConfiguration implements IIdentifiable<Long> {
                     .filter(s -> s.getName().equals(pParameterName)).findFirst();
             if (pluginParameter.isPresent()) {
                 value = pluginParameter.get().getValue();
+            }
+        }
+        return value;
+    }
+
+    /**
+     * @param parameterName the parameter to get the value
+     * @return the stripped value (no enclosing quotes)
+     */
+    public String getStripParameterValue(String parameterName) {
+        // Strip quotes using Gson
+        Gson gson = new Gson();
+        String value = null;
+        if (parameters != null) {
+            Optional<PluginParameter> pluginParameter = parameters.stream()
+                    .filter(s -> s.getName().equals(parameterName)).findFirst();
+            if (pluginParameter.isPresent()) {
+                JsonElement el = gson.fromJson(pluginParameter.get().getValue(), JsonElement.class);
+                value = el == null ? null : el.getAsString();
             }
         }
         return value;
