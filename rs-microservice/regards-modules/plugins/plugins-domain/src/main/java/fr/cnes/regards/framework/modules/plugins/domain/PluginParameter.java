@@ -95,17 +95,23 @@ public class PluginParameter implements IIdentifiable<Long> {
     private Set<PluginDynamicValue> dynamicsValues = new HashSet<>();
 
     /**
-     * Default constructor
+     * Needed for deserialization
      */
     public PluginParameter() {
-        super();
-        name = "undefined";
+        // Nothing to do
     }
 
+    /**
+     * Do not use this constructor for manipulating plugin parameter. <br/>
+     * <b>Use PluginParameterFactory to create parameters.</b>
+     * @param name parameter name
+     * @param value JSON normalized parameter value
+     */
     public PluginParameter(String name, String value) {
-        super();
         this.name = name;
-        this.value = PluginParameterValue.create(value);
+        if (value != null) {
+            this.value = PluginParameterValue.create(value);
+        }
     }
 
     /**
@@ -173,6 +179,11 @@ public class PluginParameter implements IIdentifiable<Long> {
         return value == null ? null : value.getValue();
     }
 
+    /**
+     * Do not use this setter for updating plugin parameter value. <br/>
+     * <b>Use PluginParameterFactory update method.</b>
+     * @param value JSON normalized parameter value
+     */
     public void setValue(String value) {
         if (value != null) {
             this.value = PluginParameterValue.create(value);

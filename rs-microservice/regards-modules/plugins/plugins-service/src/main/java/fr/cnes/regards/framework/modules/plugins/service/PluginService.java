@@ -60,6 +60,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginServiceAction;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginInterfaceUtils;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 
@@ -667,16 +668,11 @@ public class PluginService implements IPluginService {
                     "Automatic plugin configuration for plugin id : " + pluginId);
             pluginConfiguration.setPluginId(pluginId);
 
-            List<PluginParameter> plgParams = new ArrayList<>();
+            PluginParametersFactory ppf = PluginParametersFactory.build();
             for (PluginParameterType param : aPlgMetaData.get().getParameters()) {
-                PluginParameter plgParam = new PluginParameter(param.getName(), param.getDefaultValue());
-                plgParam.setName(param.getName());
-                plgParam.setValue(param.getDefaultValue());
-                // FIXME bizarre! lien entre dynamic et optional?
-                plgParam.setIsDynamic(param.isOptional());
-                plgParams.add(plgParam);
+                ppf.addDynamicParameter(param.getName(), param.getDefaultValue());
             }
-            pluginConfiguration.setParameters(plgParams);
+            pluginConfiguration.setParameters(ppf.getParameters());
 
             return this.savePluginConfiguration(pluginConfiguration);
         } else {

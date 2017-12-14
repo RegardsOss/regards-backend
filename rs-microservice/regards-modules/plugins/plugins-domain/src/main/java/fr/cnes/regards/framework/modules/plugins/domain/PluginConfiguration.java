@@ -271,21 +271,6 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     }
 
     /**
-     * Change the value of the parameter which name is pParameterName if and only if such parameter exists and is
-     * dynamic
-     *
-     * @param pParameterName Name of the parameter whose value should be setted
-     * @param pValue value to be setted
-     */
-    public final void setParameterDynamicValue(String pParameterName, String pValue) {
-        Optional<PluginParameter> parameter = parameters.stream()
-                .filter(p -> p.getName().equals(pParameterName) && p.isDynamic()).findFirst();
-        if (parameter.isPresent()) {
-            parameter.get().setValue(pValue);
-        }
-    }
-
-    /**
      * Return the {@link PluginParameter} of a specific parameter
      *
      * @param pParameterName the parameter to get the value

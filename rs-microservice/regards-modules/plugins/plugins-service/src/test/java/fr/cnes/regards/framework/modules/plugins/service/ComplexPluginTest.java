@@ -26,15 +26,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 
 /**
  *
@@ -74,7 +72,7 @@ public class ComplexPluginTest {
 
         Long pPluginConfigurationId = 10L;
 
-        List<PluginParameter> dynParameters = new ArrayList<PluginParameter>();
+        PluginParametersFactory ppf = PluginParametersFactory.build();
 
         TestPojo pojo = new TestPojo();
         TestPojo2 pojo2 = new TestPojo2();
@@ -82,11 +80,11 @@ public class ComplexPluginTest {
         pojo.setPojoParam("string_value");
         pojo.setOtherPojoParam(pojo2);
 
-        dynParameters.add(new PluginParameter(TestPlugin.FIELD_NAME_POJO_PARAM, new Gson().toJson(pojo)));
+        ppf.addDynamicParameter(TestPlugin.FIELD_NAME_POJO_PARAM, pojo);
 
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = new PluginConfiguration(result,
-                "a configuration from PluginServiceUtility", dynParameters, 0);
+                "a configuration from PluginServiceUtility", ppf.getParameters(), 0);
         aPluginConfiguration.setId(pPluginConfigurationId);
 
         pluginConfs.add(aPluginConfiguration);

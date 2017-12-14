@@ -86,6 +86,15 @@ public class PluginParametersFactory {
     }
 
     /**
+     * Update a parameter value
+     * @param parameter parameter to update
+     * @param value value to normalize
+     */
+    public static void updateParameter(PluginParameter parameter, Object value) {
+        parameter.setValue(normalize(value));
+    }
+
+    /**
      * Add a dynamic parameter
      * @param name the name parameter
      * @param value may be an {@link Object}, a {@link Collection} or a {@link Map}.
@@ -123,7 +132,7 @@ public class PluginParametersFactory {
      * @param value object
      * @return {@link String} value
      */
-    private String normalize(Object value) {
+    private static String normalize(Object value) {
         return PluginGsonUtils.getInstance().toJson(value);
     }
 

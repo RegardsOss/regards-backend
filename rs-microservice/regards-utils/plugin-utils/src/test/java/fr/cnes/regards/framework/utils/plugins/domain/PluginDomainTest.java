@@ -2,15 +2,12 @@ package fr.cnes.regards.framework.utils.plugins.domain;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginDynamicValue;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
@@ -85,8 +82,8 @@ public class PluginDomainTest extends PluginDomainUtility {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         final String parameterName = "paramWithPluginConf1";
         final List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addPluginConfiguration(parameterName, aPluginConfiguration)
-                .addParameter("paramIdentifier1", BLUE).getParameters();
+                .addPluginConfiguration(parameterName, aPluginConfiguration).addParameter("paramIdentifier1", BLUE)
+                .getParameters();
         parameters.get(0).setId(AN_ID);
 
         final PluginConfiguration pluginConfigurationParameter = new PluginConfiguration();
@@ -119,8 +116,8 @@ public class PluginDomainTest extends PluginDomainUtility {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         final String parameterName = "paramWithPluginConf2";
         final List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addPluginConfiguration(parameterName, aPluginConfiguration)
-                .addParameter("paramIdentifier2", BLUE).getParameters();
+                .addPluginConfiguration(parameterName, aPluginConfiguration).addParameter("paramIdentifier2", BLUE)
+                .getParameters();
         parameters.get(0).setId(AN_ID);
 
         final PluginConfiguration pluginConfigurationParameter = new PluginConfiguration();
@@ -163,39 +160,4 @@ public class PluginDomainTest extends PluginDomainUtility {
         Assert.assertEquals(aDescription, plgMetaData.getDescription());
         Assert.assertEquals(parameters, plgMetaData.getParameters());
     }
-
-    /**
-     * Test domain {@link PluginParameter}
-     */
-    @Test
-    public void pluginParameter() {
-        final PluginParameter plgParam = new PluginParameter();
-        plgParam.setName(RED);
-        plgParam.setValue(GREEN);
-        plgParam.setIsDynamic(Boolean.FALSE);
-
-        Assert.assertEquals(RED, plgParam.getName());
-        Assert.assertEquals(GREEN, plgParam.getValue());
-        Assert.assertEquals(false, plgParam.isDynamic().booleanValue());
-
-        // test dynamics==null
-        Assert.assertEquals(plgParam.getDynamicsValuesAsString().size(), 0);
-
-        // test dynamics!=null && dynamics.isEmpty
-        final Set<PluginDynamicValue> dynValues = new HashSet<>();
-        plgParam.setDynamicsValues(dynValues);
-        Assert.assertEquals(plgParam.getDynamicsValuesAsString().size(), dynValues.size());
-
-        dynValues.add(new PluginDynamicValue(BLUE));
-        dynValues.add(new PluginDynamicValue(GREEN));
-        final PluginDynamicValue plgDynValue = new PluginDynamicValue();
-        plgDynValue.setValue(BLUE);
-        dynValues.add(plgDynValue);
-
-        plgParam.setDynamicsValues(dynValues);
-
-        Assert.assertEquals(plgParam.getDynamicsValues().size(), dynValues.size());
-        Assert.assertEquals(plgParam.getDynamicsValuesAsString().size(), dynValues.size());
-    }
-
 }
