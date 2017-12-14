@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.notification.domain.dto;
 
-import java.util.List;
+import java.util.Set;
 
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
 
@@ -37,18 +36,18 @@ public class NotificationDTO {
     private String message;
 
     /**
-     * The recipients as project user's logins
+     * The recipients as project user's emails
      */
-    private List<String> projectUserRecipients;
+    private Set<String> projectUserRecipients;
 
     /**
      * The recipients as role names
      */
-    private List<String> roleRecipients;
+    private Set<String> roleRecipients;
 
     /**
      * The notification sender<br>
-     * {@link ProjectUser} <code>login</code> or microservice name as a permissive String
+     * project user <code>email</code> or microservice name as a permissive String
      */
     private String sender;
 
@@ -77,7 +76,7 @@ public class NotificationDTO {
      * @param title notification title
      * @param type notification type
      */
-    public NotificationDTO(String message, List<String> projectUserRecipients, List<String> roleRecipients,
+    public NotificationDTO(String message, Set<String> projectUserRecipients, Set<String> roleRecipients,
             String sender, String title, NotificationType type) {
         this.message = message;
         this.projectUserRecipients = projectUserRecipients;
@@ -105,7 +104,7 @@ public class NotificationDTO {
     /**
      * @return the projectUserRecipients
      */
-    public List<String> getProjectUserRecipients() {
+    public Set<String> getProjectUserRecipients() {
         return projectUserRecipients;
     }
 
@@ -113,14 +112,14 @@ public class NotificationDTO {
      * @param pProjectUserRecipients
      *            the projectUserRecipients to set
      */
-    public void setProjectUserRecipients(final List<String> pProjectUserRecipients) {
+    public void setProjectUserRecipients(final Set<String> pProjectUserRecipients) {
         projectUserRecipients = pProjectUserRecipients;
     }
 
     /**
      * @return the roleRecipients
      */
-    public List<String> getRoleRecipients() {
+    public Set<String> getRoleRecipients() {
         return roleRecipients;
     }
 
@@ -128,7 +127,7 @@ public class NotificationDTO {
      * @param pRoleRecipients
      *            the roleRecipients to set
      */
-    public void setRoleRecipients(final List<String> pRoleRecipients) {
+    public void setRoleRecipients(final Set<String> pRoleRecipients) {
         roleRecipients = pRoleRecipients;
     }
 

@@ -17,6 +17,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -24,10 +25,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
@@ -47,12 +46,6 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IRoleService roleService;
-
-    @Autowired
-    private IProjectUserRepository projectUserRepository;
-
-    @Autowired
     private IProjectUsersClient projectUsersClient;
 
     @Override
@@ -64,15 +57,12 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
     @Commit
     public void testCreateNotification() throws EntityNotFoundException {
         String roleName = DefaultRole.PROJECT_ADMIN.name();
-        Role pa = roleService.retrieveRole(roleName);
-        ProjectUser pu = projectUserRepository
-                .save(new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList()));
-        Mockito.when(projectUsersClient.retrieveRoleProjectUserList(pa.getId(), 0, 100))
+        ProjectUser pu = new ProjectUser("project.admin@test.fr", new Role(roleName), Lists.newArrayList(), Lists.newArrayList());
+        Mockito.when(projectUsersClient.retrieveRoleProjectUsersList(roleName, 0, 100))
                 .thenReturn(new ResponseEntity<>(HateoasUtils.wrapToPagedResources(
                         Lists.newArrayList(pu)), HttpStatus.OK));
-        NotificationDTO notif = new NotificationDTO("Lets test",
-                                                    Lists.newArrayList(),
-                                                    Lists.newArrayList(roleName),
+        NotificationDTO notif = new NotificationDTO("Lets test", Sets.newHashSet(),
+                                                    Sets.newHashSet(roleName),
                                                     "microservice",
                                                     "test", NotificationType.INFO);
 

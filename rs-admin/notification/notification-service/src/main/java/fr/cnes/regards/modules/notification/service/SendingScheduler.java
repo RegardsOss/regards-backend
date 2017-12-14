@@ -154,7 +154,7 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
                                                                         notificationSettingsService
                                                                                 .retrieveNotificationSettings(
                                                                                         projectUser))).filter(pFilter)
-                        .map(n -> n.getProjectUser().getEmail()).distinct().toArray(s -> new String[s]);
+                        .map(n -> n.getProjectUser()).distinct().toArray(s -> new String[s]);
 
                 // Send the notification to recipients
                 sendNotification(notification, recipients);
@@ -198,7 +198,7 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
     @Override
     public void onApplicationEvent(NotificationToSendEvent event) {
         Notification notif = event.getNotification();
-        String[] recipients = notificationService.findRecipients(notif).distinct().map(ProjectUser::getEmail)
+        String[] recipients = notificationService.findRecipients(notif).distinct()
                 .toArray(n -> new String[n]);
         sendNotification(notif, recipients);
     }

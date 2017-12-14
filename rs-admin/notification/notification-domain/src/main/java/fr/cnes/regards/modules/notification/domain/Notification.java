@@ -23,25 +23,18 @@ import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.SequenceGenerator;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
-import java.util.List;
+import java.util.Set;
 
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
  * Models a notification.<br>
@@ -76,33 +69,32 @@ public class Notification implements IIdentifiable<Long> {
     private String message;
 
     /**
-     * The {@link ProjectUser} recipients
+     * The project user recipients represented by their email
      */
     @NotNull
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "ta_notification_projectuser",
-            joinColumns = @JoinColumn(name = "notification_id", referencedColumnName = "id",
-                    foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_projectuser")),
-            inverseJoinColumns = @JoinColumn(name = "projectuser_id", referencedColumnName = "id",
-                    foreignKey = @javax.persistence.ForeignKey(name = "fk_projectuser_notification")))
-    private List<ProjectUser> projectUserRecipients;
+    //    @ManyToMany(fetch = FetchType.LAZY) FIXME
+    //    @JoinTable(name = "ta_notification_projectuser",
+    //            joinColumns = @JoinColumn(name = "notification_id", referencedColumnName = "id",
+    //                    foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_projectuser")),
+    //            inverseJoinColumns = @JoinColumn(name = "projectuser_id", referencedColumnName = "id",
+    //                    foreignKey = @javax.persistence.ForeignKey(name = "fk_projectuser_notification")))
+    private Set<String> projectUserRecipients;
 
     /**
-     * The {@link Role} recipients
+     * The role recipients represented by their name
      */
     @NotNull
-    @Valid
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "ta_notification_role",
-            joinColumns = @JoinColumn(name = "notification_id", referencedColumnName = "id",
-                    foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_role")),
-            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id",
-                    foreignKey = @javax.persistence.ForeignKey(name = "fk_role_notification")))
-    private List<Role> roleRecipients;
+    //    @ManyToMany(fetch = FetchType.LAZY) FIXME
+    //    @JoinTable(name = "ta_notification_role",
+    //            joinColumns = @JoinColumn(name = "notification_id", referencedColumnName = "id",
+    //                    foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_role")),
+    //            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id",
+    //                    foreignKey = @javax.persistence.ForeignKey(name = "fk_role_notification")))
+    private Set<String> roleRecipients;
 
     /**
      * The notification sender<br>
-     * {@link ProjectUser} <code>login</code> or microservice name as a permissive String
+     * project user <code>email</code> or microservice name as a permissive String
      */
     @NotBlank
     @Column(name = "sender")
@@ -176,7 +168,7 @@ public class Notification implements IIdentifiable<Long> {
     /**
      * @return the projectUserRecipients
      */
-    public List<ProjectUser> getProjectUserRecipients() {
+    public Set<String> getProjectUserRecipients() {
         return projectUserRecipients;
     }
 
@@ -184,14 +176,14 @@ public class Notification implements IIdentifiable<Long> {
      * @param pProjectUserRecipients
      *            the projectUserRecipients to set
      */
-    public void setProjectUserRecipients(final List<ProjectUser> pProjectUserRecipients) {
+    public void setProjectUserRecipients(final Set<String> pProjectUserRecipients) {
         projectUserRecipients = pProjectUserRecipients;
     }
 
     /**
      * @return the roleRecipients
      */
-    public List<Role> getRoleRecipients() {
+    public Set<String> getRoleRecipients() {
         return roleRecipients;
     }
 
@@ -199,7 +191,7 @@ public class Notification implements IIdentifiable<Long> {
      * @param pRoleRecipients
      *            the roleRecipients to set
      */
-    public void setRoleRecipients(final List<Role> pRoleRecipients) {
+    public void setRoleRecipients(final Set<String> pRoleRecipients) {
         roleRecipients = pRoleRecipients;
     }
 

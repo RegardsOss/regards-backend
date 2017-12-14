@@ -43,7 +43,7 @@ public interface INotificationSettingsService {
     /**
      * Retrieve {@link NotificationSettings} for the given user if any. Create it otherwise.
      */
-    NotificationSettings retrieveNotificationSettings(ProjectUser projectUser);
+    NotificationSettings retrieveNotificationSettings(String userEmail);
 
     /**
      * Define the endpoint for updating the {@link Notification#status}

@@ -18,15 +18,13 @@
  */
 package fr.cnes.regards.modules.notification.domain;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,8 +33,6 @@ import org.junit.Test;
 
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
  * Validate getter/setters and JPA constraints on {@link Notification}.
@@ -75,12 +71,12 @@ public class NotificationTest {
     /**
      * Role recipients
      */
-    private static List<Role> roleRecipients;
+    private static Set<String> roleRecipients;
 
     /**
      * User recipients
      */
-    private static List<ProjectUser> projectUserRecipients;
+    private static Set<String> projectUserRecipients;
 
     /**
      * Sender
@@ -120,12 +116,12 @@ public class NotificationTest {
         notification.setStatus(STATUS);
         notification.setType(TYPE);
 
-        roleRecipients = new ArrayList<>();
-        roleRecipients.add(new Role(DefaultRole.PUBLIC.toString(), null));
+        roleRecipients = new HashSet<>();
+        roleRecipients.add(DefaultRole.PUBLIC.toString());
         notification.setRoleRecipients(roleRecipients);
 
-        projectUserRecipients = new ArrayList<>();
-        projectUserRecipients.add(new ProjectUser("user@email.com", null, new ArrayList<>(), new ArrayList<>()));
+        projectUserRecipients = new HashSet<>();
+        projectUserRecipients.add("user@email.com");
         notification.setProjectUserRecipients(projectUserRecipients);
 
         // Run the validator

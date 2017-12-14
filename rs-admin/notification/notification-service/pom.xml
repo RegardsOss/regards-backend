@@ -42,8 +42,8 @@
 			<artifactId>notification-dao</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.accessrights</groupId>
-			<artifactId>accessrights-service</artifactId>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-regards-starter</artifactId>
 		</dependency>
 		<!-- Module email -->
 		<dependency>

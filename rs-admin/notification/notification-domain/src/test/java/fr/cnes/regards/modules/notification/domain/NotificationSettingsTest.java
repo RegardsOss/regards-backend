@@ -33,7 +33,6 @@ import org.junit.Test;
 
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 /**
  * Validate getters/setters and hibernate constraints on {@link Notification}.
@@ -65,7 +64,7 @@ public class NotificationSettingsTest {
     /**
      * User
      */
-    private static ProjectUser user;
+    private static String user;
 
     /**
      * Self expl
@@ -96,15 +95,14 @@ public class NotificationSettingsTest {
      */
     @Before
     public void setUpNotification() {
-        user = new ProjectUser("user@email.com", null, new ArrayList<>(),
-                new ArrayList<>());
+        user = "user@email.com";
 
         settings = new NotificationSettings();
         settings.setId(ID);
         settings.setDays(DAYS);
         settings.setHours(HOURS);
         settings.setFrequency(FREQUENCY);
-        settings.setProjectUser(user);
+        settings.setProjectUserEmail(user);
 
         // Run the validator
         final Set<ConstraintViolation<NotificationSettings>> constraintViolations = validator.validate(settings);
@@ -124,7 +122,7 @@ public class NotificationSettingsTest {
         Assert.assertTrue(settings.getDays().equals(DAYS));
         Assert.assertTrue(settings.getHours().equals(HOURS));
         Assert.assertTrue(settings.getFrequency().equals(FREQUENCY));
-        Assert.assertTrue(settings.getProjectUser().equals(user));
+        Assert.assertTrue(settings.getProjectUserEmail().equals(user));
     }
 
     /**
@@ -169,7 +167,7 @@ public class NotificationSettingsTest {
     @Purpose("Check that the system fails when user is null.")
     public void userIsNull() {
         // Init the malformed object
-        settings.setProjectUser(null);
+        settings.setProjectUserEmail(null);
 
         // Run the validator
         final Set<ConstraintViolation<NotificationSettings>> constraintViolations = validator.validate(settings);

@@ -34,16 +34,17 @@
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-data-regards</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.accessrights</groupId>
-			<artifactId>accessrights-domain</artifactId>
+			<artifactId>jpa-commons-regards</artifactId>
 		</dependency>
 		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-regards</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

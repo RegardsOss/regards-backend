@@ -24,7 +24,6 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
 
@@ -40,11 +39,11 @@ public interface INotificationSettingsRepository extends JpaRepository<Notificat
     /**
      * Find the notification settings for the passed project user.
      *
-     * @param pProjectUser
-     *            The project user
+     * @param userEmail
+     *            The project user represented by its email
      * @return The found notification settings
      */
-    NotificationSettings findOneByProjectUser(ProjectUser pProjectUser);
+    NotificationSettings findOneByProjectUserEmail(String userEmail);
 
     /**
      * Retrieve all notification configuration parameters with passed frequency
