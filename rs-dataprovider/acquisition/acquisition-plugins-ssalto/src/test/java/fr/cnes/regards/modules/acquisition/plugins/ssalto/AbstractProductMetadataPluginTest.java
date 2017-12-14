@@ -366,20 +366,6 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         product.setStatus(ProductStatus.ACQUIRING);
         ssaltoFile.setProduct(product);
 
-        // TODO CMZ à confirmer
-        // archivingDirectory
-        //        FileArchivingInformations archInfos = new FileArchivingInformations();
-        //        LocalPhysicalLocation physLoc = new LocalPhysicalLocation();
-        //        PhysicalFile physFile = new PhysicalFile();
-        //        physFile.setArchivingDirectory(pFile.getParent());
-        //        physFile.setFileName(pFile.getName());
-        //        physLoc.setPhysicalFile(physFile);
-        //        archInfos.setLocalPhysicalLocation(physLoc);
-        //        ssaltoFile.setArchivingInformations(archInfos);
-        //        ssaltoFile.setStatus(AcquisitionFileStatus.VALID);
-        //        LocalArchiveAdapter adapter = new LocalArchiveAdapter();
-        //        adapter.setProcessWorkingDirectory(System.getProperty("user.dir") + File.separator);
-        //        adapter.setDataFolder(System.getProperty("user.dir") + File.separator);
         return ssaltoFile;
     }
 
@@ -645,19 +631,6 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
                         acqFile.getFileName());
                 fileMap.put(newFile, originalFile);
             }
-
-            // TODO CMZ à confirmer que la condition du if est toujours VRAI
-            //            else if ((ssaltoFile.getStatus().equals(AcquisitionFileStatus.ACQUIRED))
-            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.TO_ARCHIVE))
-            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.ARCHIVED))
-            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.TAR_CURRENT))
-            //                    || (ssaltoFile.getStatus().equals(AcquisitionFileStatus.IN_CATALOGUE))) {
-            //                File newFile = new File(
-            //                        LocalArchive.getInstance().getDataFolder() + "/" + ssaltoFile.getArchivingInformations()
-            //                                .getLocalPhysicalLocation().getPhysicalFile().getArchivingDirectory(),
-            //                        ssaltoFile.getFileName());
-            //                fileMap.put(newFile, originalFile);
-            //            }
         }
 
         return fileMap;

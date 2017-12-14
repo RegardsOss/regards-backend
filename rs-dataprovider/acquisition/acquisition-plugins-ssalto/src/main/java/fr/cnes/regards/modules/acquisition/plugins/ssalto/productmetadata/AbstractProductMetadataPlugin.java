@@ -196,7 +196,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
 
         // Getting conf file from project configured directory
         String pluginConfDirectory = getPluginsRepositoryProperties().getPluginConfFilesDir();
-        // TODO CMZ à virer : String pluginConfDirectory = pluginsRepositoryProperties.getPluginConfFilesDir();
         File pluginConfFile = new File(pluginConfDirectory, dataSetName + CONFIG_FILE_SUFFIX);
         URL confFile = null;
 

@@ -23,7 +23,7 @@ package fr.cnes.regards.modules.acquisition.tools;
  * @author Christophe Mertz
  *
  */
-public class CalculusTypeEnum {
+public final class CalculusTypeEnum {
 
     private final String name;
 

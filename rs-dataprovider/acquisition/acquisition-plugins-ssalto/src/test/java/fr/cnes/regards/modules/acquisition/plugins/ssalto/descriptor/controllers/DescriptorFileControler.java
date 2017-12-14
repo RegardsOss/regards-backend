@@ -36,8 +36,6 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.EntityDescr
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.EntityDescriptorElement.ElementType;
 
 /**
- * TODO CMZ à supprimer DescriptorFileControler
- * 
  * represente un fichier descripteur
  * 
  * @author Christophe Mertz
@@ -109,7 +107,7 @@ public class DescriptorFileControler implements IDescriptorFileControler<Descrip
      * @param elementList
      * @return
      */
-    public static synchronized  DocumentImpl buildDocument(DescriptorFile pDescriptorFile,
+    public static synchronized DocumentImpl buildDocument(DescriptorFile pDescriptorFile,
             List<EntityDescriptorElement> elementList) {
         // Build document
         DocumentImpl newDoc = null;
@@ -140,7 +138,7 @@ public class DescriptorFileControler implements IDescriptorFileControler<Descrip
      * 
      * @return une liste de <code>DocumentImpl</code>
      */
-    public static synchronized  List<DocumentImpl> getDescDocumentList(DescriptorFile pDescriptorFile) {
+    public static synchronized List<DocumentImpl> getDescDocumentList(DescriptorFile pDescriptorFile) {
         ArrayList<DocumentImpl> descDocumentList = new ArrayList<>();
 
         // Loop through the blocks to add all blocks data storage objects
@@ -177,7 +175,7 @@ public class DescriptorFileControler implements IDescriptorFileControler<Descrip
      * 
      * @return une liste de <code>DocumentImpl</code>
      */
-    public static synchronized  List<DocumentImpl> getUpdateDocumentList(DescriptorFile pDescriptorFile) {
+    public static synchronized List<DocumentImpl> getUpdateDocumentList(DescriptorFile pDescriptorFile) {
         List<DocumentImpl> updateDocumentList = new ArrayList<>();
 
         // Loop through the blocks to add all blocks data storage objects
@@ -328,14 +326,5 @@ public class DescriptorFileControler implements IDescriptorFileControler<Descrip
                 updateElementMap.remove(entityId);
             }
         }
-    }
-
-    /**
-     * renvoie tous les elements dans lequel un des attributs contient entityId
-     * 
-     * @since 1.0
-     */
-    public void getElementsForEntity(String pEntityId) {
-        // TODO PHC IMPLEMENTER
     }
 }

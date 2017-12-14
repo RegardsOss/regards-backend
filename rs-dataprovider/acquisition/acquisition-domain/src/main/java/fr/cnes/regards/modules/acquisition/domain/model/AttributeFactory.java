@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
  * @author Christophe Mertz
  *
  */
-public class AttributeFactory {
+public final class AttributeFactory {
 
     /**
      * Class logger

@@ -49,21 +49,12 @@ public class DataObjectDescriptionElementControler extends DataObjectElementCont
         DataObjectDescriptionElement dataObjectDescriptionElement = (DataObjectDescriptionElement) pEntityDescriptorElement;
         Element doDescriptorElement = null;
 
-        //        try {
         doDescriptorElement = pNewDoc.createElement("DATA_OBJECT_DESCRIPTION_SSALTO");
-        // TODO CMZ à confirmer DATA_OBJECT_DESCRIPTION_SSALTO ne devrait pas être en dur
-        //                .createElement(DescConfiguration.getInstance().getProperties().getDataObjectDescriptionNode());
         doDescriptorElement.setAttribute(ENTITY_TYPE, "DATA_OBJECT_DESCRIPTION");
-        //                .setAttribute(ENTITY_TYPE,
-        //                              DescConfiguration.getInstance().getProperties().getDataObjectDescriptionType());
         Element identifierElement = pNewDoc.createElement(DATA_OBJECT_IDENTIFIER);
         identifierElement.appendChild(pNewDoc.createTextNode(dataObjectDescriptionElement.getDataObjectIdentifier()));
         doDescriptorElement.appendChild(identifierElement);
         buildElement(dataObjectDescriptionElement, doDescriptorElement, pNewDoc);
-        //        }
-        //        catch (SsaltoDomainException e) {
-        //            LOGGER.error(e.getMessage());
-        //        }
 
         return doDescriptorElement;
     }

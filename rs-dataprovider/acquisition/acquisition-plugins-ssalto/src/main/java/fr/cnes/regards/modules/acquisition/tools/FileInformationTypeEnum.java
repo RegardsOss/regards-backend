@@ -23,7 +23,7 @@ package fr.cnes.regards.modules.acquisition.tools;
  * @author Christophe Mertz
  *
  */
-public class FileInformationTypeEnum {
+public final class FileInformationTypeEnum {
 
     private final String name;
 

@@ -101,8 +101,8 @@ public class CleanOriginalFilePostPlugin implements IPostProcessSipPlugin {
     }
 
     /**
-     * Create 
-     * @param acqFile
+     * Create the acknowledgement for an {@link AcquisitionFile}
+     * @param acqFile the current {@link AcquisitionFile}
      */
     private void createAck(AcquisitionFile acqFile) {
         if (!createAck) {
@@ -120,7 +120,7 @@ public class CleanOriginalFilePostPlugin implements IPostProcessSipPlugin {
                 ackFile.setLastModified(OffsetDateTime.now().toInstant().getEpochSecond());
             }
         } catch (IOException e) {
-            LOGGER.error("error");
+            LOGGER.error("Unable to create acknowledgement file", e);
         }
 
     }

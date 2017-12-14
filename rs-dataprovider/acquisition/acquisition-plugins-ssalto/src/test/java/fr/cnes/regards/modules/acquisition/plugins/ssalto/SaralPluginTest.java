@@ -92,7 +92,7 @@ public class SaralPluginTest extends AbstractProductMetadataPluginTest {
         addPluginTestDef("DA_TC_SARAL_FREQAJ_BALPUB", "COMMUN/BALISES_PUBLIQUES/FA",
                          "SRL_FBP_AXXCNE20080919_075700_20080920_044831_20080923_235921");
 
-        // TODO : Pas de données de test
+        // no data available
         // addPluginTestDef("DA_TC_SARAL_BDR_ALTIKA", "COMMUN/BALISES_PUBLIQUES/FA");
         // addPluginTestDef("DA_TC_SARAL_LOGVOL_ALTIKA", "SARAL/IGDR");
         // addPluginTestDef("DA_TC_SARAL_LOGVOL_ICU", "SARAL/EXPERT_ALTIKA");
