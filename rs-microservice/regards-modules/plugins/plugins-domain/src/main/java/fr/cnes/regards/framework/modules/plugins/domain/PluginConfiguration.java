@@ -19,11 +19,6 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
-import java.net.URL;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -40,6 +35,10 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
+import java.net.URL;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
@@ -49,7 +48,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
@@ -261,7 +259,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
                 String tmp = pluginParameter.get().getValue();
                 if (tmp.startsWith("\"")) {
                     JsonElement el = gson.fromJson(pluginParameter.get().getValue(), JsonElement.class);
-                    value = el == null ? null : el.getAsString();
+                    value = (el == null) ? null : el.getAsString();
                 } else {
                     value = tmp;
                 }
