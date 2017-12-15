@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
@@ -82,7 +83,7 @@ public class ProjectServiceTest {
 
         // use a stub repository, to be able to only test the service
         final IProjectRepository projectRepoStub = new ProjectRepositoryStub();
-        projectService = new ProjectService(projectRepoStub, new MultitenantDaoProperties(),
+        projectService = new ProjectService(projectRepoStub, Mockito.mock(ITenantResolver.class),
                 Mockito.mock(IInstancePublisher.class));
 
         projectRepoStub.save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));

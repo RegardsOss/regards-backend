@@ -32,12 +32,11 @@ import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.event.tenant.TenantCreatedEvent;
 import fr.cnes.regards.framework.amqp.event.tenant.TenantDeletedEvent;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
-import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
-import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 
@@ -65,10 +64,7 @@ public class ProjectService implements IProjectService {
      */
     private final IProjectRepository projectRepository;
 
-    /**
-     * JPA Multitenants default configuration from properties file.
-     */
-    private final MultitenantDaoProperties defaultProperties;
+    private final ITenantResolver tenantResolver;
 
     /**
      * AMQP message publisher
@@ -82,23 +78,23 @@ public class ProjectService implements IProjectService {
      *            The JPA repository.
      */
     public ProjectService(final IProjectRepository pProjectRepository,
-            final MultitenantDaoProperties pDefaultProperties, IInstancePublisher instancePublisher) {
+            final ITenantResolver tenantResolver, IInstancePublisher instancePublisher) {
         super();
         projectRepository = pProjectRepository;
-        defaultProperties = pDefaultProperties;
+        this.tenantResolver = tenantResolver;
         this.instancePublisher = instancePublisher;
     }
 
     @PostConstruct
     public void projectsInitialization() throws ModuleException {
-
-        // Create project from properties files it does not exists yet
-        for (final TenantConnection tenant : defaultProperties.getTenants()) {
-            if (projectRepository.findOneByNameIgnoreCase(tenant.getTenant()) == null) {
+        // Before creating projects, lets see if we need to initialize them by checking if any project already exists
+        List<Project> projects = projectRepository.findAll();
+        if(projects.isEmpty()) {
+            for(String tenant : tenantResolver.getAllTenants()) {
                 LOG.info(String.format("Creating new project %s from static properties configuration",
-                                       tenant.getTenant()));
-                Project project=new Project("", "", true, tenant.getTenant());
-                project.setLabel(tenant.getTenant());
+                                       tenant));
+                Project project=new Project("", "", true, tenant);
+                project.setLabel(tenant);
                 project.setAccessible(true);
                 createProject(project);
             }

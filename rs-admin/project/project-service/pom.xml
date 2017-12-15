@@ -47,13 +47,9 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards</artifactId>
+			<artifactId>multitenant-regards-starter</artifactId>
 		</dependency>
 		<!-- Microservice internal dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.modules.project</groupId>
-			<artifactId>project-domain</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-dao</artifactId>
