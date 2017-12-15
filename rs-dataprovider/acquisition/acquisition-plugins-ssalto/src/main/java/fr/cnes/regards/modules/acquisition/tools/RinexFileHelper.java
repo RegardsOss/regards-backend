@@ -40,6 +40,9 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
  */
 public class RinexFileHelper {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(RinexFileHelper.class);
 
     /**
@@ -48,7 +51,7 @@ public class RinexFileHelper {
     private static final String EMPTY_STRING = "";
 
     /**
-     * fichier a lire, est initialise dans le constructeur
+     * Fichier a lire, est initialise dans le constructeur
      */
     private File currentFile;
 
@@ -58,7 +61,7 @@ public class RinexFileHelper {
     private static final String MEASURE_BLOC_DATE_LINE_PATTERN = "\\s+([0-9]{2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\s+([0-9]{1,2})\\.([0-9]{7})(.)*";
 
     /**
-     * constructeur par defaut
+     * Constructeur par defaut
      *
      * @param fileName
      */
@@ -67,7 +70,7 @@ public class RinexFileHelper {
     }
 
     /**
-     * constructeur
+     * Constructeur
      *
      * @param aFile
      *
@@ -77,8 +80,7 @@ public class RinexFileHelper {
     }
 
     /**
-     * renvoie la chaine de caractere recuperee a la ligne pLineNumber dans le groupe de capture pCatchGroup du filePattern
-     * pPattern.
+     * Renvoie la chaine de caractere recuperee a la ligne lineNumber dans le groupe de capture catchGroup du filePattern pattern.
      *
      * @param lineNumber
      *            Si 0 ou -1 = Recherche de la ligne a partir d'un filePattern
@@ -86,7 +88,7 @@ public class RinexFileHelper {
      *            Si >0 = Recherche de la ligne x dans le fichier
      * @param pattern
      * @param catchGroup
-     * @return
+     * @return la chaine trouvée
      * @throws PluginAcquisitionException
      *             if get line return an empty {@link String}
      */
@@ -146,10 +148,10 @@ public class RinexFileHelper {
     }
 
     /**
-     * retourne ligne dont le numero est pLineNumber.
-     * Si la fin du fichier est atteinte avant d'arriver a pLineNumber, alors la valeur "" est renvoyee
-     * Si pLineNumber=-2, alors on renvoie la derniere ligne
-     * Les valeurs de pLineNumber = 0 et -1 sont a exclure de cette methode car la recherche de la ligne se fait d'apres un filePattern
+     * Retourne ligne dont le numero est lineNumber.
+     * Si la fin du fichier est atteinte avant d'arriver a lineNumber, alors la valeur "" est renvoyee
+     * Si lineNumber=-2, alors on renvoie la derniere ligne
+     * Les valeurs de lineNumber = 0 et -1 sont a exclure de cette methode car la recherche de la ligne se fait d'apres un filePattern
      *
      * @param lineNumber
      *            le numero de la ligne a renvoyer
@@ -202,7 +204,7 @@ public class RinexFileHelper {
     }
 
     /**
-     * renvoie l'interval de date correspondant au min et max des dates des blocs de mesure.
+     * Renvoie l'interval de date correspondant au min et max des dates des blocs de mesure.
      *
      * @return
      */
@@ -228,7 +230,7 @@ public class RinexFileHelper {
     }
 
     /**
-     * renvoie un date parsee par le Pattern de date de bloc.
+     * Renvoie une date parsee par le Pattern de date de bloc.
      *
      * @param matcher
      * @return date en milliseconds
@@ -244,7 +246,6 @@ public class RinexFileHelper {
     }
 
     public void releaseFile() {
-        currentFile = null;
     }
 
 }

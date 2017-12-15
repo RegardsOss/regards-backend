@@ -46,23 +46,23 @@ public class CNESJulianDate {
     }
 
     /**
-     * Transforme les jour Julien CNES en date.
+     * Transforme les jours Julien CNES en date.
      * 
-     * @param pJulianDays
-     * @param pSecondInDay
+     * @param julianDays
+     * @param secondInDay
      * @return
      */
-    public static Date toDate(Integer pJulianDays, Integer pSecondInDay) {
+    public static Date toDate(Integer julianDays, Integer secondInDay) {
 
         Calendar cal = getJulianCalendar();
 
         // Add number of days
-        if (pJulianDays != null) {
-            cal.add(Calendar.DATE, pJulianDays.intValue());
+        if (julianDays != null) {
+            cal.add(Calendar.DATE, julianDays.intValue());
         }
         // Add second in day
-        if (pSecondInDay != null) {
-            int seconds = pSecondInDay.intValue();
+        if (secondInDay != null) {
+            int seconds = secondInDay.intValue();
             // if seconds = 86400 then hour = 23:59:59 instead of 00:00:00 the
             // day after
             if (seconds == 86400) {
@@ -76,7 +76,7 @@ public class CNESJulianDate {
     }
 
     /**
-     * Transforme les jour Julien CNES en date.
+     * Transforme les jours Julien CNES en date.
      * 
      * @param pJulianDays
      * @param pSecondInDay
@@ -95,45 +95,45 @@ public class CNESJulianDate {
     }
 
     /**
-     * Transforme les jour Julien CNES en date.
+     * Transforme les jours Julien CNES en date.
      * 
-     * @param pJulianDays
+     * @param julianDays
      * @return
      */
-    public static Date toDate(Integer pJulianDays) {
-        return CNESJulianDate.toDate(pJulianDays, 0);
+    public static Date toDate(Integer julianDays) {
+        return CNESJulianDate.toDate(julianDays, 0);
     }
 
     /**
      * 
-     * @param pJulianDays
-     * @param pHours
-     * @param pMinutes
-     * @param pSeconds
+     * @param julianDays
+     * @param hours
+     * @param minutes
+     * @param seconds
      * @return a Gregorian Date
      */
-    public static Date toDate(String pJulianDays, String pHours, String pMinutes, String pSeconds) {
+    public static Date toDate(String julianDays, String hours, String minutes, String seconds) {
 
         Calendar cal = getJulianCalendar();
         // Add Julien days
-        if (pJulianDays != null) {
-            Integer julianDays = Integer.valueOf(pJulianDays);
-            cal.add(Calendar.DATE, julianDays);
+        if (julianDays != null) {
+            Integer jDays = Integer.valueOf(julianDays);
+            cal.add(Calendar.DATE, jDays);
         }
         // Add hours
-        if (pHours != null) {
-            Integer hours = Integer.valueOf(pHours);
-            cal.set(Calendar.HOUR_OF_DAY, hours);
+        if (hours != null) {
+            Integer hh = Integer.valueOf(hours);
+            cal.set(Calendar.HOUR_OF_DAY, hh);
         }
         // Add minutes
-        if (pMinutes != null) {
-            Integer minutes = Integer.valueOf(pMinutes);
-            cal.set(Calendar.MINUTE, minutes);
+        if (minutes != null) {
+            Integer mm = Integer.valueOf(minutes);
+            cal.set(Calendar.MINUTE, mm);
         }
         // Add seconds
-        if (pSeconds != null) {
-            Integer seconds = Integer.valueOf(pSeconds);
-            cal.set(Calendar.SECOND, seconds);
+        if (seconds != null) {
+            Integer ss = Integer.valueOf(seconds);
+            cal.set(Calendar.SECOND, ss);
         }
 
         return cal.getTime();

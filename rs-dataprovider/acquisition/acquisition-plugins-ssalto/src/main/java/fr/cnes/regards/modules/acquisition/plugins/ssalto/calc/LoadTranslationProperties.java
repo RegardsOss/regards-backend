@@ -65,17 +65,17 @@ public final class LoadTranslationProperties {
     private static final LoadTranslationProperties instance = new LoadTranslationProperties();
 
     /**
+     * Default private constructor
+     */
+    private LoadTranslationProperties() {
+    }
+
+    /**
      * Get the {@link LoadTranslationProperties} instance
      * @return the {@link TranslatedAttributeFromArcFile} instance
      */
     public static LoadTranslationProperties getInstance() {
         return instance;
-    }
-
-    /**
-     * Default private constructor
-     */
-    private LoadTranslationProperties() {
     }
 
     /**
@@ -103,7 +103,7 @@ public final class LoadTranslationProperties {
             // Try to read the InputStream
             stream.available();
         } catch (IOException e) {
-            LOGGER.warn("NOT FOUND " + translationFile.getPath());
+            LOGGER.warn("NOT FOUND " + translationFile.getPath()); // NOSONAR
             isReadable = false;
         }
 
