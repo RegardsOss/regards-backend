@@ -38,10 +38,6 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-instance-regards</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards</artifactId>
 		</dependency>
 		<dependency>

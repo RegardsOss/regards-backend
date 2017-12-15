@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -54,7 +54,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  * @author Xavier-Alexandre Brochard
  */
 @Service
-@InstanceTransactional
+@RegardsTransactional
 public class RegistrationService implements IRegistrationService {
 
     /**
