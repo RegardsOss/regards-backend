@@ -157,7 +157,30 @@ public class PluginParametersFactory {
         return this;
     }
 
+    /**
+     * Get all parameters as list
+     * @return {@link PluginParameter} list
+     */
     public List<PluginParameter> getParameters() {
         return parameters;
+    }
+
+    /**
+     * Get all parameters as list
+     * @return {@link PluginParameter} list
+     */
+    public List<PluginParameter> asList() {
+        return parameters;
+    }
+
+    /**
+     * Get all parameters as array
+     * @return {@link PluginParameter} array
+     */
+    public PluginParameter[] asArray() {
+        if (parameters == null) {
+            return null;
+        }
+        return parameters.toArray(new PluginParameter[parameters.size()]);
     }
 }
