@@ -19,8 +19,6 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -41,6 +39,7 @@ import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.LoadTranslationProperties;
 import fr.cnes.regards.modules.acquisition.tools.NetCdfFileHelper;
 
 /**
@@ -116,27 +115,12 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
             } else {
                 throw new PluginAcquisitionException("unable to get productType from fileName " + file.getName());
             }
-            // translate the productType using
-            final Properties translationProperties = new Properties();
-            try {
-                // Get file from project configured directory
-                final String translationDirectory = pluginsRepositoryProperties.getPluginTranslationFilesDir();
-                final File translationFile = new File(translationDirectory, TRANSACTION_FILE);
-                if (translationFile.exists() && translationFile.canRead()) {
-                    translationProperties.load(new FileReader(translationFile));
-                } else {
-                    LOGGER.warn("Unable to find translaction file " + translationFile.getPath()
-                            + ". Checking in classpath ...");
-                    translationProperties.load(new FileReader("/ssalto/domain/plugins/impl/" + TRANSACTION_FILE));
-                }
-            } catch (IOException e) {
-                final String msg = "unable to load the translation properties file";
-                LOGGER.error(msg, e);
-                throw new PluginAcquisitionException(msg, e);
-            }
+
+            // Load the translation for the productType
+            final Properties translationProperties = LoadTranslationProperties.getInstance().load(TRANSACTION_FILE);
+
             productType = translationProperties.getProperty(productType);
             value = producer + " - " + productType;
-
         }
         final List<String> valueList = new ArrayList<>();
         valueList.add(value);

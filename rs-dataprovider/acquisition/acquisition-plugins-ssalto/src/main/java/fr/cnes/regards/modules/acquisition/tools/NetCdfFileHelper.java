@@ -50,6 +50,10 @@ public class NetCdfFileHelper {
      */
     private NetcdfFile netCfdFile;
 
+    /**
+     * Constructor
+     * @param pNetCdfFile the Netcdf file to read
+     */
     public NetCdfFileHelper(File pNetCdfFile) {
         try {
             netCfdFile = NetcdfFile.open(pNetCdfFile.getAbsolutePath());
@@ -58,6 +62,9 @@ public class NetCdfFileHelper {
         }
     }
 
+    /**
+     * Close the current Netcdf file
+     */
     public void release() {
         try {
             netCfdFile.close();
@@ -66,31 +73,37 @@ public class NetCdfFileHelper {
         }
     }
 
-    public String getGlobalAttributeStringValue(String pAttributeName, String pFormatRead) {
-        String attValue = netCfdFile.findGlobalAttribute(pAttributeName).getStringValue();
-        if (pFormatRead != null) {
-            attValue = attValue.substring(0, pFormatRead.length());
+    /**
+     * Get a substring of an attribute value. The attribute is loop up by name.  
+     * @param attributeName the attribute name to find
+     * @param formatRead the format used to substring the attribute value. Only the format length is used to substrings.
+     * @return the substring of an attribute value
+     */
+    public String getGlobalAttributeStringValue(String attributeName, String formatRead) {
+        String attValue = netCfdFile.findGlobalAttribute(attributeName).getStringValue();
+        if (formatRead != null) {
+            attValue = attValue.substring(0, formatRead.length());
         }
         return attValue;
     }
 
     /**
-     * renvoie la liste des valeurs (chaine de caracteres) de l'attribut pAttributeName de toutes les variables du fichier
+     * Renvoie la liste des valeurs (chaine de caracteres) de l'attribut pAttributeName de toutes les variables du fichier
      * 
-     * @param pAttributeName
+     * @param attributeName
      *            le nom de l'attribut a recuperer dans les variables.
-     * @param pExceptionList
+     * @param exceptionList
      *            une liste d'exception sur les noms des variables.
      * @return
      */
-    public List<String> getAllVariableAttributeValue(String pAttributeName, List<String> pExceptionList) {
-        if (pExceptionList == null) {
-            pExceptionList = new ArrayList<>();
+    public List<String> getAllVariableAttributeValue(String attributeName, List<String> exceptionList) {
+        if (exceptionList == null) {
+            exceptionList = new ArrayList<>();
         }
         List<String> resultList = new ArrayList<>();
         for (Variable element : netCfdFile.getVariables()) {
-            if (!pExceptionList.contains(element.getShortName())) {
-                Attribute att = element.findAttribute(pAttributeName);
+            if (!exceptionList.contains(element.getShortName())) {
+                Attribute att = element.findAttribute(attributeName);
                 resultList.add(att.getStringValue());
             } else {
                 LOGGER.debug("variable " + element.getShortName() + " skipped because present in exception list");
@@ -100,16 +113,16 @@ public class NetCdfFileHelper {
     }
 
     /**
-     * renvoie la liste des valeurs pour la variable donnee
+     * Renvoie la liste des valeurs pour la variable donnee
      * 
-     * @param pVariableName
+     * @param variable
      *            le nom de la variable
-     * @param pValueType
+     * @param valueType
      *            le type de valeur a recuperer.
      * @return
      */
-    public List<Object> getVariableValues(String pVariableName, AttributeTypeEnum pValueType) {
-        Variable longitude = netCfdFile.findVariable(pVariableName);
+    public List<Object> getVariableValues(String variable, AttributeTypeEnum valueType) {
+        Variable longitude = netCfdFile.findVariable(variable);
         List<Object> valueList = new ArrayList<>();
         double scale = 1;
         if (longitude.findAttribute("scale_factor") != null) {
@@ -119,8 +132,8 @@ public class NetCdfFileHelper {
             Array longArray = longitude.read();
             IndexIterator iter = longArray.getIndexIterator();
             for (; iter.hasNext();) {
-                if (pValueType.equals(AttributeTypeEnum.TYPE_INTEGER)
-                        || pValueType.equals(AttributeTypeEnum.TYPE_REAL)) {
+                if (valueType.equals(AttributeTypeEnum.TYPE_INTEGER)
+                        || valueType.equals(AttributeTypeEnum.TYPE_REAL)) {
                     int value = iter.getIntNext();
                     valueList.add(Double.valueOf(value * scale));
                 } else {

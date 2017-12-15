@@ -70,7 +70,7 @@ public class DescriptorFile {
         super();
         this.dicoName = dicoName;
         this.projectName = projectName;
-        this.fileName = null;
+//        this.fileName = null;
 
         descElementMap = new HashMap<>();
         updateElementMap = new HashMap<>();
