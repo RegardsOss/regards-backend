@@ -244,8 +244,4 @@ public class RinexFileHelper {
                                                ZoneOffset.UTC);
         return 1000 * odt.toEpochSecond();
     }
-
-    public void releaseFile() {
-    }
-
 }

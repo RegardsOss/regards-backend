@@ -40,6 +40,11 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.TranslatedFromCycleFileFinder;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
+/**
+ * 
+ * @author Christophe Mertz
+ *
+ */
 public class TranslatedFromCycleFileFinderTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TranslatedFromCycleFileFinderTest.class);
@@ -112,7 +117,7 @@ public class TranslatedFromCycleFileFinderTest {
         Assert.assertEquals(126, ((Integer) resultList.get(0)).intValue());
     }
 
-    // TODO CMZ ignore car passe ne pas systematiquement sur intégration continue alors que passe en local 
+    // CMZ ignore car passe ne pas systematiquement sur intégration continue alors que passe en local 
     @Ignore
     @Test
     public void jason2GetCycleFromDateEqualCycleStartDate() throws Exception {
@@ -254,7 +259,7 @@ public class TranslatedFromCycleFileFinderTest {
     }
 
     // Cycle inclu dans le deuxieme fichier
-    // TODO CMZ ignore car passe ne pas systematiquement sur intégration continue alors que passe en local 
+    // FIXME CMZ ignore car passe ne pas systematiquement sur intégration continue alors que passe en local 
     @Ignore
     @Test
     public void jason2GetDateFromCycleSecondFile() {

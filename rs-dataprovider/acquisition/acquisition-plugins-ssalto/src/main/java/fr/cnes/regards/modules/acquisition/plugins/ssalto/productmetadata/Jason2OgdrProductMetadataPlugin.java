@@ -108,7 +108,7 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
         for (final File file : acquisitionFileList) {
             final Matcher fileNameMatcher = fileNamePattern.matcher(file.getName());
             final NetCdfFileHelper helper = new NetCdfFileHelper(file);
-            final String producer = helper.getGlobalAttributeStringValue("institution", null);
+            
             String productType;
             if (fileNameMatcher.matches()) {
                 productType = fileNameMatcher.group(1);
@@ -119,7 +119,9 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
             // Load the translation for the productType
             final Properties translationProperties = LoadTranslationProperties.getInstance().load(TRANSACTION_FILE);
 
+            String producer = helper.getGlobalAttributeStringValue("institution", null);
             productType = translationProperties.getProperty(productType);
+            
             value = producer + " - " + productType;
         }
         final List<String> valueList = new ArrayList<>();

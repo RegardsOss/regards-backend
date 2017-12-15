@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -151,13 +150,10 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
         // or should be available for finders
         doCreateIndependantSpecificAttributes(fileMap, attributeMap);
 
-        if (pluginConfProperties.getFinderList() != null) {
-            Collection<AttributeFinder> finderList = pluginConfProperties.getFinderList();
-            for (AttributeFinder finder : finderList) {
-                finder.setAttributProperties(pluginConfProperties);
-                Attribute attribute = finder.buildAttribute(fileMap, attributeValueMap);
-                registerAttribute(attributeMap, finder.getName(), attribute);
-            }
+        for (AttributeFinder finder : pluginConfProperties.getFinderList()) {
+            finder.setAttributProperties(pluginConfProperties);
+            Attribute attribute = finder.buildAttribute(fileMap, attributeValueMap);
+            registerAttribute(attributeMap, finder.getName(), attribute);
         }
 
         // then do specific attributes which can depend on other attribute value
@@ -246,7 +242,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      * @param attributeMap
      */
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
-            throws PluginAcquisitionException { // NOSONAR
+            throws PluginAcquisitionException {
     }
 
     /**
@@ -255,7 +251,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      * @param attributeMap
      */
     protected void doCreateDependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
-            throws ModuleException { // NOSONAR
+            throws ModuleException {
     }
 
     protected Properties getAttributeOrderProperties() {
@@ -295,7 +291,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
         sipBuilder.addDescriptiveInformation(Strings.toLowerCase(MISSION), getProjectName());
 
         for (Attribute att : mapAttrs.values()) {
-
             if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_STRING)
                     && att.getClass().equals(CompositeAttribute.class)) {
                 // CompositeAttribute
@@ -303,7 +298,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             } else {
                 addSip(sipBuilder, att);
             }
-
         }
     }
 
@@ -420,7 +414,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     private void addSip(SIPBuilder sipBuilder, Attribute attr) {
         LOGGER.debug("build SIP : add attribute [{}]", attr.getMetaAttribute().getName());
         if (attr.getValueList().size() == 1) {
-
             sipBuilder.addDescriptiveInformation(Strings.toLowerCase(attr.getAttributeKey()),
                                                  attr.getValueList().get(0));
         } else {
@@ -443,7 +436,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
                 throw new AcquisitionException(e.getMessage());
             }
         }
-
     }
 
 }

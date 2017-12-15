@@ -31,6 +31,13 @@ import java.util.Date;
 public class CNESJulianDate {
 
     /**
+     * Default constructor
+     */
+    private CNESJulianDate() {
+        super();
+    }
+
+    /**
      * @return a Julian Calendar whose first day is 01/01/1950
      */
     private static Calendar getJulianCalendar() {

@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.plugins.properties;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.SortedMap;
@@ -169,10 +170,10 @@ public class PluginConfigurationProperties {
     }
 
     public Collection<AttributeFinder> getFinderList() {
-        if (finderList != null) {
-            return finderList.values();
+        if (finderList == null) {
+            return new ArrayList<>();
         } else {
-            return null;
+            return finderList.values();
         }
     }
 
