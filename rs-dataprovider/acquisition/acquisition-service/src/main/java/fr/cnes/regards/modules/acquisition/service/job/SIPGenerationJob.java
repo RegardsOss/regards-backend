@@ -35,8 +35,8 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionProcessingChainJobParameter;
 import fr.cnes.regards.modules.acquisition.domain.job.ProductJobParameter;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
-import fr.cnes.regards.modules.acquisition.service.step.GenerateSipStep;
-import fr.cnes.regards.modules.acquisition.service.step.IStep;
+import fr.cnes.regards.modules.acquisition.service.job.step.GenerateSipStep;
+import fr.cnes.regards.modules.acquisition.service.job.step.IStep;
 
 /**
  * This job runs a set of step :<br>
@@ -48,9 +48,9 @@ import fr.cnes.regards.modules.acquisition.service.step.IStep;
  * @author Christophe Mertz
  *
  */
-public class AcquisitionGenerateSIPJob extends AbstractJob<Void> {
+public class SIPGenerationJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionGenerateSIPJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SIPGenerationJob.class);
 
     @Autowired
     private AutowireCapableBeanFactory beanFactory;

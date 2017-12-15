@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionProcessingChainConfiguration;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProcess;
+import fr.cnes.regards.modules.acquisition.service.job.step.GenerateSipStep;
 
 /**
  * @author Christophe Mertz

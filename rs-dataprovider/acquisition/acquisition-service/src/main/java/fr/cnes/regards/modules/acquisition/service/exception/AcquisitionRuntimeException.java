@@ -21,12 +21,15 @@ package fr.cnes.regards.modules.acquisition.service.exception;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
+
 /**
  * Exception for Service acquisition module.
- * 
+ *
  * @author Christophe Mertz
- * 
+ *         Use {@link JobRuntimeException}
  */
+@Deprecated
 public class AcquisitionRuntimeException extends RuntimeException {
 
     /**

@@ -45,11 +45,11 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionProcessingChainJobParameter;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
-import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProductsJob;
+import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 
 /**
  * Manage global {@link AcquisitionProcessingChain} life cycle
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -171,8 +171,9 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
         if (chain.getGenerateSipPluginConf() != null) {
             chain.setGenerateSipPluginConf(createOrUpdatePluginConfiguration(chain.getGenerateSipPluginConf()));
         }
-        if (chain.getPostProcessSipPluginConf() != null) {
-            chain.setPostProcessSipPluginConf(createOrUpdatePluginConfiguration(chain.getPostProcessSipPluginConf()));
+        if (chain.getPostProcessSipPluginConf().isPresent()) {
+            chain.setPostProcessSipPluginConf(createOrUpdatePluginConfiguration(chain.getPostProcessSipPluginConf()
+                    .get()));
         }
     }
 
@@ -227,9 +228,9 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
                     .loadPluginConfiguration(chain.getGenerateSipPluginConf().getId()));
         }
 
-        if (chain.getPostProcessSipPluginConf() != null) {
+        if (chain.getPostProcessSipPluginConf().isPresent()) {
             chain.setPostProcessSipPluginConf(pluginService
-                    .loadPluginConfiguration(chain.getPostProcessSipPluginConf().getId()));
+                    .loadPluginConfiguration(chain.getPostProcessSipPluginConf().get().getId()));
         }
 
         return chain;
@@ -282,7 +283,7 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
             return false;
         }
 
-        // the AcquisitionProcessingChain is ready to be started 
+        // the AcquisitionProcessingChain is ready to be started
         chain.setRunning(true);
         chain.setSession(chain.getLabel() + ":" + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + ":"
                 + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
@@ -297,7 +298,7 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
         // Create a ScanJob
         JobInfo acquisition = new JobInfo();
         acquisition.setParameters(new AcquisitionProcessingChainJobParameter(chain));
-        acquisition.setClassName(AcquisitionProductsJob.class.getName());
+        acquisition.setClassName(ProductAcquisitionJob.class.getName());
         acquisition.setOwner(authResolver.getUser());
 
         acquisition = jobInfoService.createAsQueued(acquisition);

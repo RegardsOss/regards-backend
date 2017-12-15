@@ -24,28 +24,32 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
+import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.job.SIPEventJobParameter;
+import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
+import fr.cnes.regards.modules.acquisition.service.IExecAcquisitionProcessingChainService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.step.IPostAcquisitionStep;
-import fr.cnes.regards.modules.acquisition.service.step.IStep;
-import fr.cnes.regards.modules.acquisition.service.step.PostSipAcquisitionStep;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
 /**
  * This job runs a set of step :<br>
  * <li>a step {@link IPostAcquisitionStep}
- * 
- * This job runs for one {@link Product} 
- *  
+ *
+ * This job runs for one {@link Product}
+ *
  * @author Christophe Mertz
  *
  */
@@ -54,10 +58,13 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PostAcquisitionJob.class);
 
     @Autowired
-    private AutowireCapableBeanFactory beanFactory;
+    private PluginService pluginService;
 
     @Autowired
     private IProductService productService;
+
+    @Autowired
+    private IExecAcquisitionProcessingChainService execProcessingChainService;
 
     @Autowired
     private IAcquisitionProcessingChainService acqProcessChainService;
@@ -68,18 +75,55 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
     public void run() {
         LOGGER.info("Start POST acquisition SIP job for the product <{}>", sipEvent.getIpId());
 
-        Product product = productService.retrieve(sipEvent.getIpId());
-        AcquisitionProcessingChain acqProcessingChain = acqProcessChainService.findByMetaProduct(product.getMetaProduct());
+        try {
+            Product product = productService.retrieve(sipEvent.getIpId());
+            AcquisitionProcessingChain acqProcessingChain = acqProcessChainService
+                    .findByMetaProduct(product.getMetaProduct());
 
-        AcquisitionProcess process = new AcquisitionProcess(acqProcessingChain, product);
+            if (acqProcessingChain == null) {
+                String msg = "The chain generation is mandatory";
+                LOGGER.error(msg);
+                throw new JobRuntimeException(msg);
+            }
 
-        // IPostAcquisitionStep is the first step
-        IStep postSipStep = new PostSipAcquisitionStep(sipEvent);
-        postSipStep.setProcess(process);
-        beanFactory.autowireBean(postSipStep);
-        process.setCurrentStep(postSipStep);
+            if (product == null) {
+                throw new JobRuntimeException("The product is mandatory");
+            }
 
-        process.run();
+            // Launch post processing plugin if present
+            if (acqProcessingChain.getPostProcessSipPluginConf().isPresent()) {
+                LOGGER.info("[{}-{}] : starting post acquisition job for job {}", acqProcessingChain.getLabel(),
+                            acqProcessingChain.getSession(), product.getProductName());
+                // Get an instance of the plugin
+                IPostProcessSipPlugin postProcessPlugin = pluginService
+                        .getPlugin(acqProcessingChain.getPostProcessSipPluginConf().get().getId());
+                postProcessPlugin.runPlugin(product, acqProcessingChain);
+            } else {
+                LOGGER.info("[{}-{}] : no post processing", acqProcessingChain.getLabel(),
+                            acqProcessingChain.getSession());
+            }
+
+            // Update ProductStatus to SAVED
+            product.setStatus(ProductStatus.SAVED);
+            productService.save(product);
+
+            int nbSipStored = 0;
+            int nbSipError = 0;
+            if (sipEvent.getState().equals(SIPState.STORED)) {
+                nbSipStored = 1;
+            } else if (sipEvent.getState().equals(SIPState.STORE_ERROR)) {
+                nbSipError = 1;
+            }
+
+            execProcessingChainService.updateExecProcessingChain(acqProcessingChain.getSession(), 0, nbSipStored,
+                                                                 nbSipError);
+
+            LOGGER.info("[{}] Stop  POST acqusition SIP step for the product <{}>", acqProcessingChain.getSession(),
+                        product.getProductName());
+        } catch (ModuleException pse) {
+            LOGGER.error("Business error", pse);
+            throw new JobRuntimeException(pse);
+        }
     }
 
     @Override
