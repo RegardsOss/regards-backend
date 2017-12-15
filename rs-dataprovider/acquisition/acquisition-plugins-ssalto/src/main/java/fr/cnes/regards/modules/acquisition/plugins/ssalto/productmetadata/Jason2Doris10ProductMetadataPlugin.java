@@ -49,10 +49,4 @@ public class Jason2Doris10ProductMetadataPlugin extends AbstractJasonDoris10Prod
     protected String getProjectName() {
         return PROJECT_NAME;
     }
-
-    @Override
-    public String getProjectProperties() {
-        return "ssalto/domain/plugins/impl/jason2plugin.properties";
-    }
-
 }

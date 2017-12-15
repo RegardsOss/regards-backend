@@ -23,8 +23,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * Plugin Ssalto repository configuration <b>pluginsRepository.properties</b>.<br>
  * The properties are :<br>
- * <li>regards.acquisition.ssalto.plugin-conf-files-dir : path to the Ssalto plugin configuration file
- * <li>regards.acquisition.ssalto.plugin-translation-files-dir : path the translation properties file
+ * <li>regards.acquisition.ssalto.plugin-conf-files-path : path to the Ssalto plugin configuration file
+ * <li>regards.acquisition.ssalto.plugin-translation-files-path : path the translation properties file
  * 
  * @author Christophe Mertz
  *
@@ -32,24 +32,34 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "regards.acquisition.ssalto")
 public class PluginsRepositoryProperties {
 
-    private String pluginConfFilesDir;
+    private String pluginConfFilesPath;
 
-    private String pluginTranslationFilesDir;
+    private String pluginTranslationFilesPath;
 
-    public String getPluginConfFilesDir() {
-        return pluginConfFilesDir;
+    private String pluginConfPath;
+
+    public String getPluginConfFilesPath() {
+        return pluginConfFilesPath;
     }
 
-    public void setPluginConfFilesDir(String pluginConfFilesDir) {
-        this.pluginConfFilesDir = pluginConfFilesDir;
+    public void setPluginConfFilesPath(String pluginConfFilesDir) {
+        this.pluginConfFilesPath = pluginConfFilesDir;
     }
 
-    public String getPluginTranslationFilesDir() {
-        return pluginTranslationFilesDir;
+    public String getPluginTranslationFilesPath() {
+        return pluginTranslationFilesPath;
     }
 
-    public void setPluginTranslationFilesDir(String pluginTranslationFilesDir) {
-        this.pluginTranslationFilesDir = pluginTranslationFilesDir;
+    public void setPluginTranslationFilesPath(String pluginTranslationFilesDir) {
+        this.pluginTranslationFilesPath = pluginTranslationFilesDir;
+    }
+
+    public String getPluginConfPath() {
+        return pluginConfPath;
+    }
+
+    public void setPluginConfPath(String pluginConfDir) {
+        this.pluginConfPath = pluginConfDir;
     }
 
 }

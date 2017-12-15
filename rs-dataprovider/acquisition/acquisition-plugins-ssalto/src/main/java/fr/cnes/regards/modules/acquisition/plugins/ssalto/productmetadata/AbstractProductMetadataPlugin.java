@@ -77,9 +77,9 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      */
     private static final String CONFIG_FILE_SUFFIX = "_PluginConfiguration.xml";
 
-    private static final String RULE_FILE = "ssalto/domain/plugins/impl/tools/pluginFinderDigesterRules.xml";
+    private static final String RULE_FILE = "pluginFinderDigesterRules.xml";
 
-    private static final String ATTRIBUTE_ORDER_PROP_FILE = "ssalto/domain/plugins/impl/tools/attributeOrder.properties";
+    private static final String ATTRIBUTE_ORDER_PROP_FILE = "attributeOrder.properties";
 
     protected static final String GEO_COORDINATES = "GEO_COORDINATES";
 
@@ -124,8 +124,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     protected abstract String getProjectName();
 
     protected abstract PluginsRepositoryProperties getPluginsRepositoryProperties();
-
-    protected abstract String getProjectProperties();
 
     /**
      * cree les attributs pour le {@link Product} contenant la liste des {@link AcquisitionFile}, pour le jeu de donnees dataSetName
@@ -186,23 +184,32 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      *             des attributs.
      */
     protected void loadDataSetConfiguration(String dataSetName) throws ModuleException {
+        // Path to the configuration file
+        // attributeOrder.properties and pluginFinderDigesterRules.xml
+        String pluginsConfPath = getPluginsRepositoryProperties().getPluginConfPath();
+
+        // file access to pluginFinderDigesterRules.xml
+        File digesterRuleFile = new File(pluginsConfPath, RULE_FILE);
+
         // Get the path to the digester rules file
-        URL ruleFile = getClass().getClassLoader().getResource(RULE_FILE);
-        if (ruleFile == null) {
-            String msg = "unable to load the rule file " + RULE_FILE;
+        URL ruleUrl = getClass().getClassLoader().getResource(digesterRuleFile.getPath());
+        if (ruleUrl == null) {
+            String msg = "unable to load the rule file " + digesterRuleFile.getPath();
             LOGGER.error(msg);
             throw new ModuleException(msg);
         }
 
         // Getting conf file from project configured directory
-        String pluginsConfDir = getPluginsRepositoryProperties().getPluginConfFilesDir();
+        String pluginsConfDir = getPluginsRepositoryProperties().getPluginConfFilesPath();
+
+        // File access to plugin conf of this dataset
         File pluginConfFile = new File(pluginsConfDir, dataSetName + CONFIG_FILE_SUFFIX);
 
         // The first action is to test if the property file exists
         try (InputStream in = getClass().getClassLoader().getResourceAsStream(pluginConfFile.getPath())) {
             // create instance of digester that can handle the digester rule file
-            Digester digester = DigesterLoader.createDigester(ruleFile);
-            // Process the input file.
+            Digester digester = DigesterLoader.createDigester(ruleUrl);
+            // Process the input file
             pluginConfProperties = (PluginConfigurationProperties) digester.parse(in);
             pluginConfProperties.setProject(getProjectName());
         } catch (IOException | SAXException e) {
@@ -211,16 +218,16 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             throw new ModuleException(e);
         }
 
-        // init the attributeOrderMap_ from the attributeOrderConfigurationFile
+        // file access to attributeOrder.properties
+        File attributeOrderFile = new File(pluginsConfPath, ATTRIBUTE_ORDER_PROP_FILE);
         attributeOrderProperties = new Properties();
-        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(ATTRIBUTE_ORDER_PROP_FILE)) {
+        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(attributeOrderFile.getPath())) {
             attributeOrderProperties.load(stream);
         } catch (IOException e) {
-            String message = "unable to load property file" + ATTRIBUTE_ORDER_PROP_FILE;
+            String message = "unable to load property file" + attributeOrderFile.getPath();
             LOGGER.error(e.getMessage(), e);
             throw new ModuleException(message);
         }
-
     }
 
     /**

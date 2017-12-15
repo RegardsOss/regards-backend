@@ -50,27 +50,9 @@ public class TranslatedFromCycleFileFinderTest {
 
     private static final String STOP_DATE = "STOP_DATE";
 
-    //    private static final Date ATT_VALUE_DATE_INSIDE = new Date();// (108, 9, 10);
-
-    //    private static final Integer ATT_VALUE_CYCLE = new Integer(3);
-
-    //    private static final Integer ATT_VALUE_CYCLE_OVER = new Integer(3000);
-
     private static final String JA2_CYCLE_FILEPATH = "src/test/resources/income/data/JASON2/CYCLES/JASON2_CYCLES";
 
     private static final String JA2_ORF_FILEPATH = "src/test/resources/income/data/JASON2/ORF_HISTORIQUE/JA2_ORF_AXXCN*";
-
-    //    private static final String JA1_CYCLE_FILEPATH = "testing/ressources/ssalto/domain/plugins/impl/finder/JASON1_CYCLES";
-
-    //    private static final String JA1_ORF_FILEPATH = "testing/ressources/ssalto/domain/plugins/impl/finder/JA1_ORF_AXXCN*";
-
-    //    private static final String BEF_DRIFT_JA1_ORF_FILEPATH = "testing/ressources/ssalto/domain/plugins/impl/finder/BEF_DRIFT_JA1_ORF_AXXCN*";
-
-    //    private static final Integer ATT_VALUE_CYCLE_000_FILE = new Integer(0);
-
-    //    private static final Integer ATT_VALUE_CYCLE_FIRST_FILE = new Integer(262);
-
-    //    private static final Integer ATT_VALUE_CYCLE_UNKNOWN = new Integer(999);
 
     @Test
     public void jasonGetCycleFromDateInsideCycleInterval() throws Exception {

@@ -30,8 +30,8 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.TranslatedAttributeFromArcFile;
 
 /**
- * Load a translation properties file from the classpath .<br>
- * The folder path for the translation file is read in the file <b>pluginsRepository.properties</b>, the key <b>regards.acquisition.ssalto.plugin-translation-files-dir</b>.
+ * Load a translation properties file from the classpath.<br>
+ * The folder path for the translation file is read in the file <b>pluginsRepository.properties</b>, the key <b>regards.acquisition.ssalto.plugin-translation-files-path</b>.
  * If the translation file can not be load from this path, try to load the translation file in the default path <b>income/plugins/translations</b>
  * 
  * @author Christophe Mertz
@@ -57,7 +57,7 @@ public final class LoadTranslationProperties {
     /**
      * Key for the property translation file path 
      */
-    private static final String KEY_TRANSLATION_DIR = "regards.acquisition.ssalto.plugin-translation-files-dir";
+    private static final String KEY_TRANSLATION_DIR = "regards.acquisition.ssalto.plugin-translation-files-path";
 
     /**
      * An instance of {@link LoadTranslationProperties}
@@ -85,15 +85,7 @@ public final class LoadTranslationProperties {
      * @throws PluginAcquisitionException if an error occurs
      */
     public Properties load(String translationPropertiesFilePath) throws PluginAcquisitionException {
-        Properties pluginsRepo = new Properties();
-
-        // Load plugins repository properties
-        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(FILE_REPO_PROPERTIES)) {
-            pluginsRepo.load(stream);
-        } catch (IOException e) {
-            LOGGER.error("unable to read " + FILE_REPO_PROPERTIES, e);
-            throw new PluginAcquisitionException(e.getMessage());
-        }
+        Properties pluginsRepo = loadPluginsRepository();
 
         String translationDirectory = (String) pluginsRepo.get(KEY_TRANSLATION_DIR);
         File translationFile = new File(translationDirectory, translationPropertiesFilePath);
@@ -103,7 +95,7 @@ public final class LoadTranslationProperties {
             // Try to read the InputStream
             stream.available();
         } catch (IOException e) {
-            LOGGER.warn("NOT FOUND " + translationFile.getPath()); // NOSONAR
+            LOGGER.warn("NOT FOUND " + translationFile.getPath());
             isReadable = false;
         }
 
@@ -122,5 +114,24 @@ public final class LoadTranslationProperties {
         }
 
         return translationProperties;
+    }
+    
+    /**
+     * Load the pluginsRepository.properties file
+     * @return the {@link Properties} loaded
+     * @throws PluginAcquisitionException an error occurs
+     */
+    public Properties loadPluginsRepository() throws PluginAcquisitionException {
+        Properties pluginsRepo = new Properties();
+
+        // Load plugins repository properties
+        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(FILE_REPO_PROPERTIES)) {
+            pluginsRepo.load(stream);
+        } catch (IOException e) {
+            LOGGER.error("unable to read " + FILE_REPO_PROPERTIES, e);
+            throw new PluginAcquisitionException(e.getMessage());
+        }
+
+        return pluginsRepo;
     }
 }

@@ -39,13 +39,17 @@ public class PluginsRepositoryPropertiesTest {
 
         Assert.assertNotNull(pluginsRepositoryProperties);
 
-        String pluginConfFilesDir = pluginsRepositoryProperties.getPluginConfFilesDir();
+        String pluginConfFilesDir = pluginsRepositoryProperties.getPluginConfFilesPath();
         Assert.assertTrue("Erreur de lecture du fichier de configuration des plugins",
                           ((pluginConfFilesDir != null) && !pluginConfFilesDir.isEmpty()));
 
-        String pluginConfTranslationFilesDir = pluginsRepositoryProperties.getPluginTranslationFilesDir();
+        String pluginConfTranslationFilesDir = pluginsRepositoryProperties.getPluginTranslationFilesPath();
         Assert.assertTrue("Erreur de lecture du fichier de configuration des plugins",
                           (pluginConfTranslationFilesDir != null) && !pluginConfTranslationFilesDir.isEmpty());
+        
+        String pluginConfDir = pluginsRepositoryProperties.getPluginConfPath();
+        Assert.assertTrue("Erreur de lecture du fichier de configuration des plugins",
+                          (pluginConfDir != null) && !pluginConfDir.isEmpty());
     }
 
 }

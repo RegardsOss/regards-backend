@@ -241,7 +241,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
             }
 
             // Test if the dataset plugin configuration file exists
-            String pluginsConfDir = pluginsRepositoryProperties.getPluginConfFilesDir();
+            String pluginsConfDir = pluginsRepositoryProperties.getPluginConfFilesPath();
             File pluginConfFile = new File(pluginsConfDir, pluginTestDef.getDataSetName() + CONFIG_FILE_SUFFIX);
             
             try (InputStream stream = getClass().getClassLoader().getResourceAsStream(pluginConfFile.getPath())) {

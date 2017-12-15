@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.properties;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
@@ -28,7 +29,9 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.AttributeFinder;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.LoadTranslationProperties;
 
 /**
  * 
@@ -49,11 +52,13 @@ public class PluginConfigurationProperties {
 
     private static final String SEPARATOR = ";";
 
-    private static final String URL_PROPERTIES = "ssalto/domain/plugins/impl/tools/pluginConfiguration.properties";
+    private static final String CYCLES_ORL_PROPERTIES = "pluginConfiguration.properties";
 
     private static final String LOG_PROPERTY_NOT_FOUND = "Property not found %s in file '%s'";
 
     private static final String LOG_PROJECT_NOT_SET = "The required project is not set : JASON, JASON2 ...";
+
+    private static final String KEY_CONF_DIR = "regards.acquisition.ssalto.plugin-conf-path";
 
     /**
      * filePattern du nom du fichier
@@ -89,9 +94,18 @@ public class PluginConfigurationProperties {
     }
 
     private void loadProperties() {
-        pluginProperties = new Properties();
+        String confPath = "";
+        try {
+            Properties confProperties = LoadTranslationProperties.getInstance().loadPluginsRepository();
+            confPath = (String) confProperties.get(KEY_CONF_DIR);
+        } catch (PluginAcquisitionException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
 
-        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(URL_PROPERTIES)) {
+        pluginProperties = new Properties();
+        File cycleOrfFile = new File(confPath, CYCLES_ORL_PROPERTIES);
+
+        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(cycleOrfFile.getPath())) {
             pluginProperties.load(stream);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
@@ -107,7 +121,7 @@ public class PluginConfigurationProperties {
         String propertyValue = pluginProperties.getProperty(propertyName);
 
         if (propertyValue == null) {
-            LOGGER.error(String.format(LOG_PROPERTY_NOT_FOUND, propertyName, URL_PROPERTIES));
+            LOGGER.error(String.format(LOG_PROPERTY_NOT_FOUND, propertyName, CYCLES_ORL_PROPERTIES));
         }
 
         return propertyValue;
@@ -125,7 +139,7 @@ public class PluginConfigurationProperties {
         String propertyValue = pluginProperties.getProperty(propertyName);
 
         if (propertyValue == null) {
-            LOGGER.error(String.format(LOG_PROPERTY_NOT_FOUND, propertyName, URL_PROPERTIES));
+            LOGGER.error(String.format(LOG_PROPERTY_NOT_FOUND, propertyName, CYCLES_ORL_PROPERTIES));
             return orfFilePath;
         }
 
