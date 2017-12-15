@@ -19,8 +19,6 @@
 package fr.cnes.regards.modules.acquisition.finder;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +26,10 @@ import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
-import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.LoadTranslationProperties;
 
 /**
  * ce finder recupere une valeur dans le nom d'un fichier a partir du filePattern et de la liste de groupe de capture et
@@ -46,54 +43,18 @@ public class TranslatedFileNameFinder extends FileNameFinder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TranslatedAttributeFromArcFile.class);
 
-    private static final String PATH_PROPERTIES = "income/plugins/translations";
-
     /**
-     * fichier de traduction
+     * {@link Properties} load in the translation file
      */
-    private Properties translationProperties;
-
-    @Autowired
-    protected PluginsRepositoryProperties pluginsRepositoryProperties;
+    private Properties translationProperties = new Properties();
 
     /**
-     * @param translationPropertiesFilePath
-     * @throws PluginAcquisitionException
+     * Load the translation file
+     * @param translationPropertiesFilePath the translation file to load
+     * @throws PluginAcquisitionException an error occurs when reading the translation file
      */
     public void setTranslationProperties(String translationPropertiesFilePath) throws PluginAcquisitionException {
-        translationProperties = new Properties();
-
-//        try {
-            // Get file from project configured directory
-            // TODO CMZ à revoir pour le moment pluginsRepositoryProperties est null
-
-            //            String translationDirectory = pluginsRepositoryProperties.getPluginTranslationFilesDir();
-            //            File translationFile = new File(translationDirectory, translationPropertiesFilePath);
-            //            if ((translationFile != null) && translationFile.exists() && translationFile.canRead()) {
-            //                InputStream inStream = new FileInputStream(translationFile);
-            //                translationProperties.load(inStream);
-            //            } else {
-            //                LOGGER.warn("Unable to find translaction file " + translationFile.getPath()
-            //                        + ". Checking in classpath ...");
-            //                File ff = new File("income/plugins/translations" + translationPropertiesFilePath);
-            //                InputStream inStream = new FileInputStream(ff);
-            //                translationProperties.load(inStream);
-
-            try (InputStream stream = getClass().getClassLoader()
-                    .getResourceAsStream(PATH_PROPERTIES + translationPropertiesFilePath)) {
-                translationProperties.load(stream);
-            } catch (IOException e) {
-                String msg = "unable to load the translation properties file";
-                LOGGER.error(msg, e);
-                throw new PluginAcquisitionException(msg, e);
-            }
-
-            //            }
-        //        } catch (Exception e) {
-        //            String msg = "unable to load the translation properties file";
-        //            LOGGER.error(msg, e);
-        //            throw new PluginAcquisitionException(msg, e);
-        //        }
+        translationProperties = LoadTranslationProperties.getInstance().load(translationPropertiesFilePath);
     }
 
     @Override
@@ -113,13 +74,12 @@ public class TranslatedFileNameFinder extends FileNameFinder {
     }
 
     /**
-     * recupere la valeur dans le fichier de traduction dont la clef est pValue.
-     *
-     * @param pvalue
-     * @return
+     * Get the value in the translation file for a key
+     * @param key get the value of this key
+     * @return the value in the translation file for a key
      */
-    protected Object getTranslatedValue(Object value) {
-        return translationProperties.get(value);
+    protected Object getTranslatedValue(Object key) {
+        return translationProperties.get(key);
     }
 
     @Override
@@ -128,4 +88,5 @@ public class TranslatedFileNameFinder extends FileNameFinder {
         buff.append(" | translationProperties").append(translationProperties);
         return buff.toString();
     }
+
 }

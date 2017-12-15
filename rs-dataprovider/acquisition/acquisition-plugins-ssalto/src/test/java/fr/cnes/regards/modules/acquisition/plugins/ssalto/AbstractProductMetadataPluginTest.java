@@ -23,7 +23,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
@@ -143,13 +142,10 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      */
     @Before
     public void setUp() {
-        Properties properties;
-        String propertyFilePath;
-
         LOGGER.info("Create context");
 
-        properties = new Properties();
-        propertyFilePath = getProjectProperties();
+        Properties properties = new Properties();
+        String propertyFilePath = getProjectProperties();
 
         try (InputStream stream = getClass().getClassLoader().getResourceAsStream(propertyFilePath)) {
             properties.load(stream);
@@ -232,6 +228,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         boolean isFail = false;
 
         for (PluginTestDef pluginTestDef : pluginTestDefList) {
+            // Test if the data file exists
             for (Iterator<String> fileIter = pluginTestDef.getFileNameList().iterator(); fileIter.hasNext()
                     && !isFail;) {
                 String fileName = fileIter.next();
@@ -243,21 +240,18 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
                 }
             }
 
-            String pluginsConfDir;
-            pluginsConfDir = pluginsRepositoryProperties.getPluginConfFilesDir();
+            // Test if the dataset plugin configuration file exists
+            String pluginsConfDir = pluginsRepositoryProperties.getPluginConfFilesDir();
             File pluginConfFile = new File(pluginsConfDir, pluginTestDef.getDataSetName() + CONFIG_FILE_SUFFIX);
-            if ((pluginConfFile == null) || !pluginConfFile.exists() || !pluginConfFile.canRead()) {
-                LOGGER.warn("NOT FOUND " + pluginConfFile.getPath());
-                URL confFile = getClass().getResource("tools/" + pluginTestDef.getDataSetName() + CONFIG_FILE_SUFFIX);
-                if (confFile == null) {
-                    confFile = getClass()
-                            .getResource("impl/tools/" + pluginTestDef.getDataSetName() + CONFIG_FILE_SUFFIX);
-                    if (confFile == null) {
-                        isFail = true;
-                        LOGGER.error("NOT FOUND " + "tools/" + pluginTestDef.getDataSetName() + CONFIG_FILE_SUFFIX);
-                    }
-                }
+            
+            try (InputStream stream = getClass().getClassLoader().getResourceAsStream(pluginConfFile.getPath())) {
+                // Try to read the InputStream
+                stream.available();
+            } catch (IOException e) {
+                LOGGER.error("NOT FOUND " + pluginConfFile.getPath());
+                isFail = true;
             }
+
         }
         Assert.assertFalse(isFail);
     }

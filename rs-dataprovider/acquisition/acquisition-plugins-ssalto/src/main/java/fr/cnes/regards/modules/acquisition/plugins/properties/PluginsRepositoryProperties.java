@@ -21,8 +21,10 @@ package fr.cnes.regards.modules.acquisition.plugins.properties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Representation de la configuration des repertoires de dépots des fichiers de configuration des plugins
- * d'acquisition
+ * Plugin Ssalto repository configuration <b>pluginsRepository.properties</b>.<br>
+ * The properties are :<br>
+ * <li>regards.acquisition.ssalto.plugin-conf-files-dir : path to the Ssalto plugin configuration file
+ * <li>regards.acquisition.ssalto.plugin-translation-files-dir : path the translation properties file
  * 
  * @author Christophe Mertz
  *

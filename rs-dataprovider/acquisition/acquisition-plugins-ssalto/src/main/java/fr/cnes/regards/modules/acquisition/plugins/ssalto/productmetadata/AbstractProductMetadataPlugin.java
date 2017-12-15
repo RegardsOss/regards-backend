@@ -73,7 +73,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
 
     /**
-     * Nom du fichier de configuration des plugins
+     * Suffix of Ssalto plugin configuration file
      */
     private static final String CONFIG_FILE_SUFFIX = "_PluginConfiguration.xml";
 
@@ -195,39 +195,18 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
         }
 
         // Getting conf file from project configured directory
-        String pluginConfDirectory = getPluginsRepositoryProperties().getPluginConfFilesDir();
-        File pluginConfFile = new File(pluginConfDirectory, dataSetName + CONFIG_FILE_SUFFIX);
-        URL confFile = null;
-
-        if (!pluginConfFile.exists() || !pluginConfFile.canRead()) {
-            // If conf file doesn't exists in the project configuration directory, check in the classpath
-
-            String msg = "unable to load the conf file " + pluginConfFile.getPath() + ", checking in classpath ...";
-            LOGGER.warn(msg);
-
-            confFile = getClass().getResource("tools/" + dataSetName + CONFIG_FILE_SUFFIX);
-            if (confFile == null) {
-                msg = "unable to load the conf file " + "tools/" + dataSetName + CONFIG_FILE_SUFFIX;
-                LOGGER.error(msg);
-                throw new ModuleException(msg);
-            }
-        } else {
-            try {
-                confFile = pluginConfFile.toURI().toURL();
-            } catch (MalformedURLException e) {
-                throw new ModuleException(e.getMessage());
-            }
-        }
+        String pluginsConfDir = getPluginsRepositoryProperties().getPluginConfFilesDir();
+        File pluginConfFile = new File(pluginsConfDir, dataSetName + CONFIG_FILE_SUFFIX);
 
         // The first action is to test if the property file exists
-        try (InputStream in = confFile.openStream()) {
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream(pluginConfFile.getPath())) {
             // create instance of digester that can handle the digester rule file
             Digester digester = DigesterLoader.createDigester(ruleFile);
             // Process the input file.
             pluginConfProperties = (PluginConfigurationProperties) digester.parse(in);
             pluginConfProperties.setProject(getProjectName());
         } catch (IOException | SAXException e) {
-            String msg = "unable to parse file " + dataSetName + CONFIG_FILE_SUFFIX + " using rule file " + RULE_FILE;
+            String msg = "unable to parse file " + pluginConfFile.getPath() + " using rule file " + RULE_FILE;
             LOGGER.error(msg, e);
             throw new ModuleException(e);
         }
