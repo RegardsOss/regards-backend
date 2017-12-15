@@ -20,12 +20,12 @@ package fr.cnes.regards.modules.ingest.service.plugin;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPReference;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.exception.InvalidSIPReferenceException;
-import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPreprocessing;
 import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
 
@@ -48,7 +48,6 @@ public class PreprocessingTestPlugin implements ISipPreprocessing {
         if (PreprocessingTestPlugin.class.equals(errorSimulator.getSimulateErrorForStep())) {
             throw new ProcessingStepException("Simulated exception for step PreprocessingTestPlugin");
         }
-        // Nothing to do
     }
 
     @Override

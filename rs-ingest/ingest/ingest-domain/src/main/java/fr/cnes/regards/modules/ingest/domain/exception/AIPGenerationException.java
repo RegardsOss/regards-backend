@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.exception;
 
+import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
+
 /**
  * ProcessingStepException thrown by AIPGenerationStep
  * @author Sébastien Binda

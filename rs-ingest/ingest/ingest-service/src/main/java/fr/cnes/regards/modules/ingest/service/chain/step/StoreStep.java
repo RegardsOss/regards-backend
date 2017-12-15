@@ -23,11 +23,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
-import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-public class StoreStep extends AbstractProcessingStep<List<AIP>, Void> {
+public class StoreStep extends AbstractIngestStep<List<AIP>, Void> {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(StoreStep.class);
@@ -51,23 +51,19 @@ public class StoreStep extends AbstractProcessingStep<List<AIP>, Void> {
         // Created AIPEntities will be handled by a scheduled task to be sent to archival storage microservice
         in.forEach(aip -> this.job.getIngestProcessingService().createAIP(this.job.getEntity().getId(),
                                                                           AIPState.CREATED, aip));
+        // After success
+        SIPEntity sip = this.job.getEntity();
+        sip.setState(SIPState.AIP_CREATED);
+        updateSIPEntityState(SIPState.AIP_CREATED);
+        job.getPublisher().publish(new SIPEvent(sip));
         return null;
     }
 
     @Override
-    protected void doAfterStepError(List<AIP> pIn) {
+    protected void doAfterError(List<AIP> pIn) {
         SIPEntity sip = this.job.getEntity();
         sip.setState(SIPState.AIP_GEN_ERROR);
         this.updateSIPEntityState(SIPState.AIP_GEN_ERROR);
         this.job.getPublisher().publish(new SIPEvent(sip));
     }
-
-    @Override
-    protected void doAfterStepSuccess(List<AIP> pIn) {
-        SIPEntity sip = this.job.getEntity();
-        sip.setState(SIPState.AIP_CREATED);
-        this.updateSIPEntityState(SIPState.AIP_CREATED);
-        this.job.getPublisher().publish(new SIPEvent(sip));
-    }
-
 }

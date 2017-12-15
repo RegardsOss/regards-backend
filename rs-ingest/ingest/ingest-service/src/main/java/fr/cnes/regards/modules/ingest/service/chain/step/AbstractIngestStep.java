@@ -19,59 +19,29 @@
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.step.AbstractProcessingStep;
+import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 
 /**
  * Common ingest processing step
- *
  * @author Marc Sordi
- * @auhtor Sébastien Binda
  */
-public abstract class AbstractProcessingStep<I, O> implements IProcessingStep<I, O> {
+public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I, O, IngestProcessingJob> {
 
     protected final IngestProcessingChain processingChain;
 
     protected final IPluginService pluginService;
 
-    protected final IngestProcessingJob job;
-
-    public AbstractProcessingStep(IngestProcessingJob job) {
-        this.job = job;
+    public AbstractIngestStep(IngestProcessingJob job) {
+        super(job);
         this.processingChain = job.getProcessingChain();
         this.pluginService = job.getPluginService();
     }
-
-    @Override
-    public O execute(I in) throws ProcessingStepException {
-        boolean error = true;
-        try {
-            O out = doExecute(in);
-            error = false;
-            return out;
-        } finally {
-            if (error) {
-                doAfterStepError(in);
-            } else {
-                doAfter(in);
-            }
-        }
-    }
-
-    protected abstract O doExecute(I in) throws ProcessingStepException;
-
-    protected abstract void doAfterStepError(I in);
-
-    protected void doAfter(I in) throws ProcessingStepException {
-        job.advanceCompletion();
-        this.doAfterStepSuccess(in);
-    }
-
-    protected abstract void doAfterStepSuccess(I in);
 
     protected SIPEntity updateSIPEntityState(SIPState newEntitySIPState) {
         SIPEntity entity = this.job.getIngestProcessingService().updateSIPEntityState(this.job.getEntity().getId(),

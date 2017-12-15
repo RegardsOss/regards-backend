@@ -23,9 +23,9 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPostprocessing;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-public class PostprocessingStep extends AbstractProcessingStep<SIP, Void> {
+public class PostprocessingStep extends AbstractIngestStep<SIP, Void> {
 
     /**
      * Class logger
@@ -62,15 +62,7 @@ public class PostprocessingStep extends AbstractProcessingStep<SIP, Void> {
     }
 
     @Override
-    protected void doAfterStepError(SIP sip) {
+    protected void doAfterError(SIP sip) {
         LOGGER.error("Error during post processing for SIP \"{}\"", sip.getId());
-        // Nothing to do.
-
     }
-
-    @Override
-    protected void doAfterStepSuccess(SIP sip) {
-        // Nothing to do
-    }
-
 }

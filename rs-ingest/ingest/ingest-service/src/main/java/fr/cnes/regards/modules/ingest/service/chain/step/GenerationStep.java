@@ -23,6 +23,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -30,7 +31,6 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
-import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-public class GenerationStep extends AbstractProcessingStep<SIP, List<AIP>> {
+public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerationStep.class);
 
@@ -65,16 +65,11 @@ public class GenerationStep extends AbstractProcessingStep<SIP, List<AIP>> {
     }
 
     @Override
-    protected void doAfterStepError(SIP sip) {
+    protected void doAfterError(SIP sip) {
         SIPEntity sipEntity = this.job.getEntity();
         sipEntity.setState(SIPState.AIP_GEN_ERROR);
         LOGGER.error("Error generating AIP(s) for SIP \"{}\"", sip.getId());
         this.updateSIPEntityState(SIPState.AIP_GEN_ERROR);
         this.job.getPublisher().publish(new SIPEvent(sipEntity));
-    }
-
-    @Override
-    protected void doAfterStepSuccess(SIP pIn) {
-        // Nothing to do
     }
 }

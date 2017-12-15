@@ -23,12 +23,12 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
-import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPreprocessing;
 import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
 
@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-public class PreprocessingStep extends AbstractProcessingStep<SIP, SIP> {
+public class PreprocessingStep extends AbstractIngestStep<SIP, SIP> {
 
     /**
      * Class logger
@@ -72,16 +72,11 @@ public class PreprocessingStep extends AbstractProcessingStep<SIP, SIP> {
     }
 
     @Override
-    protected void doAfterStepError(SIP sip) {
+    protected void doAfterError(SIP sip) {
         SIPEntity sipEntity = this.job.getEntity();
         sipEntity.setState(SIPState.INVALID);
         LOGGER.error("Error prepocessing SIP \"{}\"", sip.getId());
         this.updateSIPEntityState(SIPState.INVALID);
         this.job.getPublisher().publish(new SIPEvent(sipEntity));
-    }
-
-    @Override
-    protected void doAfterStepSuccess(SIP pIn) {
-        // Nothing to do
     }
 }

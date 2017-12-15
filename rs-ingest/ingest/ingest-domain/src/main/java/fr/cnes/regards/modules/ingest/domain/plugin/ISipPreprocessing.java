@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.domain.plugin;
 
+import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPReference;
 import fr.cnes.regards.modules.ingest.domain.exception.InvalidSIPReferenceException;
-import fr.cnes.regards.modules.ingest.domain.exception.ProcessingStepException;
 
 /**
  * First <b>optional</b> step of the SIP processing chain
