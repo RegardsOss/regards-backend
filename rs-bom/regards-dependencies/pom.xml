@@ -79,6 +79,7 @@
         <access.bootstrap.version>2.0.0-SNAPSHOT</access.bootstrap.version>
         <accessproject.bootstrap.version>2.0.0-SNAPSHOT</accessproject.bootstrap.version>
         <storage.bootstrap.version>2.0.0-SNAPSHOT</storage.bootstrap.version>
+        <dataprovider.bootstrap.version>2.0.0-SNAPSHOT</dataprovider.bootstrap.version> 
         <frontend.bootstrap.version>2.0.0-SNAPSHOT</frontend.bootstrap.version>
 
         <!-- Tests -->
@@ -112,6 +113,7 @@
         <fr.cnes.regards.modules.metrics.version>2.0.0-SNAPSHOT</fr.cnes.regards.modules.metrics.version>
         <fr.cnes.regards.modules.templates.version>2.0.0-SNAPSHOT</fr.cnes.regards.modules.templates.version>
         <fr.cnes.regards.modules.storage.version>2.0.0-SNAPSHOT</fr.cnes.regards.modules.storage.version>
+        <fr.cnes.regards.modules.dataprovider.version>2.0.0-SNAPSHOT</fr.cnes.regards.modules.dataprovider.version> 
         <fr.cnes.regards.modules.search.version>2.0.0-SNAPSHOT</fr.cnes.regards.modules.search.version>
         <fr.cnes.regards.modules.opensearch.version>2.0.0-SNAPSHOT</fr.cnes.regards.modules.opensearch.version>
         <fr.cnes.regards.modules.order.version>2.0.0-SNAPSHOT</fr.cnes.regards.modules.order.version>
@@ -793,6 +795,22 @@
                 <artifactId>storage-domain</artifactId>
                 <version>${fr.cnes.regards.modules.storage.version}</version>
             </dependency>
+            <!-- Data provider --> 
+            <dependency> 
+                <groupId>fr.cnes.regards.modules</groupId> 
+                <artifactId>acquisition-domain</artifactId> 
+                <version>${fr.cnes.regards.modules.dataprovider.version}</version> 
+            </dependency> 
+            <dependency> 
+                <groupId>fr.cnes.regards.modules</groupId> 
+                <artifactId>acquisition-rest</artifactId> 
+                <version>${fr.cnes.regards.modules.dataprovider.version}</version> 
+            </dependency> 
+            <dependency> 
+                <groupId>fr.cnes.regards.modules</groupId> 
+                <artifactId>acquisition-service</artifactId> 
+                <version>${fr.cnes.regards.modules.dataprovider.version}</version> 
+            </dependency> 
             <!-- Data Access -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.dataaccess</groupId>
