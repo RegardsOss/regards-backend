@@ -112,11 +112,13 @@ public class IngestProcessingChainController implements IResourceController<Inge
         final Resource<IngestProcessingChain> resource = resourceService.toResource(ingestChain);
         resourceService.addLink(resource, this.getClass(), "get", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, ingestChain.getName()));
-        resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
-                                MethodParamFactory.build(String.class, ingestChain.getName()));
-        // FIXME bad signature
+        if (ingestChain.getName().equals(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL)) {
+            resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
+                                    MethodParamFactory.build(String.class, ingestChain.getName()));
+        }
         resourceService.addLink(resource, this.getClass(), "update", LinkRels.UPDATE,
-                                MethodParamFactory.build(String.class, ingestChain.getName()));
+                                MethodParamFactory.build(String.class, ingestChain.getName()),
+                                MethodParamFactory.build(IngestProcessingChain.class));
         return resource;
     }
 
