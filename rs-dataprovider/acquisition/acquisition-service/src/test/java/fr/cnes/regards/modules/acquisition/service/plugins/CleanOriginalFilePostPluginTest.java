@@ -51,6 +51,7 @@ import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.builder.ProductBuilder;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
+import fr.cnes.regards.modules.acquisition.dao.IExecAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
@@ -151,6 +152,9 @@ public class CleanOriginalFilePostPluginTest extends AcquisitionScanPluginHelper
 
     @Autowired
     private IMetaFileRepository metaFileRepository;
+    
+    @Autowired
+    protected IExecAcquisitionProcessingChainRepository execProcessingChainRepository;
 
     private AcquisitionProcessingChain chain;
 
@@ -176,6 +180,7 @@ public class CleanOriginalFilePostPluginTest extends AcquisitionScanPluginHelper
         scanDirectoryRepository.deleteAll();
         productRepository.deleteAll();
         acquisitionFileRepository.deleteAll();
+        execProcessingChainRepository.deleteAll();
         processingChainRepository.deleteAll();
         metaProductRepository.deleteAll();
         metaFileRepository.deleteAll();
