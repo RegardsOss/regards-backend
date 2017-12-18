@@ -49,7 +49,11 @@
 		<!-- Module dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.microservices.administration</groupId>
-			<artifactId>local-tenant-resolver</artifactId>
+			<artifactId>remote-tenant-resolver</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.microservices.administration</groupId>
+			<artifactId>remote-authorities-provider</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.emails</groupId>
