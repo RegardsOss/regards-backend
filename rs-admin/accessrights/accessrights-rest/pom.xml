@@ -63,8 +63,7 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.microservices.administration</groupId>
-			<artifactId>local-tenant-resolver</artifactId>
-			<scope>test</scope>
+			<artifactId>local-authorities-provider</artifactId>
 		</dependency>
 	</dependencies>
 

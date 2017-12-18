@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
  * @author Marc Sordi
  * @since 1.0-SNAPSHOT
  */
-public class RemoteTenantConnectionResolver extends AbstractDiscoveryClientChecker
+public class RemoteTenantConnectionResolver extends AbstractInstanceDiscoveryClientChecker
         implements ITenantConnectionResolver {
 
     /**

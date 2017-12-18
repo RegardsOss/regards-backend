@@ -72,18 +72,4 @@ public class LocalTenantConnectionResolverAutoConfiguration {
         return new LocalTenantResolver();
     }
 
-    /**
-     *
-     * {@link IAuthoritiesProvider} implementation for local authorities resolver for administration service
-     *
-     * @return IAuthoritiesProvider
-     * @since 1.0-SNAPSHOT
-     */
-    @Bean
-    @Primary
-    IAuthoritiesProvider authoritiesProvider(IRoleService pRoleService, IResourcesService pResourcesService,
-            IRuntimeTenantResolver runtimeTenantResolver) {
-        return new LocalAuthoritiesProvider(pRoleService, pResourcesService, runtimeTenantResolver);
-    }
-
 }

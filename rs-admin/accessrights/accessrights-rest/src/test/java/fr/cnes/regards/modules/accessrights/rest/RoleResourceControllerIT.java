@@ -173,6 +173,7 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         Role newRole = roleService.createRole(new Role(NEW_ROLE_NAME, adminRole));
 
         Assert.assertNotNull(newRole.getPermissions());
+        Assert.assertFalse("newRole has no permissions", newRole.getPermissions().isEmpty());
 
         // Remove first admin inherited permission from new role
         ResourcesAccess resourceToRemove = null;

@@ -31,13 +31,6 @@ import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
-import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
-import fr.cnes.regards.modules.project.dao.IProjectRepository;
-import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.project.domain.ProjectConnection;
-import fr.cnes.regards.modules.project.service.IProjectConnectionService;
-import fr.cnes.regards.modules.project.service.IProjectService;
 
 /**
  *
@@ -51,7 +44,7 @@ import fr.cnes.regards.modules.project.service.IProjectService;
 @Configuration
 @ComponentScan("fr.cnes.regards.modules")
 @PropertySource("classpath:application-test.properties")
-@EnableAutoConfiguration(exclude = LocalTenantConnectionResolverAutoConfiguration.class)
+@EnableAutoConfiguration(exclude = LocalAuthoritiesProviderAutoConfiguration.class)
 public class AuthoritiesTestConfiguration {
 
     /**
@@ -107,35 +100,5 @@ public class AuthoritiesTestConfiguration {
     @Bean
     public IInstanceSubscriber mockInstanceSubscriber() {
         return Mockito.mock(IInstanceSubscriber.class);
-    }
-
-    /**
-     *
-     * Initialize to add a project and a project connection associated.
-     *
-     * @param pProjectRepo
-     *            JPA repository
-     * @param pProjectConnRepo
-     *            JPA repository
-     * @param pProjectService
-     *            JPA repository
-     * @return ITenantConnectionResolver
-     * @since 1.0-SNAPSHOT
-     */
-    @Bean
-    public ITenantConnectionResolver resolver(final IProjectRepository pProjectRepo,
-            final IProjectConnectionRepository pProjectConnRepo, final IProjectService pProjectService,
-            final IProjectConnectionService pProjectConnectionService) {
-        pProjectConnRepo.deleteAll();
-        pProjectRepo.deleteAll();
-        Project project = new Project(0L, "desc", "icon", true, PROJECT_NAME);
-        project.setLabel(project.getName());
-        project = pProjectRepo.save(project);
-
-        final ProjectConnection conn = new ProjectConnection(0L, project, microserviceName, "user", "password",
-                "driver", "url");
-        pProjectConnRepo.save(conn);
-
-        return new LocalTenantConnectionResolver(pProjectService, pProjectConnectionService);
     }
 }

@@ -56,7 +56,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * @author Sylvain Vissiere-Guerinet
  * @since 1.0-SNAPSHOT
  */
-public class RemoteAuthoritiesProvider extends AbstractDiscoveryClientChecker implements IAuthoritiesProvider {
+public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChecker implements IAuthoritiesProvider {
 
     /**
      * Class logger

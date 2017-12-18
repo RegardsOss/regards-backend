@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import java.util.List;
-
 import javax.annotation.PostConstruct;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,12 +32,12 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
  * @author Marc Sordi
  *
  */
-public abstract class AbstractDiscoveryClientChecker {
+public abstract class AbstractProjectDiscoveryClientChecker {
 
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDiscoveryClientChecker.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProjectDiscoveryClientChecker.class);
 
     /**
      * Admin instance id on EUREKA server
@@ -50,7 +49,7 @@ public abstract class AbstractDiscoveryClientChecker {
      */
     protected final DiscoveryClient discoveryClient;
 
-    protected AbstractDiscoveryClientChecker(final DiscoveryClient discoveryClient) {
+    protected AbstractProjectDiscoveryClientChecker(final DiscoveryClient discoveryClient) {
         this.discoveryClient = discoveryClient;
     }
 

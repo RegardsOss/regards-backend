@@ -32,7 +32,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -113,11 +112,13 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     }
 
     private ResourceMapping buildResourceMapping(final ResourcesAccess pRa, final Collection<Role> pRoles) {
-        final ResourceMapping mapping = new ResourceMapping(
-                ResourceAccessAdapter.createResourceAccess(pRa.getDescription(), null), pRa.getResource(),
-                pRa.getControllerSimpleName(), RequestMethod.valueOf(pRa.getVerb().toString()));
+        final ResourceMapping mapping = new ResourceMapping(ResourceAccessAdapter
+                                                                    .createResourceAccess(pRa.getDescription(), null),
+                                                            pRa.getResource(),
+                                                            pRa.getControllerSimpleName(),
+                                                            RequestMethod.valueOf(pRa.getVerb().toString()));
         mapping.setAutorizedRoles(pRoles.stream().map(role -> new RoleAuthority(role.getName()))
-                .collect(Collectors.toList()));
+                                          .collect(Collectors.toList()));
         return mapping;
     }
 
