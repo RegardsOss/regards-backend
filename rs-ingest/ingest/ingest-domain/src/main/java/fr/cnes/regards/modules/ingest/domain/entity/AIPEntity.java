@@ -48,7 +48,7 @@ public class AIPEntity {
      * The SIP identifier which generate the current AIP
      */
     @NotNull
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "sip_id", foreignKey = @ForeignKey(name = "fk_sip"))
     private SIPEntity sip;
 
