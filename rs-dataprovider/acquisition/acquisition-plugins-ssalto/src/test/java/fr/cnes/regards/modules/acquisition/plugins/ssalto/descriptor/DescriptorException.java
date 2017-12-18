@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.exception;
+package fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
