@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
 import fr.cnes.regards.modules.acquisition.service.IExecAcquisitionProcessingChainService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
@@ -94,7 +94,7 @@ public class PostSipAcquisitionStep extends AbstractStep implements IPostAcquisi
             postProcessPlugin.runPlugin(product, acqProcessingChain);
 
             // Update ProductStatus to SAVED
-            product.setStatus(ProductStatus.SAVED);
+            product.setStatus(ProductState.SAVED);
             productService.save(this.product);
 
             int nbSipStored = 0;

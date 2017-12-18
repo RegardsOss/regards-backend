@@ -33,9 +33,9 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
- * 
+ *
  * @author Christophe Mertz
- * 
+ *
  */
 public interface IAcquisitionFileService {
 
@@ -47,7 +47,7 @@ public interface IAcquisitionFileService {
     AcquisitionFile save(AcquisitionFile acqFile);
 
     /**
-     * 
+     *
      * @param page
      * @return a {@link Page} of {@link AcquisitionFile}
      */
@@ -96,21 +96,23 @@ public interface IAcquisitionFileService {
 
     /**
      * Find a {@link List} of {@link AcquisitionFile} for a {@link Product}
-     * @param product the {@link Product} to search
+     * @param productName the {@link Product} name to search
      * @return a {@link List} of {@link AcquisitionFile}
      */
-    List<AcquisitionFile> findByProduct(Product product);
+    List<AcquisitionFile> findByProduct(String productName);
 
     /**
-     * Set the status of all the {@link AcquisitionFile} to {@link AcquisitionFileStatus#IN_PROGRESS} and set the last acquisition date of the current {@link AcquisitionProcessingChain}.</br>
+     * Set the status of all the {@link AcquisitionFile} to {@link AcquisitionFileStatus#IN_PROGRESS} and set the last
+     * acquisition date of the current {@link AcquisitionProcessingChain}.</br>
      * If a {@link AcquisitionFile} does not exixt it is creates and persists.
-     *   
+     *
      * Save all the {@link AcquisitionFile} and the {@link AcquisitionProcessingChain}.
-     * 
+     *
      * @param acquisitionFiles a {@link Set} of {@link AcquisitionFile}
      * @param chain the current {@link AcquisitionProcessingChain}
      */
-    void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, AcquisitionProcessingChain chain) throws ModuleException;
+    void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, AcquisitionProcessingChain chain)
+            throws ModuleException;
 
     /**
      * Save the current {@link AcquisitionFile} and the associated {@link Product}.
@@ -119,10 +121,13 @@ public interface IAcquisitionFileService {
     void saveAcqFileAndProduct(AcquisitionFile acqFile);
 
     /**
-     * Calculus the {@link AcquisitionFileStatus} of the current {@link AcquisitionFile} and save the {@link AcquisitionFile} and the {@link Product}.<br>
-     * <li>If the result is <code>true</code> the status is set to {@link AcquisitionFileStatus#VALID}</br></br>
-     * <li>If the result is <code>false</code> the status is set to {@link AcquisitionFileStatus#INVALID}</br></br>
-     * @param result <code>true</code> if the check result of current file is correct   
+     * Calculus the {@link AcquisitionFileStatus} of the current {@link AcquisitionFile} and save the
+     * {@link AcquisitionFile} and the {@link Product}.<br>
+     * <li>If the result is <code>true</code> the status is set to {@link AcquisitionFileStatus#VALID}</br>
+     * </br>
+     * <li>If the result is <code>false</code> the status is set to {@link AcquisitionFileStatus#INVALID}</br>
+     * </br>
+     * @param result <code>true</code> if the check result of current file is correct
      * @param session the current session
      * @param acqFile the current {@link AcquisitionFile}
      * @param productName the {@link Product} name

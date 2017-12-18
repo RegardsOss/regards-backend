@@ -34,7 +34,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.builder.ExecAcquisitionProcessingChainBuilder;
 import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionProcessingChainConfiguration;
 import fr.cnes.regards.modules.acquisition.service.conf.MockedFeignClientConf;
@@ -67,37 +67,37 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
         // Create Products
 
         // ===================== session-001 ===================== 
-        createProduct("product-001", "session-001", metaProduct001, false, ProductStatus.COMPLETED, "file-001",
+        createProduct("product-001", "session-001", metaProduct001, false, ProductState.COMPLETED, "file-001",
                       "file-002");
-        createProduct("product-002", "session-001", metaProduct001, false, ProductStatus.COMPLETED, "file-003",
+        createProduct("product-002", "session-001", metaProduct001, false, ProductState.COMPLETED, "file-003",
                       "file-004");
 
-        createProduct("product-004", "session-001", metaProduct001, false, ProductStatus.COMPLETED, "file-007",
+        createProduct("product-004", "session-001", metaProduct001, false, ProductState.COMPLETED, "file-007",
                       "file-008");
-        createProduct("product-005", "session-001", metaProduct001, false, ProductStatus.COMPLETED, "file-009",
+        createProduct("product-005", "session-001", metaProduct001, false, ProductState.COMPLETED, "file-009",
                       "file-010");
-        createProduct("product-006", "session-001", metaProduct001, false, ProductStatus.COMPLETED, "file-011",
+        createProduct("product-006", "session-001", metaProduct001, false, ProductState.COMPLETED, "file-011",
                       "file-012");
 
         // ===================== session-002 =====================
-        createProduct("product-003", "session-002", metaProduct002, false, ProductStatus.FINISHED, "file-005",
+        createProduct("product-003", "session-002", metaProduct002, false, ProductState.FINISHED, "file-005",
                       "file-006");
 
-        createProduct("product-007", "session-002", metaProduct002, false, ProductStatus.COMPLETED, "file-013",
+        createProduct("product-007", "session-002", metaProduct002, false, ProductState.COMPLETED, "file-013",
                       "file-014");
-        createProduct("product-008", "session-002", metaProduct002, true, ProductStatus.COMPLETED, "file-015",
+        createProduct("product-008", "session-002", metaProduct002, true, ProductState.COMPLETED, "file-015",
                       "file-016");
-        createProduct("product-009", "session-002", metaProduct002, true, ProductStatus.COMPLETED, "file-017",
+        createProduct("product-009", "session-002", metaProduct002, true, ProductState.COMPLETED, "file-017",
                       "file-018");
-        createProduct("product-010", "session-002", metaProduct002, false, ProductStatus.COMPLETED, "file-019");
-        createProduct("product-011", "session-002", metaProduct002, false, ProductStatus.COMPLETED, "file-020");
-        createProduct("product-012", "session-002", metaProduct002, false, ProductStatus.COMPLETED, "file-021");
-        createProduct("product-013", "session-002", metaProduct002, false, ProductStatus.COMPLETED, "file-022");
-        createProduct("product-014", "session-002", metaProduct002, false, ProductStatus.COMPLETED, "file-023");
-        createProduct("product-015", "session-002", metaProduct002, false, ProductStatus.COMPLETED, "file-024");
-        createProduct("product-016", "session-002", metaProduct002, false, ProductStatus.COMPLETED, "file-025");
+        createProduct("product-010", "session-002", metaProduct002, false, ProductState.COMPLETED, "file-019");
+        createProduct("product-011", "session-002", metaProduct002, false, ProductState.COMPLETED, "file-020");
+        createProduct("product-012", "session-002", metaProduct002, false, ProductState.COMPLETED, "file-021");
+        createProduct("product-013", "session-002", metaProduct002, false, ProductState.COMPLETED, "file-022");
+        createProduct("product-014", "session-002", metaProduct002, false, ProductState.COMPLETED, "file-023");
+        createProduct("product-015", "session-002", metaProduct002, false, ProductState.COMPLETED, "file-024");
+        createProduct("product-016", "session-002", metaProduct002, false, ProductState.COMPLETED, "file-025");
 
-        createProduct("product-099", "session-003", metaProduct003, false, ProductStatus.ACQUIRING, "file-099");
+        createProduct("product-099", "session-003", metaProduct003, false, ProductState.ACQUIRING, "file-099");
 
         // the chain is not active to not activate it 
         chain.setActive(false);
@@ -115,10 +115,10 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
                                                  "product-013", "product-014", "product-015", "product-016"));
 
         Assert.assertEquals(14, productService
-                .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+                .findBySendedAndStatusIn(false, ProductState.COMPLETED, ProductState.FINISHED).size());
         Assert.assertEquals(2, productService
-                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductState.COMPLETED, ProductState.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING).size());
         Assert.assertNotNull(execProcessingChainService.findBySession(chain.getSession()));
         Assert.assertEquals(process, execProcessingChainService.findBySession(chain.getSession()));
 
@@ -127,10 +127,10 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
         Assert.assertEquals(1, execProcessingChainRepository.findAll().size());
 
         Assert.assertEquals(0, productService
-                .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+                .findBySendedAndStatusIn(false, ProductState.COMPLETED, ProductState.FINISHED).size());
         Assert.assertEquals(16, productService
-                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductState.COMPLETED, ProductState.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING).size());
 
         ExecAcquisitionProcessingChain processLoad = execProcessingChainService.findBySession(chain.getSession());
         Assert.assertEquals(16, processLoad.getNbSipCreated()); // 16 products created cf mock
@@ -144,10 +144,10 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
         mockIngestClientResponseUnauthorized();
 
         Assert.assertEquals(14, productService
-                .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+                .findBySendedAndStatusIn(false, ProductState.COMPLETED, ProductState.FINISHED).size());
         Assert.assertEquals(2, productService
-                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductState.COMPLETED, ProductState.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING).size());
 
         productBulkRequestService.runBulkRequest();
 
@@ -155,10 +155,10 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
 
         // Nothing should be change
         Assert.assertEquals(14, productService
-                .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+                .findBySendedAndStatusIn(false, ProductState.COMPLETED, ProductState.FINISHED).size());
         Assert.assertEquals(2, productService
-                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductState.COMPLETED, ProductState.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING).size());
 
     }
 
@@ -170,20 +170,20 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
                         "product-015", "product-016"), Arrays.asList("product-001", "product-002"));
 
         Assert.assertEquals(14, productService
-                .findBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(false, ProductState.COMPLETED, ProductState.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING).size());
         Assert.assertEquals(2, productService
-                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+                .findBySendedAndStatusIn(true, ProductState.COMPLETED, ProductState.FINISHED).size());
 
         productBulkRequestService.runBulkRequest();
 
         Assert.assertEquals(1, execProcessingChainRepository.findAll().size());
 
         // 2 products in error are not sended
-        Assert.assertEquals(2, productService.findBySendedAndStatusIn(false, ProductStatus.ERROR).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+        Assert.assertEquals(2, productService.findBySendedAndStatusIn(false, ProductState.ERROR).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING).size());
         Assert.assertEquals(14, productService
-                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
+                .findBySendedAndStatusIn(true, ProductState.COMPLETED, ProductState.FINISHED).size());
 
         ExecAcquisitionProcessingChain processLoad = execProcessingChainService.findBySession(chain.getSession());
         Assert.assertEquals(14, processLoad.getNbSipCreated()); // 14 products created cf mock

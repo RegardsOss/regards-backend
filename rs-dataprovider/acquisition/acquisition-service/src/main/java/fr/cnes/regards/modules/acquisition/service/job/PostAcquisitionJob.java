@@ -34,7 +34,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeExcepti
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.job.SIPEventJobParameter;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
@@ -76,20 +76,11 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
         LOGGER.info("Start POST acquisition SIP job for the product <{}>", sipEvent.getIpId());
 
         try {
+            // Load product
             Product product = productService.retrieve(sipEvent.getIpId());
+            // Retrieve acquisition chain
             AcquisitionProcessingChain acqProcessingChain = acqProcessChainService
                     .findByMetaProduct(product.getMetaProduct());
-
-            if (acqProcessingChain == null) {
-                String msg = "The chain generation is mandatory";
-                LOGGER.error(msg);
-                throw new JobRuntimeException(msg);
-            }
-
-            if (product == null) {
-                throw new JobRuntimeException("The product is mandatory");
-            }
-
             // Launch post processing plugin if present
             if (acqProcessingChain.getPostProcessSipPluginConf().isPresent()) {
                 LOGGER.info("[{}-{}] : starting post acquisition job for job {}", acqProcessingChain.getLabel(),
@@ -103,8 +94,9 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
                             acqProcessingChain.getSession());
             }
 
-            // Update ProductStatus to SAVED
-            product.setStatus(ProductStatus.SAVED);
+            // TODO manage event
+            // Update product
+            product.setSipState(ProductSIPState.INGESTED);
             productService.save(product);
 
             int nbSipStored = 0;

@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -36,13 +35,11 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.jobs.domain.step.IProcessingStep;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionProcessingChainJobParameter;
-import fr.cnes.regards.modules.acquisition.domain.job.ProductJobParameter;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.job.step.AcquisitionCheckStep;
@@ -54,7 +51,7 @@ import fr.cnes.regards.modules.acquisition.service.job.step.AcquisitionScanStep;
  * <li>a step {@link AcquisitionCheckStep} to check the {@link AcquisitionFile} and to determines the {@link Product}
  * associated<br>
  * And for each scanned {@link Product} not already send to Ingest microservice, and with its status equals to
- * {@link ProductStatus#COMPLETED} or {@link ProductStatus#FINISHED},
+ * {@link ProductState#COMPLETED} or {@link ProductState#FINISHED},
  * a new {@link JobInfo} of class {@link SIPGenerationJob} is create and queued.
  *
  * @author Christophe Mertz
@@ -71,16 +68,7 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
     private IProductService productService;
 
     @Autowired
-    private IJobInfoService jobInfoService;
-
-    @Autowired
     private IAcquisitionProcessingChainService acqProcessChainService;
-
-    /**
-     * Resolver to retrieve authentication information
-     */
-    @Autowired
-    private IAuthenticationResolver authResolver;
 
     /**
      * The current {@link AcquisitionProcessingChain}
@@ -98,61 +86,27 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
             beanFactory.autowireBean(scanStep);
             scanStep.execute(null);
             // Step 2 : optional files checking
-            IProcessingStep<Void, Void> chechStep = new AcquisitionCheckStep(this);
-            beanFactory.autowireBean(chechStep);
-            chechStep.execute(null);
+            IProcessingStep<Void, Void> checkStep = new AcquisitionCheckStep(this);
+            beanFactory.autowireBean(checkStep);
+            checkStep.execute(null);
 
-            // for each complete product, create and queued a Job to generate SIP
-            final int n = submitProducts();
+            // For each complete product, creates and schedules a job to generate SIP
+            Set<Product> products = productService.findChainProductsToSchedule(acqProcessingChain);
+            for (Product p : products) {
+                productService.scheduleProductSIPGeneration(p, acqProcessingChain);
+            }
 
             // Job is terminated ... release processing chain
             acqProcessingChain.setRunning(false);
             acqProcessChainService.createOrUpdate(acqProcessingChain);
 
             LOGGER.info("[{}-{}] : {} jobs for SIP generation queued", acqProcessingChain.getLabel(),
-                        acqProcessingChain.getSession(), n);
+                        acqProcessingChain.getSession(), products.size());
 
         } catch (ModuleException pse) {
             LOGGER.error("Business error", pse);
             throw new JobRuntimeException(pse);
         }
-    }
-
-    /**
-     * Create and queued a {@link JobInfo} of class {@link SIPGenerationJob} for each {@link Product} not
-     * already send to ingest microservice,<br>
-     * and with its status equals to {@link ProductStatus#COMPLETED} or {@link ProductStatus#FINISHED}.
-     * @return the number of {@link JobInfo} create and queued
-     */
-    private int submitProducts() {
-        Set<Product> products = productService.findBySendedAndStatusIn(Boolean.FALSE, ProductStatus.COMPLETED,
-                                                                       ProductStatus.FINISHED);
-        int nbJobQueued = 0;
-        for (Product apr : products) {
-            if (scheduleSIPGenerationJob(apr)) {
-                nbJobQueued++;
-            } else {
-                LOGGER.error("error :{}", apr.getProductName());
-            }
-        }
-        return nbJobQueued;
-    }
-
-    /**
-     * Create and queued a {@link JobInfo} of class {@link SIPGenerationJob} for a {@link Product}.
-     * @param product the {@link Product} to process
-     * @return true if the {@link JobInfo} is create and queued
-     */
-    private boolean scheduleSIPGenerationJob(Product product) {
-        // Create a ScanJob
-        JobInfo acquisition = new JobInfo();
-        acquisition.setParameters(new AcquisitionProcessingChainJobParameter(acqProcessingChain),
-                                  new ProductJobParameter(product.getProductName()));
-        acquisition.setClassName(SIPGenerationJob.class.getName());
-        acquisition.setOwner(authResolver.getUser());
-
-        acquisition = jobInfoService.createAsQueued(acquisition);
-        return acquisition != null;
     }
 
     @Override

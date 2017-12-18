@@ -60,7 +60,7 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
@@ -225,7 +225,7 @@ public class CleanOriginalFilePostPluginTest extends AcquisitionScanPluginHelper
         File tmpFile = File.createTempFile("file-100", ".dat");
         FileAcquisitionInformations fai1 = new FileAcquisitionInformations();
         fai1.setAcquisitionDirectory("/tmp");
-        product = createProduct("product-100", true, ProductStatus.COMPLETED, tmpFile.getName(), fai1);
+        product = createProduct("product-100", true, ProductState.COMPLETED, tmpFile.getName(), fai1);
         Assert.assertNotNull(product);
 
         plugin.runPlugin(product, chain);
@@ -250,7 +250,7 @@ public class CleanOriginalFilePostPluginTest extends AcquisitionScanPluginHelper
             File f1 = File.createTempFile("file-100", ".dat");
             FileAcquisitionInformations fai1 = new FileAcquisitionInformations();
             fai1.setAcquisitionDirectory("/tmp");
-            product = createProduct("product-100", true, ProductStatus.COMPLETED, f1.getName(), fai1);
+            product = createProduct("product-100", true, ProductState.COMPLETED, f1.getName(), fai1);
         } catch (IOException e) {
             Assert.fail();
         }
@@ -263,13 +263,13 @@ public class CleanOriginalFilePostPluginTest extends AcquisitionScanPluginHelper
      * {@link Product} creation
      * @param productName the {@link Product} name
      * @param sended <code>true</code> or <code>false</code> if the {@link SIP} is send
-     * @param status the {@link ProductStatus}
+     * @param status the {@link ProductState}
      * @param fileName the file name of the {@link Product}
      * @param fileAcqInf the {@link FileAcquisitionInformations}
      * @return the created {@link Product}
      * @throws ModuleException if an error occurs
      */
-    private Product createProduct(String productName, boolean sended, ProductStatus status, String fileName,
+    private Product createProduct(String productName, boolean sended, ProductState status, String fileName,
             FileAcquisitionInformations fileAcqInf) throws ModuleException {
         Product product = ProductBuilder.build(productName).withStatus(status).withMetaProduct(metaProduct)
                 .isSended(sended).withSession(chain.getSession()).get();

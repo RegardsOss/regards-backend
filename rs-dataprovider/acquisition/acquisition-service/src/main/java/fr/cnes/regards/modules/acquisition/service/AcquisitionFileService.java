@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -68,7 +68,7 @@ public class AcquisitionFileService implements IAcquisitionFileService {
 
     /**
      * Constructor with the bean method's member as parameters
-     * 
+     *
      * @param acqFileRepository a {@link AcquisitionFile} repository
      * @param prService a {@link Product} service
      * @param acqProcessChainService a {@link AcquisitionProcessingChain} service
@@ -122,8 +122,8 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     }
 
     @Override
-    public List<AcquisitionFile> findByProduct(Product product) {
-        return acqfileRepository.findByProduct(product);
+    public List<AcquisitionFile> findByProduct(String productName) {
+        return acqfileRepository.findByProductProductName(productName);
     }
 
     @Override
@@ -150,14 +150,14 @@ public class AcquisitionFileService implements IAcquisitionFileService {
                 if (chain.getLastDateActivation() == null) {
                     chain.setLastDateActivation(af.getAcqDate());
                 } else {
-                    if (af.getAcqDate() != null && chain.getLastDateActivation().isBefore(af.getAcqDate())) {
+                    if ((af.getAcqDate() != null) && chain.getLastDateActivation().isBefore(af.getAcqDate())) {
                         chain.setLastDateActivation(af.getAcqDate());
                     }
                 }
             }
         }
 
-        // Save the AcquisitionProcessingChain the last activation date as been modified 
+        // Save the AcquisitionProcessingChain the last activation date as been modified
         acqProcessingChainService.createOrUpdate(chain);
     }
 

@@ -30,7 +30,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionProcessingChainConfiguration;
 import fr.cnes.regards.modules.acquisition.service.conf.MockedFeignClientConf;
 import fr.cnes.regards.modules.acquisition.service.step.AcquisitionITHelper;
@@ -132,15 +132,15 @@ public class ScheduledStartChainIT extends AcquisitionITHelper {
         Assert.assertTrue(acqProcessChainService.retrieve(chain.getId()).isActive());
         Assert.assertFalse(acqProcessChainService.retrieve(chain.getId()).isRunning());
         Assert.assertEquals(0,
-                            productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING,
-                                                                   ProductStatus.COMPLETED, ProductStatus.FINISHED)
+                            productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING,
+                                                                   ProductState.COMPLETED, ProductState.FINISHED)
                                     .size());
 
         Thread.sleep(Integer.parseInt(scheduledTasksDelay) + 1_000);
 
         Assert.assertEquals(0,
-                            productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING,
-                                                                   ProductStatus.COMPLETED, ProductStatus.FINISHED)
+                            productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING,
+                                                                   ProductState.COMPLETED, ProductState.FINISHED)
                                     .size());
         Assert.assertEquals(1, acqProcessChainService.findByActiveTrueAndRunningFalse().size());
         Assert.assertTrue(acqProcessChainService.retrieve(chain.getId()).isActive());

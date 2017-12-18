@@ -23,9 +23,12 @@ import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
@@ -52,7 +55,7 @@ public interface IProductService {
      * Retrieve one specified {@link Product}
      * @param productName a product name
      */
-    Product retrieve(String productName);
+    Product retrieve(String productName) throws ModuleException;
 
     /**
      * Delete one specified {@link Product}
@@ -66,34 +69,48 @@ public interface IProductService {
      */
     void delete(Product product);
 
-    Set<Product> findByStatus(ProductStatus status);
-
-    Set<Product> findBySendedAndStatusIn(Boolean sended, ProductStatus... status);
-
-    Set<String> findDistinctIngestChainBySendedAndStatusIn(Boolean sended, ProductStatus... status);
-
-    Set<String> findDistinctSessionByIngestChainAndSendedAndStatusIn(String ingestChain, Boolean sended,
-            ProductStatus... status);
-
-    Page<Product> findAllByIngestChainAndSessionAndSendedAndStatusIn(String ingestChain, String session, Boolean sended,
-            Pageable pageable, ProductStatus... status);
+    /**
+     * @return list of {@link ProductState#FINISHED} or {@link ProductState#COMPLETED} products for specified
+     *         acquisition chain <b>not already scheduled</b>.
+     */
+    Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain chain);
 
     /**
-     * Calcul the {@link ProductStatus} :
+     * Schedule {@link Product} SIP generation
+     * @param product product for which SIP generation has to be scheduled
+     * @param chain related chain reference
+     * @return scheduled {@link JobInfo}
+     */
+    JobInfo scheduleProductSIPGeneration(Product product, AcquisitionProcessingChain chain);
+
+    Set<Product> findByStatus(ProductState status);
+
+    Set<Product> findBySendedAndStatusIn(Boolean sended, ProductState... status);
+
+    Set<String> findDistinctIngestChainBySendedAndStatusIn(Boolean sended, ProductState... status);
+
+    Set<String> findDistinctSessionByIngestChainAndSendedAndStatusIn(String ingestChain, Boolean sended,
+            ProductState... status);
+
+    Page<Product> findAllByIngestChainAndSessionAndSendedAndStatusIn(String ingestChain, String session, Boolean sended,
+            Pageable pageable, ProductState... status);
+
+    /**
+     * Calcul the {@link ProductState} :
      *
-     * <li>{@link ProductStatus#ACQUIRING} : the initial state, at least a mandatory file is missing</br>
+     * <li>{@link ProductState#ACQUIRING} : the initial state, at least a mandatory file is missing</br>
      * </br>
      *
-     * <li>{@link ProductStatus#COMPLETED} : all mandatory files is acquired</br>
+     * <li>{@link ProductState#COMPLETED} : all mandatory files is acquired</br>
      * </br>
      *
-     * <li>{@link ProductStatus#FINISHED} : the mandatory and optional files are acquired</br>
+     * <li>{@link ProductState#FINISHED} : the mandatory and optional files are acquired</br>
      * </br>
      *
-     * <li>{@link ProductStatus#SAVED} : the {@link Product} is saved by the microservice Ingest</br>
+     * <li>{@link ProductState#SAVED} : the {@link Product} is saved by the microservice Ingest</br>
      * </br>
      *
-     * <li>{@link ProductStatus#ERROR} : the {@link Product} is in error</br>
+     * <li>{@link ProductState#ERROR} : the {@link Product} is in error</br>
      * </br>
      *
      * @param product the {@link Product}
@@ -101,7 +118,7 @@ public interface IProductService {
     void calcProductStatus(Product product);
 
     /**
-     * Get the {@link Product} corresponding to the productName and calculate the {@link ProductStatus}.<br>
+     * Get the {@link Product} corresponding to the productName and calculate the {@link ProductState}.<br>
      * If it does not exists, create this {@link Product}.
      *
      * @param session the current session

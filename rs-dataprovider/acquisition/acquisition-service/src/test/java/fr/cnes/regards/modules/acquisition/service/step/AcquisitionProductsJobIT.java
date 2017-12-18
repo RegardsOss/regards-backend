@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
@@ -78,9 +78,9 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
         Assert.assertEquals(1, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
         Assert.assertEquals(5, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(1, productService.findByStatus(ProductStatus.FINISHED).size());
-        Assert.assertEquals(4, productService.findByStatus(ProductStatus.COMPLETED).size());
-        Assert.assertEquals(0, productService.findByStatus(ProductStatus.ERROR).size());
+        Assert.assertEquals(1, productService.findByStatus(ProductState.FINISHED).size());
+        Assert.assertEquals(4, productService.findByStatus(ProductState.COMPLETED).size());
+        Assert.assertEquals(0, productService.findByStatus(ProductState.ERROR).size());
 
         chain = acqProcessChainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
@@ -131,7 +131,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
     }
 
     /**
-     * Acquire 3 products with an optional {@link MetaFile}. The {@link Product} should be {@link ProductStatus#COMPLETED}. 
+     * Acquire 3 products with an optional {@link MetaFile}. The {@link Product} should be {@link ProductState#COMPLETED}. 
      * @throws ModuleException
      * @throws InterruptedException
      */
@@ -169,7 +169,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
         Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
         Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(3, productService.findByStatus(ProductStatus.COMPLETED).size());
+        Assert.assertEquals(3, productService.findByStatus(ProductState.COMPLETED).size());
 
         Assert.assertEquals(1, execProcessingChainService.retrieveAll(new PageRequest(0, 10)).getNumberOfElements());
 
@@ -178,7 +178,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
     }
 
     /**
-     * Acquire 3 products with only mandatory {@link MetaFile}. The {@link Product} should be {@link ProductStatus#FINISHED}. 
+     * Acquire 3 products with only mandatory {@link MetaFile}. The {@link Product} should be {@link ProductState#FINISHED}. 
      * @throws ModuleException
      * @throws InterruptedException
      */
@@ -217,7 +217,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
         Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
         Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(3, productService.findByStatus(ProductStatus.FINISHED).size());
+        Assert.assertEquals(3, productService.findByStatus(ProductState.FINISHED).size());
 
         chain = acqProcessChainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
@@ -260,7 +260,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         /*
          *  3 products are acquired but for each 1 mandatory file is missing 
          */
-        Assert.assertEquals(3, productService.findByStatus(ProductStatus.ACQUIRING).size());
+        Assert.assertEquals(3, productService.findByStatus(ProductState.ACQUIRING).size());
 
         for (Product product : productService.retrieveAll(new PageRequest(0, 10))) {
             Assert.assertFalse(product.isSended());
@@ -295,7 +295,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         /**
          * the 3 products are finished
          */
-        Assert.assertEquals(3, productService.findByStatus(ProductStatus.FINISHED).size());
+        Assert.assertEquals(3, productService.findByStatus(ProductState.FINISHED).size());
     }
 
     @Test

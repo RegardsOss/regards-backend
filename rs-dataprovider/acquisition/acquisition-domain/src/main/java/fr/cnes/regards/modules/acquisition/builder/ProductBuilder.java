@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.acquisition.builder;
 
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
@@ -65,7 +65,7 @@ public final class ProductBuilder {
      * @param status the status {@link String} value
      * @return the current {@link ProductBuilder}
      */
-    public ProductBuilder withStatus(ProductStatus status) {
+    public ProductBuilder withStatus(ProductState status) {
         product.setStatus(status);
         return this;
     }

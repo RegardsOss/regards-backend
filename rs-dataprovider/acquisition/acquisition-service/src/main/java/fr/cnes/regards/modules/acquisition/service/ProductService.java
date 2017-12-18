@@ -26,17 +26,27 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
+import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionProcessingChainJobParameter;
+import fr.cnes.regards.modules.acquisition.domain.job.ProductJobParameter;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 
 /**
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -55,11 +65,17 @@ public class ProductService implements IProductService {
     private final IProductRepository productRepository;
 
     /**
-     * Constructor with the bean method's member as parameters
-     * @param repository a {@link IProductRepository} bean
+     * Resolver to retrieve authentication information
      */
-    public ProductService(IProductRepository repository) {
+    private final IAuthenticationResolver authResolver;
+
+    private final IJobInfoService jobInfoService;
+
+    public ProductService(IProductRepository repository, IAuthenticationResolver authResolver,
+            IJobInfoService jobInfoService) {
         this.productRepository = repository;
+        this.authResolver = authResolver;
+        this.jobInfoService = jobInfoService;
     }
 
     @Override
@@ -73,8 +89,14 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Product retrieve(String productName) {
-        return productRepository.findCompleteByProductName(productName);
+    public Product retrieve(String productName) throws ModuleException {
+        Product product = productRepository.findCompleteByProductName(productName);
+        if (product == null) {
+            String message = String.format("Product with name \"%s\" not found", productName);
+            LOG.error(message);
+            throw new EntityNotFoundException(message);
+        }
+        return product;
     }
 
     @Override
@@ -93,29 +115,55 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Set<Product> findByStatus(ProductStatus status) {
+    public Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain chain) {
+        return productRepository.findChainProductsToSchedule(chain.getLabel());
+    }
+
+    /**
+     * Schedule a {@link SIPGenerationJob} and update product SIP state in same transaction.
+     */
+    @Override
+    public JobInfo scheduleProductSIPGeneration(Product product, AcquisitionProcessingChain chain) {
+
+        // Schedule job
+        JobInfo acquisition = new JobInfo();
+        acquisition.setParameters(new AcquisitionProcessingChainJobParameter(chain),
+                                  new ProductJobParameter(product.getProductName()));
+        acquisition.setClassName(SIPGenerationJob.class.getName());
+        acquisition.setOwner(authResolver.getUser());
+        acquisition = jobInfoService.createAsQueued(acquisition);
+
+        // Change product SIP state
+        product.setSipState(ProductSIPState.SCHEDULED);
+        productRepository.save(product);
+
+        return acquisition;
+    }
+
+    @Override
+    public Set<Product> findByStatus(ProductState status) {
         return productRepository.findByStatus(status);
     }
 
     @Override
-    public Set<Product> findBySendedAndStatusIn(Boolean sended, ProductStatus... status) {
+    public Set<Product> findBySendedAndStatusIn(Boolean sended, ProductState... status) {
         return productRepository.findBySendedAndStatusIn(sended, status);
     }
 
     @Override
-    public Set<String> findDistinctIngestChainBySendedAndStatusIn(Boolean sended, ProductStatus... status) {
+    public Set<String> findDistinctIngestChainBySendedAndStatusIn(Boolean sended, ProductState... status) {
         return productRepository.findDistinctIngestChainBySendedAndStatusIn(sended, status);
     }
 
     @Override
     public Set<String> findDistinctSessionByIngestChainAndSendedAndStatusIn(String ingestChain, Boolean sended,
-            ProductStatus... status) {
+            ProductState... status) {
         return productRepository.findDistinctSessionByIngestChainAndSendedAndStatusIn(ingestChain, sended, status);
     }
 
     @Override
     public Page<Product> findAllByIngestChainAndSessionAndSendedAndStatusIn(String ingestChain, String session,
-            Boolean sended, Pageable pageable, ProductStatus... status) {
+            Boolean sended, Pageable pageable, ProductState... status) {
         return productRepository.findAllByIngestChainAndSessionAndSendedAndStatusIn(ingestChain, session, sended,
                                                                                     pageable, status);
     }
@@ -123,7 +171,7 @@ public class ProductService implements IProductService {
     @Override
     public void calcProductStatus(Product product) {
         // At least one mandatory file is VALID
-        product.setStatus(ProductStatus.ACQUIRING);
+        product.setState(ProductState.ACQUIRING);
 
         if (product.getMetaProduct() == null) {
             LOG.error("[{}] The meta product of the product {} <{}> should not be null", product.getSession(),
@@ -157,10 +205,10 @@ public class ProductService implements IProductService {
 
         if (nbTotalMandatory == nbActualMandatory) {
             // ProductStatus is COMPLETED if mandatory files is acquired
-            product.setStatus(ProductStatus.COMPLETED);
+            product.setStatus(ProductState.COMPLETED);
             if (nbTotalOptional == nbActualOptional) {
                 // ProductStatus is FINISHED if mandatory and optional files is acquired
-                product.setStatus(ProductStatus.FINISHED);
+                product.setStatus(ProductState.FINISHED);
             }
         }
     }
@@ -172,7 +220,7 @@ public class ProductService implements IProductService {
         Product currentProduct = this.retrieve(productName);
 
         if (currentProduct == null) {
-            // It is a new Product,  create it
+            // It is a new Product, create it
             currentProduct = new Product();
             currentProduct.setProductName(productName);
             currentProduct.setMetaProduct(metaProduct);
@@ -185,5 +233,4 @@ public class ProductService implements IProductService {
 
         return currentProduct;
     }
-
 }

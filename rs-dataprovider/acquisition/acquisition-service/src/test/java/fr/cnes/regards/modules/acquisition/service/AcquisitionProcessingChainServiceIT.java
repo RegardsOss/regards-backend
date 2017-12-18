@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionServiceConfiguration;
 
@@ -127,7 +127,7 @@ public class AcquisitionProcessingChainServiceIT {
     }
 
     private Product addProduct(MetaProduct metaProduct, String productName) throws ModuleException {
-        Product product = productService.save(ProductBuilder.build(productName).withStatus(ProductStatus.ACQUIRING)
+        Product product = productService.save(ProductBuilder.build(productName).withStatus(ProductState.ACQUIRING)
                 .withMetaProduct(metaProduct).get());
         metaProduct = metaProductService.createOrUpdate(metaProduct);
         product.setMetaProduct(metaProduct);

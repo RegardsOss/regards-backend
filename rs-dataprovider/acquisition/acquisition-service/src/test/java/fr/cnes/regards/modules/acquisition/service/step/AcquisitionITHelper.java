@@ -78,7 +78,7 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
@@ -406,7 +406,7 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
      * @return the {@link Product} created
      */
     protected Product createProduct(String productName, String session, MetaProduct metaProduct, boolean sended,
-            ProductStatus status, String... fileNames) {
+            ProductState status, String... fileNames) {
         Product product = ProductBuilder.build(productName).withStatus(status).withMetaProduct(metaProduct)
                 .isSended(sended).withSession(session).withIngestProcessingChain(metaProduct.getIngestChain()).get();
 
@@ -432,7 +432,7 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
      * @return the {@link Product} created
      */
     protected Product createProduct(String productName, String session, MetaProduct metaProduct, boolean sended,
-            ProductStatus status, String fileName, FileAcquisitionInformations fileAcqInf) {
+            ProductState status, String fileName, FileAcquisitionInformations fileAcqInf) {
         Product product = ProductBuilder.build(productName).withStatus(status).withMetaProduct(metaProduct)
                 .isSended(sended).withSession(session).withIngestProcessingChain(metaProduct.getIngestChain()).get();
 

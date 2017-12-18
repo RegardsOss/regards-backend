@@ -23,7 +23,7 @@ package fr.cnes.regards.modules.acquisition.domain;
  * @author Christophe Mertz
  *
  */
-public enum ProductStatus {
+public enum ProductState {
     /**
      * At least a mandatory file is missing
      */

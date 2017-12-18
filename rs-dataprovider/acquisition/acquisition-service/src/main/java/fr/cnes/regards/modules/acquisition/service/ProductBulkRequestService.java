@@ -35,7 +35,7 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
@@ -91,7 +91,7 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
 
         // Get all the ingestChain for that at least one product is ready to be send to ingest
         Set<String> ingestChains = productService
-                .findDistinctIngestChainBySendedAndStatusIn(false, ProductStatus.COMPLETED, ProductStatus.FINISHED);
+                .findDistinctIngestChainBySendedAndStatusIn(false, ProductState.COMPLETED, ProductState.FINISHED);
 
         if (ingestChains.isEmpty()) {
             LOG.debug("Any products ready for SIP creation");
@@ -125,8 +125,8 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
 
         // Get all the session
         Set<String> sessions = productService
-                .findDistinctSessionByIngestChainAndSendedAndStatusIn(ingestChain, false, ProductStatus.COMPLETED,
-                                                                      ProductStatus.FINISHED);
+                .findDistinctSessionByIngestChainAndSendedAndStatusIn(ingestChain, false, ProductState.COMPLETED,
+                                                                      ProductState.FINISHED);
         for (String session : sessions) {
             boolean stop = false;
             while (!stop) {
@@ -145,7 +145,7 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
     private boolean postSIPOnePage(String ingestChain, String session, Pageable pageable) {
         Page<Product> page = productService
                 .findAllByIngestChainAndSessionAndSendedAndStatusIn(ingestChain, session, false, pageable,
-                                                                    ProductStatus.COMPLETED, ProductStatus.FINISHED);
+                                                                    ProductState.COMPLETED, ProductState.FINISHED);
         if (page.getContent().isEmpty()) {
             return false;
         }
@@ -222,7 +222,7 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
                           sipEntity.getRejectionCauses());
 
                 nbSipError++;
-                product.setStatus(ProductStatus.ERROR);
+                product.setStatus(ProductState.ERROR);
 
             } else if (sipEntity.getState().equals(SIPState.CREATED)) {
                 nbSipOK++;

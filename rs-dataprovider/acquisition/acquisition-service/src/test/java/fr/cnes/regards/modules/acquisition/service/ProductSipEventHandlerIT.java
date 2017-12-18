@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
 import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionProcessingChainConfiguration;
@@ -88,35 +88,35 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
         // Create a Product
 
         // ===================== session-001 ===================== 
-        createProduct("product-001", "session-001", metaProduct001, true, ProductStatus.COMPLETED, "file-001.dat",
+        createProduct("product-001", "session-001", metaProduct001, true, ProductState.COMPLETED, "file-001.dat",
                       "file-002.dat");
-        createProduct("product-002", "session-001", metaProduct001, true, ProductStatus.COMPLETED, "file-003",
+        createProduct("product-002", "session-001", metaProduct001, true, ProductState.COMPLETED, "file-003",
                       "file-004");
-        createProduct("product-004", "session-001", metaProduct002, true, ProductStatus.COMPLETED, "file-007",
+        createProduct("product-004", "session-001", metaProduct002, true, ProductState.COMPLETED, "file-007",
                       "file-008");
-        createProduct("product-005", "session-001", metaProduct002, true, ProductStatus.COMPLETED, "file-009",
+        createProduct("product-005", "session-001", metaProduct002, true, ProductState.COMPLETED, "file-009",
                       "file-010");
-        createProduct("product-006", "session-001", metaProduct002, true, ProductStatus.COMPLETED, "file-011",
+        createProduct("product-006", "session-001", metaProduct002, true, ProductState.COMPLETED, "file-011",
                       "file-012");
 
         // ===================== session-002 =====================
-        createProduct("product-003", "session-002", metaProduct001, true, ProductStatus.FINISHED, "file-005",
+        createProduct("product-003", "session-002", metaProduct001, true, ProductState.FINISHED, "file-005",
                       "file-006");
-        createProduct("product-007", "session-002", metaProduct002, true, ProductStatus.COMPLETED, "file-013",
+        createProduct("product-007", "session-002", metaProduct002, true, ProductState.COMPLETED, "file-013",
                       "file-014");
-        createProduct("product-008", "session-002", metaProduct002, true, ProductStatus.COMPLETED, "file-015",
+        createProduct("product-008", "session-002", metaProduct002, true, ProductState.COMPLETED, "file-015",
                       "file-016");
-        createProduct("product-009", "session-002", metaProduct002, true, ProductStatus.COMPLETED, "file-017",
+        createProduct("product-009", "session-002", metaProduct002, true, ProductState.COMPLETED, "file-017",
                       "file-018");
-        createProduct("product-010", "session-002", metaProduct002, true, ProductStatus.FINISHED, "file-019");
-        createProduct("product-011", "session-002", metaProduct002, true, ProductStatus.FINISHED, "file-020");
-        createProduct("product-012", "session-002", metaProduct002, true, ProductStatus.COMPLETED, "file-021");
-        createProduct("product-013", "session-002", metaProduct002, true, ProductStatus.COMPLETED, "file-022");
-        createProduct("product-014", "session-002", metaProduct002, true, ProductStatus.COMPLETED, "file-023");
-        createProduct("product-015", "session-002", metaProduct002, true, ProductStatus.COMPLETED, "file-024");
-        createProduct("product-016", "session-002", metaProduct002, true, ProductStatus.COMPLETED, "file-025");
+        createProduct("product-010", "session-002", metaProduct002, true, ProductState.FINISHED, "file-019");
+        createProduct("product-011", "session-002", metaProduct002, true, ProductState.FINISHED, "file-020");
+        createProduct("product-012", "session-002", metaProduct002, true, ProductState.COMPLETED, "file-021");
+        createProduct("product-013", "session-002", metaProduct002, true, ProductState.COMPLETED, "file-022");
+        createProduct("product-014", "session-002", metaProduct002, true, ProductState.COMPLETED, "file-023");
+        createProduct("product-015", "session-002", metaProduct002, true, ProductState.COMPLETED, "file-024");
+        createProduct("product-016", "session-002", metaProduct002, true, ProductState.COMPLETED, "file-025");
 
-        createProduct("product-099", "session-002", metaProduct003, false, ProductStatus.ACQUIRING, "file-099");
+        createProduct("product-099", "session-002", metaProduct003, false, ProductState.ACQUIRING, "file-099");
 
         // the chain is not active to not activate it 
         chain.setActive(false);
@@ -138,8 +138,8 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
         execProcessingChainService.save(process);
 
         Assert.assertEquals(16, productService
-                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductState.COMPLETED, ProductState.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING).size());
 
         chainForProcessing.setPostProcessSipPluginConf(pluginService
                 .getPluginConfiguration("CleanOriginalFilePostPlugin", IPostProcessSipPlugin.class));
@@ -150,7 +150,7 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
             File f1 = File.createTempFile("file-033", ".dat");
             FileAcquisitionInformations fai1 = new FileAcquisitionInformations();
             fai1.setAcquisitionDirectory("/tmp");
-            createProduct(productName, "session-001", metaProduct001, true, ProductStatus.COMPLETED, f1.getName(),
+            createProduct(productName, "session-001", metaProduct001, true, ProductState.COMPLETED, f1.getName(),
                           fai1);
         } catch (IOException e) {
             Assert.fail();
@@ -166,10 +166,10 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(16, productService
-                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductState.COMPLETED, ProductState.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING).size());
 
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(true, ProductStatus.SAVED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(true, ProductState.SAVED).size());
 
         ExecAcquisitionProcessingChain processLoad = execProcessingChainService.findBySession(chainForProcessing.getSession());
         Assert.assertEquals(1, processLoad.getNbSipCreated());
@@ -184,8 +184,8 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
         execProcessingChainService.save(process);
 
         Assert.assertEquals(16, productService
-                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductState.COMPLETED, ProductState.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING).size());
 
         chainForProcessing.setPostProcessSipPluginConf(pluginService
                 .getPluginConfiguration("CleanOriginalFilePostPlugin", IPostProcessSipPlugin.class));
@@ -203,9 +203,9 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(13, productService
-                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(3, productService.findBySendedAndStatusIn(true, ProductStatus.SAVED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductState.COMPLETED, ProductState.FINISHED).size());
+        Assert.assertEquals(3, productService.findBySendedAndStatusIn(true, ProductState.SAVED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING).size());
 
         ExecAcquisitionProcessingChain processLoad = execProcessingChainService.findBySession(chainForProcessing.getSession());
         Assert.assertEquals(3, processLoad.getNbSipCreated());
@@ -217,8 +217,8 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
     @Test
     public void receivedSipStoreEventFailedNoProcessSipPluginDefined() throws InterruptedException {
         Assert.assertEquals(16, productService
-                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductState.COMPLETED, ProductState.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING).size());
 
         publishSipEvent("product-001", SIPState.STORED);
 
@@ -230,15 +230,15 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(16, productService
-                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductState.COMPLETED, ProductState.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING).size());
     }
 
     @Test
     public void receivedSipStoreEventFailedNoChainDefined() throws InterruptedException {
         Assert.assertEquals(16, productService
-                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductState.COMPLETED, ProductState.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING).size());
         execProcessingChainRepository.delete(process);
         processingChainRepository.delete(chainForProcessing);
 
@@ -252,8 +252,8 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
         Assert.assertTrue(aborteds.isEmpty());
 
         Assert.assertEquals(16, productService
-                .findBySendedAndStatusIn(true, ProductStatus.COMPLETED, ProductStatus.FINISHED).size());
-        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductStatus.ACQUIRING).size());
+                .findBySendedAndStatusIn(true, ProductState.COMPLETED, ProductState.FINISHED).size());
+        Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING).size());
     }
 
     private void publishSipEvent(String productName, SIPState state) {

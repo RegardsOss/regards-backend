@@ -55,7 +55,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 
 /**
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -80,16 +80,6 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
 public class Product implements IIdentifiable<Long> {
 
     /**
-     * A constant used to define a {@link String} constraint with length 128
-     */
-    private static final int MAX_STRING_LENGTH = 128;
-
-    /**
-     * Maximum enum size constraint with length 16
-     */
-    private static final int MAX_ENUM_LENGTH = 16;
-
-    /**
      * Unique id
      */
     @Id
@@ -100,28 +90,25 @@ public class Product implements IIdentifiable<Long> {
     /**
      * The {@link Product} status
      */
-    @Column(name = "status", length = MAX_ENUM_LENGTH)
+    @Column(name = "product_state", length = 32, nullable = false)
     @Enumerated(EnumType.STRING)
-    private ProductStatus status;
+    private ProductState state;
 
-    /**
-     * <li><code>true</code> if the {@link Product} has been sended by ingest</br>
-     * <li><code>false</code> otherwise
-     */
-    @Column(name = "sended")
-    private Boolean sended = false;
+    @Column(name = "sip_state", length = 32, nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ProductSIPState sipState;
 
     /**
      * The product name
      */
     @NotBlank
-    @Column(name = "product_name", length = MAX_STRING_LENGTH)
+    @Column(name = "product_name", length = 128)
     private String productName;
 
     /**
-     * The session identifier that create the current product 
+     * The session identifier that create the current product
      */
-    @Column(name = "session", length = MAX_STRING_LENGTH)
+    @Column(name = "session", length = 128)
     private String session;
 
     /**
@@ -155,7 +142,7 @@ public class Product implements IIdentifiable<Long> {
     public int hashCode() { // NOSONAR
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((productName == null) ? 0 : productName.hashCode()); // NOSONAR
+        result = (prime * result) + ((productName == null) ? 0 : productName.hashCode()); // NOSONAR
         return result;
     }
 
@@ -183,14 +170,6 @@ public class Product implements IIdentifiable<Long> {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public ProductStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(ProductStatus status) {
-        this.status = status;
     }
 
     public String getProductName() {
@@ -229,14 +208,6 @@ public class Product implements IIdentifiable<Long> {
         this.session = session;
     }
 
-    public Boolean isSended() {
-        return sended;
-    }
-
-    public void setSended(Boolean send) {
-        this.sended = send;
-    }
-
     public SIP getSip() {
         return sip;
     }
@@ -253,6 +224,22 @@ public class Product implements IIdentifiable<Long> {
         this.ingestChain = ingestProcessingChain;
     }
 
+    public ProductState getState() {
+        return state;
+    }
+
+    public void setState(ProductState state) {
+        this.state = state;
+    }
+
+    public ProductSIPState getSipState() {
+        return sipState;
+    }
+
+    public void setSipState(ProductSIPState sipState) {
+        this.sipState = sipState;
+    }
+
     @Override
     public String toString() {
         StringBuilder strBuilder = new StringBuilder();
@@ -260,14 +247,13 @@ public class Product implements IIdentifiable<Long> {
         strBuilder.append(" - ");
         strBuilder.append(productName);
         strBuilder.append(" - ");
-        strBuilder.append(status);
+        strBuilder.append(state);
         strBuilder.append(" - ");
-        strBuilder.append(sended);
+        strBuilder.append(sipState);
         strBuilder.append(" - ");
         strBuilder.append(session);
         strBuilder.append(" - ");
         strBuilder.append(ingestChain);
         return strBuilder.toString();
     }
-
 }

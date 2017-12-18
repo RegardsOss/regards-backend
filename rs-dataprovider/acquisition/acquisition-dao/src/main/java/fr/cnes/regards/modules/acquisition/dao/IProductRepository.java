@@ -18,20 +18,18 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
-import javax.persistence.LockModeType;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 
 /**
  * {@link Product} repository
@@ -44,19 +42,34 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
     @EntityGraph("graph.metaproduct.complete")
     Product findCompleteByProductName(String productName);
 
-    Set<Product> findByStatus(ProductStatus status);
+    Set<Product> findByStatus(ProductState status);
 
-    Set<Product> findBySendedAndStatusIn(Boolean sended, ProductStatus... status);
+    Set<Product> findBySendedAndStatusIn(Boolean sended, ProductState... status);
 
-    @Query("select distinct p.ingestChain from Product p where p.sended=?1 and p.status in ?2")
-    Set<String> findDistinctIngestChainBySendedAndStatusIn(Boolean sended, ProductStatus... status);
+    // @Query("select distinct p.ingestChain from Product p where p.sended=?1 and p.status in ?2")
+    // Set<String> findDistinctIngestChainBySendedAndStatusIn(Boolean sended, ProductState... status);
+    //
+    // @Query("select distinct p.session from Product p where p.ingestChain=?1 and p.sended=?2 and p.status in ?3")
+    // Set<String> findDistinctSessionByIngestChainAndSendedAndStatusIn(String ingestChain, Boolean sended,
+    // ProductState... status);
+    //
+    // @Lock(LockModeType.PESSIMISTIC_READ)
+    // Page<Product> findAllByIngestChainAndSessionAndSendedAndStatusIn(String ingestChain, String session, Boolean
+    // sended,
+    // Pageable pageable, ProductState... status);
 
-    @Query("select distinct p.session from Product p where p.ingestChain=?1 and p.sended=?2 and p.status in ?3")
-    Set<String> findDistinctSessionByIngestChainAndSendedAndStatusIn(String ingestChain, Boolean sended,
-            ProductStatus... status);
+    @Query(value = "select p.* from {h-schema}t_acquisition_product p, {h-schema}t_acquisition_meta_product mp, {h-schema}t_acquisition_chain apc where p.sip_state=?1 and p.product_state in ?2 and p.meta_product_id=mp.id and mp.id=apc.meta_product_id and apc.label=?3",
+            nativeQuery = true)
+    Set<Product> findChainProducts(ProductSIPState sipState, List<ProductState> productStates, String chainLabel);
 
-    @Lock(LockModeType.PESSIMISTIC_READ)
-    Page<Product> findAllByIngestChainAndSessionAndSendedAndStatusIn(String ingestChain, String session, Boolean sended,
-            Pageable pageable, ProductStatus... status);
-
+    /**
+     * Find {@link ProductState#COMPLETED} or{@link ProductState#FINISHED} products not already scheduled for SIP
+     * generation and for the specified acquisition chain.
+     * @param chainLabel acquisition chain label
+     * @return a set of {@link Product} to schedule
+     */
+    default Set<Product> findChainProductsToSchedule(String chainLabel) {
+        return findChainProducts(ProductSIPState.NOT_SCHEDULED,
+                                 Arrays.asList(ProductState.COMPLETED, ProductState.FINISHED), chainLabel);
+    }
 }
