@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionFailed;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.event.ResourceAccessInit;
 
 /**
@@ -63,16 +64,25 @@ public class RoleEventListener {
     @Autowired
     private IInstancePublisher instancePublisher;
 
+    /**
+     * {@link IRuntimeTenantResolver} instance
+     */
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
     @EventListener
     public void processEvent(TenantConnectionReady event) {
         try {
             // Init default role for this tenant
+            runtimeTenantResolver.forceTenant(event.getTenant());
             roleService.initDefaultRoles();
             // Populate default roles with resources informing security starter to process
             publisher.publish(new ResourceAccessInit());
         } catch (final ListenerExecutionFailedException e) {
             LOGGER.error("Cannot initialize connection  for tenant " + event.getTenant(), e);
             instancePublisher.publish(new TenantConnectionFailed(event.getTenant(), microserviceName));
+        } finally {
+            runtimeTenantResolver.clearTenant();
         }
     }
 
