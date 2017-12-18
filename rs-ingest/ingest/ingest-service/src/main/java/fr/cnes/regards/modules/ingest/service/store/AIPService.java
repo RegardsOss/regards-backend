@@ -188,8 +188,10 @@ public class AIPService implements IAIPService {
             aipRepository.delete(oAip.get());
         }
         // Retrieve all AIP associated to the SIP.
+        FeignSecurityManager.asSystem();
         ResponseEntity<PagedResources<Resource<fr.cnes.regards.modules.storage.domain.database.AIPEntity>>> result = aipEntityClient
                 .retrieveAIPEntities(sipIpId, 0, 100);
+        FeignSecurityManager.reset();
         if (result.getStatusCode().equals(HttpStatus.OK) && (result.getBody() != null)) {
             Optional<SIPEntity> oSip = sipRepository.findOneByIpId(sipIpId);
             if (oSip.isPresent()) {
