@@ -207,8 +207,6 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param mimeType MIME type
      */
     public void setSyntax(String mimeName, String mimeDescription, String mimeType) {
-        Assert.hasLength(mimeName, "Mime name cannot be null.");
-        Assert.hasLength(mimeDescription, "Mime description cannot be null");
         Assert.hasLength(mimeType, "Mime type cannot be null");
 
         Syntax syntax = new Syntax();
@@ -218,6 +216,14 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
 
         ci.setRepresentationInformation(new RepresentationInformation());
         ci.getRepresentationInformation().setSyntax(syntax);
+    }
+
+    /**
+     * Set syntax representation
+     * @param mimeType MIME type
+     */
+    public void setSyntax(String mimeType) {
+        setSyntax(null, null, mimeType);
     }
 
     /**
@@ -236,6 +242,15 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
         semantic.setDescription(semanticDescription);
 
         ci.getRepresentationInformation().setSemantic(semantic);
+    }
+
+    /**
+     * Set syntax and <b>optional</b> semantic representations
+     * @param mimeType MIME type
+     * @param semanticDescription semantic description
+     */
+    public void setSyntaxAndSemantic(String mimeType, String semanticDescription) {
+        setSyntaxAndSemantic(null, null, mimeType, semanticDescription);
     }
 
     /**
