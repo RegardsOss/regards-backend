@@ -75,7 +75,7 @@ public class PluginService implements IPluginService {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginService.class);
 
-    @Value("${regards.pluginMap.packages-to-scan:#{null}}")
+    @Value("${regards.plugins.packages-to-scan:#{null}}")
     private String[] packagesToScan;
 
     /**

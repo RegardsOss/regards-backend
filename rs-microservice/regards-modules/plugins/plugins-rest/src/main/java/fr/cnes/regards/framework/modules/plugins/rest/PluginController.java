@@ -151,11 +151,10 @@ public class PluginController implements IResourceController<PluginConfiguration
         List<PluginMetaData> metadaDatas;
 
         if (pPluginType == null) {
-            // No plugintypes is specify, return all the plugins
+            // No plugintypes is specified, return all plugins
             metadaDatas = pluginService.getPlugins();
-
         } else {
-            // A plugintypes is specify, return only the plugin of this plugin type
+            // A plugintypes is specified, return only plugins of this type
             try {
                 metadaDatas = pluginService.getPluginsByType(Class.forName(pPluginType));
             } catch (final ClassNotFoundException e) {
