@@ -76,7 +76,7 @@ public class FileEntityDescriptionHelper implements IFileEntityDescriptionHelper
      * @return
      */
     private boolean isUserAutorisedToAccessDatasetFile(String userEmail, UniformResourceName datasetIpId) {
-        return !projectUserClient.isAdmin(userEmail).getBody()
+        return projectUserClient.isAdmin(userEmail).getBody()
                 || accessRightClient.isUserAutorisedToAccessDataset(datasetIpId, userEmail).getBody();
     }
 }

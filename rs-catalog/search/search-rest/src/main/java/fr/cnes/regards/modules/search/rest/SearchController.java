@@ -277,7 +277,7 @@ public class SearchController {
      * @return the dataset file
      */
     @RequestMapping(path = DATASETS_URN_FILE, method = RequestMethod.GET)
-    @ResourceAccess(description = "Return the dataset of passed URN_COLLECTION.", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Return the dataset description file.", role = DefaultRole.PUBLIC)
     public ResponseEntity<InputStreamResource> retrieveDatasetDescription(
             @RequestParam(name = "origin", required = false) String origin, @PathVariable("urn") String pUrn,
             HttpServletResponse response)
