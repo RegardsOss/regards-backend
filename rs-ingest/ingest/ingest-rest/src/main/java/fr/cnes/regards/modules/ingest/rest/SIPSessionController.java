@@ -84,8 +84,7 @@ public class SIPSessionController implements IResourceController<SIPSession> {
 
     @ResourceAccess(description = "Delete one SIP by is ipId.")
     @RequestMapping(value = ID_PATH, method = RequestMethod.GET)
-    public ResponseEntity<Resource<SIPSession>> getSipSession(@PathVariable(name = "id") String id,
-            PagedResourcesAssembler<SIPSession> pAssembler) {
+    public ResponseEntity<Resource<SIPSession>> getSipSession(@PathVariable(name = "id") String id) {
         SIPSession session = sipSessionService.getSession(id, false);
         return new ResponseEntity<>(toResource(session), HttpStatus.OK);
     }
