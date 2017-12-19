@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
  * @author Christophe Mertz
  *
  */
-public class FixedValueAttributeFinder extends AttributeFinder {
+public class FixedValueAttributeFinder extends AbstractAttributeFinder {
 
     private String fixedValue;
 

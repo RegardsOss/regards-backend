@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.acquisition.tools.NetCdfFileHelper;
  * @author Christophe Mertz
  *
  */
-public class CDFGlobalAttributeFinder extends CdfFileFinder {
+public class CDFGlobalAttributeFinder extends AbstractCdfFileFinder {
 
     @Override
     public List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)

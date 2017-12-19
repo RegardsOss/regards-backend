@@ -23,9 +23,8 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.xsd;
  * 
  * @author Christophe Mertz
  */
+@SuppressWarnings("serial")
 public class XMLValidationException extends Exception {
-
-    private static final long serialVersionUID = -6936886653705675407L;
 
     public XMLValidationException() {
         super();

@@ -23,10 +23,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 /**
  * @author Christophe Mertz
  */
-
+@SuppressWarnings("serial")
 public class DescriptorException extends ModuleException {
-
-    private static final long serialVersionUID = -3657982402775787248L;
 
     public DescriptorException(Throwable exception) {
         super(exception);

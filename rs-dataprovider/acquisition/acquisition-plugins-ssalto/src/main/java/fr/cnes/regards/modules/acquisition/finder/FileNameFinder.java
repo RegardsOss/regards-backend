@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
  * @author Christophe Mertz
  *
  */
-public class FileNameFinder extends AttributeFinder {
+public class FileNameFinder extends AbstractAttributeFinder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileNameFinder.class);
 

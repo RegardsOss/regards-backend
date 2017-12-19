@@ -197,9 +197,8 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
             } else if (matcherL.matches()) {
                 dateStr = matcherL.group(4);
             } else {
-                final String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
 
             LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
@@ -240,9 +239,8 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
                 valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
             } else {
-                final String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
             n++;
         }
@@ -287,9 +285,8 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
                 valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
             } else {
-                final String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
         }
         return valueList;

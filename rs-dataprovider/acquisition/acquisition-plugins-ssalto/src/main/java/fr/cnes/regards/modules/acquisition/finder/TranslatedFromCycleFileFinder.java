@@ -133,6 +133,8 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     private static final DateTimeFormatter ORF_DATE_TIME_FORMAT = DateTimeFormatter
             .ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
 
+    private static final String MSG_ORF_FILE_PATH = "getOrfFilePath : {}";
+
     /**
      * Format de la date dans les fichiers cycle
      */
@@ -176,7 +178,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
             // Check if cycle file exists
             final String cycleFilePath = confProperties.getCycleFileFilepath();
 
-            LOGGER.debug("cycle file path = " + cycleFilePath);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("cycle file path = {}", cycleFilePath);
+            }
 
             boolean computeOrfFile = true;
             if ((cycleFilePath != null) && (cycleFilePath.length() > 0)) {
@@ -223,7 +227,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         int increment = 0;
         String cycleAsString = null;
 
-        LOGGER.debug("cycle = " + cycleOccurence.toString());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("cycle = {}", cycleOccurence.toString());
+        }
 
         // occurence du cycle
         final NumberFormat numberFormat = new DecimalFormat("000");
@@ -233,7 +239,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         final String[] getOrfFilePath = confProperties.getOrfFilepath();
         while ((cycleStartDate == null) && (increment <= (getOrfFilePath.length - 1))) {
 
-            LOGGER.debug("getOrfFilePath : " + getOrfFilePath[increment]);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(MSG_ORF_FILE_PATH, getOrfFilePath[increment]);
+            }
 
             final CharBuffer fileBuffer = getOrfFile(getOrfFilePath[increment++]);
 
@@ -254,7 +262,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
             throw new PluginAcquisitionException(msg);
         }
 
-        LOGGER.debug("cycleStartDate found = " + cycleStartDate);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("cycleStartDate found = {}", cycleStartDate);
+        }
 
         return cycleStartDate;
     }
@@ -272,7 +282,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         int increment = 0;
         String cycleAsString = null;
 
-        LOGGER.debug("cycle = " + cycleOccurence.toString());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("cycle = {}", cycleOccurence.toString());
+        }
 
         // occurence du cycle +1
         final NumberFormat numberFormat = new DecimalFormat("000");
@@ -283,7 +295,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         final String[] getOrfFilePath = confProperties.getOrfFilepath();
         while ((cycleStopDate == null) && (increment <= (getOrfFilePath.length - 1))) {
 
-            LOGGER.debug("getOrfFilePath : " + getOrfFilePath[increment]);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(MSG_ORF_FILE_PATH, getOrfFilePath[increment]);
+            }
 
             // recupere le fichier depuis le disk
             final CharBuffer fileBuffer = getOrfFile(getOrfFilePath[increment++]);
@@ -304,7 +318,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
             throw new PluginAcquisitionException(msg);
         }
 
-        LOGGER.debug("cycleStopDate found = " + cycleStopDate);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("cycleStopDate found = {}", cycleStopDate);
+        }
 
         return cycleStopDate;
     }
@@ -346,7 +362,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
             try {
                 final File lastModifiedFile = fileSet.last();
 
-                LOGGER.debug("lastModifiedFile read = " + lastModifiedFile.getAbsolutePath());
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("lastModifiedFile read = {}", lastModifiedFile.getAbsolutePath());
+                }
 
                 fileBuffer = readFile(lastModifiedFile.getAbsolutePath());
             } catch (final IOException e) {
@@ -393,7 +411,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                 // fichiers ORF ( cas des cycles 000 pour jason ou 998 et 999 pour jason2 )
                 final String startDateString = matcher.group(CYCLE_START_GROUP);
 
-                LOGGER.debug("startDateString = " + startDateString);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("startDateString = {}", startDateString);
+                }
 
                 firstStartDate = 1;
 
@@ -454,7 +474,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
 
         while ((!cycleFound) && (increment <= (getOrfFilePath.length - 1))) {
 
-            LOGGER.debug("getOrfFilePath : " + getOrfFilePath[increment]);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(MSG_ORF_FILE_PATH, getOrfFilePath[increment]);
+            }
 
             final CharBuffer fileBuffer = getOrfFile(getOrfFilePath[increment++]);
             // parcours le fichier ligne par ligne
@@ -478,12 +500,16 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                     }
                     cycleFound = true;
 
-                    LOGGER.debug("cycleDateTime = " + cycleDateTime.toString());
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("cycleDateTime = {}", cycleDateTime.toString());
+                    }
                 }
             }
         }
 
-        LOGGER.debug("cycleOccurence found = " + cycleOccurence);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("cycleOccurence found = {}", cycleOccurence);
+        }
 
         return cycleOccurence;
     }

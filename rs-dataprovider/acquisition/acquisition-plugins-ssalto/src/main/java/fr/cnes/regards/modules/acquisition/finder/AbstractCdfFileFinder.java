@@ -19,12 +19,12 @@
 package fr.cnes.regards.modules.acquisition.finder;
 
 /**
- * classe abstraite des finder de type dataFileFinder qui s'occupent des fichiers au format netCDF
+ * Classe abstraite des finder de type dataFileFinder qui s'occupent des fichiers au format netCDF
  * 
  * @author Christophe Mertz
  *
  */
-public abstract class CdfFileFinder extends DataFileFinder {
+public abstract class AbstractCdfFileFinder extends AbstractDataFileFinder {
 
     /**
      * nom de l'attribut (CDF) a rechercher dans le fichier

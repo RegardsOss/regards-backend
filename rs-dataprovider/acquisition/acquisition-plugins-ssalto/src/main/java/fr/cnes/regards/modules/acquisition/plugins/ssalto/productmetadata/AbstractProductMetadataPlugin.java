@@ -55,7 +55,7 @@ import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.domain.model.CompositeAttribute;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
-import fr.cnes.regards.modules.acquisition.finder.AttributeFinder;
+import fr.cnes.regards.modules.acquisition.finder.AbstractAttributeFinder;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
@@ -100,6 +100,10 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
 
     protected static final String MISSION = "mission";
 
+    protected static final String MSG_ERR_FILENAME = "filename does not match";
+
+    protected static final String MSG_ATTRIBUTE_BUILD = "build SIP : attribute [{}]";
+
     /**
      * Class logger
      */
@@ -130,7 +134,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     @Override
     public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles,
             Optional<String> datasetName) throws ModuleException {
-        
 
         if (!datasetName.isPresent()) {
             ModuleException ex = new ModuleException("The dataset name is required");
@@ -151,7 +154,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
         // or should be available for finders
         doCreateIndependantSpecificAttributes(fileMap, attributeMap);
 
-        for (AttributeFinder finder : pluginConfProperties.getFinderList()) {
+        for (AbstractAttributeFinder finder : pluginConfProperties.getFinderList()) {
             finder.setAttributProperties(pluginConfProperties);
             Attribute attribute = finder.buildAttribute(fileMap, attributeValueMap);
             registerAttribute(attributeMap, finder.getName(), attribute);
@@ -308,7 +311,9 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      * @param compAttr a {@link CompositeAttribute} object
      */
     private void addSip(SIPBuilder sipBuilder, CompositeAttribute compAttr) {
-        LOGGER.debug("build SIP : add composite attribute [{}]", compAttr.getName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("build SIP : add composite attribute [{}]", compAttr.getName());
+        }
         if (compAttr.getName().equals(GEO_COORDINATES)) {
             addSipGeo(sipBuilder, compAttr);
         } else if (compAttr.getName().endsWith(RANGE)) {
@@ -319,7 +324,9 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
 
         } else {
             for (Attribute attr : compAttr.getAttributeList()) {
-                LOGGER.debug("attribute {}", attr.getMetaAttribute().getName());
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("attribute {}", attr.getMetaAttribute().getName());
+                }
                 addSip(sipBuilder, attr);
             }
         }
@@ -332,7 +339,9 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      * @param attr an {@link Attribute} object
      */
     private void addSip(SIPBuilder sipBuilder, Attribute attr) {
-        LOGGER.debug("build SIP : add attribute [{}]", attr.getMetaAttribute().getName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("build SIP : add attribute [{}]", attr.getMetaAttribute().getName());
+        }
         if (attr.getValueList().size() == 1) {
             sipBuilder.addDescriptiveInformation(Strings.toLowerCase(attr.getAttributeKey()),
                                                  attr.getValueList().get(0));
@@ -347,11 +356,15 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      * @param compAttr a {@link CompositeAttribute} 
      */
     private void addSipRange(SIPBuilder sipBuilder, CompositeAttribute compAttr) {
-        LOGGER.debug("build SIP : add Range [{}]", compAttr.getName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("build SIP : add Range [{}]", compAttr.getName());
+        }
         JsonObject jsonRange = new JsonObject();
 
         for (Attribute attr : compAttr.getAttributeList()) {
-            LOGGER.debug("build SIP : attribute [{}]", attr.getMetaAttribute().getName());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(MSG_ATTRIBUTE_BUILD, attr.getMetaAttribute().getName());
+            }
             Object objValue = attr.getValueList().get(0);
             jsonRange.addProperty(Strings.toLowerCase(attr.getMetaAttribute().getName()), objValue.toString());
         }
@@ -364,11 +377,15 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      * @param compAttr a {@link CompositeAttribute}
      */
     private void addSipTime(SIPBuilder sipBuilder, CompositeAttribute compAttr) {
-        LOGGER.debug("build SIP : add Time [{}]", compAttr.getName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("build SIP : add Time [{}]", compAttr.getName());
+        }
         JsonObject jsonStartStop = new JsonObject();
 
         for (Attribute attr : compAttr.getAttributeList()) {
-            LOGGER.debug("build SIP : attribute [{}]", attr.getMetaAttribute().getName());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(MSG_ATTRIBUTE_BUILD, attr.getMetaAttribute().getName());
+            }
             OffsetDateTime ofDate = (OffsetDateTime) attr.getValueList().get(0);
             jsonStartStop.addProperty(Strings.toLowerCase(attr.getMetaAttribute().getName()), ofDate.toString());
         }
@@ -382,17 +399,19 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      * @param compAttr a {@link CompositeAttribute}
      */
     private void addSipGeo(SIPBuilder sipBuilder, CompositeAttribute compAttr) {
-        LOGGER.debug("build SIP : add Geo [{}]", compAttr.getName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("build SIP : add Geo [{}]", compAttr.getName());
+        }
 
         Double latMin = null;
         Double lonMin = null;
         Double latMax = null;
         Double lonMax = null;
 
-        LOGGER.debug("build SIP : add Geo [{}]", compAttr.getName());
-
         for (Attribute attr : compAttr.getAttributeList()) {
-            LOGGER.debug("build SIP : attribute [{}]", attr.getMetaAttribute().getName());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(MSG_ATTRIBUTE_BUILD, attr.getMetaAttribute().getName());
+            }
             if (attr.getMetaAttribute().getName().equals(LATITUDE_MIN)) {
                 latMin = (Double) attr.getValueList().get(0);
             } else if (attr.getMetaAttribute().getName().equals(LATITUDE_MAX)) {

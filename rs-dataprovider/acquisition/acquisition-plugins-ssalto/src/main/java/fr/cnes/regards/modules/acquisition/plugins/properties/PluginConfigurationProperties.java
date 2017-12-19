@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
-import fr.cnes.regards.modules.acquisition.finder.AttributeFinder;
+import fr.cnes.regards.modules.acquisition.finder.AbstractAttributeFinder;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.LoadTranslationProperties;
 
 /**
@@ -69,7 +69,7 @@ public class PluginConfigurationProperties {
     /**
      * liste des finder
      */
-    private SortedMap<Integer, AttributeFinder> finderList;
+    private SortedMap<Integer, AbstractAttributeFinder> finderList;
 
     /**
      * nom du projet utilisant le fichier properties : JASON, JASON2, ...</br>
@@ -162,14 +162,14 @@ public class PluginConfigurationProperties {
      * 
      * @param finder
      */
-    public void addFileFinder(AttributeFinder finder) {
+    public void addFileFinder(AbstractAttributeFinder finder) {
         if (finderList == null) {
             finderList = new TreeMap<>();
         }
         finderList.put(Integer.valueOf(finder.getOrder()), finder);
     }
 
-    public Collection<AttributeFinder> getFinderList() {
+    public Collection<AbstractAttributeFinder> getFinderList() {
         if (finderList == null) {
             return new ArrayList<>();
         } else {

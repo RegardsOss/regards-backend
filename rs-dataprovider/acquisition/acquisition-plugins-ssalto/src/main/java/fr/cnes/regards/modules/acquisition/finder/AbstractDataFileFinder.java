@@ -19,12 +19,12 @@
 package fr.cnes.regards.modules.acquisition.finder;
 
 /**
- * classe mere des finder qui vont lire le contenu des fichiers de donnees
+ * Classe mere des finder qui vont lire le contenu des fichiers de donnees
  * 
  * @author Christophe Mertz
  *
  */
-public abstract class DataFileFinder extends AttributeFinder {
+public abstract class AbstractDataFileFinder extends AbstractAttributeFinder {
 
     public String toString() {
         return super.toString();

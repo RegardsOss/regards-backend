@@ -126,7 +126,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
             throw new PluginAcquisitionException(msg, e);
         }
 
-        registerAttribute( attributeMap, TIME_PERIOD,timePeriodAttribute);
+        registerAttribute(attributeMap, TIME_PERIOD, timePeriodAttribute);
 
         LOGGER.info("END building attribute " + TIME_PERIOD);
     }
@@ -145,7 +145,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
             Attribute fileCreationDateAttribute = AttributeFactory
                     .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, CREATION_DATE,
                                      getCreationDateValue(fileMap.keySet()));
-            registerAttribute(attributeMap, CREATION_DATE,fileCreationDateAttribute);
+            registerAttribute(attributeMap, CREATION_DATE, fileCreationDateAttribute);
             attributeValueMap.put(CREATION_DATE, fileCreationDateAttribute.getValueList());
         } catch (DomainModelException e) {
             String msg = "unable to create attribute" + CREATION_DATE;
@@ -173,9 +173,8 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
             } else if (matcherP.matches()) {
                 dateStr = matcherP.group(2);
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
 
             LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
@@ -205,9 +204,8 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
                 valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
             n++;
         }
@@ -238,9 +236,8 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
                 valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
         }
         return valueList;

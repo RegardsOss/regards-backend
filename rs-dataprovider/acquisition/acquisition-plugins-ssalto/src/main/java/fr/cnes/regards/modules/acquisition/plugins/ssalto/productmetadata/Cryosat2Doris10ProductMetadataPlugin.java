@@ -150,7 +150,7 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
             Attribute fileCreationDateAttribute = AttributeFactory
                     .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, CREATION_DATE,
                                      getCreationDateValue(fileMap.keySet()));
-            registerAttribute(attributeMap, CREATION_DATE,fileCreationDateAttribute);
+            registerAttribute(attributeMap, CREATION_DATE, fileCreationDateAttribute);
             attributeValueMap.put(CREATION_DATE, fileCreationDateAttribute.getValueList());
         } catch (DomainModelException e) {
             String msg = "unable to create attribute" + CREATION_DATE;
@@ -179,9 +179,8 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
             } else if (matcherP.matches()) {
                 dateStr = matcherP.group(2);
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
 
             LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
@@ -211,9 +210,8 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
                 valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
             n++;
         }
@@ -244,9 +242,8 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
                 valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
         }
         return valueList;

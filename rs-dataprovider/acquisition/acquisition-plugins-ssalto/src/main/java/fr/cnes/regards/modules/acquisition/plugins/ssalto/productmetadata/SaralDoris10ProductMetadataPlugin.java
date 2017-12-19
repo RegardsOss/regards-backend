@@ -200,9 +200,8 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
             } else if (matcherL.matches()) {
                 dateStr = matcherL.group(4);
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
 
             LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
@@ -241,9 +240,8 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
                 valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
             n++;
         }
@@ -287,9 +285,8 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
                 valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
         }
         return valueList;

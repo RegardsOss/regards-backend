@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ICalculationClass;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
 /**
- * Met en forme la version passee en parametre xxyy sous le format xx.yy
+ * Met en forme la version passee en parametre "xxyy" sous le format "xx.yy"
  *  
  * @author Christophe Mertz
  */
@@ -33,12 +33,11 @@ public class SetSeparator implements ICalculationClass {
     @Override
     public Object calculateValue(Object value, AttributeTypeEnum type, PluginConfigurationProperties properties) {
         String strValue = (String) value;
-        String version = "";
 
-        version = strValue.substring(0, 2);
-        version = version + "." + strValue.substring(2, 4);
+        StringBuilder strBuilder = new StringBuilder(strValue.substring(0, 2));
+        strBuilder.append(".");
+        strBuilder.append(strValue.substring(2, 4));
 
-        return version;
+        return strBuilder.toString();
     }
-
 }

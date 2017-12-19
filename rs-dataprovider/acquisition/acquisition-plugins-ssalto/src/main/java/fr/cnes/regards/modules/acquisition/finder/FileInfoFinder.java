@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.acquisition.tools.FileInformationTypeEnum;
  * @author Christophe Mertz
  *
  */
-public class FileInfoFinder extends AttributeFinder {
+public class FileInfoFinder extends AbstractAttributeFinder {
 
     /**
      * le type d'information a aller chercher

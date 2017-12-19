@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.acquisition.tools.NetCdfFileHelper;
  * 
  * @author Christophe Mertz
  */
-public class CDFEnumeratedAttributeValueFinder extends CdfFileFinder {
+public class CDFEnumeratedAttributeValueFinder extends AbstractCdfFileFinder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CDFEnumeratedAttributeValueFinder.class);
 
