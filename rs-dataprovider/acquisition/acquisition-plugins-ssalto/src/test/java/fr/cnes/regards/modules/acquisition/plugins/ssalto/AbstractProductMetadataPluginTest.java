@@ -54,6 +54,8 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
@@ -62,16 +64,16 @@ import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
-import fr.cnes.regards.modules.acquisition.exception.DescriptorException;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.controllers.DescriptorFileControler;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.Diff;
-import fr.cnes.regards.modules.acquisition.tools.xsd.IngestXsdResolver;
-import fr.cnes.regards.modules.acquisition.tools.xsd.XMLValidation;
-import fr.cnes.regards.modules.acquisition.tools.xsd.XMLValidatorFactory;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.xsd.IngestXsdResolver;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.xsd.XMLValidation;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.xsd.XMLValidatorFactory;
 
 /**
  * Cette classe permet de simplifier la creation des tests sur les plugins.<br>
@@ -168,6 +170,8 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     /**
      * Permet de tester un plugin a la fois
      */
+    @Requirement("REGARDS_DSL_ING_SSALTO_070")
+    @Purpose("A plugin can generate a SIP for all SSALTO's products")    
     @Test
     public void createMetadataPlugin_solo() {
         try {
@@ -183,6 +187,8 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     /**
      * Permet de tester plusieurs plugins
      */
+    @Requirement("REGARDS_DSL_ING_SSALTO_070")
+    @Purpose("A plugin can generate a SIP for all SSALTO's products")    
     @Test
     public void createMetadataPlugin_all() {
         try {
@@ -241,7 +247,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
             }
 
             // Test if the dataset plugin configuration file exists
-            String pluginsConfDir = pluginsRepositoryProperties.getPluginConfFilesDir();
+            String pluginsConfDir = pluginsRepositoryProperties.getPluginConfFilesPath();
             File pluginConfFile = new File(pluginsConfDir, pluginTestDef.getDataSetName() + CONFIG_FILE_SUFFIX);
             
             try (InputStream stream = getClass().getClassLoader().getResourceAsStream(pluginConfFile.getPath())) {

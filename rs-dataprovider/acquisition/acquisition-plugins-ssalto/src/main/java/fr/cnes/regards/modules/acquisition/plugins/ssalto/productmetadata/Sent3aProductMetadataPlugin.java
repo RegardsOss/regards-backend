@@ -48,9 +48,4 @@ public class Sent3aProductMetadataPlugin extends AbstractProductMetadataPlugin {
     protected String getProjectName() {
         return PROJECT_NAME;
     }
-
-    @Override
-    public String getProjectProperties() {
-        return "ssalto/domain/plugins/impl/sentinal3plugin.properties";
-    }
 }

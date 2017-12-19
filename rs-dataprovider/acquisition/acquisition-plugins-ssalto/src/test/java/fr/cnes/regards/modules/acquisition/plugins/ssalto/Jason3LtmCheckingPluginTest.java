@@ -24,6 +24,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.check.Jason3LtmP3CheckingFilePlugin;
 
@@ -35,6 +37,8 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.check.Jason3LtmP3Check
  */
 public class Jason3LtmCheckingPluginTest {
 
+    @Requirement("REGARDS_DSL_ING_SSALTO_070")
+    @Purpose("A plugin can generate a SIP for a Jason3's LTM products")
     @Test
     public void testProduct() throws ModuleException {
         Jason3LtmP3CheckingFilePlugin plugin = new Jason3LtmP3CheckingFilePlugin();
@@ -47,6 +51,8 @@ public class Jason3LtmCheckingPluginTest {
         Assert.assertEquals(ProductNameTest, plugin.getProductName());
     }
 
+    @Requirement("REGARDS_DSL_ING_SSALTO_070")
+    @Purpose("A plugin can generate a SIP for a Jason3's LTM products")
     @Test(expected = ReadFileException.class)
     public void testProductFailed() throws ModuleException {
         Jason3LtmP3CheckingFilePlugin plugin = new Jason3LtmP3CheckingFilePlugin();

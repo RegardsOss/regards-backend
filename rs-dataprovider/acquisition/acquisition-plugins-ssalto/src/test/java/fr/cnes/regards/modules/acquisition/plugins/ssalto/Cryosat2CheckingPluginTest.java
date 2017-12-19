@@ -24,15 +24,19 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.check.Cryosat2ExtCheckingFilePlugin;
 
 /**
- * Test des plugins CRYOSAT2 de niveau produit
+ * Test des plugins de niveau produit CRYOSAT2 
  * 
  * @author Christophe Mertz
  */
 public class Cryosat2CheckingPluginTest {
 
+    @Requirement("REGARDS_DSL_ING_SSALTO_070")
+    @Purpose("A plugin can generate a SIP for a Cryosat2's products")
     @Test
     public void testWithDblExtension() throws ModuleException {
         // Parameters
@@ -45,6 +49,8 @@ public class Cryosat2CheckingPluginTest {
         Assert.assertEquals("CS_OPER_REP_MACP___20100711T145514_99999999T999999_0001", plugin.getProductName());
     }
 
+    @Requirement("REGARDS_DSL_ING_SSALTO_070")
+    @Purpose("A plugin can generate a SIP for a Cryosat2's products")
     @Test
     public void testWithHdrExtension() throws ModuleException {
         // Parameters

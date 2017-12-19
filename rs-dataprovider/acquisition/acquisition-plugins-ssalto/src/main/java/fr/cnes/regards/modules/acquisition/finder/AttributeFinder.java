@@ -299,7 +299,7 @@ public abstract class AttributeFinder {
         if (fileMap.isEmpty()) {
             LOGGER.error("No file to acquire");
         }
-        List<File> unzippedFileList = new ArrayList<>();
+        
         // liste des fichiers zip
         List<File> zipFileList = new ArrayList<>();
         for (File physicalFile : fileMap.keySet()) {
@@ -313,6 +313,8 @@ public abstract class AttributeFinder {
                 throw new PluginAcquisitionException(msg);
             }
         }
+        
+        List<File> unzippedFileList = new ArrayList<>();
         if (unzipBefore.booleanValue()) {
             for (File zipFile : zipFileList) {
                 // ajoute les fichiers dezippés

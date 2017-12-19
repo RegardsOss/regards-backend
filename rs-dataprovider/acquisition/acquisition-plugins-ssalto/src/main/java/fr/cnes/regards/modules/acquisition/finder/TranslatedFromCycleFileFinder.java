@@ -319,14 +319,14 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
      * @throws PluginAcquisitionException
      */
     private CharBuffer getOrfFile(String orfFilePathPattern) throws PluginAcquisitionException {
-
-        CharBuffer fileBuffer;
         final File dir = new File(new File(orfFilePathPattern).getParent());
         final String filePattern = new File(orfFilePathPattern).getName();
         final FileFilter fileFilter = new WildcardFileFilter(filePattern);
         final File[] files = dir.listFiles(fileFilter);
+
         // recupere le dernier fichier modifier
         final SortedSet<File> fileSet = new TreeSet<>(Comparator.comparing(File::lastModified));
+
         // doit contenir au moins un fichier
         if (files == null) {
             final String msg = "No file found in dir " + dir.getAbsolutePath() + " for filePattern " + filePattern;
@@ -336,7 +336,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                 fileSet.add(file);
             }
         }
+
         // doit contenir au moins un fichier
+        CharBuffer fileBuffer;
         if (fileSet.isEmpty()) {
             final String msg = "No file found in dir " + dir.getAbsolutePath() + " for filePattern " + filePattern;
             throw new PluginAcquisitionException(msg);
@@ -351,6 +353,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
                 throw new PluginAcquisitionException(e);
             }
         }
+
         return fileBuffer;
     }
 
@@ -363,9 +366,6 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
      * @throws PluginAcquisitionException
      */
     public synchronized Integer getCycleOcurrence(OffsetDateTime startDate) throws PluginAcquisitionException {
-        Integer cycleOccurence = null;
-        int firstStartDate = 0;
-
         // recupere le fichier depuis le disk
         CharBuffer fileBuffer = null;
         try {
@@ -378,8 +378,12 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         final String stringpStartDate = CYCLE_DATE_FORMAT.format(startDate);
         // parcours le fichier ligne par ligne
         final Matcher matcher = CYCLE_LINE_PATTERN.matcher(fileBuffer);
+
         // look in ORF file
         boolean orfCycle = false;
+        Integer cycleOccurence = null;
+        int firstStartDate = 0;
+
         while (matcher.find() && (cycleOccurence == null)) {
 
             if (firstStartDate == 0) {

@@ -63,6 +63,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.acquisition.builder.AcquisitionProcessingChainBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
@@ -222,6 +224,8 @@ public class AcquisitionProductsSsaltoIT {
         subscriber.subscribeTo(JobEvent.class, new ScanJobHandler());
     }
 
+    @Requirement("REGARDS_DSL_ING_SSALTO_010")
+    @Purpose("A plugin can generate a SIP from a data file respecting a pattern")
     @Test
     public void runJason2IgdrProcessingChain() throws ModuleException, InterruptedException, IOException {
 
@@ -274,7 +278,9 @@ public class AcquisitionProductsSsaltoIT {
                 .thenReturn(new ResponseEntity<>(new Resource<Dataset>(dataSet), HttpStatus.OK));
         return dataSet;
     }
-
+    
+    @Requirement("REGARDS_DSL_ING_SSALTO_010")
+    @Purpose("A plugin can generate a SIP from a data file respecting a pattern")
     @Test
     public void runSpot2Doris1bProcessingChain() throws ModuleException, InterruptedException, IOException {
 

@@ -19,35 +19,43 @@
 package fr.cnes.regards.modules.acquisition.tools;
 
 /**
- * 
+ * Manage an interval of value [minValue, maxValue].
+ *  
  * @author Christophe Mertz
  *
  */
 public class Interval {
 
+    /**
+     * The min value of the {@link Interval}
+     */
     private long minValue = 0;
 
+    /**
+     * The max value of the {@link Interval}
+     */
     private long maxValue = 0;
 
+    /**
+     * Default constructor
+     */
     public Interval() {
-
+        super();
     }
 
-    public void update(long pValue) {
+    public void update(long value) {
         if (minValue == 0) {
-            minValue = pValue;
+            minValue = value;
         }
         if (maxValue == 0) {
-            maxValue = pValue;
+            maxValue = value;
         }
 
-        if (pValue > maxValue) {
-            maxValue = pValue;
+        if (value > maxValue) {
+            maxValue = value;
+        } else if (value < minValue) {
+            minValue = value;
         }
-        else
-            if (pValue < minValue) {
-                minValue = pValue;
-            }
     }
 
     public long getMaxValue() {
@@ -58,11 +66,11 @@ public class Interval {
         return minValue;
     }
 
-    public void setMaxValue(long pMaxValue) {
-        maxValue = pMaxValue;
+    public void setMaxValue(long maxVal) {
+        maxValue = maxVal;
     }
 
-    public void setMinValue(long pMinValue) {
-        minValue = pMinValue;
+    public void setMinValue(long minVal) {
+        minValue = minVal;
     }
 }

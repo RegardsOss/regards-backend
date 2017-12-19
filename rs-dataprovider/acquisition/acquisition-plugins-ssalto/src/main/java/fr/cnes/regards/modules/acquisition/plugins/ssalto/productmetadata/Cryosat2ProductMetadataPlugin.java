@@ -46,10 +46,4 @@ public class Cryosat2ProductMetadataPlugin extends AbstractProductMetadataPlugin
     protected String getProjectName() {
         return PROJECT_NAME;
     }
-
-    public String getProjectProperties() {
-        return "ssalto/domain/plugins/impl/cryosat2plugin.properties";
-    }
-
-
 }

@@ -41,9 +41,4 @@ public class EnvisatProductMetadataPlugin extends AbstractProductMetadataPlugin 
     protected String getProjectName() {
         return PROJECT_NAME;
     }
-
-    @Override
-    public String getProjectProperties() {
-        return "ssalto/domain/plugins/impl/envisatplugin.properties";
-    }
 }

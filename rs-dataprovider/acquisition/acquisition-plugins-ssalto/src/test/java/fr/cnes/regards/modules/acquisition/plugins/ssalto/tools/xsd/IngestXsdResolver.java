@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.tools.xsd;
+package fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.xsd;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -81,8 +81,6 @@ public class IngestXsdResolver implements EntityResolver {
             LOGGER.debug(String.format("public id : %s - system id : %s", publicId, systemId));
         }
 
-        File fileName = null;
-
         // Get file name of the xsd file to load
         // Only use name of file to chose which xsd to load.
         // It is not nice but at least it works
@@ -99,7 +97,7 @@ public class IngestXsdResolver implements EntityResolver {
         }
 
         // Get the access path of the xsd file if any
-        fileName = xsdMap.get(xsdFileName);
+        File fileName = xsdMap.get(xsdFileName);
         if (fileName == null) {
             // Error: unknown xsd file.
             // Only known xsd file may be used for validation

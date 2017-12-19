@@ -41,11 +41,4 @@ public class Spot4ProductMetadataPlugin extends AbstractProductMetadataPlugin {
     protected String getProjectName() {
         return PROJECT_NAME;
     }
-
-    @Override
-    public String getProjectProperties() {
-
-        return "ssalto/domain/plugins/impl/spot4plugin.properties";
-    }
-
 }

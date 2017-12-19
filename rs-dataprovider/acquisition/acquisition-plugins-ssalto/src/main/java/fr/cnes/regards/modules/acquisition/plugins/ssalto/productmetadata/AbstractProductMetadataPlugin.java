@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,9 +76,9 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      */
     private static final String CONFIG_FILE_SUFFIX = "_PluginConfiguration.xml";
 
-    private static final String RULE_FILE = "ssalto/domain/plugins/impl/tools/pluginFinderDigesterRules.xml";
+    private static final String RULE_FILE = "pluginFinderDigesterRules.xml";
 
-    private static final String ATTRIBUTE_ORDER_PROP_FILE = "ssalto/domain/plugins/impl/tools/attributeOrder.properties";
+    private static final String ATTRIBUTE_ORDER_PROP_FILE = "attributeOrder.properties";
 
     protected static final String GEO_COORDINATES = "GEO_COORDINATES";
 
@@ -125,15 +124,13 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
 
     protected abstract PluginsRepositoryProperties getPluginsRepositoryProperties();
 
-    protected abstract String getProjectProperties();
-
     /**
      * cree les attributs pour le {@link Product} contenant la liste des {@link AcquisitionFile}, pour le jeu de donnees dataSetName
      */
     @Override
     public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles,
             Optional<String> datasetName) throws ModuleException {
-        SortedMap<Integer, Attribute> attributeMap = new TreeMap<>();
+        
 
         if (!datasetName.isPresent()) {
             ModuleException ex = new ModuleException("The dataset name is required");
@@ -147,19 +144,17 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
 
         // add attribute from attribute finders
         attributeValueMap = new HashMap<>();
+        SortedMap<Integer, Attribute> attributeMap = new TreeMap<>();
 
         // find all attributeValue and add each one into attributeMap
         // first do the specific attributes not depending from other attribute value
         // or should be available for finders
         doCreateIndependantSpecificAttributes(fileMap, attributeMap);
 
-        if (pluginConfProperties.getFinderList() != null) {
-            Collection<AttributeFinder> finderList = pluginConfProperties.getFinderList();
-            for (AttributeFinder finder : finderList) {
-                finder.setAttributProperties(pluginConfProperties);
-                Attribute attribute = finder.buildAttribute(fileMap, attributeValueMap);
-                registerAttribute(attributeMap, finder.getName(), attribute);
-            }
+        for (AttributeFinder finder : pluginConfProperties.getFinderList()) {
+            finder.setAttributProperties(pluginConfProperties);
+            Attribute attribute = finder.buildAttribute(fileMap, attributeValueMap);
+            registerAttribute(attributeMap, finder.getName(), attribute);
         }
 
         // then do specific attributes which can depend on other attribute value
@@ -186,23 +181,32 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      *             des attributs.
      */
     protected void loadDataSetConfiguration(String dataSetName) throws ModuleException {
+        // Path to the configuration file
+        // attributeOrder.properties and pluginFinderDigesterRules.xml
+        String pluginsConfPath = getPluginsRepositoryProperties().getPluginConfPath();
+
+        // file access to pluginFinderDigesterRules.xml
+        File digesterRuleFile = new File(pluginsConfPath, RULE_FILE);
+
         // Get the path to the digester rules file
-        URL ruleFile = getClass().getClassLoader().getResource(RULE_FILE);
-        if (ruleFile == null) {
-            String msg = "unable to load the rule file " + RULE_FILE;
+        URL ruleUrl = getClass().getClassLoader().getResource(digesterRuleFile.getPath());
+        if (ruleUrl == null) {
+            String msg = "unable to load the rule file " + digesterRuleFile.getPath();
             LOGGER.error(msg);
             throw new ModuleException(msg);
         }
 
         // Getting conf file from project configured directory
-        String pluginsConfDir = getPluginsRepositoryProperties().getPluginConfFilesDir();
+        String pluginsConfDir = getPluginsRepositoryProperties().getPluginConfFilesPath();
+
+        // File access to plugin conf of this dataset
         File pluginConfFile = new File(pluginsConfDir, dataSetName + CONFIG_FILE_SUFFIX);
 
         // The first action is to test if the property file exists
         try (InputStream in = getClass().getClassLoader().getResourceAsStream(pluginConfFile.getPath())) {
             // create instance of digester that can handle the digester rule file
-            Digester digester = DigesterLoader.createDigester(ruleFile);
-            // Process the input file.
+            Digester digester = DigesterLoader.createDigester(ruleUrl);
+            // Process the input file
             pluginConfProperties = (PluginConfigurationProperties) digester.parse(in);
             pluginConfProperties.setProject(getProjectName());
         } catch (IOException | SAXException e) {
@@ -211,16 +215,16 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             throw new ModuleException(e);
         }
 
-        // init the attributeOrderMap_ from the attributeOrderConfigurationFile
+        // file access to attributeOrder.properties
+        File attributeOrderFile = new File(pluginsConfPath, ATTRIBUTE_ORDER_PROP_FILE);
         attributeOrderProperties = new Properties();
-        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(ATTRIBUTE_ORDER_PROP_FILE)) {
+        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(attributeOrderFile.getPath())) {
             attributeOrderProperties.load(stream);
         } catch (IOException e) {
-            String message = "unable to load property file" + ATTRIBUTE_ORDER_PROP_FILE;
+            String message = "unable to load property file" + attributeOrderFile.getPath();
             LOGGER.error(e.getMessage(), e);
             throw new ModuleException(message);
         }
-
     }
 
     /**
@@ -239,7 +243,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      * @param attributeMap
      */
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
-            throws PluginAcquisitionException { // NOSONAR
+            throws PluginAcquisitionException {
     }
 
     /**
@@ -248,7 +252,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      * @param attributeMap
      */
     protected void doCreateDependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
-            throws ModuleException { // NOSONAR
+            throws ModuleException {
     }
 
     protected Properties getAttributeOrderProperties() {
@@ -288,7 +292,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
         sipBuilder.addDescriptiveInformation(Strings.toLowerCase(MISSION), getProjectName());
 
         for (Attribute att : mapAttrs.values()) {
-
             if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_STRING)
                     && att.getClass().equals(CompositeAttribute.class)) {
                 // CompositeAttribute
@@ -296,14 +299,13 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             } else {
                 addSip(sipBuilder, att);
             }
-
         }
     }
 
     /**
      * Add descriptive information to the {@link SIPBuilder} for a {@link CompositeAttribute}
      * @param sipBuilder the current {@link SIPBuilder}
-     * @param compAttr a {@link CompositeAttribute} 
+     * @param compAttr a {@link CompositeAttribute} object
      */
     private void addSip(SIPBuilder sipBuilder, CompositeAttribute compAttr) {
         LOGGER.debug("build SIP : add composite attribute [{}]", compAttr.getName());
@@ -322,6 +324,21 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             }
         }
 
+    }
+
+    /**
+     * Add descriptive information to the {@link SIPBuilder} 
+     * @param sipBuilder the current {@link SIPBuilder}
+     * @param attr an {@link Attribute} object
+     */
+    private void addSip(SIPBuilder sipBuilder, Attribute attr) {
+        LOGGER.debug("build SIP : add attribute [{}]", attr.getMetaAttribute().getName());
+        if (attr.getValueList().size() == 1) {
+            sipBuilder.addDescriptiveInformation(Strings.toLowerCase(attr.getAttributeKey()),
+                                                 attr.getValueList().get(0));
+        } else {
+            sipBuilder.addDescriptiveInformation(Strings.toLowerCase(attr.getAttributeKey()), attr.getValueList());
+        }
     }
 
     /**
@@ -405,22 +422,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
         }
     }
 
-    /**
-     * Add descriptive information to the {@link SIPBuilder} 
-     * @param sipBuilder the current {@link SIPBuilder}
-     * @param attr a {@link Attribute}
-     */
-    private void addSip(SIPBuilder sipBuilder, Attribute attr) {
-        LOGGER.debug("build SIP : add attribute [{}]", attr.getMetaAttribute().getName());
-        if (attr.getValueList().size() == 1) {
-
-            sipBuilder.addDescriptiveInformation(Strings.toLowerCase(attr.getAttributeKey()),
-                                                 attr.getValueList().get(0));
-        } else {
-            sipBuilder.addDescriptiveInformation(Strings.toLowerCase(attr.getAttributeKey()), attr.getValueList());
-        }
-    }
-
     @Override
     protected void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles)
             throws AcquisitionException {
@@ -436,7 +437,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
                 throw new AcquisitionException(e.getMessage());
             }
         }
-
     }
 
 }

@@ -53,7 +53,7 @@ public class RinexFileHelper {
     /**
      * Fichier a lire, est initialise dans le constructeur
      */
-    private File currentFile;
+    private final File currentFile;
 
     /**
      * filePattern permettant d'indentifier la ligne representant la date d'un bloc de mesure dans un fichier RINEX
@@ -244,8 +244,4 @@ public class RinexFileHelper {
                                                ZoneOffset.UTC);
         return 1000 * odt.toEpochSecond();
     }
-
-    public void releaseFile() {
-    }
-
 }

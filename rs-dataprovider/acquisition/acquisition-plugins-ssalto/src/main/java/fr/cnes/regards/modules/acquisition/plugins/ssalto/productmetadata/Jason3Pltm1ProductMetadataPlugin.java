@@ -53,10 +53,4 @@ public class Jason3Pltm1ProductMetadataPlugin extends AbstractJasonPltm1ProductM
     protected String getProjectName() {
         return PROJECT_NAME;
     }
-
-    @Override
-    public String getProjectProperties() {
-        return "ssalto/domain/plugins/impl/jason2plugin.properties";
-    }
-
 }

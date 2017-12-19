@@ -22,8 +22,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.xerces.dom.DocumentImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectUpdateElement;
@@ -37,8 +35,6 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.EntityDescr
  */
 
 public class DataObjectUpdateElementControler extends DataObjectElementControler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataObjectUpdateElementControler.class);
 
     /**
      * nom du bloc update
@@ -62,23 +58,17 @@ public class DataObjectUpdateElementControler extends DataObjectElementControler
     @Override
     public Element getElement(EntityDescriptorElement pEntityDescriptorElement, DocumentImpl pNewDoc) {
         Element doDescriptorElement = null;
-//        try {
-            DataObjectUpdateElement dataObjectUpdateElement = (DataObjectUpdateElement) pEntityDescriptorElement;
+        DataObjectUpdateElement dataObjectUpdateElement = (DataObjectUpdateElement) pEntityDescriptorElement;
 
-            doDescriptorElement = pNewDoc
-                    .createElement("DATA_OBJECT_DESCRIPTION_SSALTO");
-            // TODO CMZ à confirmer DATA_OBJECT_DESCRIPTION_SSALTO ne devrait pas etre en dur
-//                    .createElement(DescConfiguration.getInstance().getProperties().getDataObjectUpdateNode());
-            doDescriptorElement.setAttribute(ENTITY_TYPE, ENTITY_TYPE_VALUE);
-            buildUpdateElement(dataObjectUpdateElement, doDescriptorElement, pNewDoc);
-//        } catch (DescriptorException e) {
-//            LOGGER.error(e.getMessage());
-//        }
+        doDescriptorElement = pNewDoc.createElement("DATA_OBJECT_DESCRIPTION_SSALTO");
+        doDescriptorElement.setAttribute(ENTITY_TYPE, ENTITY_TYPE_VALUE);
+        
+        buildUpdateElement(dataObjectUpdateElement, doDescriptorElement, pNewDoc);
         return doDescriptorElement;
     }
 
     /**
-     * merge la liste des dataStorageIdentifiers_
+     * merge la liste des dataStorageIdentifiers
      */
     @Override
     public void merge(EntityDescriptorElement entityDescriptorElement, EntityDescriptorElement descrElement) {

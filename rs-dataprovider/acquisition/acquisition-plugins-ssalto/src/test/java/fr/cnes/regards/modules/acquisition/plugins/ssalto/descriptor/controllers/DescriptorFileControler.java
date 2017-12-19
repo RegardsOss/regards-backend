@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.acquisition.exception.DescriptorException;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.EntityDescriptorElement;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.EntityDescriptorElement.ElementType;

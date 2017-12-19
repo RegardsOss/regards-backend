@@ -40,6 +40,11 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.TranslatedFromCycleFileFinder;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
+/**
+ * 
+ * @author Christophe Mertz
+ *
+ */
 public class TranslatedFromCycleFileFinderTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TranslatedFromCycleFileFinderTest.class);
@@ -50,27 +55,9 @@ public class TranslatedFromCycleFileFinderTest {
 
     private static final String STOP_DATE = "STOP_DATE";
 
-    //    private static final Date ATT_VALUE_DATE_INSIDE = new Date();// (108, 9, 10);
-
-    //    private static final Integer ATT_VALUE_CYCLE = new Integer(3);
-
-    //    private static final Integer ATT_VALUE_CYCLE_OVER = new Integer(3000);
-
     private static final String JA2_CYCLE_FILEPATH = "src/test/resources/income/data/JASON2/CYCLES/JASON2_CYCLES";
 
     private static final String JA2_ORF_FILEPATH = "src/test/resources/income/data/JASON2/ORF_HISTORIQUE/JA2_ORF_AXXCN*";
-
-    //    private static final String JA1_CYCLE_FILEPATH = "testing/ressources/ssalto/domain/plugins/impl/finder/JASON1_CYCLES";
-
-    //    private static final String JA1_ORF_FILEPATH = "testing/ressources/ssalto/domain/plugins/impl/finder/JA1_ORF_AXXCN*";
-
-    //    private static final String BEF_DRIFT_JA1_ORF_FILEPATH = "testing/ressources/ssalto/domain/plugins/impl/finder/BEF_DRIFT_JA1_ORF_AXXCN*";
-
-    //    private static final Integer ATT_VALUE_CYCLE_000_FILE = new Integer(0);
-
-    //    private static final Integer ATT_VALUE_CYCLE_FIRST_FILE = new Integer(262);
-
-    //    private static final Integer ATT_VALUE_CYCLE_UNKNOWN = new Integer(999);
 
     @Test
     public void jasonGetCycleFromDateInsideCycleInterval() throws Exception {
@@ -130,7 +117,7 @@ public class TranslatedFromCycleFileFinderTest {
         Assert.assertEquals(126, ((Integer) resultList.get(0)).intValue());
     }
 
-    // TODO CMZ ignore car passe ne pas systematiquement sur intégration continue alors que passe en local 
+    // CMZ ignore car passe ne pas systematiquement sur intégration continue alors que passe en local 
     @Ignore
     @Test
     public void jason2GetCycleFromDateEqualCycleStartDate() throws Exception {
@@ -272,7 +259,7 @@ public class TranslatedFromCycleFileFinderTest {
     }
 
     // Cycle inclu dans le deuxieme fichier
-    // TODO CMZ ignore car passe ne pas systematiquement sur intégration continue alors que passe en local 
+    // FIXME CMZ ignore car passe ne pas systematiquement sur intégration continue alors que passe en local 
     @Ignore
     @Test
     public void jason2GetDateFromCycleSecondFile() {

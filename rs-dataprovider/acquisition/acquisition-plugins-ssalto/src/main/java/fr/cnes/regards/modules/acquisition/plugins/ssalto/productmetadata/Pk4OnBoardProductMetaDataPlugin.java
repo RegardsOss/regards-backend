@@ -105,9 +105,4 @@ public class Pk4OnBoardProductMetaDataPlugin extends AbstractProductMetadataPlug
         // 3. Register attribute
         registerAttribute(pAttributeMap, DISK_ID_ATTRIBUTE, diskAttribute);
     }
-
-    @Override
-    public String getProjectProperties() {
-        return "ssalto/domain/plugins/impl/pk4plugin.properties";
-    }
 }
