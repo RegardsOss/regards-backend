@@ -24,17 +24,21 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.check.Jason1Doris1BCheckingFilePlugin;
 
-
 /**
+ * Test des plugins de niveau produit Jason1 Doris1B
  * 
  * @author Christophe Mertz
  *
  */
 public class Doris1BCheckingPluginTest {
 
+    @Requirement("REGARDS_DSL_ING_SSALTO_070")
+    @Purpose("A plugin can generate a SIP for a Jason1's Doris1B products")
     @Test
     public void testJason1Doris1B() throws ModuleException {
 
@@ -43,11 +47,13 @@ public class Doris1BCheckingPluginTest {
         String dataSetId = "DA_TC_JASON1_DORIS1B_MOE_CDDIS";
         // Launch plugin
         Jason1Doris1BCheckingFilePlugin plugin = new Jason1Doris1BCheckingFilePlugin();
-            Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
-            Assert.assertEquals("MOE_CDDIS_DORDATA_090526.SP2", plugin.getProductName());
+        Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
+        Assert.assertEquals("MOE_CDDIS_DORDATA_090526.SP2", plugin.getProductName());
     }
-    
-    @Test(expected=ReadFileException.class)
+
+    @Requirement("REGARDS_DSL_ING_SSALTO_070")
+    @Purpose("A plugin can generate a SIP for a Jason1's Doris1B products")
+    @Test(expected = ReadFileException.class)
     public void testJason1Doris1BFailed() throws ModuleException {
 
         // Parameters
@@ -55,8 +61,9 @@ public class Doris1BCheckingPluginTest {
         String dataSetId = "DA_TC_JASON1_DORIS1B_MOE_CDDIS";
         // Launch plugin
         Jason1Doris1BCheckingFilePlugin plugin = new Jason1Doris1BCheckingFilePlugin();
-            Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
-            Assert.fail();;
+        Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
+        Assert.fail();
+        ;
     }
 
 }

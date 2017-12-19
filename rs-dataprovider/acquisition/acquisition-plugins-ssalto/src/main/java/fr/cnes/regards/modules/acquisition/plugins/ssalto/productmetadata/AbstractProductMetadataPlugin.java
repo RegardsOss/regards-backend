@@ -130,7 +130,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     @Override
     public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles,
             Optional<String> datasetName) throws ModuleException {
-        SortedMap<Integer, Attribute> attributeMap = new TreeMap<>();
+        
 
         if (!datasetName.isPresent()) {
             ModuleException ex = new ModuleException("The dataset name is required");
@@ -144,6 +144,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
 
         // add attribute from attribute finders
         attributeValueMap = new HashMap<>();
+        SortedMap<Integer, Attribute> attributeMap = new TreeMap<>();
 
         // find all attributeValue and add each one into attributeMap
         // first do the specific attributes not depending from other attribute value
@@ -304,7 +305,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     /**
      * Add descriptive information to the {@link SIPBuilder} for a {@link CompositeAttribute}
      * @param sipBuilder the current {@link SIPBuilder}
-     * @param compAttr a {@link CompositeAttribute} 
+     * @param compAttr a {@link CompositeAttribute} object
      */
     private void addSip(SIPBuilder sipBuilder, CompositeAttribute compAttr) {
         LOGGER.debug("build SIP : add composite attribute [{}]", compAttr.getName());
@@ -323,6 +324,21 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             }
         }
 
+    }
+
+    /**
+     * Add descriptive information to the {@link SIPBuilder} 
+     * @param sipBuilder the current {@link SIPBuilder}
+     * @param attr an {@link Attribute} object
+     */
+    private void addSip(SIPBuilder sipBuilder, Attribute attr) {
+        LOGGER.debug("build SIP : add attribute [{}]", attr.getMetaAttribute().getName());
+        if (attr.getValueList().size() == 1) {
+            sipBuilder.addDescriptiveInformation(Strings.toLowerCase(attr.getAttributeKey()),
+                                                 attr.getValueList().get(0));
+        } else {
+            sipBuilder.addDescriptiveInformation(Strings.toLowerCase(attr.getAttributeKey()), attr.getValueList());
+        }
     }
 
     /**
@@ -403,21 +419,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
 
             // Add Geometry to SIP
             sipBuilder.setGeometry(IGeometry.polygon(pp));
-        }
-    }
-
-    /**
-     * Add descriptive information to the {@link SIPBuilder} 
-     * @param sipBuilder the current {@link SIPBuilder}
-     * @param attr a {@link Attribute}
-     */
-    private void addSip(SIPBuilder sipBuilder, Attribute attr) {
-        LOGGER.debug("build SIP : add attribute [{}]", attr.getMetaAttribute().getName());
-        if (attr.getValueList().size() == 1) {
-            sipBuilder.addDescriptiveInformation(Strings.toLowerCase(attr.getAttributeKey()),
-                                                 attr.getValueList().get(0));
-        } else {
-            sipBuilder.addDescriptiveInformation(Strings.toLowerCase(attr.getAttributeKey()), attr.getValueList());
         }
     }
 

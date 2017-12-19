@@ -74,10 +74,11 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
     }
 
     /**
-     *
-     * @param fileMap
-     * @param attributeMap
-     * @throws PluginAcquisitionException
+     * Build an {@link Attribute} PRODUCT_OPTION and add it to the {@link Attribute}'s {@link Map}.<br>
+     * The attribute's value is calculated with the translation file OGDRTranslationFile.properties see {@link Jason2OgdrProductMetadataPlugin#TRANSACTION_FILE}.
+     * @param fileMap a {@link File}'s {@link Map} for which to calculate the {@link Attribute} PRODUCT_OPTION. 
+     * @param attributeMap the {@link Attribute}'s {@link Map}
+     * @throws PluginAcquisitionException an error occurs when the new {@link Attribute} is created
      */
     private void registerOptionAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
@@ -98,17 +99,17 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
     }
 
     /**
-     *
-     * @param acquisitionFileList
-     * @return
-     * @throws PluginAcquisitionException
+     * Get the product's type for a set of {@link File}.<br>
+     * The attribute's value is calculated with the translation file OGDRTranslationFile.properties see {@link Jason2OgdrProductMetadataPlugin#TRANSACTION_FILE}.
+     * @param acquisitionFileList the {@link File}'s {@link Map} for which to calculate the {@link Attribute} PRODUCT_OPTION.
+     * @return the values's {@link List} calculated
+     * @throws PluginAcquisitionException a {@link File} name is not respecting the expected pattern  
      */
     protected List<String> getOptionValue(Collection<File> acquisitionFileList) throws PluginAcquisitionException {
         String value = null;
         for (final File file : acquisitionFileList) {
             final Matcher fileNameMatcher = fileNamePattern.matcher(file.getName());
-            final NetCdfFileHelper helper = new NetCdfFileHelper(file);
-            
+
             String productType;
             if (fileNameMatcher.matches()) {
                 productType = fileNameMatcher.group(1);
@@ -119,9 +120,10 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
             // Load the translation for the productType
             final Properties translationProperties = LoadTranslationProperties.getInstance().load(TRANSACTION_FILE);
 
+            final NetCdfFileHelper helper = new NetCdfFileHelper(file);
             String producer = helper.getGlobalAttributeStringValue("institution", null);
             productType = translationProperties.getProperty(productType);
-            
+
             value = producer + " - " + productType;
         }
         final List<String> valueList = new ArrayList<>();

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.tools.xsd;
+package fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.xsd;
 
 import java.util.ArrayList;
 import java.util.List;

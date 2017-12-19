@@ -25,7 +25,7 @@ package fr.cnes.regards.modules.acquisition.tools;
  */
 public final class CalculusTypeEnum {
 
-    private final String name;
+    private final String value;
 
     public static final CalculusTypeEnum MIN = new CalculusTypeEnum("MIN");
 
@@ -37,36 +37,35 @@ public final class CalculusTypeEnum {
 
     public static final CalculusTypeEnum LAST = new CalculusTypeEnum("LAST");
 
-    private CalculusTypeEnum(String pName) {
-        name = pName;
+    private CalculusTypeEnum(String newVal) {
+        value = newVal;
     }
 
     /**
-     * renvoie l'instance de CalculusTypeEnum dont la valeur est pValue,
-     * null, si aucune instance n'est trouvee.
-     * pValue est passe en majuscule. (ie : Min reverra CalculusTypeEnum.MIN)
-     * @param pName
-     * @return
+     * Renvoie l'instance de {@link CalculusTypeEnum} dont la valeur est name, <code>null</code>, si aucune instance n'est trouvee,
+     * name est passe en majuscule (ie : Min reverra CalculusTypeEnum.MIN)
+     * @param name la valeur à parser
+     * @return la valeur de {@link CalculusTypeEnum} correspondant à la valeur passée en paramètre
      */
-    public static CalculusTypeEnum parse(String pName) {
+    public static CalculusTypeEnum parse(String name) {
         CalculusTypeEnum myEnum = null;
-        pName = pName.toUpperCase();
-        if (pName.equals(MIN.name)) {
+        String calcValue = name.toUpperCase();
+        if (calcValue.equals(MIN.value)) {
             myEnum = MIN;
-        } else if (pName.equals(MAX.name)) {
+        } else if (calcValue.equals(MAX.value)) {
             myEnum = MAX;
-        } else if (pName.equals(AVG.name)) {
+        } else if (calcValue.equals(AVG.value)) {
             myEnum = AVG;
-        } else if (pName.equals(FIRST.name)) {
+        } else if (calcValue.equals(FIRST.value)) {
             myEnum = FIRST;
-        } else if (pName.equals(LAST.name)) {
+        } else if (calcValue.equals(LAST.value)) {
             myEnum = LAST;
         }
         return myEnum;
     }
 
     public String toString() {
-        return name;
+        return value;
     }
 
 }
