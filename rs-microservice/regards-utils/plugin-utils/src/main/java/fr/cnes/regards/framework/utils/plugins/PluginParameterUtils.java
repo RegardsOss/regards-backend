@@ -437,14 +437,14 @@ public final class PluginParameterUtils {
                     .format("Invalid plugin parameter of non instanciable interface %s", field.getType().getName()));
         }
         if (ParamType.COLLECTION.equals(paramType) && !Collection.class.isAssignableFrom(field.getType())) {
-            throw new PluginUtilsRuntimeException(String
-                    .format("Invalid plugin parameter: plugin parameter %s is supposed to be of type %s but is not. It is of type : %s",
-                            parameterName, Collection.class.getName(), field.getType().getName()));
+            throw new PluginUtilsRuntimeException(
+                    String.format("Invalid plugin parameter: plugin parameter %s is supposed to be of type %s but is not. It is of type : %s",
+                                  parameterName, Collection.class.getName(), field.getType().getName()));
         }
         if (ParamType.MAP.equals(paramType) && !Map.class.isAssignableFrom(field.getType())) {
-            throw new PluginUtilsRuntimeException(String
-                    .format("Invalid plugin parameter: plugin parameter %s is supposed to be of type %s but is not. It is of type : %s",
-                            parameterName, Map.class.getName(), field.getType().getName()));
+            throw new PluginUtilsRuntimeException(
+                    String.format("Invalid plugin parameter: plugin parameter %s is supposed to be of type %s but is not. It is of type : %s",
+                                  parameterName, Map.class.getName(), field.getType().getName()));
         }
         // Get setup value
         String paramValue = plgConf.getParameterValue(parameterName);
@@ -548,7 +548,16 @@ public final class PluginParameterUtils {
             if (typeWrapper.get().getType().equals(PrimitiveObject.STRING.getType())) {
                 // Strip quotes using Gson
                 JsonElement el = gson.fromJson(paramValue, JsonElement.class);
-                effectiveVal = el == null ? null : el.getAsString();
+                // FIXME : Handle datasource plugin configurations
+                if ((el != null) && el.isJsonPrimitive()) {
+                    effectiveVal = el.getAsString();
+                } else {
+                    if (paramValue.startsWith("\"") && paramValue.endsWith("\"") && (paramValue.length() > 2)) {
+                        effectiveVal = paramValue.substring(1, paramValue.length() - 1);
+                    } else {
+                        effectiveVal = paramValue;
+                    }
+                }
             } else {
                 final Method method = typeWrapper.get().getType().getDeclaredMethod("valueOf", String.class);
                 effectiveVal = method.invoke(null, paramValue);
