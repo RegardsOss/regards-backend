@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
@@ -546,13 +547,16 @@ public final class PluginParameterUtils {
             Object effectiveVal;
             if (typeWrapper.get().getType().equals(PrimitiveObject.STRING.getType())) {
                 // Strip quotes using Gson
-                // JsonElement el = gson.fromJson(paramValue, JsonElement.class);
+                JsonElement el = gson.fromJson(paramValue, JsonElement.class);
                 // FIXME : Handle datasource plugin configurations
-                // effectiveVal = el == null ? null : el.getAsString();
-                if (paramValue.startsWith("\"") && paramValue.endsWith("\"") && (paramValue.length() > 2)) {
-                    effectiveVal = paramValue.substring(1, paramValue.length() - 1);
+                if ((el != null) && el.isJsonPrimitive()) {
+                    effectiveVal = el.getAsString();
                 } else {
-                    effectiveVal = paramValue;
+                    if (paramValue.startsWith("\"") && paramValue.endsWith("\"") && (paramValue.length() > 2)) {
+                        effectiveVal = paramValue.substring(1, paramValue.length() - 1);
+                    } else {
+                        effectiveVal = paramValue;
+                    }
                 }
             } else {
                 final Method method = typeWrapper.get().getType().getDeclaredMethod("valueOf", String.class);
