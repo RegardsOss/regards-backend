@@ -212,7 +212,7 @@ public class SIPController implements IResourceController<SIPEntity> {
                                         MethodParamFactory.build(String.class, sipEntity.getIpId()));
             }
             if (sipService.isRetryable(sipEntity.getIpId())) {
-                resourceService.addLink(resource, this.getClass(), "retrySipEntityIngest", LinkRels.DELETE,
+                resourceService.addLink(resource, this.getClass(), "retrySipEntityIngest", "retry",
                                         MethodParamFactory.build(String.class, sipEntity.getIpId()));
             }
         } catch (EntityNotFoundException e) {
