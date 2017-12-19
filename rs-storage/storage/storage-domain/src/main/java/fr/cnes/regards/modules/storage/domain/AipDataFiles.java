@@ -25,6 +25,11 @@ public class AipDataFiles {
     private Set<DataFileDto> dataFiles = new HashSet<>();
 
     /**
+     * Default constructor
+     */
+    public AipDataFiles() {}
+
+    /**
      * Constructor providing the aip and data files to extract the public information
      */
     public AipDataFiles(AIP aip, StorageDataFile... dataFiles) {
