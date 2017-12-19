@@ -27,6 +27,7 @@
 		</encoder>
 	</appender>
 	
+	<logger name="fr.cnes.regards.modules.acquisition" level="DEBUG" />
 	<root level="info">
 		<appender-ref ref="STDOUT" />
 	</root>

@@ -28,7 +28,7 @@ import java.util.Date;
  * @author Christophe Mertz
  *
  */
-public class CNESJulianDate {
+public final class CNESJulianDate {
 
     /**
      * Default constructor
