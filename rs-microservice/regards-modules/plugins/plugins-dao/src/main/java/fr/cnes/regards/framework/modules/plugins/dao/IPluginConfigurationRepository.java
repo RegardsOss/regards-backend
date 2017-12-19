@@ -21,9 +21,9 @@ package fr.cnes.regards.framework.modules.plugins.dao;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -35,7 +35,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
  * @author Christophe Mertz
  */
 @Repository
-public interface IPluginConfigurationRepository extends CrudRepository<PluginConfiguration, Long> {
+public interface IPluginConfigurationRepository extends JpaRepository<PluginConfiguration, Long> {
 
     /**
      * Find a {@link List} of {@link PluginConfiguration} for a plugin

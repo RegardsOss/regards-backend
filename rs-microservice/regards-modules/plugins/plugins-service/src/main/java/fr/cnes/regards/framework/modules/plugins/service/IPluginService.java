@@ -20,8 +20,8 @@
 package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentMap;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -55,19 +55,12 @@ public interface IPluginService {
     List<PluginMetaData> getPlugins();
 
     /**
-     * Return all {@link PluginMetaData} available for a specific plugin type.
+     * Return all specific plugin type available {@link PluginMetaData}s.
      *
      * @param interfacePluginType a specific interface plugin type
-     * @return list of {@link PluginMetaData}
+     * @return list of {@link PluginMetaData}s
      */
     List<PluginMetaData> getPluginsByType(Class<?> interfacePluginType);
-
-    /**
-     * @param pluginConfigurationId
-     * @return whether the plugin configured by the given plugin configuration threw its id cna be instantiated or not
-     * @throws ModuleException
-     */
-    boolean canInstantiate(Long pluginConfigurationId) throws ModuleException;
 
     /**
      * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
@@ -208,14 +201,14 @@ public interface IPluginService {
 
     /**
      * Get {@link PluginMetaData} for a plugin of a specific plugin type.</br>
-     * If the plugin class name does not match a plugin of the plugin type, a exception is thrown.
+     * If the plugin class name does not match a plugin of the plugin type, an exception is thrown.
      *
      * @param clazz the plugin type
      * @param pluginClassName a plugin class name
      * @return the {@link PluginMetaData} of the plugin of plugin type
-     * @throws EntityInvalidException Any plugin of plugin type is find.
+     * @throws EntityInvalidException No plugin of plugin type found.
      */
-    public PluginMetaData checkPluginClassName(Class<?> clazz, String pluginClassName) throws EntityInvalidException;
+    PluginMetaData checkPluginClassName(Class<?> clazz, String pluginClassName) throws EntityInvalidException;
 
     /**
      * Get a PluginConfiguration according to its unique label
@@ -257,7 +250,7 @@ public interface IPluginService {
     /**
      * @return tenant plugin cache
      */
-    ConcurrentMap<Long, Object> getPluginCache();
+    Map<Long, Object> getPluginCache();
 
     /**
      *

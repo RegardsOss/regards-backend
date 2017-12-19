@@ -82,7 +82,7 @@ public final class PluginUtils {
      * @param prefixes a {@link List} of package to scan to find the {@link Plugin} and {@link PluginInterface}
      * @return all class annotated {@link Plugin}
      */
-    public static Map<String, PluginMetaData> getPlugins(final String prefix, final List<String> prefixes) {
+    public static Map<String, PluginMetaData> getPlugins(String prefix, List<String> prefixes) {
         final Map<String, PluginMetaData> plugins = new HashMap<>();
 
         // Scan class path with Reflections library
@@ -122,14 +122,14 @@ public final class PluginUtils {
      * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @return all class annotated {@link Plugin}
      */
-    public static ConcurrentMap<String, PluginMetaData> getPlugins(final List<String> prefixes) {
-        final ConcurrentMap<String, PluginMetaData> plugins = new ConcurrentHashMap<>();
+    public static Map<String, PluginMetaData> getPlugins(List<String> prefixes) {
+        ConcurrentMap<String, PluginMetaData> pluginMap = new ConcurrentHashMap<>();
 
-        for (final String p : prefixes) {
-            plugins.putAll(getPlugins(p, prefixes));
+        for (String p : prefixes) {
+            pluginMap.putAll(getPlugins(p, prefixes));
         }
 
-        return plugins;
+        return pluginMap;
     }
 
     /**
