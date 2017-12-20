@@ -58,6 +58,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginInterfaceUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 
 /**
  * The implementation of {@link IPluginService}.
@@ -328,6 +329,25 @@ public class PluginService implements IPluginService {
             final PluginParameter... dynamicPluginParameters) throws ModuleException {
         return getPlugin(pPluginConfiguration.getId(), dynamicPluginParameters);
     }
+
+    /**
+     * We consider only plugin without dynamic parameters so we can profit from the cache system.
+     *
+     * @return whether a plugin conf, without dynamic parameters is instanciable or not
+     * @throws ModuleException when no plugin configuration with this id exists
+     */
+    @Override
+    public boolean canInstantiate(final Long pluginConfigurationId) throws ModuleException {
+        try {
+            getPlugin(pluginConfigurationId);
+            return true;
+        } catch (PluginUtilsRuntimeException e) {
+            LOGGER.warn(String.format("Plugin with configuration %s couldn't be instanciated", pluginConfigurationId),
+                        e);
+            return false;
+        }
+    }
+
 
     @SuppressWarnings("unchecked")
     @Override
