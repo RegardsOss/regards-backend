@@ -182,19 +182,19 @@ public final class PluginUtils {
      * @param pluginMetadata the {@link PluginMetaData}
      * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param instantiatedPluginMap already instaniated plugins
-     * @param pluginParameters an optional list of {@link PluginParameter}
+     * @param dynamicPluginParameters an optional list of {@link PluginParameter}
      * @return an instance of a {@link Plugin} @ if a problem occurs
      */
     public static <T> T getPlugin(PluginConfiguration pluginConf, PluginMetaData pluginMetadata, List<String> prefixes,
-            Map<Long, Object> instantiatedPluginMap, PluginParameter... pluginParameters) {
+            Map<Long, Object> instantiatedPluginMap, PluginParameter... dynamicPluginParameters) {
         return getPlugin(pluginConf, pluginMetadata.getPluginClassName(), prefixes, instantiatedPluginMap,
-                         pluginParameters);
+                         dynamicPluginParameters);
     }
 
     public static <T> T getPlugin(PluginConfiguration pluginConf, PluginMetaData pluginMetadata,
             IPluginUtilsBean pluginUtilsBean, List<String> prefixes, Map<Long, Object> instantiatedPluginMap,
-            PluginParameter... pluginParameters) {
-        return PluginUtils.getPlugin(pluginConf, pluginMetadata, prefixes, instantiatedPluginMap, pluginParameters);
+            PluginParameter... dynamicPluginParameters) {
+        return PluginUtils.getPlugin(pluginConf, pluginMetadata, prefixes, instantiatedPluginMap, dynamicPluginParameters);
     }
 
     /**
@@ -204,12 +204,12 @@ public final class PluginUtils {
      * @param pluginConf the {@link PluginConfiguration}
      * @param pluginClassName the {@link Plugin} class name
      * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
-     * @param pluginParameters an optional list of {@link PluginParameter}
+     * @param dynamicPluginParameters an optional list of {@link PluginParameter}
      * @return an instance of {@link Plugin} @ if a problem occurs
      */
     @SuppressWarnings("unchecked")
     public static <T> T getPlugin(PluginConfiguration pluginConf, String pluginClassName, List<String> prefixes,
-            Map<Long, Object> instantiatedPluginMap, PluginParameter... pluginParameters) {
+            Map<Long, Object> instantiatedPluginMap, PluginParameter... dynamicPluginParameters) {
         T returnPlugin = null;
 
         try {
@@ -219,12 +219,12 @@ public final class PluginUtils {
             if (PluginUtilsBean.getInstance() != null) {
                 // Post process parameters in Spring context
                 PluginParameterUtils.postProcess(PluginUtilsBean.getInstance().getGson(), returnPlugin, pluginConf,
-                                                 prefixes, instantiatedPluginMap, pluginParameters);
+                                                 prefixes, instantiatedPluginMap, dynamicPluginParameters);
                 PluginUtilsBean.getInstance().processAutowiredBean(returnPlugin);
             } else {
                 // Post process parameters without Spring
                 PluginParameterUtils.postProcess(Optional.empty(), returnPlugin, pluginConf, prefixes,
-                                                 instantiatedPluginMap, pluginParameters);
+                                                 instantiatedPluginMap, dynamicPluginParameters);
             }
 
             // Launch init method if detected
@@ -243,17 +243,17 @@ public final class PluginUtils {
      *
      * @param <T> a {@link Plugin}
      * @param parameters a {@link List} of {@link PluginParameter}
-     * @param returnInterfaceType the required returned type
+     * @param pluginClass the required returned type
      * @param pluginUtilsBean a {@link PluginUtilsBean} containing your own
      *            {@link org.springframework.beans.factory.BeanFactory}
      * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param pluginParameters an optional {@link List} of {@link PluginParameter}
      * @return a {@link Plugin} instance @ if a problem occurs
      */
-    public static <T> T getPlugin(List<PluginParameter> parameters, Class<T> returnInterfaceType,
+    public static <T> T getPlugin(List<PluginParameter> parameters, Class<T> pluginClass,
             IPluginUtilsBean pluginUtilsBean, List<String> prefixes, Map<Long, Object> instantiatedPluginMap,
             PluginParameter... pluginParameters) {
-        return PluginUtils.getPlugin(parameters, returnInterfaceType, prefixes, instantiatedPluginMap,
+        return PluginUtils.getPlugin(parameters, pluginClass, prefixes, instantiatedPluginMap,
                                      pluginParameters);
     }
 
@@ -262,19 +262,19 @@ public final class PluginUtils {
      *
      * @param <T> a {@link Plugin}
      * @param parameters a {@link List} of {@link PluginParameter}
-     * @param returnInterfaceType the required returned type
+     * @param pluginClass the required returned type
      * @param prefixes a {@link List} of package to scan to find the {@link Plugin} and {@link PluginInterface}
-     * @param pluginParameters an optional {@link List} of {@link PluginParameter}
+     * @param dynamicPluginParameters an optional {@link List} of {@link PluginParameter}
      * @return a {@link Plugin} instance
      */
-    public static <T> T getPlugin(List<PluginParameter> parameters, Class<T> returnInterfaceType, List<String> prefixes,
-            Map<Long, Object> instantiatedPluginMap, PluginParameter... pluginParameters) {
+    public static <T> T getPlugin(List<PluginParameter> parameters, Class<T> pluginClass, List<String> prefixes,
+            Map<Long, Object> instantiatedPluginMap, PluginParameter... dynamicPluginParameters) {
         // Build plugin metadata
-        PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(returnInterfaceType, prefixes);
+        PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pluginClass, prefixes);
 
         PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetadata, "", parameters);
         return PluginUtils.getPlugin(pluginConfiguration, pluginMetadata, prefixes, instantiatedPluginMap,
-                                     pluginParameters);
+                                     dynamicPluginParameters);
     }
 
     /**

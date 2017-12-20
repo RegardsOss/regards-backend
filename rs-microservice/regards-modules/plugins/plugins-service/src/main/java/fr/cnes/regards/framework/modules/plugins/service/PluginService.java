@@ -299,7 +299,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public <T> T getFirstPluginByType(final Class<?> pInterfacePluginType, final PluginParameter... pPluginParameters)
+    public <T> T getFirstPluginByType(final Class<?> pInterfacePluginType, final PluginParameter... dynamicPluginParameters)
             throws ModuleException {
 
         // Get pluginMap configuration for given type
@@ -320,7 +320,7 @@ public class PluginService implements IPluginService {
         }
 
         // Get the plugin associated to this configuration
-        return (configuration != null) ? getPlugin(configuration.getId(), pPluginParameters) : null;
+        return (configuration != null) ? getPlugin(configuration.getId(), dynamicPluginParameters) : null;
     }
 
     @Override

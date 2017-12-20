@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Set;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginDynamicValue;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterValue;
 
 /**
  * Utility class to manage a {@link List} of {@link PluginParameter}.
@@ -95,6 +95,25 @@ public class PluginParametersFactory {
     }
 
     /**
+     * Update parameter properties
+     * @param parameter parameter to update
+     * @param value value to normalize
+     * @param isDynamic dynamic or not
+     * @param dynamicValues dynamic values
+     */
+    public static <T> void updateParameter(PluginParameter parameter, T value, boolean isDynamic,
+            List<T> dynamicValues) {
+        parameter.setValue(normalize(value));
+        parameter.setIsDynamic(isDynamic);
+        // Manage possible dynamic values
+        if ((dynamicValues != null) && !dynamicValues.isEmpty()) {
+            Set<PluginParameterValue> dyns = new HashSet<>();
+            dynamicValues.forEach(s -> dyns.add(PluginParameterValue.create((normalize(s)))));
+            parameter.setDynamicsValues(dyns);
+        }
+    }
+
+    /**
      * Add a dynamic parameter
      * @param name the name parameter
      * @param value may be an {@link Object}, a {@link Collection} or a {@link Map}.
@@ -113,14 +132,14 @@ public class PluginParametersFactory {
      * @param value may be an {@link Object}, a {@link Collection} or a {@link Map}.
      * @return the factory
      */
-    public PluginParametersFactory addDynamicParameter(String name, Object value, List<?> dynamicValues) {
+    public <T> PluginParametersFactory addDynamicParameter(String name, T value, List<T> dynamicValues) {
 
         PluginParameter parameter = new PluginParameter(name, normalize(value));
         parameter.setIsDynamic(true);
         // Manage possible dynamic values
         if ((dynamicValues != null) && !dynamicValues.isEmpty()) {
-            Set<PluginDynamicValue> dyns = new HashSet<>();
-            dynamicValues.forEach(s -> dyns.add(new PluginDynamicValue(normalize(s))));
+            Set<PluginParameterValue> dyns = new HashSet<>();
+            dynamicValues.forEach(s -> dyns.add(PluginParameterValue.create((normalize(s)))));
             parameter.setDynamicsValues(dyns);
         }
         parameters.add(parameter);
