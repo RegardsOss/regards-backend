@@ -48,35 +48,4 @@ public class DataStorageObjectDescriptionElement extends DataStorageObjectElemen
     protected int getOrder() {
         return 1;
     }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result
-                + ((getDataStorageObjectIdentifier() == null) ? 0 : getDataStorageObjectIdentifier().hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        DataStorageObjectDescriptionElement other = (DataStorageObjectDescriptionElement) obj;
-        if (getDataStorageObjectIdentifier() == null) {
-            if (other.getDataStorageObjectIdentifier() != null) {
-                return false;
-            }
-        } else if (!getDataStorageObjectIdentifier().equals(other.getDataStorageObjectIdentifier())) {
-            return false;
-        }
-        return true;
-    }
 }

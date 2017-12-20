@@ -270,6 +270,12 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
         return pluginConfProperties;
     }
 
+    /**
+     * Build a {@link Map} of {@link File} to acquire.<br>
+     * The key is a {@link File}, the value is a {@link AcquisitionFile}.
+     * @param acqFiles list of {@link AcquisitionFile} to acquire
+     * @return a {@link Map} of {@link File} to acquire
+     */
     private Map<File, ?> buildMapFile(List<AcquisitionFile> acqFiles) {
         Map<File, File> fileMap = new HashMap<>();
 

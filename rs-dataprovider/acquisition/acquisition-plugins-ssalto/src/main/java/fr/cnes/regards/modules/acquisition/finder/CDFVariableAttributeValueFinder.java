@@ -31,14 +31,18 @@ import fr.cnes.regards.modules.acquisition.tools.CalculusTypeEnum;
 import fr.cnes.regards.modules.acquisition.tools.NetCdfFileHelper;
 
 /**
- * ce finder doit recuperer l'attribut d'une variable dans un fichier netCDF. il peut y avoir plusieurs variable
- * trouvees dans le fichier. un calcul est alors necessaire pour recuperer la valeur a renvoyer.
+ * Ce finder doit recuperer l'attribut d'une variable dans un fichier netCDF. <br>
+ * Il peut y avoir plusieurs variables trouvees dans le fichier. <br>
+ * Un calcul est alors necessaire pour recuperer la valeur a renvoyer.
  * 
  * @author Christophe Mertz
  *
  */
 public class CDFVariableAttributeValueFinder extends AbstractCdfFileFinder {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(CDFVariableAttributeValueFinder.class);
 
     /**
@@ -56,16 +60,18 @@ public class CDFVariableAttributeValueFinder extends AbstractCdfFileFinder {
             throws PluginAcquisitionException {
         List<Object> translatedValueList = new ArrayList<>();
         for (File file : buildFileList(fileMap)) {
-
             NetCdfFileHelper helper = new NetCdfFileHelper(file);
             List<Object> values = helper.getVariableValues(variableName, getValueType());
             helper.release();
+
             if (Calculus.equals(CalculusTypeEnum.FIRST)) {
                 Object value = values.get(0);
                 if (calculationClass != null) {
                     value = calculationClass.calculateValue(value, getValueType(), confProperties);
                 }
-                LOGGER.debug("[{}] first value found {}", variableName, value.toString());
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("[{}] first value found {}", variableName, value.toString());
+                }
                 translatedValueList.add(value);
                 break;
             } else if (Calculus.equals(CalculusTypeEnum.LAST)) {
@@ -73,7 +79,9 @@ public class CDFVariableAttributeValueFinder extends AbstractCdfFileFinder {
                 if (calculationClass != null) {
                     value = calculationClass.calculateValue(value, getValueType(), confProperties);
                 }
-                LOGGER.debug("[{}] last value found {}", variableName, value.toString());
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("[{}] last value found {}", variableName, value.toString());
+                }
                 translatedValueList.add(value);
             } else {
                 // apply the calculus class transformation

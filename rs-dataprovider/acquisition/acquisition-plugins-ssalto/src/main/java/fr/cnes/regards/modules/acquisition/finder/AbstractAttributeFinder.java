@@ -131,7 +131,7 @@ public abstract class AbstractAttributeFinder {
      *            la liste des fichiers a traiter, en clef se trouve le fichier a traiter et en valeur, le fichier sur
      *            l'espace de fourniture.
      * @param attributeValueMap
-     *            : map de valeurs de l'attribut
+     *            map de valeurs de l'attribut
      * @return un {@link Attribute}
      * @throws PluginAcquisitionException
      *             en cas d'erreur lors de la creation de l'attribute
@@ -140,18 +140,13 @@ public abstract class AbstractAttributeFinder {
     public Attribute buildAttribute(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
 
-        LOGGER.debug("START building attribute " + getName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("START building attribute {}", getName());
+        }
 
         Attribute attribute = null;
         try {
-            List<Object> valueList = null;
-
-            try {
-                // get value list
-                valueList = (List<Object>) getValueList(fileMap, attributeValueMap);
-            } catch (NumberFormatException e) {
-                throw new PluginAcquisitionException(e);
-            }
+            List<Object> valueList = (List<Object>) getValueList(fileMap, attributeValueMap);
 
             // add attribut to calculated attribut map
             List<Object> translatedValueList = new ArrayList<>();
@@ -176,7 +171,9 @@ public abstract class AbstractAttributeFinder {
             deleteUnzippedFile();
         }
 
-        LOGGER.debug("END building attribute " + getName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("END building attribute {}", getName());
+        }
 
         return attribute;
     }
@@ -203,7 +200,7 @@ public abstract class AbstractAttributeFinder {
      * Renvoie une liste d'objet dont le type depend du type de valeur de l'attribut.
      * 
      * @see AttributeFactory#createAttribute(AttributeTypeEnum, String, List)
-     * @param fileMap une liste de SsaltoFile
+     * @param fileMap une liste de fichier acquis
      * @param attributeValueMap
      * @return
      * @throws PluginAcquisitionException
@@ -297,7 +294,7 @@ public abstract class AbstractAttributeFinder {
         if (fileMap.isEmpty()) {
             LOGGER.error("No file to acquire");
         }
-        
+
         // liste des fichiers zip
         List<File> zipFileList = new ArrayList<>();
         for (File physicalFile : fileMap.keySet()) {
@@ -305,13 +302,15 @@ public abstract class AbstractAttributeFinder {
             // so metada cannot be ingested
             if (physicalFile != null) {
                 zipFileList.add(physicalFile);
-                LOGGER.debug("Add file " + physicalFile.getName());
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Add file {}", physicalFile.getName());
+                }
             } else {
                 String msg = "file not found int the acquisition working Directory";
                 throw new PluginAcquisitionException(msg);
             }
         }
-        
+
         List<File> unzippedFileList = new ArrayList<>();
         if (unzipBefore.booleanValue()) {
             for (File zipFile : zipFileList) {
@@ -323,7 +322,9 @@ public abstract class AbstractAttributeFinder {
         }
         // change le filePattern pour utiliser les fichiers dezippe
         if (unzippedFileList.isEmpty()) {
-            LOGGER.debug("No file found to be treated by this plugIn");
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("No file found to be treated by this plugIn");
+            }
         }
         return unzippedFileList;
     }
@@ -361,7 +362,7 @@ public abstract class AbstractAttributeFinder {
             LOGGER.error(e.getMessage());
             throw new PluginAcquisitionException(e);
         }
-        
+
         Collection<File> unzippedFileList = new HashSet<>();
         Files.fileTreeTraverser().children(temporaryDir).forEach(a -> unzippedFileList.add(a));
 
@@ -469,7 +470,8 @@ public abstract class AbstractAttributeFinder {
         return valueType;
     }
 
-    public void setCalculationClass(String newCalculationClass) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public void setCalculationClass(String newCalculationClass)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         calculationClass = (ICalculationClass) Class.forName(newCalculationClass).newInstance();
     }
 

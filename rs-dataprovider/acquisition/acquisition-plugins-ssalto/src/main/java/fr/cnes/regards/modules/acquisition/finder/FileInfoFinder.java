@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.tools.FileInformationTypeEnum;
 
 /**
- * ce finder doit aller chercher la valeur de l'attribut dans les informations systemes du fichier
+ * Ce finder doit aller chercher la valeur de l'attribut dans les informations systemes du fichier.
  * 
  * @author Christophe Mertz
  *
@@ -57,7 +57,7 @@ public class FileInfoFinder extends AbstractAttributeFinder {
                     OffsetDateTime newOffsetDateTime = OffsetDateTime.ofInstant(newDate.toInstant(), ZoneId.of("UTC"));
 
                     if (oldOffSetDateTime.isBefore(newOffsetDateTime)) {
-                        valueList = new ArrayList<>();
+                        valueList.clear();
                         valueList.add(0, newOffsetDateTime);
                     }
                 } else {
@@ -66,11 +66,9 @@ public class FileInfoFinder extends AbstractAttributeFinder {
                     valueList.add(0, offDateTime);
                 }
             } else if (fileInformation.equals(FileInformationTypeEnum.FILE_SIZE)) {
-                // reset the list
-                valueList = new ArrayList<>();
                 if (!valueList.isEmpty()) {
                     Long oldLong = (Long) valueList.get(0);
-                    valueList = new ArrayList<>();
+                    valueList.clear();
                     valueList.add(Long.valueOf(oldLong.longValue() + originalFile.length()));
                 } else {
                     valueList.add(Long.valueOf(originalFile.length()));

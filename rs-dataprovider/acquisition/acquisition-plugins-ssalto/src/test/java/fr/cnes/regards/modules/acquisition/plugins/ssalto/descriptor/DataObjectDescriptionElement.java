@@ -65,36 +65,6 @@ public class DataObjectDescriptionElement extends DataObjectElement {
         attributeLst = new ArrayList<>();
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((getDataObjectIdentifier() == null) ? 0 : getDataObjectIdentifier().hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        DataObjectDescriptionElement other = (DataObjectDescriptionElement) obj;
-        if (getDataObjectIdentifier() == null) {
-            if (other.getDataObjectIdentifier() != null) {
-                return false;
-            }
-        } else if (!getDataObjectIdentifier().equals(other.getDataObjectIdentifier())) {
-            return false;
-        }
-        return true;
-    }
-
     /**
      * Cette methode permet d'ajouter un attribut a la liste d'attributs non standard de l'entite.
      * 

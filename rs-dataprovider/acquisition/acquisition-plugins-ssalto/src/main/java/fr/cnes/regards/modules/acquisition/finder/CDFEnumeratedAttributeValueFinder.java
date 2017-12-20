@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.finder;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -35,13 +36,15 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.tools.NetCdfFileHelper;
 
 /**
- * Ce finder a pour but de lister les valeurs possible prises par l'attribut de toutes les variables d'un fichier au
- * format NetCDF
+ * Ce finder a pour but de lister les valeurs possible prises par l'attribut de toutes les variables d'un fichier au format NetCDF
  * 
  * @author Christophe Mertz
  */
 public class CDFEnumeratedAttributeValueFinder extends AbstractCdfFileFinder {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(CDFEnumeratedAttributeValueFinder.class);
 
     private List<String> exceptionList;
@@ -49,12 +52,10 @@ public class CDFEnumeratedAttributeValueFinder extends AbstractCdfFileFinder {
     @Override
     public Attribute buildAttribute(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
-        LOGGER.debug("START building attribute " + getName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("START building attribute {}", getName());
+        }
         CompositeAttribute composedAttribute = new CompositeAttribute();
-        // important, set to null, to not create a root element and add directly
-        // the attributes
-        // into the dataObjectDescription XML bloc.
-        // composedAttribute.setName(null);
         try {
             List<Object> valueList = getValueList(fileMap, attributeValueMap);
             // add attribut to calculated attribut map
@@ -65,17 +66,20 @@ public class CDFEnumeratedAttributeValueFinder extends AbstractCdfFileFinder {
                 }
                 // translate the value
                 String translatedValue = changeFormat(value);
-                List<String> translatedValueList = new ArrayList<>();
-                translatedValueList.add(translatedValue);
-                LOGGER.debug("adding value " + translatedValue);
-                Attribute attribute = AttributeFactory.createAttribute(getValueType(), getName(), translatedValueList);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("adding value " + translatedValue);
+                }
+                Attribute attribute = AttributeFactory.createAttribute(getValueType(), getName(),
+                                                                       Arrays.asList(translatedValue));
                 composedAttribute.addAttribute(attribute);
             }
         } catch (DomainModelException e) {
             String msg = "unable to create attribute" + getName();
             throw new PluginAcquisitionException(msg, e);
         }
-        LOGGER.debug("START building attribute " + getName());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("START building attribute {}", getName());
+        }
         return composedAttribute;
     }
 

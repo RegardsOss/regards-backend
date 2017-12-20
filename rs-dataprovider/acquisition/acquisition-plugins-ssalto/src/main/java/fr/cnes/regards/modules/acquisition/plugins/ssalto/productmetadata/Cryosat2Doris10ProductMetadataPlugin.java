@@ -50,6 +50,9 @@ import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
         url = "https://github.com/RegardsOss")
 public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadataPlugin {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Cryosat2Doris10ProductMetadataPlugin.class);
 
     private static final String TIME_PERIOD = "TIME_PERIOD";
@@ -161,10 +164,10 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
     }
 
     /**
-     * Get the START_DATE
-     * @param files
-     * @return
-     * @throws PluginAcquisitionException
+     * Get the START_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the START_DATE value of each {@link File}
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
      */
     protected List<OffsetDateTime> getStartDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
@@ -190,10 +193,10 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
     }
 
     /**
-     * Get the STOP_DATE
-     * @param files
-     * @return
-     * @throws PluginAcquisitionException
+     * Get the STOP_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the STOP_DATE value of each {@link File}
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
      */
     protected List<OffsetDateTime> getStopDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
@@ -219,10 +222,10 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
     }
 
     /**
-     * Get the CREATION_DATE
-     * @param files
-     * @return
-     * @throws PluginAcquisitionException
+     * Get the START_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the START_DATE value of each {@link File}
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
      */
     protected List<OffsetDateTime> getCreationDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
@@ -233,8 +236,7 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
             if (matcherD.matches()) {
                 // go to search into file using RINExFileHelper
                 RinexFileHelper helper = new RinexFileHelper(file);
-                Pattern cdPattern = CREATION_DATE_PATTERN;
-                String dateStr = helper.getValue(2, cdPattern, 1);
+                String dateStr = helper.getValue(2, CREATION_DATE_PATTERN, 1);
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FILE_FORMATTER);
                 valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
             } else if (matcherP.matches()) {

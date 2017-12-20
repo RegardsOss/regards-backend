@@ -33,13 +33,16 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
 /**
- * classe mere des finder qui trouvent les valeurs des attributs dans le nom des fichiers
+ * Classe mere des finder qui trouvent les valeurs des attributs dans le nom des fichiers.
  * 
  * @author Christophe Mertz
  *
  */
 public class FileNameFinder extends AbstractAttributeFinder {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(FileNameFinder.class);
 
     /**

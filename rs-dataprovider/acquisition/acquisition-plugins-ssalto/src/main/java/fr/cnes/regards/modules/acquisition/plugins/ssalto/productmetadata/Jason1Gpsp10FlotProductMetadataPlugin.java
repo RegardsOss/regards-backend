@@ -132,9 +132,9 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
     }
 
     /**
-     * 
-     * @param files
-     * @return
+     * Get the START_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the START_DATE value of each {@link File}
      * @throws PluginAcquisitionException
      */
     protected List<OffsetDateTime> getStartDateValue(Collection<File> files) throws PluginAcquisitionException {
@@ -155,9 +155,9 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
     }
 
     /**
-     * 
-     * @param files
-     * @return
+     * Get the STOP_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the STOP_DATE value of each {@link File}
      * @throws PluginAcquisitionException
      */
     protected List<OffsetDateTime> getStopDateValue(Collection<File> files) throws PluginAcquisitionException {
@@ -178,10 +178,10 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
     }
 
     /**
-     * 
-     * @param files
-     * @return
-     * @throws PluginAcquisitionException
+     * Get the START_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the START_DATE value of each {@link File}
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
      */
     protected List<OffsetDateTime> getCreationDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();

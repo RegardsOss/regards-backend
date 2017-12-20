@@ -42,6 +42,9 @@ import fr.cnes.regards.modules.acquisition.tools.CalculusTypeEnum;
  */
 public class MultipleFileNameFinder extends FileNameFinder {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MultipleFileNameFinder.class);
 
     /**

@@ -53,6 +53,9 @@ import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
         url = "https://github.com/RegardsOss")
 public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(SaralDoris10ProductMetadataPlugin.class);
 
     @Autowired
@@ -172,11 +175,10 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
     }
 
     /**
-     * Get the START_DATE
-     * @param files
-     *            : les fichiers de donnees de la mission
-     * @return valueList : date de debut de la mission
-     * @throws PluginAcquisitionException
+     * Get the START_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the START_DATE value of each {@link File}
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
      */
     protected List<OffsetDateTime> getStartDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
@@ -208,11 +210,10 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
     }
 
     /**
-     * Get the STOP_DATE
-     * @param files
-     *            liste de fichiers de donnees de la mission
-     * @return valueList : date de fin de la mission
-     * @throws PluginAcquisitionException
+     * Get the STOP_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the STOP_DATE value of each {@link File}
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
      */
     protected List<OffsetDateTime> getStopDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
@@ -226,7 +227,6 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
             if (matcherD.matches()) {
                 OffsetDateTime date = (OffsetDateTime) attributeValueMap.get(START_DATE).get(n);
                 valueList.add(date.plusSeconds(86399));
-
             } else if (matcherP.matches()) {
                 String dateStr = matcherP.group(3);
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
@@ -248,11 +248,10 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
     }
 
     /**
-     * Get the CREATION_DATE
-     * @param pSsaltoFileList
-     *            liste de fichiers de données de la mission
-     * @return valueList : date de creation des fichiers de donnees de la mission
-     * @throws PluginAcquisitionException
+     * Get the CREATION_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the CREATION_DATE value of each {@link File}
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
      */
     protected List<OffsetDateTime> getCreationDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
