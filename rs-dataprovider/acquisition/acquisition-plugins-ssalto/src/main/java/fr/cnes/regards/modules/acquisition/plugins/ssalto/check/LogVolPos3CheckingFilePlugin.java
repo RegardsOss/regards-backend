@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 @Plugin(description = "LogVolPos3CheckingFilePlugin", id = "LogVolPos3CheckingFilePlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class LogVolPos3CheckingFilePlugin extends AbstractCheckingFilePlugin {
+public class LogVolPos3CheckingFilePlugin extends CheckingFilePluginHelper {
 
     /**
      * The extension file BIN
@@ -52,7 +52,7 @@ public class LogVolPos3CheckingFilePlugin extends AbstractCheckingFilePlugin {
     /**
      * Initialize the extension file to remove from the file name
      */
-    protected void initExtensionList() {
+    private void initExtensionList() {
         extensionList.add(EXTENSION_BIN);
         extensionList.add(EXTENSION_HDR);
     }

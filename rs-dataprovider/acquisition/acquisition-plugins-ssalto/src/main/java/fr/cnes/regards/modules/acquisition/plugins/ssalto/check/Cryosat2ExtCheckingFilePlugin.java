@@ -20,6 +20,7 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 
 /**
@@ -33,7 +34,7 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 @Plugin(description = "Cryosat2ExtCheckingFilePlugin", id = "Cryosat2ExtCheckingFilePlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class Cryosat2ExtCheckingFilePlugin extends AbstractCheckingFilePlugin {
+public class Cryosat2ExtCheckingFilePlugin extends CheckingFilePluginHelper {
 
     /**
      * The extension file HDR
@@ -53,7 +54,7 @@ public class Cryosat2ExtCheckingFilePlugin extends AbstractCheckingFilePlugin {
     /**
      * Initialize the extension file to remove from the file name
      */
-    protected void initExtensionList() {
+    private final void initExtensionList() {
         extensionList.add(EXTENSION_HDR);
         extensionList.add(EXTENSION_DBL);
     }

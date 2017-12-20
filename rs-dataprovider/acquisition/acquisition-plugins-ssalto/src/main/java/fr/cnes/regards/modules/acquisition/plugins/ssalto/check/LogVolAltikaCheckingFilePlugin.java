@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 @Plugin(description = "LogVolAltikaCheckingFilePlugin", id = "LogVolAltikaCheckingFilePlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class LogVolAltikaCheckingFilePlugin extends AbstractCheckingFilePlugin {
+public class LogVolAltikaCheckingFilePlugin extends CheckingFilePluginHelper {
 
     /**
      * The extension file HDR
@@ -57,7 +57,7 @@ public class LogVolAltikaCheckingFilePlugin extends AbstractCheckingFilePlugin {
     /**
      * Initialize the extension file to remove from the file name
      */
-    protected void initExtensionList() {
+    private void initExtensionList() {
         extensionList.add(EXTENSION_BIN);
         extensionList.add(EXTENSION_HDR);
         extensionList.add(EXTENSION_TCH);

@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
  * @author Christophe Mertz
  *
  */
-public abstract class AbstractCheckingFilePlugin implements ICheckFilePlugin {
+public abstract class CheckingFilePluginHelper implements ICheckFilePlugin {
 
     /**
      * The {@link Product} name
@@ -46,14 +46,9 @@ public abstract class AbstractCheckingFilePlugin implements ICheckFilePlugin {
      */
     protected final List<String> extensionList = new ArrayList<String>();
 
-    public AbstractCheckingFilePlugin() {
+    public CheckingFilePluginHelper() {
         super();
     }
-
-    /**
-     * Initialize the extension file to remove from the file name
-     */
-    protected abstract void initExtensionList();
 
     /**
      * This methods checks that the file exists and is accessible.<br>

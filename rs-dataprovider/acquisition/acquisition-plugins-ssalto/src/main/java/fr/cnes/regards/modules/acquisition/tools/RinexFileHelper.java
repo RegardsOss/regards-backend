@@ -97,7 +97,9 @@ public class RinexFileHelper {
         String value = null;
         if (lineNumber > 0) {
             String line = getLine(lineNumber, currentFile);
-            LOGGER.debug("line read : " + line);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("line read : {}", line);
+            }
             Matcher valueMatcher = pattern.matcher(line);
             valueMatcher.matches();
             value = valueMatcher.group(catchGroup);
@@ -122,7 +124,9 @@ public class RinexFileHelper {
         // get the file's last line
         else if (lineNumber == -2) {
             String line = getLine(lineNumber, currentFile);
-            LOGGER.debug("line read : " + line);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("line read : {}", line);
+            }
             Matcher valueMatcher = pattern.matcher(line);
             valueMatcher.matches();
             value = valueMatcher.group(catchGroup);
