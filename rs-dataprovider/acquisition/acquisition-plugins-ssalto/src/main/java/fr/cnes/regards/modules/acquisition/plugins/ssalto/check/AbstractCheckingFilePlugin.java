@@ -48,7 +48,6 @@ public abstract class AbstractCheckingFilePlugin implements ICheckFilePlugin {
 
     public AbstractCheckingFilePlugin() {
         super();
-        initExtensionList();
     }
 
     /**

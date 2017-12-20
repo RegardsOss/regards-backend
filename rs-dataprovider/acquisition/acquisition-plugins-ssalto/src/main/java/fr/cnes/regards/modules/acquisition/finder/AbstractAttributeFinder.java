@@ -139,11 +139,9 @@ public abstract class AbstractAttributeFinder {
     @SuppressWarnings("unchecked")
     public Attribute buildAttribute(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
-
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("START building attribute {}", getName());
         }
-
         Attribute attribute = null;
         try {
             List<Object> valueList = (List<Object>) getValueList(fileMap, attributeValueMap);
@@ -170,11 +168,9 @@ public abstract class AbstractAttributeFinder {
         } finally {
             deleteUnzippedFile();
         }
-
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("END building attribute {}", getName());
         }
-
         return attribute;
     }
 

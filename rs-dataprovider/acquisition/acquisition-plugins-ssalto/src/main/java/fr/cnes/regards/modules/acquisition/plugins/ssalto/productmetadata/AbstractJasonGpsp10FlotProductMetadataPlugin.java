@@ -28,10 +28,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
-import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
@@ -48,15 +46,6 @@ public abstract class AbstractJasonGpsp10FlotProductMetadataPlugin extends Abstr
 
     public AbstractJasonGpsp10FlotProductMetadataPlugin() {
         super();
-    }
-
-    /**
-     * cree les attributs time_period et file_creation_date
-     */
-    @Override
-    protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
-            throws PluginAcquisitionException {
-        super.doCreateIndependantSpecificAttributes(pFileMap, pAttributeMap);
     }
 
     @Override

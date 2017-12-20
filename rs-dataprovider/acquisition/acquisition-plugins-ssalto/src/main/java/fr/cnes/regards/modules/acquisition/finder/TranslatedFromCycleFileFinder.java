@@ -226,11 +226,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         OffsetDateTime cycleStartDate = null;
         int increment = 0;
         String cycleAsString = null;
-
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("cycle = {}", cycleOccurence.toString());
         }
-
         // occurence du cycle
         final NumberFormat numberFormat = new DecimalFormat("000");
         cycleAsString = numberFormat.format(cycleOccurence.intValue());
@@ -238,7 +236,6 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         // recupere le ou les fichiers depuis le disk
         final String[] getOrfFilePath = confProperties.getOrfFilepath();
         while ((cycleStartDate == null) && (increment <= (getOrfFilePath.length - 1))) {
-
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(MSG_ORF_FILE_PATH, getOrfFilePath[increment]);
             }
@@ -261,11 +258,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
             LOGGER.error(msg);
             throw new PluginAcquisitionException(msg);
         }
-
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("cycleStartDate found = {}", cycleStartDate);
         }
-
         return cycleStartDate;
     }
 

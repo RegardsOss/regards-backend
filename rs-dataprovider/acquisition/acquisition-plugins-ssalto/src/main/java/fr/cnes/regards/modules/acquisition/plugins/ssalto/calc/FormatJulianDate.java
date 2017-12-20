@@ -50,7 +50,7 @@ public class FormatJulianDate implements ICalculationClass {
             secondInDay = tokenizer.nextToken();
         }
         Date tmp = CNESJulianDate.toDate(julianDayString, secondInDay);
-        String tmp2String = DateFormatter.getDateRepresentation(tmp, DateFormatter.XS_DATE_TIME_FORMAT);
-        return tmp2String;
+
+        return DateFormatter.getDateRepresentation(tmp, DateFormatter.XS_DATE_TIME_FORMAT);
     }
 }

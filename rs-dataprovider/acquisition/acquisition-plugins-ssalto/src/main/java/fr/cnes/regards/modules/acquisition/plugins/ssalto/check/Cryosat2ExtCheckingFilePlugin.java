@@ -45,6 +45,11 @@ public class Cryosat2ExtCheckingFilePlugin extends AbstractCheckingFilePlugin {
      */
     private static String EXTENSION_DBL = ".DBL";
 
+    public Cryosat2ExtCheckingFilePlugin() {
+        super();
+        initExtensionList();
+    }
+
     /**
      * Initialize the extension file to remove from the file name
      */

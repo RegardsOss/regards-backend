@@ -67,7 +67,9 @@ public class TranslatedFileNameFinder extends FileNameFinder {
             if (getTranslatedValue(element) != null) {
                 translatedValues.add(getTranslatedValue(element));
             } else {
-                LOGGER.debug("unable to find translation for value " + element.toString());
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("unable to find translation for value " + element.toString());
+                }
             }
         }
         return translatedValues;

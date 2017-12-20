@@ -88,7 +88,9 @@ public class FileNameFinder extends AbstractAttributeFinder {
         Object parsedValue = null;
         for (File fileToProceed : fileToProceedList) {
             Matcher matcher = pattern.matcher(fileToProceed.getName());
-            LOGGER.debug("testing file " + fileToProceed.getName());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("testing file " + fileToProceed.getName());
+            }
             if (matcher.matches()) {
                 StringBuilder value = new StringBuilder();
 
@@ -100,7 +102,9 @@ public class FileNameFinder extends AbstractAttributeFinder {
                 parsedValue = valueOf(value.toString());
 
                 if (parsedValue != null) {
-                    LOGGER.debug("add value " + parsedValue.toString() + " for file " + fileToProceed.getName());
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("add value " + parsedValue.toString() + " for file " + fileToProceed.getName());
+                    }
                 }
             }
         }
@@ -109,8 +113,7 @@ public class FileNameFinder extends AbstractAttributeFinder {
         }
         // warn if no file are found
         if (valueList.isEmpty()) {
-            String msg = "No filename matching the pattern " + filePattern;
-            LOGGER.warn(msg);
+            LOGGER.warn("No filename matching the pattern ", filePattern);
         }
         return valueList;
     }

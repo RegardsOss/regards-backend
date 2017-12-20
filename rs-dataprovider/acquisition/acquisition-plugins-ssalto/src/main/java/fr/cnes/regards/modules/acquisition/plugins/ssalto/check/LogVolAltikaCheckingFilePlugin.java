@@ -49,6 +49,11 @@ public class LogVolAltikaCheckingFilePlugin extends AbstractCheckingFilePlugin {
      */
     private static String EXTENSION_TCH = "_TCH";
 
+    private LogVolAltikaCheckingFilePlugin() {
+        super();
+        initExtensionList();
+    }
+
     /**
      * Initialize the extension file to remove from the file name
      */

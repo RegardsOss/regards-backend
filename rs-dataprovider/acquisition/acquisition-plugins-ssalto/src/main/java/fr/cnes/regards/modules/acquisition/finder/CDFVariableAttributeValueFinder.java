@@ -53,7 +53,7 @@ public class CDFVariableAttributeValueFinder extends AbstractCdfFileFinder {
     /**
      * calcul a effectuer sur la liste des valeurs de l'attribut sur toutes les variables trouvees dans le fichier
      */
-    private CalculusTypeEnum Calculus;
+    private CalculusTypeEnum calculus;
 
     @Override
     public List<Object> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
@@ -64,7 +64,7 @@ public class CDFVariableAttributeValueFinder extends AbstractCdfFileFinder {
             List<Object> values = helper.getVariableValues(variableName, getValueType());
             helper.release();
 
-            if (Calculus.equals(CalculusTypeEnum.FIRST)) {
+            if (calculus.equals(CalculusTypeEnum.FIRST)) {
                 Object value = values.get(0);
                 if (calculationClass != null) {
                     value = calculationClass.calculateValue(value, getValueType(), confProperties);
@@ -74,7 +74,7 @@ public class CDFVariableAttributeValueFinder extends AbstractCdfFileFinder {
                 }
                 translatedValueList.add(value);
                 break;
-            } else if (Calculus.equals(CalculusTypeEnum.LAST)) {
+            } else if (calculus.equals(CalculusTypeEnum.LAST)) {
                 Object value = values.get(values.size() - 1);
                 if (calculationClass != null) {
                     value = calculationClass.calculateValue(value, getValueType(), confProperties);
@@ -95,11 +95,11 @@ public class CDFVariableAttributeValueFinder extends AbstractCdfFileFinder {
                     } else {
                         @SuppressWarnings("unchecked")
                         int compare = ((Comparable<Object>) value).compareTo(translatedValueList.get(0));
-                        if (Calculus.equals(CalculusTypeEnum.MAX) && (compare > 0)) {
+                        if (calculus.equals(CalculusTypeEnum.MAX) && (compare > 0)) {
                             translatedValueList.clear();
                             translatedValueList.add(value);
                         }
-                        if (Calculus.equals(CalculusTypeEnum.MIN) && (compare < 0)) {
+                        if (calculus.equals(CalculusTypeEnum.MIN) && (compare < 0)) {
                             translatedValueList.clear();
                             translatedValueList.add(value);
                         }
@@ -124,12 +124,12 @@ public class CDFVariableAttributeValueFinder extends AbstractCdfFileFinder {
     public String toString() {
         StringBuilder buff = new StringBuilder(super.toString());
         buff.append(" | variableName").append(variableName);
-        buff.append(" | calculus").append(Calculus);
+        buff.append(" | calculus").append(calculus);
         return buff.toString();
     }
 
     public void setCalculus(String newCalculus) {
-        Calculus = CalculusTypeEnum.parse(newCalculus);
+        calculus = CalculusTypeEnum.parse(newCalculus);
     }
 
     public void setVariableName(String newVariableName) {

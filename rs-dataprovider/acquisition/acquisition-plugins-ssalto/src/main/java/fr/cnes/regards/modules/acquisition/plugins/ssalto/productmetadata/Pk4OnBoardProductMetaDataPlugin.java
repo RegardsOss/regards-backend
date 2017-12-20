@@ -57,7 +57,7 @@ public class Pk4OnBoardProductMetaDataPlugin extends AbstractProductMetadataPlug
 
     private static final String DISK_ID_DEFAULT_VALUE = ".";
 
-    private static final String pathPattern_ = ".*/(Disk[0-9]*)/.*";
+    private static final String PATH_PATTERN = ".*/(Disk[0-9]*)/.*";
 
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
@@ -76,7 +76,7 @@ public class Pk4OnBoardProductMetaDataPlugin extends AbstractProductMetadataPlug
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
 
-        final Pattern pattern = Pattern.compile(pathPattern_);
+        final Pattern pattern = Pattern.compile(PATH_PATTERN);
         String diskParam = DISK_ID_DEFAULT_VALUE;
 
         // 1. Loop on product file and get unique Disk param value in path

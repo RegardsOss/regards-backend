@@ -44,6 +44,11 @@ public class LogVolPos3CheckingFilePlugin extends AbstractCheckingFilePlugin {
      */
     private static String EXTENSION_HDR = "_HDR";
 
+    private LogVolPos3CheckingFilePlugin() {
+        super();
+        initExtensionList();
+    }
+
     /**
      * Initialize the extension file to remove from the file name
      */
