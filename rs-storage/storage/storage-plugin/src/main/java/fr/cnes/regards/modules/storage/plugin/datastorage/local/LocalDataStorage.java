@@ -18,10 +18,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
-import com.google.gson.Gson;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
@@ -58,21 +58,23 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     private static final Logger LOG = LoggerFactory.getLogger(LocalDataStorage.class);
 
     /**
-     * {@link Gson} instance
+     * {@link IRuntimeTenantResolver} instance
      */
     @Autowired
-    private Gson gson;
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Base storage location url
      */
-    @PluginParameter(name = BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, description = "Base storage location url to use", label = "Base storage location url")
+    @PluginParameter(name = BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, description = "Base storage location url to use",
+            label = "Base storage location url")
     private String baseStorageLocationAsString;
 
     /**
      * can this data storage delete files or not?
      */
-    @PluginParameter(name = LOCAL_STORAGE_DELETE_OPTION, defaultValue = "true", description = "Can this data storage delete files or not?", label = "Deletion option")
+    @PluginParameter(name = LOCAL_STORAGE_DELETE_OPTION, defaultValue = "true",
+            description = "Can this data storage delete files or not?", label = "Deletion option")
     private Boolean canDelete;
 
     /**
@@ -108,7 +110,12 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
 
     @Override
     public void store(LocalWorkingSubset workingSubset, Boolean replaceMode, IProgressManager progressManager) {
-        workingSubset.getDataFiles().parallelStream().forEach(data -> doStore(progressManager, data, replaceMode));
+        // because we use a parallel stream, we need to get the tenant now and force it before each doStore call
+        String tenant = runtimeTenantResolver.getTenant();
+        workingSubset.getDataFiles().stream().forEach(data -> {
+            runtimeTenantResolver.forceTenant(tenant);
+            doStore(progressManager, data, replaceMode);
+        });
     }
 
     @Override
@@ -129,9 +136,10 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                 return;
             }
         } catch (IOException ioe) {
-            String failureCause = String.format("Storage of StorageDataFile(%s) failed due to the following IOException: %s",
-                                                data.getChecksum(),
-                                                ioe.getMessage());
+            String failureCause = String.format(
+                    "Storage of StorageDataFile(%s) failed due to the following IOException: %s",
+                    data.getChecksum(),
+                    ioe.getMessage());
             LOG.error(failureCause, ioe);
             progressManager.storageFailed(data, failureCause);
             return;
@@ -160,9 +168,10 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                     re);
             throw re;
         } catch (IOException ioe) {
-            String failureCause = String.format("Storage of StorageDataFile(%s) failed due to the following IOException: %s",
-                                                data.getChecksum(),
-                                                ioe.getMessage());
+            String failureCause = String.format(
+                    "Storage of StorageDataFile(%s) failed due to the following IOException: %s",
+                    data.getChecksum(),
+                    ioe.getMessage());
             LOG.error(failureCause, ioe);
             Paths.get(fullPathToFile).toFile().delete();
             progressManager.storageFailed(data, failureCause);
