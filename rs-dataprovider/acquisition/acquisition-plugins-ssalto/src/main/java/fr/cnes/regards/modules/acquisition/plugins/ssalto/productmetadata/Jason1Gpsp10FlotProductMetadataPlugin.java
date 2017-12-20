@@ -61,12 +61,6 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(Jason1Gpsp10FlotProductMetadataPlugin.class);
 
-    private static final String TIME_PERIOD = "TIME_PERIOD";
-
-    private static final String START_DATE = "START_DATE";
-
-    private static final String STOP_DATE = "STOP_DATE";
-
     protected static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     protected Pattern patternd;

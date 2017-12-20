@@ -47,6 +47,9 @@ public class CDFEnumeratedAttributeValueFinder extends AbstractCdfFileFinder {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(CDFEnumeratedAttributeValueFinder.class);
 
+    /**
+     * Une {@link List} d'exception sur les noms des variables
+     */
     private List<String> exceptionList;
 
     @Override

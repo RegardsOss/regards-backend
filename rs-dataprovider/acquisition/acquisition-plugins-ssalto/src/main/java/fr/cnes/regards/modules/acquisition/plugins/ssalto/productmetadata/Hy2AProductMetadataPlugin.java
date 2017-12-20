@@ -33,6 +33,9 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryP
         url = "https://github.com/RegardsOss")
 public class Hy2AProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
+    /**
+     * HY-2A project name
+     */
     private static final String PROJECT_NAME = "HY2A";
 
     @Autowired

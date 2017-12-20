@@ -120,10 +120,25 @@ public abstract class AbstractSetDateCommon implements ICalculationClass {
         return result;
     }
 
+    /**
+     * Default hour value
+     * 
+     * @return Default hour value
+     */
     protected abstract int getDefaultHour();
 
+    /**
+     * Default minute value
+     * 
+     * @return Default minute value
+     */
     protected abstract int getDefaultMinute();
 
+    /**
+     * Default second value
+     * 
+     * @return Default second value
+     */
     protected abstract int getDefaultSecond();
 
 }

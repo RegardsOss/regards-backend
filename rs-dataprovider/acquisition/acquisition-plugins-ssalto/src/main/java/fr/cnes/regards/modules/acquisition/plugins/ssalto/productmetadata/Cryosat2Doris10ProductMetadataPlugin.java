@@ -22,7 +22,6 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -54,20 +53,6 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(Cryosat2Doris10ProductMetadataPlugin.class);
-
-    private static final String TIME_PERIOD = "TIME_PERIOD";
-
-    private static final String START_DATE = "START_DATE";
-
-    private static final String STOP_DATE = "STOP_DATE";
-
-    private static final String CREATION_DATE = "FILE_CREATION_DATE";
-
-    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
-
-    private static final DateTimeFormatter DATETIME_FILE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd HHmmss");
-
-    private static final Pattern CREATION_DATE_PATTERN = Pattern.compile(".* ([0-9]{8} [0-9]{6}) UTC.*");
 
     protected Pattern patternd;
 

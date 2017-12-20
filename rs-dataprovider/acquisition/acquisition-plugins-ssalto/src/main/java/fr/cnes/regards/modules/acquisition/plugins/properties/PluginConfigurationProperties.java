@@ -35,31 +35,57 @@ import fr.cnes.regards.modules.acquisition.finder.AbstractAttributeFinder;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.LoadTranslationProperties;
 
 /**
+ * Class to load the <b>pluginConfiguration.properties</b> file
  * 
  * @author Christophe Mertz
  *
  */
 public class PluginConfigurationProperties {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginConfigurationProperties.class);
 
+    /**
+     * The {@link Properties} read in the ORL file properties
+     */
     protected Properties pluginProperties;
 
+    /**
+     * The ORF_FILEPATH_PATTERN key used in the ORL file properties
+     */
     protected static final String ORF_FILE_PATH_KEY = "ORF_FILEPATH_PATTERN";
 
+    /**
+     * The CYCLE_FILEPATH key used in the ORL file properties
+     */
     protected static final String CYCLE_FILE_PATH_KEY = "CYCLE_FILEPATH";
 
+    /**
+     * The ARCS_FILEPATH key used in the ORL file properties
+     */
     protected static final String ARCS_FILEPATH_KEY = "ARCS_FILEPATH";
 
+    /**
+     * The separator's value used in the ORL file properties
+     */
     private static final String SEPARATOR = ";";
 
+    /**
+     * The ORL file properties name
+     */
     private static final String CYCLES_ORL_PROPERTIES = "pluginConfiguration.properties";
 
+    /**
+     * Log message
+     */
     private static final String LOG_PROPERTY_NOT_FOUND = "Property not found %s in file '%s'";
 
+    /**
+     * Log message
+     */
     private static final String LOG_PROJECT_NOT_SET = "The required project is not set : JASON, JASON2 ...";
-
-    private static final String KEY_CONF_DIR = "regards.acquisition.ssalto.plugin-conf-path";
 
     /**
      * filePattern du nom du fichier
@@ -77,6 +103,9 @@ public class PluginConfigurationProperties {
      */
     private String project;
 
+    /**
+     * Default constructor
+     */
     public PluginConfigurationProperties() {
         super();
         loadProperties();
@@ -94,11 +123,14 @@ public class PluginConfigurationProperties {
         return getPropertyValue(ARCS_FILEPATH_KEY);
     }
 
+    /**
+     * Load the {@link Properties} in pluginConfiguration.properties file
+     */
     private void loadProperties() {
         String confPath = "";
         try {
             Properties confProperties = LoadTranslationProperties.getInstance().loadPluginsRepository();
-            confPath = (String) confProperties.get(KEY_CONF_DIR);
+            confPath = (String) confProperties.get("regards.acquisition.ssalto.plugin-conf-path");
         } catch (PluginAcquisitionException e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -113,12 +145,17 @@ public class PluginConfigurationProperties {
         }
     }
 
-    private String getPropertyValue(String value) {
+    /**
+     * Get the property value for the current project for a key 
+     * @param key the key to search in the file properties for the current project 
+     * @return the property value for the current project for a key
+     */
+    private String getPropertyValue(String key) {
         if (project == null) {
             LOGGER.error(LOG_PROJECT_NOT_SET);
         }
 
-        String propertyName = project + "_" + value;
+        String propertyName = project + "_" + key;
         String propertyValue = pluginProperties.getProperty(propertyName);
 
         if (propertyValue == null) {
@@ -128,6 +165,10 @@ public class PluginConfigurationProperties {
         return propertyValue;
     }
 
+    /**
+     * Get the value's properties ORF_FILEPATH_PATTERN for the current project
+     * @return
+     */
     public String[] getOrfFilepath() {
         String[] orfFilePath = new String[0];
 

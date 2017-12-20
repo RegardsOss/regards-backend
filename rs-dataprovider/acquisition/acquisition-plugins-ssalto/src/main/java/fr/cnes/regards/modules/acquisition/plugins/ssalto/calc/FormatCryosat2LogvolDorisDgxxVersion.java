@@ -23,13 +23,20 @@ import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.plugins.ICalculationClass;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
+/**
+ * Parse a {@link String} XYY_abb_ aaaammjj_hhmmss_MEM.REF
+ * and return the {@link String} DORIS=X.YY DIODE=a.bb
+ *
+ * @author Christophe Mertz
+ *
+ */
 public class FormatCryosat2LogvolDorisDgxxVersion implements ICalculationClass {
 
-    private static final  String DELIM = "_";
+    private static final String DELIM = "_";
 
-    private static final  int VERSION_DIGIT_LENGTH = 1;
+    private static final int VERSION_DIGIT_LENGTH = 1;
 
-    private static final  String POINT = ".";
+    private static final String POINT = ".";
 
     public Object calculateValue(Object value, AttributeTypeEnum type, PluginConfigurationProperties properties) {
 

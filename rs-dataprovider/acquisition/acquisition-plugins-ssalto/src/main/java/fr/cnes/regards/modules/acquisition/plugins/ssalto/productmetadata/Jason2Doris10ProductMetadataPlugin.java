@@ -35,6 +35,9 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryP
         url = "https://github.com/RegardsOss")
 public class Jason2Doris10ProductMetadataPlugin extends AbstractJasonDoris10ProductMetadataPlugin {
 
+    /**
+     * JASON2 project name
+     */
     private static final String PROJECT_NAME = "JASON2";
 
     @Autowired

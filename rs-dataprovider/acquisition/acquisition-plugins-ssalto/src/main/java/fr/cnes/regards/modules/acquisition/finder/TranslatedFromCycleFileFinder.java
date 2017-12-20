@@ -61,15 +61,29 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
  */
 public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(TranslatedAttributeFromArcFile.class);
 
+    /**
+    * START_DATE attribute name
+    */
     private static final String START_DATE = "START_DATE";
 
+    /**
+     * STOP_DATE attribute name
+     */
     private static final String STOP_DATE = "STOP_DATE";
 
-    // Charset and decoder_ for ISO-8859-15
+    /**
+     *  {@link Charset} for ISO-8859-15
+     */
     private static final Charset CHARSET = Charset.forName("ISO-8859-15");
 
+    /**
+     * {@link Charset} decoder for ISO-8859-15
+     */
     private static final CharsetDecoder decoder = CHARSET.newDecoder();
 
     /**
@@ -133,6 +147,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     private static final DateTimeFormatter ORF_DATE_TIME_FORMAT = DateTimeFormatter
             .ofPattern("yyyy/MM/dd HH:mm:ss.SSS");
 
+    /**
+     * Log message
+     */
     private static final String MSG_ORF_FILE_PATH = "getOrfFilePath : {}";
 
     /**
@@ -140,6 +157,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
      */
     private static final DateTimeFormatter CYCLE_DATE_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
+    /**
+     * Default constructor
+     */
     public TranslatedFromCycleFileFinder() {
         super();
     }
@@ -164,10 +184,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     /**
      * Calcul l'integer de l'occurence de cycle a partir de la date ou vice versa
      *
-     * @param otherValue
-     *            {@link Date} ou {@link Integer}
+     * @param otherValue {@link Date} ou {@link Integer}
      * @return un {@link Integer} correspondant au numero de cycle ou une date correspondant au startDate
-     * @throws PluginAcquisitionException
+     * @throws PluginAcquisitionException attribut n'est pas du type {@link Date} ou {@link Integer}
      */
     private Object processCalculOnValues(Object otherValue) throws PluginAcquisitionException {
         // Integer or Date
@@ -217,10 +236,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     /**
      * Retourne la date correspondant à la premiere ligne contenant l'occurence du cycle pCycleOccurence dans le fichier ORF.
      *
-     * @param cycleOccurence
-     *            l'occurence du cycle
-     * @return
-     * @throws PluginAcquisitionException
+     * @param cycleOccurence l'occurence du cycle à chercher
+     * @return la date correspondant à la premiere ligne contenant l'occurence du cycle pCycleOccurence dans le fichier ORF
+     * @throws PluginAcquisitionException le cycle n'est pas trouvé dans le fichier ORF
      */
     private synchronized OffsetDateTime getCycleStartDate(Integer cycleOccurence) throws PluginAcquisitionException {
         OffsetDateTime cycleStartDate = null;
@@ -324,8 +342,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
      * Le nom des fichiers ORF evolue en fonction des mises a jours. </br>
      * On ne selectionne que le dernier modifie
      *
-     * @param orfFilePathPattern
-     *            de preference en chemin absolu
+     * @param orfFilePathPattern  de preference en chemin absolu
      * @return
      * @throws PluginAcquisitionException
      */
@@ -371,12 +388,11 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     }
 
     /**
-     * Retourne l'occurence du cycle correspondant a la Date
+     * Retourne l'occurence du cycle correspondant a la date
      *
-     * @param startDate
-     *            la date pour laquelle on cherche le cycle correspondant
-     * @return
-     * @throws PluginAcquisitionException
+     * @param startDate la date pour laquelle on cherche le cycle correspondant
+     * @return l'occurence du cycle correspondant a la Date
+     * @throws PluginAcquisitionException erreur de lecture du fichier contenant les cycles
      */
     public synchronized Integer getCycleOcurrence(OffsetDateTime startDate) throws PluginAcquisitionException {
         // recupere le fichier depuis le disk
@@ -453,9 +469,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     /**
      * Retrouve dans le fichier Orf l'occurence du cycle correspondant a la date
      *
-     * @param startDate
+     * @param startDate la date pour laquelle on cherche le cycle correspondant
      * @return l'occurence du cycle correspondant a la date
-     * @throws PluginAcquisitionException
+     * @throws PluginAcquisitionException erreur de lecture du fichier Orf
      */
     public synchronized Integer getCycleOccurenceFromOrf(OffsetDateTime startDate) throws PluginAcquisitionException {
         Integer cycleOccurence = null;
@@ -510,11 +526,11 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
     }
 
     /**
-     * Lit un fichier sous forme de charBuffer.
-     *
-     * @param filePath
-     * @return
-     * @throws IOException
+     * Read a file and return a {@link CharBuffer}
+     * 
+     * @param filePath the path to the file to read
+     * @return a {@link CharBuffer} to the the current file
+     * @throws IOException an error occurs then reading the file
      */
     private CharBuffer readFile(String filePath) throws IOException {
         CharBuffer cb = null;

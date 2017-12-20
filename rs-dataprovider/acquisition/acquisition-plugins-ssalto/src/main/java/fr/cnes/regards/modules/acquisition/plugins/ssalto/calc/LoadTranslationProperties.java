@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.TranslatedAttributeFromArcFile;
 
 /**
- * Load a translation properties file from the classpath.<br>
+ * Loads a translation properties file from the classpath.<br>
  * The folder path for the translation file is read in the file <b>pluginsRepository.properties</b>, the key <b>regards.acquisition.ssalto.plugin-translation-files-path</b>.
  * If the translation file can not be load from this path, try to load the translation file in the default path <b>income/plugins/translations</b>
  * 
@@ -115,7 +115,7 @@ public final class LoadTranslationProperties {
 
         return translationProperties;
     }
-    
+
     /**
      * Load the pluginsRepository.properties file
      * @return the {@link Properties} loaded

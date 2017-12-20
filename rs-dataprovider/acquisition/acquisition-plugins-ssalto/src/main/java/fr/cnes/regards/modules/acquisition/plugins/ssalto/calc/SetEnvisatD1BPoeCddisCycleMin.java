@@ -27,7 +27,6 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
  * @author Christophe Mertz
  *
  */
-
 public class SetEnvisatD1BPoeCddisCycleMin implements ICalculationClass {
 
     @Override

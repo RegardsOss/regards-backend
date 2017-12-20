@@ -28,6 +28,9 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryP
         url = "https://github.com/RegardsOss")
 public class EnvisatProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
+    /**
+     * ENVISAT project name
+     */
     private static final String PROJECT_NAME = "ENVISAT";
 
     @Autowired

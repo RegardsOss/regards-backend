@@ -33,6 +33,9 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryP
         url = "https://github.com/RegardsOss")
 public class Cryosat2ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
+    /**
+     * CRYOSAT2 project name
+     */
     private static final String PROJECT_NAME = "CRYOSAT2";
 
     @Autowired

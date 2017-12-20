@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ICalculationClass;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
 /**
+ * Calculate the a new date from a date parameter.
  * 
  * @author Christophe Mertz
  *

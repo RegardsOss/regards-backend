@@ -58,16 +58,6 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 
-    private static final String GEO_COORDINATES = "GEO_COORDINATES";
-
-    private static final String LONGITUDE_MIN = "LONGITUDE_MIN";
-
-    private static final String LONGITUDE_MAX = "LONGITUDE_MAX";
-
-    private static final String LATITUDE_MIN = "LATITUDE_MIN";
-
-    private static final String LATITUDE_MAX = "LATITUDE_MAX";
-
     private static final double DIX_MOINS_6 = 0.000001;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EnvisatPLTMProductMetadataPlugin.class);
@@ -227,7 +217,9 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
         List<Double> stopLatList = (List<Double>) finder.getValueList(fileMap, attributeValueMap);
 
         // Compute latitudes
-        if (!(startLatList.isEmpty() || (stopLatList.isEmpty()))) {
+        if (startLatList.isEmpty() || (stopLatList.isEmpty())) {
+            throw new PluginAcquisitionException("Unknown START_LAT or STOP_LAT in file");
+        } else {
             double startLat = Double.parseDouble(startLatList.get(0).toString());
             double stopLat = Double.parseDouble(stopLatList.get(0).toString());
             startLat = startLat * DIX_MOINS_6;
@@ -240,8 +232,6 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
                 latitudeMin.add(formatCoordinate(stopLat));
                 latitudeMax.add(formatCoordinate(startLat));
             }
-        } else {
-            throw new PluginAcquisitionException("Unknown START_LAT or STOP_LAT in file");
         }
     }
 

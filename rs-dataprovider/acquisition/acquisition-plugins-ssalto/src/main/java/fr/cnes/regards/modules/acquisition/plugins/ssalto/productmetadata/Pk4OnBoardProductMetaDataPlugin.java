@@ -49,8 +49,14 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryP
         url = "https://github.com/RegardsOss")
 public class Pk4OnBoardProductMetaDataPlugin extends AbstractProductMetadataPlugin {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Pk4OnBoardProductMetaDataPlugin.class);
 
+    /**
+     * Project name
+     */
     private static final String PROJECT_NAME = "PK4";
 
     private static final String DISK_ID_ATTRIBUTE = "DISK_ID";

@@ -32,12 +32,17 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
 import fr.cnes.regards.modules.acquisition.tools.DateFormatter;
 
 /**
+ * Calculates a new date from a date parameter :<br> 
+ * the calculate date is the date parameter plus <code>6</code> days and the hour is set to <code>23h59min59seconds</code>
  * 
  * @author Christophe Mertz
  *
  */
 public class SetEnvisatD1BPoeCddisStopDate implements ICalculationClass {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(SetEnvisatD1BPoeCddisStopDate.class);
 
     @Override

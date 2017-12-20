@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ICalculationClass;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
 /**
- * Cette classe renvoie Ascending si la valeur est paire et Descending sinon.
+ * Cette classe renvoie <b>Ascending</b> si la valeur est paire et <b>Descending</b> sinon.
  * 
  * @author Christophe Mertz
  *

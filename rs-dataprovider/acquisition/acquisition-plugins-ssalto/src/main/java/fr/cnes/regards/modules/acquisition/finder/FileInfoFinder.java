@@ -49,7 +49,11 @@ public class FileInfoFinder extends AbstractAttributeFinder {
         for (File file : fileMap.keySet()) {
             File originalFile = (File) fileMap.get(file);
             if (fileInformation.equals(FileInformationTypeEnum.LAST_MODIFICATION_DATE)) {
-                if (!valueList.isEmpty()) {
+                if (valueList.isEmpty()) {
+                    Date date = new Date(originalFile.lastModified());
+                    OffsetDateTime offDateTime = OffsetDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
+                    valueList.add(0, offDateTime);
+                } else {
                     // check if date inside the list is before the new Date
                     OffsetDateTime oldOffSetDateTime = (OffsetDateTime) valueList.get(0);
 
@@ -60,18 +64,14 @@ public class FileInfoFinder extends AbstractAttributeFinder {
                         valueList.clear();
                         valueList.add(0, newOffsetDateTime);
                     }
-                } else {
-                    Date date = new Date(originalFile.lastModified());
-                    OffsetDateTime offDateTime = OffsetDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
-                    valueList.add(0, offDateTime);
                 }
             } else if (fileInformation.equals(FileInformationTypeEnum.FILE_SIZE)) {
-                if (!valueList.isEmpty()) {
+                if (valueList.isEmpty()) {
+                    valueList.add(Long.valueOf(originalFile.length()));
+                } else {
                     Long oldLong = (Long) valueList.get(0);
                     valueList.clear();
                     valueList.add(Long.valueOf(oldLong.longValue() + originalFile.length()));
-                } else {
-                    valueList.add(Long.valueOf(originalFile.length()));
                 }
             }
         }

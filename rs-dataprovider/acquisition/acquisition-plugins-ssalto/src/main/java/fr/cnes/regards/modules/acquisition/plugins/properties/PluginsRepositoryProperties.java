@@ -32,10 +32,19 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "regards.acquisition.ssalto")
 public class PluginsRepositoryProperties {
 
+    /**
+     * value of regards.acquisition.ssalto.plugin-conf-files-path 
+     */
     private String pluginConfFilesPath;
 
+    /**
+     * value of regards.acquisition.ssalto.plugin-translation-files-path
+     */
     private String pluginTranslationFilesPath;
 
+    /**
+     * value of regards.acquisition.ssalto.plugin-conf-path
+     */
     private String pluginConfPath;
 
     public String getPluginConfFilesPath() {

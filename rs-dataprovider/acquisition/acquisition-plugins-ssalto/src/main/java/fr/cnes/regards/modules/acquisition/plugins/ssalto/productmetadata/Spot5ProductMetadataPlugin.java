@@ -28,6 +28,9 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryP
         url = "https://github.com/RegardsOss")
 public class Spot5ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
+    /**
+     * SPOT5 project name
+     */
     private static final String PROJECT_NAME = "SPOT5";
 
     @Autowired

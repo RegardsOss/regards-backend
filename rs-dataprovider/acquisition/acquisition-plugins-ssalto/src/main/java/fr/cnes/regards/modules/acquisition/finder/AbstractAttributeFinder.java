@@ -68,6 +68,9 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
  */
 public abstract class AbstractAttributeFinder {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAttributeFinder.class);
 
     /**
@@ -115,8 +118,14 @@ public abstract class AbstractAttributeFinder {
      */
     private String defaultValue;
 
+    /**
+     * <code>true</code> si il est nécessaire de dézipper les fihciers avant de les lire
+     */
     private Boolean unzipBefore = Boolean.FALSE;
 
+    /**
+     * Si la décompression des fichiers est activée, le format de compression des fichiers
+     */
     private CompressionTypeEnum compression;
 
     /**
@@ -149,9 +158,7 @@ public abstract class AbstractAttributeFinder {
             // add attribut to calculated attribut map
             List<Object> translatedValueList = new ArrayList<>();
             // translate the values
-            if (!valueList.isEmpty()) {
-                translatedValueList = translateValueList(valueList);
-            } else {
+            if (valueList.isEmpty()) {
                 if (defaultValue == null) {
                     String msg = "unable to find a value and no default value has been specified";
                     LOGGER.error(msg);
@@ -159,6 +166,8 @@ public abstract class AbstractAttributeFinder {
                 }
                 translatedValueList = new ArrayList<>();
                 translatedValueList.add(defaultValue);
+            } else {
+                translatedValueList = translateValueList(valueList);
             }
             attribute = AttributeFactory.createAttribute(getValueType(), getName(), translatedValueList);
             attributeValueMap.put(name, translatedValueList);
@@ -296,14 +305,14 @@ public abstract class AbstractAttributeFinder {
         for (File physicalFile : fileMap.keySet()) {
             // if physical file is null, file is not in the workingDirectory
             // so metada cannot be ingested
-            if (physicalFile != null) {
+            if (physicalFile == null) {
+                String msg = "file not found int the acquisition working Directory";
+                throw new PluginAcquisitionException(msg);
+            } else {
                 zipFileList.add(physicalFile);
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Add file {}", physicalFile.getName());
                 }
-            } else {
-                String msg = "file not found int the acquisition working Directory";
-                throw new PluginAcquisitionException(msg);
             }
         }
 

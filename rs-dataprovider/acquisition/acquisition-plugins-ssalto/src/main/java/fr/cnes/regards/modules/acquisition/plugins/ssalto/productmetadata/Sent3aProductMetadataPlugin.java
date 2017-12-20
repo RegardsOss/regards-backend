@@ -34,6 +34,9 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryP
         url = "https://github.com/RegardsOss")
 public class Sent3aProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
+    /**
+     * Sentinel 3A project name
+     */
     private static final String PROJECT_NAME = "SENT3A";
 
     @Autowired

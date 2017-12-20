@@ -102,13 +102,13 @@ public class NetCdfFileHelper {
         }
         List<String> resultList = new ArrayList<>();
         for (Variable element : netCfdFile.getVariables()) {
-            if (!exceptionList.contains(element.getShortName())) {
-                Attribute att = element.findAttribute(attributeName);
-                resultList.add(att.getStringValue());
-            } else {
+            if (exceptionList.contains(element.getShortName())) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("variable " + element.getShortName() + " skipped because present in exception list");
                 }
+            } else {
+                Attribute att = element.findAttribute(attributeName);
+                resultList.add(att.getStringValue());
             }
         }
         return resultList;
