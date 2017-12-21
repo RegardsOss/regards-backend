@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.time.OffsetDateTime;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -71,15 +72,20 @@ public class ProductService implements IProductService {
 
     private final IJobInfoService jobInfoService;
 
+    private final IExecAcquisitionProcessingChainService execAcquisitionProcessingChainService;
+
     public ProductService(IProductRepository repository, IAuthenticationResolver authResolver,
-            IJobInfoService jobInfoService) {
+            IJobInfoService jobInfoService,
+            ExecAcquisitionProcessingChainService execAcquisitionProcessingChainService) {
         this.productRepository = repository;
         this.authResolver = authResolver;
         this.jobInfoService = jobInfoService;
+        this.execAcquisitionProcessingChainService = execAcquisitionProcessingChainService;
     }
 
     @Override
     public Product save(Product product) {
+        product.setLastUpdate(OffsetDateTime.now());
         return productRepository.save(product);
     }
 

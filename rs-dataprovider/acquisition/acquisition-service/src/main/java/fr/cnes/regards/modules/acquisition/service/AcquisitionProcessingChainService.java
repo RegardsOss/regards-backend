@@ -252,27 +252,22 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
     }
 
     @Override
-    public Set<AcquisitionProcessingChain> findByActiveTrueAndRunningFalse() {
-        return processingChainRepository.findByActiveTrueAndRunningFalse();
+    public void run(Long id) {
+        run(this.retrieve(id));
     }
 
     @Override
-    public boolean run(Long id) {
-        return run(this.retrieve(id));
-    }
-
-    @Override
-    public boolean run(AcquisitionProcessingChain chain) { // NOSONAR
+    public void run(AcquisitionProcessingChain chain) { // NOSONAR
         // the AcquisitionProcessingChain must be active
         if (!chain.isActive()) {
             LOGGER.warn("[{}] Unable to run a not active chain generation", chain.getLabel());
-            return false;
+            return;
         }
 
         // the AcquisitionProcessingChain must not be already running
         if (chain.isRunning()) {
             LOGGER.warn("[{}] Unable to run an already running chain generation", chain.getLabel());
-            return false;
+            return;
         }
 
         // the difference between the previous activation date and current time must be greater than the periodicity
@@ -280,7 +275,7 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
                 && chain.getLastDateActivation().plusSeconds(chain.getPeriodicity()).isAfter(OffsetDateTime.now())) {
             LOGGER.warn("[{}] Unable to run the chain generation : the last activation date is too close from now with the periodicity {}.",
                         chain.getLabel(), chain.getPeriodicity());
-            return false;
+            return;
         }
 
         // the AcquisitionProcessingChain is ready to be started
@@ -301,9 +296,16 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
         acquisition.setClassName(ProductAcquisitionJob.class.getName());
         acquisition.setOwner(authResolver.getUser());
 
-        acquisition = jobInfoService.createAsQueued(acquisition);
-
-        return acquisition != null;
+        jobInfoService.createAsQueued(acquisition);
     }
+
+    @Override
+    public void runActiveChains() {
+        // Retrieve all chains
+        Set<AcquisitionProcessingChain> chains = processingChainRepository.findByActiveTrueAndRunningFalse();
+        chains.forEach(ch -> run(ch));
+    }
+
+}
 
 }

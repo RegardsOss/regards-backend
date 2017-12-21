@@ -18,28 +18,30 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
+import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+
 /**
  *
- * SIP lifecycle
+ * This SIP state defines the first steps states in DATA PROVIDER. Following states are inherited from INGEST.
  *
  * <pre>
-*
-*          NOT_SCHEDULED
-*             |
-*          SCHEDULED
-*             |_______ GENERATION_ERROR
-*             |
-*          GENERATED
-*             |_______ INGESTION_ERROR
-*             |
-*          INGESTED
+ *
+ *          NOT_SCHEDULED
+ *             |
+ *          SCHEDULED
+ *             |_______ GENERATION_ERROR
+ *             |
+ *          GENERATED
+ *             |
+ *       {@link SIPState}
  *
  * </pre>
  *
  * @author Marc Sordi
  *
  */
-public enum ProductSIPState {
+public enum ProductSIPState implements ISipState {
 
     /**
      * SIP is not yet scheduled because related product is not {@link ProductStatus#FINISHED} or
@@ -57,13 +59,10 @@ public enum ProductSIPState {
     /**
      * SIP has not been generated because an error occurs.
      */
-    GENERATION_ERROR,
-    /**
-     * SIP has been sent to INGEST successfully
-     */
-    INGESTED,
-    /**
-     * SIP has been sent to INGEST but REJECTED for some reasons
-     */
-    INGESTION_ERROR;
+    GENERATION_ERROR;
+
+    @Override
+    public String getName() {
+        return this.name();
+    }
 }

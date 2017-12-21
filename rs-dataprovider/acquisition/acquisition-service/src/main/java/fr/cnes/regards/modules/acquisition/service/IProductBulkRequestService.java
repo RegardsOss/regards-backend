@@ -19,13 +19,11 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 /**
- * 
+ *
  * @author Christophe Mertz
- * 
+ *
  */
 public interface IProductBulkRequestService {
 
     void runBulkRequest();
-    
-    void runActiveChains();
 }

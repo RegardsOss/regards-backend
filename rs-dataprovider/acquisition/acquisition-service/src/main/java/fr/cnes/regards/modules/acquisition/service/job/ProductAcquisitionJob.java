@@ -55,6 +55,7 @@ import fr.cnes.regards.modules.acquisition.service.job.step.AcquisitionScanStep;
  * a new {@link JobInfo} of class {@link SIPGenerationJob} is create and queued.
  *
  * @author Christophe Mertz
+ * @author Marc Sordi
  *
  */
 public class ProductAcquisitionJob extends AbstractJob<Void> {

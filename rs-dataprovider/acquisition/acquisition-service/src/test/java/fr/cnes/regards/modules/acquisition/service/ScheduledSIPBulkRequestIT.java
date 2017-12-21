@@ -135,7 +135,7 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
         ExecAcquisitionProcessingChain processLoad = execProcessingChainService.findBySession(chain.getSession());
         Assert.assertEquals(16, processLoad.getNbSipCreated()); // 16 products created cf mock
         Assert.assertEquals(0, processLoad.getNbSipError());
-        Assert.assertEquals(0, processLoad.getNbSipStored());
+        Assert.assertEquals(0, processLoad.getNbSipIngested());
         Assert.assertNull(processLoad.getStopDate());
     }
 
@@ -188,7 +188,7 @@ public class ScheduledSIPBulkRequestIT extends AcquisitionITHelper {
         ExecAcquisitionProcessingChain processLoad = execProcessingChainService.findBySession(chain.getSession());
         Assert.assertEquals(14, processLoad.getNbSipCreated()); // 14 products created cf mock
         Assert.assertEquals(2, processLoad.getNbSipError());
-        Assert.assertEquals(0, processLoad.getNbSipStored());
+        Assert.assertEquals(0, processLoad.getNbSipIngested());
         Assert.assertNull(processLoad.getStopDate());
     }
 

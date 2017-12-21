@@ -18,11 +18,13 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -50,9 +52,11 @@ import org.hibernate.annotations.TypeDefs;
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
 /**
  *
@@ -95,8 +99,12 @@ public class Product implements IIdentifiable<Long> {
     private ProductState state;
 
     @Column(name = "sip_state", length = 32, nullable = false)
-    @Enumerated(EnumType.STRING)
-    private ProductSIPState sipState;
+    @Convert(converter = SipStateConverter.class)
+    private ISipState sipState;
+
+    @Column(name = "last_update", nullable = false)
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime lastUpdate;
 
     /**
      * The product name
@@ -232,14 +240,6 @@ public class Product implements IIdentifiable<Long> {
         this.state = state;
     }
 
-    public ProductSIPState getSipState() {
-        return sipState;
-    }
-
-    public void setSipState(ProductSIPState sipState) {
-        this.sipState = sipState;
-    }
-
     @Override
     public String toString() {
         StringBuilder strBuilder = new StringBuilder();
@@ -255,5 +255,21 @@ public class Product implements IIdentifiable<Long> {
         strBuilder.append(" - ");
         strBuilder.append(ingestChain);
         return strBuilder.toString();
+    }
+
+    public ISipState getSipState() {
+        return sipState;
+    }
+
+    public void setSipState(ISipState sipState) {
+        this.sipState = sipState;
+    }
+
+    public OffsetDateTime getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(OffsetDateTime lastUpdate) {
+        this.lastUpdate = lastUpdate;
     }
 }

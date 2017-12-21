@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.util.Set;
-
 import javax.persistence.FetchType;
 
 import org.springframework.data.domain.Page;
@@ -31,9 +29,9 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
  * {@link AcquisitionProcessingChain} management service
- * 
+ *
  * @author Christophe Mertz
- * 
+ *
  */
 public interface IAcquisitionProcessingChainService {
 
@@ -59,7 +57,8 @@ public interface IAcquisitionProcessingChainService {
      * @return the updated {@link AcquisitionProcessingChain}
      * @throws ModuleException if error occurs!
      */
-    AcquisitionProcessingChain update(Long chainId, AcquisitionProcessingChain acqProcessingChain) throws ModuleException;
+    AcquisitionProcessingChain update(Long chainId, AcquisitionProcessingChain acqProcessingChain)
+            throws ModuleException;
 
     /**
      * Retrieve one specified {@link AcquisitionProcessingChain}
@@ -69,7 +68,8 @@ public interface IAcquisitionProcessingChainService {
     AcquisitionProcessingChain retrieve(Long id);
 
     /**
-     * Retrieve one specified {@link AcquisitionProcessingChain} and load all the properties with a {@link FetchType#LAZY}.
+     * Retrieve one specified {@link AcquisitionProcessingChain} and load all the properties with a
+     * {@link FetchType#LAZY}.
      * @param id {@link AcquisitionProcessingChain}
      * @return a {@link AcquisitionProcessingChain}
      */
@@ -82,7 +82,7 @@ public interface IAcquisitionProcessingChainService {
 
     /**
      * Delete a {@link AcquisitionProcessingChain}
-     * @param id the {@link AcquisitionProcessingChain} identifier 
+     * @param id the {@link AcquisitionProcessingChain} identifier
      */
     void delete(Long id);
 
@@ -100,22 +100,21 @@ public interface IAcquisitionProcessingChainService {
     AcquisitionProcessingChain findByMetaProduct(MetaProduct metaProduct);
 
     /**
-     * Find a {@link Set} of {@link AcquisitionProcessingChain} that are active and not running
-     * @return the finded {@link Set} of {@link AcquisitionProcessingChain}
-     */
-    Set<AcquisitionProcessingChain> findByActiveTrueAndRunningFalse();
-
-    /**
      * Start the acquisition process for a {@link AcquisitionProcessingChain}
-     * @param id the {@link AcquisitionProcessingChain} identifier 
+     * @param id the {@link AcquisitionProcessingChain} identifier
      * @return the {@link AcquisitionProcessingChain} has been started
      */
-    boolean run(Long id);
+    void run(Long id);
 
     /**
      * Start the acquisition process for a {@link AcquisitionProcessingChain}
      * @param acqProcessingChain the {@link AcquisitionProcessingChain} to start
      * @return been started
      */
-    boolean run(AcquisitionProcessingChain acqProcessingChain);
+    void run(AcquisitionProcessingChain acqProcessingChain);
+
+    /**
+     * Run active chains that is not already running
+     */
+    void runActiveChains();
 }

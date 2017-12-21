@@ -18,9 +18,6 @@ create table t_acquisition_chain (
 );
 create table t_acquisition_exec_chain (
     id int8 not null,
-    nb_sip_created int4 not null,
-    nb_sip_in_error int4 not null,
-    nb_sip_stored int4 not null,
     session varchar(255),
     start_date timestamp,
     stop_date timestamp,
@@ -77,6 +74,7 @@ create table t_acquisition_product (
     json_sip jsonb,
     product_state varchar(32) not null,
     sip_state varchar(32) not null,
+    last_update timestamp not null,
     meta_product_id int8,
     primary key (id)
 );

@@ -34,14 +34,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeExcepti
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.job.SIPEventJobParameter;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
-import fr.cnes.regards.modules.acquisition.service.IExecAcquisitionProcessingChainService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
-import fr.cnes.regards.modules.acquisition.service.step.IPostAcquisitionStep;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
 /**
@@ -51,6 +47,7 @@ import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
  * This job runs for one {@link Product}
  *
  * @author Christophe Mertz
+ * @author Marc Sordi
  *
  */
 public class PostAcquisitionJob extends AbstractJob<Void> {
@@ -64,9 +61,6 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
     private IProductService productService;
 
     @Autowired
-    private IExecAcquisitionProcessingChainService execProcessingChainService;
-
-    @Autowired
     private IAcquisitionProcessingChainService acqProcessChainService;
 
     private SIPEvent sipEvent;
@@ -78,6 +72,11 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
         try {
             // Load product
             Product product = productService.retrieve(sipEvent.getIpId());
+
+            // Update product (store ingest state)
+            product.setSipState(sipEvent.getState());
+            productService.save(product);
+
             // Retrieve acquisition chain
             AcquisitionProcessingChain acqProcessingChain = acqProcessChainService
                     .findByMetaProduct(product.getMetaProduct());
@@ -93,22 +92,6 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
                 LOGGER.info("[{}-{}] : no post processing", acqProcessingChain.getLabel(),
                             acqProcessingChain.getSession());
             }
-
-            // TODO manage event
-            // Update product
-            product.setSipState(ProductSIPState.INGESTED);
-            productService.save(product);
-
-            int nbSipStored = 0;
-            int nbSipError = 0;
-            if (sipEvent.getState().equals(SIPState.STORED)) {
-                nbSipStored = 1;
-            } else if (sipEvent.getState().equals(SIPState.STORE_ERROR)) {
-                nbSipError = 1;
-            }
-
-            execProcessingChainService.updateExecProcessingChain(acqProcessingChain.getSession(), 0, nbSipStored,
-                                                                 nbSipError);
 
             LOGGER.info("[{}] Stop  POST acqusition SIP step for the product <{}>", acqProcessingChain.getSession(),
                         product.getProductName());

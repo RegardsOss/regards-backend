@@ -33,7 +33,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
@@ -44,9 +43,10 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
- * 
- * @author Christophe Mertz
+ * Manage SIP submission
  *
+ * @author Christophe Mertz
+ * @author Marc Sordi
  */
 @MultitenantTransactional
 @Service
@@ -55,17 +55,12 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(ProductBulkRequestService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProductBulkRequestService.class);
 
     /**
      * {@link Product} service
      */
     private final IProductService productService;
-
-    /**
-     * {@link AcquisitionProcessingChain} service
-     */
-    private final IAcquisitionProcessingChainService acqProcessChainService;
 
     /**
      * Ingest client
@@ -77,43 +72,34 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
     @Value("${regards.acquisition.sip.bulk.request.limit:10000}")
     private Integer bulkRequestLimit;
 
-    public ProductBulkRequestService(IProductService productService, IAcquisitionProcessingChainService acqProcessChainService,
-            IIngestClient ingestClient, IExecAcquisitionProcessingChainService processService) {
+    public ProductBulkRequestService(IProductService productService,
+            IAcquisitionProcessingChainService acqProcessChainService, IIngestClient ingestClient,
+            IExecAcquisitionProcessingChainService processService) {
         this.productService = productService;
-        this.acqProcessChainService = acqProcessChainService;
         this.ingestClient = ingestClient;
         this.execProcessingChainService = processService;
     }
 
     @Override
     public void runBulkRequest() {
-        LOG.debug("----> Start bulk request SIP creation");
+        LOGGER.debug("----> Start bulk request SIP creation");
 
         // Get all the ingestChain for that at least one product is ready to be send to ingest
         Set<String> ingestChains = productService
                 .findDistinctIngestChainBySendedAndStatusIn(false, ProductState.COMPLETED, ProductState.FINISHED);
 
         if (ingestChains.isEmpty()) {
-            LOG.debug("Any products ready for SIP creation");
+            LOGGER.debug("Any products ready for SIP creation");
             return;
         }
 
-        LOG.info("{} ingest chains found", ingestChains.size());
+        LOGGER.info("{} ingest chains found", ingestChains.size());
 
         for (String ingestChain : ingestChains) {
             postSIPBulkRequest(ingestChain);
         }
 
-        LOG.debug("<----  End   bulk request SIP creation");
-    }
-
-    @Override
-    public void runActiveChains() {
-        LOG.info("----> Start run active chains");
-
-        acqProcessChainService.findByActiveTrueAndRunningFalse().forEach(ch -> acqProcessChainService.run(ch));
-
-        LOG.info("<---- End   run active chains");
+        LOGGER.debug("<----  End   bulk request SIP creation");
     }
 
     /**
@@ -121,7 +107,7 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
      * @param ingestChain an Ingest processing chain identifier
      */
     private void postSIPBulkRequest(String ingestChain) {
-        LOG.info("[{}] Send SIP", ingestChain);
+        LOGGER.info("[{}] Send SIP", ingestChain);
 
         // Get all the session
         Set<String> sessions = productService
@@ -163,10 +149,10 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
         if (products.isEmpty()) {
             return false;
         }
-        LOG.info("[{}] {} products found", session, products.size());
+        LOGGER.info("[{}] {} products found", session, products.size());
         SIPCollectionBuilder sipCollectionBuilder = new SIPCollectionBuilder(ingestChain, session);
         for (Product product : products) {
-            LOG.debug("[{}] product <{}> add to SIP", session, product.getProductName());
+            LOGGER.debug("[{}] product <{}> add to SIP", session, product.getProductName());
             sipCollectionBuilder.add(product.getSip());
         }
 
@@ -180,7 +166,7 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
      * @return the number of {@link Product} that has been sended to Ingest microservice
      */
     private int postSipCollection(String session, SIPCollection sipCollection) {
-        LOG.info("[{}] Start publish SIP Collections", session);
+        LOGGER.info("[{}] Start publish SIP Collections", session);
         int nbSipCreated = 0;
 
         ResponseEntity<Collection<SIPDto>> response = ingestClient.ingest(sipCollection);
@@ -190,16 +176,17 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
             execProcessingChainService.updateExecProcessingChain(session, nbSipCreated, 0, 0);
         } else if (response.getStatusCode().equals(HttpStatus.PARTIAL_CONTENT)) {
             nbSipCreated = responseIngestSip(session, response.getBody());
-            execProcessingChainService.updateExecProcessingChain(session, nbSipCreated, 0, response.getBody().size() - nbSipCreated);
+            execProcessingChainService.updateExecProcessingChain(session, nbSipCreated, 0,
+                                                                 response.getBody().size() - nbSipCreated);
         } else if (response.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
-            LOG.error("[{}] Unauthorized access to ingest microservice", session);
+            LOGGER.error("[{}] Unauthorized access to ingest microservice", session);
 
         } else if (response.getStatusCode().equals(HttpStatus.CONFLICT)) {
-            LOG.error("[{}] Unauthorized access to ingest microservice", session);
+            LOGGER.error("[{}] Unauthorized access to ingest microservice", session);
 
         }
 
-        LOG.info("[{}] End  publish SIP Collections", session);
+        LOGGER.info("[{}] End  publish SIP Collections", session);
 
         return nbSipCreated;
     }
@@ -218,8 +205,8 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
             Product product = productService.retrieve(sipEntity.getIpId());
 
             if (sipEntity.getState().equals(SIPState.REJECTED)) {
-                LOG.error("[{}] SIP in error : productName=<{}>, reason=<{}>", session, sipEntity.getIpId(),
-                          sipEntity.getRejectionCauses());
+                LOGGER.error("[{}] SIP in error : productName=<{}>, reason=<{}>", session, sipEntity.getIpId(),
+                             sipEntity.getRejectionCauses());
 
                 nbSipError++;
                 product.setStatus(ProductState.ERROR);
@@ -232,8 +219,8 @@ public class ProductBulkRequestService implements IProductBulkRequestService {
             productService.save(product);
         }
 
-        LOG.info("[{}] SIP collection has heen partially processed with success : {} ingested / {} rejected", session,
-                 nbSipOK, nbSipError);
+        LOGGER.info("[{}] SIP collection has heen partially processed with success : {} ingested / {} rejected",
+                    session, nbSipOK, nbSipError);
 
         return nbSipOK;
     }

@@ -39,7 +39,7 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 
 /**
- * 
+ * Register an acquisition chain execution
  * @author Christophe Mertz
  */
 @Entity
@@ -87,24 +87,6 @@ public class ExecAcquisitionProcessingChain implements IIdentifiable<Long> {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime stopDate;
 
-    /**
-     * The number of SIP created for the current {@link ExecAcquisitionProcessingChain}
-     */
-    @Column(name = "nb_sip_created", nullable = false)
-    private int nbSipCreated = 0;
-
-    /**
-     * The number of SIP in error for the current {@link ExecAcquisitionProcessingChain}
-     */
-    @Column(name = "nb_sip_in_error", nullable = false)
-    private int nbSipError = 0;
-
-    /**
-     * The number of SIP stored for the current {@link ExecAcquisitionProcessingChain}
-     */
-    @Column(name = "nb_sip_stored", nullable = false)
-    private int nbSipStored = 0;
-
     @Override
     public Long getId() {
         return id;
@@ -142,48 +124,12 @@ public class ExecAcquisitionProcessingChain implements IIdentifiable<Long> {
         this.stopDate = stopDate;
     }
 
-    public int getNbSipCreated() {
-        return nbSipCreated;
-    }
-
-    public void setNbSipCreated(int nbSipCreated) {
-        this.nbSipCreated = nbSipCreated;
-    }
-
-    public void sipCreatedIncrease() {
-        this.nbSipCreated++;
-    }
-
-    public int getNbSipError() {
-        return nbSipError;
-    }
-
-    public void setNbSipError(int nbSipError) {
-        this.nbSipError = nbSipError;
-    }
-
-    public void sipErrorIncrease() {
-        this.nbSipError++;
-    }
-
-    public int getNbSipStored() {
-        return nbSipStored;
-    }
-
-    public void setNbSipStored(int nbSipStored) {
-        this.nbSipStored = nbSipStored;
-    }
-
-    public void sipStoredIncrease() {
-        this.nbSipStored++;
-    }
-
     @Override
     public int hashCode() { // NOSONAR
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((session == null) ? 0 : session.hashCode());
+        result = (prime * result) + ((id == null) ? 0 : id.hashCode());
+        result = (prime * result) + ((session == null) ? 0 : session.hashCode());
         return result;
     }
 

@@ -50,9 +50,8 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
 /**
  * This job manages SIP generation for a given product
  *
- * This job runs for one {@link Product}
- *
  * @author Christophe Mertz
+ * @author Marc Sordi
  *
  */
 public class SIPGenerationJob extends AbstractJob<Void> {
@@ -78,11 +77,16 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                     acqProcessingChain.getSession(), productName);
 
         // Load the product
-        Product product = productService.retrieve(productName);
-
-        // Launch generation plugin
+        Product product;
         try {
-            // build the plugin parameters
+            product = productService.retrieve(productName);
+        } catch (ModuleException e) {
+            LOGGER.error("Cannot load product", e);
+            throw new JobRuntimeException(e.getMessage());
+        }
+
+        try {
+            // Build the plugin parameters
             PluginParametersFactory factory = PluginParametersFactory.build();
             for (Map.Entry<String, String> entry : this.acqProcessingChain.getGenerateSipParameter().entrySet()) {
                 factory.addParameter(entry.getKey(), entry.getValue());
@@ -95,13 +99,18 @@ public class SIPGenerationJob extends AbstractJob<Void> {
             // Get an instance of the plugin
             IGenerateSIPPlugin generateSipPlugin = pluginService
                     .getPlugin(acqProcessingChain.getGenerateSipPluginConf().getId(), factory.asArray());
+
             // Retrieve files
             List<AcquisitionFile> acqFiles = acquisitionFileService.findByProduct(productName);
+
+            // Launch generation plugin
             SIP sip = generateSipPlugin.runPlugin(acqFiles, Optional.of(acqProcessingChain.getDataSet()));
+
             // Update product
             product.setSip(sip);
             product.setSipState(ProductSIPState.GENERATED);
             productService.save(product);
+
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             // Update product

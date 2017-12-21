@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
 /**
  *
@@ -61,12 +62,22 @@ public final class ProductBuilder {
     }
 
     /**
-     * Set the status property to the current {@link Product}
+     * Set the state property to the current {@link Product}
      * @param status the status {@link String} value
      * @return the current {@link ProductBuilder}
      */
-    public ProductBuilder withStatus(ProductState status) {
-        product.setStatus(status);
+    public ProductBuilder withState(ProductState state) {
+        product.setState(state);
+        return this;
+    }
+
+    /**
+     * Set the SIP state for current {@link Product}
+     * @param state
+     * @return
+     */
+    public ProductBuilder withSipState(ISipState state) {
+        product.setSipState(state);
         return this;
     }
 
@@ -99,15 +110,4 @@ public final class ProductBuilder {
         product.setIngestChain(ingestChain);
         return this;
     }
-
-    /**
-     * Set the sended property to the current {@link Product}
-     * @param sended
-     * @return the current {@link ProductBuilder}
-     */
-    public ProductBuilder isSended(boolean sended) {
-        product.setSended(sended);
-        return this;
-    }
-
 }

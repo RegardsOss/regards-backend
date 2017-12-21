@@ -21,7 +21,10 @@ package fr.cnes.regards.modules.acquisition.dao;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.persistence.LockModeType;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
@@ -51,7 +54,8 @@ public interface IAcquisitionProcessingChainRepository extends JpaRepository<Acq
 
     /**
      * Find all the {@link AcquisitionProcessingChain} tahat are active and not running
-     * @return the {@link Set} of finded {@link AcquisitionProcessingChain} 
+     * @return the {@link Set} of finded {@link AcquisitionProcessingChain}
      */
+    @Lock(LockModeType.PESSIMISTIC_READ)
     Set<AcquisitionProcessingChain> findByActiveTrueAndRunningFalse();
 }

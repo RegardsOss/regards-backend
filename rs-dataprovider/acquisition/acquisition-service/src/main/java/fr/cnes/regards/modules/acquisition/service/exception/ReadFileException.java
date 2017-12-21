@@ -33,5 +33,4 @@ public class ReadFileException extends ModuleException {
     public ReadFileException(String file) {
         super(String.format("Can not read the file : %s", file));
     }
-
 }

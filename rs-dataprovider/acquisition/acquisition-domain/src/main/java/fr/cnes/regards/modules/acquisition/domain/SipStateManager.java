@@ -18,31 +18,33 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
+import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+
 /**
  *
- * @author Christophe Mertz
+ * {@link ISipState} utils
+ *
+ * @author Marc Sordi
  *
  */
-public enum ProductState {
-    /**
-     * At least a mandatory file is missing
-     */
-    ACQUIRING,
-    /**
-     * All mandatory files is acquired
-     */
-    COMPLETED,
-    /**
-     * Mandatory and optional files is acquired
-     */
-    FINISHED,
-    /**
-     * The {@link Product} is in error
-     */
-    ERROR;
+public class SipStateManager {
 
-    @Override
-    public String toString() {
-        return this.name();
+    private SipStateManager() {
+        // Nothing to do
+    }
+
+    public static ISipState fromName(String name) {
+        for (SIPState state : SIPState.values()) {
+            if (state.getName().equals(name)) {
+                return state;
+            }
+        }
+        for (ProductSIPState state : ProductSIPState.values()) {
+            if (state.getName().equals(name)) {
+                return state;
+            }
+        }
+        throw new IllegalArgumentException("Unknown SIP state " + name);
     }
 }

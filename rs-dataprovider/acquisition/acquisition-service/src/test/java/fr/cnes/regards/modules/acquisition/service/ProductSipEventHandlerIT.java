@@ -174,7 +174,7 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
         ExecAcquisitionProcessingChain processLoad = execProcessingChainService.findBySession(chainForProcessing.getSession());
         Assert.assertEquals(1, processLoad.getNbSipCreated());
         Assert.assertEquals(0, processLoad.getNbSipError());
-        Assert.assertEquals(1, processLoad.getNbSipStored());
+        Assert.assertEquals(1, processLoad.getNbSipIngested());
         Assert.assertNotNull(processLoad.getStopDate());
     }
 
@@ -210,7 +210,7 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
         ExecAcquisitionProcessingChain processLoad = execProcessingChainService.findBySession(chainForProcessing.getSession());
         Assert.assertEquals(3, processLoad.getNbSipCreated());
         Assert.assertEquals(0, processLoad.getNbSipError());
-        Assert.assertEquals(3, processLoad.getNbSipStored());
+        Assert.assertEquals(3, processLoad.getNbSipIngested());
         Assert.assertNotNull(processLoad.getStopDate());
     }
 

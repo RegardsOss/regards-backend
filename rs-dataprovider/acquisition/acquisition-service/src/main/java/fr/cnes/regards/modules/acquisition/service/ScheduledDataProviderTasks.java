@@ -28,40 +28,34 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
  * Scheduled actions to process new CREATED SIPS by sending bulk request to Ingest
+ *
  * @author Christophe Mertz
+ * @author Marc Sordi
  */
 @Component
 @Profile("!disableDataProviderTask")
 @EnableScheduling
 public class ScheduledDataProviderTasks {
 
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(ScheduledDataProviderTasks.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScheduledDataProviderTasks.class);
 
-    /**
-     * Resolver to know all existing tenants of the current REGARDS instance.
-     */
     @Autowired
     private ITenantResolver tenantResolver;
 
-    /**
-     * Resolver to retrieve request tenant
-     */
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private IProductBulkRequestService productBulkRequestService;
+
+    @Autowired
+    private IAcquisitionProcessingChainService chainService;
 
     @Bean
     public TaskScheduler taskScheduler() {
@@ -69,9 +63,8 @@ public class ScheduledDataProviderTasks {
     }
 
     @Scheduled(fixedRateString = "${regards.acquisition.process.new.sip.ingest.delay:60000}", initialDelay = 10000)
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processNewSIPBulkRequest() {
-        LOG.debug("Process new SIP bulk request to ingest");
+        LOGGER.debug("Process new SIP bulk request to ingest");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
@@ -84,13 +77,12 @@ public class ScheduledDataProviderTasks {
     }
 
     @Scheduled(fixedRateString = "${regards.acquisition.process.run.chains.delay:60000}", initialDelay = 10000)
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processRunActiveChains() {
-        LOG.debug("Process run active chains");
+        LOGGER.debug("Process run active chains");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                productBulkRequestService.runActiveChains();
+                chainService.runActiveChains();
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

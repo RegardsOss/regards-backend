@@ -16,13 +16,30 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.service.step;
+package fr.cnes.regards.modules.acquisition.domain;
+
+import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
+
+import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
 /**
- * 
- * @author Christophe Mertz
- * 
+ * Converter for extended SIP state
+ *
+ * @author Marc Sordi
+ *
  */
-public interface IAcquisitionCheckStep extends IStep {
+@Converter(autoApply = true)
+public class SipStateConverter implements AttributeConverter<ISipState, String> {
+
+    @Override
+    public String convertToDatabaseColumn(ISipState attribute) {
+        return attribute == null ? null : attribute.getName();
+    }
+
+    @Override
+    public ISipState convertToEntityAttribute(String dbData) {
+        return dbData == null ? null : SipStateManager.fromName(dbData);
+    }
 
 }
