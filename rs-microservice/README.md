@@ -6,9 +6,9 @@ This repository brings together all the REGARDS framework features :
 * All framework starters,
 * Test tools.
 
-For now, this version has not yet been tested under operational conditions and is considered as **beta**.
+REGARDS is still under heavy development. Operational version V1.0.0 is planed for 2018.
 
-## Build requirement
+## Build requirements
 
 Build relies on :
 * Maven 3+
