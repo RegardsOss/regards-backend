@@ -328,12 +328,12 @@ public final class PluginParameterUtils {
      * @param plgConf the {@link PluginConfiguration}
      * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param instantiatedPluginMap a {@link Map} of already instantiated {@link Plugin}
-     * @param plgParameters an optional set of
+     * @param dynamicPluginParameters an optional set of
      *            {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter} @ if any error occurs
      */
     public static <T> void postProcess(Optional<Gson> gson, T returnPlugin, PluginConfiguration plgConf,
             List<String> prefixes, Map<Long, Object> instantiatedPluginMap,
-            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... plgParameters) {
+            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... dynamicPluginParameters) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Starting postProcess :" + returnPlugin.getClass().getSimpleName());
         }
@@ -350,7 +350,7 @@ public final class PluginParameterUtils {
                 PluginParameter plgParamAnnotation = field.getAnnotation(PluginParameter.class);
                 Gson gsonProcessor = gson.isPresent() ? gson.get() : PluginGsonUtils.getInstance();
                 processPluginParameter(gsonProcessor, returnPlugin, plgConf, field, plgParamAnnotation, prefixes,
-                                       instantiatedPluginMap, plgParameters);
+                                       instantiatedPluginMap, dynamicPluginParameters);
             }
         }
 
@@ -370,13 +370,13 @@ public final class PluginParameterUtils {
      * @param plgParamAnnotation the {@link PluginParameter} annotation
      * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param instantiatedPluginMap a {@link Map} of already instantiated {@link Plugin}
-     * @param plgParameters an optional set of
+     * @param dynamicPluginParameters an optional set of
      *            {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter} @ if any error occurs
      */
     private static <T> void processPluginParameter(Gson gson, T pluginInstance, PluginConfiguration plgConf,
             Field field, PluginParameter plgParamAnnotation, List<String> prefixes,
             Map<Long, Object> instantiatedPluginMap,
-            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... plgParameters) {
+            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... dynamicPluginParameters) {
 
         // Inject value
         ReflectionUtils.makeAccessible(field);
@@ -389,7 +389,7 @@ public final class PluginParameterUtils {
             case PRIMITIVE:
                 LOGGER.debug(String.format("primitive parameter : %s --> %s", field.getName(), field.getType()));
                 postProcessPrimitiveType(gson, pluginInstance, plgConf, field, typeWrapper, plgParamAnnotation,
-                                         plgParameters);
+                                         dynamicPluginParameters);
                 break;
             case PLUGIN:
                 LOGGER.debug(String.format("interface parameter : %s --> %s", field.getName(), field.getType()));
@@ -401,11 +401,59 @@ public final class PluginParameterUtils {
                 LOGGER.debug(String.format("Object parameter %s : %s --> %s", paramType, field.getName(),
                                            field.getType()));
                 postProcessObjectType(gson, pluginInstance, plgConf, field, plgParamAnnotation, paramType,
-                                      plgParameters);
+                                      dynamicPluginParameters);
                 break;
             default:
                 throw new PluginUtilsRuntimeException(String.format("Type parameter <%s> is unknown.", field));
         }
+    }
+
+    /**
+     * Compute the parameter value from the plugin configuration or possibly from dynamic plugin parameters if there are
+     * any!
+     * @param parameterName parameter name
+     * @param pluginConf plugin configuration
+     * @param dynamicPluginParameters dynamic plugin parameters
+     * @return paramater value
+     */
+    private static String getParameterValue(String parameterName, PluginConfiguration pluginConf,
+            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... dynamicPluginParameters) {
+
+        // Default value comes from plugin configuration
+        String paramValue = pluginConf.getParameterValue(parameterName);
+
+        // Manage dynamic parameters
+        if ((dynamicPluginParameters != null) && (dynamicPluginParameters.length > 0)) {
+
+            // Search dynamic parameter for current parameter name
+            Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> dynamicParameter = Arrays
+                    .asList(dynamicPluginParameters).stream().filter(s -> s.getName().equals(parameterName))
+                    .findFirst();
+            if (dynamicParameter.isPresent()) {
+
+                // Check if parameter can be dynamic in plugin configuration
+                Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> confParameter = pluginConf
+                        .getParameters().stream()
+                        .filter(s -> s.getName().equals(dynamicParameter.get().getName()) && s.isDynamic()).findFirst();
+                if (confParameter.isPresent()) {
+
+                    // Override plugin configuration value with dynamic one
+                    paramValue = dynamicParameter.get().getValue();
+                    LOGGER.debug("Parameter with name \"{}\" set to its dynamic value \"{}\"", parameterName,
+                                 paramValue);
+
+                    // Check if this value is valid
+                    if (!confParameter.get().isValidDynamicValue(paramValue)) {
+                        // The dynamic parameter value is not a possible value
+                        throw new PluginUtilsRuntimeException(
+                                String.format("The dynamic value <%s> is not an authorized value for the parameter %s.",
+                                              paramValue, parameterName));
+                    }
+                }
+            }
+        }
+
+        return paramValue;
     }
 
     /**
@@ -418,12 +466,12 @@ public final class PluginParameterUtils {
      * @param field the parameter
      * @param plgParamAnnotation the {@link PluginParameter} annotation
      * @param paramType param type to consider
-     * @param plgParameters an optional set of
+     * @param dynamicPluginParameters an optional set of
      *            {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter}
      */
     private static <T> void postProcessObjectType(Gson gson, T pluginInstance, PluginConfiguration plgConf, Field field,
             PluginParameter plgParamAnnotation, ParamType paramType,
-            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... plgParameters) {
+            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... dynamicPluginParameters) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Starting postProcessObjectType :" + plgParamAnnotation.label());
         }
@@ -446,27 +494,8 @@ public final class PluginParameterUtils {
                     .format("Invalid plugin parameter: plugin parameter %s is supposed to be of type %s but is not. It is of type : %s",
                             parameterName, Map.class.getName(), field.getType().getName()));
         }
-        // Get setup value
-        String paramValue = plgConf.getParameterValue(parameterName);
-
-        if (plgParameters != null) {
-            /*
-             * Test if a specific value is given for this annotation parameter
-             */
-            Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> aDynamicPlgParam = Arrays
-                    .asList(plgParameters).stream().filter(s -> s.getName().equals(parameterName)).findFirst();
-            if (aDynamicPlgParam.isPresent()) {
-                /*
-                 * Test if this parameter is set as dynamic in the plugin configuration
-                 */
-                final Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> cfd = plgConf
-                        .getParameters().stream()
-                        .filter(s -> s.getName().equals(aDynamicPlgParam.get().getName()) && s.isDynamic()).findFirst();
-                if (cfd.isPresent()) {
-                    paramValue = postProcessDynamicValues(paramValue, cfd, aDynamicPlgParam);
-                }
-            }
-        }
+        // Get parameter value
+        String paramValue = getParameterValue(parameterName, plgConf, dynamicPluginParameters);
 
         // Do not handle default value for object types.
         if (paramValue != null) {
@@ -498,12 +527,12 @@ public final class PluginParameterUtils {
      * @param field the parameter
      * @param typeWrapper the type wrapper of the parameter
      * @param plgParamAnnotation the {@link PluginParameter} annotation
-     * @param plgParameters an optional set of
+     * @param dynamicPluginParameters an optional set of
      *            {@link fr.cnes.regards.framework.modules.plugins.domain.PluginParameter} @ if any error occurs
      */
     private static <T> void postProcessPrimitiveType(Gson gson, T pluginInstance, PluginConfiguration plgConf,
             Field field, final Optional<PrimitiveObject> typeWrapper, PluginParameter plgParamAnnotation,
-            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... plgParameters) {
+            fr.cnes.regards.framework.modules.plugins.domain.PluginParameter... dynamicPluginParameters) {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Starting postProcessPrimitiveType :" + plgParamAnnotation.label());
@@ -512,27 +541,8 @@ public final class PluginParameterUtils {
         // Retrieve parameter name
         String parameterName = getFieldName(field, plgParamAnnotation);
 
-        // Get setup value
-        String paramValue = plgConf.getParameterValue(parameterName);
-
-        if (plgParameters != null) {
-            /*
-             * Test if a specific value is given for this annotation parameter
-             */
-            final Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> aDynamicPlgParam = Arrays
-                    .asList(plgParameters).stream().filter(s -> s.getName().equals(parameterName)).findFirst();
-            if (aDynamicPlgParam.isPresent()) {
-                /*
-                 * Test if this parameter is set as dynamic in the plugin configuration
-                 */
-                final Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> cfd = plgConf
-                        .getParameters().stream()
-                        .filter(s -> s.getName().equals(aDynamicPlgParam.get().getName()) && s.isDynamic()).findFirst();
-                if (cfd.isPresent()) {
-                    paramValue = postProcessDynamicValues(paramValue, cfd, aDynamicPlgParam);
-                }
-            }
-        }
+        // Get parameter value
+        String paramValue = getParameterValue(parameterName, plgConf, dynamicPluginParameters);
 
         // If the parameter value is not defined, get the default parameter value
         if (Strings.isNullOrEmpty(paramValue)) {
@@ -548,7 +558,16 @@ public final class PluginParameterUtils {
             if (typeWrapper.get().getType().equals(PrimitiveObject.STRING.getType())) {
                 // Strip quotes using Gson
                 JsonElement el = gson.fromJson(paramValue, JsonElement.class);
-                effectiveVal = el == null ? null : el.getAsString();
+                // FIXME : Handle datasource plugin configurations
+                if ((el != null) && el.isJsonPrimitive()) {
+                    effectiveVal = el.getAsString();
+                } else {
+                    if (paramValue.startsWith("\"") && paramValue.endsWith("\"") && (paramValue.length() > 2)) {
+                        effectiveVal = paramValue.substring(1, paramValue.length() - 1);
+                    } else {
+                        effectiveVal = paramValue;
+                    }
+                }
             } else {
                 final Method method = typeWrapper.get().getType().getDeclaredMethod("valueOf", String.class);
                 effectiveVal = method.invoke(null, paramValue);
@@ -599,37 +618,6 @@ public final class PluginParameterUtils {
                     e);
         }
         LOGGER.debug("Ending postProcessInterface :" + plgParamAnnotation.label());
-    }
-
-    /**
-     * Apply a dynamic parameter value to a parameter plugin
-     *
-     * @param paramValue the current parameter value
-     * @param configuredPlgParam the plugin parameter configured
-     * @param dynamicPlgParam the dynamic parameter value
-     * @return the new parameter value
-     */
-    private static String postProcessDynamicValues(final String paramValue,
-            final Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> configuredPlgParam,
-            final Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> dynamicPlgParam) {
-        LOGGER.debug(String.format("Starting postProcessDynamicValues : %s - init value= <%s>",
-                                   dynamicPlgParam.get().getName(), paramValue));
-
-        if ((configuredPlgParam.get().getDynamicsValues() != null)
-                && (!configuredPlgParam.get().getDynamicsValues().isEmpty())
-                && (!configuredPlgParam.get().getDynamicsValuesAsString().contains(dynamicPlgParam.get().getValue()))) {
-            // The dynamic parameter value is not a possible value
-            throw new PluginUtilsRuntimeException(
-                    String.format("The dynamic value <%s> is not an authorized value for the parameter %s.",
-                                  dynamicPlgParam.get().getValue(), dynamicPlgParam.get().getName()));
-        }
-
-        final String newValue = dynamicPlgParam.get().getValue();
-
-        LOGGER.debug(String.format("Ending postProcessDynamicValues : %s - new value= <%s>",
-                                   dynamicPlgParam.get().getName(), newValue));
-
-        return newValue;
     }
 
     /**

@@ -7,10 +7,11 @@
     "priorityOrder": 1,
     "parameters": [
         {
-            "dynamic": false,
+            "dynamic": true,
             "value": "file:/home/msordi/git/rs-storage/storage/storage-service/target/AIPServiceIT",
             "type": "java.lang.String",
-            "name": "pString"
+            "name": "pString",
+            "dynamicsValues":["toto","titi", "tutu"]
         },
         {
             "dynamic": false,
@@ -25,10 +26,11 @@
             "name": "pShort"
         },
         {
-            "dynamic": false,
+            "dynamic": true,
             "value": 4,
             "type": "java.lang.Integer",
-            "name": "pInteger"
+            "name": "pInteger",
+            "dynamicsValues":[10,20,30]
         },
         {
             "dynamic": false,

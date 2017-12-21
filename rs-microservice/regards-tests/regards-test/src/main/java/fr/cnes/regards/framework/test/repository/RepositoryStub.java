@@ -24,7 +24,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
@@ -37,7 +41,7 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  * @author sbinda
  * @since 1.0-SNAPSHOT
  */
-public class RepositoryStub<T extends IIdentifiable<Long>> implements CrudRepository<T, Long> {
+public class RepositoryStub<T extends IIdentifiable<Long>> implements JpaRepository<T, Long> {
 
     /**
      * Internal storage
@@ -100,12 +104,77 @@ public class RepositoryStub<T extends IIdentifiable<Long>> implements CrudReposi
     }
 
     @Override
-    public Iterable<T> findAll() {
+    public void flush() {
+
+    }
+
+    @Override
+    public <S extends T> S saveAndFlush(S entity) {
+        return null;
+    }
+
+    @Override
+    public void deleteInBatch(Iterable<T> entities) {
+
+    }
+
+    @Override
+    public void deleteAllInBatch() {
+
+    }
+
+    @Override
+    public T getOne(Long aLong) {
+        return null;
+    }
+
+    @Override
+    public <S extends T> S findOne(Example<S> example) {
+        return null;
+    }
+
+    @Override
+    public <S extends T> List<S> findAll(Example<S> example) {
+        return null;
+    }
+
+    @Override
+    public <S extends T> List<S> findAll(Example<S> example, Sort sort) {
+        return null;
+    }
+
+    @Override
+    public <S extends T> Page<S> findAll(Example<S> example, Pageable pageable) {
+        return null;
+    }
+
+    @Override
+    public <S extends T> long count(Example<S> example) {
+        return 0;
+    }
+
+    @Override
+    public <S extends T> boolean exists(Example<S> example) {
+        return false;
+    }
+
+    @Override
+    public List<T> findAll() {
         return entities;
     }
 
     @Override
-    public Iterable<T> findAll(final Iterable<Long> pIds) {
+    public List<T> findAll(Sort sort) {
+        return null;
+    }
+
+    @Override
+    public Page<T> findAll(Pageable pageable) {
+        return null;
+    }
+
+    @Override
+    public List<T> findAll(final Iterable<Long> pIds) {
         try (final Stream<Long> stream = StreamSupport.stream(pIds.spliterator(), false)) {
             return stream.map(id -> findOne(id)).collect(Collectors.toList());
         }
