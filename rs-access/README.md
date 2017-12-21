@@ -4,7 +4,7 @@ This is the backend for frontend repository.
 
 REGARDS is still under heavy development. Operational version V1.0.0 is planed for 2018.
 
-## Build requirement
+## Build requirements
 
 Build relies on :
 * Maven 3+
