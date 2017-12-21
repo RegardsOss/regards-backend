@@ -184,8 +184,16 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      */
     protected PluginConfigurationProperties pluginConfProperties;
 
+    /**
+     * Get the project name
+     * @return the project name
+     */
     protected abstract String getProjectName();
 
+    /**
+     * Get the plugin Ssalto repository configuration 
+     * @return the plugin Ssalto repository {@link PluginsRepositoryProperties}
+     */
     protected abstract PluginsRepositoryProperties getPluginsRepositoryProperties();
 
     /**

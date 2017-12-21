@@ -55,6 +55,9 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 
+    /*
+     * Double value of 10exp-6 
+     */
     private static final double DIX_MOINS_6 = 0.000001;
 
     /**
@@ -62,12 +65,24 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(EnvisatPLTMProductMetadataPlugin.class);
 
+    /**
+     * {@link List} of minimum longitude value
+     */
     private List<Double> longitudeMin = null;
 
+    /**
+     * {@link List} of maximum longitude value
+     */
     private List<Double> longitudeMax = null;
 
+    /**
+     * {@link List} of minimum latitude value
+     */
     private List<Double> latitudeMin = null;
 
+    /**
+     * {@link List} of maximum latitude value
+     */
     private List<Double> latitudeMax = null;
 
     @Override
@@ -76,7 +91,7 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
     }
 
     /**
-     * LONGITUDE_MIN, LONGITUDE_MAX, LATITUDE_MIN, LATITUDE_MAX attributes creation
+     * LONGITUDE_MIN, LONGITUDE_MAX, LATITUDE_MIN, LATITUDE_MAX {@link Attribute}s creation
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)

@@ -43,6 +43,12 @@ public class Interval {
         super();
     }
 
+    /**
+     * Update the interval value with a new value<br>
+     * If the value is > maxValue then maxValue is set to value
+     * If the value is < minValue then minValue is set to value
+     * @param value the value to apply to the interval
+     */
     public void update(long value) {
         if (minValue == 0) {
             minValue = value;

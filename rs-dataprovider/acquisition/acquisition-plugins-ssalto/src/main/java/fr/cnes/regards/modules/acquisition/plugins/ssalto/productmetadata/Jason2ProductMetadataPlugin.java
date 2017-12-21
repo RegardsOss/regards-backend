@@ -49,6 +49,7 @@ public class Jason2ProductMetadataPlugin extends AbstractProductMetadataPlugin {
         return pluginsRepositoryProperties;
     }
 
+    @Override
     protected String getProjectName() {
         return PROJECT_NAME;
     }
