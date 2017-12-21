@@ -24,11 +24,12 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
- * Exactly the same plugin that the JASON2 one.
+ * Metadata caculation's plugin for Jason3 using Doris1B instrument.
+ * The TIME_PERIOD and FILE_CREATION_DATE attributes are managed specifically.
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Jason3Doris10ProductMetadataPlugin", id = "Jason3Doris10ProductMetadataPlugin",
+@Plugin(description = "Metadata caculation's plugin for Jason3 using Doris1B instrument", id = "Jason3Doris10ProductMetadataPlugin",
         version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Jason3Doris10ProductMetadataPlugin extends AbstractJasonDoris10ProductMetadataPlugin {

@@ -24,13 +24,11 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
- * plugin specifiques au donnees jason2 GPSP10Flot Les attributs traites specifiquement sont les TIME_PERIOD ( résolu
- * comme pour les donnees Doris, et FILE_CREATION_DATE, qui ne se recupere pas de la meme maniere en fonction du nom des
- * fichiers.
+ * Metadata caculation's plugin for Jason2 Pltm1 products.
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Jason2Ptlm1ProductMetadataPlugin", id = "Jason2Ptlm1ProductMetadataPlugin", version = "1.0.0",
+@Plugin(description = "Metadata caculation's plugin for Jason2 Pltm1 products.", id = "Jason2Ptlm1ProductMetadataPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Jason2Ptlm1ProductMetadataPlugin extends AbstractJasonPltm1ProductMetadataPlugin {

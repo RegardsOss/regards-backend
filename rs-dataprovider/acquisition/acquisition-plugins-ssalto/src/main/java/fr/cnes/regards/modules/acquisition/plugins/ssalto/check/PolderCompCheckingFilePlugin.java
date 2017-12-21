@@ -26,12 +26,12 @@ import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
- * Manage POLDER data.
+ * Check's plugin for Polder products.<br>
  * 
  * @author Christophe Mertz
  *
  */
-@Plugin(description = "PolderCompCheckingFilePlugin", id = "PolderCompCheckingFilePlugin", version = "1.0.0",
+@Plugin(description = "Check's plugin for Polder products", id = "PolderCompCheckingFilePlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class PolderCompCheckingFilePlugin implements ICheckFilePlugin {

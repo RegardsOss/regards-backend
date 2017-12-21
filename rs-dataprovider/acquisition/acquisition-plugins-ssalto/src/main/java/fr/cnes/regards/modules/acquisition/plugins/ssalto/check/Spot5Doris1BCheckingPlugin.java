@@ -24,13 +24,13 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 
 /**
- * Manage Spot5 Doris1B data prefixes.<br>
+ * Check's plugin for Spot5 products using Doris1B instrument.<br>
  * This {@link Plugin} checks that the file exists and is accessible and add a prefix to the product name.
  * 
  * @author Christophe Mertz
  *
  */
-@Plugin(description = "Spot5Doris1BCheckingPlugin", id = "Spot5Doris1BCheckingPlugin", version = "1.0.0",
+@Plugin(description = "Check's plugin for Spot5 products using Doris1B instrument", id = "Spot5Doris1BCheckingPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Spot5Doris1BCheckingPlugin extends AbstractDoris1BCheckingPlugin {

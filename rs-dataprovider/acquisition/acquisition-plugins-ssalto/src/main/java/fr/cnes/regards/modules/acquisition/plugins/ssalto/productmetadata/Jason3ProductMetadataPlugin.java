@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
- * Plugin JASON3
+ * Metadata caculation's plugin for Jason2 products.
  *
  * @author Christophe Mertz
  */

@@ -43,11 +43,12 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.LoadTranslationPr
 import fr.cnes.regards.modules.acquisition.tools.NetCdfFileHelper;
 
 /**
+ * Metadata caculation's plugin for Jason2 Ogdr products.
  * 
  * @author Christophe Mertz
  *
  */
-@Plugin(author = "CS-SI", description = "Jason2OgdrProductMetadataPlugin", owner = "CNES", contact = "CS-SI",
+@Plugin(author = "CS-SI", description = "Metadata caculation's plugin for Jason2 Ogdr products", owner = "CNES", contact = "CS-SI",
         id = "Jason2OgdrProductMetadataPlugin", licence = "Apache ", url = "http://regards.org", version = "1.0")
 public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin {
 

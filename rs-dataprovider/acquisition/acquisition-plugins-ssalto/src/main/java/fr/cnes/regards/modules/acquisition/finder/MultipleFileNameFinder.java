@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.tools.CalculusTypeEnum;
 
 /**
- * finder qui recuperer la valeur dans une liste de fichiers, puis  effectue eventuellement un calcul avec ces valeurs pour
+ * Finder qui recupere la valeur dans une liste de fichiers, puis  effectue eventuellement un calcul avec ces valeurs pour
  * renvoyer la valeur de l'attribut
  * 
  * @author Christophe Mertz

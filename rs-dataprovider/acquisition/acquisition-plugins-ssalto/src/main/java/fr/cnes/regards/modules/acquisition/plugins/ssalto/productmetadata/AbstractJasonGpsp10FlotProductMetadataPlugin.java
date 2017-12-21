@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 /**
- * plugin specifiques au donnees jason2 GPSP10Flot Les attributs traites specifiquement sont les TIME_PERIOD, que l'on
+ * Plugin specifique aux donnees jason2 GPSP10Flot Les attributs traites specifiquement sont les TIME_PERIOD, que l'on
  * va lire dans les blocs de mesure.
  *
  * @author Christophe Mertz

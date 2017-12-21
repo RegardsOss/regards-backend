@@ -24,11 +24,12 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
+ * Metadata caculation's plugin for Hy2A products.
  * 
  * @author Christophe Mertz
  *
  */
-@Plugin(description = "Hy2AProductMetadataPlugin", id = "Hy2AProductMetadataPlugin", version = "1.0.0",
+@Plugin(description = "Metadata caculation's plugin for Hy2A products", id = "Hy2AProductMetadataPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Hy2AProductMetadataPlugin extends AbstractProductMetadataPlugin {

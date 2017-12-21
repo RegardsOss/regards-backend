@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 
 /**
- * Manage Doris1B data.<br>
+ * Manage products using Doris1B instrument.<br>
  * This {@link Plugin} checks that the file exists and is accessible and add a prefix to the product name.
  * 
  * @author Christophe Mertz

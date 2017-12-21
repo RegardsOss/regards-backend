@@ -46,13 +46,12 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryP
 import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 /**
- * plugin specifiques au donnees saral doris les noms des fichiers ont deux formes bien distinctes et ne peuvent pas
- * etre resolues juste par le fichier de configuration. Les attributs traites specifiquement sont les TIME_PERIOD et
- * FILE_CREATION_DATE.
- * 
+ * Metadata caculation's plugin for SARAL using Doris1B instrument.<br>
+ * The TIME_PERIOD and FILE_CREATION_DATE attributes are managed specifically.
+ *  
  * @author Christophe Mertz
  */
-@Plugin(description = "SaralDoris10ProductMetadataPlugin", id = "SaralDoris10ProductMetadataPlugin", version = "1.0.0",
+@Plugin(description = "Metadata caculation's plugin for SARAL using Doris1B instrument", id = "SaralDoris10ProductMetadataPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugin {

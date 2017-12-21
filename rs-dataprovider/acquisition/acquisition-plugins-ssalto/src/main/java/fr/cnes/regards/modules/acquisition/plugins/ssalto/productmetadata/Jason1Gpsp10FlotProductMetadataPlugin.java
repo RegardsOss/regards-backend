@@ -45,13 +45,13 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 /**
- * plugin specifiques au donnees jason1 Gpsp10Flot les noms des fichiers ont deux formes bien distinctes et ne peuvent
- * pas etre resolues juste par le fichier de configuration. L' attribut traite specifiquement est le TIME_PERIOD
+ * Metadata caculation's plugin for Jason1 Gpsp10_FLOT products.
+ * The TIME_PERIOD's attribute is managed specifically.
  * 
  * @author Christophe Mertz
  * 
  */
-@Plugin(description = "Jason1Gpsp10FlotProductMetadataPlugin", id = "Jason1Gpsp10FlotProductMetadataPlugin",
+@Plugin(description = "Metadata caculation's plugin for Jason1 Gpsp10_FLOT products", id = "Jason1Gpsp10FlotProductMetadataPlugin",
         version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadataPlugin {

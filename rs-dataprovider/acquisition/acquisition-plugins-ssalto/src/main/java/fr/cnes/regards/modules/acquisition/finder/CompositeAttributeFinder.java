@@ -42,6 +42,9 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
  */
 public class CompositeAttributeFinder extends AbstractAttributeFinder {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(CompositeAttributeFinder.class);
 
     /**

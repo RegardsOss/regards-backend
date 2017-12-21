@@ -38,13 +38,12 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
- * Plugin de création des méta données PK4 pour determiner le champ "DISK_ID" depuis le chemin d'accès au fichier à
- * acquerir
+ * Metadata caculation's plugin for PK4 products.
  * 
  * @author Christophe Mertz
  *
  */
-@Plugin(description = "Pk4OnBoardProductMetaDataPlugin", id = "Pk4OnBoardProductMetaDataPlugin", version = "1.0.0",
+@Plugin(description = "Metadata caculation's plugin for PK4 products", id = "Pk4OnBoardProductMetaDataPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Pk4OnBoardProductMetaDataPlugin extends AbstractProductMetadataPlugin {

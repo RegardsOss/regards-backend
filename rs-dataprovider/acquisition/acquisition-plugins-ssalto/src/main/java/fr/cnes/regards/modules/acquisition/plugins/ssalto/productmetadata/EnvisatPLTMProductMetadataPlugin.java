@@ -40,17 +40,11 @@ import fr.cnes.regards.modules.acquisition.finder.AsciiFileFinder;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
- * Cette classe permet de calculer de maniere specifique pour les fichiers ENVISAT PLTM, les elements suivants :
- * <ul>
- * <li>GEO_COORDINATES/LONGITUDE_MIN</li>
- * <li>GEO_COORDINATES/LONGITUDE_MAX</li>
- * <li>GEO_COORDINATES/LATITUDE_MIN</li>
- * <li>GEO_COORDINATES/LATITUDE_MAX</li>
- * </ul>
+ * Metadata caculation's plugin for Envisat PLTM products.
  * 
  * @author Christophe Mertz
  */
-@Plugin(description = "EnvisatPLTMProductMetadataPlugin", id = "EnvisatPLTMProductMetadataPlugin", version = "1.0.0",
+@Plugin(description = "Metadata caculation's plugin for Envisat PLTM products", id = "EnvisatPLTMProductMetadataPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlugin {
@@ -60,6 +54,9 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
 
     private static final double DIX_MOINS_6 = 0.000001;
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(EnvisatPLTMProductMetadataPlugin.class);
 
     private List<Double> longitudeMin = null;

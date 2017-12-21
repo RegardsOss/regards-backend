@@ -26,12 +26,16 @@ import java.util.Map;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 
 /**
+ * This finder aims to set a particular value to an attribute.
  * 
  * @author Christophe Mertz
  *
  */
 public class FixedValueAttributeFinder extends AbstractAttributeFinder {
 
+    /**
+     * A fixed value
+     */
     private String fixedValue;
 
     @Override

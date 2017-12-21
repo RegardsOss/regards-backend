@@ -32,12 +32,22 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
  */
 public class FormatCryosat2LogvolDorisDgxxVersion implements ICalculationClass {
 
+    /**
+     * "_" separator
+     */
     private static final String DELIM = "_";
 
+    /**
+     * Length of digit
+     */
     private static final int VERSION_DIGIT_LENGTH = 1;
 
+    /**
+     * "." seperator
+     */
     private static final String POINT = ".";
 
+    @Override
     public Object calculateValue(Object value, AttributeTypeEnum type, PluginConfigurationProperties properties) {
 
         // Parse XYY_abb_ aaaammjj_hhmmss_MEM.REF

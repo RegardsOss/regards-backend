@@ -23,7 +23,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
-@Plugin(description = "Spot5ProductMetadataPlugin", id = "Spot5ProductMetadataPlugin", version = "1.0.0",
+/**
+ * Metadata caculation's plugin for SPOT5 products.
+ * 
+ * @author Christophe Mertz
+ *
+ */
+@Plugin(description = "Metadata caculation's plugin for SPOT5 products", id = "Spot5ProductMetadataPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Spot5ProductMetadataPlugin extends AbstractProductMetadataPlugin {

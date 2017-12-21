@@ -24,10 +24,11 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
+ * Metadata caculation's plugin for SALP products.
  * 
  * @author Christophe Mertz
  */
-@Plugin(description = "SalpProductMetadataPlugin", id = "SalpProductMetadataPlugin", version = "1.0.0",
+@Plugin(description = "Metadata caculation's plugin for SALP products", id = "SalpProductMetadataPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class SalpProductMetadataPlugin extends AbstractProductMetadataPlugin {

@@ -32,10 +32,19 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
  */
 public class SetDorisRadicalFromName implements ICalculationClass {
 
+    /**
+     * A pattern for product name
+     */
     private static final String PATTERND = "^(.*)([a-z]{1})(D|S)([0-9]{8}_[0-9]{6})$";
 
+    /**
+     * A pattern for product name with date
+     */
     private static final String PATTERNS = "^(.*)([a-z]{1})(D|S)([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$";
 
+    /**
+     * "_" separator used isn product name
+     */
     private static final String DATE_SEPARATOR = "_";
 
     @Override

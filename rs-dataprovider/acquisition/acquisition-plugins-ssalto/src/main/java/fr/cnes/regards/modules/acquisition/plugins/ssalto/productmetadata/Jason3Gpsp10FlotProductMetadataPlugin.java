@@ -24,12 +24,12 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
- * plugin specifiques au donnees jason2 GPSP10Flot Les attributs traites specifiquement sont les TIME_PERIOD, que l'on
- * va lire dans les blocs de mesure.
+ * Metadata caculation's plugin for Jason3 Gpsp10_FLOT products.
+ * The TIME_PERIOD attribute is managed specifically.
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Jason3Gpsp10FlotProductMetadataPlugin", id = "Jason3Gpsp10FlotProductMetadataPlugin",
+@Plugin(description = "Metadata caculation's plugin for Jason3 Gpsp10_FLOT products", id = "Jason3Gpsp10FlotProductMetadataPlugin",
         version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Jason3Gpsp10FlotProductMetadataPlugin extends AbstractJasonGpsp10FlotProductMetadataPlugin {

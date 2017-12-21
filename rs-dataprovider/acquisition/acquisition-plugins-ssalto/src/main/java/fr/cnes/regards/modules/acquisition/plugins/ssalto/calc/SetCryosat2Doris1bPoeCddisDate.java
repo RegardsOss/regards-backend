@@ -27,33 +27,29 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
 import fr.cnes.regards.modules.acquisition.tools.DateFormatter;
 
 /**
- * Formate les dates recupererees dans le fichier cs_data([0-9]{3}).dat.Z
+ * Format the {@link Date} extracts from the file cs_data([0-9]{3}).dat.Z
  * 
  * @author Christophe Mertz
  *
  */
 public class SetCryosat2Doris1bPoeCddisDate implements ICalculationClass {
 
+    @Override
     public Object calculateValue(Object value, AttributeTypeEnum type, PluginConfigurationProperties properties) {
 
-        Date date = calculate(value, type);
+        Date date = calculate(value);
 
         return DateFormatter.getDateRepresentation(date, DateFormatter.XS_DATE_TIME_FORMAT);
     }
 
     /**
-     * Calcule la date associee au parametre value
-     * @param value
-     * @param type
-     * @return type Date
+     * Calculate a {@link Date} extracts from a {@link String}
+     * @param value a {@link String} to extracts the {@link Date}
+     * @return the calculated {@link Date}
      */
-    public Date calculate(Object value, AttributeTypeEnum type) {
+    public Date calculate(Object value) {
         // Read line
         String line = (String) value;
-        // Parameters for compute values
-        String compute = null;
-        int beginIndex = 0;
-        int endIndex = 0;
 
         // Init calendar
         Calendar cal = Calendar.getInstance();
@@ -62,9 +58,9 @@ public class SetCryosat2Doris1bPoeCddisDate implements ICalculationClass {
         // 17-18 Time of observation (beginning of count)
         // Year minus 1900 if greater than 90
         // Year minus 2000 if less than or equal 90
-        beginIndex = 0;
-        endIndex = 2;
-        compute = line.substring(beginIndex, endIndex).trim();
+        int beginIndex = 0;
+        int endIndex = 2;
+        String compute = line.substring(beginIndex, endIndex).trim();
         int year = Integer.valueOf(compute).intValue();
         if (year > 90) {
             year = year + 1900;

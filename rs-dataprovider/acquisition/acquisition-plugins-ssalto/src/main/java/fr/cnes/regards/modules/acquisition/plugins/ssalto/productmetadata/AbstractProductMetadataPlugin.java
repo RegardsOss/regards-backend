@@ -74,12 +74,18 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
 
     /**
-     * Suffix of Ssalto plugin configuration file
+     * Suffix of Ssalto's plugin configuration files
      */
     private static final String CONFIG_FILE_SUFFIX = "_PluginConfiguration.xml";
 
+    /**
+     * Digester rules used in Ssalto's plugin configuration files
+     */
     private static final String RULE_FILE = "pluginFinderDigesterRules.xml";
 
+    /**
+     * Attributes order
+     */
     private static final String ATTRIBUTE_ORDER_PROP_FILE = "attributeOrder.properties";
 
     protected static final String GEO_COORDINATES = "GEO_COORDINATES";
@@ -102,16 +108,30 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
 
     protected static final String CREATION_DATE = "FILE_CREATION_DATE";
 
+    /**
+     * {@link DateTimeFormatter} "yyyyMMdd_HHmmss"
+     * 
+     */
     protected static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
+    /**
+     * {@link DateTimeFormatter} "yyyyMMdd HHmmss"
+     */
     protected static final DateTimeFormatter DATETIME_FILE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd HHmmss");
 
+    /**
+     * {@link Pattern} for the creation date attribute's value
+     */
     protected static final Pattern CREATION_DATE_PATTERN = Pattern.compile(".* ([0-9]{8} [0-9]{6}) UTC.*");
 
-    protected static final String MISSION = "mission";
-
+    /**
+     * Log message
+     */
     protected static final String MSG_ERR_FILENAME = "filename does not match";
 
+    /**
+     * Log message
+     */
     protected static final String MSG_ATTRIBUTE_BUILD = "build SIP : attribute [{}]";
 
     /**
@@ -308,7 +328,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             throws AcquisitionException {
 
         sipBuilder.getPDIBuilder().setFacility("CNES");
-        sipBuilder.addDescriptiveInformation(Strings.toLowerCase(MISSION), getProjectName());
+        sipBuilder.addDescriptiveInformation("mission", getProjectName());
 
         for (Attribute att : mapAttrs.values()) {
             if (att.getMetaAttribute().getValueType().equals(AttributeTypeEnum.TYPE_STRING)

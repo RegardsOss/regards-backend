@@ -20,18 +20,17 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 
 /**
- * Manage Cryosat2 data.<br>
+ * Check's plugin for Cryosat2 products.<br>
  * This {@link Plugin} checks that the file exists and is accessible.<br>
  * The {@link Product} name is the file name less the extension file.<br>
  * 
  * @author Christophe Mertz
  *
  */
-@Plugin(description = "Cryosat2ExtCheckingFilePlugin", id = "Cryosat2ExtCheckingFilePlugin", version = "1.0.0",
+@Plugin(description = "Check's plugin for Cryosat2 products", id = "Cryosat2ExtCheckingFilePlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Cryosat2ExtCheckingFilePlugin extends CheckingFilePluginHelper {

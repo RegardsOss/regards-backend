@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 /**
- * plugin specifiques au donnees jason2 doris les noms des fichiers ont deux formes bien distinctes et ne peuvent pas
+ * Plugin specifique aux donnees jason2 doris les noms des fichiers ont deux formes bien distinctes et ne peuvent pas
  * etre resolues juste par le fichier de configuration. Les attributs traites specifiquement sont les TIME_PERIOD et
  * FILE_CREATION_DATE.
  *

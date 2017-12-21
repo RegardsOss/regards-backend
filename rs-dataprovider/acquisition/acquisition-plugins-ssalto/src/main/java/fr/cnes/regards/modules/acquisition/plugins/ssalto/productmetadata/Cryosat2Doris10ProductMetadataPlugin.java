@@ -44,7 +44,13 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
-@Plugin(description = "Cryosat2Doris10ProductMetadataPlugin", id = "Cryosat2Doris10ProductMetadataPlugin",
+/**
+ * Metadata caculation's plugin for Cryosat2 products using Doris1B instrument.
+ * 
+ * @author Christophe Mertz
+ *
+ */
+@Plugin(description = "Metadata caculation's plugin for Cryosat2 products using Doris1B instrument", id = "Cryosat2Doris10ProductMetadataPlugin",
         version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadataPlugin {

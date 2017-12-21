@@ -24,12 +24,11 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
- *
- * Plugin de generation des metadonnees produit pour la mission SENTINEL-3
+ * Metadata caculation's plugin for SENTINEL-3 products.
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Sent3aProductMetadataPlugin", id = "Sent3aProductMetadataPlugin", version = "1.0.0",
+@Plugin(description = "Metadata caculation's plugin for SENTINEL-3 products", id = "Sent3aProductMetadataPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Sent3aProductMetadataPlugin extends AbstractProductMetadataPlugin {

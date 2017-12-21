@@ -45,9 +45,11 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryP
 import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 /**
+ * Metadata caculation's plugin for Hy2A products using Doris1B instrument.
+ * 
  * @author Christophe Mertz
  */
-@Plugin(description = "Hy2ADoris10ProductMetadataPlugin", id = "Hy2ADoris10ProductMetadataPlugin", version = "1.0.0",
+@Plugin(description = "Metadata caculation's plugin for Hy2A products using Doris1B instrument", id = "Hy2ADoris10ProductMetadataPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin {

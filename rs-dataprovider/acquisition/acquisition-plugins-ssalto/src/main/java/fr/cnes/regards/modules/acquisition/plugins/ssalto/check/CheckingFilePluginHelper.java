@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
  * @author Christophe Mertz
  *
  */
-public abstract class CheckingFilePluginHelper implements ICheckFilePlugin {
+public class CheckingFilePluginHelper implements ICheckFilePlugin {
 
     /**
      * The {@link Product} name

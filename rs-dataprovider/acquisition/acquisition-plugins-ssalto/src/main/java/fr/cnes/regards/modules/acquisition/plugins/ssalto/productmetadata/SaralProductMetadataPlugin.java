@@ -24,11 +24,11 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
- * Plugin de generation des metadonnees produit pour la mission SARAL
+ * Metadata caculation's plugin for SARAL products.
  * 
  * @author Christophe Mertz
  */
-@Plugin(description = "SaralProductMetadataPlugin", id = "SaralProductMetadataPlugin", version = "1.0.0",
+@Plugin(description = "Metadata caculation's plugin for SARAL products", id = "SaralProductMetadataPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class SaralProductMetadataPlugin extends AbstractProductMetadataPlugin {

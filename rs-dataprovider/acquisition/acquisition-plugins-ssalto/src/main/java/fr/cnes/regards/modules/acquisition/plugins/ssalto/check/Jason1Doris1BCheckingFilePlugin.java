@@ -24,13 +24,13 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 
 /**
- * Manage Jason1 - Doris1B data prefixes.<br>
+ * Check's plugin for Jason1 products using Doris1B instrument.<br>
  * This {@link Plugin} checks that the file exists and is accessible and that the extension file is authorized.
  * 
  * @author Christophe Mertz
  *
  */
-@Plugin(description = "Jason1Doris1BCheckingFilePlugin", id = "Jason1Doris1BCheckingFilePlugin", version = "1.0.0",
+@Plugin(description = "Check's plugin for Jason1 products using Doris1B instrument", id = "Jason1Doris1BCheckingFilePlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Jason1Doris1BCheckingFilePlugin extends AbstractDoris1BCheckingPlugin {
