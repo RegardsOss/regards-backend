@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
@@ -118,7 +119,7 @@ public interface IAipClient {
      * @return page of aip with indexing information on associated files respecting the constraints
      */
     @RequestMapping(method = RequestMethod.GET, path = INDEXING_PATH)
-    ResponseEntity<Page<AipDataFiles>> retrieveAipDataFiles(@RequestParam(name = "state") AIPState state,
+    ResponseEntity<PagedResources<AipDataFiles>> retrieveAipDataFiles(@RequestParam(name = "state") AIPState state,
             @RequestParam("tags") Set<String> tags,
             @RequestParam(name = "last_update", required = false) OffsetDateTime fromLastUpdateDate, @RequestParam("page") int page, @RequestParam("size") int size);
 
