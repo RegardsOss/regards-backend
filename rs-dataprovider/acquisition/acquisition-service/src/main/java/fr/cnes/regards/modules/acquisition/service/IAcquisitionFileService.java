@@ -115,12 +115,6 @@ public interface IAcquisitionFileService {
             throws ModuleException;
 
     /**
-     * Save the current {@link AcquisitionFile} and the associated {@link Product}.
-     * @param acqFile the current {@link AcquisitionFile}
-     */
-    void saveAcqFileAndProduct(AcquisitionFile acqFile);
-
-    /**
      * Calculus the {@link AcquisitionFileStatus} of the current {@link AcquisitionFile} and save the
      * {@link AcquisitionFile} and the {@link Product}.<br>
      * <li>If the result is <code>true</code> the status is set to {@link AcquisitionFileStatus#VALID}</br>

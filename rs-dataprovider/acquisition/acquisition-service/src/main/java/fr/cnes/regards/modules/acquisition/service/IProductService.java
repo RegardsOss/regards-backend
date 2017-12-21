@@ -111,7 +111,7 @@ public interface IProductService {
 
     /**
      * Get the {@link Product} corresponding to the productName and calculate the {@link ProductState}.<br>
-     * If it does not exists, create this {@link Product}.
+     * If it does not exists, create this {@link Product}. Create or update the product in database.
      *
      * @param session the current session
      * @param acqFile the {@link AcquisitionFile} to add to the {@link Product}

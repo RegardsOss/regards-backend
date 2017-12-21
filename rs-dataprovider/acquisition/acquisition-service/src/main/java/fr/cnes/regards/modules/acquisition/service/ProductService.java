@@ -199,21 +199,22 @@ public class ProductService implements IProductService {
     public Product linkAcquisitionFileToProduct(String session, AcquisitionFile acqFile, String productName,
             MetaProduct metaProduct, String ingestChain) throws ModuleException {
         // Get the product if it exists
-        Product currentProduct = retrieve(productName);
+        Product currentProduct = productRepository.findCompleteByProductName(productName);
 
         if (currentProduct == null) {
             // It is a new Product, create it
             currentProduct = new Product();
             currentProduct.setProductName(productName);
             currentProduct.setMetaProduct(metaProduct);
+            currentProduct.setSipState(ProductSIPState.NOT_SCHEDULED);
         }
 
         currentProduct.setSession(session);
         currentProduct.setIngestChain(ingestChain);
         currentProduct.addAcquisitionFile(acqFile);
-        this.computeProductStatus(currentProduct);
+        computeProductStatus(currentProduct);
 
-        return currentProduct;
+        return save(currentProduct);
     }
 
     @Override

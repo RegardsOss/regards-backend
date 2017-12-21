@@ -162,37 +162,23 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     }
 
     @Override
-    public void saveAcqFileAndProduct(AcquisitionFile acqFile) {
-        if (acqFile.getProduct() != null) {
-            productService.save(acqFile.getProduct());
-        }
-        this.save(acqFile);
-    }
-
-    @Override
     public void checkFileStatus(boolean result, String session, AcquisitionFile acqFile, String productName,
             MetaProduct metaProduct, String ingestChain) throws ModuleException {
+
         if (result) {
-
             LOGGER.info("Valid file {}", acqFile.getFileName());
-
             acqFile.setStatus(AcquisitionFileStatus.VALID);
-
             // Link valid file to product
-            acqFile.setProduct(productService.linkAcquisitionFileToProduct(session, acqFile, productName, metaProduct,
-                                                                           ingestChain));
-
+            Product product = productService.linkAcquisitionFileToProduct(session, acqFile, productName, metaProduct,
+                                                                          ingestChain);
+            acqFile.setProduct(product);
         } else {
-
             // TODO CMZ à gérer le cas d'un fichier optionnel INVALID
             // juste logger que le fichier est invalide, mais le produit peut quand même être bon
-
             LOGGER.info("Invalid file {}", acqFile.getFileName());
-
             acqFile.setStatus(AcquisitionFileStatus.INVALID);
         }
-
-        this.saveAcqFileAndProduct(acqFile);
+        save(acqFile);
     }
 
 }
