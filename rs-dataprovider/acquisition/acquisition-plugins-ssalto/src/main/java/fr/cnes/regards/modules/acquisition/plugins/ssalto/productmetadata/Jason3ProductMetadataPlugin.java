@@ -38,6 +38,9 @@ public class Jason3ProductMetadataPlugin extends AbstractProductMetadataPlugin {
      */
     private static final String PROJECT_NAME = "JASON3";
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 

@@ -88,24 +88,54 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      */
     private static final String ATTRIBUTE_ORDER_PROP_FILE = "attributeOrder.properties";
 
+    /**
+     * Attribute GEO_COORDINATES
+     */
     protected static final String GEO_COORDINATES = "GEO_COORDINATES";
 
+    /**
+     * Attribute LONGITUDE_MIN
+     */
     protected static final String LONGITUDE_MIN = "LONGITUDE_MIN";
 
+    /**
+     * Attribute LONGITUDE_MAX
+     */
     protected static final String LONGITUDE_MAX = "LONGITUDE_MAX";
 
+    /**
+     * Attribute LATITUDE_MIN
+     */
     protected static final String LATITUDE_MIN = "LATITUDE_MIN";
 
+    /**
+     * Attribute LATITUDE_MAX
+     */
     protected static final String LATITUDE_MAX = "LATITUDE_MAX";
 
+    /**
+     * Attribute RANGE
+     */
     protected static final String RANGE = "RANGE";
 
+    /**
+     * Attribute TIME_PERIOD
+     */
     protected static final String TIME_PERIOD = "TIME_PERIOD";
 
+    /**
+     * Attribute START_DATE
+     */
     protected static final String START_DATE = "START_DATE";
 
+    /**
+     * Attribute STOP_DATE
+     */
     protected static final String STOP_DATE = "STOP_DATE";
 
+    /**
+     * Attribute FILE_CREATION_DATE
+     */
     protected static final String CREATION_DATE = "FILE_CREATION_DATE";
 
     /**

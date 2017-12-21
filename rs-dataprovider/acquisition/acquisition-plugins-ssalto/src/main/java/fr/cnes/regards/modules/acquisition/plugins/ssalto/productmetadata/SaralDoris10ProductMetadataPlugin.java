@@ -51,9 +51,9 @@ import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
  *  
  * @author Christophe Mertz
  */
-@Plugin(description = "Metadata caculation's plugin for SARAL using Doris1B instrument", id = "SaralDoris10ProductMetadataPlugin", version = "1.0.0",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+@Plugin(description = "Metadata caculation's plugin for SARAL using Doris1B instrument",
+        id = "SaralDoris10ProductMetadataPlugin", version = "1.0.0", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugin {
 
     /**
@@ -61,14 +61,29 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(MultipleFileNameFinder.class);
 
+    /**
+     * A {@link Pattern} for "[A-Z]([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternd;
 
+    /**
+     * A {@link Pattern} for "[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternp;
 
+    /**
+     * A {@link Pattern} for "([a-z]{1})([DS]{1})([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternh;
 
+    /**
+     * A {@link Pattern} for "([a-z]{1})([DS]{1})([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternl;
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 
@@ -97,7 +112,7 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
     }
 
     /**
-     * cree les attributs TIME_PERIOD et FILE_CREATION_DATE
+     * Add TIME_PERIOD and FILE_CREATION_DATE {@link Attribute}s
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
@@ -107,10 +122,10 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
     }
 
     /**
-     * Add the START_DATE and the STOP_DATE attributs
-     * @param fileMap
-     * @param attributeMap
-     * @throws PluginAcquisitionException
+     * Add the TIME_PERIOD {@link CompositeAttribute}
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException an error occurs when the new {@link Attribute} is created
      */
     private void registerTimePeriodAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
@@ -140,10 +155,10 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
     }
 
     /**
-     * Add the CREATION_DATE attribut
-     * @param fileMap
-     * @param attributeMap
-     * @throws PluginAcquisitionException
+     * Add the CREATION_DATE {@link Attribute}
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException an error occurs when the new {@link Attribute} is created
      */
     private void registerFileCreationDateAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
@@ -236,7 +251,7 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
     }
 
     /**
-     * Get the START_DATE value to a set of {@link File}
+     * Get the CREATION_DATE value to a set of {@link File}
      * @param files a set of {@link File}
      * @return valueList the START_DATE value of each {@link File}
      * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 

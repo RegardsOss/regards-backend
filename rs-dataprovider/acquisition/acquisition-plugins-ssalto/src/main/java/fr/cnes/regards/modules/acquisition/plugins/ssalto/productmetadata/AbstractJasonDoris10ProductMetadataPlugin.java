@@ -83,7 +83,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
     }
 
     /**
-     * TIME_PERIOD and FILE_CREATION_DATE attributes creation
+     * Add TIME_PERIOD and FILE_CREATION_DATE {@link Attribute}s
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> pAttributeMap)
@@ -93,10 +93,10 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
     }
 
     /**
-     * Add the START_DATE and the STOP_DATE attributes
+     * Add the TIME_PERIOD {@link CompositeAttribute}
      * @param fileMap a {@link Map} of the {@link File} to acquire
-     * @param attributeMap {@link Map} of the {@link Attribute}
-     * @throws PluginAcquisitionException
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException if an error occurs
      */
     private void registerTimePeriodAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
@@ -126,10 +126,10 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
     }
 
     /**
-     * Add the CREATION_DATE attribute
+     * Add the CREATION_DATE {@link Attribute}
      * @param fileMap a {@link Map} of the {@link File} to acquire
-     * @param attributeMap {@link Map} of the {@link Attribute}
-     * @throws PluginAcquisitionException
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException if an error occurs when the {@link Attribute} creation
      */
     private void registerFileCreationDateAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
@@ -207,7 +207,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
     }
 
     /**
-     * Get the START_DATE value to a set of {@link File}
+     * Get the CREATION_DATE value to a set of {@link File}
      * @param files a set of {@link File}
      * @return valueList the START_DATE value of each {@link File}
      * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 

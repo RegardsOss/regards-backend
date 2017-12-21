@@ -36,6 +36,9 @@ import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
         url = "https://github.com/RegardsOss")
 public class PolderCompCheckingFilePlugin implements ICheckFilePlugin {
 
+    /**
+     * Max size for the product name : 15
+     */
     private static final int PRODUCT_NAME_MAX_SIZE = 15;
 
     /**

@@ -37,6 +37,9 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryP
 @EnableTransactionManagement
 public class AcquisitionPluginSsaltoAutoConfigure {
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 

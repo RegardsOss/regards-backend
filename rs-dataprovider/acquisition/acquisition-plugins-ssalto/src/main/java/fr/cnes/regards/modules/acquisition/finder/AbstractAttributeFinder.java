@@ -134,16 +134,12 @@ public abstract class AbstractAttributeFinder {
     private final List<File> temporaryUnzippedDirList = new ArrayList<>();
 
     /**
-     * Cree un objet Attribute qui va servir a generer l'element XML dans le fichier descripteur
+     * Create an {@link Attribute}
      * 
-     * @param fileMap
-     *            la liste des fichiers a traiter, en clef se trouve le fichier a traiter et en valeur, le fichier sur
-     *            l'espace de fourniture.
-     * @param attributeValueMap
-     *            map de valeurs de l'attribut
-     * @return un {@link Attribute}
-     * @throws PluginAcquisitionException
-     *             en cas d'erreur lors de la creation de l'attribute
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @return the created {@link Attribute}
+     * @throws PluginAcquisitionException if an error occurs when the {@link Attribute} creation
      */
     @SuppressWarnings("unchecked")
     public Attribute buildAttribute(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
@@ -205,10 +201,10 @@ public abstract class AbstractAttributeFinder {
      * Renvoie une liste d'objet dont le type depend du type de valeur de l'attribut.
      * 
      * @see AttributeFactory#createAttribute(AttributeTypeEnum, String, List)
-     * @param fileMap une liste de fichier acquis
-     * @param attributeValueMap
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
      * @return
-     * @throws PluginAcquisitionException
+     * @throws PluginAcquisitionException if an error occurs
      */
     public abstract List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException;
@@ -294,6 +290,7 @@ public abstract class AbstractAttributeFinder {
      * 
      * @param fileMap une {@link Map} des fichiers à acquérir
      * @return la {@link List} des fichiers corespondants aux fichiers à acquérir
+     * @throws PluginAcquisitionException if an error occurs
      */
     protected List<File> buildFileList(Map<File, ?> fileMap) throws PluginAcquisitionException {
         if (fileMap.isEmpty()) {

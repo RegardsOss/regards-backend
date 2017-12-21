@@ -60,10 +60,19 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(Cryosat2Doris10ProductMetadataPlugin.class);
 
+    /**
+     * A {@link Pattern} for ".*[A-Z]([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternd;
 
+    /**
+     * A {@link Pattern} for ".*[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternp;
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 
@@ -87,7 +96,7 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
     }
 
     /**
-     * cree les attributs TIME_PERIOD et FILE_CREATION_DATE
+     * Add TIME_PERIOD and FILE_CREATION_DATE {@link Attribute}s
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> attributeMap)
@@ -97,10 +106,10 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
     }
 
     /**
-     * Add the START_DATE and the STOP_DATE attributs
-     * @param fileMap
-     * @param attributeMap
-     * @throws PluginAcquisitionException
+     * Add the TIME_PERIOD {@link CompositeAttribute}
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException if an error occurs
      */
     private void registerTimePeriodAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
@@ -131,10 +140,10 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
     }
 
     /**
-     * Add the CREATION_DATE attribut
-     * @param fileMap
-     * @param attributeMap
-     * @throws PluginAcquisitionException
+     * Add the CREATION_DATE {@link Attribute}
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException if an error occurs
      */
     private void registerFileCreationDateAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
@@ -213,7 +222,7 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
     }
 
     /**
-     * Get the START_DATE value to a set of {@link File}
+     * Get the CREATION_DATE value to a set of {@link File}
      * @param files a set of {@link File}
      * @return valueList the START_DATE value of each {@link File}
      * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 

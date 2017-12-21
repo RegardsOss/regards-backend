@@ -49,9 +49,9 @@ import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
  * 
  * @author Christophe Mertz
  */
-@Plugin(description = "Metadata caculation's plugin for Hy2A products using Doris1B instrument", id = "Hy2ADoris10ProductMetadataPlugin", version = "1.0.0",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+@Plugin(description = "Metadata caculation's plugin for Hy2A products using Doris1B instrument",
+        id = "Hy2ADoris10ProductMetadataPlugin", version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr",
+        licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin {
 
     /**
@@ -59,15 +59,30 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SaralDoris10ProductMetadataPlugin.class);
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 
+    /**
+     * A {@link Pattern} for "[A-Z]([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternd;
 
+    /**
+     * A {@link Pattern} for "[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternp;
 
+    /**
+     * A {@link Pattern} for "([a-z]{1})([DS]{1})([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternh;
 
+    /**
+     * A {@link Pattern} for "([a-z]{1})([DS]{1})([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternl;
 
     public Hy2ADoris10ProductMetadataPlugin() {
@@ -95,7 +110,7 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
     }
 
     /**
-     * cree les attributs TIME_PERIOD et FILE_CREATION_DATE
+     * Add TIME_PERIOD and FILE_CREATION_DATE {@link Attribute}s
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
@@ -105,10 +120,10 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
     }
 
     /**
-     * Add the START_DATE and the STOP_DATE attributs
-     * @param fileMap
-     * @param attributeMap
-     * @throws PluginAcquisitionException
+     * Add the TIME_PERIOD {@link CompositeAttribute}
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException if an error occurs
      */
     private void registerTimePeriodAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
@@ -138,10 +153,10 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
     }
 
     /**
-     * Add the CREATION_DATE attribut
-     * @param fileMap
-     * @param attributeMap
-     * @throws PluginAcquisitionException
+     * Add the CREATION_DATE {@link Attribute}
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException if an error occurs
      */
     private void registerFileCreationDateAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {

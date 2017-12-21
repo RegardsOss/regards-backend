@@ -42,6 +42,9 @@ import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 public abstract class AbstractJasonGpsp10FlotProductMetadataPlugin extends AbstractJasonDoris10ProductMetadataPlugin {
 
+    /**
+     * A {@link DateTimeFormatter} for the pattern "yyyy-MM-dd HH:mm:ss"
+     */
     protected static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public AbstractJasonGpsp10FlotProductMetadataPlugin() {

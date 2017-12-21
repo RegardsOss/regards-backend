@@ -87,6 +87,9 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProductMetadataPluginTest.class);
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 
@@ -171,7 +174,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      * Permet de tester un plugin a la fois
      */
     @Requirement("REGARDS_DSL_ING_SSALTO_070")
-    @Purpose("A plugin can generate a SIP for all SSALTO's products")    
+    @Purpose("A plugin can generate a SIP for all SSALTO's products")
     @Test
     public void createMetadataPlugin_solo() {
         try {
@@ -188,7 +191,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      * Permet de tester plusieurs plugins
      */
     @Requirement("REGARDS_DSL_ING_SSALTO_070")
-    @Purpose("A plugin can generate a SIP for all SSALTO's products")    
+    @Purpose("A plugin can generate a SIP for all SSALTO's products")
     @Test
     public void createMetadataPlugin_all() {
         try {
@@ -249,7 +252,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
             // Test if the dataset plugin configuration file exists
             String pluginsConfDir = pluginsRepositoryProperties.getPluginConfFilesPath();
             File pluginConfFile = new File(pluginsConfDir, pluginTestDef.getDataSetName() + CONFIG_FILE_SUFFIX);
-            
+
             try (InputStream stream = getClass().getClassLoader().getResourceAsStream(pluginConfFile.getPath())) {
                 // Try to read the InputStream
                 stream.available();
@@ -341,11 +344,12 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      * Initialise un fichier a partir duquel est cree un descripteur
      *
      * @param aFile
+     * @param productName
      * @return an {@link AcquisitionFile}
      */
     protected AcquisitionFile initAcquisitionFile(File aFile, String productName) {
-        AcquisitionFile ssaltoFile = new AcquisitionFile();
-        ssaltoFile.setFileName(aFile.getName());
+        AcquisitionFile acqFile = new AcquisitionFile();
+        acqFile.setFileName(aFile.getName());
 
         ScanDirectory dir = new ScanDirectory();
         dir.setScanDir(aFile.getParent());
@@ -354,8 +358,8 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         acqInfos.setWorkingDirectory(aFile.getParent());
         acqInfos.setAcquisitionDirectory(aFile.getParent());
 
-        ssaltoFile.setAcquisitionInformations(acqInfos);
-        ssaltoFile.setStatus(AcquisitionFileStatus.VALID);
+        acqFile.setAcquisitionInformations(acqInfos);
+        acqFile.setStatus(AcquisitionFileStatus.VALID);
 
         MetaProduct metaProduct = new MetaProduct();
         metaProduct.setLabel(productName);
@@ -364,9 +368,9 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         product.setProductName(productName);
         product.setMetaProduct(metaProduct);
         product.setStatus(ProductStatus.ACQUIRING);
-        ssaltoFile.setProduct(product);
+        acqFile.setProduct(product);
 
-        return ssaltoFile;
+        return acqFile;
     }
 
     /**

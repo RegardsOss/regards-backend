@@ -29,8 +29,8 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryP
  * @author Christophe Mertz
  *
  */
-@Plugin(description = "Metadata caculation's plugin for Jason1 products", id = "Jason1ProductMetadataPlugin", version = "1.0.0",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+@Plugin(description = "Metadata caculation's plugin for Jason1 products", id = "Jason1ProductMetadataPlugin",
+        version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Jason1ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
@@ -39,6 +39,9 @@ public class Jason1ProductMetadataPlugin extends AbstractProductMetadataPlugin {
      */
     private static final String PROJECT_NAME = "JASON";
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 

@@ -71,6 +71,9 @@ public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJa
      */
     protected abstract String getProjectPrefix();
 
+    /**
+     * RADICAL attribute creation
+     */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
@@ -185,9 +188,9 @@ public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJa
      *
      * Ajout de l'attribut RADICAL à la map des attributs
      *
-     * @param fileMap
-     * @param attributeMap
-     * @throws PluginAcquisitionException
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException if an error occurs
      */
     private void registerRadicalAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {

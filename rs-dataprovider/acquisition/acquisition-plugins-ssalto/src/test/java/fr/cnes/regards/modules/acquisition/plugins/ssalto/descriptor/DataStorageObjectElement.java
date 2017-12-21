@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor;
 
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+
 /**
- * element descripteur pour un dataStorageObject. a partir des informations fournies d'une part par le SsaltoFile
- * concerne et par le PhysicalFile du staf qui est traite si besoin
+ * element descripteur pour un dataStorageObject. a partir des informations fournies par le {@link AcquisitionFile}
  * 
  * @author Christophe Mertz
  */
@@ -41,21 +42,13 @@ public abstract class DataStorageObjectElement extends EntityDescriptorElement {
 
     private String offLineFileName;
 
-    //    private TransformerTypeEnum transformer_;
-
     /**
-     * constructeur par defaut
-     * 
-     * @since 1.0
-     * 
+     * Default constructor
      */
     public DataStorageObjectElement() {
         super();
     }
 
-    /**
-     * renvoie le dataStorageObjectIdentifier
-     */
     @Override
     public String getEntityId() {
         return dataStorageObjectIdentifier;
@@ -117,15 +110,4 @@ public abstract class DataStorageObjectElement extends EntityDescriptorElement {
         return onlinePath;
     }
 
-    //    public TransformerTypeEnum getTransformer() {
-    //        return transformer_;
-    //    }
-    //
-    //    public void setTransformer(String pTransformer) {
-    //        transformer_ = TransformerTypeEnum.parse(pTransformer);
-    //    }
-    //
-    //    public void setTransformer(TransformerTypeEnum pTransformer) {
-    //        transformer_ = pTransformer;
-    //    }
 }

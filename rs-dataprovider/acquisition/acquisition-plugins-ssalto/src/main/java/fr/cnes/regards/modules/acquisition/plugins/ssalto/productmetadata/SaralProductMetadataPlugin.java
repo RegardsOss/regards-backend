@@ -28,8 +28,8 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryP
  * 
  * @author Christophe Mertz
  */
-@Plugin(description = "Metadata caculation's plugin for SARAL products", id = "SaralProductMetadataPlugin", version = "1.0.0",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+@Plugin(description = "Metadata caculation's plugin for SARAL products", id = "SaralProductMetadataPlugin",
+        version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class SaralProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
@@ -38,6 +38,9 @@ public class SaralProductMetadataPlugin extends AbstractProductMetadataPlugin {
      */
     private static final String PROJECT_NAME = "SARAL";
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 
