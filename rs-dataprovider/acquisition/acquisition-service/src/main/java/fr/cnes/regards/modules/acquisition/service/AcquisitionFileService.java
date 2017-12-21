@@ -171,7 +171,7 @@ public class AcquisitionFileService implements IAcquisitionFileService {
 
     @Override
     public void checkFileStatus(boolean result, String session, AcquisitionFile acqFile, String productName,
-            MetaProduct metaProduct, String ingestChain) {
+            MetaProduct metaProduct, String ingestChain) throws ModuleException {
         if (result) {
 
             LOGGER.info("Valid file {}", acqFile.getFileName());

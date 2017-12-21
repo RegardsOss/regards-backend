@@ -52,10 +52,10 @@ public class ScheduledDataProviderTasks {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IProductBulkRequestService productBulkRequestService;
+    private IAcquisitionProcessingChainService chainService;
 
     @Autowired
-    private IAcquisitionProcessingChainService chainService;
+    private IProductService productService;
 
     @Bean
     public TaskScheduler taskScheduler() {
@@ -63,12 +63,12 @@ public class ScheduledDataProviderTasks {
     }
 
     @Scheduled(fixedRateString = "${regards.acquisition.process.new.sip.ingest.delay:60000}", initialDelay = 10000)
-    public void processNewSIPBulkRequest() {
+    public void processSipSubmission() {
         LOGGER.debug("Process new SIP bulk request to ingest");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                productBulkRequestService.runBulkRequest();
+                productService.scheduleProductSIPSubmission();
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
@@ -77,7 +77,7 @@ public class ScheduledDataProviderTasks {
     }
 
     @Scheduled(fixedRateString = "${regards.acquisition.process.run.chains.delay:60000}", initialDelay = 10000)
-    public void processRunActiveChains() {
+    public void processAcquisitionChains() {
         LOGGER.debug("Process run active chains");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
@@ -88,5 +88,4 @@ public class ScheduledDataProviderTasks {
             }
         }
     }
-
 }

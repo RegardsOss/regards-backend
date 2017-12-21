@@ -135,6 +135,6 @@ public interface IAcquisitionFileService {
      * @param ingestChain the current ingest processing chain
      */
     void checkFileStatus(boolean result, String session, AcquisitionFile acqFile, String productName,
-            MetaProduct metaProduct, String ingestChain);
+            MetaProduct metaProduct, String ingestChain) throws ModuleException;
 
 }

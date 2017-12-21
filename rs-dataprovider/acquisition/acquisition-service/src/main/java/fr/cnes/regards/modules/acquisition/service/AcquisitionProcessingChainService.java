@@ -307,5 +307,3 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
     }
 
 }
-
-}

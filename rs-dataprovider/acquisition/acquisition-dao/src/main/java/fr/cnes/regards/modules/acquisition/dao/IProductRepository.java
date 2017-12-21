@@ -22,14 +22,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.LockModeType;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
+import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
 /**
  * {@link Product} repository
@@ -43,20 +49,6 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
     Product findCompleteByProductName(String productName);
 
     Set<Product> findByStatus(ProductState status);
-
-    Set<Product> findBySendedAndStatusIn(Boolean sended, ProductState... status);
-
-    // @Query("select distinct p.ingestChain from Product p where p.sended=?1 and p.status in ?2")
-    // Set<String> findDistinctIngestChainBySendedAndStatusIn(Boolean sended, ProductState... status);
-    //
-    // @Query("select distinct p.session from Product p where p.ingestChain=?1 and p.sended=?2 and p.status in ?3")
-    // Set<String> findDistinctSessionByIngestChainAndSendedAndStatusIn(String ingestChain, Boolean sended,
-    // ProductState... status);
-    //
-    // @Lock(LockModeType.PESSIMISTIC_READ)
-    // Page<Product> findAllByIngestChainAndSessionAndSendedAndStatusIn(String ingestChain, String session, Boolean
-    // sended,
-    // Pageable pageable, ProductState... status);
 
     @Query(value = "select p.* from {h-schema}t_acquisition_product p, {h-schema}t_acquisition_meta_product mp, {h-schema}t_acquisition_chain apc where p.sip_state=?1 and p.product_state in ?2 and p.meta_product_id=mp.id and mp.id=apc.meta_product_id and apc.label=?3",
             nativeQuery = true)
@@ -72,4 +64,21 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
         return findChainProducts(ProductSIPState.NOT_SCHEDULED,
                                  Arrays.asList(ProductState.COMPLETED, ProductState.FINISHED), chainLabel);
     }
+
+    /**
+     * @param ingestChain ingest processing chain name
+     * @param session session name
+     * @param sipState {@link ISipState}
+     * @param pageable page limit
+     * @return a page of products with the above properties
+     */
+    Page<Product> findByIngestChainAndSessionAndSipState(String ingestChain, String session, ISipState sipState,
+            Pageable pageable);
+
+    /**
+     * @param sipState {@link ISipState}
+     * @return a set of products with the above properties
+     */
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    Set<Product> findBySipState(ISipState sipState);
 }

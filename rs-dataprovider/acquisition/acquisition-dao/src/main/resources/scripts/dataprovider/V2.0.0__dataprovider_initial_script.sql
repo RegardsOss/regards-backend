@@ -69,6 +69,7 @@ add
 create table t_acquisition_product (
     id int8 not null,
     ingest_chain varchar(255),
+    ip_id varchar(80),
     product_name varchar(128),
     session varchar(128),
     json_sip jsonb,

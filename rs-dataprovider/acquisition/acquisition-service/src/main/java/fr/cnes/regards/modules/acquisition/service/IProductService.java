@@ -28,8 +28,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
 
 /**
  *
@@ -85,16 +87,6 @@ public interface IProductService {
 
     Set<Product> findByStatus(ProductState status);
 
-    Set<Product> findBySendedAndStatusIn(Boolean sended, ProductState... status);
-
-    Set<String> findDistinctIngestChainBySendedAndStatusIn(Boolean sended, ProductState... status);
-
-    Set<String> findDistinctSessionByIngestChainAndSendedAndStatusIn(String ingestChain, Boolean sended,
-            ProductState... status);
-
-    Page<Product> findAllByIngestChainAndSessionAndSendedAndStatusIn(String ingestChain, String session, Boolean sended,
-            Pageable pageable, ProductState... status);
-
     /**
      * Calcul the {@link ProductState} :
      *
@@ -115,7 +107,7 @@ public interface IProductService {
      *
      * @param product the {@link Product}
      */
-    void calcProductStatus(Product product);
+    void computeProductStatus(Product product);
 
     /**
      * Get the {@link Product} corresponding to the productName and calculate the {@link ProductState}.<br>
@@ -129,6 +121,18 @@ public interface IProductService {
      * @return the existing {@link Product} corresponding to the product name
      */
     Product linkAcquisitionFileToProduct(String session, AcquisitionFile acqFile, String productName,
-            MetaProduct metaProduct, String ingestChain);
+            MetaProduct metaProduct, String ingestChain) throws ModuleException;
 
+    /**
+     * @param ingestChain ingest processing chain name
+     * @param session ingest session name
+     * @return the first page of products with state {@link ProductSIPState#SUBMISSION_SCHEDULED}
+     *
+     */
+    Page<Product> findProductsToSubmit(String ingestChain, String session);
+
+    /**
+     * Schedule {@link SIPSubmissionJob}s according to available SIPs
+     */
+    void scheduleProductSIPSubmission();
 }

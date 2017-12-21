@@ -34,6 +34,8 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  *             |
  *          GENERATED
  *             |
+ *      SUBMISSION_SCHEDULED
+ *             |
  *       {@link SIPState}
  *
  * </pre>
@@ -59,7 +61,11 @@ public enum ProductSIPState implements ISipState {
     /**
      * SIP has not been generated because an error occurs.
      */
-    GENERATION_ERROR;
+    GENERATION_ERROR,
+    /**
+     * SIP submission has been scheduled
+     */
+    SUBMISSION_SCHEDULED;
 
     @Override
     public String getName() {

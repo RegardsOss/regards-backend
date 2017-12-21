@@ -23,15 +23,22 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
@@ -45,34 +52,27 @@ import fr.cnes.regards.modules.acquisition.domain.job.ProductJobParameter;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
+import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
 
 /**
- *
+ * Manage acquisition {@link Product}
  * @author Christophe Mertz
- *
+ * @author Marc Sordi
  */
 @MultitenantTransactional
 @Service
 public class ProductService implements IProductService {
 
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(ProductService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
 
-    /**
-     * {@link Product} repository
-     */
     private final IProductRepository productRepository;
 
-    /**
-     * Resolver to retrieve authentication information
-     */
     private final IAuthenticationResolver authResolver;
 
     private final IJobInfoService jobInfoService;
 
-    private final IExecAcquisitionProcessingChainService execAcquisitionProcessingChainService;
+    @Value("${regards.acquisition.sip.bulk.request.limit:10000}")
+    private Integer bulkRequestLimit;
 
     public ProductService(IProductRepository repository, IAuthenticationResolver authResolver,
             IJobInfoService jobInfoService,
@@ -80,7 +80,6 @@ public class ProductService implements IProductService {
         this.productRepository = repository;
         this.authResolver = authResolver;
         this.jobInfoService = jobInfoService;
-        this.execAcquisitionProcessingChainService = execAcquisitionProcessingChainService;
     }
 
     @Override
@@ -99,7 +98,7 @@ public class ProductService implements IProductService {
         Product product = productRepository.findCompleteByProductName(productName);
         if (product == null) {
             String message = String.format("Product with name \"%s\" not found", productName);
-            LOG.error(message);
+            LOGGER.error(message);
             throw new EntityNotFoundException(message);
         }
         return product;
@@ -152,36 +151,13 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Set<Product> findBySendedAndStatusIn(Boolean sended, ProductState... status) {
-        return productRepository.findBySendedAndStatusIn(sended, status);
-    }
-
-    @Override
-    public Set<String> findDistinctIngestChainBySendedAndStatusIn(Boolean sended, ProductState... status) {
-        return productRepository.findDistinctIngestChainBySendedAndStatusIn(sended, status);
-    }
-
-    @Override
-    public Set<String> findDistinctSessionByIngestChainAndSendedAndStatusIn(String ingestChain, Boolean sended,
-            ProductState... status) {
-        return productRepository.findDistinctSessionByIngestChainAndSendedAndStatusIn(ingestChain, sended, status);
-    }
-
-    @Override
-    public Page<Product> findAllByIngestChainAndSessionAndSendedAndStatusIn(String ingestChain, String session,
-            Boolean sended, Pageable pageable, ProductState... status) {
-        return productRepository.findAllByIngestChainAndSessionAndSendedAndStatusIn(ingestChain, session, sended,
-                                                                                    pageable, status);
-    }
-
-    @Override
-    public void calcProductStatus(Product product) {
+    public void computeProductStatus(Product product) {
         // At least one mandatory file is VALID
         product.setState(ProductState.ACQUIRING);
 
         if (product.getMetaProduct() == null) {
-            LOG.error("[{}] The meta product of the product {} <{}> should not be null", product.getSession(),
-                      product.getId(), product.getProductName());
+            LOGGER.error("[{}] The meta product of the product {} <{}> should not be null", product.getSession(),
+                         product.getId(), product.getProductName());
             return;
         }
 
@@ -211,19 +187,19 @@ public class ProductService implements IProductService {
 
         if (nbTotalMandatory == nbActualMandatory) {
             // ProductStatus is COMPLETED if mandatory files is acquired
-            product.setStatus(ProductState.COMPLETED);
+            product.setState(ProductState.COMPLETED);
             if (nbTotalOptional == nbActualOptional) {
                 // ProductStatus is FINISHED if mandatory and optional files is acquired
-                product.setStatus(ProductState.FINISHED);
+                product.setState(ProductState.FINISHED);
             }
         }
     }
 
     @Override
     public Product linkAcquisitionFileToProduct(String session, AcquisitionFile acqFile, String productName,
-            MetaProduct metaProduct, String ingestChain) {
+            MetaProduct metaProduct, String ingestChain) throws ModuleException {
         // Get the product if it exists
-        Product currentProduct = this.retrieve(productName);
+        Product currentProduct = retrieve(productName);
 
         if (currentProduct == null) {
             // It is a new Product, create it
@@ -235,8 +211,65 @@ public class ProductService implements IProductService {
         currentProduct.setSession(session);
         currentProduct.setIngestChain(ingestChain);
         currentProduct.addAcquisitionFile(acqFile);
-        this.calcProductStatus(currentProduct);
+        this.computeProductStatus(currentProduct);
 
         return currentProduct;
+    }
+
+    @Override
+    public Page<Product> findProductsToSubmit(String ingestChain, String session) {
+        return productRepository.findByIngestChainAndSessionAndSipState(ingestChain, session,
+                                                                        ProductSIPState.SUBMISSION_SCHEDULED,
+                                                                        new PageRequest(0, bulkRequestLimit));
+    }
+
+    /**
+     * This method is called by a time scheduler. We only schedule a new job for a specified chain and session if and
+     * only if an existing job not already exists. To detect that a job is already scheduled, we check the SIP state of
+     * the products. Product not already scheduled will be scheduled on next scheduler call.
+     */
+    @Override
+    public void scheduleProductSIPSubmission() {
+        // Find all products already scheduled for submission
+        Set<Product> products = productRepository.findBySipState(ProductSIPState.SUBMISSION_SCHEDULED);
+
+        // Register all chains and sessions already scheduled
+        Multimap<String, String> scheduledSessionsByChain = ArrayListMultimap.create();
+        if ((products != null) && !products.isEmpty()) {
+            for (Product product : products) {
+                scheduledSessionsByChain.put(product.getIngestChain(), product.getSession());
+            }
+        }
+
+        // Find all products with available SIPs ready for submission
+        products = productRepository.findBySipState(ProductSIPState.GENERATED);
+
+        if ((products != null) && !products.isEmpty()) {
+
+            Multimap<String, String> sessionsByChain = ArrayListMultimap.create();
+            for (Product product : products) {
+                // Check if chain and session not already scheduled
+                if (!scheduledSessionsByChain.containsEntry(product.getIngestChain(), product.getSession())) {
+                    // Register chains and sessions for scheduling
+                    sessionsByChain.put(product.getIngestChain(), product.getSession());
+                    // Update SIP state
+                    product.setSipState(ProductSIPState.SUBMISSION_SCHEDULED);
+                    save(product);
+                }
+            }
+
+            // Schedule submission jobs
+            for (String ingestChain : sessionsByChain.keySet()) {
+                for (String session : sessionsByChain.get(ingestChain)) {
+                    // Schedule job
+                    Set<JobParameter> jobParameters = Sets.newHashSet();
+                    jobParameters.add(new JobParameter(SIPSubmissionJob.CHAIN_PARAMETER, ingestChain));
+                    jobParameters.add(new JobParameter(SIPSubmissionJob.SESSION_PARAMETER, session));
+                    JobInfo jobInfo = new JobInfo(1, jobParameters, authResolver.getUser(),
+                            SIPSubmissionJob.class.getName());
+                    jobInfoService.createAsQueued(jobInfo);
+                }
+            }
+        }
     }
 }

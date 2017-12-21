@@ -54,6 +54,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
@@ -140,6 +141,13 @@ public class Product implements IIdentifiable<Long> {
 
     @Column(name = "ingest_chain")
     private String ingestChain;
+
+    /**
+     * The unique ingest IP identifier : only available if product SIP has been properly submited to INGEST
+     * microservice.
+     */
+    @Column(name = "ip_id", length = UniformResourceName.MAX_SIZE)
+    private String ipId;
 
     @Override
     public Long getId() {
@@ -271,5 +279,13 @@ public class Product implements IIdentifiable<Long> {
 
     public void setLastUpdate(OffsetDateTime lastUpdate) {
         this.lastUpdate = lastUpdate;
+    }
+
+    public String getIpId() {
+        return ipId;
+    }
+
+    public void setIpId(String ipId) {
+        this.ipId = ipId;
     }
 }
