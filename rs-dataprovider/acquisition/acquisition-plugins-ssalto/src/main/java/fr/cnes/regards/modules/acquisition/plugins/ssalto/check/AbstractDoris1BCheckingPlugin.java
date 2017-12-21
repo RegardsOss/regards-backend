@@ -37,6 +37,9 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
  */
 public abstract class AbstractDoris1BCheckingPlugin implements ICheckFilePlugin {
 
+    /**
+     * The product name
+     */
     protected String productName;
 
     /**

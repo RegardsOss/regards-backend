@@ -38,6 +38,9 @@ import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class Jason2CheckingPlugin implements ICheckFilePlugin {
 
+    /**
+     * Max size for the product name : 128
+     */
     private static final int PRODUCT_NAME_MAX_SIZE = 128;
 
     /**

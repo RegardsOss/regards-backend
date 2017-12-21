@@ -52,6 +52,9 @@ public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJa
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJasonPltm1ProductMetadataPlugin.class);
 
+    /**
+     * The {@link String} RADICAL
+     */
     private static final String RADICAL = "RADICAL";
 
     public AbstractJasonPltm1ProductMetadataPlugin() {

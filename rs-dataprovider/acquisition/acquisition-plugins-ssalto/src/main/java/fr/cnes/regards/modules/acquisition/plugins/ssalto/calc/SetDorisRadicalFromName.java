@@ -26,6 +26,12 @@ import fr.cnes.regards.modules.acquisition.plugins.ICalculationClass;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
 /**
+ * This class aims to extract a radical from a product name.<br>
+ * The product can respects the to patterns:
+ * <li>"^(.*)([a-z]{1})(D|S)([0-9]{8}_[0-9]{6})$"
+ * in this case the radical is the concatenation of the groups 1, 3 and 4 
+ * <li>"^(.*)([a-z]{1})(D|S)([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$"
+ * in this case the radical is the concatenation of the groups 1, 3, 5 and 6 and the delimiter "_"
  * 
  * @author Christophe Mertz
  *

@@ -56,8 +56,14 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJasonDoris10ProductMetadataPlugin.class);
 
+    /**
+     * A {@link Pattern} for "[A-Z]([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternd;
 
+    /**
+     * A {@link Pattern} for "[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternp;
 
     public AbstractJasonDoris10ProductMetadataPlugin() {
@@ -65,7 +71,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
     }
 
     /**
-     * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique
+     * Load the dataset plugin configuration and initialize the patterns based on the file name
      */
     @Override
     public void loadDataSetConfiguration(String dataSetName) throws ModuleException {
@@ -77,7 +83,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
     }
 
     /**
-     * cree les attributs TIME_PERIOD et FILE_CREATION_DATE
+     * TIME_PERIOD and FILE_CREATION_DATE attributes creation
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> pAttributeMap)
@@ -87,9 +93,9 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
     }
 
     /**
-     * Add the START_DATE and the STOP_DATE attributs
-     * @param fileMap
-     * @param attributeMap
+     * Add the START_DATE and the STOP_DATE attributes
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeMap {@link Map} of the {@link Attribute}
      * @throws PluginAcquisitionException
      */
     private void registerTimePeriodAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
@@ -120,9 +126,9 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
     }
 
     /**
-     * Add the CREATION_DATE attribut
-     * @param fileMap
-     * @param attributeMap
+     * Add the CREATION_DATE attribute
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeMap {@link Map} of the {@link Attribute}
      * @throws PluginAcquisitionException
      */
     private void registerFileCreationDateAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
