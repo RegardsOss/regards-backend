@@ -48,6 +48,9 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
     @EntityGraph("graph.metaproduct.complete")
     Product findCompleteByProductName(String productName);
 
+    @EntityGraph("graph.metaproduct.complete")
+    Product findCompleteByIpId(String ipId);
+
     Set<Product> findByStatus(ProductState status);
 
     @Query(value = "select p.* from {h-schema}t_acquisition_product p, {h-schema}t_acquisition_meta_product mp, {h-schema}t_acquisition_chain apc where p.sip_state=?1 and p.product_state in ?2 and p.meta_product_id=mp.id and mp.id=apc.meta_product_id and apc.label=?3",

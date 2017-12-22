@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
+import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
 /**
  *
@@ -146,4 +147,11 @@ public interface IProductService {
      * Retry product SIP submission for resetting product SIP state to {@link ProductSIPState#GENERATED}
      */
     void retryProductSIPSubmission();
+
+    /**
+     * Update a product state
+     * @param ipId ipId of the product
+     * @param sipState new SIP state
+     */
+    void updateProductSIPState(String ipId, ISipState sipState);
 }

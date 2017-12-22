@@ -34,20 +34,19 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.domain.job.SIPEventJobParameter;
 import fr.cnes.regards.modules.acquisition.service.job.PostAcquisitionJob;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
 /**
- * This class is triggered on {@link SIPEvent} receipts 
- * 
+ * This class is triggered on {@link SIPEvent} receipts
+ *
  * @author Christophe Mertz
+ * @author Marc Sordi
  */
 @Component
 public class ProductSipEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(ProductSipEventHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProductSipEventHandler.class);
 
     /**
      * AMQP Message subscriber
@@ -67,19 +66,15 @@ public class ProductSipEventHandler implements ApplicationListener<ApplicationRe
     @Autowired
     private IAuthenticationResolver authResolver;
 
-    /**
-     * {@link JobInfo} service
-     */
     @Autowired
     private IJobInfoService jobInfoService;
 
-    public ProductSipEventHandler() {
-        super();
-    }
+    @Autowired
+    IProductService productService;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        LOG.info("ProductSipEventHandler subscribs to new SIPEvent events");
+        LOGGER.info("ProductSipEventHandler subscribs to new SIPEvent events");
         subscriber.subscribeTo(SIPEvent.class, new ProductSipReadyEventHandler());
     }
 
@@ -89,14 +84,19 @@ public class ProductSipEventHandler implements ApplicationListener<ApplicationRe
         public void handle(TenantWrapper<SIPEvent> wrapper) {
             runtimeTenantResolver.forceTenant(wrapper.getTenant());
             SIPEvent event = wrapper.getContent();
-            LOG.debug("[{}] received event {}", event.getIpId(), event.getState());
+            LOGGER.debug("[{}] received event {}", event.getIpId(), event.getState());
 
-            JobInfo acquisition = new JobInfo();
-            acquisition.setParameters(new SIPEventJobParameter(event));
-            acquisition.setClassName(PostAcquisitionJob.class.getName());
-            acquisition.setOwner(authResolver.getUser());
+            // Update product state
+            productService.updateProductSIPState(event.getIpId(), event.getState());
 
-            acquisition = jobInfoService.createAsQueued(acquisition);
+            // Do post processing if SIP properly stored
+            if (SIPState.STORED.equals(event.getState())) {
+                JobInfo acquisition = new JobInfo();
+                acquisition.setParameters(new SIPEventJobParameter(event));
+                acquisition.setClassName(PostAcquisitionJob.class.getName());
+                acquisition.setOwner(authResolver.getUser());
+                acquisition = jobInfoService.createAsQueued(acquisition);
+            }
         }
     }
 

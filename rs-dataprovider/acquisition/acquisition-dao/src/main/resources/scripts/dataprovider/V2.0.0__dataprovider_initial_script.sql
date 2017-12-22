@@ -100,6 +100,10 @@ alter table
     t_acquisition_product
 add
     constraint uk_acq_product_name unique (product_name);
+alter table
+    t_acquisition_product
+add
+    constraint uk_acq_product_ipId unique (ip_id);
 create sequence seq_chain start 1 increment 50;
 create sequence seq_exec_chain start 1 increment 50;
 create sequence seq_meta_file start 1 increment 50;

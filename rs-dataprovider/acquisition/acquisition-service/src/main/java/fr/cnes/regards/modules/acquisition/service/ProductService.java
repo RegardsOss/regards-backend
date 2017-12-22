@@ -56,6 +56,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
+import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
 /**
  * Manage acquisition {@link Product}
@@ -308,5 +309,11 @@ public class ProductService implements IProductService {
             product.setSipState(ProductSIPState.GENERATED);
             save(product);
         }
+    }
+
+    @Override
+    public void updateProductSIPState(String ipId, ISipState sipState) {
+        Product product = productRepository.findCompleteByIpId(ipId);
+        product.setSipState(sipState);
     }
 }

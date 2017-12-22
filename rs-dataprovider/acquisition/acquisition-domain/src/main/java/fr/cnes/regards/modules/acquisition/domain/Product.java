@@ -69,7 +69,8 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
         indexes = { @Index(name = "idx_acq_product_name", columnList = "product_name"),
                 @Index(name = "idx_acq_ingest_chain", columnList = "ingest_chain"),
                 @Index(name = "idx_acq_product_session", columnList = "session") },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name") })
+        uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name"),
+                @UniqueConstraint(name = "uk_acq_product_ipId", columnNames = "ip_id") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @NamedEntityGraphs({
         @NamedEntityGraph(name = "graph.acquisition.file.complete",
