@@ -81,15 +81,14 @@ public class ScanDirectoryPlugin extends AcquisitionScanPluginHelper implements 
             File dirFile = new File(dirPath);
             // Check if directory exists and is readable
             if (dirFile.exists() && dirFile.isDirectory() && dirFile.canRead()) {
-                addMatchedFile(dirFile, scanDir, filter, metaProduct, metaFile, acqFileList, lastDateActivation);
+                addMatchedFile(dirFile, filter, metaProduct, metaFile, acqFileList, lastDateActivation);
             }
         }
 
     }
 
-    private void addMatchedFile(File dirFile, ScanDirectory scanDir, RegexFilenameFilter filter,
-            MetaProduct metaProduct, MetaFile metaFile, Set<AcquisitionFile> acqFileList,
-            OffsetDateTime lastDateActivation) {
+    private void addMatchedFile(File dirFile, RegexFilenameFilter filter, MetaProduct metaProduct, MetaFile metaFile,
+            Set<AcquisitionFile> acqFileList, OffsetDateTime lastDateActivation) {
 
         List<File> filteredFileList = filteredFileList(dirFile, filter, lastDateActivation);
 
@@ -136,10 +135,10 @@ public class ScanDirectoryPlugin extends AcquisitionScanPluginHelper implements 
                 File[] fileArray = dirFile.listFiles(filter);
 
                 // Add files to list : filter selects only files
-                for (int j = 0; j < fileArray.length; j++) {
-                    //   process_.addWarnToReport(msg);
-                    LOGGER.info("Unexpected file <{}> for the chain <{}>", fileArray[j].getAbsolutePath(), chainLabel);
-                    badFiles.add(fileArray[j]);
+                for (File element : fileArray) {
+                    // process_.addWarnToReport(msg);
+                    LOGGER.info("Unexpected file <{}> for the chain <{}>", element.getAbsolutePath(), chainLabel);
+                    badFiles.add(element);
                 }
             }
         }
