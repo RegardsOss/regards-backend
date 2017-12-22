@@ -76,6 +76,15 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
             Pageable pageable);
 
     /**
+     * @param ingestChain ingest processing chain name
+     * @param session session name
+     * @param sipState {@link ISipState}
+     * @param pageable page limit
+     * @return all products with the above properties
+     */
+    Set<Product> findByIngestChainAndSessionAndSipState(String ingestChain, String session, ISipState sipState);
+
+    /**
      * @param sipState {@link ISipState}
      * @return a set of products with the above properties
      */

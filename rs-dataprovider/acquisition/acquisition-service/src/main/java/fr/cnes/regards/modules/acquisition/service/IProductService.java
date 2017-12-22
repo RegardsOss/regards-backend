@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -135,4 +136,14 @@ public interface IProductService {
      * Schedule {@link SIPSubmissionJob}s according to available SIPs
      */
     void scheduleProductSIPSubmission();
+
+    /**
+     * Handle product SIP submission failure
+     */
+    void handleProductSIPSubmissionFailure(JobEvent jobEvent);
+
+    /**
+     * Retry product SIP submission for resetting product SIP state to {@link ProductSIPState#GENERATED}
+     */
+    void retryProductSIPSubmission();
 }

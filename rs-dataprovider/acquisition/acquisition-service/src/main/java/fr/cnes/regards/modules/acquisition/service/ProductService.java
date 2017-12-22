@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -39,6 +40,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
@@ -271,6 +274,39 @@ public class ProductService implements IProductService {
                     jobInfoService.createAsQueued(jobInfo);
                 }
             }
+        }
+    }
+
+    /**
+     * If {@link SIPSubmissionJob} fails, no job can be run as long as there are products in
+     * {@link ProductSIPState#SUBMISSION_SCHEDULED}. This handler updates product states to
+     * {@link ProductSIPState#SUBMISSION_ERROR}.<br>
+     */
+    @Override
+    public void handleProductSIPSubmissionFailure(JobEvent jobEvent) {
+        if (JobEventType.FAILED.equals(jobEvent.getJobEventType())
+                && SIPSubmissionJob.class.isAssignableFrom(jobEvent.getClass())) {
+            // Load job info
+            JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
+            Map<String, JobParameter> params = jobInfo.getParametersAsMap();
+            String ingestChain = params.get(SIPSubmissionJob.CHAIN_PARAMETER).getValue();
+            String session = params.get(SIPSubmissionJob.SESSION_PARAMETER).getValue();
+            // Update product status
+            Set<Product> products = productRepository
+                    .findByIngestChainAndSessionAndSipState(ingestChain, session, ProductSIPState.SUBMISSION_SCHEDULED);
+            for (Product product : products) {
+                product.setSipState(ProductSIPState.SUBMISSION_ERROR);
+                save(product);
+            }
+        }
+    }
+
+    @Override
+    public void retryProductSIPSubmission() {
+        Set<Product> products = productRepository.findBySipState(ProductSIPState.SUBMISSION_ERROR);
+        for (Product product : products) {
+            product.setSipState(ProductSIPState.GENERATED);
+            save(product);
         }
     }
 }
