@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentif
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -43,7 +44,6 @@ import fr.cnes.regards.modules.acquisition.builder.ExecAcquisitionProcessingChai
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionProcessingChainJobParameter;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 
@@ -292,7 +292,7 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
 
         // Create a ScanJob
         JobInfo acquisition = new JobInfo();
-        acquisition.setParameters(new AcquisitionProcessingChainJobParameter(chain));
+        acquisition.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER, chain));
         acquisition.setClassName(ProductAcquisitionJob.class.getName());
         acquisition.setOwner(authResolver.getUser());
 

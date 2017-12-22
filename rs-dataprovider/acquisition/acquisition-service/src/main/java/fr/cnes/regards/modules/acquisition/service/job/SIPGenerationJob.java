@@ -40,8 +40,6 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
-import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionProcessingChainJobParameter;
-import fr.cnes.regards.modules.acquisition.domain.job.ProductJobParameter;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
@@ -58,6 +56,10 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPGenerationJob.class);
 
+    public static final String CHAIN_PARAMETER = "chain";
+
+    public static final String PRODUCT_NAME = "productName";
+
     @Autowired
     private IProductService productService;
 
@@ -70,6 +72,13 @@ public class SIPGenerationJob extends AbstractJob<Void> {
     private AcquisitionProcessingChain acqProcessingChain;
 
     private String productName;
+
+    @Override
+    public void setParameters(Map<String, JobParameter> parameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
+        acqProcessingChain = getValue(parameters, CHAIN_PARAMETER);
+        productName = getValue(parameters, PRODUCT_NAME);
+    }
 
     @Override
     public void run() {
@@ -120,29 +129,4 @@ public class SIPGenerationJob extends AbstractJob<Void> {
             throw new JobRuntimeException(e.getMessage());
         }
     }
-
-    @Override
-    public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
-        if (parameters.isEmpty()) {
-            throw new JobParameterMissingException("No parameter provided");
-        }
-        if (parameters.size() != 2) {
-            throw new JobParameterInvalidException("Two parameters are expected.");
-        }
-
-        for (JobParameter jp : parameters.values()) {
-            if (AcquisitionProcessingChainJobParameter.isCompatible(jp)) {
-                acqProcessingChain = jp.getValue();
-            } else {
-                if (ProductJobParameter.isCompatible(jp)) {
-                    productName = jp.getValue();
-                } else {
-                    throw new JobParameterInvalidException(
-                            "Please use AcquisitionProcessingChainJobParameter or ProductJobParameter in place of JobParameter");
-                }
-            }
-        }
-    }
-
 }

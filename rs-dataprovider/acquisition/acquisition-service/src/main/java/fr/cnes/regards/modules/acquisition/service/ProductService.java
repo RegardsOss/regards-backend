@@ -50,8 +50,6 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
-import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionProcessingChainJobParameter;
-import fr.cnes.regards.modules.acquisition.domain.job.ProductJobParameter;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
@@ -136,8 +134,8 @@ public class ProductService implements IProductService {
 
         // Schedule job
         JobInfo acquisition = new JobInfo();
-        acquisition.setParameters(new AcquisitionProcessingChainJobParameter(chain),
-                                  new ProductJobParameter(product.getProductName()));
+        acquisition.setParameters(new JobParameter(SIPGenerationJob.CHAIN_PARAMETER, chain),
+                                  new JobParameter(SIPGenerationJob.PRODUCT_NAME, product.getProductName()));
         acquisition.setClassName(SIPGenerationJob.class.getName());
         acquisition.setOwner(authResolver.getUser());
         acquisition = jobInfoService.createAsQueued(acquisition);

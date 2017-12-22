@@ -39,7 +39,6 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
-import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionProcessingChainJobParameter;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.job.step.AcquisitionCheckStep;
@@ -62,6 +61,8 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductAcquisitionJob.class);
 
+    public static final String CHAIN_PARAMETER = "chain";
+
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
@@ -75,6 +76,12 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
      * The current {@link AcquisitionProcessingChain}
      */
     private AcquisitionProcessingChain acqProcessingChain;
+
+    @Override
+    public void setParameters(Map<String, JobParameter> parameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
+        acqProcessingChain = getValue(parameters, CHAIN_PARAMETER);
+    }
 
     @Override
     public void run() {
@@ -108,25 +115,6 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
             LOGGER.error("Business error", pse);
             throw new JobRuntimeException(pse);
         }
-    }
-
-    @Override
-    public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
-        if (parameters.isEmpty()) {
-            throw new JobParameterMissingException("No parameter provided");
-        }
-        if (parameters.size() != 1) {
-            throw new JobParameterInvalidException("Only one parameter is expected.");
-        }
-        JobParameter param = parameters.values().iterator().next();
-        if (!AcquisitionProcessingChainJobParameter.isCompatible(param)) {
-            throw new JobParameterInvalidException(
-                    "Please use ChainGenerationJobParameter in place of JobParameter (this "
-                            + "class is here to facilitate your life so please use it.");
-        }
-
-        acqProcessingChain = param.getValue();
     }
 
     public AcquisitionProcessingChain getAcqProcessingChain() {

@@ -27,7 +27,6 @@ import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterValue;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
 /**
@@ -36,7 +35,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
  * @author Marc Sordi
  *
  */
-@GsonTypeAdapter(adapted = PluginParameterValue.class)
+@GsonTypeAdapter(adapted = ISipState.class)
 public class SipStateAdapter extends TypeAdapter<ISipState> {
 
     @Override

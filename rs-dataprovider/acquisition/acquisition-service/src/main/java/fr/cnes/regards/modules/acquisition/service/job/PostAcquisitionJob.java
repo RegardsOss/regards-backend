@@ -34,7 +34,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeExcepti
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.job.SIPEventJobParameter;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
@@ -54,6 +53,8 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostAcquisitionJob.class);
 
+    public static final String EVENT_PARAMETER = "event";
+
     @Autowired
     private PluginService pluginService;
 
@@ -64,6 +65,12 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
     private IAcquisitionProcessingChainService acqProcessChainService;
 
     private SIPEvent sipEvent;
+
+    @Override
+    public void setParameters(Map<String, JobParameter> parameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
+        sipEvent = getValue(parameters, EVENT_PARAMETER);
+    }
 
     @Override
     public void run() {
@@ -98,25 +105,6 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
         } catch (ModuleException pse) {
             LOGGER.error("Business error", pse);
             throw new JobRuntimeException(pse);
-        }
-    }
-
-    @Override
-    public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
-        if (parameters.isEmpty()) {
-            throw new JobParameterMissingException("No parameter provided");
-        }
-        if (parameters.size() != 1) {
-            throw new JobParameterInvalidException("One parameter is expected");
-        }
-
-        for (JobParameter jp : parameters.values()) {
-            if (SIPEventJobParameter.isCompatible(jp)) {
-                sipEvent = jp.getValue();
-            } else {
-                throw new JobParameterInvalidException("Please use SIPEventJobParameter in place of JobParameter");
-            }
         }
     }
 
