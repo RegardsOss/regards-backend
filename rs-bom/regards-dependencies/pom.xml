@@ -1245,6 +1245,11 @@
                 <version>${authentication.bootstrap.version}</version>
             </dependency>
             <dependency>
+                <groupId>fr.cnes.regards.microservices.dataprovider</groupId>
+                <artifactId>bootstrap-dataprovider</artifactId>
+                <version>${dataprovider.bootstrap.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.logback-extensions</groupId>
                 <artifactId>logback-ext-spring</artifactId>
                 <version>${logback-ext-spring.version}</version>
