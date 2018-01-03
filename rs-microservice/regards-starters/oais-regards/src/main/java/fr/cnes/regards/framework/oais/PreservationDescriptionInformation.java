@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
 
 /**
  *
@@ -41,7 +42,7 @@ public class PreservationDescriptionInformation {
      * Should contains the tags too as a "special" key
      */
     @NotNull
-    private final Map<String, Object> contextInformation = new HashMap<>();
+    private final InformationPackageMap contextInformation = new InformationPackageMap();
 
     @NotNull
     private final Map<String, String> referenceInformation = new HashMap<>();
@@ -50,7 +51,7 @@ public class PreservationDescriptionInformation {
     private final ProvenanceInformation provenanceInformation = new ProvenanceInformation();
 
     @NotNull
-    private final Map<String, Object> fixityInformation = new HashMap<>();
+    private final InformationPackageMap fixityInformation = new InformationPackageMap();
 
     @NotNull
     private final AccessRightInformation accessRightInformation = new AccessRightInformation();

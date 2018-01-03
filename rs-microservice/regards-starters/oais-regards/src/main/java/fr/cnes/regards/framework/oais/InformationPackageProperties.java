@@ -9,6 +9,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
 
 /**
  * Information package main structure
@@ -34,7 +35,7 @@ public class InformationPackageProperties {
     /**
      * The descriptive information
      */
-    private Map<String, Object> descriptiveInformation;
+    private InformationPackageMap descriptiveInformation;
 
     /**
      * @return the content information
@@ -66,7 +67,7 @@ public class InformationPackageProperties {
      */
     public Map<String, Object> getDescriptiveInformation() {
         if (descriptiveInformation == null) {
-            descriptiveInformation = Maps.newHashMap();
+            descriptiveInformation = new InformationPackageMap();
         }
         return descriptiveInformation;
     }
