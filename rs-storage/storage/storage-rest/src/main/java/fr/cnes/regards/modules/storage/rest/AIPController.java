@@ -192,11 +192,13 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(method = RequestMethod.GET, path = INDEXING_PATH)
     @ResponseBody
     @ResourceAccess(description = "send a page of aips with indexing information on associated files")
-    public ResponseEntity<Page<AipDataFiles>> retrieveAipDataFiles(@RequestParam(name = "state") AIPState state,
+    public ResponseEntity<PagedResources<AipDataFiles>> retrieveAipDataFiles(@RequestParam(name = "state") AIPState state,
             @RequestParam("tags") Set<String> tags,
             @RequestParam(name = "last_update", required = false) OffsetDateTime fromLastUpdateDate,
             final Pageable pageable) {
-        Page<AipDataFiles> aipDataFiles = aipService.retrieveAipDataFiles(state, tags, fromLastUpdateDate, pageable);
+        Page<AipDataFiles> page = aipService.retrieveAipDataFiles(state, tags, fromLastUpdateDate, pageable);
+        // small hack to be used thanks to GSON which does not know how to deserialize Page or PageImpl
+        PagedResources<AipDataFiles> aipDataFiles = new PagedResources<>(page.getContent(), new PagedResources.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages()));
         return new ResponseEntity<>(aipDataFiles, HttpStatus.OK);
     }
 
