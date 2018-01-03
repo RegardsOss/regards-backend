@@ -132,4 +132,108 @@ public class ParamTestPlugin implements IParamTestPlugin {
         }
     }
 
+    public String getpString() {
+        return pString;
+    }
+
+    public void setpString(String pString) {
+        this.pString = pString;
+    }
+
+    public Byte getpByte() {
+        return pByte;
+    }
+
+    public void setpByte(Byte pByte) {
+        this.pByte = pByte;
+    }
+
+    public Short getpShort() {
+        return pShort;
+    }
+
+    public void setpShort(Short pShort) {
+        this.pShort = pShort;
+    }
+
+    public Integer getpInteger() {
+        return pInteger;
+    }
+
+    public void setpInteger(Integer pInteger) {
+        this.pInteger = pInteger;
+    }
+
+    public Long getpLong() {
+        return pLong;
+    }
+
+    public void setpLong(Long pLong) {
+        this.pLong = pLong;
+    }
+
+    public Float getpFloat() {
+        return pFloat;
+    }
+
+    public void setpFloat(Float pFloat) {
+        this.pFloat = pFloat;
+    }
+
+    public Double getpDouble() {
+        return pDouble;
+    }
+
+    public void setpDouble(Double pDouble) {
+        this.pDouble = pDouble;
+    }
+
+    public Boolean getpBoolean() {
+        return pBoolean;
+    }
+
+    public void setpBoolean(Boolean pBoolean) {
+        this.pBoolean = pBoolean;
+    }
+
+    public List<String> getsList() {
+        return sList;
+    }
+
+    public void setsList(List<String> sList) {
+        this.sList = sList;
+    }
+
+    public Map<String, String> getSsMap() {
+        return ssMap;
+    }
+
+    public void setSsMap(Map<String, String> ssMap) {
+        this.ssMap = ssMap;
+    }
+
+    public Pojo getPojo() {
+        return pojo;
+    }
+
+    public void setPojo(Pojo pojo) {
+        this.pojo = pojo;
+    }
+
+    public Constraints getConstraints() {
+        return constraints;
+    }
+
+    public void setConstraints(Constraints constraints) {
+        this.constraints = constraints;
+    }
+
+    public Map<String, Constraint> getScMap() {
+        return scMap;
+    }
+
+    public void setScMap(Map<String, Constraint> scMap) {
+        this.scMap = scMap;
+    }
+
 }

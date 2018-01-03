@@ -92,7 +92,8 @@ public class PluginParameter implements IIdentifiable<Long> {
     @ElementCollection
     @CollectionTable(name = "t_plugin_param_dyn_value", joinColumns = @JoinColumn(name = "id"),
             foreignKey = @ForeignKey(name = "fk_plugin_param_dyn_value_param_id"))
-    private Set<PluginDynamicValue> dynamicsValues = new HashSet<>();
+    @Column(name = "value")
+    private Set<PluginParameterValue> dynamicsValues = new HashSet<>();
 
     /**
      * Needed for deserialization
@@ -150,7 +151,7 @@ public class PluginParameter implements IIdentifiable<Long> {
         pluginConfiguration = pPluginConfiguration;
     }
 
-    public Set<PluginDynamicValue> getDynamicsValues() {
+    public Set<PluginParameterValue> getDynamicsValues() {
         return dynamicsValues;
     }
 
@@ -162,7 +163,23 @@ public class PluginParameter implements IIdentifiable<Long> {
         return result;
     }
 
-    public void setDynamicsValues(Set<PluginDynamicValue> pDynamicValues) {
+    public boolean isValidDynamicValue(String value) {
+        boolean result = false;
+        if ((dynamicsValues == null) || dynamicsValues.isEmpty()) {
+            // No restriction
+            return true;
+        } else {
+            for (PluginParameterValue dyn : dynamicsValues) {
+                if (dyn.getValue().equals(value)) {
+                    return true;
+                }
+
+            }
+        }
+        return result;
+    }
+
+    public void setDynamicsValues(Set<PluginParameterValue> pDynamicValues) {
         dynamicsValues = pDynamicValues;
     }
 

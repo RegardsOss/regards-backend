@@ -30,6 +30,8 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 
 /**
  * Test plugin controller
@@ -62,5 +64,44 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         resolver.forceTenant(DEFAULT_TENANT);
         IParamTestPlugin plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class);
         Assert.assertNotNull(plugin);
+
+        // With dynamic parameter
+        String dynValue = "toto";
+        PluginParametersFactory dynParametersFactory = PluginParametersFactory.build().addDynamicParameter("pString",
+                                                                                                           dynValue);
+        plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class, dynParametersFactory.asArray());
+        Assert.assertNotNull(plugin);
+
+        if (plugin instanceof ParamTestPlugin) {
+            ParamTestPlugin p = (ParamTestPlugin) plugin;
+            Assert.assertEquals(p.getpString(), dynValue);
+        } else {
+            Assert.fail();
+        }
+
+        // With bad dynamic parameter
+        dynParametersFactory = PluginParametersFactory.build().addDynamicParameter("pString", "fake");
+        boolean unexpectedValue = false;
+        try {
+            plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class, dynParametersFactory.asArray());
+        } catch (PluginUtilsRuntimeException e) {
+            unexpectedValue = true;
+        }
+        Assert.assertTrue(unexpectedValue);
+
+        // With integer dynamic parameter
+        Integer dynInt = 10;
+        dynParametersFactory = PluginParametersFactory.build().addDynamicParameter("pString", dynValue)
+                .addDynamicParameter("pInteger", dynInt);
+        plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class, dynParametersFactory.asArray());
+        Assert.assertNotNull(plugin);
+        if (plugin instanceof ParamTestPlugin) {
+            ParamTestPlugin p = (ParamTestPlugin) plugin;
+            Assert.assertEquals(p.getpString(), dynValue);
+            Assert.assertEquals(p.getpInteger(), dynInt);
+        } else {
+            Assert.fail();
+        }
+
     }
 }
