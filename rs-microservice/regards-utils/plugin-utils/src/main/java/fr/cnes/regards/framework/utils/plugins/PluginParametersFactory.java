@@ -90,8 +90,9 @@ public class PluginParametersFactory {
      * @param parameter parameter to update
      * @param value value to normalize
      */
-    public static void updateParameter(PluginParameter parameter, Object value) {
+    public static PluginParameter updateParameter(PluginParameter parameter, Object value) {
         parameter.setValue(normalize(value));
+        return parameter;
     }
 
     /**

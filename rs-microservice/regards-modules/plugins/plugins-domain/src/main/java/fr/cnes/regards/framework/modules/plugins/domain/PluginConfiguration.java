@@ -54,14 +54,12 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * Plugin configuration contains a unique Id, plugin meta-data and parameters.
- *
  * @author cmertz
  * @author oroussel
  */
 @Entity
-@Table(name = "t_plugin_configuration",
-        indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
-                @Index(name = "idx_plugin_configuration_label", columnList = "label") },
+@Table(name = "t_plugin_configuration", indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
+        @Index(name = "idx_plugin_configuration_label", columnList = "label") },
         uniqueConstraints = @UniqueConstraint(name = "uk_plugin_configuration_label", columnNames = { "label" }))
 @SequenceGenerator(name = "pluginConfSequence", initialValue = 1, sequenceName = "seq_plugin_conf")
 public class PluginConfiguration implements IIdentifiable<Long> {
@@ -116,7 +114,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * The plugin configuration is active.
      */
-    private Boolean active;
+    private Boolean active = true;
 
     /**
      * The plugin class name
@@ -157,61 +155,51 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * A constructor with {@link PluginMetaData}.
-     *
-     * @param pPluginMetaData the plugin's metadata
-     * @param pLabel the label
+     * @param metaData the plugin's metadata
+     * @param label the label
      */
-    public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel) {
-        this(pPluginMetaData, pLabel, Lists.newArrayList(), 0);
+    public PluginConfiguration(PluginMetaData metaData, String label) {
+        this(metaData, label, Lists.newArrayList(), 0);
     }
 
     /**
      * A constructor with {@link PluginMetaData} and list of {@link PluginParameter}.
-     *
-     * @param pPluginMetaData the plugin's metadata
-     * @param pLabel the label
-     * @param pParameters the list of parameters
+     * @param metaData the plugin's metadata
+     * @param label the label
+     * @param parameters the list of parameters
      */
-    public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel,
-            final List<PluginParameter> pParameters) {
-        this(pPluginMetaData, pLabel, pParameters, 0);
+    public PluginConfiguration(PluginMetaData metaData, String label, List<PluginParameter> parameters) {
+        this(metaData, label, parameters, 0);
     }
 
     /**
      * A constructor with {@link PluginMetaData} and list of {@link PluginParameter}.
-     *
-     * @param pPluginMetaData the plugin's metadata
-     * @param pLabel the label
-     * @param pParameters the list of parameters
-     * @param pOrder the order
+     * @param metaData the plugin's metadata
+     * @param label the label
+     * @param parameters the list of parameters
+     * @param order the order
      */
-    public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel,
-            final List<PluginParameter> pParameters, final int pOrder) {
+    public PluginConfiguration(PluginMetaData metaData, String label, List<PluginParameter> parameters, int order) {
         super();
-        pluginId = pPluginMetaData.getPluginId();
-        version = pPluginMetaData.getVersion();
-        pluginClassName = pPluginMetaData.getPluginClassName();
-        interfaceNames = Sets.newHashSet(pPluginMetaData.getInterfaceNames());
-        parameters = pParameters;
-        priorityOrder = pOrder;
-        label = pLabel;
+        this.setMetaData(metaData);
+        this.parameters = parameters;
+        priorityOrder = order;
+        this.label = label;
         active = Boolean.TRUE;
     }
 
     /**
      * A constructor with {@link PluginMetaData}.
-     *
      * @param pPluginMetaData the plugin's metadata
      * @param pLabel the label
      * @param pOrder the order
      */
-    public PluginConfiguration(final PluginMetaData pPluginMetaData, final String pLabel, final int pOrder) {
+    public PluginConfiguration(PluginMetaData pPluginMetaData, String pLabel, int pOrder) {
         this(pPluginMetaData, pLabel, Lists.newArrayList(), pOrder);
     }
 
     /**
      * Constructor initializing a new plugin configuration from an other one
-     * @param other
      */
     public PluginConfiguration(PluginConfiguration other) {
         active = other.active;
@@ -226,9 +214,15 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         iconUrl = other.iconUrl;
     }
 
+    public void setMetaData(PluginMetaData pluginMetaData) {
+        pluginId = pluginMetaData.getPluginId();
+        version = pluginMetaData.getVersion();
+        pluginClassName = pluginMetaData.getPluginClassName();
+        interfaceNames = Sets.newHashSet(pluginMetaData.getInterfaceNames());
+    }
+
     /**
      * Return the value of a specific parameter
-     *
      * @param pParameterName the parameter to get the value
      * @return the value of the parameter
      */
@@ -270,7 +264,6 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * Return the {@link PluginParameter} of a specific parameter
-     *
      * @param pParameterName the parameter to get the value
      * @return the {@link PluginParameter}
      */
@@ -288,7 +281,6 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * Return the value of a specific parameter {@link PluginConfiguration}
-     *
      * @param pParameterName the parameter to get the value
      * @return the value of the parameter
      */
@@ -309,15 +301,15 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public void logParams() {
         LOGGER.info("===> parameters <===");
-        LOGGER.info("  ---> number of dynamic parameters : "
-                + getParameters().stream().filter(p -> p.isDynamic()).count());
+        LOGGER.info(
+                "  ---> number of dynamic parameters : " + getParameters().stream().filter(p -> p.isDynamic()).count());
 
         getParameters().stream().filter(p -> p.isDynamic()).forEach(p -> {
             logParam(p, "  ---> dynamic parameter : ");
         });
 
-        LOGGER.info("  ---> number of no dynamic parameters : "
-                + getParameters().stream().filter(p -> !p.isDynamic()).count());
+        LOGGER.info("  ---> number of no dynamic parameters : " + getParameters().stream().filter(p -> !p.isDynamic())
+                .count());
         getParameters().stream().filter(p -> !p.isDynamic()).forEach(p -> {
             logParam(p, "  ---> parameter : ");
         });
@@ -325,7 +317,6 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * Log a {@link PluginParameter}.
-     *
      * @param pParam the {@link PluginParameter} to log
      * @param pPrefix a prefix to set in the log
      */
@@ -350,7 +341,6 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * This setter <b>must</b> only be used while TESTING
-     * @param pVersion
      */
     public final void setVersion(String pVersion) {
         version = pVersion;
@@ -388,6 +378,10 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         active = pIsActive;
     }
 
+    public void setPluginClassName(String pluginClassName) {
+        this.pluginClassName = pluginClassName;
+    }
+
     public String getPluginClassName() {
         return pluginClassName;
     }
@@ -401,7 +395,6 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * Set the interface names
-     * @param pInterfaceNames
      */
     public void setInterfaceNames(Set<String> pInterfaceNames) {
         interfaceNames = pInterfaceNames;

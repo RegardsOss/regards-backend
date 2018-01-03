@@ -155,7 +155,7 @@ public interface IPluginService {
      * @return a specific configuration
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
      */
-    PluginConfiguration getPluginConfiguration(Long id) throws ModuleException;
+    PluginConfiguration getPluginConfiguration(Long id) throws EntityNotFoundException;
 
     /**
      * Load a PluginConfiguration with all its relations

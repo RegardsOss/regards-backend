@@ -211,7 +211,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public PluginConfiguration getPluginConfiguration(final Long id) throws ModuleException {
+    public PluginConfiguration getPluginConfiguration(final Long id) throws EntityNotFoundException {
         PluginConfiguration plgConf = pluginConfRepository.findOne(id);
         if (plgConf == null) {
             LOGGER.error(String.format("Error while getting the plugin configuration <%s>.", id));
