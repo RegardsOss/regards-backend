@@ -33,6 +33,9 @@ public class InformationPackageMapTypeAdapter extends TypeAdapter<InformationPac
 
     private static final Logger LOG = LoggerFactory.getLogger(InformationPackageMapTypeAdapter.class);
 
+    /**
+     * {@link Gson} instance
+     */
     private Gson gson;
 
     private ApplicationContext applicationContext;
