@@ -31,6 +31,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
@@ -49,7 +50,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  */
-@Entity(name = "t_notification")
+@Entity
+@Table(name = "t_notification")
 @SequenceGenerator(name = "notificationSequence", initialValue = 1, sequenceName = "seq_notification")
 public class Notification implements IIdentifiable<Long> {
 
