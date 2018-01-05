@@ -811,6 +811,11 @@
                 <artifactId>acquisition-service</artifactId> 
                 <version>${fr.cnes.regards.modules.dataprovider.version}</version> 
             </dependency> 
+            <dependency> 
+                <groupId>fr.cnes.regards.modules</groupId> 
+                <artifactId>acquisition-plugins-ssalto</artifactId> 
+                <version>${fr.cnes.regards.modules.dataprovider.version}</version> 
+            </dependency> 
             <!-- Data Access -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.dataaccess</groupId>
