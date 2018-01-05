@@ -178,6 +178,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         }
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
     @EventListener
     public void processEvent(TenantConnectionReady event) {
         initCacheFileSystem(event.getTenant());
