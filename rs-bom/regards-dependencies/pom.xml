@@ -1106,6 +1106,11 @@
                 <version>${org.elasticsearch.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.elasticsearch.client</groupId>
+                <artifactId>transport</artifactId>
+                <version>${org.elasticsearch.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-buffer</artifactId>
                 <version>${io.netty.version}</version>
