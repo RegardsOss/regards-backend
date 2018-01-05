@@ -25,10 +25,13 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
+ * Target.MICROSERVICE because CATALOG must not receive events from DAM BUT ALL instances of CATALOG MUST receive
+ * events. <br/>
+ * WorkerMode.BROADCAST because ALL handlers of CATALOG must receive events.
  * @author Sylvain Vissiere-Guerinet
  * @author oroussel
  */
-@Event(target = Target.ALL)
+@Event(target = Target.MICROSERVICE)
 public class BroadcastPluginConfEvent extends AbstractPluginConfEvent implements ISubscribable {
 
     public BroadcastPluginConfEvent(Long pPluginConfId, PluginServiceAction pAction, Set<String> pPluginTypes) {

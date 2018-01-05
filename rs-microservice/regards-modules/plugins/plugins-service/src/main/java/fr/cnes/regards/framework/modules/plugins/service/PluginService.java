@@ -203,8 +203,8 @@ public class PluginService implements IPluginService {
         if (shouldPublishCreation) {
             publisher.publish(new BroadcastPluginConfEvent(newConf.getId(), PluginServiceAction.CREATE,
                                                            newConf.getInterfaceNames()));
-            publisher.publish(new PluginConfEvent(newConf.getId(),
-                                                  PluginServiceAction.CREATE, newConf.getInterfaceNames()));
+            publisher.publish(
+                    new PluginConfEvent(newConf.getId(), PluginServiceAction.CREATE, newConf.getInterfaceNames()));
 
         }
         return newConf;
@@ -243,25 +243,24 @@ public class PluginService implements IPluginService {
             throw new EntityNotFoundException(pPluginConf.getId().toString(), PluginConfiguration.class);
         }
         final boolean oldConfActive = oldConf.isActive();
-        final PluginConfiguration newPluginConfiguration = savePluginConfiguration(pPluginConf);
+        final PluginConfiguration newConf = savePluginConfiguration(pPluginConf);
 
-        if (oldConfActive != newPluginConfiguration.isActive()) {
-            if (newPluginConfiguration.isActive()) {
-                publisher.publish(new BroadcastPluginConfEvent(pPluginConf.getId(), PluginServiceAction.ACTIVATE,
-                                                               newPluginConfiguration.getInterfaceNames()));
-                publisher.publish(new PluginConfEvent(pPluginConf.getId(), PluginServiceAction.ACTIVATE,
-                                                      newPluginConfiguration.getInterfaceNames()));
-            } else {
-                publisher.publish(new BroadcastPluginConfEvent(pPluginConf.getId(), PluginServiceAction.DISABLE,
-                                                               newPluginConfiguration.getInterfaceNames()));
-            }
+        if (oldConfActive != newConf.isActive()) {
+            // For CATALOG
+            publisher.publish(new BroadcastPluginConfEvent(pPluginConf.getId(), newConf.isActive() ?
+                    PluginServiceAction.ACTIVATE :
+                    PluginServiceAction.DISABLE, newConf.getInterfaceNames()));
+            // For DAM
+            publisher.publish(new PluginConfEvent(pPluginConf.getId(), newConf.isActive() ?
+                    PluginServiceAction.ACTIVATE :
+                    PluginServiceAction.DISABLE, newConf.getInterfaceNames()));
         }
         /**
          * Remove the PluginConfiguratin from the map
          */
         cleanPluginCache(pPluginConf.getId());
 
-        return newPluginConfiguration;
+        return newConf;
     }
 
     @Override
@@ -300,8 +299,8 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public <T> T getFirstPluginByType(final Class<?> pInterfacePluginType, final PluginParameter... dynamicPluginParameters)
-            throws ModuleException {
+    public <T> T getFirstPluginByType(final Class<?> pInterfacePluginType,
+            final PluginParameter... dynamicPluginParameters) throws ModuleException {
 
         // Get pluginMap configuration for given type
         final List<PluginConfiguration> confs = getPluginConfigurationsByType(pInterfacePluginType);
@@ -332,7 +331,6 @@ public class PluginService implements IPluginService {
 
     /**
      * We consider only plugin without dynamic parameters so we can profit from the cache system.
-     *
      * @return whether a plugin conf, without dynamic parameters is instanciable or not
      * @throws ModuleException when no plugin configuration with this id exists
      */
@@ -347,7 +345,6 @@ public class PluginService implements IPluginService {
             return false;
         }
     }
-
 
     @SuppressWarnings("unchecked")
     @Override
