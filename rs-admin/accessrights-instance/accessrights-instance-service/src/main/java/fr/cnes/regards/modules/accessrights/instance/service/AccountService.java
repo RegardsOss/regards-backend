@@ -299,6 +299,9 @@ public class AccountService implements IAccountService {
 
     @Override
     public boolean validPassword(final String pPassword) {
+        if(pPassword == null) {
+            return false;
+        }
         final Pattern p = Pattern.compile(passwordRegex);
         return p.matcher(pPassword).matches();
     }
