@@ -32,6 +32,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -111,7 +112,7 @@ public class JobService implements IJobService {
     @Override
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        subscriber.subscribeTo(StopJobEvent.class, this::handleStopEvent);
+        subscriber.subscribeTo(StopJobEvent.class, new StopJobHandler());
     }
 
     @Override
@@ -127,10 +128,8 @@ public class JobService implements IJobService {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
-                        LOGGER.error(
-                                "Thread sleep has been interrupted, looks like it's the beginning of the end, pray "
-                                        + "for your soul",
-                                e);
+                        LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
+                                   + "of the end, pray for your soul", e);
                     }
                 }
                 // Find highest priority job to execute
@@ -229,10 +228,14 @@ public class JobService implements IJobService {
         publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
     }
 
-    private void handleStopEvent(TenantWrapper<StopJobEvent> wrapper) {
-        if (wrapper.getContent() != null) {
-            runtimeTenantResolver.forceTenant(wrapper.getTenant());
-            JobService.this.abort(wrapper.getContent().getJobId());
+    private class StopJobHandler implements IHandler<StopJobEvent> {
+
+        @Override
+        public void handle(TenantWrapper<StopJobEvent> wrapper) {
+            if (wrapper.getContent() != null) {
+                runtimeTenantResolver.forceTenant(wrapper.getTenant());
+                JobService.this.abort(wrapper.getContent().getJobId());
+            }
         }
     }
 
