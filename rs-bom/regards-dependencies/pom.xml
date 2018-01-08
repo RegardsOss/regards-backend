@@ -81,6 +81,7 @@
         <storage.bootstrap.version>2.0.0-SNAPSHOT</storage.bootstrap.version>
         <dataprovider.bootstrap.version>2.0.0-SNAPSHOT</dataprovider.bootstrap.version> 
         <order.bootstrap.version>2.0.0-SNAPSHOT</order.bootstrap.version> 
+        <ingest.bootstrap.version>2.0.0-SNAPSHOT</ingest.bootstrap.version> 
         <frontend.bootstrap.version>2.0.0-SNAPSHOT</frontend.bootstrap.version>
 
         <!-- Tests -->
@@ -1261,11 +1262,15 @@
                 <version>${order.bootstrap.version}</version>
             </dependency>
             <dependency>
+                <groupId>fr.cnes.regards.microservices.ingest</groupId>
+                <artifactId>bootstrap-ingest</artifactId>
+                <version>${ingest.bootstrap.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.logback-extensions</groupId>
                 <artifactId>logback-ext-spring</artifactId>
                 <version>${logback-ext-spring.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>fr.cnes.regards.deployment</groupId>
                 <artifactId>custom-components</artifactId>
