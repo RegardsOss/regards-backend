@@ -80,6 +80,7 @@
         <accessproject.bootstrap.version>2.0.0-SNAPSHOT</accessproject.bootstrap.version>
         <storage.bootstrap.version>2.0.0-SNAPSHOT</storage.bootstrap.version>
         <dataprovider.bootstrap.version>2.0.0-SNAPSHOT</dataprovider.bootstrap.version> 
+        <order.bootstrap.version>2.0.0-SNAPSHOT</order.bootstrap.version> 
         <frontend.bootstrap.version>2.0.0-SNAPSHOT</frontend.bootstrap.version>
 
         <!-- Tests -->
@@ -1253,6 +1254,11 @@
                 <groupId>fr.cnes.regards.microservices.dataprovider</groupId>
                 <artifactId>bootstrap-dataprovider</artifactId>
                 <version>${dataprovider.bootstrap.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.microservices.order</groupId>
+                <artifactId>bootstrap-order</artifactId>
+                <version>${order.bootstrap.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.logback-extensions</groupId>
