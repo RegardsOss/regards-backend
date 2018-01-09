@@ -23,9 +23,9 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 /**
  * @author oroussel
  */
-public class CannotResumeOrderException extends ModuleException {
+public class CannotPauseOrderException extends ModuleException {
 
-    public CannotResumeOrderException(String cause) {
-        super(cause);
+    public CannotPauseOrderException() {
+        super("ORDER_MUST_BE_PENDING_OR_RUNNING");
     }
 }

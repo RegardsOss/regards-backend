@@ -79,6 +79,7 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
 import fr.cnes.regards.modules.order.metalink.schema.FileType;
@@ -335,8 +336,12 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void pause(Long id) {
+    public void pause(Long id) throws CannotPauseOrderException {
         Order order = repos.findCompleteById(id);
+        // Only a pending or running order can be paused
+        if ((order.getStatus() != OrderStatus.PENDING) && (order.getStatus() != OrderStatus.RUNNING)) {
+            throw new CannotPauseOrderException();
+        }
         // Ask for all jobInfos abortion
         order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream()).map(FilesTask::getJobInfo)
                 .forEach(jobInfo -> jobInfoService.stopJob(jobInfo.getId()));
@@ -347,10 +352,13 @@ public class OrderService implements IOrderService {
     @Override
     public void resume(Long id) throws CannotResumeOrderException {
         Order order = repos.findCompleteById(id);
+        if (order.getStatus() != OrderStatus.PAUSED) {
+            throw new CannotResumeOrderException("ONLY_PAUSED_ORDER_CAN_BE_RESUMED");
+        }
         // Look at all associated JobInfos : they must be at a paused compatible status
         boolean inPause = orderEffectivelyInPause(order);
         if (!inPause) {
-            throw new CannotResumeOrderException();
+            throw new CannotResumeOrderException("ORDER_NOT_COMPLETELY_PAUSED");
         }
         // Passes all ABORTED jobInfo to PENDING
         order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream()).map(FilesTask::getJobInfo)
@@ -392,9 +400,14 @@ public class OrderService implements IOrderService {
         Order order = repos.findCompleteById(id);
         switch (order.getStatus()) {
             case PENDING: // not yet run
-                self.pause(order.getId());
+                try {
+                    self.pause(order.getId());
+                } catch (CannotPauseOrderException e) {
+                    // Cannot occur because order has pending state
+                    throw new RuntimeException(e); // NOSONAR
+                }
                 if (!this.orderEffectivelyInPause(order)) {
-                    // Too late !!! order just quits PENDING status
+                    // Too late !!! order finally wasn't in PENDING state when asked to be paused
                     throw new CannotRemoveOrderException();
                 }
                 // No break (deliberately) => Java for dumb
@@ -405,10 +418,11 @@ public class OrderService implements IOrderService {
                 // Don't forget no relation is hardly mapped between OrderDataFile and Order
                 dataFileService.removeAll(order.getId());
                 break;
-            case DELETED: // data files have already been removed
+            case DELETED:
+            case EXPIRED:
+                // data files have already been removed so it only remains order to be removed
                 break;
             default:
-                // EXPIRED is a temporary state, order is immediately deleted after have been set to EXPIRED
                 // RUNNING needs a pause before being removed
                 // REMOVED is a final state (order no more exists, this state is unreachable)
                 throw new CannotRemoveOrderException();
@@ -680,8 +694,9 @@ public class OrderService implements IOrderService {
     // transaction is used each time loadComplete is called (I think it is due to Hibernate Flush mode set a NEVER
     // specified by Spring so it is cached in first level)
     public void cleanExpiredOrder(Order order) {
-        // Pause
-        self.pause(order.getId());
+        // Ask for all jobInfos abortion (don't call self.pause() because of status, order must stay EXPIRED)
+        order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream()).map(FilesTask::getJobInfo)
+                .forEach(jobInfo -> jobInfoService.stopJob(jobInfo.getId()));
 
         // Wait for its complete stop
         order = self.loadComplete(order.getId());
@@ -693,11 +708,9 @@ public class OrderService implements IOrderService {
             }
             order = self.loadComplete(order.getId());
         }
-        // Delete
-        try {
-            self.delete(order.getId());
-        } catch (CannotDeleteOrderException e) {
-            throw new RuntimeException(e); // NOSONAR
-        }
+        // Delete all its data files
+        // Don't forget no relation is hardly mapped between OrderDataFile and Order
+        dataFileService.removeAll(order.getId());
+        // Order is already at EXPIRED state so let it be
     }
 }

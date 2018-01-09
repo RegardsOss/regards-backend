@@ -18,6 +18,7 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotWaitForEffectivePauseException;
@@ -58,7 +59,7 @@ public interface IOrderService {
     /**
      * Pause an order (status is immediately updated but it's an async task)
      */
-    void pause(Long id);
+    void pause(Long id) throws CannotPauseOrderException;
 
     /**
      * Resume a paused order.
