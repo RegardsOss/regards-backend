@@ -380,7 +380,7 @@ public class OrderService implements IOrderService {
     }
 
     /**
-     * Test if order is truely in pause (ie all its jobs are not run)
+     * Test if order is truely in pause (ie none of its jobs is running)
      */
     private boolean orderEffectivelyInPause(Order order) {
         return order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
@@ -390,8 +390,28 @@ public class OrderService implements IOrderService {
     @Override
     public void remove(Long id) throws CannotRemoveOrderException {
         Order order = repos.findCompleteById(id);
-        if (order.getStatus() != OrderStatus.DELETED) {
-            throw new CannotRemoveOrderException();
+        switch (order.getStatus()) {
+            case PENDING: // not yet run
+                self.pause(order.getId());
+                if (!this.orderEffectivelyInPause(order)) {
+                    // Too late !!! order just quits PENDING status
+                    throw new CannotRemoveOrderException();
+                }
+                // No break (deliberately) => Java for dumb
+            case DONE:
+            case DONE_WITH_WARNING:
+            case FAILED:
+            case PAUSED:
+                // Don't forget no relation is hardly mapped between OrderDataFile and Order
+                dataFileService.removeAll(order.getId());
+                break;
+            case DELETED: // data files have already been removed
+                break;
+            default:
+                // EXPIRED is a temporary state, order is immediately deleted after have been set to EXPIRED
+                // RUNNING needs a pause before being removed
+                // REMOVED is a final state (order no more exists, this state is unreachable)
+                throw new CannotRemoveOrderException();
         }
         repos.delete(order.getId());
     }
@@ -663,6 +683,7 @@ public class OrderService implements IOrderService {
         // Pause
         self.pause(order.getId());
 
+        // Wait for its complete stop
         order = self.loadComplete(order.getId());
         while (!orderEffectivelyInPause(order)) {
             try {

@@ -25,6 +25,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  */
 public class CannotRemoveOrderException extends ModuleException {
     public CannotRemoveOrderException() {
-        super("ORDER_MUST_BE_DELETED");
+        super("ORDER_MUST_NOT_BE_RUNNING");
     }
 }

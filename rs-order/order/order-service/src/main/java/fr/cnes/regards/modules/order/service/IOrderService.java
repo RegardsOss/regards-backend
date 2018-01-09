@@ -74,8 +74,7 @@ public interface IOrderService {
     void delete(Long id) throws CannotDeleteOrderException;
 
     /**
-     * Remove completely an order. Current order status must be DELETED, All associated jobs must be compatible with a
-     * PAUSED status (not running nor planned to be run)
+     * Remove completely an order. Current order must not be RUNNING,
      */
     void remove(Long id) throws CannotRemoveOrderException;
 
