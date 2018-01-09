@@ -44,7 +44,6 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -71,7 +70,7 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
  * @author Sylvain Vissiere-Guerinet
  */
 @Service
-@MultitenantTransactional
+@RegardsTransactional
 public class NotificationService implements INotificationService, ApplicationListener<ApplicationReadyEvent> {
 
     /**
@@ -254,8 +253,8 @@ public class NotificationService implements INotificationService, ApplicationLis
                                                      r -> HateoasUtils.retrieveAllPages(100,
                                                                                         pageable -> retrieveRoleProjectUserList(
                                                                                                 r,
-                                                                                                pageable)).stream().map(ProjectUser::getEmail))
-                                         ).distinct();
+                                                                                                pageable)).stream()
+                                                             .map(ProjectUser::getEmail))).distinct();
         }
     }
 

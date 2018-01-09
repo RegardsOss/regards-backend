@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.notification.service;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
  *
  */
 @Service
-@MultitenantTransactional
+@RegardsTransactional
 public class NotificationSettingsService implements INotificationSettingsService {
 
     /**

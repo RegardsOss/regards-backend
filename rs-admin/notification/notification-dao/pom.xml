@@ -34,7 +34,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-commons-regards</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards-starter</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.notification</groupId>
