@@ -1262,7 +1262,7 @@
                 <version>${order.bootstrap.version}</version>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.microservices.ingest</groupId>
+                <groupId>fr.cnes.regards.microservices.ingestion</groupId>
                 <artifactId>bootstrap-ingest</artifactId>
                 <version>${ingest.bootstrap.version}</version>
             </dependency>
