@@ -48,10 +48,6 @@
 			<groupId>fr.cnes.regards.modules.templates</groupId>
 			<artifactId>templates-domain</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-starter</artifactId>
-		</dependency>
 		<!-- Tests dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.templates</groupId>
@@ -61,6 +57,11 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-multitenant-regards-starter</artifactId>
 			<scope>test</scope>
 		</dependency>
 
