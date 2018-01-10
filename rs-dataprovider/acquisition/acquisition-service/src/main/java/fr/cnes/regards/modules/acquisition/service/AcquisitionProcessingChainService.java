@@ -22,6 +22,8 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +47,7 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionProcessingChainJobParameter;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProductsJob;
 
 /**
@@ -92,6 +95,11 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
      */
     @Autowired
     private IAuthenticationResolver authResolver;
+
+    @PostConstruct
+    public void initDefaultPluginPackages() {
+        pluginService.addPluginPackage(ICheckFilePlugin.class.getPackage().getName());
+    }
 
     /**
      * Constructor with the bean method's member as parameters
