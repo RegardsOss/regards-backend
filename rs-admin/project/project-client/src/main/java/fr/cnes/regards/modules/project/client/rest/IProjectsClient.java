@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
  */
-@RestClient(name = "rs-admin")
+@RestClient(name = "rs-admin-instance")
 @RequestMapping(value = "/projects", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IProjectsClient {
 
