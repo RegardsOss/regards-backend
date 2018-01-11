@@ -173,21 +173,9 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // Re-pause
         results = performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, okExpectations(), "error", orderId);
 
-        // Try to remove
+        // remove
         results = performDefaultDelete(OrderController.REMOVE_ORDER_PATH,
-                                       expectations(MockMvcResultMatchers.status().isUnauthorized()), "error", orderId);
-
-        // Re-delete
-        results = performDefaultDelete(OrderController.DELETE_ORDER_PATH, okExpectations(), "error", orderId);
-        // This time : ok
-        assertStatus(orderId, OrderStatus.DELETED);
-
-        // Re-remove
-        results = performDefaultDelete(OrderController.REMOVE_ORDER_PATH, okExpectations(), "error", orderId);
-        // This time : ok, so no more  order exists in database
-        performDefaultGet(OrderController.GET_ORDER_PATH, expectations(MockMvcResultMatchers.status().isNotFound()),
-                          "error", orderId);
-
+                                       okExpectations(), "error", orderId);
     }
 
     private void assertStatus(Long orderId, OrderStatus expectedStatus) throws UnsupportedEncodingException {
