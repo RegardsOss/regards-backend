@@ -56,6 +56,7 @@ import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
+import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
 import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
@@ -309,11 +310,12 @@ public class OrderServiceIT {
         List<OrderDataFile> files = dataFileRepos.findAllAvailables(order.getId());
         Assert.assertEquals(0, files.size());
         order = orderService.loadSimple(order.getId());
-        Assert.assertTrue(order.getStatus() == OrderStatus.DELETED);
+        Assert.assertTrue(order.getStatus() == OrderStatus.EXPIRED);
     }
 
     @Test
-    public void testPauseResume() throws IOException, InterruptedException, CannotResumeOrderException {
+    public void testPauseResume()
+            throws IOException, InterruptedException, CannotResumeOrderException, CannotPauseOrderException {
 
         Basket basket = new Basket("tulavu@qui.fr");
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
