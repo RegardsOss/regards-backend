@@ -25,7 +25,7 @@ import java.util.Set;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
@@ -40,9 +40,9 @@ public interface IAcquisitionScanPlugin {
 
     /**
      * Scan thee {@link Set} of {@link MetaFile} of a {@link MetaProduct}. 
-     * @param chainLabel the {@link AcquisitionProcessingChain} label
+     * @param chainLabel the {@link AcquisitionProcessingChain2} label
      * @param metaProduct the {@link MetaProduct} of the file to scan
-     * @param lastDateActivation the date of the previous acquisition for the current {@link AcquisitionProcessingChain} 
+     * @param lastDateActivation the date of the previous acquisition for the current {@link AcquisitionProcessingChain2} 
      * @return a {@link Set} of the {@link AcquisitionFile}
      */
     Set<AcquisitionFile> getAcquisitionFiles(String chainLabel, MetaProduct metaProduct,
@@ -50,7 +50,7 @@ public interface IAcquisitionScanPlugin {
 
     /**
      * Return the files that are scanned but they do not match the expected file of the {@link Set} of {@link MetaFile}.
-     * @param chainLabel the {@link AcquisitionProcessingChain} label
+     * @param chainLabel the {@link AcquisitionProcessingChain2} label
      * @param metaFiles a {@link Set} of {@link MetaFile}
      * @return a {@link Set} of {@link File}
      */

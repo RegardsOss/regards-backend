@@ -57,6 +57,10 @@ public class AcquisitionScanStep extends AbstractDataProviderStep<Void, Void> {
     @Override
     protected Void doExecute(Void in) throws ProcessingStepException {
 
+        // TODO
+        // Scan file using plugin
+        // Register them
+
         LOGGER.debug("[{}] : acquistion scan step started.", acqProcessingChain.getLabel());
 
         // Launch the scan plugin

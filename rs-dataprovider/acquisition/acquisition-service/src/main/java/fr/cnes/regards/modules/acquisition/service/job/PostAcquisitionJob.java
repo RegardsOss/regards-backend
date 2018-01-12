@@ -32,10 +32,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
-import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService2;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
@@ -62,7 +62,7 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
     private IProductService productService;
 
     @Autowired
-    private IAcquisitionProcessingChainService acqProcessChainService;
+    private IAcquisitionProcessingChainService2 acqProcessChainService;
 
     private SIPEvent sipEvent;
 
@@ -85,7 +85,7 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
             productService.save(product);
 
             // Retrieve acquisition chain
-            AcquisitionProcessingChain acqProcessingChain = acqProcessChainService
+            AcquisitionProcessingChain2 acqProcessingChain = acqProcessChainService
                     .findByMetaProduct(product.getMetaProduct());
             // Launch post processing plugin if present
             if (acqProcessingChain.getPostProcessSipPluginConf().isPresent()) {

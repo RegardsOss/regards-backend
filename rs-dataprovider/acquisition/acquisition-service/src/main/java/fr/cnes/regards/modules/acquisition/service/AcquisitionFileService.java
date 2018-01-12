@@ -31,8 +31,8 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -57,9 +57,9 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     private final IAcquisitionFileRepository acqfileRepository;
 
     /**
-     * {@link AcquisitionProcessingChain} service
+     * {@link AcquisitionProcessingChain2} service
      */
-    private final IAcquisitionProcessingChainService acqProcessingChainService;
+    private final IAcquisitionProcessingChainService2 acqProcessingChainService;
 
     /**
      * {@link Product} service
@@ -71,10 +71,10 @@ public class AcquisitionFileService implements IAcquisitionFileService {
      *
      * @param acqFileRepository a {@link AcquisitionFile} repository
      * @param prService a {@link Product} service
-     * @param acqProcessChainService a {@link AcquisitionProcessingChain} service
+     * @param acqProcessChainService a {@link AcquisitionProcessingChain2} service
      */
     public AcquisitionFileService(IAcquisitionFileRepository acqFileRepository, IProductService productService,
-            IAcquisitionProcessingChainService acqProcessChainService) {
+            IAcquisitionProcessingChainService2 acqProcessChainService) {
         super();
         this.acqfileRepository = acqFileRepository;
         this.acqProcessingChainService = acqProcessChainService;
@@ -112,12 +112,12 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     }
 
     @Override
-    public List<AcquisitionFile> findByStatus(AcquisitionFileStatus status) {
+    public List<AcquisitionFile> findByStatus(AcquisitionFileState status) {
         return acqfileRepository.findByStatus(status);
     }
 
     @Override
-    public List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileStatus status, MetaFile metaFile) {
+    public List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileState status, MetaFile metaFile) {
         return acqfileRepository.findByStatusAndMetaFile(status, metaFile);
     }
 
@@ -127,7 +127,7 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     }
 
     @Override
-    public void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, AcquisitionProcessingChain chain)
+    public void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, AcquisitionProcessingChain2 chain)
             throws ModuleException {
         if (acquisitionFiles != null) {
             for (AcquisitionFile af : acquisitionFiles) {
@@ -138,10 +138,10 @@ public class AcquisitionFileService implements IAcquisitionFileService {
                     // update his status and his date acquisition
                     AcquisitionFile afExisting = listAf.get(listAf.indexOf(af));
                     afExisting.setAcqDate(af.getAcqDate());
-                    afExisting.setStatus(AcquisitionFileStatus.IN_PROGRESS);
+                    afExisting.setStatus(AcquisitionFileState.IN_PROGRESS);
                     this.save(afExisting);
                 } else {
-                    af.setStatus(AcquisitionFileStatus.IN_PROGRESS);
+                    af.setStatus(AcquisitionFileState.IN_PROGRESS);
                     this.save(af);
                 }
 
@@ -167,7 +167,7 @@ public class AcquisitionFileService implements IAcquisitionFileService {
 
         if (result) {
             LOGGER.info("Valid file {}", acqFile.getFileName());
-            acqFile.setStatus(AcquisitionFileStatus.VALID);
+            acqFile.setStatus(AcquisitionFileState.VALID);
             // Link valid file to product
             Product product = productService.linkAcquisitionFileToProduct(session, acqFile, productName, metaProduct,
                                                                           ingestChain);
@@ -176,7 +176,7 @@ public class AcquisitionFileService implements IAcquisitionFileService {
             // TODO CMZ à gérer le cas d'un fichier optionnel INVALID
             // juste logger que le fichier est invalide, mais le produit peut quand même être bon
             LOGGER.info("Invalid file {}", acqFile.getFileName());
-            acqFile.setStatus(AcquisitionFileStatus.INVALID);
+            acqFile.setStatus(AcquisitionFileState.INVALID);
         }
         save(acqFile);
     }

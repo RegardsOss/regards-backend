@@ -52,7 +52,7 @@ public class ScheduledDataProviderTasks {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IAcquisitionProcessingChainService chainService;
+    private IAcquisitionProcessingChainService2 chainService;
 
     @Autowired
     private IProductService productService;

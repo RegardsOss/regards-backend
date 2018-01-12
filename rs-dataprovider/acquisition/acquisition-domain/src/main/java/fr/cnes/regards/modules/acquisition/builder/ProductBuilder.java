@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.builder;
 
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
 /**
  *
- * {@link AcquisitionProcessingChain} builder
+ * {@link AcquisitionProcessingChain2} builder
  *
  * @author Christophe Mertz
  *

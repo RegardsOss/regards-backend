@@ -16,19 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.dao;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
+package fr.cnes.regards.modules.acquisition.domain.chain;
 
 /**
- * {@link MetaFile} repository
- *
- * @author Christophe Mertz
+ * {@link AcquisitionProcessingChain} processing mode
+ * @author Marc Sordi
  */
-@Repository
-public interface IMetaFileRepository extends JpaRepository<MetaFile, Long> {
+public enum AcquisitionProcessingChainMode {
 
+    /**
+     * Define a processing chain that can be activated manually
+     */
+    MANUAL,
+    /**
+     * Define a processing chain that has to be run automatically
+     */
+    AUTO;
 }

@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeExcepti
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
@@ -69,7 +69,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
     @Autowired
     private IAcquisitionFileService acquisitionFileService;
 
-    private AcquisitionProcessingChain acqProcessingChain;
+    private AcquisitionProcessingChain2 acqProcessingChain;
 
     private String productName;
 

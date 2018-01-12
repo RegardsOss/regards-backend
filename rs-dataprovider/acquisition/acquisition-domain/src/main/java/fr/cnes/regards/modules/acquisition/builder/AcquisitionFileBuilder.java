@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.acquisition.builder;
 import java.time.OffsetDateTime;
 
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
@@ -73,12 +73,12 @@ public final class AcquisitionFileBuilder {
     }
 
     /**
-     * Set the {@link AcquisitionFileStatus} property to the current {@link AcquisitionFile}
-     * @param status the {@link AcquisitionFileStatus} {@link String} value
+     * Set the {@link AcquisitionFileState} property to the current {@link AcquisitionFile}
+     * @param status the {@link AcquisitionFileState} {@link String} value
      * @return the current {@link AcquisitionFileBuilder}
      */
     public AcquisitionFileBuilder withStatus(String status) {
-        acqFile.setStatus(AcquisitionFileStatus.valueOf(status));
+        acqFile.setStatus(AcquisitionFileState.valueOf(status));
         return this;
     }
 

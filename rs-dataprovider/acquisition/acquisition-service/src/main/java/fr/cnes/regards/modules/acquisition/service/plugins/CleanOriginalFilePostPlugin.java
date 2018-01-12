@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
 
@@ -84,7 +84,7 @@ public class CleanOriginalFilePostPlugin implements IPostProcessSipPlugin {
     public String extensionAck;
 
     @Override
-    public void runPlugin(Product product, AcquisitionProcessingChain chain) throws ModuleException {
+    public void runPlugin(Product product, AcquisitionProcessingChain2 chain) throws ModuleException {
         LOGGER.info("[{}] Start post processing for the product : {}", chain.getSession(), product.getProductName());
 
         if (product.getMetaProduct().getCleanOriginalFile()) {

@@ -45,8 +45,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
@@ -122,7 +122,7 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain chain) {
+    public Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain2 chain) {
         return productRepository.findChainProductsToSchedule(chain.getLabel());
     }
 
@@ -130,7 +130,7 @@ public class ProductService implements IProductService {
      * Schedule a {@link SIPGenerationJob} and update product SIP state in same transaction.
      */
     @Override
-    public JobInfo scheduleProductSIPGeneration(Product product, AcquisitionProcessingChain chain) {
+    public JobInfo scheduleProductSIPGeneration(Product product, AcquisitionProcessingChain2 chain) {
 
         // Schedule job
         JobInfo acquisition = new JobInfo();
@@ -176,7 +176,7 @@ public class ProductService implements IProductService {
                 nbTotalOptional++;
             }
             for (AcquisitionFile af : product.getAcquisitionFile()) {
-                if (af.getMetaFile().equals(mf) && af.getStatus().equals(AcquisitionFileStatus.VALID)) {
+                if (af.getMetaFile().equals(mf) && af.getStatus().equals(AcquisitionFileState.VALID)) {
                     if (mf.isMandatory()) {
                         // At least one mandatory file is VALID
                         nbActualMandatory++;

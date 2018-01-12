@@ -41,6 +41,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
  * {@link Product} repository
  *
  * @author Christophe Mertz
+ * @author Marc Sordi
  */
 @Repository
 public interface IProductRepository extends JpaRepository<Product, Long> {

@@ -37,7 +37,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.builder.AcquisitionProcessingChainBuilder;
 import fr.cnes.regards.modules.acquisition.builder.MetaProductBuilder;
 import fr.cnes.regards.modules.acquisition.builder.ExecAcquisitionProcessingChainBuilder;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -71,7 +71,7 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
 
     private MetaProduct metaProduct003;
 
-    private AcquisitionProcessingChain chainForProcessing;
+    private AcquisitionProcessingChain2 chainForProcessing;
 
     private ExecAcquisitionProcessingChain process;
 

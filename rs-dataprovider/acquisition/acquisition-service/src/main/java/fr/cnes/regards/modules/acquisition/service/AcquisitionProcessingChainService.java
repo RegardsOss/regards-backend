@@ -42,20 +42,20 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.builder.ExecAcquisitionProcessingChainBuilder;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 
 /**
- * Manage global {@link AcquisitionProcessingChain} life cycle
+ * Manage global {@link AcquisitionProcessingChain2} life cycle
  *
  * @author Christophe Mertz
  *
  */
 @MultitenantTransactional
 @Service
-public class AcquisitionProcessingChainService implements IAcquisitionProcessingChainService {
+public class AcquisitionProcessingChainService implements IAcquisitionProcessingChainService2 {
 
     /**
      * Class logger
@@ -63,7 +63,7 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingChainService.class);
 
     /**
-     * {@link AcquisitionProcessingChain} repository
+     * {@link AcquisitionProcessingChain2} repository
      */
     private final IAcquisitionProcessingChainRepository processingChainRepository;
 
@@ -113,26 +113,26 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
     }
 
     @Override
-    public AcquisitionProcessingChain save(AcquisitionProcessingChain acqProcessingChain) {
+    public AcquisitionProcessingChain2 save(AcquisitionProcessingChain2 acqProcessingChain) {
         return processingChainRepository.save(acqProcessingChain);
     }
 
     @Override
-    public AcquisitionProcessingChain update(Long chainId, AcquisitionProcessingChain acqProcessingChain)
+    public AcquisitionProcessingChain2 update(Long chainId, AcquisitionProcessingChain2 acqProcessingChain)
             throws ModuleException {
         if (!chainId.equals(acqProcessingChain.getId())) {
             throw new EntityInconsistentIdentifierException(chainId, acqProcessingChain.getId(),
                     acqProcessingChain.getClass());
         }
         if (!processingChainRepository.exists(chainId)) {
-            throw new EntityNotFoundException(chainId, AcquisitionProcessingChain.class);
+            throw new EntityNotFoundException(chainId, AcquisitionProcessingChain2.class);
         }
 
         return processingChainRepository.save(createOrUpdate(acqProcessingChain));
     }
 
     @Override
-    public AcquisitionProcessingChain createOrUpdate(AcquisitionProcessingChain acqProcessingChain)
+    public AcquisitionProcessingChain2 createOrUpdate(AcquisitionProcessingChain2 acqProcessingChain)
             throws ModuleException { // NOSONAR
         if (acqProcessingChain == null) {
             return null;
@@ -145,7 +145,7 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
             acqProcessingChain.setMetaProduct(metaProductService.createOrUpdate(acqProcessingChain.getMetaProduct()));
             return processingChainRepository.save(acqProcessingChain);
         } else {
-            AcquisitionProcessingChain existingChain = this.retrieveComplete(acqProcessingChain.getId());
+            AcquisitionProcessingChain2 existingChain = this.retrieveComplete(acqProcessingChain.getId());
             acqProcessingChain.setMetaProduct(metaProductService.createOrUpdate(acqProcessingChain.getMetaProduct()));
             if (existingChain.equals(acqProcessingChain)) {
                 // it is the same --> just return it
@@ -158,11 +158,11 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
     }
 
     /**
-     * Creates or updates {@link PluginConfiguration} of each {@link Plugin} of the {@link AcquisitionProcessingChain}
-     * @param chain {@link AcquisitionProcessingChain}
+     * Creates or updates {@link PluginConfiguration} of each {@link Plugin} of the {@link AcquisitionProcessingChain2}
+     * @param chain {@link AcquisitionProcessingChain2}
      * @throws ModuleException if error occurs!
      */
-    private void createOrUpdatePluginConfigurations(AcquisitionProcessingChain chain) throws ModuleException {
+    private void createOrUpdatePluginConfigurations(AcquisitionProcessingChain2 chain) throws ModuleException {
         // Save new plugins conf, and update existing ones if they changed
         if (chain.getCheckAcquisitionPluginConf() != null) {
             chain.setCheckAcquisitionPluginConf(createOrUpdatePluginConfiguration(chain
@@ -196,18 +196,18 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
     }
 
     @Override
-    public Page<AcquisitionProcessingChain> retrieveAll(Pageable page) {
+    public Page<AcquisitionProcessingChain2> retrieveAll(Pageable page) {
         return processingChainRepository.findAll(page);
     }
 
     @Override
-    public AcquisitionProcessingChain retrieve(Long id) {
+    public AcquisitionProcessingChain2 retrieve(Long id) {
         return processingChainRepository.findOne(id);
     }
 
     @Override
-    public AcquisitionProcessingChain retrieveComplete(Long id) {
-        AcquisitionProcessingChain chain = this.retrieve(id);
+    public AcquisitionProcessingChain2 retrieveComplete(Long id) {
+        AcquisitionProcessingChain2 chain = this.retrieve(id);
 
         if (chain.getMetaProduct() != null) {
             chain.setMetaProduct(metaProductService.retrieveComplete(chain.getMetaProduct().getId()));
@@ -242,12 +242,12 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
     }
 
     @Override
-    public void delete(AcquisitionProcessingChain acqProcessingChain) {
+    public void delete(AcquisitionProcessingChain2 acqProcessingChain) {
         processingChainRepository.delete(acqProcessingChain);
     }
 
     @Override
-    public AcquisitionProcessingChain findByMetaProduct(MetaProduct metaProduct) {
+    public AcquisitionProcessingChain2 findByMetaProduct(MetaProduct metaProduct) {
         return processingChainRepository.findByMetaProduct(metaProduct);
     }
 
@@ -257,7 +257,7 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
     }
 
     @Override
-    public void run(AcquisitionProcessingChain chain) { // NOSONAR
+    public void run(AcquisitionProcessingChain2 chain) { // NOSONAR
         // the AcquisitionProcessingChain must be active
         if (!chain.isActive()) {
             LOGGER.warn("[{}] Unable to run a not active chain generation", chain.getLabel());
@@ -302,7 +302,7 @@ public class AcquisitionProcessingChainService implements IAcquisitionProcessing
     @Override
     public void runActiveChains() {
         // Retrieve all chains
-        Set<AcquisitionProcessingChain> chains = processingChainRepository.findByActiveTrueAndRunningFalse();
+        Set<AcquisitionProcessingChain2> chains = processingChainRepository.findByActiveTrueAndRunningFalse();
         chains.forEach(ch -> run(ch));
     }
 

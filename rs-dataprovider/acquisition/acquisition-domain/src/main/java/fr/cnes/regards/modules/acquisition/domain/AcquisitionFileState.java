@@ -16,25 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.dao;
-
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+package fr.cnes.regards.modules.acquisition.domain;
 
 /**
- * {@link MetaProduct} repository
- *
+ * {@link AcquisitionFile} state
  * @author Christophe Mertz
+ * @author Marc Sordi
+ *
  */
-@Repository
-public interface IMetaProductRepository extends JpaRepository<MetaProduct, Long> {
-
-    @EntityGraph("graph.product.complete")
-    MetaProduct findCompleteById(Long id);
-
-    MetaProduct findByLabel(String name);
-
+public enum AcquisitionFileState {
+    VALID,
+    INVALID,
+    IN_PROGRESS;
 }

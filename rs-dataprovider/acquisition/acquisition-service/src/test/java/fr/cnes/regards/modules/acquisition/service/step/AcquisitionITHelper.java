@@ -74,8 +74,8 @@ import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IExecAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
@@ -83,7 +83,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
-import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService2;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 import fr.cnes.regards.modules.acquisition.service.IExecAcquisitionProcessingChainService;
@@ -127,7 +127,7 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
     protected static final String DEFAULT_ROLE = "ROLE_DEFAULT";
 
     @Autowired
-    protected IAcquisitionProcessingChainService acqProcessChainService;
+    protected IAcquisitionProcessingChainService2 acqProcessChainService;
 
     @Autowired
     protected IMetaProductService metaProductService;
@@ -198,7 +198,7 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
     @Autowired
     protected ISubscriber subscriber;
 
-    protected AcquisitionProcessingChain chain;
+    protected AcquisitionProcessingChain2 chain;
 
     protected MetaFile metaFileOptional;
 
@@ -412,7 +412,7 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
 
         for (String acqf : fileNames) {
             product.addAcquisitionFile(acquisitionFileService.save(AcquisitionFileBuilder.build(acqf)
-                    .withStatus(AcquisitionFileStatus.VALID.toString()).withMetaFile(metaFileMandatory).get()));
+                    .withStatus(AcquisitionFileState.VALID.toString()).withMetaFile(metaFileMandatory).get()));
         }
 
         product.setSip(createSIP(productName));
@@ -437,7 +437,7 @@ public class AcquisitionITHelper extends AbstractRegardsIT {
                 .isSended(sended).withSession(session).withIngestProcessingChain(metaProduct.getIngestChain()).get();
 
         product.addAcquisitionFile(acquisitionFileService
-                .save(AcquisitionFileBuilder.build(fileName).withStatus(AcquisitionFileStatus.VALID.toString())
+                .save(AcquisitionFileBuilder.build(fileName).withStatus(AcquisitionFileState.VALID.toString())
                         .withMetaFile(metaFileMandatory).withFileAcquisitionInformations(fileAcqInf).get()));
 
         product.setSip(createSIP(productName));

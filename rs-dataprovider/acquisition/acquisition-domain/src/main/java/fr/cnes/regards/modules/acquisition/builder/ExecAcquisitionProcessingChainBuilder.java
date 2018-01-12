@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.acquisition.builder;
 
 import java.time.OffsetDateTime;
 
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
 
 /**
@@ -81,11 +81,11 @@ public final class ExecAcquisitionProcessingChainBuilder {
     }
 
     /**
-     * Set the {@link AcquisitionProcessingChain} property to the current {@link ExecAcquisitionProcessingChain}
+     * Set the {@link AcquisitionProcessingChain2} property to the current {@link ExecAcquisitionProcessingChain}
      * @param processingChain
      * @return the current {@link ExecAcquisitionProcessingChainBuilder}
      */
-    public ExecAcquisitionProcessingChainBuilder withChain(AcquisitionProcessingChain processingChain) {
+    public ExecAcquisitionProcessingChainBuilder withChain(AcquisitionProcessingChain2 processingChain) {
         process.setChainGeneration(processingChain);
         return this;
     }

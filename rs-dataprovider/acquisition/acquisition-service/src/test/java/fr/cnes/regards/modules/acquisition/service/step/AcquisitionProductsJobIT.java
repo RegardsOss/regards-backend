@@ -31,8 +31,8 @@ import org.springframework.test.context.ContextConfiguration;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.builder.MetaFileBuilder;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
@@ -75,8 +75,8 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertEquals(1, acqProcessChainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(2, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(7, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
-        Assert.assertEquals(1, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
+        Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileState.VALID).size());
+        Assert.assertEquals(1, acquisitionFileService.findByStatus(AcquisitionFileState.INVALID).size());
         Assert.assertEquals(5, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(1, productService.findByStatus(ProductState.FINISHED).size());
         Assert.assertEquals(4, productService.findByStatus(ProductState.COMPLETED).size());
@@ -124,7 +124,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertEquals(2, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         // 6 mandatory and 1 optional
         Assert.assertEquals(7, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(7, acquisitionFileService.findByStatus(AcquisitionFileStatus.IN_PROGRESS).size());
+        Assert.assertEquals(7, acquisitionFileService.findByStatus(AcquisitionFileState.IN_PROGRESS).size());
 
         chain = acqProcessChainService.retrieve(chain.getId());
         Assert.assertNotNull(chain.getLastDateActivation());
@@ -166,8 +166,8 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertEquals(1, acqProcessChainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
-        Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
+        Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileState.VALID).size());
+        Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileState.INVALID).size());
         Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, productService.findByStatus(ProductState.COMPLETED).size());
 
@@ -214,8 +214,8 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertEquals(1, acqProcessChainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(2, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
-        Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
+        Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileState.VALID).size());
+        Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileState.INVALID).size());
         Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, productService.findByStatus(ProductState.FINISHED).size());
 
@@ -254,8 +254,8 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertEquals(2, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(3, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(3, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
-        Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
+        Assert.assertEquals(3, acquisitionFileService.findByStatus(AcquisitionFileState.VALID).size());
+        Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileState.INVALID).size());
         Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         /*
          *  3 products are acquired but for each 1 mandatory file is missing 
@@ -266,7 +266,7 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
             Assert.assertFalse(product.isSended());
         }
 
-        AcquisitionProcessingChain chainLastAcqDate = acqProcessChainService.retrieve(chain.getId());
+        AcquisitionProcessingChain2 chainLastAcqDate = acqProcessChainService.retrieve(chain.getId());
         Assert.assertNotNull(chainLastAcqDate.getLastDateActivation());
 
         Thread.sleep(WAIT_TIME);
@@ -289,8 +289,8 @@ public class AcquisitionProductsJobIT extends AcquisitionITHelper {
         Assert.assertEquals(1, acqProcessChainService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(2, metaFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         Assert.assertEquals(6, acquisitionFileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileStatus.VALID).size());
-        Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileStatus.INVALID).size());
+        Assert.assertEquals(6, acquisitionFileService.findByStatus(AcquisitionFileState.VALID).size());
+        Assert.assertEquals(0, acquisitionFileService.findByStatus(AcquisitionFileState.INVALID).size());
         Assert.assertEquals(3, productService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
         /**
          * the 3 products are finished

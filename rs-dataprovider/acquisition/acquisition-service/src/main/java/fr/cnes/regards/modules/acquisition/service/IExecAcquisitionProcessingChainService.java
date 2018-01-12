@@ -24,7 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
 
 /**
@@ -42,7 +42,7 @@ public interface IExecAcquisitionProcessingChainService {
 
     Page<ExecAcquisitionProcessingChain> retrieveAll(Pageable pageable);
 
-    Page<ExecAcquisitionProcessingChain> findByChainGeneration(AcquisitionProcessingChain chainGeneration,
+    Page<ExecAcquisitionProcessingChain> findByChainGeneration(AcquisitionProcessingChain2 chainGeneration,
             Pageable pageable);
 
     Page<ExecAcquisitionProcessingChain> findByStartDateBetween(OffsetDateTime start, OffsetDateTime stop,

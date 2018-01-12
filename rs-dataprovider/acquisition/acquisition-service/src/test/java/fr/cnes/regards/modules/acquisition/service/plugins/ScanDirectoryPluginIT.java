@@ -54,13 +54,13 @@ import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
-import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService2;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 import fr.cnes.regards.modules.acquisition.service.IScanDirectoryService;
@@ -108,7 +108,7 @@ public class ScanDirectoryPluginIT {
     private IScanDirectoryService scandirService;
 
     @Autowired
-    private IAcquisitionProcessingChainService acqProcessChainService;
+    private IAcquisitionProcessingChainService2 acqProcessChainService;
 
     @Autowired
     private IPluginService pluginService;
@@ -140,7 +140,7 @@ public class ScanDirectoryPluginIT {
     @Autowired
     private IMetaFileRepository metaFileRepository;
 
-    private AcquisitionProcessingChain chain;
+    private AcquisitionProcessingChain2 chain;
 
     private final URL dataPath = getClass().getResource("/data");
 

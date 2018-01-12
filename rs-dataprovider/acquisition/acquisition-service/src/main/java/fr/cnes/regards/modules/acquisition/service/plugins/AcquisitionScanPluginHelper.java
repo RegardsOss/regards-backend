@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.acquisition.builder.FileAcquisitionInformationsBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 
 /**
@@ -163,7 +163,7 @@ public class AcquisitionScanPluginHelper {
     protected AcquisitionFile initAcquisitionFile(File baseFile, MetaFile metaFile, String algorithm) {
         AcquisitionFile acqFile = new AcquisitionFile();
         acqFile.setMetaFile(metaFile);
-        acqFile.setStatus(AcquisitionFileStatus.IN_PROGRESS);
+        acqFile.setStatus(AcquisitionFileState.IN_PROGRESS);
         acqFile.setFileName(baseFile.getName());
         acqFile.setSize(baseFile.length());
         acqFile.setAcquisitionInformations(FileAcquisitionInformationsBuilder.build(baseFile.getParent().toString())

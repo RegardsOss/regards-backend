@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IExecAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -81,7 +81,7 @@ public class AcquisitionProcessingChainServiceIT {
     private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
-    private IAcquisitionProcessingChainService acqProcessChainService;
+    private IAcquisitionProcessingChainService2 acqProcessChainService;
 
     @Autowired
     private IMetaProductService metaProductService;
@@ -137,7 +137,7 @@ public class AcquisitionProcessingChainServiceIT {
     @Test
     public void createChaine() throws ModuleException {
         // Create a first generation chain
-        AcquisitionProcessingChain chain = acqProcessChainService
+        AcquisitionProcessingChain2 chain = acqProcessChainService
                 .createOrUpdate(AcquisitionProcessingChainBuilder.build(CHAIN_LABEL).isActive().withDataSet(DATASET_NAME).get());
         Assert.assertNotNull(chain);
         Assert.assertNotNull(chain.getId());
@@ -158,7 +158,7 @@ public class AcquisitionProcessingChainServiceIT {
         Assert.assertNotNull(aProduct);
 
         // Get the AcquisitionProcessingChain
-        Page<AcquisitionProcessingChain> chains = acqProcessChainService.retrieveAll(new PageRequest(0, 10));
+        Page<AcquisitionProcessingChain2> chains = acqProcessChainService.retrieveAll(new PageRequest(0, 10));
         Assert.assertNotNull(chains.getContent());
         Assert.assertEquals(1, chains.getContent().size());
         Assert.assertEquals(CHAIN_LABEL, chains.getContent().get(0).getLabel());
@@ -168,7 +168,7 @@ public class AcquisitionProcessingChainServiceIT {
     @Test
     public void deleteAProduct() throws ModuleException {
         // Create a first generation chain
-        AcquisitionProcessingChain chain = acqProcessChainService
+        AcquisitionProcessingChain2 chain = acqProcessChainService
                 .createOrUpdate(AcquisitionProcessingChainBuilder.build(CHAIN_LABEL).isActive().withDataSet(DATASET_NAME).get());
         Assert.assertNotNull(chain);
         Assert.assertNotNull(chain.getId());

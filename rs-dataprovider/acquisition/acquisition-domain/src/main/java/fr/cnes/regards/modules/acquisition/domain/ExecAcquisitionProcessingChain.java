@@ -67,11 +67,11 @@ public class ExecAcquisitionProcessingChain implements IIdentifiable<Long> {
     private String session;
 
     /**
-     * The {@link AcquisitionProcessingChain} associate to the current {@link ExecAcquisitionProcessingChain}
+     * The {@link AcquisitionProcessingChain2} associate to the current {@link ExecAcquisitionProcessingChain}
      */
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name = "chain_id", foreignKey = @ForeignKey(name = "fk_acq_exec_chain_id"), updatable = false)
-    private AcquisitionProcessingChain chainGeneration;
+    private AcquisitionProcessingChain2 chainGeneration;
 
     /**
      * The start date of the {@link ExecAcquisitionProcessingChain}
@@ -100,11 +100,11 @@ public class ExecAcquisitionProcessingChain implements IIdentifiable<Long> {
         this.session = session;
     }
 
-    public AcquisitionProcessingChain getChainGeneration() {
+    public AcquisitionProcessingChain2 getChainGeneration() {
         return chainGeneration;
     }
 
-    public void setChainGeneration(AcquisitionProcessingChain chainGeneration) {
+    public void setChainGeneration(AcquisitionProcessingChain2 chainGeneration) {
         this.chainGeneration = chainGeneration;
     }
 

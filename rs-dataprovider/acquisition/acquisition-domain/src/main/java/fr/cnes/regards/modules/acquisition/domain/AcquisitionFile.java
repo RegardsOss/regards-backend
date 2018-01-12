@@ -18,18 +18,15 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
-import java.io.File;
 import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -38,20 +35,16 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
-import fr.cnes.regards.modules.acquisition.plugins.IAcquisitionScanPlugin;
 
 /**
- * This class represents a {@link MetaFile} instance.<br>
- * A data file is detected by a {@link Plugin} {@link IAcquisitionScanPlugin} 
- * 
+ * This class represents an acquisition file.<br>
+ * This file is created when detected by a scan plugin.
+ *
  * @author Christophe Mertz
  *
  */
@@ -93,9 +86,9 @@ public class AcquisitionFile implements IIdentifiable<Long> {
     /**
      * The data file's status
      */
-    @Column(name = "status", length = MAX_ENUM_LENGTH)
+    @Column(name = "state", length = MAX_ENUM_LENGTH)
     @Enumerated(EnumType.STRING)
-    private AcquisitionFileStatus status;
+    private AcquisitionFileState state;
 
     /**
      * The {@link Product} associated to the data file
@@ -103,21 +96,6 @@ public class AcquisitionFile implements IIdentifiable<Long> {
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_acq_file_id"), updatable = false)
     private Product product;
-
-    /**
-     * The {@link MetaFile}
-     */
-    @NotNull
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "meta_file_id", foreignKey = @ForeignKey(name = "fk_meta_file_id"), nullable = true,
-            updatable = false)
-    private MetaFile metaFile;
-
-    /**
-     * File information used to locate the data file
-     */
-    @Embedded
-    private FileAcquisitionInformations acquisitionInformations;
 
     /**
      * Acquisition date of the data file
@@ -143,8 +121,8 @@ public class AcquisitionFile implements IIdentifiable<Long> {
     public int hashCode() { // NOSONAR
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((checksum == null) ? 0 : checksum.hashCode()); //NOSONAR
-        result = prime * result + ((fileName == null) ? 0 : fileName.hashCode()); //NOSONAR
+        result = (prime * result) + ((checksum == null) ? 0 : checksum.hashCode()); // NOSONAR
+        result = (prime * result) + ((fileName == null) ? 0 : fileName.hashCode()); // NOSONAR
         return result;
     }
 
@@ -202,20 +180,12 @@ public class AcquisitionFile implements IIdentifiable<Long> {
         this.size = size;
     }
 
-    public AcquisitionFileStatus getStatus() {
-        return status;
+    public AcquisitionFileState getState() {
+        return state;
     }
 
-    public void setStatus(AcquisitionFileStatus status) {
-        this.status = status;
-    }
-
-    public MetaFile getMetaFile() {
-        return metaFile;
-    }
-
-    public void setMetaFile(MetaFile metaFile) {
-        this.metaFile = metaFile;
+    public void setState(AcquisitionFileState state) {
+        this.state = state;
     }
 
     public Product getProduct() {
@@ -250,29 +220,6 @@ public class AcquisitionFile implements IIdentifiable<Long> {
         this.checksumAlgorithm = checksumAlgorithm;
     }
 
-    public FileAcquisitionInformations getAcquisitionInformations() {
-        return acquisitionInformations;
-    }
-
-    public void setAcquisitionInformations(FileAcquisitionInformations acquisitionInformations) {
-        this.acquisitionInformations = acquisitionInformations;
-    }
-
-    public File getFile() {
-        File currentFile = null;
-        if (this.getAcquisitionInformations() == null) {
-            currentFile = new File(this.getFileName());
-        } else {
-            String workingDir = this.getAcquisitionInformations().getWorkingDirectory();
-            if (workingDir == null) {
-                currentFile = new File(this.getAcquisitionInformations().getAcquisitionDirectory(), this.getFileName());
-            } else {
-                currentFile = new File(workingDir, this.getFileName());
-            }
-        }
-        return currentFile;
-    }
-
     @Override
     public String toString() {
         StringBuilder strBuilder = new StringBuilder();
@@ -285,9 +232,9 @@ public class AcquisitionFile implements IIdentifiable<Long> {
             strBuilder.append(" - ");
             strBuilder.append(size);
         }
-        if (status != null) {
+        if (state != null) {
             strBuilder.append(" - [");
-            strBuilder.append(status);
+            strBuilder.append(state);
             strBuilder.append("]");
         }
         return strBuilder.toString();

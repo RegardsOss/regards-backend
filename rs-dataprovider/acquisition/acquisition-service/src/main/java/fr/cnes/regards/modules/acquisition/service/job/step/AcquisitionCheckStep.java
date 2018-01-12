@@ -37,7 +37,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
@@ -86,7 +86,7 @@ public class AcquisitionCheckStep extends AbstractDataProviderStep<Void, Void> {
         // Retrieve in progress files per metafile
         inProgressFileList = new ArrayList<>();
         for (MetaFile metaFile : acqProcessingChain.getMetaProduct().getMetaFiles()) {
-            inProgressFileList.addAll(acquisitionFileService.findByStatusAndMetaFile(AcquisitionFileStatus.IN_PROGRESS,
+            inProgressFileList.addAll(acquisitionFileService.findByStatusAndMetaFile(AcquisitionFileState.IN_PROGRESS,
                                                                                      metaFile));
         }
 
@@ -125,7 +125,7 @@ public class AcquisitionCheckStep extends AbstractDataProviderStep<Void, Void> {
                                                        acqProcessingChain.getMetaProduct(),
                                                        acqProcessingChain.getMetaProduct().getIngestChain());
 
-                if (acqFile.getStatus().equals(AcquisitionFileStatus.INVALID)) {
+                if (acqFile.getStatus().equals(AcquisitionFileState.INVALID)) {
                     // Move invalid file in a dedicated directory
                     moveInvalidFile(acqFile);
                 }

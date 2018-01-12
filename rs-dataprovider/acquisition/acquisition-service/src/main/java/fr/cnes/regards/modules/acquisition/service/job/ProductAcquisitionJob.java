@@ -19,6 +19,8 @@
 
 package fr.cnes.regards.modules.acquisition.service.job;
 
+import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,11 +37,14 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.jobs.domain.step.IProcessingStep;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
-import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.job.step.AcquisitionCheckStep;
 import fr.cnes.regards.modules.acquisition.service.job.step.AcquisitionScanStep;
@@ -61,7 +66,7 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductAcquisitionJob.class);
 
-    public static final String CHAIN_PARAMETER = "chain";
+    public static final String CHAIN_PARAMETER_ID = "chain";
 
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
@@ -70,21 +75,50 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
     private IProductService productService;
 
     @Autowired
-    private IAcquisitionProcessingChainService acqProcessChainService;
+    private IAcquisitionProcessingService acqProcessingService;
+
+    @Autowired
+    private IPluginService pluginService;
 
     /**
-     * The current {@link AcquisitionProcessingChain}
+     * The current chain to work with!
      */
     private AcquisitionProcessingChain acqProcessingChain;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        acqProcessingChain = getValue(parameters, CHAIN_PARAMETER);
+        Long acqProcessingChainId = getValue(parameters, CHAIN_PARAMETER_ID);
+        try {
+            acqProcessingChain = acqProcessingService.getChain(acqProcessingChainId);
+        } catch (ModuleException e) {
+            handleInvalidParameter(CHAIN_PARAMETER_ID, e.getMessage());
+        }
     }
 
     @Override
     public void run() {
+
+        // Get file informations
+        Set<AcquisitionFileInfo> fileInfos = acqProcessingChain.getFileInfos();
+        // Launch file scanning for each file information
+        for (AcquisitionFileInfo info : fileInfos) {
+            // Get plugin instance
+            IScanPlugin scanPlugin = pluginService.getPlugin(info.getScanPlugin().getId());
+            // Launch scanning
+            // FIXME : may compute activation date per acquisition file
+            List<Path> scannedFiles = scanPlugin.scan(acqProcessingChain.getLastActivationDate());
+            // Initialize acquisition file
+            // TODO
+        }
+
+        // Validate all files and get all related product name
+        // TODO
+        // Create missing product
+        // TODO
+        // Update product state
+        // TODO
+
         LOGGER.info("[{}-{}] : starting acquisition job", acqProcessingChain.getLabel(),
                     acqProcessingChain.getSession());
 

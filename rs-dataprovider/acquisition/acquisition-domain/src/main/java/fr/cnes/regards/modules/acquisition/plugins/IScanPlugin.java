@@ -16,19 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.dao;
+package fr.cnes.regards.modules.acquisition.plugins;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import java.nio.file.Path;
+import java.time.OffsetDateTime;
+import java.util.List;
 
-import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
- * {@link ScanDirectory} repository
+ * First required step of acquisition processing chain.
  *
- * @author Christophe Mertz
+ * @author Marc Sordi
+ *
  */
-@Repository
-public interface IScanDirectoryRepository extends JpaRepository<ScanDirectory, Long> {
+@PluginInterface(description = "File scanning plugin contract")
+public interface IScanPlugin {
 
+    /**
+     * Scan disk to detect and retrieve files
+     * @param lastActivationDate last scanning date
+     * @return list of detected file
+     */
+    List<Path> scan(OffsetDateTime lastActivationDate);
 }

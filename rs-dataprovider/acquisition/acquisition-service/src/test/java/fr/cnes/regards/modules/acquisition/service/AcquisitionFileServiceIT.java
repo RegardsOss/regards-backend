@@ -47,7 +47,7 @@ import fr.cnes.regards.modules.acquisition.dao.IExecAcquisitionProcessingChainRe
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
@@ -173,7 +173,7 @@ public class AcquisitionFileServiceIT {
 
         // Create 2 AcquisitionFile 
         AcquisitionFile acqFile1 = AcquisitionFileBuilder.build("file" + ONE)
-                .withStatus(AcquisitionFileStatus.IN_PROGRESS.toString()).withSize(133L)
+                .withStatus(AcquisitionFileState.IN_PROGRESS.toString()).withSize(133L)
                 .withActivationDate(OffsetDateTime.now().minusDays(5)).withChecksum("XXXXXXXXXXXXXXX", CHECKUM_ALGO)
                 .get();
         acqFile1.setMetaFile(aMetaFile);
@@ -187,7 +187,7 @@ public class AcquisitionFileServiceIT {
                 .withChecksumAlgorithm(CHECKUM_ALGO).withCleanOriginalFile(Boolean.FALSE).addMetaFile(aMetaFile).get());
         Product aProduct2 = addProduct(metaProduct2, PRODUCT_NAME + TWO);
         AcquisitionFile acqFile2 = AcquisitionFileBuilder.build("file" + TWO)
-                .withStatus(AcquisitionFileStatus.IN_PROGRESS.toString()).withSize(15686L)
+                .withStatus(AcquisitionFileState.IN_PROGRESS.toString()).withSize(15686L)
                 .withChecksum("YYYYYYYYYYYYYYYYY", CHECKUM_ALGO).withActivationDate(OffsetDateTime.now()).get();
         acqFile2.setMetaFile(aMetaFile);
         acqFile2.setProduct(aProduct2);
@@ -202,8 +202,8 @@ public class AcquisitionFileServiceIT {
         Assert.assertEquals(1, aProduct1.getAcquisitionFile().size());
         Assert.assertEquals(1, aProduct2.getAcquisitionFile().size());
         Assert.assertEquals(2, acqfileService.retrieveAll(new PageRequest(0, 10)).getTotalElements());
-        Assert.assertEquals(2, acqfileService.findByStatus(AcquisitionFileStatus.IN_PROGRESS).size());
-        Assert.assertEquals(2, acqfileService.findByStatusAndMetaFile(AcquisitionFileStatus.IN_PROGRESS, aMetaFile)
+        Assert.assertEquals(2, acqfileService.findByStatus(AcquisitionFileState.IN_PROGRESS).size());
+        Assert.assertEquals(2, acqfileService.findByStatusAndMetaFile(AcquisitionFileState.IN_PROGRESS, aMetaFile)
                 .size());
         Assert.assertEquals(acqFile1, acqfileService.retrieve(acqFile1.getId()));
 
@@ -242,14 +242,14 @@ public class AcquisitionFileServiceIT {
 
         // Create 2 AcquisitionFile 
         AcquisitionFile acqFile1 = AcquisitionFileBuilder.build("file" + ONE)
-                .withStatus(AcquisitionFileStatus.IN_PROGRESS.toString()).withSize(133L)
+                .withStatus(AcquisitionFileState.IN_PROGRESS.toString()).withSize(133L)
                 .withActivationDate(OffsetDateTime.now().minusDays(5)).withChecksum("XXXXXXXXXXXXXXX", CHECKUM_ALGO)
                 .get();
         acqFile1.setMetaFile(aMetaFile);
         acqFile1 = acqfileService.save(acqFile1);
 
         AcquisitionFile acqFile2 = AcquisitionFileBuilder.build("file" + TWO)
-                .withStatus(AcquisitionFileStatus.IN_PROGRESS.toString()).withSize(15686L)
+                .withStatus(AcquisitionFileState.IN_PROGRESS.toString()).withSize(15686L)
                 .withChecksum("YYYYYYYYYYYYYYYYY", CHECKUM_ALGO).withActivationDate(OffsetDateTime.now()).get();
         acqFile2.setMetaFile(aMetaFile);
         acqFile2 = acqfileService.save(acqFile2);
@@ -284,7 +284,7 @@ public class AcquisitionFileServiceIT {
 
         // Create 2 AcquisitionFile 
         AcquisitionFile acqFile1 = AcquisitionFileBuilder.build("file" + ONE)
-                .withStatus(AcquisitionFileStatus.IN_PROGRESS.toString()).withSize(133L)
+                .withStatus(AcquisitionFileState.IN_PROGRESS.toString()).withSize(133L)
                 .withChecksum("YYYYYYYYYYYYYYYYY", CHECKUM_ALGO).get();
         acqFile1.setMetaFile(aMetaFile);
         acqFile1 = acqfileService.save(acqFile1);
@@ -293,7 +293,7 @@ public class AcquisitionFileServiceIT {
         aProduct.addAcquisitionFile(acqFile1);
 
         AcquisitionFile acqFile2 = AcquisitionFileBuilder.build("file" + TWO)
-                .withStatus(AcquisitionFileStatus.IN_PROGRESS.toString())
+                .withStatus(AcquisitionFileState.IN_PROGRESS.toString())
                 .withChecksum("YYYYYYYYYYYYYYYYY", CHECKUM_ALGO).withSize(15686L).get();
         acqFile2.setMetaFile(aMetaFile);
         acqFile2 = acqfileService.save(acqFile2);

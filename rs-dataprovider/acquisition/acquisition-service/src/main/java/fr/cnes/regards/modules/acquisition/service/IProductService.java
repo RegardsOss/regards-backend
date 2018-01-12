@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
@@ -77,7 +77,7 @@ public interface IProductService {
      * @return list of {@link ProductState#FINISHED} or {@link ProductState#COMPLETED} products for specified
      *         acquisition chain <b>not already scheduled</b>.
      */
-    Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain chain);
+    Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain2 chain);
 
     /**
      * Schedule {@link Product} SIP generation
@@ -85,7 +85,7 @@ public interface IProductService {
      * @param chain related chain reference
      * @return scheduled {@link JobInfo}
      */
-    JobInfo scheduleProductSIPGeneration(Product product, AcquisitionProcessingChain chain);
+    JobInfo scheduleProductSIPGeneration(Product product, AcquisitionProcessingChain2 chain);
 
     Set<Product> findByStatus(ProductState status);
 

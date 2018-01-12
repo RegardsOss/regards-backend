@@ -26,8 +26,8 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
@@ -80,19 +80,19 @@ public interface IAcquisitionFileService {
     List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
 
     /**
-     * Find a {@link List} of {@link AcquisitionFile} for with a {@link AcquisitionFileStatus}
-     * @param status the {@link AcquisitionFileStatus} to search
+     * Find a {@link List} of {@link AcquisitionFile} for with a {@link AcquisitionFileState}
+     * @param status the {@link AcquisitionFileState} to search
      * @return a {@link List} of {@link AcquisitionFile}
      */
-    List<AcquisitionFile> findByStatus(AcquisitionFileStatus status);
+    List<AcquisitionFile> findByStatus(AcquisitionFileState status);
 
     /**
-     * Find a {@link List} of {@link AcquisitionFile} for with a {@link AcquisitionFileStatus} and a {@link MetaFile}
-     * @param status the {@link AcquisitionFileStatus} to search
+     * Find a {@link List} of {@link AcquisitionFile} for with a {@link AcquisitionFileState} and a {@link MetaFile}
+     * @param status the {@link AcquisitionFileState} to search
      * @param metaFile the {@link MetaFile} to search
      * @return a {@link List} of {@link AcquisitionFile}
      */
-    List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileStatus status, MetaFile metaFile);
+    List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileState status, MetaFile metaFile);
 
     /**
      * Find a {@link List} of {@link AcquisitionFile} for a {@link Product}
@@ -102,24 +102,24 @@ public interface IAcquisitionFileService {
     List<AcquisitionFile> findByProduct(String productName);
 
     /**
-     * Set the status of all the {@link AcquisitionFile} to {@link AcquisitionFileStatus#IN_PROGRESS} and set the last
-     * acquisition date of the current {@link AcquisitionProcessingChain}.</br>
+     * Set the status of all the {@link AcquisitionFile} to {@link AcquisitionFileState#IN_PROGRESS} and set the last
+     * acquisition date of the current {@link AcquisitionProcessingChain2}.</br>
      * If a {@link AcquisitionFile} does not exixt it is creates and persists.
      *
-     * Save all the {@link AcquisitionFile} and the {@link AcquisitionProcessingChain}.
+     * Save all the {@link AcquisitionFile} and the {@link AcquisitionProcessingChain2}.
      *
      * @param acquisitionFiles a {@link Set} of {@link AcquisitionFile}
-     * @param chain the current {@link AcquisitionProcessingChain}
+     * @param chain the current {@link AcquisitionProcessingChain2}
      */
-    void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, AcquisitionProcessingChain chain)
+    void saveAcqFilesAndChain(Set<AcquisitionFile> acquisitionFiles, AcquisitionProcessingChain2 chain)
             throws ModuleException;
 
     /**
-     * Calculus the {@link AcquisitionFileStatus} of the current {@link AcquisitionFile} and save the
+     * Calculus the {@link AcquisitionFileState} of the current {@link AcquisitionFile} and save the
      * {@link AcquisitionFile} and the {@link Product}.<br>
-     * <li>If the result is <code>true</code> the status is set to {@link AcquisitionFileStatus#VALID}</br>
+     * <li>If the result is <code>true</code> the status is set to {@link AcquisitionFileState#VALID}</br>
      * </br>
-     * <li>If the result is <code>false</code> the status is set to {@link AcquisitionFileStatus#INVALID}</br>
+     * <li>If the result is <code>false</code> the status is set to {@link AcquisitionFileState#INVALID}</br>
      * </br>
      * @param result <code>true</code> if the check result of current file is correct
      * @param session the current session

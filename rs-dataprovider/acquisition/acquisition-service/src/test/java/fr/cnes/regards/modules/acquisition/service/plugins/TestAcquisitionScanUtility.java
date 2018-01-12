@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.modules.acquisition.builder.FileAcquisitionInformationsBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 
@@ -87,7 +87,7 @@ public class TestAcquisitionScanUtility extends AcquisitionScanPluginHelper {
         af.setAcqDate(OffsetDateTime.now());
         af.setChecksumAlgorithm(CHECKUM_ALGO);
         af.setChecksum("unknown file");
-        af.setStatus(AcquisitionFileStatus.IN_PROGRESS);
+        af.setStatus(AcquisitionFileState.IN_PROGRESS);
 
         af.setMetaFile(metaFileService.retrieve(getMetaFileOptional(metaFiles, false).getId()));
 

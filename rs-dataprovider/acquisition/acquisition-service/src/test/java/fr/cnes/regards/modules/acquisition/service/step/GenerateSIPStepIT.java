@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.builder.AcquisitionFileBuilder;
 import fr.cnes.regards.modules.acquisition.builder.ProductBuilder;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
@@ -69,9 +69,9 @@ public class GenerateSIPStepIT extends AcquisitionITHelper {
 
         // Add AcquisitionFile to the Product
         product.addAcquisitionFile(acquisitionFileService.save(AcquisitionFileBuilder.build("file-1")
-                .withStatus(AcquisitionFileStatus.VALID.toString()).withMetaFile(metaFileMandatory).get()));
+                .withStatus(AcquisitionFileState.VALID.toString()).withMetaFile(metaFileMandatory).get()));
         product.addAcquisitionFile(acquisitionFileService.save(AcquisitionFileBuilder.build("file-2")
-                .withStatus(AcquisitionFileStatus.VALID.toString()).withMetaFile(metaFileMandatory).get()));
+                .withStatus(AcquisitionFileState.VALID.toString()).withMetaFile(metaFileMandatory).get()));
         productService.save(product);
 
         AcquisitionProcess process = new AcquisitionProcess(chain, product);

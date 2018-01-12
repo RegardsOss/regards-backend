@@ -57,8 +57,8 @@ import fr.cnes.regards.modules.acquisition.dao.IMetaProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.IScanDirectoryRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
@@ -67,7 +67,7 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
-import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService2;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
 import fr.cnes.regards.modules.acquisition.service.IMetaProductService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
@@ -118,7 +118,7 @@ public class CleanOriginalFilePostPluginTest extends AcquisitionScanPluginHelper
     private IScanDirectoryService scandirService;
 
     @Autowired
-    private IAcquisitionProcessingChainService acqProcessChainService;
+    private IAcquisitionProcessingChainService2 acqProcessChainService;
 
     @Autowired
     private IProductService productService;
@@ -156,7 +156,7 @@ public class CleanOriginalFilePostPluginTest extends AcquisitionScanPluginHelper
     @Autowired
     protected IExecAcquisitionProcessingChainRepository execProcessingChainRepository;
 
-    private AcquisitionProcessingChain chain;
+    private AcquisitionProcessingChain2 chain;
 
     private final URL dataPath = getClass().getResource("/data");
 
@@ -279,7 +279,7 @@ public class CleanOriginalFilePostPluginTest extends AcquisitionScanPluginHelper
         Product product = ProductBuilder.build(productName).withStatus(status).withMetaProduct(metaProduct)
                 .isSended(sended).withSession(chain.getSession()).get();
         product.addAcquisitionFile(acquisitionFileService
-                .save(AcquisitionFileBuilder.build(fileName).withStatus(AcquisitionFileStatus.VALID.toString())
+                .save(AcquisitionFileBuilder.build(fileName).withStatus(AcquisitionFileState.VALID.toString())
                         .withFileAcquisitionInformations(fileAcqInf).withMetaFile(metaFile).get()));
 
         return productService.save(product);

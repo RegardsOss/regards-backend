@@ -16,28 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.service.job.step;
+package fr.cnes.regards.modules.acquisition.service;
 
-import fr.cnes.regards.framework.modules.jobs.domain.step.AbstractProcessingStep;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
-import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 
 /**
- *
- * Common data provider step
- *
- * @param <I> input object
- * @param <0> output object
+ * Acquistion processing service interface
  *
  * @author Marc Sordi
  *
  */
-public abstract class AbstractDataProviderStep<I, O> extends AbstractProcessingStep<I, O, ProductAcquisitionJob> {
+public interface IAcquisitionProcessingService {
 
-    protected final AcquisitionProcessingChain2 acqProcessingChain;
-
-    public AbstractDataProviderStep(ProductAcquisitionJob job) {
-        super(job);
-        this.acqProcessingChain = job.getAcqProcessingChain();
-    }
+    /**
+     * Retrieve a processing chain according to its identifier.
+     * @param id {@link AcquisitionProcessingChain} identifier
+     * @return {@link AcquisitionProcessingChain}
+     * @throws ModuleException if error occurs.
+     */
+    AcquisitionProcessingChain getChain(Long id) throws ModuleException;
 }

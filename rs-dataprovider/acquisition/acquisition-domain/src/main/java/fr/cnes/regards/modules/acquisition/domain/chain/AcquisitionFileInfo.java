@@ -19,6 +19,9 @@
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -26,6 +29,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
@@ -35,19 +39,21 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 
 /**
  *
- * TODO
- * @author Marc Sordi
+ * Acquisition file information. An acquisition file is an optional or mandatory part of a product.
  *
+ * @author Marc Sordi
  */
+@Entity
+@Table(name = "t_acq_file_info")
 public class AcquisitionFileInfo {
 
     @Id
-    @SequenceGenerator(name = "MetaFileSequence", initialValue = 1, sequenceName = "seq_meta_file")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "MetaFileSequence")
+    @SequenceGenerator(name = "AcqFileInfoSequence", initialValue = 1, sequenceName = "seq_acq_file_info")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "AcqFileInfoSequence")
     protected Long id;
 
     /**
-     * <code>true</code> if the data file is mandatory, <code>false</code> otherwise
+     * <code>true</code> if the related data file is mandatory, <code>false</code> otherwise
      */
     @NotNull
     @Column(name = "mandatory")
@@ -55,14 +61,8 @@ public class AcquisitionFileInfo {
 
     @NotNull(message = "Scan plugin is required")
     @ManyToOne(optional = false)
-    @JoinColumn(name = "scan_conf_id", nullable = false, foreignKey = @ForeignKey(name = "fk_generation_conf_id"))
+    @JoinColumn(name = "scan_conf_id", nullable = false, foreignKey = @ForeignKey(name = "fk_scan_conf_id"))
     private PluginConfiguration scanPlugin;
-
-    /**
-     * A folder used to move invalid data file
-     */
-    @Column(name = "invalid_folder_name", length = 255)
-    private String invalidFolder;
 
     /**
      * A {@link String} corresponding to the data file mime-type
@@ -71,7 +71,9 @@ public class AcquisitionFileInfo {
     @Column(name = "mime_type", length = 255)
     private String mimeType;
 
-    // TODO
+    @NotNull(message = "REGARDS data type is required")
+    @Column(name = "data_type", length = 16)
+    @Enumerated(EnumType.STRING)
     private DataType dataType;
 
     /**
@@ -80,4 +82,48 @@ public class AcquisitionFileInfo {
     @Column(name = "comment")
     @Type(type = "text")
     private String comment;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public PluginConfiguration getScanPlugin() {
+        return scanPlugin;
+    }
+
+    public void setScanPlugin(PluginConfiguration scanPlugin) {
+        this.scanPlugin = scanPlugin;
+    }
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    public DataType getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(DataType dataType) {
+        this.dataType = dataType;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public Boolean getMandatory() {
+        return mandatory;
+    }
 }

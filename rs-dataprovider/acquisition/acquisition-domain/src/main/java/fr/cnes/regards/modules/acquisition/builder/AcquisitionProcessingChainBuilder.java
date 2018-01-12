@@ -21,12 +21,12 @@ package fr.cnes.regards.modules.acquisition.builder;
 import java.time.OffsetDateTime;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 
 /**
  *
- * {@link AcquisitionProcessingChain} builder
+ * {@link AcquisitionProcessingChain2} builder
  *
  * @author Christophe Mertz
  *
@@ -34,11 +34,11 @@ import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 public final class AcquisitionProcessingChainBuilder {
 
     /**
-     * Current {@link AcquisitionProcessingChain}
+     * Current {@link AcquisitionProcessingChain2}
      */
-    private final AcquisitionProcessingChain chain;
+    private final AcquisitionProcessingChain2 chain;
 
-    private AcquisitionProcessingChainBuilder(AcquisitionProcessingChain processingChain) {
+    private AcquisitionProcessingChainBuilder(AcquisitionProcessingChain2 processingChain) {
         this.chain = processingChain;
     }
 
@@ -48,21 +48,21 @@ public final class AcquisitionProcessingChainBuilder {
      * @return the current {@link AcquisitionProcessingChainBuilder}
      */
     public static AcquisitionProcessingChainBuilder build(String label) {
-        final AcquisitionProcessingChain cg = new AcquisitionProcessingChain();
+        final AcquisitionProcessingChain2 cg = new AcquisitionProcessingChain2();
         cg.setLabel(label);
         return new AcquisitionProcessingChainBuilder(cg);
     }
 
     /**
-     * Get the current {@link AcquisitionProcessingChain}
-     * @return the current {@link AcquisitionProcessingChain}
+     * Get the current {@link AcquisitionProcessingChain2}
+     * @return the current {@link AcquisitionProcessingChain2}
      */
-    public AcquisitionProcessingChain get() {
+    public AcquisitionProcessingChain2 get() {
         return chain;
     }
 
     /**
-     * Set the comment property to the current {@link AcquisitionProcessingChain}
+     * Set the comment property to the current {@link AcquisitionProcessingChain2}
      * @param comment
      * @return the current {@link AcquisitionProcessingChainBuilder}
      */
@@ -72,7 +72,7 @@ public final class AcquisitionProcessingChainBuilder {
     }
 
     /**
-     * Set the active property to the current {@link AcquisitionProcessingChain}
+     * Set the active property to the current {@link AcquisitionProcessingChain2}
      * @return the current {@link AcquisitionProcessingChainBuilder}
      */
     public AcquisitionProcessingChainBuilder isActive() {
@@ -81,7 +81,7 @@ public final class AcquisitionProcessingChainBuilder {
     }
 
     /**
-     * Set the last acquition date property to the current {@link AcquisitionProcessingChain}
+     * Set the last acquition date property to the current {@link AcquisitionProcessingChain2}
      * @param date
      * @return the current {@link AcquisitionProcessingChainBuilder}
      */
@@ -91,7 +91,7 @@ public final class AcquisitionProcessingChainBuilder {
     }
 
     /**
-     * Set the periodicity property to the current {@link AcquisitionProcessingChain}
+     * Set the periodicity property to the current {@link AcquisitionProcessingChain2}
      * @param periodicity
      * @return the current {@link AcquisitionProcessingChainBuilder}
      */
@@ -101,7 +101,7 @@ public final class AcquisitionProcessingChainBuilder {
     }
 
     /**
-     * Set the {@link MetaProduct} property to the current {@link AcquisitionProcessingChain}
+     * Set the {@link MetaProduct} property to the current {@link AcquisitionProcessingChain2}
      * @param metaProduct
      * @return the current {@link AcquisitionProcessingChainBuilder}
      */
@@ -111,7 +111,7 @@ public final class AcquisitionProcessingChainBuilder {
     }
 
     /**
-     * Set the dataset property to the current {@link AcquisitionProcessingChain}
+     * Set the dataset property to the current {@link AcquisitionProcessingChain2}
      * @param dataSet the dataset {@link String} value
      * @return the current {@link AcquisitionProcessingChainBuilder}
      */
@@ -121,7 +121,7 @@ public final class AcquisitionProcessingChainBuilder {
     }
 
     /**
-     * Set the session property to the current {@link AcquisitionProcessingChain}
+     * Set the session property to the current {@link AcquisitionProcessingChain2}
      * @param session the session {@link String} value
      * @return the current {@link AcquisitionProcessingChainBuilder}
      */
@@ -131,7 +131,7 @@ public final class AcquisitionProcessingChainBuilder {
     }
 
     /**
-     * Set the scan {@link PluginConfiguration} id property to the current {@link AcquisitionProcessingChain}
+     * Set the scan {@link PluginConfiguration} id property to the current {@link AcquisitionProcessingChain2}
      * @param pluginconfId
      * @return the current {@link AcquisitionProcessingChainBuilder} 
      */
