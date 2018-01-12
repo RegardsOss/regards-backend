@@ -43,6 +43,7 @@ import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.dto.OrderDto;
 import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
@@ -140,7 +141,7 @@ public class OrderController implements IResourceController<OrderDto> {
 
     @ResourceAccess(description = "Ask for an order to be paused", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.PUT, path = PAUSE_ORDER_PATH)
-    public ResponseEntity<Void> pauseOrder(@PathVariable("orderId") Long orderId) {
+    public ResponseEntity<Void> pauseOrder(@PathVariable("orderId") Long orderId) throws CannotPauseOrderException {
         orderService.pause(orderId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
