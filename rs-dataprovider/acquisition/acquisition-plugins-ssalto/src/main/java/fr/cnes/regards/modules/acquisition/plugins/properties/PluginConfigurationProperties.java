@@ -130,7 +130,7 @@ public class PluginConfigurationProperties {
         String confPath = "";
         try {
             Properties confProperties = LoadTranslationProperties.getInstance().loadPluginsRepository();
-            confPath = (String) confProperties.get("regards.acquisition.ssalto.plugin-conf-path");
+            confPath = (String) confProperties.get("regards.acquisition.ssalto.cycle-orf-conf-path");
         } catch (PluginAcquisitionException e) {
             LOGGER.error(e.getMessage(), e);
         }

@@ -43,9 +43,9 @@ public class PluginsRepositoryProperties {
     private String pluginTranslationFilesPath;
 
     /**
-     * value of regards.acquisition.ssalto.plugin-conf-path
+     * value of regards.acquisition.ssalto.cycle-orf-conf-path
      */
-    private String pluginConfPath;
+    private String cycleOrfConfPath;
 
     public String getPluginConfFilesPath() {
         return pluginConfFilesPath;
@@ -63,12 +63,12 @@ public class PluginsRepositoryProperties {
         this.pluginTranslationFilesPath = pluginTranslationFilesDir;
     }
 
-    public String getPluginConfPath() {
-        return pluginConfPath;
+    public String getCycleOrfConfPath() {
+        return cycleOrfConfPath;
     }
 
-    public void setPluginConfPath(String pluginConfDir) {
-        this.pluginConfPath = pluginConfDir;
+    public void setCycleOrfConfPath(String cycleOrfConfPath) {
+        this.cycleOrfConfPath = cycleOrfConfPath;
     }
 
 }

@@ -87,6 +87,11 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      * Attributes order
      */
     private static final String ATTRIBUTE_ORDER_PROP_FILE = "attributeOrder.properties";
+    
+    /**
+     * Path the 
+     */
+    private static final String DEFAULT_CONF_PATH = "ssalto/domain/plugins/impl/tools";
 
     /**
      * Attribute GEO_COORDINATES
@@ -252,12 +257,8 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      *             des attributs.
      */
     protected void loadDataSetConfiguration(String dataSetName) throws ModuleException {
-        // Path to the configuration file
-        // attributeOrder.properties and pluginFinderDigesterRules.xml
-        String pluginsConfPath = getPluginsRepositoryProperties().getPluginConfPath();
-
         // file access to pluginFinderDigesterRules.xml
-        File digesterRuleFile = new File(pluginsConfPath, RULE_FILE);
+        File digesterRuleFile = new File(DEFAULT_CONF_PATH, RULE_FILE);
 
         // Get the path to the digester rules file
         URL ruleUrl = getClass().getClassLoader().getResource(digesterRuleFile.getPath());
@@ -287,7 +288,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
         }
 
         // file access to attributeOrder.properties
-        File attributeOrderFile = new File(pluginsConfPath, ATTRIBUTE_ORDER_PROP_FILE);
+        File attributeOrderFile = new File(DEFAULT_CONF_PATH, ATTRIBUTE_ORDER_PROP_FILE);
         attributeOrderProperties = new Properties();
         try (InputStream stream = getClass().getClassLoader().getResourceAsStream(attributeOrderFile.getPath())) {
             attributeOrderProperties.load(stream);
