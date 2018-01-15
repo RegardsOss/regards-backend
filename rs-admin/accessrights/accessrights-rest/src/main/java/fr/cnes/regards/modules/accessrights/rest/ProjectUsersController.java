@@ -122,7 +122,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the list of users of the project", role = DefaultRole.ADMIN)
     public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveProjectUserList(
-            @RequestParam(name = "status", required = false) final String status, @RequestParam(name = "partialLogin", required = false) String emailStart, final Pageable pageable,
+            @RequestParam(name = "status", required = false) final String status, @RequestParam(name = "partialEmail", required = false) String emailStart, final Pageable pageable,
             final PagedResourcesAssembler<ProjectUser> pagedResourcesAssembler) {
         Page<ProjectUser> users;
         users = projectUserService.retrieveUserList(status, emailStart, pageable);
