@@ -61,6 +61,11 @@ public class ProjectClientStub implements IProjectsClient {
     }
 
     @Override
+    public ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(int page, int size) {
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    @Override
     public ResponseEntity<Resource<Project>> createProject(final Project pNewProject) {
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }

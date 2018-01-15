@@ -109,7 +109,7 @@ public class ProjectController implements IResourceController<Project> {
      */
     @RequestMapping(value = "/public", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
-    @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(final Pageable pPageable,
             final PagedResourcesAssembler<Project> pAssembler) {
         final Page<Project> projects = projectService.retrievePublicProjectList(pPageable);

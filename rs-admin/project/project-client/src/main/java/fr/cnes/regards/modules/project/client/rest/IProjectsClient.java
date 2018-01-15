@@ -42,7 +42,8 @@ import fr.cnes.regards.modules.project.domain.Project;
  * @since 1.0-SNAPSHOT
  */
 @RestClient(name = "rs-admin-instance")
-@RequestMapping(value = "/projects", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/projects", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IProjectsClient {
 
     // Projects Requests
@@ -64,6 +65,17 @@ public interface IProjectsClient {
     @ResponseBody
     ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(@RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
+
+    /**
+     * Same than {@link IProjectsClient#retrieveProjectList(int, int)} but only for public projects
+     * @param page
+     * @param size
+     * @return
+     */
+    @RequestMapping(value = "/public", method = RequestMethod.GET, produces = "application/json")
+    @ResponseBody
+    ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(@RequestParam("page") int page,
+            @RequestParam("size") int size);
 
     /**
      *
