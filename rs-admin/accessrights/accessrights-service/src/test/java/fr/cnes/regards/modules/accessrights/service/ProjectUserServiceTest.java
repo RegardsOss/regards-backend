@@ -252,7 +252,7 @@ public class ProjectUserServiceTest {
         Mockito.when(projectUserRepository.findByStatus(UserStatus.ACCESS_GRANTED, pageable)).thenReturn(expectedPage);
 
         // Retrieve actual value
-        final Page<ProjectUser> actual = projectUserService.retrieveUserList(UserStatus.ACCESS_GRANTED, pageable);
+        final Page<ProjectUser> actual = projectUserService.retrieveUserList(UserStatus.ACCESS_GRANTED.toString(), null, pageable);
 
         // Check that the expected and actual role have same values
         Assert.assertEquals(expectedPage, actual);
@@ -282,7 +282,7 @@ public class ProjectUserServiceTest {
         Mockito.when(projectUserRepository.findAll(pageable)).thenReturn(expectedPage);
 
         // Retrieve actual value
-        final Page<ProjectUser> actual = projectUserService.retrieveUserList(pageable);
+        final Page<ProjectUser> actual = projectUserService.retrieveUserList(null, null, pageable);
 
         // Check that the expected and actual role have same values
         Assert.assertEquals(expectedPage, actual);

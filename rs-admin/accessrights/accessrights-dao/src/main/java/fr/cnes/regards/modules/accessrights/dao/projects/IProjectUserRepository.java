@@ -28,6 +28,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -41,7 +42,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  */
-public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long> {
+public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>,
+        JpaSpecificationExecutor<ProjectUser> {
 
     /**
      * Find the single {@link ProjectUser} with passed <code>email</code>.<br>
