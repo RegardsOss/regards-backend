@@ -43,13 +43,13 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-starter</artifactId>
+			<groupId>fr.cnes.regards.modules.accessrights</groupId>
+			<artifactId>accessrights-dao</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-instance-regards-starter</artifactId>
+			<artifactId>jpa-multitenant-regards-starter</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

@@ -89,29 +89,28 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void testListNotif() throws EntityNotFoundException {
         String roleName = DefaultRole.PROJECT_ADMIN.name();
-        Role pa = roleService.retrieveRole(roleName);
-        ProjectUser pu = projectUserRepository
-                .save(new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList()));
+        Role pa = new Role(roleName);
+        ProjectUser pu = new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList());
         Mockito.when(projectUsersClient.retrieveRoleProjectUserList(pa.getId(), 0, 100))
                 .thenReturn(new ResponseEntity<>(HateoasUtils.wrapToPagedResources(Lists.newArrayList(pu)),
                                                  HttpStatus.OK));
         NotificationDTO notif = new NotificationDTO("Bonne",
-                                                    Lists.newArrayList(),
-                                                    Lists.newArrayList(roleName),
+                                                    Sets.newHashSet(),
+                                                    Sets.newHashSet(roleName),
                                                     "microservice",
                                                     "test",
                                                     NotificationType.INFO);
         notificationService.createNotification(notif);
         notif = new NotificationDTO("Année",
-                                    Lists.newArrayList(),
-                                    Lists.newArrayList(roleName),
+                                    Sets.newHashSet(),
+                                    Sets.newHashSet(roleName),
                                     "microservice",
                                     "test",
                                     NotificationType.INFO);
         notificationService.createNotification(notif);
         notif = new NotificationDTO("2018",
-                                    Lists.newArrayList(),
-                                    Lists.newArrayList(roleName),
+                                    Sets.newHashSet(),
+                                    Sets.newHashSet(roleName),
                                     "microservice",
                                     "test",
                                     NotificationType.INFO);
@@ -119,8 +118,8 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         //some lorem ipsum so we have a notification with content
         notif = new NotificationDTO(
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus sed magna turpis. Curabitur ultrices scelerisque magna pretium mollis. Sed suscipit, ligula eu tempus pretium, lorem quam vehicula urna, vel efficitur leo mauris quis mauris. Pellentesque ac ullamcorper lectus. Aliquam sed tempor massa. Proin ex massa, sodales vel turpis non, sodales rhoncus lacus. Maecenas a convallis nisi. Aliquam felis justo, pellentesque id vestibulum id, tempus sit amet dui. Quisque quis lacus vehicula, gravida lectus a, elementum erat. In vitae venenatis turpis, et venenatis lacus. Phasellus facilisis pellentesque elit, in lacinia enim placerat quis.",
-                Lists.newArrayList(),
-                Lists.newArrayList(roleName),
+                Sets.newHashSet(),
+                Sets.newHashSet(roleName),
                 "microservice",
                 "test",
                 NotificationType.INFO);
@@ -138,15 +137,14 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void testSetNotifRead() throws EntityNotFoundException {
         String roleName = DefaultRole.PROJECT_ADMIN.name();
-        Role pa = roleService.retrieveRole(roleName);
-        ProjectUser pu = projectUserRepository
-                .save(new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList()));
+        Role pa = new Role(roleName);
+        ProjectUser pu = new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList());
         Mockito.when(projectUsersClient.retrieveRoleProjectUserList(pa.getId(), 0, 100))
                 .thenReturn(new ResponseEntity<>(HateoasUtils.wrapToPagedResources(Lists.newArrayList(pu)),
                                                  HttpStatus.OK));
         NotificationDTO notificationDTO = new NotificationDTO("Bonne",
-                                                              Lists.newArrayList(),
-                                                              Lists.newArrayList(roleName),
+                                                              Sets.newHashSet(),
+                                                              Sets.newHashSet(roleName),
                                                               "microservice",
                                                               "test",
                                                               NotificationType.INFO);
@@ -164,15 +162,14 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
     public void testSetNotifUnread() throws EntityNotFoundException {
         //create a notification
         String roleName = DefaultRole.PROJECT_ADMIN.name();
-        Role pa = roleService.retrieveRole(roleName);
-        ProjectUser pu = projectUserRepository
-                .save(new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList()));
+        Role pa = new Role(roleName);
+        ProjectUser pu = new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList());
         Mockito.when(projectUsersClient.retrieveRoleProjectUserList(pa.getId(), 0, 100))
                 .thenReturn(new ResponseEntity<>(HateoasUtils.wrapToPagedResources(Lists.newArrayList(pu)),
                                                  HttpStatus.OK));
         NotificationDTO notificationDTO = new NotificationDTO("Bonne",
-                                                              Lists.newArrayList(),
-                                                              Lists.newArrayList(roleName),
+                                                              Sets.newHashSet(),
+                                                              Sets.newHashSet(roleName),
                                                               "microservice",
                                                               "test",
                                                               NotificationType.INFO);
