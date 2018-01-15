@@ -61,11 +61,6 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
      */
     private String instanceAdmintoken;
 
-    /**
-     * Public Token
-     */
-    private String publicToken;
-
     @Autowired
     private IProjectRepository projectRepo;
 
@@ -77,7 +72,6 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
     @Before
     public void initialize() {
         instanceAdmintoken = jwtService.generateToken("test1", DEFAULT_USER_EMAIL, DefaultRole.INSTANCE_ADMIN.name());
-        publicToken = jwtService.generateToken("test1", DEFAULT_USER_EMAIL, DefaultRole.PUBLIC.name());
     }
 
     /**
@@ -94,7 +88,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performGet("/projects/public", publicToken, requestBuilderCustomizer, "error");
+        performGet("/projects/public", instanceAdmintoken, requestBuilderCustomizer, "error");
     }
 
     /**
@@ -164,7 +158,10 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performGet("/projects/test1", publicToken, requestBuilderCustomizer, "Error there must be project results");
+        performGet("/projects/test1",
+                   instanceAdmintoken,
+                   requestBuilderCustomizer,
+                   "Error there must be project results");
     }
 
     /**
