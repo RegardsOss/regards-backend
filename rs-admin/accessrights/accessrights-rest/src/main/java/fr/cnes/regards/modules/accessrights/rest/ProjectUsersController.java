@@ -349,6 +349,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
                                     MethodParamFactory.build(Long.class, pElement.getId()));
             resourceService.addLink(resource, this.getClass(), "retrieveProjectUserList", LinkRels.LIST,
                                     MethodParamFactory.build(String.class, pElement.getStatus().toString()),
+                                    MethodParamFactory.build(String.class),
                                     MethodParamFactory.build(Pageable.class),
                                     MethodParamFactory.build(PagedResourcesAssembler.class));
             // Specific links to add in WAITING_ACCESS state
