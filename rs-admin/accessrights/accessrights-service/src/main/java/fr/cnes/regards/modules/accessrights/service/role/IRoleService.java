@@ -275,4 +275,9 @@ public interface IRoleService {
      * @since 1.0-SNAPSHOT
      */
     Set<Role> retrieveRolesWithResource(Long pResourceId);
+
+    /**
+     * Init all default roles for the current tenant
+     */
+    void initDefaultRoles();
 }

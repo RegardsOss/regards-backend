@@ -46,6 +46,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecification;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
@@ -122,18 +123,8 @@ public class ProjectUserService implements IProjectUserService {
      * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveUserList()
      */
     @Override
-    public Page<ProjectUser> retrieveUserList(final Pageable pPageable) {
-        return projectUserRepository.findAll(pPageable);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveUserList(UserStatus)
-     */
-    @Override
-    public Page<ProjectUser> retrieveUserList(final UserStatus pStatus, final Pageable pPageable) {
-        return projectUserRepository.findByStatus(pStatus, pPageable);
+    public Page<ProjectUser> retrieveUserList(String status, String emailStart, final Pageable pageable) {
+        return projectUserRepository.findAll(ProjectUserSpecification.search(status, emailStart), pageable);
     }
 
     /*

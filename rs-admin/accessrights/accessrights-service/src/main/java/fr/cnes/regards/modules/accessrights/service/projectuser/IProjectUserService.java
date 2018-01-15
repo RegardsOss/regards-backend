@@ -45,26 +45,16 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
 public interface IProjectUserService {
 
     /**
-     * Retrieve the {@link List} of all {@link ProjectUser}s.
+     * Retrieve the paged {@link List} of all {@link ProjectUser}s filtered by given properties.
      *
+     *
+     * @param status
+     * @param emailStart
      * @param pPageable
      *            the paging information
-     *
-     * @return The list of project users
+     *  @return The list of project users
      */
-    Page<ProjectUser> retrieveUserList(Pageable pPageable);
-
-    /**
-     * Retrieve the {@link List} of all {@link ProjectUser}s with the given status.
-     *
-     * @param pStatus
-     *            the {@link UserStatus} to retrieve
-     * @param pPageable
-     *            the paging information
-     *
-     * @return The list of project users
-     */
-    Page<ProjectUser> retrieveUserList(UserStatus pStatus, Pageable pPageable);
+    Page<ProjectUser> retrieveUserList(String status, String emailStart, Pageable pPageable);
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>id</code>.

@@ -65,6 +65,16 @@ public class NotificationController {
     public static final String NOTIFICATION_ID_PATH = "/{notification_id}";
 
     /**
+     * Controller path using notification id as path variable
+     */
+    public static final String NOTIFICATION_READ_PATH = NOTIFICATION_ID_PATH + "/read";
+
+    /**
+     * Controller path using notification id as path variable
+     */
+    public static final String NOTIFICATION_UNREAD_PATH = NOTIFICATION_ID_PATH + "/unread";
+
+    /**
      * Controller path for notification settings
      */
     public static final String NOTIFICATION_SETTINGS = "/settings";
@@ -128,23 +138,37 @@ public class NotificationController {
     }
 
     /**
-     * Define the endpoint for updating the {@link Notification#status}
+     * Allows to set a notification to status read
      *
-     * @param pId
+     * @param id
      *            The notification <code>id</code>
-     * @param pStatus
-     *            The new <code>status</code>
      * @return The updated {@link Notification} wrapped in a {@link ResponseEntity}
      * @throws EntityNotFoundException
      *             Thrown when no notification with passed <code>id</code> could be found
      *
      */
     @ResponseBody
-    @RequestMapping(value = NOTIFICATION_ID_PATH, method = RequestMethod.PUT)
+    @RequestMapping(value = NOTIFICATION_READ_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Define the endpoint for updating the notification status")
-    public ResponseEntity<Notification> updateNotificationStatus(@PathVariable("notification_id") final Long pId,
-            @Valid @RequestBody final NotificationStatus pStatus) throws EntityNotFoundException {
-        final Notification notification = notificationService.updateNotificationStatus(pId, pStatus);
+    public ResponseEntity<Notification> setNotificationRead(@PathVariable("notification_id") final Long id) throws EntityNotFoundException {
+        final Notification notification = notificationService.updateNotificationStatus(id, NotificationStatus.READ);
+        return new ResponseEntity<>(notification, HttpStatus.OK);
+    }
+
+    /**
+     * Allows to set a notification to status unread
+     *
+     * @param id
+     *            The notification <code>id</code>
+     * @return The updated {@link Notification} wrapped in a {@link ResponseEntity}
+     * @throws EntityNotFoundException
+     *             Thrown when no notification with passed <code>id</code> could be found
+     */
+    @ResponseBody
+    @RequestMapping(value = NOTIFICATION_UNREAD_PATH, method = RequestMethod.PUT)
+    @ResourceAccess(description = "Define the endpoint for updating the notification status")
+    public ResponseEntity<Notification> setNotificationUnRead(@PathVariable("notification_id") final Long id) throws EntityNotFoundException {
+        final Notification notification = notificationService.updateNotificationStatus(id, NotificationStatus.UNREAD);
         return new ResponseEntity<>(notification, HttpStatus.OK);
     }
 

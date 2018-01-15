@@ -41,10 +41,8 @@ public interface INotificationRepository extends JpaRepository<Notification, Lon
     /**
      * Find all notifications having the passed project user or the passed role as recipient.
      *
-     * @param pProjectUser
-     *            The required project user recipient
-     * @param pRole
-     *            The required role recipient
+     * @param projectUser The required project user recipient
+     * @param role The required role recipient
      * @return The list of found notifications
      */
     @Query("select distinct n from t_notification n where ?1 in n.projectUserRecipients or ?2 in n.roleRecipients")

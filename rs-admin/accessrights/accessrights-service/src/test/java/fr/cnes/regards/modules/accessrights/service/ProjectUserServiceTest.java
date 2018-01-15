@@ -39,6 +39,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -51,6 +52,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecification;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
@@ -287,16 +289,13 @@ public class ProjectUserServiceTest {
         final Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 1);
 
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findByStatus(UserStatus.ACCESS_GRANTED, pageable)).thenReturn(expectedPage);
+        Mockito.when(projectUserRepository.findAll(Mockito.any(Specification.class), Mockito.eq(pageable))).thenReturn(expectedPage);
 
         // Retrieve actual value
-        final Page<ProjectUser> actual = projectUserService.retrieveUserList(UserStatus.ACCESS_GRANTED, pageable);
+        final Page<ProjectUser> actual = projectUserService.retrieveUserList(UserStatus.ACCESS_GRANTED.toString(), null, pageable);
 
         // Check that the expected and actual role have same values
         Assert.assertEquals(expectedPage, actual);
-
-        // Check that the repository's method was called with right arguments
-        Mockito.verify(projectUserRepository).findByStatus(UserStatus.ACCESS_GRANTED, pageable);
     }
 
     /**
@@ -317,16 +316,13 @@ public class ProjectUserServiceTest {
         final Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 1);
 
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findAll(pageable)).thenReturn(expectedPage);
+        Mockito.when(projectUserRepository.findAll(Mockito.any(Specification.class), Mockito.eq(pageable))).thenReturn(expectedPage);
 
         // Retrieve actual value
-        final Page<ProjectUser> actual = projectUserService.retrieveUserList(pageable);
+        final Page<ProjectUser> actual = projectUserService.retrieveUserList(null, null, pageable);
 
         // Check that the expected and actual role have same values
         Assert.assertEquals(expectedPage, actual);
-
-        // Check that the repository's method was called with right arguments
-        Mockito.verify(projectUserRepository).findAll(pageable);
     }
 
     /**

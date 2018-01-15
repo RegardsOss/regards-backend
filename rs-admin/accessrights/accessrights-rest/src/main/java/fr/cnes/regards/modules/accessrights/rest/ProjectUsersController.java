@@ -120,17 +120,13 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "retrieve the list of users of the project", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "retrieve the list of users of the project", role = DefaultRole.ADMIN)
     public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveProjectUserList(
-            @RequestParam(name = "status", required = false) final String pStatus, final Pageable pPageable,
-            final PagedResourcesAssembler<ProjectUser> pPagedResourcesAssembler) {
+            @RequestParam(name = "status", required = false) final String status, @RequestParam(name = "partialEmail", required = false) String emailStart, final Pageable pageable,
+            final PagedResourcesAssembler<ProjectUser> pagedResourcesAssembler) {
         Page<ProjectUser> users;
-        if (pStatus == null) {
-            users = projectUserService.retrieveUserList(pPageable);
-        } else {
-            users = projectUserService.retrieveUserList(UserStatus.valueOf(pStatus), pPageable);
-        }
-        return new ResponseEntity<>(toPagedResources(users, pPagedResourcesAssembler), HttpStatus.OK);
+        users = projectUserService.retrieveUserList(status, emailStart, pageable);
+        return new ResponseEntity<>(toPagedResources(users, pagedResourcesAssembler), HttpStatus.OK);
     }
 
     /**
@@ -375,6 +371,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
                                     MethodParamFactory.build(Long.class, pElement.getId()));
             resourceService.addLink(resource, this.getClass(), "retrieveProjectUserList", LinkRels.LIST,
                                     MethodParamFactory.build(String.class, pElement.getStatus().toString()),
+                                    MethodParamFactory.build(String.class),
                                     MethodParamFactory.build(Pageable.class),
                                     MethodParamFactory.build(PagedResourcesAssembler.class));
             // Specific links to add in WAITING_ACCESS state

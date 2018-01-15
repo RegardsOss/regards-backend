@@ -38,7 +38,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
@@ -149,9 +148,8 @@ public class RoleServiceTest {
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
         tenantResolver = Mockito.mock(ITenantResolver.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
-        roleService = new RoleService("rs-test", roleRepository, projectUserRepository, tenantResolver,
-                runtimeTenantResolver, Mockito.mock(IInstancePublisher.class), Mockito.mock(IPublisher.class),
-                authResolver);
+        roleService = new RoleService(roleRepository, projectUserRepository, tenantResolver, runtimeTenantResolver,
+                Mockito.mock(IPublisher.class), authResolver);
 
         // Clear the repos
         projectUserRepository.deleteAll();
