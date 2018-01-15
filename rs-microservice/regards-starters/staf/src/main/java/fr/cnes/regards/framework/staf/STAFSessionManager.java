@@ -4,7 +4,9 @@
 package fr.cnes.regards.framework.staf;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 
@@ -36,21 +38,15 @@ public class STAFSessionManager {
     /**
      * Dernier identifiant de session attribue
      */
-    private int lastIdentifier;
+    private final AtomicInteger lastIdentifier = new AtomicInteger(0);
 
     /**
      * Liste des reservations en cours
      */
-    private List<Integer> reservations;
+    private final List<Integer> reservations = Collections.synchronizedList(new ArrayList<>());
 
-    private STAFSessionManager(STAFConfiguration pConfiguration) throws STAFException {
-        lastIdentifier = 0;
-        reservations = new ArrayList<>();
-        configuration = pConfiguration;
-    }
-
-    private STAFSessionManager() {
-
+    private STAFSessionManager(STAFConfiguration configuration) {
+        this.configuration = configuration;
     }
 
     public STAFSession getNewSession() {
@@ -59,50 +55,44 @@ public class STAFSessionManager {
 
     /**
      * Recupere l'instance unique du gestionnaire STAF
-     *
      * @return L'instance unique du gestionnaire STAF
-     * @throws STAFException
-     *             si le manager ne peut pas etre instancie.
+     * @throws STAFException si le manager ne peut pas etre instancie.
      */
-    public static synchronized STAFSessionManager getInstance(STAFConfiguration pConfiguration) throws STAFException {
+    public static STAFSessionManager getInstance(STAFConfiguration configuration) {
         if (instance == null) {
-            instance = new STAFSessionManager(pConfiguration);
+            instance = new STAFSessionManager(configuration);
         }
         return instance;
     }
 
     /**
      * Effectue la reservation d'un certain nombre de sessions pour une restitution ou une archive
-     *
-     * @param pReservationCount
-     *            Nombre de reservations demandees
-     * @param pBlock
-     *            Indique si l'octroi d'au moins une reservation est bloquant
-     * @param pMode
-     *            mode de restitution ou d archivage (constante de STAFService)
+     * @param reservationCount Nombre de reservations demandees
+     * @param block Indique si l'octroi d'au moins une reservation est bloquant
+     * @param mode mode de restitution ou d archivage (constante de STAFService)
      * @return Un tableau contenant les identifiants de reservation obtenus. En fonction de la disponibilite des
-     *         sessions, le nombre de reservations reellement obtenues peut etre inferieur au nombre de reservations
-     *         demandees.
+     * sessions, le nombre de reservations reellement obtenues peut etre inferieur au nombre de reservations
+     * demandees.
      */
-    public List<Integer> getReservations(int pReservationCount, boolean pBlock, ArchiveAccessModeEnum pMode) {
+    public List<Integer> getReservations(int reservationCount, boolean block, ArchiveAccessModeEnum mode) {
 
         // Reservations obtenues
         List<Integer> currentReservations = new ArrayList<>();
         // Reservation unique
-        Integer uniqueReservation = null;
+        int uniqueReservation = -1;
 
         // La reservation a lieu dans un section critique pour eviter tout
         // conflit en cas de reservation simultanee de plusieurs commandes.
         synchronized (this) {
-            if (hasFreeSessions(pMode)) {
+            if (hasFreeSessions(mode)) {
                 // Il existe des sessions libres. On en attribue un maximum au
                 // demandeur
                 int reservationIndex = 0;
-                while ((reservationIndex < pReservationCount) && hasFreeSessions(pMode)) {
+                while ((reservationIndex < reservationCount) && hasFreeSessions(mode)) {
                     currentReservations.add(getReservationIdentifier());
                     reservationIndex++;
                 }
-            } else if (pBlock) {
+            } else if (block) {
                 // Une reservation est ajoutee a la liste des reservations en cours
                 // mais la main n'est rendue a l'appelant que lorsque la reservation
                 // ainsi ajoutee fait partie des N (config) premieres de la liste des
@@ -115,12 +105,12 @@ public class STAFSessionManager {
         // L'attente eventuelle de l'obtention d'une reservation unique se fait
         // en dehors de la section critique car elle peut durer longtemps. En
         // revanche la verification de l'ordre de la reservation est synchronisee.
-        if (uniqueReservation != null) {
-            while (!isReservationAuthorized(uniqueReservation, pMode)) {
+        if (uniqueReservation != -1) {
+            while (!isReservationAuthorized(uniqueReservation, mode)) {
                 try {
-                    synchronized (uniqueReservation) {
-                        uniqueReservation.wait();
-                    }
+                    // Ici il y avait un synchronized avec un wait sur le uniqueReservation (de type Integer)
+                    // TODO semaphore
+                    Thread.sleep(1000l);
                 } catch (InterruptedException e) {
                     // Une interruption de l'attente n'est pas une erreur
                 }
@@ -136,70 +126,63 @@ public class STAFSessionManager {
 
     /**
      * Effectue la reservation pour une seule session (appel bloquant) pour une restitution ou une archive
-     *
-     * @param pMode
-     *            mode de restitution ou d archivage (constante de STAFService)
+     * @param mode mode de restitution ou d archivage (constante de STAFService)
      * @return L'identifiant de la session demandee.
      */
-    public Integer getReservation(ArchiveAccessModeEnum pMode) {
-        List<Integer> sessions = getReservations(1, true, pMode);
+    public Integer getReservation(ArchiveAccessModeEnum mode) {
+        List<Integer> sessions = getReservations(1, true, mode);
         return sessions.get(0);
     }
 
     /**
      * Libere une session. Les threads en attente d'une session sont avertis du retrait de la reservation pour la
      * restitution ou pour l archivage
-     *
-     * @param pReservation
-     *            Reservation liberee
-     * @param pMode
-     *            mode de restitution ou d archivage (constante de STAFService)
+     * @param reservation Reservation liberee
+     * @param mode mode de restitution ou d archivage (constante de STAFService)
      */
-    public synchronized void freeReservation(Integer pReservation, ArchiveAccessModeEnum pMode) {
+    public synchronized void freeReservation(Integer reservation, ArchiveAccessModeEnum mode) {
         // Free a reservation
-        reservations.remove(pReservation);
+        reservations.remove(reservation);
         // Restitution mode
-        if (pMode == ArchiveAccessModeEnum.RESTITUTION_MODE) {
+        if (mode == ArchiveAccessModeEnum.RESTITUTION_MODE) {
             // Inform the first thread waiting for a free ressource
             if (reservations.size() >= configuration.getMaxSessionsRestitutionMode().intValue()) {
                 int indexNextSession = configuration.getMaxSessionsRestitutionMode().intValue() - 1;
                 Integer nextReservation = reservations.get(indexNextSession);
+                // TODO REMPLACER PAR UN SEmaphore !!!
                 synchronized (nextReservation) {
                     nextReservation.notify();
                 }
             }
         }
         // Archive mode
-        else if (pMode == ArchiveAccessModeEnum.ARCHIVE_MODE) {
+        else if (mode == ArchiveAccessModeEnum.ARCHIVE_MODE) {
             // Inform the first thread waiting for a free ressource
             if (reservations.size() >= configuration.getMaxSessionsArchivingMode().intValue()) {
                 int indexNextSession = configuration.getMaxSessionsArchivingMode().intValue() - 1;
                 Integer nextReservation = reservations.get(indexNextSession);
+                // TODO REMPLACER PAR UN SEmaphore !!!
                 synchronized (nextReservation) {
                     nextReservation.notify();
                 }
             }
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("session number " + pReservation + " has been released");
+            logger.debug("session number " + reservation + " has been released");
         }
     }
 
     /**
      * Permet de savoir s'il existe des sessions disponibles pour une restitution ou un archivage
-     *
-     * @param pMode
-     *            mode de restitution ou d archivage (constante de STAFService)
+     * @param mode mode de restitution ou d archivage (constante de STAFService)
      * @return Indique s'il existe des sessions disponibles selon le mode
      */
-    private boolean hasFreeSessions(ArchiveAccessModeEnum pMode) {
+    private boolean hasFreeSessions(ArchiveAccessModeEnum mode) {
         boolean freeSession = false;
         // Restitution mode
-        if (pMode == ArchiveAccessModeEnum.RESTITUTION_MODE) {
+        if (mode == ArchiveAccessModeEnum.RESTITUTION_MODE) {
             freeSession = configuration.getMaxSessionsRestitutionMode().intValue() > reservations.size();
-        }
-        // Archivage mode
-        else if (pMode == ArchiveAccessModeEnum.ARCHIVE_MODE) {
+        } else if (mode == ArchiveAccessModeEnum.ARCHIVE_MODE) { // Archivage mode
             freeSession = configuration.getMaxSessionsArchivingMode().intValue() > reservations.size();
         }
         return freeSession;
@@ -208,40 +191,29 @@ public class STAFSessionManager {
     /**
      * Obtient un nouvel identificateur de reservation. Cet identificateur est stocke dans la table des reservations en
      * cours.
-     *
      * @return Le nouvel identificateur
      */
-    private Integer getReservationIdentifier() {
-
+    private int getReservationIdentifier() {
         // Calcule le nouvel identifiant
-        Integer identifier = null;
-        lastIdentifier++;
-        identifier = new Integer(lastIdentifier);
-
-        // Stocke le nouvel identifiant
-        reservations.add(identifier);
-
-        return identifier;
+        reservations.add(lastIdentifier.incrementAndGet());
+        return lastIdentifier.get();
     }
 
     /**
      * Verifie si une reservation autorise l'ouverture d'une session pour une restitution ou un archivage
-     *
-     * @param pReservation
-     *            Reservation a verifier
-     * @param pMode
-     *            mode de restitution ou d archivage (constante de STAFService)
+     * @param reservation Reservation a verifier
+     * @param mode mode de restitution ou d archivage (constante de STAFService)
      * @return vrai si la reservation est autorisee, faux sinon
      */
-    private synchronized boolean isReservationAuthorized(Integer pReservation, ArchiveAccessModeEnum pMode) {
-        int reservationIndex = reservations.indexOf(pReservation);
+    private boolean isReservationAuthorized(Integer reservation, ArchiveAccessModeEnum mode) {
+        int reservationIndex = reservations.indexOf(reservation);
         boolean reservationAuthorized = false;
         // Restitution mode
-        if (pMode == ArchiveAccessModeEnum.RESTITUTION_MODE) {
+        if (mode == ArchiveAccessModeEnum.RESTITUTION_MODE) {
             reservationAuthorized = reservationIndex < configuration.getMaxSessionsRestitutionMode().intValue();
         }
         // Archive mode
-        if (pMode == ArchiveAccessModeEnum.ARCHIVE_MODE) {
+        if (mode == ArchiveAccessModeEnum.ARCHIVE_MODE) {
             reservationAuthorized = reservationIndex < configuration.getMaxSessionsArchivingMode().intValue();
         }
         if (logger.isDebugEnabled()) {
@@ -252,7 +224,6 @@ public class STAFSessionManager {
 
     /**
      * Get method.
-     *
      * @return the reservations
      */
     public List<Integer> getReservations() {
@@ -260,18 +231,7 @@ public class STAFSessionManager {
     }
 
     /**
-     * Set method.
-     *
-     * @param pReservations
-     *            the reservations to set
-     */
-    public void setReservations(List<Integer> pReservations) {
-        reservations = pReservations;
-    }
-
-    /**
      * Get method.
-     *
      * @return the configuration
      */
     public STAFConfiguration getConfiguration() {
@@ -280,21 +240,17 @@ public class STAFSessionManager {
 
     /**
      * Set method.
-     *
-     * @param pConfiguration
-     *            the configuration to set
+     * @param configuration the configuration to set
      */
-    public void setConfiguration(STAFConfiguration pConfiguration) {
-        configuration = pConfiguration;
+    public void setConfiguration(STAFConfiguration configuration) {
+        this.configuration = configuration;
     }
 
     /**
      * Create a new service to retreive a STAF Access service for the given {@link STAFArchive}
-     * @param pStafArchive
-     * @return
      */
-    public STAFService getNewArchiveAccessService(STAFArchive pStafArchive) {
-        return new STAFService(this, pStafArchive);
+    public STAFService getNewArchiveAccessService(STAFArchive stafArchive) {
+        return new STAFService(this, stafArchive);
     }
 
 }
