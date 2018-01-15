@@ -53,7 +53,7 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.microservices.administration</groupId>
-			<artifactId>remote-authorities-provider</artifactId>
+			<artifactId>local-authorities-provider</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.emails</groupId>

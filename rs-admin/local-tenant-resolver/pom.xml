@@ -36,20 +36,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.accessrights</groupId>
-			<artifactId>accessrights-service</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-service</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-instance-regards-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-starter</artifactId>
 		</dependency>
 	</dependencies>
 

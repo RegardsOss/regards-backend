@@ -149,7 +149,7 @@ public class ProjectController implements IResourceController<Project> {
      */
     @RequestMapping(method = RequestMethod.GET, value = "/{project_name}", produces = "application/json")
     @ResponseBody
-    @ResourceAccess(description = "retrieve the project project_name", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "retrieve the project project_name", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") final String pProjectName)
             throws ModuleException {
 
