@@ -45,7 +45,7 @@ public interface INotificationRepository extends JpaRepository<Notification, Lon
      * @param role The required role recipient
      * @return The list of found notifications
      */
-    @Query("select distinct n from Notification n where ?1 in n.projectUserRecipients or ?2 in n.roleRecipients")
+    @Query("select distinct n from Notification n left join n.projectUserRecipients p left join n.roleRecipients r where p = ?1 or r = ?2")
     List<Notification> findByRecipientsContaining(String projectUser, String role);
 
     /**
