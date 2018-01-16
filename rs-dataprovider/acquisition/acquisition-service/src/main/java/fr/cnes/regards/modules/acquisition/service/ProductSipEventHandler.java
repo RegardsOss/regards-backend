@@ -74,7 +74,7 @@ public class ProductSipEventHandler implements ApplicationListener<ApplicationRe
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        LOGGER.info("ProductSipEventHandler subscribs to new SIPEvent events");
+        LOGGER.info("ProductSipEventHandler subscribes to new SIPEvent events");
         subscriber.subscribeTo(SIPEvent.class, new ProductSipReadyEventHandler());
     }
 

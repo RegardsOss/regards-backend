@@ -38,8 +38,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -58,8 +58,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
  *
  */
 @Entity
-@Table(name = "t_acq_processing_chain",
-        uniqueConstraints = { @UniqueConstraint(name = "uk_ingest_chain_name", columnNames = "name") })
+@Table(name = "t_acq_processing_chain")
 public class AcquisitionProcessingChain {
 
     /**
@@ -119,12 +118,15 @@ public class AcquisitionProcessingChain {
     /**
      * The ipId of the dataset for which the acquired files are set
      */
+    @NotBlank
     @Column(length = 256)
     private String datasetIpId;
 
     /**
      * The {@link List} of files to build a product
      */
+    @NotNull
+    @Size(min = 1)
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "acq_chain_id", foreignKey = @ForeignKey(name = "fk_acq_chain_id"))
     private Set<AcquisitionFileInfo> fileInfos;
@@ -215,8 +217,8 @@ public class AcquisitionProcessingChain {
         this.generateSipPluginConf = generateSipPluginConf;
     }
 
-    public PluginConfiguration getPostProcessSipPluginConf() {
-        return postProcessSipPluginConf;
+    public Optional<PluginConfiguration> getPostProcessSipPluginConf() {
+        return Optional.ofNullable(postProcessSipPluginConf);
     }
 
     public void setPostProcessSipPluginConf(PluginConfiguration postProcessSipPluginConf) {

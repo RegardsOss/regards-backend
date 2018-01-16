@@ -37,6 +37,7 @@ import javax.persistence.UniqueConstraint;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 
 /**
  * Register an acquisition chain execution
@@ -71,7 +72,7 @@ public class ExecAcquisitionProcessingChain implements IIdentifiable<Long> {
      */
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name = "chain_id", foreignKey = @ForeignKey(name = "fk_acq_exec_chain_id"), updatable = false)
-    private AcquisitionProcessingChain2 chainGeneration;
+    private AcquisitionProcessingChain chainGeneration;
 
     /**
      * The start date of the {@link ExecAcquisitionProcessingChain}
@@ -100,11 +101,11 @@ public class ExecAcquisitionProcessingChain implements IIdentifiable<Long> {
         this.session = session;
     }
 
-    public AcquisitionProcessingChain2 getChainGeneration() {
+    public AcquisitionProcessingChain getChainGeneration() {
         return chainGeneration;
     }
 
-    public void setChainGeneration(AcquisitionProcessingChain2 chainGeneration) {
+    public void setChainGeneration(AcquisitionProcessingChain chainGeneration) {
         this.chainGeneration = chainGeneration;
     }
 

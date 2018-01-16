@@ -82,8 +82,8 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.info("[{}-{}] : starting SIP generation job for the product <{}>", acqProcessingChain.getLabel(),
-                    acqProcessingChain.getSession(), productName);
+        LOGGER.info("[{}] : starting SIP generation job for the product <{}>", acqProcessingChain.getLabel(),
+                    productName);
 
         // Load the product
         Product product;
@@ -97,7 +97,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         try {
             // Build the plugin parameters
             PluginParametersFactory factory = PluginParametersFactory.build();
-            for (Map.Entry<String, String> entry : this.acqProcessingChain.getGenerateSipParameter().entrySet()) {
+            for (Map.Entry<String, String> entry : acqProcessingChain.getGenerateSipParameter().entrySet()) {
                 factory.addParameter(entry.getKey(), entry.getValue());
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("[{}] Add parameter <{}> with value : {}", acqProcessingChain.getSession(),

@@ -32,10 +32,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
-import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService2;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
@@ -61,9 +60,6 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
     @Autowired
     private IProductService productService;
 
-    @Autowired
-    private IAcquisitionProcessingChainService2 acqProcessChainService;
-
     private SIPEvent sipEvent;
 
     @Override
@@ -85,23 +81,14 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
             productService.save(product);
 
             // Retrieve acquisition chain
-            AcquisitionProcessingChain2 acqProcessingChain = acqProcessChainService
-                    .findByMetaProduct(product.getMetaProduct());
+            AcquisitionProcessingChain acqProcessingChain = product.getProcessingChain();
             // Launch post processing plugin if present
             if (acqProcessingChain.getPostProcessSipPluginConf().isPresent()) {
-                LOGGER.info("[{}-{}] : starting post acquisition job for job {}", acqProcessingChain.getLabel(),
-                            acqProcessingChain.getSession(), product.getProductName());
                 // Get an instance of the plugin
                 IPostProcessSipPlugin postProcessPlugin = pluginService
                         .getPlugin(acqProcessingChain.getPostProcessSipPluginConf().get().getId());
-                postProcessPlugin.runPlugin(product, acqProcessingChain);
-            } else {
-                LOGGER.info("[{}-{}] : no post processing", acqProcessingChain.getLabel(),
-                            acqProcessingChain.getSession());
+                postProcessPlugin.postProcess(product, acqProcessingChain);
             }
-
-            LOGGER.info("[{}] Stop  POST acqusition SIP step for the product <{}>", acqProcessingChain.getSession(),
-                        product.getProductName());
         } catch (ModuleException pse) {
             LOGGER.error("Business error", pse);
             throw new JobRuntimeException(pse);

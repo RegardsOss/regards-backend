@@ -59,7 +59,6 @@ import fr.cnes.regards.modules.acquisition.service.job.step.AcquisitionScanStep;
  */
 public class ProductAcquisitionJob extends AbstractJob<Void> {
 
-    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductAcquisitionJob.class);
 
     public static final String CHAIN_PARAMETER_ID = "chain";

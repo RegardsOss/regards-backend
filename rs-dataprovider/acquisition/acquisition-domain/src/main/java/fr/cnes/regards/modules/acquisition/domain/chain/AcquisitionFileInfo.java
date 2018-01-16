@@ -36,6 +36,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
+import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -78,7 +79,7 @@ public class AcquisitionFileInfo {
     /**
      * A {@link String} corresponding to the data file mime-type
      */
-    @NotNull(message = "Mime type is required")
+    @NotBlank(message = "Mime type is required")
     @Column(name = "mime_type", length = 255)
     private String mimeType;
 

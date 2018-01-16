@@ -26,6 +26,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,8 +36,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
@@ -49,6 +52,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
 /**
  * Acquisition processing service
@@ -88,14 +92,182 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Override
     public AcquisitionProcessingChain createChain(AcquisitionProcessingChain processingChain) throws ModuleException {
-        // TODO Auto-generated method stub
-        return null;
+
+        // Check no identifier
+        if (processingChain.getId() != null) {
+            throw new EntityInvalidException(
+                    String.format("New chain %s must not already have and identifier.", processingChain.getLabel()));
+        }
+
+        // Prevent bad values
+        processingChain.setRunning(Boolean.FALSE);
+        processingChain.setLastActivationDate(null);
+
+        // Manage acquisition file info
+        for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
+
+            // Check no identifier
+            if (fileInfo.getId() != null) {
+                throw new EntityInvalidException(
+                        String.format("A file information must not already have and identifier."));
+            }
+
+            // Prevent bad value
+            fileInfo.setLastModificationDate(null);
+            // Manage scan plugin conf
+            createPluginConfiguration(fileInfo.getScanPlugin());
+            // Save file info
+            fileInfoRepository.save(fileInfo);
+        }
+
+        // Manage validation plugin conf
+        if (processingChain.getValidationPluginConf().isPresent()) {
+            createPluginConfiguration(processingChain.getValidationPluginConf().get());
+        }
+
+        // Manage product plugin conf
+        createPluginConfiguration(processingChain.getProductPluginConf());
+
+        // Manage generate SIP plugin conf
+        createPluginConfiguration(processingChain.getGenerateSipPluginConf());
+
+        // Manage post process SIP plugin conf
+        if (processingChain.getPostProcessSipPluginConf().isPresent()) {
+            createPluginConfiguration(processingChain.getPostProcessSipPluginConf().get());
+        }
+
+        // Save new chain
+        return acqChainRepository.save(processingChain);
+    }
+
+    private PluginConfiguration createPluginConfiguration(PluginConfiguration pluginConfiguration)
+            throws ModuleException {
+        // Check no identifier. For each new chain, we force plugin configuration creation. A configuration cannot be
+        // reused.
+        if (pluginConfiguration.getId() != null) {
+            throw new EntityInvalidException(
+                    String.format("Plugin configuration %s must not already have and identifier.",
+                                  pluginConfiguration.getLabel()));
+        }
+        return pluginService.savePluginConfiguration(pluginConfiguration);
     }
 
     @Override
     public AcquisitionProcessingChain updateChain(AcquisitionProcessingChain processingChain) throws ModuleException {
-        // TODO Auto-generated method stub
-        return null;
+        // Check already exists
+        if (!acqChainRepository.exists(processingChain.getId())) {
+            throw new EntityNotFoundException(processingChain.getLabel(), IngestProcessingChain.class);
+        }
+
+        List<Optional<PluginConfiguration>> confsToRemove = new ArrayList<>();
+
+        // Manage acquisition file info
+        for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
+
+            // Check identifier
+            if (fileInfo.getId() == null) {
+                throw new EntityInvalidException(String.format("A file information must already have and identifier."));
+            }
+            // Manage scan plugin conf
+            // TODO update scan plugin and clean old conf if necessary
+            // Save file info
+            fileInfoRepository.save(fileInfo);
+        }
+
+        // Manage validation plugin conf
+        // TODO update plugin and clean old conf if necessary
+        if (processingChain.getValidationPluginConf().isPresent()) {
+            createPluginConfiguration(processingChain.getValidationPluginConf().get());
+        }
+
+        // Manage product plugin conf
+        // TODO update scan plugin and clean old conf if necessary
+        createPluginConfiguration(processingChain.getProductPluginConf());
+
+        // Manage generate SIP plugin conf
+        // TODO update scan plugin and clean old conf if necessary
+        createPluginConfiguration(processingChain.getGenerateSipPluginConf());
+
+        // Manage post process SIP plugin conf
+        // TODO update scan plugin and clean old conf if necessary
+        if (processingChain.getPostProcessSipPluginConf().isPresent()) {
+            createPluginConfiguration(processingChain.getPostProcessSipPluginConf().get());
+        }
+
+        // Save new chain
+        acqChainRepository.save(processingChain);
+
+        // Clean unused plugin configuration after chain update avoiding foreign keys constraints restrictions.
+        for (Optional<PluginConfiguration> confToRemove : confsToRemove) {
+            if (confToRemove.isPresent()) {
+                pluginService.deletePluginConfiguration(confToRemove.get().getId());
+            }
+        }
+
+        return processingChain;
+
+        //
+        // // Manage plugin configuration
+        // // ---------------------------
+        // // Pre-processing plugine
+        // Optional<PluginConfiguration> existing = ingestChainRepository
+        // .findOnePreProcessingPluginByName(chainToUpdate.getName());
+        // confsToRemove.add(updatePluginConfiguration(chainToUpdate.getPreProcessingPlugin(), existing));
+        // // Validation plugin
+        // existing = ingestChainRepository.findOneValidationPluginByName(chainToUpdate.getName());
+        // confsToRemove.add(updatePluginConfiguration(Optional.of(chainToUpdate.getValidationPlugin()), existing));
+        // // Generation plugin
+        // existing = ingestChainRepository.findOneGenerationPluginByName(chainToUpdate.getName());
+        // confsToRemove.add(updatePluginConfiguration(Optional.of(chainToUpdate.getGenerationPlugin()), existing));
+        // // Tag plugin
+        // existing = ingestChainRepository.findOneTagPluginByName(chainToUpdate.getName());
+        // confsToRemove.add(updatePluginConfiguration(chainToUpdate.getTagPlugin(), existing));
+        // // Post-processing plugin
+        // existing = ingestChainRepository.findOnePostProcessingPluginByName(chainToUpdate.getName());
+        // confsToRemove.add(updatePluginConfiguration(chainToUpdate.getPostProcessingPlugin(), existing));
+        //
+        // // Update chain
+        // ingestChainRepository.save(chainToUpdate);
+        //
+        // // Clean unused plugin configuration after chain update avoiding foreign keys constraints restrictions.
+        // for (Optional<PluginConfiguration> confToRemove : confsToRemove) {
+        // if (confToRemove.isPresent()) {
+        // pluginService.deletePluginConfiguration(confToRemove.get().getId());
+        // }
+        // }
+        //
+        // return chainToUpdate;
+    }
+
+    /**
+     * Create or update a plugin configuration cleaning old one if necessary
+     * @param pluginConfiguration new plugin configuration or update
+     * @param existing existing plugin configuration
+     * @return configuration to remove because it is no longer used
+     * @throws ModuleException if error occurs!
+     */
+    private Optional<PluginConfiguration> updatePluginConfiguration(Optional<PluginConfiguration> pluginConfiguration,
+            Optional<PluginConfiguration> existing) throws ModuleException {
+
+        Optional<PluginConfiguration> confToRemove = Optional.empty();
+
+        if (pluginConfiguration.isPresent()) {
+            PluginConfiguration conf = pluginConfiguration.get();
+            if (conf.getId() == null) {
+                // Delete previous configuration if exists
+                confToRemove = existing;
+                // Save new configuration
+                pluginService.savePluginConfiguration(conf);
+            } else {
+                // Update configuration
+                pluginService.updatePluginConfiguration(conf);
+            }
+        } else {
+            // Delete previous configuration if exists
+            confToRemove = existing;
+        }
+
+        return confToRemove;
     }
 
     @Override
