@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.staf.exception.STAFException;
  * requetes. Cette classe assure principalement la gestion de la charge imposee au STAF en limitant le nombre de
  * sessions ouvertes en parallele. Cette limitation s'appuie sur un systeme de reservations de ressources.
  * @author sbinda CS
+ * @author oroussel
  */
 public class STAFSessionManager {
 
@@ -39,7 +40,7 @@ public class STAFSessionManager {
     private STAFConfiguration configuration;
 
     /**
-     * Dernier identifiant de session attribue
+     * Dernier identifiant de session attribué
      */
     private final AtomicInteger lastIdentifier = new AtomicInteger(0);
 
@@ -48,15 +49,19 @@ public class STAFSessionManager {
      */
     private final List<Integer> reservations = Collections.synchronizedList(new ArrayList<>());
 
+    /**
+     * One semaphore per archive mode
+     */
     private Map<ArchiveAccessModeEnum, Semaphore> semaphoreMap = Collections
             .synchronizedMap(new EnumMap<ArchiveAccessModeEnum, Semaphore>(ArchiveAccessModeEnum.class));
 
     private STAFSessionManager(STAFConfiguration configuration) {
         this.configuration = configuration;
-        this.semaphoreMap
-                .put(ArchiveAccessModeEnum.ARCHIVE_MODE, new Semaphore(configuration.getMaxSessionsArchivingMode()));
+        // Creating fair semaphores (to respect FIFO)
+        this.semaphoreMap.put(ArchiveAccessModeEnum.ARCHIVE_MODE,
+                              new Semaphore(configuration.getMaxSessionsArchivingMode(), true));
         this.semaphoreMap.put(ArchiveAccessModeEnum.RESTITUTION_MODE,
-                              new Semaphore(configuration.getMaxSessionsRestitutionMode()));
+                              new Semaphore(configuration.getMaxSessionsRestitutionMode(), true));
     }
 
     public STAFSession getNewSession() {
@@ -78,33 +83,20 @@ public class STAFSessionManager {
     /**
      * Effectue la reservation d'un certain nombre de sessions pour une restitution ou une archive
      * @param reservationCount Nombre de reservations demandees
-     * @param block Indique si l'octroi d'au moins une reservation est bloquant
+     * @param block Indique si l'octroi d'une reservation est bloquant (non pris en compte si plusieurs reservations demandées
      * @param mode mode de restitution ou d archivage (constante de STAFService)
      * @return Un tableau contenant les identifiants de reservation obtenus. En fonction de la disponibilite des
      * sessions, le nombre de reservations reellement obtenues peut etre inferieur au nombre de reservations
      * demandees.
      */
     public List<Integer> getReservations(int reservationCount, boolean block, ArchiveAccessModeEnum mode) {
-
         Semaphore semaphore = this.semaphoreMap.get(mode);
-
         // Reservations obtenues
         List<Integer> currentReservations = new ArrayList<>();
-        // Reservation unique
-        int uniqueReservation = -1;
 
         // La reservation a lieu dans un section critique pour eviter tout
         // conflit en cas de reservation simultanee de plusieurs commandes.
-        //        synchronized (this) {
         if (reservationCount > 1) {
-            //    if (hasFreeSessions(mode)) {
-            // Il existe des sessions libres. On en attribue un maximum au
-            // demandeur
-            //                int reservationIndex = 0;
-            //                while ((reservationIndex < reservationCount) && hasFreeSessions(mode)) {
-            //                    currentReservations.add(getReservationIdentifier());
-            //                    reservationIndex++;
-            //                }
             int tokenCount = Math.min(reservationCount, semaphore.availablePermits());
             for (int i = 0; i < tokenCount; i++) {
                 try {
@@ -114,53 +106,18 @@ public class STAFSessionManager {
                 }
                 currentReservations.add(getReservationIdentifier());
             }
-        } else if (block) {
-            // Une reservation est ajoutee a la liste des reservations en cours
-            // mais la main n'est rendue a l'appelant que lorsque la reservation
-            // ainsi ajoutee fait partie des N (config) premieres de la liste des
-            // reservations en cours (l'ordre des reservations temoigne de leur
-            // ordre d'arrivee).
+        } else if (block) { // Blocking unique reservation
             try {
                 semaphore.acquire();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e); // NOSONAR
             }
             currentReservations.add(getReservationIdentifier());
-        } else { // non bloquant
+        } else { // non blocking unique reservation
             if (semaphore.tryAcquire()) {
                 currentReservations.add(getReservationIdentifier());
             }
         }
-        //        }
-
-        // L'attente eventuelle de l'obtention d'une reservation unique se fait
-        // en dehors de la section critique car elle peut durer longtemps. En
-        // revanche la verification de l'ordre de la reservation est synchronisee.
-/*        if (uniqueReservation != -1) {
-            while (!isReservationAuthorized(uniqueReservation, mode)) {
-//                try {
-//                    // Ici il y avait un synchronized avec un wait sur le uniqueReservation (de type Integer)
-//                    // TODO semaphore
-//                    Thread.sleep(1000l);
-//                } catch (InterruptedException e) {
-//                    // Une interruption de l'attente n'est pas une erreur
-//                }
-                try {
-                    switch (mode) {
-                        case ARCHIVE_MODE:
-                            archivageSemaphore.acquire();
-                            break;
-                        case RESTITUTION_MODE:
-                            restitutionSemaphore.acquire();
-                            break;
-                    }
-                } catch (InterruptedException e) {
-                    // Une interruption de l'attente n'est pas une erreur
-                }
-            }
-            // La reservation a ete obtenue
-            currentReservations.add(uniqueReservation);
-        }*/
         if (logger.isDebugEnabled()) {
             logger.debug(currentReservations.size() + " session reserved");
         }
@@ -188,51 +145,9 @@ public class STAFSessionManager {
         semaphore.release();
         // Free a reservation
         reservations.remove(reservation);
-        // Restitution mode
-/*        if (mode == ArchiveAccessModeEnum.RESTITUTION_MODE) {
-            // Inform the first thread waiting for a free ressource
-            if (reservations.size() >= configuration.getMaxSessionsRestitutionMode().intValue()) {
-                int indexNextSession = configuration.getMaxSessionsRestitutionMode().intValue() - 1;
-                Integer nextReservation = reservations.get(indexNextSession);
-//                // TODO REMPLACER PAR UN SEmaphore !!!
-//                synchronized (nextReservation) {
-//                    nextReservation.notify();
-//                }
-                restitutionSemaphore.release();
-            }
-        }
-        // Archive mode
-        else if (mode == ArchiveAccessModeEnum.ARCHIVE_MODE) {
-            // Inform the first thread waiting for a free ressource
-            if (reservations.size() >= configuration.getMaxSessionsArchivingMode().intValue()) {
-                int indexNextSession = configuration.getMaxSessionsArchivingMode().intValue() - 1;
-                Integer nextReservation = reservations.get(indexNextSession);
-//                // TODO REMPLACER PAR UN SEmaphore !!!
-//                synchronized (nextReservation) {
-//                    nextReservation.notify();
-//                }
-                archivageSemaphore.release();
-            }
-        }*/
         if (logger.isDebugEnabled()) {
             logger.debug("session number " + reservation + " has been released");
         }
-    }
-
-    /**
-     * Permet de savoir s'il existe des sessions disponibles pour une restitution ou un archivage
-     * @param mode mode de restitution ou d archivage (constante de STAFService)
-     * @return Indique s'il existe des sessions disponibles selon le mode
-     */
-    private boolean hasFreeSessions(ArchiveAccessModeEnum mode) {
-        boolean freeSession = false;
-        // Restitution mode
-        if (mode == ArchiveAccessModeEnum.RESTITUTION_MODE) {
-            freeSession = configuration.getMaxSessionsRestitutionMode().intValue() > reservations.size();
-        } else if (mode == ArchiveAccessModeEnum.ARCHIVE_MODE) { // Archivage mode
-            freeSession = configuration.getMaxSessionsArchivingMode().intValue() > reservations.size();
-        }
-        return freeSession;
     }
 
     /**
@@ -244,29 +159,6 @@ public class STAFSessionManager {
         // Calcule le nouvel identifiant
         reservations.add(lastIdentifier.incrementAndGet());
         return lastIdentifier.get();
-    }
-
-    /**
-     * Verifie si une reservation autorise l'ouverture d'une session pour une restitution ou un archivage
-     * @param reservation Reservation a verifier
-     * @param mode mode de restitution ou d archivage (constante de STAFService)
-     * @return vrai si la reservation est autorisee, faux sinon
-     */
-    private boolean isReservationAuthorized(Integer reservation, ArchiveAccessModeEnum mode) {
-        int reservationIndex = reservations.indexOf(reservation);
-        boolean reservationAuthorized = false;
-        // Restitution mode
-        if (mode == ArchiveAccessModeEnum.RESTITUTION_MODE) {
-            reservationAuthorized = reservationIndex < configuration.getMaxSessionsRestitutionMode().intValue();
-        }
-        // Archive mode
-        if (mode == ArchiveAccessModeEnum.ARCHIVE_MODE) {
-            reservationAuthorized = reservationIndex < configuration.getMaxSessionsArchivingMode().intValue();
-        }
-        if (logger.isDebugEnabled()) {
-            logger.debug(" session reservation is possible : " + reservationAuthorized);
-        }
-        return reservationAuthorized;
     }
 
     /**
@@ -306,7 +198,7 @@ public class STAFSessionManager {
      */
     protected void releaseAllCurrentlyBlockingReservations() throws InterruptedException {
         Semaphore semaphore = semaphoreMap.get(ArchiveAccessModeEnum.ARCHIVE_MODE);
-        if (semaphore.availablePermits()< configuration.getMaxSessionsArchivingMode()) {
+        if (semaphore.availablePermits() < configuration.getMaxSessionsArchivingMode()) {
             semaphore.release(configuration.getMaxSessionsArchivingMode() - semaphore.availablePermits());
         }
         semaphore = semaphoreMap.get(ArchiveAccessModeEnum.RESTITUTION_MODE);
