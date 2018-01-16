@@ -771,8 +771,6 @@ public class STAFSession {
                     final String msg = "Unable to archive all files";
                     logger.error(msg);
                 }
-            } catch (final Exception e) {
-                throw e;
             } finally {
                 renameStafFilesAfterArchiving(renamedLocalFilePathMap);
             }

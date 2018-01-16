@@ -5,7 +5,10 @@ package fr.cnes.regards.framework.staf;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
@@ -45,8 +48,15 @@ public class STAFSessionManager {
      */
     private final List<Integer> reservations = Collections.synchronizedList(new ArrayList<>());
 
+    private Map<ArchiveAccessModeEnum, Semaphore> semaphoreMap = Collections
+            .synchronizedMap(new EnumMap<ArchiveAccessModeEnum, Semaphore>(ArchiveAccessModeEnum.class));
+
     private STAFSessionManager(STAFConfiguration configuration) {
         this.configuration = configuration;
+        this.semaphoreMap
+                .put(ArchiveAccessModeEnum.ARCHIVE_MODE, new Semaphore(configuration.getMaxSessionsArchivingMode()));
+        this.semaphoreMap.put(ArchiveAccessModeEnum.RESTITUTION_MODE,
+                              new Semaphore(configuration.getMaxSessionsRestitutionMode()));
     }
 
     public STAFSession getNewSession() {
@@ -76,6 +86,8 @@ public class STAFSessionManager {
      */
     public List<Integer> getReservations(int reservationCount, boolean block, ArchiveAccessModeEnum mode) {
 
+        Semaphore semaphore = this.semaphoreMap.get(mode);
+
         // Reservations obtenues
         List<Integer> currentReservations = new ArrayList<>();
         // Reservation unique
@@ -83,41 +95,72 @@ public class STAFSessionManager {
 
         // La reservation a lieu dans un section critique pour eviter tout
         // conflit en cas de reservation simultanee de plusieurs commandes.
-        synchronized (this) {
-            if (hasFreeSessions(mode)) {
-                // Il existe des sessions libres. On en attribue un maximum au
-                // demandeur
-                int reservationIndex = 0;
-                while ((reservationIndex < reservationCount) && hasFreeSessions(mode)) {
-                    currentReservations.add(getReservationIdentifier());
-                    reservationIndex++;
+        //        synchronized (this) {
+        if (reservationCount > 1) {
+            //    if (hasFreeSessions(mode)) {
+            // Il existe des sessions libres. On en attribue un maximum au
+            // demandeur
+            //                int reservationIndex = 0;
+            //                while ((reservationIndex < reservationCount) && hasFreeSessions(mode)) {
+            //                    currentReservations.add(getReservationIdentifier());
+            //                    reservationIndex++;
+            //                }
+            int tokenCount = Math.min(reservationCount, semaphore.availablePermits());
+            for (int i = 0; i < tokenCount; i++) {
+                try {
+                    semaphore.acquire();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e); // NOSONAR
                 }
-            } else if (block) {
-                // Une reservation est ajoutee a la liste des reservations en cours
-                // mais la main n'est rendue a l'appelant que lorsque la reservation
-                // ainsi ajoutee fait partie des N (config) premieres de la liste des
-                // reservations en cours (l'ordre des reservations temoigne de leur
-                // ordre d'arrivee).
-                uniqueReservation = getReservationIdentifier();
+                currentReservations.add(getReservationIdentifier());
+            }
+        } else if (block) {
+            // Une reservation est ajoutee a la liste des reservations en cours
+            // mais la main n'est rendue a l'appelant que lorsque la reservation
+            // ainsi ajoutee fait partie des N (config) premieres de la liste des
+            // reservations en cours (l'ordre des reservations temoigne de leur
+            // ordre d'arrivee).
+            try {
+                semaphore.acquire();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e); // NOSONAR
+            }
+            currentReservations.add(getReservationIdentifier());
+        } else { // non bloquant
+            if (semaphore.tryAcquire()) {
+                currentReservations.add(getReservationIdentifier());
             }
         }
+        //        }
 
         // L'attente eventuelle de l'obtention d'une reservation unique se fait
         // en dehors de la section critique car elle peut durer longtemps. En
         // revanche la verification de l'ordre de la reservation est synchronisee.
-        if (uniqueReservation != -1) {
+/*        if (uniqueReservation != -1) {
             while (!isReservationAuthorized(uniqueReservation, mode)) {
+//                try {
+//                    // Ici il y avait un synchronized avec un wait sur le uniqueReservation (de type Integer)
+//                    // TODO semaphore
+//                    Thread.sleep(1000l);
+//                } catch (InterruptedException e) {
+//                    // Une interruption de l'attente n'est pas une erreur
+//                }
                 try {
-                    // Ici il y avait un synchronized avec un wait sur le uniqueReservation (de type Integer)
-                    // TODO semaphore
-                    Thread.sleep(1000l);
+                    switch (mode) {
+                        case ARCHIVE_MODE:
+                            archivageSemaphore.acquire();
+                            break;
+                        case RESTITUTION_MODE:
+                            restitutionSemaphore.acquire();
+                            break;
+                    }
                 } catch (InterruptedException e) {
                     // Une interruption de l'attente n'est pas une erreur
                 }
             }
             // La reservation a ete obtenue
             currentReservations.add(uniqueReservation);
-        }
+        }*/
         if (logger.isDebugEnabled()) {
             logger.debug(currentReservations.size() + " session reserved");
         }
@@ -140,19 +183,22 @@ public class STAFSessionManager {
      * @param reservation Reservation liberee
      * @param mode mode de restitution ou d archivage (constante de STAFService)
      */
-    public synchronized void freeReservation(Integer reservation, ArchiveAccessModeEnum mode) {
+    public void freeReservation(Integer reservation, ArchiveAccessModeEnum mode) {
+        Semaphore semaphore = this.semaphoreMap.get(mode);
+        semaphore.release();
         // Free a reservation
         reservations.remove(reservation);
         // Restitution mode
-        if (mode == ArchiveAccessModeEnum.RESTITUTION_MODE) {
+/*        if (mode == ArchiveAccessModeEnum.RESTITUTION_MODE) {
             // Inform the first thread waiting for a free ressource
             if (reservations.size() >= configuration.getMaxSessionsRestitutionMode().intValue()) {
                 int indexNextSession = configuration.getMaxSessionsRestitutionMode().intValue() - 1;
                 Integer nextReservation = reservations.get(indexNextSession);
-                // TODO REMPLACER PAR UN SEmaphore !!!
-                synchronized (nextReservation) {
-                    nextReservation.notify();
-                }
+//                // TODO REMPLACER PAR UN SEmaphore !!!
+//                synchronized (nextReservation) {
+//                    nextReservation.notify();
+//                }
+                restitutionSemaphore.release();
             }
         }
         // Archive mode
@@ -161,12 +207,13 @@ public class STAFSessionManager {
             if (reservations.size() >= configuration.getMaxSessionsArchivingMode().intValue()) {
                 int indexNextSession = configuration.getMaxSessionsArchivingMode().intValue() - 1;
                 Integer nextReservation = reservations.get(indexNextSession);
-                // TODO REMPLACER PAR UN SEmaphore !!!
-                synchronized (nextReservation) {
-                    nextReservation.notify();
-                }
+//                // TODO REMPLACER PAR UN SEmaphore !!!
+//                synchronized (nextReservation) {
+//                    nextReservation.notify();
+//                }
+                archivageSemaphore.release();
             }
-        }
+        }*/
         if (logger.isDebugEnabled()) {
             logger.debug("session number " + reservation + " has been released");
         }
@@ -253,4 +300,20 @@ public class STAFSessionManager {
         return new STAFService(this, stafArchive);
     }
 
+    /**
+     * Method only useable by tests (=> protected)
+     * Release all currently blocking tokens
+     */
+    protected void releaseAllCurrentlyBlockingReservations() throws InterruptedException {
+        Semaphore semaphore = semaphoreMap.get(ArchiveAccessModeEnum.ARCHIVE_MODE);
+        if (semaphore.availablePermits()< configuration.getMaxSessionsArchivingMode()) {
+            semaphore.release(configuration.getMaxSessionsArchivingMode() - semaphore.availablePermits());
+        }
+        semaphore = semaphoreMap.get(ArchiveAccessModeEnum.RESTITUTION_MODE);
+        if (semaphore.availablePermits() < configuration.getMaxSessionsRestitutionMode()) {
+            // Don't use relase(int permist) !!!! Each time a token is released it may unblock
+            // a waiting task and so acquire a new token and so decrease available permits
+            semaphore.release(configuration.getMaxSessionsRestitutionMode() - semaphore.availablePermits());
+        }
+    }
 }
