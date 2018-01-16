@@ -70,7 +70,7 @@ public class STAFURLFactory {
     private static final String STANDARD_URL_STRING_FORMAT = STAF_URL_PROTOCOLE + "://%s";
 
     /**
-     * PRivate constructor. Only static methods.
+     * Private constructor. Only static methods.
      */
     private STAFURLFactory() {
     }
@@ -78,7 +78,7 @@ public class STAFURLFactory {
     public static void initSTAFURLProtocol() {
         try {
             URL.setURLStreamHandlerFactory(new STAFURLStreamHandlerFactory());
-        } catch (Error e) {
+        } catch (Exception e) { // NOSONAR
             // Factory already defined. Nothing to do.
         }
     }
@@ -231,7 +231,7 @@ public class STAFURLFactory {
                     .format(STANDARD_URL_STRING_FORMAT,
                             Paths.get(pTarFile.getStafArchiveName(), pTarFile.getStafNode().toString()));
             for (Entry<Path, Path> fileInTar : pTarFile.getFilesInTar().entrySet()) {
-                if (pRawFile == fileInTar.getKey()) {
+                if (pRawFile.equals(fileInTar.getKey())) {
                     url = Optional.of(new URL(String.format(STAF_PARAMETERIZED_URL_PATTERN, urlInitialPath,
                                                             pTarFile.getSTAFFilePath().getFileName().toString(),
                                                             STAFURLParameter.TAR_FILENAME_PARAMETER.getParameterName(),
