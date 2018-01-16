@@ -18,14 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 
 /**
@@ -45,27 +39,40 @@ public interface IAcquisitionProcessingService {
     AcquisitionProcessingChain getChain(Long id) throws ModuleException;
 
     /**
-     * Register detected files in database initializing its metadata
-     * @param scannedFiles list of scanned files to register
-     * @param info the related file information
-     * @throws ModuleException if error occurs
-     */
-    void registerFiles(List<Path> scannedFiles, AcquisitionFileInfo info) throws ModuleException;
-
-    /**
-     * Validate {@link AcquisitionFileState#IN_PROGRESS} files for specified {@link AcquisitionFileInfo}
-     * @param fileInfo file info filter
-     * @param validationPluginConf optional validation plugin configuration
+     * Create a new acquisition processing chain
+     * @param processingChain the processing chain
+     * @return registered processing chain
      * @throws ModuleException if error occurs!
      */
-    void validateFiles(AcquisitionFileInfo fileInfo, Optional<PluginConfiguration> validationPluginConf)
-            throws ModuleException;
+    AcquisitionProcessingChain createChain(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
-     * Build products according to {@link AcquisitionFileState#VALID} files of specified {@link AcquisitionFileInfo}
-     * @param fileInfo file info filter
-     * @param productPluginConf required product plugin configuration
+     * Update an existing processing chain
+     * @param processingChain the updated processing chain
+     * @return updated processing chain
      * @throws ModuleException if error occurs!
      */
-    void buildProducts(AcquisitionFileInfo fileInfo, PluginConfiguration productPluginConf) throws ModuleException;
+    AcquisitionProcessingChain updateChain(AcquisitionProcessingChain processingChain) throws ModuleException;
+
+    /**
+     * Scan and register detected files for specified {@link AcquisitionProcessingChain}
+     * @param processingChain processing chain
+     * @throws ModuleException if error occurs!
+     */
+    void scanAndRegisterFiles(AcquisitionProcessingChain processingChain) throws ModuleException;
+
+    /**
+     * Validate {@link AcquisitionFileState#IN_PROGRESS} files for specified {@link AcquisitionProcessingChain}
+     * @param processingChain processing chain
+     * @throws ModuleException if error occurs!
+     */
+    void validateFiles(AcquisitionProcessingChain processingChain) throws ModuleException;
+
+    /**
+     * Build products according to {@link AcquisitionFileState#VALID} files for specified
+     * {@link AcquisitionProcessingChain}
+     * @param processingChain processing chain
+     * @throws ModuleException if error occurs!
+     */
+    void buildProducts(AcquisitionProcessingChain processingChain) throws ModuleException;
 }

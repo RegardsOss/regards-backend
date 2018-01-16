@@ -51,7 +51,6 @@ import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
@@ -199,7 +198,7 @@ public class ProductService implements IProductService {
 
     @Override
     public Product linkAcquisitionFileToProduct(String session, AcquisitionFile acqFile, String productName,
-            MetaProduct metaProduct, String ingestChain) throws ModuleException {
+            AcquisitionProcessingChain processingChain) throws ModuleException {
         // Get the product if it exists
         Product currentProduct = productRepository.findCompleteByProductName(productName);
 
@@ -207,12 +206,11 @@ public class ProductService implements IProductService {
             // It is a new Product, create it
             currentProduct = new Product();
             currentProduct.setProductName(productName);
-            currentProduct.setMetaProduct(metaProduct);
+            currentProduct.setProcessingChain(processingChain);
             currentProduct.setSipState(ProductSIPState.NOT_SCHEDULED);
         }
 
         currentProduct.setSession(session);
-        currentProduct.setIngestChain(ingestChain);
         currentProduct.addAcquisitionFile(acqFile);
         computeProductStatus(currentProduct);
 

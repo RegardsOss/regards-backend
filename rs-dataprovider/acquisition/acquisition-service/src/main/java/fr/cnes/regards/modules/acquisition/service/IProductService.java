@@ -31,7 +31,6 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
@@ -118,12 +117,11 @@ public interface IProductService {
      * @param session the current session
      * @param acqFile the {@link AcquisitionFile} to add to the {@link Product}
      * @param productName the {@link Product} name
-     * @param metaProduct the {@link MetaProduct} of the {@link Product}
-     * @param ingestChain the current ingest processing chain
+     * @param processingChain the related {@link AcquisitionProcessingChain}
      * @return the existing {@link Product} corresponding to the product name
      */
     Product linkAcquisitionFileToProduct(String session, AcquisitionFile acqFile, String productName,
-            MetaProduct metaProduct, String ingestChain) throws ModuleException;
+            AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
      * @param ingestChain ingest processing chain name

@@ -37,7 +37,6 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
@@ -48,6 +47,7 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 
 /**
@@ -74,9 +74,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @Autowired
     private IPluginService pluginService;
 
+    @Autowired
+    private IProductService productService;
+
     @Override
     public AcquisitionProcessingChain getChain(Long id) throws ModuleException {
-
         AcquisitionProcessingChain chain = acqChainRepository.findOne(id);
         if (chain == null) {
             throw new EntityNotFoundException(id, AcquisitionProcessingChain.class);
@@ -85,7 +87,32 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public void registerFiles(List<Path> scannedFiles, AcquisitionFileInfo info) throws ModuleException {
+    public AcquisitionProcessingChain createChain(AcquisitionProcessingChain processingChain) throws ModuleException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public AcquisitionProcessingChain updateChain(AcquisitionProcessingChain processingChain) throws ModuleException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void scanAndRegisterFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
+
+        // Launch file scanning for each file information
+        for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
+            // Get plugin instance
+            IScanPlugin scanPlugin = pluginService.getPlugin(fileInfo.getScanPlugin().getId());
+            // Launch scanning
+            List<Path> scannedFiles = scanPlugin.scan(Optional.ofNullable(fileInfo.getLastModificationDate()));
+            // Register scanned files
+            registerFiles(scannedFiles, fileInfo);
+        }
+    }
+
+    private void registerFiles(List<Path> scannedFiles, AcquisitionFileInfo info) throws ModuleException {
 
         // Register the most recent last modification date
         OffsetDateTime reference = info.getLastModificationDate();
@@ -158,50 +185,53 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public void validateFiles(AcquisitionFileInfo fileInfo, Optional<PluginConfiguration> validationPluginConf)
-            throws ModuleException {
+    public void validateFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
 
-        // Load in progress files
-        List<AcquisitionFile> inProgressFiles = acqFileRepository
-                .findByStateAndFileInfo(AcquisitionFileState.IN_PROGRESS, fileInfo);
+        for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
+            // Load in progress files
+            List<AcquisitionFile> inProgressFiles = acqFileRepository
+                    .findByStateAndFileInfo(AcquisitionFileState.IN_PROGRESS, fileInfo);
 
-        if (validationPluginConf.isPresent()) {
-            // Get validation plugin
-            IValidationPlugin validationPlugin = pluginService.getPlugin(validationPluginConf.get().getId());
-            // Apply to all files
-            for (AcquisitionFile inProgressFile : inProgressFiles) {
-                if (validationPlugin.validate(inProgressFile.getFilePath())) {
-                    inProgressFile.setState(AcquisitionFileState.VALID);
-                } else {
-                    inProgressFile.setState(AcquisitionFileState.INVALID);
+            if (processingChain.getValidationPluginConf().isPresent()) {
+                // Get validation plugin
+                IValidationPlugin validationPlugin = pluginService
+                        .getPlugin(processingChain.getValidationPluginConf().get().getId());
+                // Apply to all files
+                for (AcquisitionFile inProgressFile : inProgressFiles) {
+                    if (validationPlugin.validate(inProgressFile.getFilePath())) {
+                        inProgressFile.setState(AcquisitionFileState.VALID);
+                    } else {
+                        inProgressFile.setState(AcquisitionFileState.INVALID);
+                    }
+                    acqFileRepository.save(inProgressFile);
                 }
-                acqFileRepository.save(inProgressFile);
-            }
-        } else {
-            // Files are always considered valid
-            for (AcquisitionFile inProgressFile : inProgressFiles) {
-                inProgressFile.setState(AcquisitionFileState.VALID);
-                acqFileRepository.save(inProgressFile);
+            } else {
+                // Files are always considered valid
+                for (AcquisitionFile inProgressFile : inProgressFiles) {
+                    inProgressFile.setState(AcquisitionFileState.VALID);
+                    acqFileRepository.save(inProgressFile);
+                }
             }
         }
     }
 
     @Override
-    public void buildProducts(AcquisitionFileInfo fileInfo, PluginConfiguration productPluginConf)
-            throws ModuleException {
+    public void buildProducts(AcquisitionProcessingChain processingChain) throws ModuleException {
 
-        // Load valid files
-        List<AcquisitionFile> validFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.VALID,
-                                                                                    fileInfo);
+        for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
+            // Load valid files
+            List<AcquisitionFile> validFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.VALID,
+                                                                                        fileInfo);
 
-        // Get product plugin
-        IProductPlugin productPlugin = pluginService.getPlugin(productPluginConf.getId());
+            // Get product plugin
+            IProductPlugin productPlugin = pluginService.getPlugin(processingChain.getProductPluginConf().getId());
 
-        // Compute product name for each valid files
-        for (AcquisitionFile validFile : validFiles) {
-            String productName = productPlugin.getProductName(validFile.getFilePath());
-            // TODO
+            // Compute product name for each valid files
+            for (AcquisitionFile validFile : validFiles) {
+                String productName = productPlugin.getProductName(validFile.getFilePath());
+                // FIXME manage session?
+                productService.linkAcquisitionFileToProduct(null, validFile, productName, processingChain);
+            }
         }
-
     }
 }

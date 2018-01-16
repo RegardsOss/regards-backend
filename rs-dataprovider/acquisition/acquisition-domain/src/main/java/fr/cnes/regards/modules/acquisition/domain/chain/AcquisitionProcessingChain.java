@@ -94,7 +94,7 @@ public class AcquisitionProcessingChain {
      * The same acquisition chain must not be run twice!
      */
     @Column
-    private final Boolean running = false;
+    private Boolean running = false;
 
     /**
      * The last activation date when an acquisition were running.
@@ -233,6 +233,10 @@ public class AcquisitionProcessingChain {
 
     public boolean isRunning() {
         return running;
+    }
+
+    public void setRunning(Boolean running) {
+        this.running = running;
     }
 
     public Long getId() {

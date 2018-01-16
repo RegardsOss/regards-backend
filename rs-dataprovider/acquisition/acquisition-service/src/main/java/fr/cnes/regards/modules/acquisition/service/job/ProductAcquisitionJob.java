@@ -19,10 +19,7 @@
 
 package fr.cnes.regards.modules.acquisition.service.job;
 
-import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -35,13 +32,11 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.job.step.AcquisitionCheckStep;
@@ -73,22 +68,19 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
     private IProductService productService;
 
     @Autowired
-    private IAcquisitionProcessingService acqProcessingService;
-
-    @Autowired
-    private IPluginService pluginService;
+    private IAcquisitionProcessingService processingService;
 
     /**
      * The current chain to work with!
      */
-    private AcquisitionProcessingChain acqProcessingChain;
+    private AcquisitionProcessingChain processingChain;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
         Long acqProcessingChainId = getValue(parameters, CHAIN_PARAMETER_ID);
         try {
-            acqProcessingChain = acqProcessingService.getChain(acqProcessingChainId);
+            processingChain = processingService.getChain(acqProcessingChainId);
         } catch (ModuleException e) {
             handleInvalidParameter(CHAIN_PARAMETER_ID, e.getMessage());
         }
@@ -97,35 +89,31 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
     @Override
     public void run() {
 
-        // Get file informations
-        Set<AcquisitionFileInfo> fileInfos = acqProcessingChain.getFileInfos();
+        try {
+            // First step : scan and register files
+            processingService.scanAndRegisterFiles(processingChain);
+            // Second step : validate in progress files
+            processingService.validateFiles(processingChain);
+            // Third step : build products with valid files
+            processingService.buildProducts(processingChain);
 
-        // Launch file scanning for each file information
-        for (AcquisitionFileInfo fileInfo : fileInfos) {
-            // Get plugin instance
-            IScanPlugin scanPlugin = pluginService.getPlugin(fileInfo.getScanPlugin().getId());
-            // Launch scanning
-            List<Path> scannedFiles = scanPlugin.scan(Optional.ofNullable(fileInfo.getLastModificationDate()));
-            // Initialize acquisition file
-            acqProcessingService.registerFiles(scannedFiles, fileInfo);
-            // Validate all files
-            acqProcessingService.validateFiles(fileInfo, acqProcessingChain.getValidationPluginConf());
-            // Build products
-            acqProcessingService.buildProducts(fileInfo, acqProcessingChain.getProductPluginConf());
+            // For each complete product, creates and schedules a job to generate SIP
+            Set<Product> products = productService.findChainProductsToSchedule(processingChain);
+            for (Product p : products) {
+                productService.scheduleProductSIPGeneration(p, processingChain);
+            }
+
+            // Job is terminated ... release processing chain
+            processingChain.setRunning(false);
+            processingService.updateChain(processingChain);
+
+        } catch (ModuleException e) {
+            LOGGER.error("Business error", e);
+            throw new JobRuntimeException(e);
         }
-
-        // For each complete product, creates and schedules a job to generate SIP
-        Set<Product> products = productService.findChainProductsToSchedule(acqProcessingChain);
-        for (Product p : products) {
-            productService.scheduleProductSIPGeneration(p, acqProcessingChain);
-        }
-
-        // Job is terminated ... release processing chain
-        acqProcessingChain.setRunning(false);
-        acqProcessChainService.createOrUpdate(acqProcessingChain);
     }
 
     public AcquisitionProcessingChain getAcqProcessingChain() {
-        return acqProcessingChain;
+        return processingChain;
     }
 }
