@@ -64,6 +64,6 @@ public interface IJsonSearchClient {
     @RequestMapping(value = "/datasets", method = RequestMethod.GET)
     ResponseEntity<JsonObject> searchDatasets(@RequestParam Map<String, String> allParams);
 
-    @RequestMapping(value = "/documents", method = RequestMethod.GET)
+    @RequestMapping(value = "/documents/withfacets", method = RequestMethod.GET)
     ResponseEntity<JsonObject> searchDocuments(@RequestParam Map<String, String> allParams);
 }

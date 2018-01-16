@@ -107,6 +107,8 @@ public class SearchController {
 
     public static final String DOCUMENTS_SEARCH = "/documents";
 
+    public static final String DOCUMENTS_SEARCH_WITH_FACETS = "/documents/withfacets";
+
     public static final String DATAOBJECTS_SEARCH_WITH_FACETS = "/dataobjects/withfacets";
 
     public static final String DATAOBJECTS_COMPUTE_FILES_SUMMARY = "/dataobjects/computefilessummary";
@@ -476,6 +478,28 @@ public class SearchController {
         SimpleSearchKey<Document> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DOCUMENT);
         FacetPage<Document> result = searchService.search(allParams, searchKey, null, pageable);
         return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
+    }
+
+
+    /**
+     * Perform an OpenSearch request on documents. Only return required facets.
+     * @param allParams all query parameters
+     * @param pFacets the facets to apply
+     * @param pPageable the page
+     * @return the page of documents matching the query
+     * @throws SearchException when an error occurs while parsing the query
+     */
+    @RequestMapping(path = DOCUMENTS_SEARCH_WITH_FACETS, method = RequestMethod.GET)
+    @ResourceAccess(description = "Perform an OpenSearch request on documents. Only return required facets.",
+            role = DefaultRole.PUBLIC)
+    public ResponseEntity<FacettedPagedResources<Resource<Document>>> searchDocuments(
+            @RequestParam final Map<String, String> allParams,
+            @RequestParam(value = "facets", required = false) String[] pFacets, final Pageable pPageable,
+            FacettedPagedResourcesAssembler<Document> pAssembler) throws SearchException {
+        final SimpleSearchKey<Document> searchKey = Searches
+                .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.DOCUMENT);
+        final FacetPage<Document> result = catalogSearchService.search(allParams, searchKey, pFacets, pPageable);
+        return new ResponseEntity<>(pAssembler.toResource(result), HttpStatus.OK);
     }
 
     @RequestMapping(path = DOCUMENTS_SEARCH + DESCRIPTOR, method = RequestMethod.GET,
