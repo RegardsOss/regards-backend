@@ -87,6 +87,7 @@ public class ProjectService implements IProjectService {
 
     @PostConstruct
     public void projectsInitialization() throws ModuleException {
+        LOG.info("Initializing projects");
         // Before creating projects, lets see if we need to initialize them by checking if any project already exists
         List<Project> projects = projectRepository.findAll();
         if(projects.isEmpty()) {
@@ -98,6 +99,8 @@ public class ProjectService implements IProjectService {
                 project.setAccessible(true);
                 createProject(project);
             }
+        } else {
+            LOG.info("Projects are already initialized, skipping project initialization");
         }
     }
 
