@@ -78,7 +78,7 @@ public class STAFURLFactory {
     public static void initSTAFURLProtocol() {
         try {
             URL.setURLStreamHandlerFactory(new STAFURLStreamHandlerFactory());
-        } catch (Exception e) { // NOSONAR
+        } catch (Error e) { // NOSONAR
             // Factory already defined. Nothing to do.
         }
     }
