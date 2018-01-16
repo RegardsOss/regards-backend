@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.domain.chain;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -44,9 +45,10 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 
 /**
  *
@@ -95,7 +97,7 @@ public class AcquisitionProcessingChain {
     private final Boolean running = false;
 
     /**
-     * The last activation date when an acquisition were running
+     * The last activation date when an acquisition were running.
      */
     @Column(name = "last_activation_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
@@ -128,12 +130,19 @@ public class AcquisitionProcessingChain {
     private Set<AcquisitionFileInfo> fileInfos;
 
     /**
-     * A {@link PluginConfiguration} of a {@link ICheckFilePlugin}
+     * An optional {@link PluginConfiguration} of a {@link IValidationPlugin}
+     */
+    @ManyToOne
+    @JoinColumn(name = "validation_conf_id", foreignKey = @ForeignKey(name = "fk_validation_conf_id"))
+    private PluginConfiguration validationPluginConf;
+
+    /**
+     * A {@link PluginConfiguration} of a {@link IProductPlugin}
      */
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "checkfile_conf_id", foreignKey = @ForeignKey(name = "fk_checkfile_conf_id"))
-    private PluginConfiguration checkAcquisitionPluginConf;
+    @JoinColumn(name = "product_conf_id", foreignKey = @ForeignKey(name = "fk_product_conf_id"))
+    private PluginConfiguration productPluginConf;
 
     /**
      * A {@link PluginConfiguration} of a {@link IGenerateSIPPlugin}
@@ -198,14 +207,6 @@ public class AcquisitionProcessingChain {
         this.fileInfos = fileInfos;
     }
 
-    public PluginConfiguration getCheckAcquisitionPluginConf() {
-        return checkAcquisitionPluginConf;
-    }
-
-    public void setCheckAcquisitionPluginConf(PluginConfiguration checkAcquisitionPluginConf) {
-        this.checkAcquisitionPluginConf = checkAcquisitionPluginConf;
-    }
-
     public PluginConfiguration getGenerateSipPluginConf() {
         return generateSipPluginConf;
     }
@@ -240,5 +241,21 @@ public class AcquisitionProcessingChain {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Optional<PluginConfiguration> getValidationPluginConf() {
+        return Optional.ofNullable(validationPluginConf);
+    }
+
+    public void setValidationPluginConf(PluginConfiguration validationPluginConf) {
+        this.validationPluginConf = validationPluginConf;
+    }
+
+    public PluginConfiguration getProductPluginConf() {
+        return productPluginConf;
+    }
+
+    public void setProductPluginConf(PluginConfiguration productPluginConf) {
+        this.productPluginConf = productPluginConf;
     }
 }

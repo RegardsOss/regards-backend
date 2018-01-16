@@ -51,11 +51,10 @@ import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 import org.hibernate.validator.constraints.NotBlank;
 
-import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
@@ -83,7 +82,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
                         attributeNodes = { @NamedAttributeNode(value = "metaFiles") }) })
 
 })
-public class Product implements IIdentifiable<Long> {
+public class Product {
 
     /**
      * Unique id
@@ -121,13 +120,11 @@ public class Product implements IIdentifiable<Long> {
     @Column(name = "session", length = 128)
     private String session;
 
-    /**
-     * The {@link MetaProduct}
-     */
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_product_id"), updatable = false)
-    private MetaProduct metaProduct;
+    @JoinColumn(name = "processing_chain_id", foreignKey = @ForeignKey(name = "fk_processing_chain_id"),
+            updatable = false)
+    private AcquisitionProcessingChain processingChain;
 
     /**
      * {@link List} of file include in the {@link Product}
@@ -140,17 +137,13 @@ public class Product implements IIdentifiable<Long> {
     @Type(type = "jsonb")
     private SIP sip;
 
-    @Column(name = "ingest_chain")
-    private String ingestChain;
-
     /**
-     * The unique ingest IP identifier : only available if product SIP has been properly submited to INGEST
+     * The unique ingest IP identifier : only available if product SIP has been properly submitted to INGEST
      * microservice.
      */
     @Column(name = "ip_id", length = UniformResourceName.MAX_SIZE)
     private String ipId;
 
-    @Override
     public Long getId() {
         return id;
     }
@@ -197,14 +190,6 @@ public class Product implements IIdentifiable<Long> {
         this.productName = productName;
     }
 
-    public MetaProduct getMetaProduct() {
-        return metaProduct;
-    }
-
-    public void setMetaProduct(MetaProduct metaProduct) {
-        this.metaProduct = metaProduct;
-    }
-
     public void addAcquisitionFile(AcquisitionFile acqFile) {
         this.fileList.add(acqFile);
     }
@@ -233,14 +218,6 @@ public class Product implements IIdentifiable<Long> {
         this.sip = sip;
     }
 
-    public String getIngestChain() {
-        return ingestChain;
-    }
-
-    public void setIngestChain(String ingestProcessingChain) {
-        this.ingestChain = ingestProcessingChain;
-    }
-
     public ProductState getState() {
         return state;
     }
@@ -261,8 +238,6 @@ public class Product implements IIdentifiable<Long> {
         strBuilder.append(sipState);
         strBuilder.append(" - ");
         strBuilder.append(session);
-        strBuilder.append(" - ");
-        strBuilder.append(ingestChain);
         return strBuilder.toString();
     }
 
@@ -288,5 +263,13 @@ public class Product implements IIdentifiable<Long> {
 
     public void setIpId(String ipId) {
         this.ipId = ipId;
+    }
+
+    public AcquisitionProcessingChain getProcessingChain() {
+        return processingChain;
+    }
+
+    public void setProcessingChain(AcquisitionProcessingChain processingChain) {
+        this.processingChain = processingChain;
     }
 }

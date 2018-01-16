@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 
@@ -35,60 +36,45 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotBlank;
-
-import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.jpa.converters.PathAttributeConverter;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 
 /**
  * This class represents an acquisition file.<br>
  * This file is created when detected by a scan plugin.
  *
  * @author Christophe Mertz
+ * @author Marc Sordi
  *
  */
 @Entity
 @Table(name = "t_acquisition_file")
-public class AcquisitionFile implements IIdentifiable<Long> {
+public class AcquisitionFile {
 
-    /**
-     * Maximum String size constraint with length 255
-     */
-    private static final int MAX_STRING_NAME_LENGTH = 255;
-
-    /**
-     * Maximum enum size constraint with length 16
-     */
-    private static final int MAX_ENUM_LENGTH = 16;
-
-    /**
-     * Unique id
-     */
     @Id
-    @SequenceGenerator(name = "ChainSequence", initialValue = 1, sequenceName = "seq_chain")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ChainSequence")
+    @SequenceGenerator(name = "AcqFileSequence", initialValue = 1, sequenceName = "seq_acq_file")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "AcqFileSequence")
     private Long id;
 
-    /**
-     * The data file name
-     */
-    @NotBlank
-    @Column(name = "label", length = MAX_STRING_NAME_LENGTH, nullable = false)
-    private String fileName;
-
-    /**
-     * The data file's size in octets
-     */
-    @Column(name = "file_size")
-    private Long size;
+    @NotNull(message = "File path is required")
+    @Convert(converter = PathAttributeConverter.class)
+    private Path filePath;
 
     /**
      * The data file's status
      */
-    @Column(name = "state", length = MAX_ENUM_LENGTH)
+    @Column(name = "state", length = 16)
     @Enumerated(EnumType.STRING)
     private AcquisitionFileState state;
+
+    /**
+     * This field is only used when acquisition file status is set to {@link AcquisitionFileState#ERROR}
+     */
+    @Column(length = 256)
+    private String error;
 
     /**
      * The {@link Product} associated to the data file
@@ -107,7 +93,7 @@ public class AcquisitionFile implements IIdentifiable<Long> {
     /**
      * Data file checksum
      */
-    @Column(name = "checksum", length = MAX_STRING_NAME_LENGTH)
+    @Column(name = "checksum", length = 255)
     private String checksum;
 
     /**
@@ -117,67 +103,17 @@ public class AcquisitionFile implements IIdentifiable<Long> {
     @Column(name = "checksumAlgorithm", length = 16)
     private String checksumAlgorithm;
 
-    @Override
-    public int hashCode() { // NOSONAR
-        final int prime = 31;
-        int result = 1;
-        result = (prime * result) + ((checksum == null) ? 0 : checksum.hashCode()); // NOSONAR
-        result = (prime * result) + ((fileName == null) ? 0 : fileName.hashCode()); // NOSONAR
-        return result;
-    }
+    @NotNull(message = "Acquisition file information is required")
+    @ManyToOne
+    @JoinColumn(name = "acq_file_info_id", foreignKey = @ForeignKey(name = "fk_acq_file_info_id"), updatable = false)
+    private AcquisitionFileInfo fileInfo;
 
-    @Override
-    public boolean equals(Object obj) { // NOSONAR
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        AcquisitionFile other = (AcquisitionFile) obj;
-        if (checksum == null) {
-            if (other.checksum != null) {
-                return false;
-            }
-        } else if (!checksum.equals(other.checksum)) {
-            return false;
-        }
-        if (fileName == null) {
-            if (other.fileName != null) {
-                return false;
-            }
-        } else if (!fileName.equals(other.fileName)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
-    public Long getSize() {
-        return size;
-    }
-
-    public void setSize(Long size) {
-        this.size = size;
     }
 
     public AcquisitionFileState getState() {
@@ -208,8 +144,8 @@ public class AcquisitionFile implements IIdentifiable<Long> {
         return checksum;
     }
 
-    public void setChecksum(String check) {
-        this.checksum = check;
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
     }
 
     public String getChecksumAlgorithm() {
@@ -220,24 +156,27 @@ public class AcquisitionFile implements IIdentifiable<Long> {
         this.checksumAlgorithm = checksumAlgorithm;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder strBuilder = new StringBuilder();
-        if (id != null) {
-            strBuilder.append(id);
-            strBuilder.append(" - ");
-        }
-        strBuilder.append(fileName);
-        if (size != null) {
-            strBuilder.append(" - ");
-            strBuilder.append(size);
-        }
-        if (state != null) {
-            strBuilder.append(" - [");
-            strBuilder.append(state);
-            strBuilder.append("]");
-        }
-        return strBuilder.toString();
+    public AcquisitionFileInfo getFileInfo() {
+        return fileInfo;
     }
 
+    public void setFileInfo(AcquisitionFileInfo fileInfo) {
+        this.fileInfo = fileInfo;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
+    }
+
+    public Path getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(Path filePath) {
+        this.filePath = filePath;
+    }
 }

@@ -19,27 +19,22 @@
 package fr.cnes.regards.modules.acquisition.plugins;
 
 import java.nio.file.Path;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
- * First <b>required</b> step of acquisition processing chain. This step is used to make disk scanning for file
- * detection.
+ * Second <b>optional</b> step of acquisition processing chain. This step is used to validate a file.
  *
  * @author Marc Sordi
  *
  */
-@PluginInterface(description = "File scanning plugin contract")
-public interface IScanPlugin {
+@PluginInterface(description = "File validation plugin contract")
+public interface IValidationPlugin {
 
     /**
-     * Scan disk to detect and retrieve files
-     * @param lastModificationDate The last most recent last modification date of all the last scanned files. May be
-     *            null for first scan!
-     * @return list of detected files
+     * Validate a file
+     * @param filePath file to validate
+     * @return true if file is valid
      */
-    List<Path> scan(Optional<OffsetDateTime> lastModificationDate);
+    boolean validate(Path filePath);
 }

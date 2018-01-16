@@ -27,5 +27,6 @@ package fr.cnes.regards.modules.acquisition.domain;
 public enum AcquisitionFileState {
     VALID,
     INVALID,
-    IN_PROGRESS;
+    IN_PROGRESS,
+    ERROR;
 }

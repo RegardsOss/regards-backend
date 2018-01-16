@@ -18,7 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
+import java.time.OffsetDateTime;
+
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -34,6 +37,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
 
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.urn.DataType;
 
@@ -63,6 +67,13 @@ public class AcquisitionFileInfo {
     @ManyToOne(optional = false)
     @JoinColumn(name = "scan_conf_id", nullable = false, foreignKey = @ForeignKey(name = "fk_scan_conf_id"))
     private PluginConfiguration scanPlugin;
+
+    /**
+     * The most recent last modification date of all scanned files as millisecond
+     */
+    @Column(name = "lastModificationDate")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime lastModificationDate;
 
     /**
      * A {@link String} corresponding to the data file mime-type
@@ -125,5 +136,13 @@ public class AcquisitionFileInfo {
 
     public Boolean getMandatory() {
         return mandatory;
+    }
+
+    public OffsetDateTime getLastModificationDate() {
+        return lastModificationDate;
+    }
+
+    public void setLastModificationDate(OffsetDateTime lastModificationDate) {
+        this.lastModificationDate = lastModificationDate;
     }
 }

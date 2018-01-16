@@ -46,10 +46,10 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
@@ -122,15 +122,15 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain2 chain) {
-        return productRepository.findChainProductsToSchedule(chain.getLabel());
+    public Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain chain) {
+        return productRepository.findChainProductsToSchedule(chain);
     }
 
     /**
      * Schedule a {@link SIPGenerationJob} and update product SIP state in same transaction.
      */
     @Override
-    public JobInfo scheduleProductSIPGeneration(Product product, AcquisitionProcessingChain2 chain) {
+    public JobInfo scheduleProductSIPGeneration(Product product, AcquisitionProcessingChain chain) {
 
         // Schedule job
         JobInfo acquisition = new JobInfo();
@@ -240,7 +240,7 @@ public class ProductService implements IProductService {
         Multimap<String, String> scheduledSessionsByChain = ArrayListMultimap.create();
         if ((products != null) && !products.isEmpty()) {
             for (Product product : products) {
-                scheduledSessionsByChain.put(product.getIngestChain(), product.getSession());
+                scheduledSessionsByChain.put(product.getProcessingChain().getIngestChain(), product.getSession());
             }
         }
 
@@ -252,9 +252,10 @@ public class ProductService implements IProductService {
             Multimap<String, String> sessionsByChain = ArrayListMultimap.create();
             for (Product product : products) {
                 // Check if chain and session not already scheduled
-                if (!scheduledSessionsByChain.containsEntry(product.getIngestChain(), product.getSession())) {
+                if (!scheduledSessionsByChain.containsEntry(product.getProcessingChain().getIngestChain(),
+                                                            product.getSession())) {
                     // Register chains and sessions for scheduling
-                    sessionsByChain.put(product.getIngestChain(), product.getSession());
+                    sessionsByChain.put(product.getProcessingChain().getIngestChain(), product.getSession());
                     // Update SIP state
                     product.setSipState(ProductSIPState.SUBMISSION_SCHEDULED);
                     save(product);

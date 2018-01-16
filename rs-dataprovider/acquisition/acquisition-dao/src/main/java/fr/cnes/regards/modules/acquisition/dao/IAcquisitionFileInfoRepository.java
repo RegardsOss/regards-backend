@@ -18,30 +18,17 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
-import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 
 /**
- * {@link AcquisitionFile} repository
+ * {@link AcquisitionFileInfo} repository
  *
- * @author Christophe Mertz
  * @author Marc Sordi
  */
 @Repository
-public interface IAcquisitionFileRepository extends JpaRepository<AcquisitionFile, Long> {
-
-    // List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
-    //
-    // List<AcquisitionFile> findByStatus(AcquisitionFileState status);
-
-    List<AcquisitionFile> findByStateAndFileInfo(AcquisitionFileState state, AcquisitionFileInfo fileInfo);
-
-    // List<AcquisitionFile> findByProductProductName(String productName);
+public interface IAcquisitionFileInfoRepository extends JpaRepository<AcquisitionFileInfo, Long> {
 
 }

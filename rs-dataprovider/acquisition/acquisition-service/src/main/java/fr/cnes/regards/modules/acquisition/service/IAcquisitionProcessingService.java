@@ -18,11 +18,18 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 
 /**
- * Acquistion processing service interface
+ * Acquisition processing service interface
  *
  * @author Marc Sordi
  *
@@ -36,4 +43,29 @@ public interface IAcquisitionProcessingService {
      * @throws ModuleException if error occurs.
      */
     AcquisitionProcessingChain getChain(Long id) throws ModuleException;
+
+    /**
+     * Register detected files in database initializing its metadata
+     * @param scannedFiles list of scanned files to register
+     * @param info the related file information
+     * @throws ModuleException if error occurs
+     */
+    void registerFiles(List<Path> scannedFiles, AcquisitionFileInfo info) throws ModuleException;
+
+    /**
+     * Validate {@link AcquisitionFileState#IN_PROGRESS} files for specified {@link AcquisitionFileInfo}
+     * @param fileInfo file info filter
+     * @param validationPluginConf optional validation plugin configuration
+     * @throws ModuleException if error occurs!
+     */
+    void validateFiles(AcquisitionFileInfo fileInfo, Optional<PluginConfiguration> validationPluginConf)
+            throws ModuleException;
+
+    /**
+     * Build products according to {@link AcquisitionFileState#VALID} files of specified {@link AcquisitionFileInfo}
+     * @param fileInfo file info filter
+     * @param productPluginConf required product plugin configuration
+     * @throws ModuleException if error occurs!
+     */
+    void buildProducts(AcquisitionFileInfo fileInfo, PluginConfiguration productPluginConf) throws ModuleException;
 }

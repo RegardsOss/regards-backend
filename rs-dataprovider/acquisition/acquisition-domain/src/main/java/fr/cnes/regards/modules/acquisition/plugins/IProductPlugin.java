@@ -19,27 +19,23 @@
 package fr.cnes.regards.modules.acquisition.plugins;
 
 import java.nio.file.Path;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
- * First <b>required</b> step of acquisition processing chain. This step is used to make disk scanning for file
- * detection.
+ * Third <b>required</b> step of acquisition processing chain. This step is used to compute product name for a specified
+ * file.
  *
  * @author Marc Sordi
  *
  */
-@PluginInterface(description = "File scanning plugin contract")
-public interface IScanPlugin {
+@PluginInterface(description = "Product name computing plugin contract")
+public interface IProductPlugin {
 
     /**
-     * Scan disk to detect and retrieve files
-     * @param lastModificationDate The last most recent last modification date of all the last scanned files. May be
-     *            null for first scan!
-     * @return list of detected files
+     * Compute product name for a specified file
+     * @param filePath file path
+     * @return product name
      */
-    List<Path> scan(Optional<OffsetDateTime> lastModificationDate);
+    String getProductName(Path filePath);
 }

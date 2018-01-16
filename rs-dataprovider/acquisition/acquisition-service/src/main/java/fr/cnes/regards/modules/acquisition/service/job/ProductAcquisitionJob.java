@@ -22,12 +22,12 @@ package fr.cnes.regards.modules.acquisition.service.job;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -35,8 +35,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
-import fr.cnes.regards.framework.modules.jobs.domain.step.IProcessingStep;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -50,6 +48,8 @@ import fr.cnes.regards.modules.acquisition.service.job.step.AcquisitionCheckStep
 import fr.cnes.regards.modules.acquisition.service.job.step.AcquisitionScanStep;
 
 /**
+ * FIXME : revoir la doc en fonction de l'implémentation
+ *
  * This class runs a set of step :<br>
  * <li>a step {@link AcquisitionScanStep} to scan and identify the {@link AcquisitionFile} to acquired
  * <li>a step {@link AcquisitionCheckStep} to check the {@link AcquisitionFile} and to determines the {@link Product}
@@ -64,12 +64,10 @@ import fr.cnes.regards.modules.acquisition.service.job.step.AcquisitionScanStep;
  */
 public class ProductAcquisitionJob extends AbstractJob<Void> {
 
+    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductAcquisitionJob.class);
 
     public static final String CHAIN_PARAMETER_ID = "chain";
-
-    @Autowired
-    private AutowireCapableBeanFactory beanFactory;
 
     @Autowired
     private IProductService productService;
@@ -101,54 +99,30 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
 
         // Get file informations
         Set<AcquisitionFileInfo> fileInfos = acqProcessingChain.getFileInfos();
+
         // Launch file scanning for each file information
-        for (AcquisitionFileInfo info : fileInfos) {
+        for (AcquisitionFileInfo fileInfo : fileInfos) {
             // Get plugin instance
-            IScanPlugin scanPlugin = pluginService.getPlugin(info.getScanPlugin().getId());
+            IScanPlugin scanPlugin = pluginService.getPlugin(fileInfo.getScanPlugin().getId());
             // Launch scanning
-            // FIXME : may compute activation date per acquisition file
-            List<Path> scannedFiles = scanPlugin.scan(acqProcessingChain.getLastActivationDate());
+            List<Path> scannedFiles = scanPlugin.scan(Optional.ofNullable(fileInfo.getLastModificationDate()));
             // Initialize acquisition file
-            // TODO
+            acqProcessingService.registerFiles(scannedFiles, fileInfo);
+            // Validate all files
+            acqProcessingService.validateFiles(fileInfo, acqProcessingChain.getValidationPluginConf());
+            // Build products
+            acqProcessingService.buildProducts(fileInfo, acqProcessingChain.getProductPluginConf());
         }
 
-        // Validate all files and get all related product name
-        // TODO
-        // Create missing product
-        // TODO
-        // Update product state
-        // TODO
-
-        LOGGER.info("[{}-{}] : starting acquisition job", acqProcessingChain.getLabel(),
-                    acqProcessingChain.getSession());
-
-        try {
-            // Step 1 : required files scanning
-            IProcessingStep<Void, Void> scanStep = new AcquisitionScanStep(this);
-            beanFactory.autowireBean(scanStep);
-            scanStep.execute(null);
-            // Step 2 : optional files checking
-            IProcessingStep<Void, Void> checkStep = new AcquisitionCheckStep(this);
-            beanFactory.autowireBean(checkStep);
-            checkStep.execute(null);
-
-            // For each complete product, creates and schedules a job to generate SIP
-            Set<Product> products = productService.findChainProductsToSchedule(acqProcessingChain);
-            for (Product p : products) {
-                productService.scheduleProductSIPGeneration(p, acqProcessingChain);
-            }
-
-            // Job is terminated ... release processing chain
-            acqProcessingChain.setRunning(false);
-            acqProcessChainService.createOrUpdate(acqProcessingChain);
-
-            LOGGER.info("[{}-{}] : {} jobs for SIP generation queued", acqProcessingChain.getLabel(),
-                        acqProcessingChain.getSession(), products.size());
-
-        } catch (ModuleException pse) {
-            LOGGER.error("Business error", pse);
-            throw new JobRuntimeException(pse);
+        // For each complete product, creates and schedules a job to generate SIP
+        Set<Product> products = productService.findChainProductsToSchedule(acqProcessingChain);
+        for (Product p : products) {
+            productService.scheduleProductSIPGeneration(p, acqProcessingChain);
         }
+
+        // Job is terminated ... release processing chain
+        acqProcessingChain.setRunning(false);
+        acqProcessChainService.createOrUpdate(acqProcessingChain);
     }
 
     public AcquisitionProcessingChain getAcqProcessingChain() {

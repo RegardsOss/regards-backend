@@ -29,12 +29,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
 /**
@@ -54,19 +54,28 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
 
     Set<Product> findByStatus(ProductState status);
 
-    @Query(value = "select p.* from {h-schema}t_acquisition_product p, {h-schema}t_acquisition_meta_product mp, {h-schema}t_acquisition_chain apc where p.sip_state=?1 and p.product_state in ?2 and p.meta_product_id=mp.id and mp.id=apc.meta_product_id and apc.label=?3",
-            nativeQuery = true)
-    Set<Product> findChainProducts(ProductSIPState sipState, List<ProductState> productStates, String chainLabel);
+    // FIXME remove
+    // @Query(value = "select p.* from {h-schema}t_acquisition_product p, {h-schema}t_acquisition_meta_product mp,
+    // {h-schema}t_acquisition_chain apc where p.sip_state=?1 and p.product_state in ?2 and p.meta_product_id=mp.id and
+    // mp.id=apc.meta_product_id and apc.label=?3",
+    // nativeQuery = true)
+    // Set<Product> findChainProducts(ProductSIPState sipState, List<ProductState> productStates, String chainLabel);
+
+    Set<Product> findByProcessingChainAndSipStateAndStateIn(AcquisitionProcessingChain processingChain,
+            ProductSIPState sipState, List<ProductState> productStates);
 
     /**
      * Find {@link ProductState#COMPLETED} or{@link ProductState#FINISHED} products not already scheduled for SIP
      * generation and for the specified acquisition chain.
-     * @param chainLabel acquisition chain label
+     * @param processingChain acquisition processing chain
      * @return a set of {@link Product} to schedule
      */
-    default Set<Product> findChainProductsToSchedule(String chainLabel) {
-        return findChainProducts(ProductSIPState.NOT_SCHEDULED,
-                                 Arrays.asList(ProductState.COMPLETED, ProductState.FINISHED), chainLabel);
+    default Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain processingChain) {
+        // FIXME remove comments
+        // return findChainProducts(ProductSIPState.NOT_SCHEDULED,
+        // Arrays.asList(ProductState.COMPLETED, ProductState.FINISHED), chainLabel);
+        return findByProcessingChainAndSipStateAndStateIn(processingChain, ProductSIPState.NOT_SCHEDULED,
+                                                          Arrays.asList(ProductState.COMPLETED, ProductState.FINISHED));
     }
 
     /**
