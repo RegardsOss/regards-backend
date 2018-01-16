@@ -46,6 +46,10 @@
 			<artifactId>plugins-service</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
+			<artifactId>accessrights-instance-client</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
@@ -60,6 +64,6 @@
 			<artifactId>regards-test-reporting</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+    </dependencies>
 </project>
 
