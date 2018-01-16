@@ -480,12 +480,11 @@ public class SearchController {
         return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
 
-
     /**
      * Perform an OpenSearch request on documents. Only return required facets.
      * @param allParams all query parameters
-     * @param pFacets the facets to apply
-     * @param pPageable the page
+     * @param facets the facets to apply
+     * @param pageable the page
      * @return the page of documents matching the query
      * @throws SearchException when an error occurs while parsing the query
      */
@@ -494,12 +493,12 @@ public class SearchController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<FacettedPagedResources<Resource<Document>>> searchDocuments(
             @RequestParam final Map<String, String> allParams,
-            @RequestParam(value = "facets", required = false) String[] pFacets, final Pageable pPageable,
-            FacettedPagedResourcesAssembler<Document> pAssembler) throws SearchException {
+            @RequestParam(value = "facets", required = false) String[] facets, final Pageable pageable,
+            FacettedPagedResourcesAssembler<Document> assembler) throws SearchException {
         final SimpleSearchKey<Document> searchKey = Searches
-                .onSingleEntity(runtimeTenantResolver.getTenant(), EntityType.DOCUMENT);
-        final FacetPage<Document> result = catalogSearchService.search(allParams, searchKey, pFacets, pPageable);
-        return new ResponseEntity<>(pAssembler.toResource(result), HttpStatus.OK);
+                .onSingleEntity(tenantResolver.getTenant(), EntityType.DOCUMENT);
+        final FacetPage<Document> result = searchService.search(allParams, searchKey, facets, pageable);
+        return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
     }
 
     @RequestMapping(path = DOCUMENTS_SEARCH + DESCRIPTOR, method = RequestMethod.GET,
