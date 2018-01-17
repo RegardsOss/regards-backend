@@ -58,7 +58,7 @@ public interface IAcquisitionProcessingService {
      * Start all automatic chains according to several conditions
      * @throws ModuleException if error occurs!
      */
-    void startAutomaticChains() throws ModuleException;
+    void startAutomaticChains();
 
     /**
      * Start a chain manually

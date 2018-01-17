@@ -250,7 +250,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public void startAutomaticChains() throws ModuleException {
+    public void startAutomaticChains() {
 
         // Load all automatic chains
         List<AcquisitionProcessingChain> processingChains = acqChainRepository.findAllBootableAutomaticChains();
@@ -272,6 +272,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Override
     public void startManualChain(Long processingChainId) throws ModuleException {
+
         // Load chain
         AcquisitionProcessingChain processingChain = getChain(processingChainId);
 
@@ -302,10 +303,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     /**
      * Schedule a product acquisition job for specified processing chain. Only one job can be scheduled.
-     * @param processingChain
-     * @throws ModuleException
+     * @param processingChain processing chain
      */
-    private void scheduleProductAcquisitionJob(AcquisitionProcessingChain processingChain) throws ModuleException {
+    private void scheduleProductAcquisitionJob(AcquisitionProcessingChain processingChain) {
 
         // Mark processing chain as running
         processingChain.setRunning(true);
@@ -427,6 +427,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                     if (validationPlugin.validate(inProgressFile.getFilePath())) {
                         inProgressFile.setState(AcquisitionFileState.VALID);
                     } else {
+                        // FIXME move invalid files?
                         inProgressFile.setState(AcquisitionFileState.INVALID);
                     }
                     acqFileRepository.save(inProgressFile);

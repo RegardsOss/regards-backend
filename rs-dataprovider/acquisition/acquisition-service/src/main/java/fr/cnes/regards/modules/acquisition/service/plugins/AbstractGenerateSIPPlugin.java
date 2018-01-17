@@ -31,6 +31,7 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.builder.PDIBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
@@ -39,7 +40,7 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 
 /**
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -51,26 +52,22 @@ public abstract class AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
     private IDatasetClient datasetClient;
 
     @Override
-    public SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId) throws ModuleException {
-        String productName = acqFiles.get(0).getProduct().getProductName();
+    public SIP generate(Product product) throws ModuleException {
 
-        LOGGER.info("Start SIP generation for product <{}>", productName);
+        LOGGER.info("Start SIP generation for product <{}>", product.getProductName());
 
         // Init the builder
-        SIPBuilder sipBuilder = new SIPBuilder(productName);
+        SIPBuilder sipBuilder = new SIPBuilder(product.getProductName());
 
         // Add all AcquisistionFile to the content information
-        addDataObjectsToSip(sipBuilder, acqFiles);
+        addDataObjectsToSip(sipBuilder, product.getAcquisitionFiles());
 
         // Get the dataset name
-        Optional<String> datasetName = Optional.empty();
-        if (datasetIpId.isPresent()) {
-            datasetName = Optional
-                    .of(datasetClient.retrieveDataset(datasetIpId.get()).getBody().getContent().getSipId());
-        }
+        String datasetName = datasetClient.retrieveDataset(product.getProcessingChain().getDatasetIpId()).getBody()
+                .getContent().getSipId();
 
         // Extracts the meta-attributes
-        SortedMap<Integer, Attribute> mm = this.createMetadataPlugin(acqFiles, datasetName);
+        SortedMap<Integer, Attribute> mm = createMetadataPlugin(product.getAcquisitionFiles(), datasetName);
 
         addAttributesTopSip(sipBuilder, mm);
 
@@ -78,14 +75,14 @@ public abstract class AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
         SIP aSip = sipBuilder.build();
 
         // If a dataSet is defined, add a tag to the PreservationDescriptionInformation
-        addDatasetTag(aSip, datasetIpId);
+        addDatasetTag(aSip, Optional.of(product.getProcessingChain().getDatasetIpId()));
 
         if (LOGGER.isDebugEnabled()) {
             Gson gson = new Gson();
             LOGGER.debug(gson.toJson(aSip));
         }
 
-        LOGGER.info("End SIP generation for product <{}>", productName);
+        LOGGER.info("End SIP generation for product <{}>", product.getProductName());
 
         return aSip;
     }
@@ -105,4 +102,6 @@ public abstract class AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
     protected abstract void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles)
             throws AcquisitionException;
 
+    protected abstract SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles,
+            String datasetName) throws ModuleException;
 }

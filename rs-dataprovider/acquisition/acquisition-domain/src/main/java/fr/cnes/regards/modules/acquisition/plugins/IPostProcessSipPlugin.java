@@ -24,7 +24,7 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 
 /**
- * Acquisition chain post processing
+ * Acquisition chain post processing plugin
  *
  * @author Christophe Mertz
  *

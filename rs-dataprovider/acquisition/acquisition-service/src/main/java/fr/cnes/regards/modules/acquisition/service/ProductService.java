@@ -45,12 +45,11 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
@@ -90,8 +89,12 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Product retrieve(Long id) {
-        return productRepository.findOne(id);
+    public Product loadProduct(Long id) throws ModuleException {
+        Product product = productRepository.findOne(id);
+        if (product == null) {
+            throw new EntityNotFoundException(id, Product.class);
+        }
+        return product;
     }
 
     @Override
@@ -133,8 +136,8 @@ public class ProductService implements IProductService {
 
         // Schedule job
         JobInfo acquisition = new JobInfo();
-        acquisition.setParameters(new JobParameter(SIPGenerationJob.CHAIN_PARAMETER, chain),
-                                  new JobParameter(SIPGenerationJob.PRODUCT_NAME, product.getProductName()));
+        acquisition.setParameters(new JobParameter(SIPGenerationJob.CHAIN_PARAMETER_ID, chain.getId()),
+                                  new JobParameter(SIPGenerationJob.PRODUCT_ID, product.getId()));
         acquisition.setClassName(SIPGenerationJob.class.getName());
         acquisition.setOwner(authResolver.getUser());
         acquisition = jobInfoService.createAsQueued(acquisition);
@@ -151,38 +154,30 @@ public class ProductService implements IProductService {
         return productRepository.findByStatus(status);
     }
 
-    @Override
-    public void computeProductStatus(Product product) {
+    private void computeProductState(Product product) {
         // At least one mandatory file is VALID
         product.setState(ProductState.ACQUIRING);
-
-        if (product.getMetaProduct() == null) {
-            LOGGER.error("[{}] The meta product of the product {} <{}> should not be null", product.getSession(),
-                         product.getId(), product.getProductName());
-            return;
-        }
 
         int nbTotalMandatory = 0;
         int nbTotalOptional = 0;
         int nbActualMandatory = 0;
         int nbActualOptional = 0;
 
-        for (MetaFile mf : product.getMetaProduct().getMetaFiles()) {
-            // Calculus the number of mandatory files
-            if (mf.isMandatory()) {
+        // Compute product requirements
+        for (AcquisitionFileInfo fileInfo : product.getProcessingChain().getFileInfos()) {
+            if (fileInfo.isMandatory()) {
                 nbTotalMandatory++;
             } else {
                 nbTotalOptional++;
             }
-            for (AcquisitionFile af : product.getAcquisitionFile()) {
-                if (af.getMetaFile().equals(mf) && af.getStatus().equals(AcquisitionFileState.VALID)) {
-                    if (mf.isMandatory()) {
-                        // At least one mandatory file is VALID
-                        nbActualMandatory++;
-                    } else {
-                        nbActualOptional++;
-                    }
-                }
+        }
+
+        // Compute product state
+        for (AcquisitionFile file : product.getAcquisitionFiles()) {
+            if (file.getFileInfo().isMandatory()) {
+                nbActualMandatory++;
+            } else {
+                nbActualOptional++;
             }
         }
 
@@ -212,7 +207,7 @@ public class ProductService implements IProductService {
 
         currentProduct.setSession(session);
         currentProduct.addAcquisitionFile(acqFile);
-        computeProductStatus(currentProduct);
+        computeProductState(currentProduct);
 
         return save(currentProduct);
     }

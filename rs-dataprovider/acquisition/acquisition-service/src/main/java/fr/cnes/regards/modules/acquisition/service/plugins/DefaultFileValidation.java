@@ -16,28 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.service.job.step;
+package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import fr.cnes.regards.framework.modules.jobs.domain.step.AbstractProcessingStep;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
-import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
+import java.nio.file.Path;
+
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 
 /**
- *
- * Common data provider step
- *
- * @param <I> input object
- * @param <0> output object
- *
  * @author Marc Sordi
  *
  */
-public abstract class AbstractDataProviderStep<I, O> extends AbstractProcessingStep<I, O, ProductAcquisitionJob> {
+@Plugin(id = "DefaultFileValidation", version = "1.0.0-SNAPSHOT", description = "Default noop validation plugin",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
+public class DefaultFileValidation implements IValidationPlugin {
 
-    protected final AcquisitionProcessingChain2 acqProcessingChain;
-
-    public AbstractDataProviderStep(ProductAcquisitionJob job) {
-        super(job);
-        this.acqProcessingChain = job.getAcqProcessingChain();
+    @Override
+    public boolean validate(Path filePath) {
+        return true;
     }
 }

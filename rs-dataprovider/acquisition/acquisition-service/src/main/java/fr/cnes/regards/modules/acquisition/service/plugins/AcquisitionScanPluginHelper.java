@@ -20,10 +20,6 @@
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -35,14 +31,8 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.modules.acquisition.builder.FileAcquisitionInformationsBuilder;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
-
 /**
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -54,32 +44,9 @@ public class AcquisitionScanPluginHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionScanPluginHelper.class);
 
     /**
-     * Process the checksum of the {@link File} inside the {@link AcquisitionFile}.
-     *  
-     * @param acqFile the {@link AcquisitionFile}
-     * @param algorithm the algorithm to used, {@link MessageDigest} for the possible values
-     */
-    protected void calcCheckSum(AcquisitionFile acqFile, String algorithm) {
-        if (algorithm == null) {
-            acqFile.setChecksum(null);
-            acqFile.setChecksumAlgorithm(null);
-            return;
-        }
-        try (FileInputStream fis = new FileInputStream(acqFile.getFile())) {
-            acqFile.setChecksum(ChecksumUtils.computeHexChecksum(fis, algorithm));
-            acqFile.setChecksumAlgorithm(algorithm);
-        } catch (NoSuchAlgorithmException e) {
-            LOGGER.error(e.getMessage(), e);
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-
-    }
-
-    /**
      * Converts a a pattern to a Java pattern.<br>
      * The table below shows the conversions that are applied.<br>
-     * The order of this 2 conversions is important, it should be not modified.<br>  
+     * The order of this 2 conversions is important, it should be not modified.<br>
      * <table border=1 cellpadding=2>
      * <tr>
      * <th>Order</th>
@@ -97,7 +64,7 @@ public class AcquisitionScanPluginHelper {
      * <td>.*</td>
      * </tr>
      * </table>
-     * 
+     *
      * @param originalPattern a pattern to converts to a Java pattern
      * @return the Java pattern
      */
@@ -113,10 +80,10 @@ public class AcquisitionScanPluginHelper {
 
     /**
      * Replace a pattern by a replacement value in a {@link String}
-     * 
+     *
      * @param patternToReplace the {@link String} to replace
-     * @param replacement the replacement value 
-     * @param target the {@link String} in that apply the replacement 
+     * @param replacement the replacement value
+     * @param target the {@link String} in that apply the replacement
      * @return a new {@link String} where a the pattern is replaced by a replacement value
      */
     protected String replacePattern(String patternToReplace, String replacement, String target) {
@@ -126,12 +93,14 @@ public class AcquisitionScanPluginHelper {
     }
 
     /**
-     * {@link List} the files of a directory that match a {@link RegexFilenameFilter} and that the last modification date is after a {@link OffsetDateTime} 
+     * {@link List} the files of a directory that match a {@link RegexFilenameFilter} and that the last modification
+     * date is after a {@link OffsetDateTime}
      *
-     * @param dirFile the directory where to get the files 
+     * @param dirFile the directory where to get the files
      * @param filter the {@link RegexFilenameFilter} to apply
      * @param lastAcqDate the {@link OffsetDateTime} to apply to filer the file
-     * @return List<File> the {@link List} of {@link File} that match the {@link RegexFilenameFilter} and the {@link OffsetDateTime}
+     * @return List<File> the {@link List} of {@link File} that match the {@link RegexFilenameFilter} and the
+     *         {@link OffsetDateTime}
      */
     protected List<File> filteredFileList(File dirFile, RegexFilenameFilter filter, OffsetDateTime lastAcqDate) {
         // Look for files with match the pattern
@@ -140,7 +109,7 @@ public class AcquisitionScanPluginHelper {
         List<File> sortedFileList = new ArrayList<>(nameFileArray.length);
         for (File element : nameFileArray) {
 
-            if (lastAcqDate == null
+            if ((lastAcqDate == null)
                     || OffsetDateTime.ofInstant(Instant.ofEpochMilli(element.lastModified()), ZoneId.of("UTC"))
                             .isAfter(lastAcqDate.atZoneSameInstant(ZoneId.of("UTC")).toOffsetDateTime())) {
                 sortedFileList.add(element);
@@ -152,25 +121,4 @@ public class AcquisitionScanPluginHelper {
 
         return sortedFileList;
     }
-
-    /**
-     * Create an {@link AcquisitionFile} and process the checksum of the {@link File}
-     * @param baseFile the {@link File} for which to create an {@link AcquisitionFile}
-     * @param metaFile the {@link MetaFile}
-     * @param algorithm the algorithm to used for the checksum, {@link MessageDigest} for the possible values
-     * @return
-     */
-    protected AcquisitionFile initAcquisitionFile(File baseFile, MetaFile metaFile, String algorithm) {
-        AcquisitionFile acqFile = new AcquisitionFile();
-        acqFile.setMetaFile(metaFile);
-        acqFile.setStatus(AcquisitionFileState.IN_PROGRESS);
-        acqFile.setFileName(baseFile.getName());
-        acqFile.setSize(baseFile.length());
-        acqFile.setAcquisitionInformations(FileAcquisitionInformationsBuilder.build(baseFile.getParent().toString())
-                .get());
-        calcCheckSum(acqFile, algorithm);
-
-        return acqFile;
-    }
-
 }

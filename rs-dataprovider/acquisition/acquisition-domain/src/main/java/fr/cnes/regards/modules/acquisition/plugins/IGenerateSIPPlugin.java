@@ -18,26 +18,19 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.SortedMap;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 
 /**
+ * This plugin is used for generating product SIP
+ *
  * @author Christophe Mertz
  *
  */
 @PluginInterface(description = "Plugin to generate SIP with product and file metadata")
 public interface IGenerateSIPPlugin {
 
-    SIP runPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetIpId) throws ModuleException;
-
-    SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, Optional<String> datasetName)
-            throws ModuleException;
-
+    SIP generate(Product product) throws ModuleException;
 }

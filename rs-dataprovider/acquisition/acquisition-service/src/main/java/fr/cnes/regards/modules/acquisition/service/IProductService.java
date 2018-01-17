@@ -49,10 +49,10 @@ public interface IProductService {
     Page<Product> retrieveAll(Pageable page);
 
     /**
-     * Retrieve one specified {@link Product}
+     * Load one specified {@link Product}
      * @param id {@link Product}
      */
-    Product retrieve(Long id);
+    Product loadProduct(Long id) throws ModuleException;
 
     /**
      * Retrieve one specified {@link Product}
@@ -87,28 +87,6 @@ public interface IProductService {
     JobInfo scheduleProductSIPGeneration(Product product, AcquisitionProcessingChain chain);
 
     Set<Product> findByStatus(ProductState status);
-
-    /**
-     * Calcul the {@link ProductState} :
-     *
-     * <li>{@link ProductState#ACQUIRING} : the initial state, at least a mandatory file is missing</br>
-     * </br>
-     *
-     * <li>{@link ProductState#COMPLETED} : all mandatory files is acquired</br>
-     * </br>
-     *
-     * <li>{@link ProductState#FINISHED} : the mandatory and optional files are acquired</br>
-     * </br>
-     *
-     * <li>{@link ProductState#SAVED} : the {@link Product} is saved by the microservice Ingest</br>
-     * </br>
-     *
-     * <li>{@link ProductState#ERROR} : the {@link Product} is in error</br>
-     * </br>
-     *
-     * @param product the {@link Product}
-     */
-    void computeProductStatus(Product product);
 
     /**
      * Get the {@link Product} corresponding to the productName and calculate the {@link ProductState}.<br>

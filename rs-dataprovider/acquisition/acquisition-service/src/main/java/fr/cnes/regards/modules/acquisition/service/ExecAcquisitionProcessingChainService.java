@@ -30,8 +30,8 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IExecAcquisitionProcessingChainRepository;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain2;
 import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 
 /**
  *
@@ -77,7 +77,7 @@ public class ExecAcquisitionProcessingChainService implements IExecAcquisitionPr
     }
 
     @Override
-    public Page<ExecAcquisitionProcessingChain> findByChainGeneration(AcquisitionProcessingChain2 chainGeneration,
+    public Page<ExecAcquisitionProcessingChain> findByChainGeneration(AcquisitionProcessingChain chainGeneration,
             Pageable pageable) {
         return processRepository.findByChainGeneration(chainGeneration, pageable);
     }

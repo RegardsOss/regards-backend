@@ -28,30 +28,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
-import fr.cnes.regards.modules.acquisition.service.job.step.AcquisitionCheckStep;
-import fr.cnes.regards.modules.acquisition.service.job.step.AcquisitionScanStep;
 
 /**
- * FIXME : revoir la doc en fonction de l'implémentation
+ * This class manages data driven product creation using following steps :
+ * <ul>
+ * <li>Scanning and file registering</li>
+ * <li>File validation</li>
+ * <li>Product creation</li>
+ * </ul>
  *
- * This class runs a set of step :<br>
- * <li>a step {@link AcquisitionScanStep} to scan and identify the {@link AcquisitionFile} to acquired
- * <li>a step {@link AcquisitionCheckStep} to check the {@link AcquisitionFile} and to determines the {@link Product}
- * associated<br>
- * And for each scanned {@link Product} not already send to Ingest microservice, and with its status equals to
- * {@link ProductState#COMPLETED} or {@link ProductState#FINISHED},
- * a new {@link JobInfo} of class {@link SIPGenerationJob} is create and queued.
+ * And at the end, for all {@link ProductState#COMPLETED} or {@link ProductState#FINISHED} products of the current
+ * processing chain, {@link SIPGenerationJob} are scheduled.
  *
  * @author Christophe Mertz
  * @author Marc Sordi

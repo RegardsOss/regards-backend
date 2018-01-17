@@ -19,9 +19,8 @@
 package fr.cnes.regards.modules.acquisition.domain;
 
 import java.time.OffsetDateTime;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -131,7 +130,7 @@ public class Product {
      */
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
-    private final Set<AcquisitionFile> fileList = new HashSet<AcquisitionFile>();
+    private final List<AcquisitionFile> fileList = new ArrayList<>();
 
     @Column(columnDefinition = "jsonb", name = "json_sip")
     @Type(type = "jsonb")
@@ -194,8 +193,8 @@ public class Product {
         this.fileList.add(acqFile);
     }
 
-    public Set<AcquisitionFile> getAcquisitionFile() {
-        return this.fileList;
+    public List<AcquisitionFile> getAcquisitionFiles() {
+        return fileList;
     }
 
     public void removeAcquisitionFile(AcquisitionFile acqFile) {

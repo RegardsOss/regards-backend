@@ -135,7 +135,7 @@ public class AcquisitionFileInfo {
         this.comment = comment;
     }
 
-    public Boolean getMandatory() {
+    public Boolean isMandatory() {
         return mandatory;
     }
 

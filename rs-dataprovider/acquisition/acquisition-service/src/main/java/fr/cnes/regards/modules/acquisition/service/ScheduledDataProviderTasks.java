@@ -52,7 +52,7 @@ public class ScheduledDataProviderTasks {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IAcquisitionProcessingChainService2 chainService;
+    private IAcquisitionProcessingService chainService;
 
     @Autowired
     private IProductService productService;
@@ -82,7 +82,7 @@ public class ScheduledDataProviderTasks {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                chainService.runActiveChains();
+                chainService.startAutomaticChains();
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

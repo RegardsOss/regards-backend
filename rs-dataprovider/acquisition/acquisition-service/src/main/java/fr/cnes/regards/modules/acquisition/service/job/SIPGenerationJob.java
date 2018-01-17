@@ -19,9 +19,7 @@
 
 package fr.cnes.regards.modules.acquisition.service.job;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,14 +32,12 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
-import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 
@@ -56,9 +52,9 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPGenerationJob.class);
 
-    public static final String CHAIN_PARAMETER = "chain";
+    public static final String CHAIN_PARAMETER_ID = "chain_id";
 
-    public static final String PRODUCT_NAME = "productName";
+    public static final String PRODUCT_ID = "product_id";
 
     @Autowired
     private IProductService productService;
@@ -67,53 +63,50 @@ public class SIPGenerationJob extends AbstractJob<Void> {
     private IPluginService pluginService;
 
     @Autowired
-    private IAcquisitionFileService acquisitionFileService;
+    private IAcquisitionProcessingService processingService;
 
-    private AcquisitionProcessingChain acqProcessingChain;
+    /**
+     * The current chain to work with!
+     */
+    private AcquisitionProcessingChain processingChain;
 
-    private String productName;
+    /**
+     * The product used for SIP generation
+     */
+    private Product product;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        acqProcessingChain = getValue(parameters, CHAIN_PARAMETER);
-        productName = getValue(parameters, PRODUCT_NAME);
+
+        Long acqProcessingChainId = getValue(parameters, CHAIN_PARAMETER_ID);
+        try {
+            processingChain = processingService.getChain(acqProcessingChainId);
+        } catch (ModuleException e) {
+            handleInvalidParameter(CHAIN_PARAMETER_ID, e.getMessage());
+        }
+
+        Long productId = getValue(parameters, PRODUCT_ID);
+        try {
+            product = productService.loadProduct(productId);
+        } catch (ModuleException e) {
+            handleInvalidParameter(PRODUCT_ID, e.getMessage());
+        }
     }
 
     @Override
     public void run() {
-        LOGGER.info("[{}] : starting SIP generation job for the product <{}>", acqProcessingChain.getLabel(),
-                    productName);
-
-        // Load the product
-        Product product;
-        try {
-            product = productService.retrieve(productName);
-        } catch (ModuleException e) {
-            LOGGER.error("Cannot load product", e);
-            throw new JobRuntimeException(e.getMessage());
-        }
+        LOGGER.info("[{}] : starting SIP generation job for the product <{}>", processingChain.getLabel(),
+                    product.getProductName());
 
         try {
-            // Build the plugin parameters
-            PluginParametersFactory factory = PluginParametersFactory.build();
-            for (Map.Entry<String, String> entry : acqProcessingChain.getGenerateSipParameter().entrySet()) {
-                factory.addParameter(entry.getKey(), entry.getValue());
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("[{}] Add parameter <{}> with value : {}", acqProcessingChain.getSession(),
-                                 entry.getKey(), entry.getValue());
-                }
-            }
-
             // Get an instance of the plugin
             IGenerateSIPPlugin generateSipPlugin = pluginService
-                    .getPlugin(acqProcessingChain.getGenerateSipPluginConf().getId(), factory.asArray());
-
-            // Retrieve files
-            List<AcquisitionFile> acqFiles = acquisitionFileService.findByProduct(productName);
-
+                    .getPlugin(processingChain.getGenerateSipPluginConf().getId());
             // Launch generation plugin
-            SIP sip = generateSipPlugin.runPlugin(acqFiles, Optional.of(acqProcessingChain.getDataSet()));
+            SIP sip = generateSipPlugin.generate(product);
+
+            // FIXME add dataset tag if exists
 
             // Update product
             product.setSip(sip);
