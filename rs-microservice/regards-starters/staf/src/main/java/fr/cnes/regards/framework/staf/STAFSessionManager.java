@@ -75,7 +75,9 @@ public class STAFSessionManager {
      */
     public static STAFSessionManager getInstance(STAFConfiguration configuration) {
         if (instance == null) {
-            instance = new STAFSessionManager(configuration);
+            synchronized (STAFSessionManager.class) {
+                instance = new STAFSessionManager(configuration);
+            }
         }
         return instance;
     }

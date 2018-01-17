@@ -236,7 +236,6 @@ public class TarCompression extends AbstractRunnableCompression {
             } else {
                 inputStream = new TarArchiveInputStream(is);
             }
-            FileOutputStream outputStream = null;
             if (!pOutputDir.exists()) {
                 pOutputDir.mkdirs();
             }
@@ -252,15 +251,11 @@ public class TarCompression extends AbstractRunnableCompression {
                 if (!file.getParentFile().exists()) {
                     file.getParentFile().mkdirs();
                 }
-                outputStream = new FileOutputStream(file);
-                while ((bytesRead = inputStream.read(buf, 0, bufsize)) > -1) {
-                    outputStream.write(buf, 0, bytesRead);
-                }
-                try {
-                    if (null != outputStream) {
-                        outputStream.close();
+                try (FileOutputStream outputStream = new FileOutputStream(file)) {
+                    while ((bytesRead = inputStream.read(buf, 0, bufsize)) > -1) {
+                        outputStream.write(buf, 0, bytesRead);
                     }
-                } catch (final Exception e) {
+                } catch (final IOException | RuntimeException e) {
                     LOGGER.error(e.getMessage(), e);
                 }
             }
@@ -269,11 +264,6 @@ public class TarCompression extends AbstractRunnableCompression {
                 LOGGER.debug(String.format("The file %s is uncompressed to %s", pCompressedFile.getName(),
                                            pOutputDir.getName()));
             }
-
-        } catch (final IOException ioE) {
-            throw new CompressionException(String.format("IO error during %s uncompression", CompressionTypeEnum.TAR),
-                    ioE);
-        } finally {
             try {
                 if (inputStream != null) {
                     inputStream.close();
@@ -282,6 +272,9 @@ public class TarCompression extends AbstractRunnableCompression {
                 throw new CompressionException(
                         String.format("IO error during %s uncompression", CompressionTypeEnum.TAR), e);
             }
+        } catch (final IOException ioE) {
+            throw new CompressionException(String.format("IO error during %s uncompression", CompressionTypeEnum.TAR),
+                    ioE);
         }
     }
 
