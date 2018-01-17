@@ -163,7 +163,7 @@ public final class PluginParameterUtils {
         else if (ParamType.MAP.equals(paramType)) {
             ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
             // Set key label
-            if (pluginParameter.keylabel() != null) {
+            if (pluginParameter != null) {
                 result.setKeyLabel(pluginParameter.keylabel());
             }
             // Get parameter types
