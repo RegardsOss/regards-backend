@@ -35,10 +35,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
@@ -49,9 +53,11 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
+import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
 /**
@@ -80,6 +86,12 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Autowired
     private IProductService productService;
+
+    @Autowired
+    private IJobInfoService jobInfoService;
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     @Override
     public AcquisitionProcessingChain getChain(Long id) throws ModuleException {
@@ -160,6 +172,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         List<Optional<PluginConfiguration>> confsToRemove = new ArrayList<>();
+        Optional<PluginConfiguration> existing;
 
         // Manage acquisition file info
         for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
@@ -169,30 +182,28 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 throw new EntityInvalidException(String.format("A file information must already have and identifier."));
             }
             // Manage scan plugin conf
-            // TODO update scan plugin and clean old conf if necessary
+            existing = fileInfoRepository.findOneScanPlugin(fileInfo.getId());
+            confsToRemove.add(updatePluginConfiguration(Optional.of(fileInfo.getScanPlugin()), existing));
+
             // Save file info
             fileInfoRepository.save(fileInfo);
         }
 
         // Manage validation plugin conf
-        // TODO update plugin and clean old conf if necessary
-        if (processingChain.getValidationPluginConf().isPresent()) {
-            createPluginConfiguration(processingChain.getValidationPluginConf().get());
-        }
+        existing = acqChainRepository.findOneValidationPlugin(processingChain.getId());
+        confsToRemove.add(updatePluginConfiguration(processingChain.getValidationPluginConf(), existing));
 
         // Manage product plugin conf
-        // TODO update scan plugin and clean old conf if necessary
-        createPluginConfiguration(processingChain.getProductPluginConf());
+        existing = acqChainRepository.findOneProductPlugin(processingChain.getId());
+        confsToRemove.add(updatePluginConfiguration(Optional.of(processingChain.getProductPluginConf()), existing));
 
         // Manage generate SIP plugin conf
-        // TODO update scan plugin and clean old conf if necessary
-        createPluginConfiguration(processingChain.getGenerateSipPluginConf());
+        existing = acqChainRepository.findOneGenerateSipPlugin(processingChain.getId());
+        confsToRemove.add(updatePluginConfiguration(Optional.of(processingChain.getGenerateSipPluginConf()), existing));
 
         // Manage post process SIP plugin conf
-        // TODO update scan plugin and clean old conf if necessary
-        if (processingChain.getPostProcessSipPluginConf().isPresent()) {
-            createPluginConfiguration(processingChain.getPostProcessSipPluginConf().get());
-        }
+        existing = acqChainRepository.findOnePostProcessSipPlugin(processingChain.getId());
+        confsToRemove.add(updatePluginConfiguration(processingChain.getPostProcessSipPluginConf(), existing));
 
         // Save new chain
         acqChainRepository.save(processingChain);
@@ -205,38 +216,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         return processingChain;
-
-        //
-        // // Manage plugin configuration
-        // // ---------------------------
-        // // Pre-processing plugine
-        // Optional<PluginConfiguration> existing = ingestChainRepository
-        // .findOnePreProcessingPluginByName(chainToUpdate.getName());
-        // confsToRemove.add(updatePluginConfiguration(chainToUpdate.getPreProcessingPlugin(), existing));
-        // // Validation plugin
-        // existing = ingestChainRepository.findOneValidationPluginByName(chainToUpdate.getName());
-        // confsToRemove.add(updatePluginConfiguration(Optional.of(chainToUpdate.getValidationPlugin()), existing));
-        // // Generation plugin
-        // existing = ingestChainRepository.findOneGenerationPluginByName(chainToUpdate.getName());
-        // confsToRemove.add(updatePluginConfiguration(Optional.of(chainToUpdate.getGenerationPlugin()), existing));
-        // // Tag plugin
-        // existing = ingestChainRepository.findOneTagPluginByName(chainToUpdate.getName());
-        // confsToRemove.add(updatePluginConfiguration(chainToUpdate.getTagPlugin(), existing));
-        // // Post-processing plugin
-        // existing = ingestChainRepository.findOnePostProcessingPluginByName(chainToUpdate.getName());
-        // confsToRemove.add(updatePluginConfiguration(chainToUpdate.getPostProcessingPlugin(), existing));
-        //
-        // // Update chain
-        // ingestChainRepository.save(chainToUpdate);
-        //
-        // // Clean unused plugin configuration after chain update avoiding foreign keys constraints restrictions.
-        // for (Optional<PluginConfiguration> confToRemove : confsToRemove) {
-        // if (confToRemove.isPresent()) {
-        // pluginService.deletePluginConfiguration(confToRemove.get().getId());
-        // }
-        // }
-        //
-        // return chainToUpdate;
     }
 
     /**
@@ -268,6 +247,81 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         return confToRemove;
+    }
+
+    @Override
+    public void startAutomaticChains() throws ModuleException {
+
+        // Load all automatic chains
+        List<AcquisitionProcessingChain> processingChains = acqChainRepository.findAllBootableAutomaticChains();
+
+        for (AcquisitionProcessingChain processingChain : processingChains) {
+
+            // Check periodicity
+            if ((processingChain.getLastActivationDate() != null) && processingChain.getLastActivationDate()
+                    .plusSeconds(processingChain.getPeriodicity()).isAfter(OffsetDateTime.now())) {
+                LOGGER.debug("Acquisition processing chain \"{}\" will not be started due to periodicity",
+                             processingChain.getLabel());
+            } else {
+                // Schedule job
+                scheduleProductAcquisitionJob(processingChain);
+            }
+        }
+
+    }
+
+    @Override
+    public void startManualChain(Long processingChainId) throws ModuleException {
+        // Load chain
+        AcquisitionProcessingChain processingChain = getChain(processingChainId);
+
+        if (!processingChain.isActive()) {
+            String message = String.format("Inactive processing chain \"%s\" cannot be started",
+                                           processingChain.getLabel());
+            LOGGER.error(message);
+            throw new EntityInvalidException(message);
+        }
+
+        if (AcquisitionProcessingChainMode.AUTO.equals(processingChain.getMode())) {
+            String message = String.format("Automatic processing chain \"%s\" cannot be started manuallly",
+                                           processingChain.getLabel());
+            LOGGER.error(message);
+            throw new EntityInvalidException(message);
+        }
+
+        if (processingChain.isRunning()) {
+            String message = String.format("Processing chain \"%s\" already running", processingChain.getLabel());
+            LOGGER.error(message);
+            throw new EntityInvalidException(message);
+        }
+
+        // Schedule job
+        scheduleProductAcquisitionJob(processingChain);
+
+    }
+
+    /**
+     * Schedule a product acquisition job for specified processing chain. Only one job can be scheduled.
+     * @param processingChain
+     * @throws ModuleException
+     */
+    private void scheduleProductAcquisitionJob(AcquisitionProcessingChain processingChain) throws ModuleException {
+
+        // Mark processing chain as running
+        processingChain.setRunning(true);
+        acqChainRepository.save(processingChain);
+        // FIXME session?
+        // processingChain.setSession(processingChain.getLabel() + ":" +
+        // OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + ":"
+        // + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
+
+        LOGGER.debug("Scheduling product acquisition job for processing chain \"{}\"", processingChain.getLabel());
+        JobInfo acquisition = new JobInfo();
+        acquisition.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID, processingChain.getId()));
+        acquisition.setClassName(ProductAcquisitionJob.class.getName());
+        acquisition.setOwner(authResolver.getUser());
+
+        jobInfoService.createAsQueued(acquisition);
     }
 
     @Override

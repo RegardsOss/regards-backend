@@ -55,6 +55,19 @@ public interface IAcquisitionProcessingService {
     AcquisitionProcessingChain updateChain(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
+     * Start all automatic chains according to several conditions
+     * @throws ModuleException if error occurs!
+     */
+    void startAutomaticChains() throws ModuleException;
+
+    /**
+     * Start a chain manually
+     * @param processingChainId identifier of the chain to start
+     * @throws ModuleException if error occurs!
+     */
+    void startManualChain(Long processingChainId) throws ModuleException;
+
+    /**
      * Scan and register detected files for specified {@link AcquisitionProcessingChain}
      * @param processingChain processing chain
      * @throws ModuleException if error occurs!

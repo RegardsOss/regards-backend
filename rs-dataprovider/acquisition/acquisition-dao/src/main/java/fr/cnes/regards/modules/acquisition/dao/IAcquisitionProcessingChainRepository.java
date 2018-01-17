@@ -18,10 +18,19 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
+import java.util.List;
+import java.util.Optional;
+
+import javax.persistence.LockModeType;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 
 /**
  * {@link AcquisitionProcessingChain} repository
@@ -32,24 +41,30 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 @Repository
 public interface IAcquisitionProcessingChainRepository extends JpaRepository<AcquisitionProcessingChain, Long> {
 
-    // /**
-    // * Find a {@link AcquisitionProcessingChain2} by label
-    // * @param name the {@link AcquisitionProcessingChain2} label to find
-    // * @return an {@link Optional} {@link AcquisitionProcessingChain2}
-    // */
-    // Optional<AcquisitionProcessingChain> findOneByLabel(String name);
-    //
-    // /**
-    // * Find a {@link AcquisitionProcessingChain2} by {@link MetaProduct}
-    // * @param metaProduct the {@link MetaProduct} to find
-    // * @return the finded {@link AcquisitionProcessingChain2}
-    // */
-    // AcquisitionProcessingChain findByMetaProduct(MetaProduct metaProduct);
-    //
-    // /**
-    // * Find all the {@link AcquisitionProcessingChain2} tahat are active and not running
-    // * @return the {@link Set} of finded {@link AcquisitionProcessingChain2}
-    // */
-    // @Lock(LockModeType.PESSIMISTIC_READ)
-    // Set<AcquisitionProcessingChain> findByActiveTrueAndRunningFalse();
+    /**
+     * Find all active and not running processing chain for a specified mode
+     * @param mode chain processing mode
+     * @return all chains
+     */
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    List<AcquisitionProcessingChain> findByActiveTrueAndRunningFalseAndByMode(AcquisitionProcessingChainMode mode);
+
+    /**
+     * @return all automatic chains that might be started
+     */
+    default List<AcquisitionProcessingChain> findAllBootableAutomaticChains() {
+        return findByActiveTrueAndRunningFalseAndByMode(AcquisitionProcessingChainMode.AUTO);
+    }
+
+    @Query("select chain.validationPluginConf from AcquisitionProcessingChain chain,PluginConfiguration conf where chain.id = ?1 and chain.validationPluginConf.id = conf.id")
+    Optional<PluginConfiguration> findOneValidationPlugin(Long chainId);
+
+    @Query("select chain.productPluginConf from AcquisitionProcessingChain chain,PluginConfiguration conf where chain.id = ?1 and chain.productPluginConf.id = conf.id")
+    Optional<PluginConfiguration> findOneProductPlugin(Long chainId);
+
+    @Query("select chain.generateSipPluginConf from AcquisitionProcessingChain chain,PluginConfiguration conf where chain.id = ?1 and chain.generateSipPluginConf.id = conf.id")
+    Optional<PluginConfiguration> findOneGenerateSipPlugin(Long chainId);
+
+    @Query("select chain.postProcessSipPluginConf from AcquisitionProcessingChain chain,PluginConfiguration conf where chain.id = ?1 and chain.postProcessSipPluginConf.id = conf.id")
+    Optional<PluginConfiguration> findOnePostProcessSipPlugin(Long chainId);
 }
