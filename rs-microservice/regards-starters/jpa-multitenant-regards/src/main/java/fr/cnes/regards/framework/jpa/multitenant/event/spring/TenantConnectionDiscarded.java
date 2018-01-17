@@ -33,7 +33,7 @@ public class TenantConnectionDiscarded extends ApplicationEvent {
 
     public TenantConnectionDiscarded(Object source, String tenant) {
         super(source);
-        this.setTenant(tenant);
+        this.tenant = tenant;
     }
 
     public String getTenant() {

@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.staf.exception.STAFException;
  * @author sbinda CS
  * @author oroussel
  */
-public class STAFSessionManager {
+public final class STAFSessionManager {
 
     private static Logger logger = Logger.getLogger(STAFSessionManager.class);
 
@@ -52,7 +52,7 @@ public class STAFSessionManager {
     /**
      * One semaphore per archive mode
      */
-    private Map<ArchiveAccessModeEnum, Semaphore> semaphoreMap = Collections
+    private final Map<ArchiveAccessModeEnum, Semaphore> semaphoreMap = Collections
             .synchronizedMap(new EnumMap<ArchiveAccessModeEnum, Semaphore>(ArchiveAccessModeEnum.class));
 
     private STAFSessionManager(STAFConfiguration configuration) {

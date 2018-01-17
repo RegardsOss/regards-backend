@@ -8,7 +8,7 @@ import java.io.File;
 /**
  * Cette classe definit des utilitaires associe au module de compression
  */
-public class CompressionUtil {
+public final class CompressionUtil {
 
     /**
      * Extension de fichier gz

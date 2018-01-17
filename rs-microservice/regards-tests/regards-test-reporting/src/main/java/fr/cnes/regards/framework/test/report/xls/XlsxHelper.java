@@ -129,7 +129,8 @@ public final class XlsxHelper {
                     // Write tests
                     if (req.getTests() != null) {
                         for (XmlTest test : req.getTests()) {
-                            final Row testRow = sheet.createRow(rownum++);
+                            final Row testRow = sheet.createRow(rownum);
+                            rownum++;
                             testRow.createCell(0).setCellValue(createHelper.createRichTextString(test.getPurpose()));
                             testRow.createCell(1).setCellValue(createHelper.createRichTextString(test.getTestClass()));
                             testRow.createCell(2)

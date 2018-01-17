@@ -32,7 +32,7 @@ import fr.cnes.regards.framework.gson.GsonCustomizer;
  * @author Marc Sordi
  *
  */
-public class PluginGsonUtils {
+public final class PluginGsonUtils {
 
     private static Gson instance;
 

@@ -38,7 +38,7 @@ import fr.cnes.regards.framework.staf.exception.STAFException;
  * @author Sébastien Binda
  *
  */
-public class STAFURLFactory {
+public final class STAFURLFactory {
 
     /**
      * Protocole name

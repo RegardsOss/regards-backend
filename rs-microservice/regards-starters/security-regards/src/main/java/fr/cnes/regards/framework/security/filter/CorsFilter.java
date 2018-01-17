@@ -112,7 +112,7 @@ public class CorsFilter extends OncePerRequestFilter {
 
         final String originAdress = getClientOrigin(request);
 
-        if ((authorizedAddress == null) || (authorizedAddress.size() == 0)) {
+        if ((authorizedAddress == null) || (authorizedAddress.isEmpty())) {
             allowCorsRequest(request, response, pFilterChain);
         } else {
             boolean isAuthorized = false;

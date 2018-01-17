@@ -36,42 +36,44 @@ public class CompressionFacade {
     /**
      * Le contexte de compression qui pilote la compression proprement dite
      */
-    private final CompressionContext strategy_;
+    private final CompressionContext strategy;
+
+    /**
+     * Attribut permettant la journalisation.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(CompressionFacade.class);
+
+    /**
+     * Taille max des fichiers compresses en ko : 2Go valeur par défaut
+     */
+    private long maxArchiveSize = 2000000;
 
     /**
      * Constructeur par defaut
      */
     public CompressionFacade() {
-        strategy_ = new CompressionContext();
+        strategy = new CompressionContext();
     }
 
-    /**
-     * Attribut permettant la journalisation.
-     */
-    static private Logger logger = LoggerFactory.getLogger(CompressionFacade.class);
 
-    /**
-     * Taille max des fichiers compresses en ko : 2Go valeur par défaut
-     */
-    private long maxArchiveSize_ = 2000000;
 
     /**
      * Compression d'une liste de fichiers
-     * @param pFileList une liste contenant les fichiers a compresser (classe File)
+     * @param fileList une liste contenant les fichiers a compresser (classe File)
      * @param pZipFile definit le chemin et le nom du fichier compresse SANS l'extension
      * @return le fichier compresse
      */
     private CompressManager compress(List<File> fileList, File pZipFile) throws CompressionException {
 
         // specify input file list
-        strategy_.setInputSource(fileList);
+        strategy.setInputSource(fileList);
 
         // specify compressed file
-        strategy_.setCompressedFile(pZipFile);
+        strategy.setCompressedFile(pZipFile);
 
-        CompressManager manager = strategy_.doCompress();
+        CompressManager manager = strategy.doCompress();
 
-        if (!strategy_.isRunInThread() && (manager.getCompressedFile() != null) && (manager.getCompressedFile().length()
+        if (!strategy.isRunInThread() && (manager.getCompressedFile() != null) && (manager.getCompressedFile().length()
                 == 0)) {
             throw new CompressionException("Error compressing files");
         }
@@ -132,21 +134,21 @@ public class CompressionFacade {
 
         // Sets the root directory
         if (pInputDirectory != null) {
-            strategy_.setRootDirectory(pInputDirectory);
+            strategy.setRootDirectory(pInputDirectory);
         } else {
             if (pRootDirectory != null) {
-                strategy_.setRootDirectory(pRootDirectory);
+                strategy.setRootDirectory(pRootDirectory);
             } else {
                 throw new CompressionException("The root directory must be set and cannot be null.");
             }
         }
-        strategy_.setFlatArchive(pFlatArchive.booleanValue());
+        strategy.setFlatArchive(pFlatArchive.booleanValue());
 
         // Apply the encoding format
-        strategy_.setCharSet(pCharset);
+        strategy.setCharSet(pCharset);
 
         // Set synchrone or asynchrone compression mode
-        strategy_.setRunInThread(pRunInThread);
+        strategy.setRunInThread(pRunInThread);
 
         /*
          * Check the size of the files to compress
@@ -164,12 +166,12 @@ public class CompressionFacade {
                 sizeTotal += tmpFile.length() / BYTES_IN_KILOBYTE;
             } else {
                 listFile2Big.add(tmpFile);
-                if (logger.isInfoEnabled()) {
-                    Long size = new Long(tmpFile.length() / BYTES_IN_KILOBYTE);
+                if (LOGGER.isInfoEnabled()) {
+                    long size = tmpFile.length() / BYTES_IN_KILOBYTE;
                     final String msg = String
                             .format("The size of the file %s is %d ko, it exceeds the maximum size for the compression.",
                                     tmpFile.getAbsoluteFile(), size);
-                    logger.info(msg);
+                    LOGGER.info(msg);
                 }
             }
         }
@@ -177,26 +179,26 @@ public class CompressionFacade {
         /*
          * If the total size does not exceed the max proceed the compress into one archive file
          */
-        if (sizeTotal < maxArchiveSize_) {
-            if (listFile2Compress.size() > 0) {
+        if (sizeTotal < maxArchiveSize) {
+            if (!listFile2Compress.isEmpty()) {
                 compressManagers.add(this.compress(listFile2Compress, pZipFile));
             } else {
-                if (logger.isInfoEnabled()) {
-                    logger.info("No file to compress");
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("No file to compress");
                 }
             }
         } else {
-            if (logger.isInfoEnabled()) {
-                logger.info(String.format(
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(String.format(
                         "The size of data is %d ko, it exceeds the maximum size %d ko for the compression, the compression is splitted in a multiple file.",
-                        sizeTotal, maxArchiveSize_));
+                        sizeTotal, maxArchiveSize));
             }
             /*
              * The total size exceed the max, split it in several files
              */
             if (pRunInThread) {
-                strategy_.setRunInThread(false);
-                logger.warn("The size of data exceeds the maximum size, synchrone compression mode is used.");
+                strategy.setRunInThread(false);
+                LOGGER.warn("The size of data exceeds the maximum size, synchrone compression mode is used.");
             }
 
             List<File> listFileOneArchive = new ArrayList<>();
@@ -207,15 +209,15 @@ public class CompressionFacade {
             for (File currentFile : listFile2Compress) {
                 long currentFileSize = currentFile.length() / BYTES_IN_KILOBYTE;
                 // check if the max size is attempt
-                if ((tailleCourante + currentFileSize) < maxArchiveSize_) {
+                if ((tailleCourante + currentFileSize) < maxArchiveSize) {
                     listFileOneArchive.add(currentFile);
                     tailleCourante += currentFileSize;
                 } else {
                     compress = true;
                 }
                 if (compress) {
-                    Integer rang = new Integer(indiceArchive++);
-                    File archiveName = new File(pZipFile.getAbsoluteFile() + "_" + rang.toString());
+                    indiceArchive++;
+                    File archiveName = new File(pZipFile.getAbsoluteFile() + "_" + Integer.toString(indiceArchive));
                     compressManagers.add(this.compress(listFileOneArchive, archiveName));
                     listFileOneArchive.clear();
 
@@ -226,9 +228,9 @@ public class CompressionFacade {
                 }
             }
 
-            if (listFileOneArchive.size() > 0) {
-                Integer rang = new Integer(indiceArchive++);
-                File archiveName = new File(pZipFile.getAbsoluteFile() + "_" + rang.toString());
+            if (!listFileOneArchive.isEmpty()) {
+                indiceArchive++;
+                File archiveName = new File(pZipFile.getAbsoluteFile() + "_" + Integer.toString(indiceArchive));
                 compressManagers.add(this.compress(listFileOneArchive, archiveName));
                 listFileOneArchive.clear();
             }
@@ -237,7 +239,7 @@ public class CompressionFacade {
         /*
          * Add to the result list the too big file
          */
-        if (listFile2Big.size() > 0) {
+        if (!listFile2Big.isEmpty()) {
             for (File tmpFile : listFile2Big) {
                 CompressManager manager = new CompressManager();
                 manager.setPercentage(100);
@@ -279,9 +281,9 @@ public class CompressionFacade {
                     String.format("%s must be a file (not a directory)", pInputFile.getAbsolutePath()));
         }
 
-        strategy_.setCompressedFile(pInputFile);
+        strategy.setCompressedFile(pInputFile);
 
-        strategy_.setCharSet(pCharset);
+        strategy.setCharSet(pCharset);
 
         // Checking directory existance
         validateFile(pOutputDirectory);
@@ -296,9 +298,9 @@ public class CompressionFacade {
         // Checking file existance
         validateFile(pInputFile);
 
-        strategy_.setOutputDir(pOutputDirectory);
+        strategy.setOutputDir(pOutputDirectory);
 
-        strategy_.doUncompress();
+        strategy.doUncompress();
 
     }
 
@@ -309,11 +311,11 @@ public class CompressionFacade {
      */
     private void initCompression(CompressionTypeEnum pMode) throws CompressionException {
         if (pMode.equals(CompressionTypeEnum.ZIP)) {
-            strategy_.setCompression(new ZipCompression());
+            strategy.setCompression(new ZipCompression());
         } else if (pMode.equals(CompressionTypeEnum.GZIP)) {
-            strategy_.setCompression(new GZipCompression());
+            strategy.setCompression(new GZipCompression());
         } else if (pMode.equals(CompressionTypeEnum.TAR)) {
-            strategy_.setCompression(new TarCompression());
+            strategy.setCompression(new TarCompression());
         } else {
             throw new CompressionException(String.format("The compression mode %s is not defined", pMode));
         }
@@ -352,7 +354,6 @@ public class CompressionFacade {
     /**
      * Permet de verifier la validitée deu repertoire a compresser Crée une liste de fichiers valides a partir d'un
      * repertoire
-     * @param pFileList une liste contenant des instances de File
      * @param pInputDirectory le repertoire dans lesquels sont les fichiers
      * @return la liste de fichiers a compresser
      * @throws CompressionException si l'un des paramètres n'est pas correct
@@ -415,15 +416,15 @@ public class CompressionFacade {
 
     /**
      * Verifie qu'un fichier peut etre compresse. Il doit etre de taille inférieure a MAX_SIZE_ARCHIVE
-     * @param pFile le fichier a vérifier
+     * @param pfile le fichier a vérifier
      * @return vrai si le fichier est de taille inferieure a MAX_SIZE_ARCHIVE
      */
     public boolean isTooLargeFile(File pfile) {
-        return (pfile.length() / BYTES_IN_KILOBYTE) > maxArchiveSize_;
+        return (pfile.length() / BYTES_IN_KILOBYTE) > maxArchiveSize;
     }
 
     public void setMaxArchiveSize(long pMaxArchiveSize_) {
-        this.maxArchiveSize_ = pMaxArchiveSize_;
+        this.maxArchiveSize = pMaxArchiveSize_;
     }
 
 }

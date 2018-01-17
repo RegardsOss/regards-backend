@@ -214,7 +214,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         iconUrl = other.iconUrl;
     }
 
-    public void setMetaData(PluginMetaData pluginMetaData) {
+    public final void setMetaData(PluginMetaData pluginMetaData) {
         pluginId = pluginMetaData.getPluginId();
         version = pluginMetaData.getVersion();
         pluginClassName = pluginMetaData.getPluginClassName();
