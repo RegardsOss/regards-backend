@@ -92,9 +92,6 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     @Column(name = "waiting_for_user", nullable = false)
     private boolean waitingForUser = false;
 
-    public Order() {
-    }
-
     @Override
     public Long getId() {
         return id;

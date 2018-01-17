@@ -42,7 +42,7 @@ public class ForwardingDataFileEventHandlerService implements IForwardingDataFil
     @Autowired
     private ISubscriber subscriber;
 
-    private Set<IHandler<DataFileEvent>> handlers = new HashSet<>();
+    private final Set<IHandler<DataFileEvent>> handlers = new HashSet<>();
 
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) {

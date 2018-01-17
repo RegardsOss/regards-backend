@@ -59,9 +59,6 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
     @Type(type = "text")
     private String processingService;
 
-    public DatasetTask() {
-    }
-
     public String getDatasetIpid() {
         return datasetIpid;
     }

@@ -174,7 +174,7 @@ public class OrderService implements IOrderService {
     /**
      * Set of DataTypes to retrieve on DataObjects
      */
-    private final Set<DataType> DATA_TYPES = Stream.of(DataTypeSelection.ALL.getFileTypes()).map(DataType::valueOf)
+    private static final Set<DataType> DATA_TYPES = Stream.of(DataTypeSelection.ALL.getFileTypes()).map(DataType::valueOf)
             .collect(Collectors.toSet());
 
     @Override
@@ -220,7 +220,8 @@ public class OrderService implements IOrderService {
                         bucketFiles.clear();
                     }
                 }
-                objects = searchDataObjects(dsSel.getOpenSearchRequest(), ++page);
+                page++;
+                objects = searchDataObjects(dsSel.getOpenSearchRequest(), page);
             }
             // Manage remaining files
             if (!bucketFiles.isEmpty()) {

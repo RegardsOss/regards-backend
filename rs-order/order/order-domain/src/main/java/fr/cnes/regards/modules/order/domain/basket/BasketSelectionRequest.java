@@ -25,9 +25,6 @@ public class BasketSelectionRequest {
      */
     private Set<String> ipIds;
 
-    public BasketSelectionRequest() {
-    }
-
     public String getSelectAllOpenSearchRequest() {
         return selectAllOpenSearchRequest;
     }

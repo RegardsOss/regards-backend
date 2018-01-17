@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -58,7 +59,7 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
 
     @ElementCollection
     @CollectionTable(name = "t_basket_ds_item", joinColumns = @JoinColumn(name = "basket_dataset_id"),
-            foreignKey = @javax.persistence.ForeignKey(name = "fk_items_selection"))
+            foreignKey = @ForeignKey(name = "fk_items_selection"))
     @SortNatural
     private SortedSet<BasketDatedItemsSelection> itemsSelections = new TreeSet<>();
 
