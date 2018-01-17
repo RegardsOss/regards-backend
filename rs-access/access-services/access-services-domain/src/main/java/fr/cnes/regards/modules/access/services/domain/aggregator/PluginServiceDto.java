@@ -16,7 +16,7 @@ import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDt
  *
  * @author Xavier-Alexandre Brochard
  */
-public class PluginServiceDto {
+public final class PluginServiceDto {
 
     private final Long configId;
 
