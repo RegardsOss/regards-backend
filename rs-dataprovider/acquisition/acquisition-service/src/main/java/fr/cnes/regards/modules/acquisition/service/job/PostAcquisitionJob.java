@@ -87,7 +87,7 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
                 // Get an instance of the plugin
                 IPostProcessSipPlugin postProcessPlugin = pluginService
                         .getPlugin(acqProcessingChain.getPostProcessSipPluginConf().get().getId());
-                postProcessPlugin.postProcess(product, acqProcessingChain);
+                postProcessPlugin.postProcess(product);
             }
         } catch (ModuleException pse) {
             LOGGER.error("Business error", pse);
