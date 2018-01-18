@@ -80,7 +80,7 @@ public class LogbackAppenderTest {
     private IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
     @Autowired
-    SubscriberLogEvent receiverLogEvent;
+    private SubscriberLogEvent receiverLogEvent;
 
     @Before
     public void init() {
