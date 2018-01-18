@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.emails.rest;
 
-import java.util.List;
-
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

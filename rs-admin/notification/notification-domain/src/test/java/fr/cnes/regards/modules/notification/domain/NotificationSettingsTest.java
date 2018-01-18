@@ -18,13 +18,12 @@
  */
 package fr.cnes.regards.modules.notification.domain;
 
-import java.util.ArrayList;
-import java.util.Set;
-
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import java.util.ArrayList;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;

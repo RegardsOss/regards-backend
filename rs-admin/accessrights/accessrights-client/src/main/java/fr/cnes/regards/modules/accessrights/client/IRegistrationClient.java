@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import java.util.List;
-
 import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;

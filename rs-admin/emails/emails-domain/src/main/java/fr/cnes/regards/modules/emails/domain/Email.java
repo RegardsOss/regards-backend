@@ -6,7 +6,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.SequenceGenerator;
 import java.time.LocalDateTime;
 
@@ -298,21 +297,15 @@ public class Email implements IIdentifiable<Long> {
         }
         for (int i = 0; (this.to != null) && (i < this.to.length); i++) {
             hashCode = multiplier * hashCode;
-            if (this.to != null) {
-                hashCode += this.to[i].hashCode();
-            }
+            hashCode += this.to[i].hashCode();
         }
         for (int i = 0; (this.cc != null) && (i < this.cc.length); i++) {
             hashCode = multiplier * hashCode;
-            if (this.cc != null) {
-                hashCode += this.cc[i].hashCode();
-            }
+            hashCode += this.cc[i].hashCode();
         }
         for (int i = 0; (this.bcc != null) && (i < this.bcc.length); i++) {
             hashCode = multiplier * hashCode;
-            if (this.bcc != null) {
-                hashCode += this.bcc[i].hashCode();
-            }
+            hashCode += this.bcc[i].hashCode();
         }
         hashCode = multiplier * hashCode;
         if (this.sentDate != null) {

@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.emails.domain;
 
-import java.util.Set;
-
 import javax.validation.Valid;
+import java.util.Set;
 
 /**
  * Data Transfer Object wrapping the {@link Email} and a list of recipients received.The point is to match the

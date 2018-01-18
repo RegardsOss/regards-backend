@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.project.client.rest;
 
-import java.util.List;
-
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

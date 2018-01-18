@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *

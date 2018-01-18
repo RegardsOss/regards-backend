@@ -1,8 +1,6 @@
 /**LICENSE_PLACEHOLDER*/
 package fr.cnes.regards.modules.accessrights.domain.passwordreset;
 
-import java.time.LocalDateTime;
-
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
@@ -12,6 +10,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import java.time.LocalDateTime;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.domain.instance.Account;

@@ -1,8 +1,6 @@
 package fr.cnes.regards.modules.accessrights.dao.projects;
 
 import javax.persistence.criteria.Predicate;
-
-import java.time.OffsetDateTime;
 import java.util.Set;
 
 import org.springframework.data.jpa.domain.Specification;
