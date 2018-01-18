@@ -191,7 +191,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     protected void initCacheFileSystem(String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
         Path tenantCachePath = getTenantCachePath();
-        LOG.debug("Initilizing cache file system for tenant {} in repository {}", tenant, tenantCachePath);
+        LOG.debug("Initializing cache file system for tenant {} in repository {}", tenant, tenantCachePath);
         // Check that the given cache storage path is available.
         File cachedPathFile = tenantCachePath.toFile();
         if (!cachedPathFile.exists()) {
