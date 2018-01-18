@@ -218,9 +218,9 @@ public class CleanOriginalFilePostPluginTest extends AcquisitionScanPluginHelper
                 .getPlugin(pluginService
                         .getPluginConfiguration("CleanOriginalFilePostPlugin", IPostProcessSipPlugin.class)
                         .getId(), PluginParametersFactory.build()
-                                .addDynamicParameter(CleanOriginalFilePostPlugin.CREATE_ACK_PARAM, Boolean.TRUE)
-                                .addDynamicParameter(CleanOriginalFilePostPlugin.EXTENSION_ACK_PARAM, extension)
-                                .addDynamicParameter(CleanOriginalFilePostPlugin.FOLDER_ACK_PARAM, folder)
+                                .addDynamicParameter(CleanAndAcknowledgePlugin.CREATE_ACK_PARAM, Boolean.TRUE)
+                                .addDynamicParameter(CleanAndAcknowledgePlugin.EXTENSION_ACK_PARAM, extension)
+                                .addDynamicParameter(CleanAndAcknowledgePlugin.FOLDER_ACK_PARAM, folder)
                                 .getParameters().toArray(new PluginParameter[1]));
 
         chain.setSession("session-001");

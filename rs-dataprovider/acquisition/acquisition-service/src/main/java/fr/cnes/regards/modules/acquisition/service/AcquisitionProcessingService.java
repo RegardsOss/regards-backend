@@ -133,9 +133,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         // Manage validation plugin conf
-        if (processingChain.getValidationPluginConf().isPresent()) {
-            createPluginConfiguration(processingChain.getValidationPluginConf().get());
-        }
+        createPluginConfiguration(processingChain.getValidationPluginConf());
 
         // Manage product plugin conf
         createPluginConfiguration(processingChain.getProductPluginConf());
@@ -191,7 +189,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         // Manage validation plugin conf
         existing = acqChainRepository.findOneValidationPlugin(processingChain.getId());
-        confsToRemove.add(updatePluginConfiguration(processingChain.getValidationPluginConf(), existing));
+        confsToRemove.add(updatePluginConfiguration(Optional.of(processingChain.getValidationPluginConf()), existing));
 
         // Manage product plugin conf
         existing = acqChainRepository.findOneProductPlugin(processingChain.getId());
@@ -418,26 +416,18 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             List<AcquisitionFile> inProgressFiles = acqFileRepository
                     .findByStateAndFileInfo(AcquisitionFileState.IN_PROGRESS, fileInfo);
 
-            if (processingChain.getValidationPluginConf().isPresent()) {
-                // Get validation plugin
-                IValidationPlugin validationPlugin = pluginService
-                        .getPlugin(processingChain.getValidationPluginConf().get().getId());
-                // Apply to all files
-                for (AcquisitionFile inProgressFile : inProgressFiles) {
-                    if (validationPlugin.validate(inProgressFile.getFilePath())) {
-                        inProgressFile.setState(AcquisitionFileState.VALID);
-                    } else {
-                        // FIXME move invalid files?
-                        inProgressFile.setState(AcquisitionFileState.INVALID);
-                    }
-                    acqFileRepository.save(inProgressFile);
-                }
-            } else {
-                // Files are always considered valid
-                for (AcquisitionFile inProgressFile : inProgressFiles) {
+            // Get validation plugin
+            IValidationPlugin validationPlugin = pluginService
+                    .getPlugin(processingChain.getValidationPluginConf().getId());
+            // Apply to all files
+            for (AcquisitionFile inProgressFile : inProgressFiles) {
+                if (validationPlugin.validate(inProgressFile.getFilePath())) {
                     inProgressFile.setState(AcquisitionFileState.VALID);
-                    acqFileRepository.save(inProgressFile);
+                } else {
+                    // FIXME move invalid files?
+                    inProgressFile.setState(AcquisitionFileState.INVALID);
                 }
+                acqFileRepository.save(inProgressFile);
             }
         }
     }

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -27,13 +28,13 @@ import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
  * @author Marc Sordi
  *
  */
-@Plugin(id = "DefaultFileValidation", version = "1.0.0-SNAPSHOT", description = "Default noop validation plugin",
+@Plugin(id = "DefaultFileValidation", version = "1.0.0-SNAPSHOT", description = "Default validation plugin",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class DefaultFileValidation implements IValidationPlugin {
 
     @Override
     public boolean validate(Path filePath) {
-        return true;
+        return (filePath != null) && Files.isRegularFile(filePath) && Files.isReadable(filePath);
     }
 }

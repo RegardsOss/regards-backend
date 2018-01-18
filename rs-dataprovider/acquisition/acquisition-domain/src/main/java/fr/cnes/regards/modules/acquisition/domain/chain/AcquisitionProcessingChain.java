@@ -134,6 +134,7 @@ public class AcquisitionProcessingChain {
     /**
      * An optional {@link PluginConfiguration} of a {@link IValidationPlugin}
      */
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "validation_conf_id", foreignKey = @ForeignKey(name = "fk_validation_conf_id"))
     private PluginConfiguration validationPluginConf;
@@ -249,8 +250,8 @@ public class AcquisitionProcessingChain {
         this.id = id;
     }
 
-    public Optional<PluginConfiguration> getValidationPluginConf() {
-        return Optional.ofNullable(validationPluginConf);
+    public PluginConfiguration getValidationPluginConf() {
+        return validationPluginConf;
     }
 
     public void setValidationPluginConf(PluginConfiguration validationPluginConf) {
