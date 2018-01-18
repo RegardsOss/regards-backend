@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import java.time.OffsetDateTime;
-
 import javax.persistence.Embeddable;
 import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotBlank;

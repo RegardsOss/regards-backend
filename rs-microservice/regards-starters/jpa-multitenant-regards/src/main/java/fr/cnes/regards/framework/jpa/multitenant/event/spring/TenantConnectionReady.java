@@ -33,7 +33,7 @@ public class TenantConnectionReady extends ApplicationEvent {
 
     public TenantConnectionReady(Object source, String tenant) {
         super(source);
-        this.setTenant(tenant);
+        this.tenant = tenant;
     }
 
     public String getTenant() {

@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.staf.domain.ArchiveAccessModeEnum;
 import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
 import fr.cnes.regards.framework.staf.event.CollectEvent;

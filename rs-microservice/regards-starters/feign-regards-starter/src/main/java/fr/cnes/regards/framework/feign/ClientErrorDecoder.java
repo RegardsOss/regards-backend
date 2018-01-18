@@ -51,19 +51,6 @@ public class ClientErrorDecoder extends ErrorDecoder.Default implements ErrorDec
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientErrorDecoder.class);
 
-    /**
-     * Spring decoder
-     */
-    private SpringDecoder springDecoder;
-
-    /**
-     * Constructor setting the sprind decoder as attribute
-     * @param springDecoder
-     */
-    public ClientErrorDecoder(SpringDecoder springDecoder) {
-        this.springDecoder = springDecoder;
-    }
-
     @Override
     public Exception decode(final String methodKey, final Response response) {
         LOGGER.error(String.format("Remote call to %s. Response is : %d - %s",

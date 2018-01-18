@@ -42,9 +42,9 @@ public abstract class AbstractTenantEvent {
         super();
     }
 
-    public AbstractTenantEvent(final String pTenant, final String pMicroserviceName) {
+    public AbstractTenantEvent(String pTenant, String pMicroserviceName) {
         super();
-        setTenant(pTenant);
+        tenant = pTenant;
         microserviceName = pMicroserviceName;
     }
 

@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import java.net.URL;
-
 import javax.validation.constraints.NotNull;
+import java.net.URL;
 
 import org.hibernate.validator.constraints.NotBlank;
 

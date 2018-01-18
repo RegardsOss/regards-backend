@@ -17,7 +17,7 @@ import com.google.common.collect.Sets;
  * Utils to handle files.
  * @author Sébastien Binda
  */
-public class CommonFileUtils {
+public final class CommonFileUtils {
 
     private CommonFileUtils() {
     }

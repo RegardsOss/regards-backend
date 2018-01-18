@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.templates.rest;
 
-import java.util.List;
-
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;

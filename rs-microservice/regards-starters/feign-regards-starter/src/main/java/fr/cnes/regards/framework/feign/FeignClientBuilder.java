@@ -21,10 +21,8 @@ package fr.cnes.regards.framework.feign;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
-import org.springframework.cloud.netflix.feign.support.SpringDecoder;
 
 import com.google.gson.Gson;
-
 import feign.Feign;
 import feign.Target;
 import feign.gson.GsonDecoder;
@@ -54,7 +52,7 @@ public final class FeignClientBuilder {
     public static <T> T build(final Target<T> pTarget) {
         return Feign.builder() // Feign customization
                 .encoder(new GsonEncoder()).decoder(new ResponseEntityDecoder(new GsonDecoder()))
-                .errorDecoder(new ClientErrorDecoder(new SpringDecoder(messageConverters))).decode404().contract(new FeignContractSupplier().get())
+                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
                 .target(pTarget);
     }
 
@@ -69,7 +67,7 @@ public final class FeignClientBuilder {
     public static <T> T build(final Target<T> pTarget, Gson gson) {
         return Feign.builder() // Feign customization
                 .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
-                .errorDecoder(new ClientErrorDecoder(new SpringDecoder(messageConverters))).decode404().contract(new FeignContractSupplier().get())
+                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
                 .target(pTarget);
     }
 

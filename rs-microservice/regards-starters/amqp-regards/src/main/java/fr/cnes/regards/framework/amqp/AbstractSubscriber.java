@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,6 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -49,11 +49,8 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
 /**
- *
  * Common subscriber methods
- *
  * @author Marc Sordi
- *
  */
 public abstract class AbstractSubscriber implements ISubscriberContract {
 
@@ -161,20 +158,14 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     }
 
     /**
-     *
      * Initialize any necessary container to listen to specified event using
-     * {@link AbstractSubscriber#initializeSimpleMessageListenerContainer(Class, String, IHandler, WorkerMode, Target)}
-     *
-     * @param <T>
-     *            event type to which we subscribe
-     * @param eventType
-     *            the event class token you want to subscribe to
-     * @param handler
-     *            the POJO defining the method handling the corresponding event connection factory from context
-     * @param workerMode
-     *            {@link WorkerMode}
-     * @param target
-     *            communication scope
+     * AbstractSubscriber#initializeSimpleMessageListenerContainer(Class, String, IHandler, WorkerMode, Target)
+     * @param <E> event type to which we subscribe
+     * @param <H> handler type
+     * @param eventType the event class token you want to subscribe to
+     * @param handler the POJO defining the method handling the corresponding event connection factory from context
+     * @param workerMode {@link WorkerMode}
+     * @param target communication scope
      * @param purgeQueue true to purge queue if already exists
      */
     protected <E extends ISubscribable, H extends IHandler<E>> void subscribeTo(final Class<E> eventType, H handler,
@@ -184,7 +175,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
         Set<String> tenants = resolveTenants();
 
-        Map<String, SimpleMessageListenerContainer> vhostsContainers = new HashMap<>();
+        Map<String, SimpleMessageListenerContainer> vhostsContainers = new ConcurrentHashMap<>();
 
         if (!listeners.containsKey(handler.getClass())) {
             listeners.put(handler.getClass(), vhostsContainers);
@@ -252,7 +243,6 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     /**
      * Declare listener according to virtual host, handler and queue(s).
-     *
      * @param virtualHost virtual host
      * @param handler event handler
      * @param queues queues to listen to
@@ -311,9 +301,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     /**
      * Add tenant listener to existing subscribers
-     *
-     * @param tenant
-     *            new tenant to manage
+     * @param tenant new tenant to manage
      */
     protected void addTenantListeners(String tenant) {
         if (listeners != null) {
@@ -341,7 +329,6 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      * Retrieve listeners for specified handler. For test purpose!
      * @param handler event handler
      * @return all listeners by virtual host or <code>null</code>
-     *
      */
     public Map<String, SimpleMessageListenerContainer> getListeners(IHandler<? extends ISubscribable> handler) {
         if (listeners.containsKey(handler.getClass())) {

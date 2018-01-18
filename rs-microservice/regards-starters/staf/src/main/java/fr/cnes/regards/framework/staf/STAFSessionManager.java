@@ -52,7 +52,7 @@ public class STAFSessionManager {
     /**
      * One semaphore per archive mode
      */
-    private Map<ArchiveAccessModeEnum, Semaphore> semaphoreMap = Collections
+    private final Map<ArchiveAccessModeEnum, Semaphore> semaphoreMap = Collections
             .synchronizedMap(new EnumMap<ArchiveAccessModeEnum, Semaphore>(ArchiveAccessModeEnum.class));
 
     private STAFSessionManager(STAFConfiguration configuration) {
@@ -75,7 +75,9 @@ public class STAFSessionManager {
      */
     public static STAFSessionManager getInstance(STAFConfiguration configuration) {
         if (instance == null) {
-            instance = new STAFSessionManager(configuration);
+            synchronized (STAFSessionManager.class) {
+                instance = new STAFSessionManager(configuration);
+            }
         }
         return instance;
     }

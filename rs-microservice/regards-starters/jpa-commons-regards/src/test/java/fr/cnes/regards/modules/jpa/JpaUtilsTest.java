@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.jpa;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-
-import javax.sql.DataSource;
 
 import org.junit.Assert;
 import org.junit.Test;

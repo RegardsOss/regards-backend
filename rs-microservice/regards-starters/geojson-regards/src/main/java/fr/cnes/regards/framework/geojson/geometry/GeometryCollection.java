@@ -33,11 +33,10 @@ import fr.cnes.regards.framework.geojson.GeoJsonType;
  */
 public class GeometryCollection extends AbstractGeoJsonObject implements IGeometry {
 
-    private List<AbstractGeometry<?>> geometries;
+    private List<AbstractGeometry<?>> geometries = new ArrayList<>();
 
     public GeometryCollection() {
         super(GeoJsonType.GEOMETRY_COLLECTION);
-        setGeometries(new ArrayList<>());
     }
 
     public List<AbstractGeometry<?>> getGeometries() {

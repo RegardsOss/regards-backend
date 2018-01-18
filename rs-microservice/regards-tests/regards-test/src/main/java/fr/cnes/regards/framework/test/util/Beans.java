@@ -18,6 +18,9 @@ public final class Beans {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Beans.class);
 
+    private Beans() {
+    }
+
     /**
      * Compare two objects first with equals then by their properties readers, recursively follow inner objects using
      * same comparison mechanism.

@@ -18,44 +18,43 @@ import org.slf4j.LoggerFactory;
  */
 public class CompressionRunImpl implements Runnable {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(CompressionRunImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CompressionRunImpl.class);
 
-    private AbstractRunnableCompression compression_ = null;
+    private final AbstractRunnableCompression compression;
 
-    private final List<File> fileList_;
+    private final List<File> fileList;
 
-    private final File compressedFile_;
+    private final File compressedFile;
 
-    private final File rootDirectory_;
+    private final File rootDirectory;
 
-    private final boolean flatArchive_;
+    private final boolean flatArchive;
 
-    private final Charset charset_;
+    private final Charset charset;
 
-    private final CompressManager compressManager_ = new CompressManager();
+    private final CompressManager compressManager = new CompressManager();
 
     public CompressManager getCompressManager() {
-        return compressManager_;
+        return compressManager;
     }
 
     public CompressionRunImpl(AbstractRunnableCompression pCompression, List<File> pFileList, File pCompressedFile,
             File pRootDirectory, boolean pFlatArchive, Charset pCharset) {
-        compression_ = pCompression;
-        fileList_ = pFileList;
-        compressedFile_ = pCompressedFile;
-        rootDirectory_ = pRootDirectory;
-        flatArchive_ = pFlatArchive;
-        charset_ = pCharset;
+        compression = pCompression;
+        fileList = pFileList;
+        compressedFile = pCompressedFile;
+        rootDirectory = pRootDirectory;
+        flatArchive = pFlatArchive;
+        charset = pCharset;
     }
 
     @Override
     public void run() {
 
         try {
-            System.out.println("Running thread compress");
-            compressManager_.setThread(Thread.currentThread());
-            compression_.runCompress(fileList_, compressedFile_, rootDirectory_, flatArchive_, charset_,
-                                     compressManager_);
+            LOGGER.info("Running thread compress");
+            compressManager.setThread(Thread.currentThread());
+            compression.runCompress(fileList, compressedFile, rootDirectory, flatArchive, charset, compressManager);
         } catch (CompressionException e) {
             LOGGER.error(e.getMessage(), e);
         }

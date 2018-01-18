@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -163,7 +162,9 @@ public final class PluginParameterUtils {
         else if (ParamType.MAP.equals(paramType)) {
             ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
             // Set key label
-            result.setKeyLabel(pluginParameter.keylabel());
+            if (pluginParameter != null) {
+                result.setKeyLabel(pluginParameter.keylabel());
+            }
             // Get parameter types
             Class<?> keyType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
             Class<?> valueType = (Class<?>) parameterizedType.getActualTypeArguments()[1];

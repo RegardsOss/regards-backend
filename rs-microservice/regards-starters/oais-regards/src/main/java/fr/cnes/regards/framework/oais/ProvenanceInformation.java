@@ -195,10 +195,7 @@ public class ProvenanceInformation {
         } else if (!facility.equals(other.facility)) {
             return false;
         }
-        if (!history.containsAll(other.history)) {
-            return false;
-        }
-        return true;
+        return history.containsAll(other.history);
     }
 
 }

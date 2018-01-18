@@ -87,11 +87,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
         this.ip = properties;
         this.cis = properties.getContentInformations();
         this.pdiBuilder = new PDIBuilder(properties.getPdi());
-        if (properties.getDescriptiveInformation() == null) {
-            this.descriptiveInformation = Maps.newHashMap();
-        } else {
-            this.descriptiveInformation = properties.getDescriptiveInformation();
-        }
+        this.descriptiveInformation = properties.getDescriptiveInformation();
     }
 
     @Override

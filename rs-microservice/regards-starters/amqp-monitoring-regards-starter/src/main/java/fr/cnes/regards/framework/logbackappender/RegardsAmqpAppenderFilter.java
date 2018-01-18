@@ -28,7 +28,6 @@ import ch.qos.logback.core.spi.FilterReply;
 
 /**
  * @author Christophe Mertz
- *
  */
 public class RegardsAmqpAppenderFilter extends Filter<ILoggingEvent> {
 
@@ -52,14 +51,11 @@ public class RegardsAmqpAppenderFilter extends Filter<ILoggingEvent> {
 
     @Override
     public FilterReply decide(ILoggingEvent event) {
-
         if (event.getLevel() != level) {
             return FilterReply.DENY;
         }
-
         accept = false;
         String loggerName = event.getLoggerName().toLowerCase();
-
         includes.forEach(s -> {
             if (!accept && loggerName.contains(s.toLowerCase())) {
                 accept = true;
@@ -69,7 +65,6 @@ public class RegardsAmqpAppenderFilter extends Filter<ILoggingEvent> {
         if (!accept) { // NOSONAR
             return FilterReply.DENY;
         }
-
         return FilterReply.ACCEPT;
     }
 

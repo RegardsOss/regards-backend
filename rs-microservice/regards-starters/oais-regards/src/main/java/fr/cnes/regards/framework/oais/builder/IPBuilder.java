@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
+import javax.annotation.Nullable;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-
-import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

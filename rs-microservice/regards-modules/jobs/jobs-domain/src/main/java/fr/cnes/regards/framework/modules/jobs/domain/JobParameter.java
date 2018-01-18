@@ -52,7 +52,7 @@ public class JobParameter {
      * Set value. Because this value is gsonified, it must not be a parametered type.
      * If yout want one, feel free to create a specific class inheriting parametered type
      */
-    public <T> void setValue(T value) {
+    public final <T> void setValue(T value) {
         if (value != null) {
             this.className = value.getClass().getName();
         }

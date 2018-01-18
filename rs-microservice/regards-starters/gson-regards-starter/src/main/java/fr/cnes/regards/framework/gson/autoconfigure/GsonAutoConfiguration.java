@@ -38,7 +38,6 @@ import org.springframework.http.converter.json.GsonHttpMessageConverter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
-
 import fr.cnes.regards.framework.gson.GsonCustomizer;
 import fr.cnes.regards.framework.gson.GsonProperties;
 

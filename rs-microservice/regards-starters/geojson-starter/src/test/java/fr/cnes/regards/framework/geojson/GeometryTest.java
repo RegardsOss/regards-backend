@@ -31,7 +31,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import fr.cnes.regards.framework.geojson.coordinates.Positions;
 import fr.cnes.regards.framework.geojson.geometry.GeometryCollection;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;

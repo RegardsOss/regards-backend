@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.framework.jpa.converter;
 
-import java.util.Set;
-import java.util.StringJoiner;
-
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
+import java.util.Set;
+import java.util.StringJoiner;
 
 import com.google.common.collect.Sets;
 

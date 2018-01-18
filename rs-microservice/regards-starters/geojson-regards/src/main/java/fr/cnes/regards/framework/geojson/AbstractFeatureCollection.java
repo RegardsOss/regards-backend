@@ -76,9 +76,6 @@ public abstract class AbstractFeatureCollection<F extends AbstractFeature<?, ?>>
         }
         @SuppressWarnings("rawtypes")
         AbstractFeatureCollection other = (AbstractFeatureCollection) obj;
-        if (!features.equals(other.features)) {
-            return false;
-        }
-        return true;
+        return features.equals(other.features);
     }
 }

@@ -18,43 +18,43 @@ public class CompressionContext {
     /**
      * Permet de stocker la ou les ressource(s) a compresser. La source peut etre un fichier ou un repertoire.
      */
-    List<File> inputSource_ = null;
+    List<File> inputSource = null;
 
     /**
      * Contient le fichier produit par la compression
      */
-    File compressedFile_ = null;
+    File compressedFile = null;
 
     /**
      * Contient le repertoire cible de decompression
      */
-    File outputDir_ = null;
+    File outputDir = null;
 
     /**
      * Contient le répertoire racine des fichiers à compresser. Utile pour insérer les chemins des fichiers relatifs à
      * une racine (espace utilisateur dédié par exemple)
      */
-    File rootDirectory_ = null;
+    File rootDirectory = null;
 
     /**
      * Designe la strategie de compression
      */
-    private ICompression referenceStrategy_;
+    private ICompression referenceStrategy;
 
     /**
      * indique si l'archive doit etre cree a plat
      */
-    private boolean flatArchive_;
+    private boolean flatArchive;
 
     /**
      * Format d'encodage des caracteres lors de la compression
      */
-    private Charset charSet_;
+    private Charset charset;
 
     /**
      * Lancement synchrone ou asynchrone de la compression
      */
-    private boolean runInThread_;
+    private boolean runInThread;
 
     /**
      * Constructeur de classe
@@ -70,8 +70,8 @@ public class CompressionContext {
      * @return le fichier compresse avec l'extension
      */
     protected CompressManager doCompress() throws CompressionException {
-        return referenceStrategy_.compress(inputSource_, compressedFile_, rootDirectory_, flatArchive_, runInThread_,
-                                           charSet_);
+        return referenceStrategy.compress(inputSource, compressedFile, rootDirectory, flatArchive, runInThread,
+                                          charset);
     }
 
     /**
@@ -81,7 +81,7 @@ public class CompressionContext {
      *                Exception survenue lors du traitement.
      */
     protected void doUncompress() throws CompressionException {
-        referenceStrategy_.uncompress(compressedFile_, outputDir_, charSet_);
+        referenceStrategy.uncompress(compressedFile, outputDir, charset);
     }
 
     /**
@@ -91,14 +91,14 @@ public class CompressionContext {
      *            : le mode de compression
      */
     protected void setCompression(ICompression pCompressionMethod) {
-        referenceStrategy_ = pCompressionMethod;
+        referenceStrategy = pCompressionMethod;
     }
 
     /**
      * getter pour flatARchive
      */
     protected boolean isFlatArchive() {
-        return flatArchive_;
+        return flatArchive;
     }
 
     /**
@@ -107,17 +107,17 @@ public class CompressionContext {
      * @param pFile
      */
     public void setCompressedFile(File pFile) {
-        compressedFile_ = pFile;
+        compressedFile = pFile;
     }
 
     /**
-     * Modificateur inputSource_
+     * Modificateur inputSource
      *
      * @param pList
      *            une liste de <code>File</code>
      */
     public void setInputSource(List<File> pList) {
-        inputSource_ = pList;
+        inputSource = pList;
     }
 
     /**
@@ -126,14 +126,14 @@ public class CompressionContext {
      * @param pFile
      */
     public void setOutputDir(File pFile) {
-        outputDir_ = pFile;
+        outputDir = pFile;
     }
 
     /**
      * @return Returns the rootDirectory.
      */
     public File getRootDirectory() {
-        return rootDirectory_;
+        return rootDirectory;
     }
 
     /**
@@ -141,46 +141,46 @@ public class CompressionContext {
      *            The rootDirectory to set.
      */
     public void setRootDirectory(File pRootDirectory) {
-        rootDirectory_ = pRootDirectory;
+        rootDirectory = pRootDirectory;
     }
 
     /**
      * setter pour fatARchive_
      */
     protected void setFlatArchive(boolean pFlatArchive) {
-        flatArchive_ = pFlatArchive;
+        flatArchive = pFlatArchive;
     }
 
     /**
      * getter charset
      */
     public Charset getCharSet() {
-        return charSet_;
+        return charset;
     }
 
     /**
      * setter charset
      */
     public void setCharSet(Charset charSet) {
-        charSet_ = charSet;
+        charset = charSet;
     }
 
     /**
      *
-     * Getter runInThread_
+     * Getter runInThread
      */
     public boolean isRunInThread() {
-        return runInThread_;
+        return runInThread;
     }
 
     /**
      *
-     * Setter runInThread_
+     * Setter runInThread
      *
      * @param pRunInThread
      */
     public void setRunInThread(boolean pRunInThread) {
-        runInThread_ = pRunInThread;
+        runInThread = pRunInThread;
     }
 
 }

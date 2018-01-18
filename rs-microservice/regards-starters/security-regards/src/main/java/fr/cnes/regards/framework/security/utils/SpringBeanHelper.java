@@ -34,7 +34,7 @@ public class SpringBeanHelper implements BeanFactoryAware {
     /**
      * Static instance
      */
-    private final static SpringBeanHelper INSTANCE = new SpringBeanHelper();
+    private static final SpringBeanHelper INSTANCE = new SpringBeanHelper();
 
     /**
      * Spring Bean factory
@@ -61,11 +61,7 @@ public class SpringBeanHelper implements BeanFactoryAware {
      * @return Bean
      */
     public static <T> T getBean(final Class<T> beanClass) {
-        if (INSTANCE != null) {
-            return INSTANCE.getBeanFactory().getBean(beanClass);
-        } else {
-            return null;
-        }
+        return INSTANCE.getBeanFactory().getBean(beanClass);
     }
 
 }

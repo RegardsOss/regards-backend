@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
+import javax.persistence.Entity;
+import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.persistence.Entity;
-import javax.sql.DataSource;
 
 import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;

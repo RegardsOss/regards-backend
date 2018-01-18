@@ -25,11 +25,8 @@ import org.springframework.transaction.TransactionDefinition;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
- *
  * Override {@link RabbitTransactionManager} to manage virtual host in transaction
- *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class MultitenantRabbitTransactionManager extends RabbitTransactionManager {
@@ -39,12 +36,12 @@ public class MultitenantRabbitTransactionManager extends RabbitTransactionManage
     /**
      * Resolve current tenant at runtime. The resolver must be thread safe.
      */
-    private transient final IRuntimeTenantResolver runtimeTenantResolver;
+    private final transient IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Virtual host admin
      */
-    private transient final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
+    private final transient IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
     public MultitenantRabbitTransactionManager(VirtualHostMode mode, ConnectionFactory connectionFactory,
             IRuntimeTenantResolver pRuntimeTenantResolver, IRabbitVirtualHostAdmin rabbitVirtualHostAdmin) {

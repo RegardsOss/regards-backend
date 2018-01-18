@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
-import java.util.Map;
-
 import javax.sql.DataSource;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

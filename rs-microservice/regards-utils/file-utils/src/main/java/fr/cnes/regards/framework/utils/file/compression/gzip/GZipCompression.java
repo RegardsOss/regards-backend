@@ -33,7 +33,6 @@ import fr.cnes.regards.framework.utils.file.compression.tar.TarCompression;
  * de compression GZIP. L'algorithme GZIP ne peut compresser qu'un seul fichier. C'est pourquoi cette classe va utiliser
  * la concatenation TAR dans un premier temps pour rassembler les fichiers en un seul puis la compression GZIP. S'il n'y
  * a qu'un fichier a compresser il est directement compressé en GZIP
- *
  * @author CS
  */
 public class GZipCompression extends AbstractRunnableCompression {
@@ -75,17 +74,11 @@ public class GZipCompression extends AbstractRunnableCompression {
 
     /**
      * Permet de compression une liste de fichiers dans un seul.
-     *
-     * @param pFileList
-     *            la liste de File a compresser
-     * @param pCompressedFile
-     *            définit le nom et le chemin du fichier compresse.
-     * @param pRootDirectory
-     *            le répertoire racine de tous les fichiers à compresser.
-     * @param pFlatArchive
+     * @param pFileList la liste de File a compresser
+     * @param pCompressedFile définit le nom et le chemin du fichier compresse.
+     * @param pRootDirectory le répertoire racine de tous les fichiers à compresser.
      * @return le fichier compressé avec l'extension
-     * @throws CompressionException
-     *             si l'un des paramètres est incorrect ou illisible
+     * @throws CompressionException si l'un des paramètres est incorrect ou illisible
      */
     @Override
     public CompressManager runCompress(List<File> pFileList, File pCompressedFile, File pRootDirectory,
@@ -114,8 +107,8 @@ public class GZipCompression extends AbstractRunnableCompression {
             compressedTarFile = pCompressManager.getCompressedFile();
             pCompressManager.setRatio(0.75);
         } else {
-            CompressManager compressManager = tar.compress(pFileList, compressedFile, pRootDirectory, pFlatArchive,
-                                                           Boolean.FALSE);
+            CompressManager compressManager = tar
+                    .compress(pFileList, compressedFile, pRootDirectory, pFlatArchive, Boolean.FALSE);
             compressedTarFile = compressManager.getCompressedFile();
         }
 
@@ -131,13 +124,9 @@ public class GZipCompression extends AbstractRunnableCompression {
 
     /**
      * Permet de decompresser un fichier compresse dans un repertoire cible
-     *
-     * @param pCompressedFile
-     *            le fichier a decompresser
-     * @param pOutputDir
-     *            le repertoire destination
-     * @throws CompressionException
-     *             si l'un des paramètres est incorrect ou illisible
+     * @param pCompressedFile le fichier a decompresser
+     * @param pOutputDir le repertoire destination
+     * @throws CompressionException si l'un des paramètres est incorrect ou illisible
      */
     @Override
     public void uncompress(File pCompressedFile, File pOutputDir) throws CompressionException {
@@ -146,13 +135,9 @@ public class GZipCompression extends AbstractRunnableCompression {
 
     /**
      * Permet de decompresser un fichier compresse dans un repertoire cible
-     *
-     * @param pCompressedFile
-     *            le fichier a decompresser
-     * @param pOutputDir
-     *            le repertoire destination
-     * @throws CompressionException
-     *             si l'un des paramètres est incorrect ou illisible
+     * @param pCompressedFile le fichier a decompresser
+     * @param pOutputDir le repertoire destination
+     * @throws CompressionException si l'un des paramètres est incorrect ou illisible
      */
     @Override
     public void uncompress(File pCompressedFile, File pOutputDir, Charset pCharset) throws CompressionException {
@@ -172,14 +157,11 @@ public class GZipCompression extends AbstractRunnableCompression {
     /**
      * Méthode utilisée pour compresser un unique fichier puisque l'algorithme GZIP ne peut directement en compresser
      * plusieurs
-     *
+     * @param pFileToCompress le fichier a compresser
+     * @param pCompressedFile définit le nom et le chemin du fichier compressé sans extension
      * @return le fichier compressé avec l'extension
-     * @since 1.0
-     * @param pFileToCompress
-     *            le fichier a compresser
-     * @param pCompressedFile
-     *            définit le nom et le chemin du fichier compressé sans extension
      * @throws {@link CompressionException}
+     * @since 1.0
      */
     private File compressOneFile(File pFileToCompress, File pCompressedFile, CompressManager pCompressManager)
             throws CompressionException {
@@ -204,40 +186,29 @@ public class GZipCompression extends AbstractRunnableCompression {
 
         if (compressedFile.exists()) {
             throw new FileAlreadyExistException(String.format("File %s already exist", compressedFile.getName()),
-                    compressedFile);
+                                                compressedFile);
         }
 
         // Write in this file
-        try {
-            BufferedInputStream origin = null;
-            FileOutputStream dest = new FileOutputStream(compressedFile);
-            CheckedOutputStream checksum = new CheckedOutputStream(dest, new Adler32());
-            GZIPOutputStream out = new GZIPOutputStream(new BufferedOutputStream(checksum));
-            try {
-                byte data[] = new byte[BUFFER];
-                FileInputStream fi = new FileInputStream(pFileToCompress);
-                origin = new BufferedInputStream(fi, BUFFER);
-                try {
-                    int count = 0;
-                    while ((count = origin.read(data, 0, BUFFER)) != -1) {
-                        compressedSize += count;
-                        out.write(data, 0, count);
-                        percentage = (100 * compressedSize) / totalSize;
-                        if (percentage > 0) {
-                            pCompressManager.upPercentage(percentage);
-                            compressedSize = 0;
-                        }
+        try (GZIPOutputStream out = new GZIPOutputStream(new BufferedOutputStream(
+                new CheckedOutputStream(new FileOutputStream(compressedFile), new Adler32())))) {
+            byte data[] = new byte[BUFFER];
+            try (BufferedInputStream origin = new BufferedInputStream(new FileInputStream(pFileToCompress), BUFFER)) {
+                int count = 0;
+                while ((count = origin.read(data, 0, BUFFER)) != -1) {
+                    compressedSize += count;
+                    out.write(data, 0, count);
+                    percentage = (100 * compressedSize) / totalSize;
+                    if (percentage > 0) {
+                        pCompressManager.upPercentage(percentage);
+                        compressedSize = 0;
                     }
-                } finally {
-                    origin.close();
                 }
-            } finally {
-                out.close();
             }
         } catch (IOException ioE) {
             logger.error(ioE.getMessage(), ioE);
             throw new CompressionException(String.format("IO error during %s compression", CompressionTypeEnum.GZIP),
-                    ioE);
+                                           ioE);
         }
         return compressedFile;
     }
@@ -245,12 +216,9 @@ public class GZipCompression extends AbstractRunnableCompression {
     /**
      * Méthode utilisée pour compresser un unique fichier puisque l'algorithme GZIP ne peut directement en compresser
      * plusieurs
-     *
+     * @param pCompressedFile le fichier a decompresser
+     * @param pOutputDir le repertoire où decompresser le fichier
      * @return le fichier decompresse
-     * @param pCompressedFile
-     *            le fichier a decompresser
-     * @param pOutputDir
-     *            le repertoire où decompresser le fichier
      * @throws {@link CompressionException}
      */
     private File uncompressOneFile(File pCompressedFile, File pOutputDir) throws CompressionException {
@@ -263,8 +231,8 @@ public class GZipCompression extends AbstractRunnableCompression {
         }
 
         // Create uncompressedFile
-        File returnedFile = new File(pOutputDir,
-                pCompressedFile.getName().substring(0, pCompressedFile.getName().length() - GZIP_EXTENSION_LENGTH));
+        File returnedFile = new File(pOutputDir, pCompressedFile.getName()
+                .substring(0, pCompressedFile.getName().length() - GZIP_EXTENSION_LENGTH));
         if (returnedFile.exists()) {
             String msg = String.format("File %s already exist", returnedFile.getName());
             logger.error(msg);
@@ -272,31 +240,19 @@ public class GZipCompression extends AbstractRunnableCompression {
         }
 
         // Write in this file
-        try {
+        try (GZIPInputStream zis = new GZIPInputStream(new BufferedInputStream(new FileInputStream(pCompressedFile)))) {
             byte data[] = new byte[BUFFER];
-            BufferedOutputStream dest = null;
-            FileInputStream fis = new FileInputStream(pCompressedFile);
-            BufferedInputStream buffi = new BufferedInputStream(fis);
-            GZIPInputStream zis = new GZIPInputStream(buffi);
 
-            try {
-                FileOutputStream fos = new FileOutputStream(returnedFile);
-                dest = new BufferedOutputStream(fos, BUFFER);
-                try {
-                    int count = 0;
-                    while ((count = zis.read(data, 0, BUFFER)) != -1) {
-                        dest.write(data, 0, count);
-                    }
-                    dest.flush();
-                } finally {
-                    dest.close();
+            try (BufferedOutputStream dest = new BufferedOutputStream(new FileOutputStream(returnedFile), BUFFER)) {
+                int count = 0;
+                while ((count = zis.read(data, 0, BUFFER)) != -1) {
+                    dest.write(data, 0, count);
                 }
-            } finally {
-                zis.close();
+                dest.flush();
             }
         } catch (IOException ioE) {
             throw new CompressionException(String.format("IO error during %s uncompression", CompressionTypeEnum.GZIP),
-                    ioE);
+                                           ioE);
         }
         return returnedFile;
     }

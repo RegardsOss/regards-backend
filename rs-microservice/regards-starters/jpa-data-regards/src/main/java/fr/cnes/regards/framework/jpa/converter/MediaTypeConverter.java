@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.framework.jpa.converter;
 
-import org.springframework.http.MediaType;
-
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 import java.util.Collections;
+
+import org.springframework.http.MediaType;
 
 /**
  * @author Sylvain Vissiere-Guerinet

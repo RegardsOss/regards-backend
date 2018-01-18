@@ -18,15 +18,14 @@
  */
 package fr.cnes.regards.modules.templates.service;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
