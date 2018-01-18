@@ -44,19 +44,19 @@ import fr.cnes.regards.modules.acquisition.domain.model.DateTimeAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.GeoAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.LongAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.StringAttribute;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 
 /**
- * A simple {@link Plugin} of type {@link IGenerateSIPPlugin}.
+ * A simple {@link Plugin} of type {@link ISipGenerationPlugin}.
  *
  * @author Christophe Mertz
  */
 @Plugin(id = "TestGenerateSipPlugin", version = "1.0.0-SNAPSHOT", description = "TestGenerateSipPlugin",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
+public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements ISipGenerationPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestGenerateSipPlugin.class);
 

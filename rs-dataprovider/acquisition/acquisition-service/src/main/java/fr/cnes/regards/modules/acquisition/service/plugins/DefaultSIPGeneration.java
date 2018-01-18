@@ -16,21 +16,30 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.plugins;
+package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 
 /**
- * This plugin is used for generating product SIP
+ * Default SIP generation
  *
- * @author Christophe Mertz
- *
+ * @author Marc Sordi
  */
-@PluginInterface(description = "Plugin to generate SIP with product and file metadata")
-public interface IGenerateSIPPlugin {
+@Plugin(id = "DefaultSIPGeneration", version = "1.0.0-SNAPSHOT", description = "Generate SIP using product information",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
+public class DefaultSIPGeneration implements ISipGenerationPlugin {
 
-    SIP generate(Product product) throws ModuleException;
+    @Override
+    public SIP generate(Product product) throws ModuleException {
+        SIPBuilder builder = new SIPBuilder(product.getProductName());
+        // TODO add required elements
+        return builder.build();
+    }
+
 }

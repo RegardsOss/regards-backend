@@ -33,7 +33,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
 
 /**
  * This post processing plugin allows to optionally :
@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
         description = "Optionally clean and/or create an acknowledgement for each product file",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class CleanAndAcknowledgePlugin implements IPostProcessSipPlugin {
+public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CleanAndAcknowledgePlugin.class);
 

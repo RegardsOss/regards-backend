@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import javax.persistence.LockModeType;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -40,6 +41,15 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
  */
 @Repository
 public interface IAcquisitionProcessingChainRepository extends JpaRepository<AcquisitionProcessingChain, Long> {
+
+    Long countById(Long id);
+
+    default boolean existsChain(Long id) {
+        return countById(id) == 1;
+    }
+
+    @EntityGraph("graph.acquisition.file.info.complete")
+    AcquisitionProcessingChain findCompleteById(Long id);
 
     /**
      * Find all active and not running processing chain for a specified mode

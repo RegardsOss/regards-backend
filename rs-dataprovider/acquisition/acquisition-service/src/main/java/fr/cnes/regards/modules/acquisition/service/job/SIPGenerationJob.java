@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.ingest.domain.SIP;
@@ -101,7 +101,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
         try {
             // Get an instance of the plugin
-            IGenerateSIPPlugin generateSipPlugin = pluginService
+            ISipGenerationPlugin generateSipPlugin = pluginService
                     .getPlugin(processingChain.getGenerateSipPluginConf().getId());
             // Launch generation plugin
             SIP sip = generateSipPlugin.generate(product);

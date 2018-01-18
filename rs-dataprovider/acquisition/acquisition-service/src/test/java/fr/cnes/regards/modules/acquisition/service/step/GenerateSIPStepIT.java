@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.acquisition.builder.ProductBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionProcessingChainConfiguration;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionProcess;
 import fr.cnes.regards.modules.acquisition.service.job.step.GenerateSipStep;
@@ -61,7 +61,7 @@ public class GenerateSIPStepIT extends AcquisitionITHelper {
 
         // Configure a plugin IGenerateSIPPlugin
         chain.setGenerateSipPluginConf(pluginService.getPluginConfiguration("TestGenerateSipPlugin",
-                                                                            IGenerateSIPPlugin.class));
+                                                                            ISipGenerationPlugin.class));
 
         // Create a Product
         Product product = productService.save(ProductBuilder.build(FIRST_PRODUCT).withStatus(ProductState.COMPLETED)

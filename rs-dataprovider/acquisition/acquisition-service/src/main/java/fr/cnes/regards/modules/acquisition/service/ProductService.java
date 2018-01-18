@@ -75,8 +75,7 @@ public class ProductService implements IProductService {
     private Integer bulkRequestLimit;
 
     public ProductService(IProductRepository repository, IAuthenticationResolver authResolver,
-            IJobInfoService jobInfoService,
-            ExecAcquisitionProcessingChainService execAcquisitionProcessingChainService) {
+            IJobInfoService jobInfoService) {
         this.productRepository = repository;
         this.authResolver = authResolver;
         this.jobInfoService = jobInfoService;

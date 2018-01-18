@@ -62,7 +62,7 @@ public class AcquisitionFileInfo {
      */
     @NotNull
     @Column(name = "mandatory")
-    private final Boolean mandatory = Boolean.FALSE;
+    private Boolean mandatory = Boolean.FALSE;
 
     @NotNull(message = "Scan plugin is required")
     @ManyToOne(optional = false)
@@ -145,5 +145,9 @@ public class AcquisitionFileInfo {
 
     public void setLastModificationDate(OffsetDateTime lastModificationDate) {
         this.lastModificationDate = lastModificationDate;
+    }
+
+    public void setMandatory(Boolean mandatory) {
+        this.mandatory = mandatory;
     }
 }

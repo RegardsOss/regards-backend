@@ -18,14 +18,39 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.util.HashMap;
+
+import org.junit.Assert;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
+
+import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultDiskScanning;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 
 /**
  * Test {@link AcquisitionProcessingService}
@@ -37,10 +62,97 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acquisition", "jwt.secret=123456789",
         "regards.workspace=target/workspace" })
 @ContextConfiguration(classes = { AcquisitionProcessingServiceTest.AcquisitionConfiguration.class })
+@MultitenantTransactional
 public class AcquisitionProcessingServiceTest extends AbstractDaoTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingServiceTest.class);
+
+    @Autowired
+    private IAcquisitionProcessingService processingService;
+
+    @Autowired
+    private Validator validator;
 
     @Configuration
     @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
     static class AcquisitionConfiguration {
+    }
+
+    private AcquisitionProcessingChain createChain() throws ModuleException {
+
+        // Create a processing chain
+        AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
+        processingChain.setLabel("Processing chain 1");
+        processingChain.setActive(Boolean.TRUE);
+        processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
+        processingChain.setIngestChain("DefaultIngestChain");
+        processingChain.setDatasetIpId("DATASET_IP_ID");
+
+        // Create an acquisition file info
+        AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
+        fileInfo.setMandatory(Boolean.TRUE);
+        fileInfo.setComment("A comment");
+        fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        fileInfo.setDataType(DataType.RAWDATA);
+
+        PluginConfiguration scanPlugin = PluginUtils
+                .getPluginConfiguration(Lists.newArrayList(), DefaultDiskScanning.class, Lists.newArrayList());
+        scanPlugin.setIsActive(true);
+        scanPlugin.setLabel("Scan plugin");
+        fileInfo.setScanPlugin(scanPlugin);
+
+        processingChain.addFileInfo(fileInfo);
+
+        // Validation
+        PluginConfiguration validationPlugin = PluginUtils
+                .getPluginConfiguration(Lists.newArrayList(), DefaultFileValidation.class, Lists.newArrayList());
+        validationPlugin.setIsActive(true);
+        validationPlugin.setLabel("Validation plugin");
+        processingChain.setValidationPluginConf(validationPlugin);
+
+        // Product
+        PluginConfiguration productPlugin = PluginUtils
+                .getPluginConfiguration(Lists.newArrayList(), DefaultProductPlugin.class, Lists.newArrayList());
+        productPlugin.setIsActive(true);
+        productPlugin.setLabel("Product plugin");
+        processingChain.setProductPluginConf(productPlugin);
+
+        // SIP generation
+        PluginConfiguration sipGenPlugin = PluginUtils
+                .getPluginConfiguration(Lists.newArrayList(), DefaultSIPGeneration.class, Lists.newArrayList());
+        sipGenPlugin.setIsActive(true);
+        sipGenPlugin.setLabel("SIP generation plugin");
+        processingChain.setGenerateSipPluginConf(sipGenPlugin);
+
+        // SIP post processing
+        // Not required
+
+        // Validate
+        Errors errors = new MapBindingResult(new HashMap<>(), "apc");
+        validator.validate(processingChain, errors);
+        if (errors.hasErrors()) {
+            errors.getAllErrors().forEach(error -> LOGGER.error(error.getDefaultMessage()));
+            Assert.fail("Acquisition processing chain should be valid");
+        }
+
+        // Save processing chain
+        return processingService.createChain(processingChain);
+    }
+
+    @Test
+    public void updateChainTest() throws ModuleException {
+
+        // Create chain
+        AcquisitionProcessingChain processingChain = createChain();
+
+        // // Do update
+        // PluginConfiguration scanPlugin = PluginUtils
+        // .getPluginConfiguration(Lists.newArrayList(), DefaultDiskScanning.class, Lists.newArrayList());
+        // scanPlugin.setIsActive(true);
+        // scanPlugin.setLabel("Scan plugin update");
+        // processingChain.getFileInfos().get(0).setScanPlugin(scanPlugin);
+        //
+        // // Save processing chain
+        // processingService.updateChain(processingChain);
     }
 }

@@ -65,7 +65,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
 import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
-import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService2;
 import fr.cnes.regards.modules.acquisition.service.IMetaFileService;
@@ -214,9 +214,9 @@ public class CleanOriginalFilePostPluginTest extends AcquisitionScanPluginHelper
     public void createAcquittement() throws ModuleException, IOException {
         String folder = "ack_rs_test";
         String extension = ".cmz";
-        IPostProcessSipPlugin plugin = pluginService
+        ISipPostProcessingPlugin plugin = pluginService
                 .getPlugin(pluginService
-                        .getPluginConfiguration("CleanOriginalFilePostPlugin", IPostProcessSipPlugin.class)
+                        .getPluginConfiguration("CleanOriginalFilePostPlugin", ISipPostProcessingPlugin.class)
                         .getId(), PluginParametersFactory.build()
                                 .addDynamicParameter(CleanAndAcknowledgePlugin.CREATE_ACK_PARAM, Boolean.TRUE)
                                 .addDynamicParameter(CleanAndAcknowledgePlugin.EXTENSION_ACK_PARAM, extension)
@@ -244,8 +244,8 @@ public class CleanOriginalFilePostPluginTest extends AcquisitionScanPluginHelper
 
     @Test
     public void doNotCreateAcquittement() throws ModuleException {
-        IPostProcessSipPlugin plugin = pluginService.getPlugin(pluginService
-                .getPluginConfiguration("CleanOriginalFilePostPlugin", IPostProcessSipPlugin.class).getId());
+        ISipPostProcessingPlugin plugin = pluginService.getPlugin(pluginService
+                .getPluginConfiguration("CleanOriginalFilePostPlugin", ISipPostProcessingPlugin.class).getId());
 
         chain.setSession("session-001");
         acqProcessChainService.save(chain);

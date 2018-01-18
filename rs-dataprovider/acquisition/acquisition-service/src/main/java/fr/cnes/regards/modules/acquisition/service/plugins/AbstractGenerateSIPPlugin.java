@@ -33,7 +33,7 @@ import fr.cnes.regards.framework.oais.builder.PDIBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.ingest.domain.SIP;
@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  * @author Christophe Mertz
  *
  */
-public abstract class AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
+public abstract class AbstractGenerateSIPPlugin implements ISipGenerationPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGenerateSIPPlugin.class);
 

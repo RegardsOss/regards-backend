@@ -34,7 +34,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeExcepti
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
@@ -85,7 +85,7 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
             // Launch post processing plugin if present
             if (acqProcessingChain.getPostProcessSipPluginConf().isPresent()) {
                 // Get an instance of the plugin
-                IPostProcessSipPlugin postProcessPlugin = pluginService
+                ISipPostProcessingPlugin postProcessPlugin = pluginService
                         .getPlugin(acqProcessingChain.getPostProcessSipPluginConf().get().getId());
                 postProcessPlugin.postProcess(product);
             }

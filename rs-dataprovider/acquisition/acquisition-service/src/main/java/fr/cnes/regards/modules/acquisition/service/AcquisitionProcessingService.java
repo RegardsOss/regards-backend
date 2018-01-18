@@ -95,7 +95,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Override
     public AcquisitionProcessingChain getChain(Long id) throws ModuleException {
-        AcquisitionProcessingChain chain = acqChainRepository.findOne(id);
+        AcquisitionProcessingChain chain = acqChainRepository.findCompleteById(id);
         if (chain == null) {
             throw new EntityNotFoundException(id, AcquisitionProcessingChain.class);
         }
@@ -165,7 +165,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @Override
     public AcquisitionProcessingChain updateChain(AcquisitionProcessingChain processingChain) throws ModuleException {
         // Check already exists
-        if (!acqChainRepository.exists(processingChain.getId())) {
+        if (!acqChainRepository.existsChain(processingChain.getId())) {
             throw new EntityNotFoundException(processingChain.getLabel(), IngestProcessingChain.class);
         }
 

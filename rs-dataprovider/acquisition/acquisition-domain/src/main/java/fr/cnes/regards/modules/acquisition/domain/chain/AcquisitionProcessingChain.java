@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -48,8 +48,8 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 
@@ -85,12 +85,12 @@ public class AcquisitionProcessingChain {
      */
     @NotNull
     @Column
-    private final Boolean active = false;
+    private Boolean active = false;
 
     @NotNull(message = "Acquisition processing mode is required")
     @Column(length = 16)
     @Enumerated(EnumType.STRING)
-    private final AcquisitionProcessingChainMode mode = AcquisitionProcessingChainMode.AUTO;
+    private AcquisitionProcessingChainMode mode = AcquisitionProcessingChainMode.AUTO;
 
     /**
      * <code>true</code> if currently running, <code>false</code>
@@ -116,7 +116,7 @@ public class AcquisitionProcessingChain {
     /**
      * Then INGEST chain name for SIP submission
      */
-    @NotNull
+    @NotBlank
     @Column(name = "ingest_chain")
     private String ingestChain;
 
@@ -134,7 +134,7 @@ public class AcquisitionProcessingChain {
     @Size(min = 1)
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "acq_chain_id", foreignKey = @ForeignKey(name = "fk_acq_chain_id"))
-    private Set<AcquisitionFileInfo> fileInfos;
+    private List<AcquisitionFileInfo> fileInfos;
 
     /**
      * An optional {@link PluginConfiguration} of a {@link IValidationPlugin}
@@ -153,7 +153,7 @@ public class AcquisitionProcessingChain {
     private PluginConfiguration productPluginConf;
 
     /**
-     * A {@link PluginConfiguration} of a {@link IGenerateSIPPlugin}
+     * A {@link PluginConfiguration} of a {@link ISipGenerationPlugin}
      */
     @NotNull
     @ManyToOne
@@ -161,7 +161,7 @@ public class AcquisitionProcessingChain {
     private PluginConfiguration generateSipPluginConf;
 
     /**
-     * A {@link PluginConfiguration} of a {@link IPostProcessSipPlugin}
+     * A {@link PluginConfiguration} of a {@link ISipPostProcessingPlugin}
      */
     @ManyToOne
     @JoinColumn(name = "postprocesssip_conf_id", foreignKey = @ForeignKey(name = "fk_postprocesssip_conf_id"))
@@ -207,12 +207,19 @@ public class AcquisitionProcessingChain {
         this.datasetIpId = datasetIpId;
     }
 
-    public Set<AcquisitionFileInfo> getFileInfos() {
+    public List<AcquisitionFileInfo> getFileInfos() {
         return fileInfos;
     }
 
-    public void setFileInfos(Set<AcquisitionFileInfo> fileInfos) {
+    public void setFileInfos(List<AcquisitionFileInfo> fileInfos) {
         this.fileInfos = fileInfos;
+    }
+
+    public void addFileInfo(AcquisitionFileInfo fileInfo) {
+        if (fileInfos == null) {
+            fileInfos = new ArrayList<>();
+        }
+        fileInfos.add(fileInfo);
     }
 
     public PluginConfiguration getGenerateSipPluginConf() {
@@ -269,5 +276,13 @@ public class AcquisitionProcessingChain {
 
     public void setProductPluginConf(PluginConfiguration productPluginConf) {
         this.productPluginConf = productPluginConf;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public void setMode(AcquisitionProcessingChainMode mode) {
+        this.mode = mode;
     }
 }

@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
-import fr.cnes.regards.modules.acquisition.plugins.IPostProcessSipPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
 import fr.cnes.regards.modules.acquisition.service.conf.AcquisitionProcessingChainConfiguration;
 import fr.cnes.regards.modules.acquisition.service.step.AcquisitionITHelper;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
@@ -142,7 +142,7 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING).size());
 
         chainForProcessing.setPostProcessSipPluginConf(pluginService
-                .getPluginConfiguration("CleanOriginalFilePostPlugin", IPostProcessSipPlugin.class));
+                .getPluginConfiguration("CleanOriginalFilePostPlugin", ISipPostProcessingPlugin.class));
         acqProcessChainService.createOrUpdate(chainForProcessing);
 
         String productName = "product-033";
@@ -188,7 +188,7 @@ public class ProductSipEventHandlerIT extends AcquisitionITHelper {
         Assert.assertEquals(1, productService.findBySendedAndStatusIn(false, ProductState.ACQUIRING).size());
 
         chainForProcessing.setPostProcessSipPluginConf(pluginService
-                .getPluginConfiguration("CleanOriginalFilePostPlugin", IPostProcessSipPlugin.class));
+                .getPluginConfiguration("CleanOriginalFilePostPlugin", ISipPostProcessingPlugin.class));
         acqProcessChainService.createOrUpdate(chainForProcessing);
 
         publishSipEvent("product-001", SIPState.STORED);

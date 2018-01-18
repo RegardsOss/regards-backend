@@ -21,15 +21,16 @@ package fr.cnes.regards.modules.acquisition.plugins;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.ingest.domain.SIP;
 
 /**
- * Acquisition chain post processing plugin
+ * This plugin is used for generating product SIP
  *
  * @author Christophe Mertz
  *
  */
-@PluginInterface(description = "Plugin to process treatement after the SIP is stored")
-public interface IPostProcessSipPlugin {
+@PluginInterface(description = "Plugin to generate SIP with product and file metadata")
+public interface ISipGenerationPlugin {
 
-    void postProcess(Product product) throws ModuleException;
+    SIP generate(Product product) throws ModuleException;
 }
