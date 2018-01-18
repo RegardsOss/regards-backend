@@ -162,12 +162,7 @@ public class OrderDataFileService implements IOrderDataFileService {
         // Set or orders not yet finished
         Set<Order> orders = totalOrderFiles.stream().map(array -> (Order) array[0]).collect(Collectors.toSet());
         // Map { order_id -> total files size }
-        Map<Long, Long> totalSizeMap = new HashMap<>();
-        try {
-            totalSizeMap = totalOrderFiles.stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
-        } catch (NullPointerException npe) {
-            System.out.println();
-        }
+        Map<Long, Long> totalSizeMap = totalOrderFiles.stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
 
         // Map { order_id -> treated files size  }
         Map<Long, Long> treatedSizeMap = repos
