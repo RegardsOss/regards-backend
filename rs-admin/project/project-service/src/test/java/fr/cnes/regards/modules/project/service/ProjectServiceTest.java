@@ -26,7 +26,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
-import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -83,8 +82,10 @@ public class ProjectServiceTest {
 
         // use a stub repository, to be able to only test the service
         final IProjectRepository projectRepoStub = new ProjectRepositoryStub();
-        projectService = new ProjectService(projectRepoStub, Mockito.mock(ITenantResolver.class),
-                Mockito.mock(IInstancePublisher.class));
+        projectService = new ProjectService(projectRepoStub,
+                                            Mockito.mock(ITenantResolver.class),
+                                            Mockito.mock(IInstancePublisher.class),
+                                            "default-project-test");
 
         projectRepoStub.save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));
         projectRepoStub.save(new Project(1L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false, PROJECT_TEST_2));
@@ -101,16 +102,22 @@ public class ProjectServiceTest {
     @Purpose("Check that the system allows to create a project.")
     public void createProjectTest() {
         final long newProjectId = 2L;
-        Project projectToCreate = new Project(newProjectId, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false,
-                PROJECT_TEST_1);
+        Project projectToCreate = new Project(newProjectId,
+                                              COMMON_PROJECT_DESCRIPTION,
+                                              COMMON_PROJECT_ICON,
+                                              false,
+                                              PROJECT_TEST_1);
         try {
             projectService.createProject(projectToCreate);
             Assert.fail("Project already exists there must be an exception thrown here");
         } catch (final ModuleException e) {
             /// Nothing to do
         }
-        projectToCreate = new Project(newProjectId, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false,
-                "new-project-test");
+        projectToCreate = new Project(newProjectId,
+                                      COMMON_PROJECT_DESCRIPTION,
+                                      COMMON_PROJECT_ICON,
+                                      false,
+                                      "new-project-test");
         try {
             projectService.createProject(projectToCreate);
         } catch (final ModuleException e) {
@@ -167,8 +174,10 @@ public class ProjectServiceTest {
     public void updateProject() {
 
         final String invalidProjectName = "project-invalid-update";
-        final Project invalidProject = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false,
-                invalidProjectName);
+        final Project invalidProject = new Project(COMMON_PROJECT_DESCRIPTION,
+                                                   COMMON_PROJECT_ICON,
+                                                   false,
+                                                   invalidProjectName);
         try {
             projectService.updateProject(invalidProjectName, invalidProject);
         } catch (final ModuleException e) {

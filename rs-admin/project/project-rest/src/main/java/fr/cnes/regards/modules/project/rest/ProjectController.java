@@ -109,7 +109,7 @@ public class ProjectController implements IResourceController<Project> {
      */
     @RequestMapping(value = "/public", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
-    @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(final Pageable pPageable,
             final PagedResourcesAssembler<Project> pAssembler) {
         final Page<Project> projects = projectService.retrievePublicProjectList(pPageable);
@@ -149,7 +149,7 @@ public class ProjectController implements IResourceController<Project> {
      */
     @RequestMapping(method = RequestMethod.GET, value = "/{project_name}", produces = "application/json")
     @ResponseBody
-    @ResourceAccess(description = "retrieve the project project_name", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "retrieve the project project_name", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") final String pProjectName)
             throws ModuleException {
 
