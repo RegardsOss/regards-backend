@@ -54,7 +54,7 @@ public class RegardsAmqpAppenderFilter extends Filter<ILoggingEvent> {
         if (event.getLevel() != level) {
             return FilterReply.DENY;
         }
-
+        accept = false;
         String loggerName = event.getLoggerName().toLowerCase();
         includes.forEach(s -> {
             if (!accept && loggerName.contains(s.toLowerCase())) {
