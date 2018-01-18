@@ -300,7 +300,7 @@ public class AccountService implements IAccountService {
     @Override
     public boolean validPassword(final String pPassword) {
         final Pattern p = Pattern.compile(passwordRegex);
-        return p.matcher(pPassword).matches();
+        return pPassword != null && p.matcher(pPassword).matches();
     }
 
     @Override
