@@ -303,7 +303,7 @@ public class AccountService implements IAccountService {
             return false;
         }
         final Pattern p = Pattern.compile(passwordRegex);
-        return p.matcher(pPassword).matches();
+        return pPassword != null && p.matcher(pPassword).matches();
     }
 
     @Override

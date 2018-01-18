@@ -31,7 +31,7 @@ import java.security.NoSuchAlgorithmException;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-public class EncryptionUtils {
+public final class EncryptionUtils {
 
     /**
      * Encryption algorithm

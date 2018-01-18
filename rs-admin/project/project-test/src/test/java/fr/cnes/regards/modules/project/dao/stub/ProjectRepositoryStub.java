@@ -29,7 +29,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.framework.test.repository.JpaRepositoryStub;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 

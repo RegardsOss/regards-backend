@@ -26,6 +26,7 @@ import java.util.Set;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -115,4 +116,15 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
     @EntityGraph(value = "graph.user.metadata")
     Page<ProjectUser> findAll(Pageable pPageable);
 
+    /**
+     * Find all project users respecting the given specification
+     *
+     * @param spec project user specification
+     * @param pageable
+     *            the pagination information
+     * @return all project users with this role
+     */
+    @Override
+    @EntityGraph(value = "graph.user.metadata")
+    Page<ProjectUser> findAll(Specification<ProjectUser> spec, Pageable pageable);
 }

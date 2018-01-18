@@ -43,7 +43,6 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 
 /**
  * Models a notification.<br>
- *
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  */
@@ -132,8 +131,7 @@ public class Notification implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pDate
-     *            the date to set
+     * @param pDate the date to set
      */
     public void setDate(final OffsetDateTime pDate) {
         date = pDate;
@@ -145,8 +143,7 @@ public class Notification implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pId
-     *            the id to set
+     * @param pId the id to set
      */
     public void setId(final Long pId) {
         id = pId;
@@ -160,8 +157,7 @@ public class Notification implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pMessage
-     *            the message to set
+     * @param pMessage the message to set
      */
     public void setMessage(final String pMessage) {
         message = pMessage;
@@ -175,8 +171,7 @@ public class Notification implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pProjectUserRecipients
-     *            the projectUserRecipients to set
+     * @param pProjectUserRecipients the projectUserRecipients to set
      */
     public void setProjectUserRecipients(final Set<String> pProjectUserRecipients) {
         projectUserRecipients = pProjectUserRecipients;
@@ -190,8 +185,7 @@ public class Notification implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pRoleRecipients
-     *            the roleRecipients to set
+     * @param pRoleRecipients the roleRecipients to set
      */
     public void setRoleRecipients(final Set<String> pRoleRecipients) {
         roleRecipients = pRoleRecipients;
@@ -205,8 +199,7 @@ public class Notification implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pSender
-     *            the sender to set
+     * @param pSender the sender to set
      */
     public void setSender(final String pSender) {
         sender = pSender;
@@ -220,8 +213,7 @@ public class Notification implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pStatus
-     *            the status to set
+     * @param pStatus the status to set
      */
     public void setStatus(final NotificationStatus pStatus) {
         status = pStatus;
@@ -235,8 +227,7 @@ public class Notification implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pTitle
-     *            the title to set
+     * @param pTitle the title to set
      */
     public void setTitle(final String pTitle) {
         title = pTitle;
@@ -251,7 +242,6 @@ public class Notification implements IIdentifiable<Long> {
 
     /**
      * Set the notification type
-     * @param type
      */
     public void setType(NotificationType type) {
         this.type = type;
