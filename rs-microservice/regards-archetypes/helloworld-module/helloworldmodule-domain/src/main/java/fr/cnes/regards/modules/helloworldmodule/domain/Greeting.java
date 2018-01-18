@@ -27,13 +27,13 @@ package fr.cnes.regards.modules.helloworldmodule.domain;
  */
 public class Greeting {
 
-    private final String content_;
+    private final String content;
 
     public Greeting(String pName) {
-        this.content_ = "Hello " + pName;
+        this.content = "Hello " + pName;
     }
 
     public String getContent() {
-        return content_;
+        return content;
     }
 }

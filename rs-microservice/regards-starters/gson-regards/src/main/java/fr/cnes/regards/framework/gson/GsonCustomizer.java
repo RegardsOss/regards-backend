@@ -49,7 +49,7 @@ import fr.cnes.regards.framework.gson.strategy.GsonIgnoreExclusionStrategy;
  * @author Marc Sordi
  *
  */
-public class GsonCustomizer {
+public final class GsonCustomizer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GsonCustomizer.class);
 

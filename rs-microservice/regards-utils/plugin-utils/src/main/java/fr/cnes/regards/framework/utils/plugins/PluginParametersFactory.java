@@ -40,13 +40,12 @@ public class PluginParametersFactory {
     /**
      * List of {@link PluginParameter}
      */
-    private final List<PluginParameter> parameters;
+    private List<PluginParameter> parameters = new ArrayList<>();
 
     /**
      * Constructor
      */
     public PluginParametersFactory() {
-        parameters = new ArrayList<>();
     }
 
     /**

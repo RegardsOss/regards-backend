@@ -33,13 +33,13 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
      */
     private static final ThreadFactory THREAD_FACTORY = new DefaultJobThreadFactory();
 
-    private IJobInfoService jobInfoService;
+    private final IJobInfoService jobInfoService;
 
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    private BiMap<JobInfo, RunnableFuture<Void>> jobsMap;
+    private final BiMap<JobInfo, RunnableFuture<Void>> jobsMap;
 
-    private IPublisher publisher;
+    private final IPublisher publisher;
 
     public JobThreadPoolExecutor(int poolSize, IJobInfoService jobInfoService,
             BiMap<JobInfo, RunnableFuture<Void>> jobsMap, IRuntimeTenantResolver runtimeTenantResolver,

@@ -18,23 +18,20 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.regex.Pattern;
-
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- *
  * Add the allow origin in the response headers to allow CORS requests.
- *
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
@@ -84,53 +81,46 @@ public class CorsFilter extends OncePerRequestFilter {
         super();
     }
 
-    public CorsFilter(final List<String> pAuthorizedAdress) {
+    public CorsFilter(List<String> pAuthorizedAdress) {
         super();
         authorizedAddress = pAuthorizedAdress;
     }
 
     @Override
-    protected void doFilterInternal(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
-            final FilterChain pFilterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-        doSecurisedFilter(pRequest, pResponse, pFilterChain);
+        doSecurisedFilter(request, response, filterChain);
 
-        if (!OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod())) {
-            pFilterChain.doFilter(pRequest, pResponse);
+        if (!OPTIONS_REQUEST_TYPE.equals(request.getMethod())) {
+            filterChain.doFilter(request, response);
         }
 
     }
 
     /**
-     *
      * Allow CORS Request only if authenticate user is autorized to.
-     *
-     * @param pRequest
-     *            Http request
-     * @param pResponse
-     *            Http response
-     * @param pFilterChain
-     *            Filter chain
-     * @throws ServletException
-     *             Servlet error
-     * @throws IOException
-     *             Internal error
+     * @param request Http request
+     * @param response Http response
+     * @param pFilterChain Filter chain
+     * @throws ServletException Servlet error
+     * @throws IOException      Internal error
      * @since 1.0-SNAPSHOT
      */
-    private void doSecurisedFilter(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
+    private void doSecurisedFilter(final HttpServletRequest request, final HttpServletResponse response,
             final FilterChain pFilterChain) throws ServletException, IOException {
 
-        final String originAdress = getClientOrigin(pRequest);
+        final String originAdress = getClientOrigin(request);
 
-        if ((authorizedAddress == null) || (authorizedAddress.size() == 0)) {
-            allowCorsRequest(pRequest, pResponse, pFilterChain);
+        if ((authorizedAddress == null) || (authorizedAddress.isEmpty())) {
+            allowCorsRequest(request, response, pFilterChain);
         } else {
             boolean isAuthorized = false;
             for (final String authorizedAdress : authorizedAddress) {
                 isAuthorized = isAuthorized || Pattern.compile(authorizedAdress).matcher(originAdress).matches();
             }
             if (isAuthorized) {
-                allowCorsRequest(pRequest, pResponse, pFilterChain);
+                allowCorsRequest(request, response, pFilterChain);
             } else {
                 LOG.error("[CORS REQUEST FILTER] Access denied for client : {}", originAdress);
             }
@@ -138,14 +128,10 @@ public class CorsFilter extends OncePerRequestFilter {
     }
 
     /**
-     *
      * Return the addresse of the origine request address
-     *
-     * @param request
-     * @return
      * @since 1.0-SNAPSHOT
      */
-    private static String getClientOrigin(final HttpServletRequest request) {
+    private static String getClientOrigin(HttpServletRequest request) {
         String remoteAddr = null;
         if (request != null) {
             remoteAddr = request.getHeader(REQUEST_HEADER_ORIGIN);
@@ -157,27 +143,20 @@ public class CorsFilter extends OncePerRequestFilter {
     }
 
     /**
-     *
      * Allow cors request
-     *
-     * @param pRequest
-     *            Http request
-     * @param pResponse
-     *            Http response
-     * @param pFilterChain
-     *            Filter chain
-     * @throws ServletException
-     *             Servlet error
-     * @throws IOException
-     *             Internal error
+     * @param request Http request
+     * @param response Http response
+     * @param filterChain Filter chain
+     * @throws ServletException Servlet error
+     * @throws IOException      Internal error
      * @since 1.0-SNAPSHOT
      */
-    public static void allowCorsRequest(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
-            final FilterChain pFilterChain) throws IOException, ServletException {
-        pResponse.setHeader(ALLOW_ORIGIN, "*");
-        pResponse.setHeader(ALLOW_METHOD, "POST, PUT, GET, OPTIONS, DELETE");
-        pResponse.setHeader(ALLOW_HEADER, "authorization, content-type, scope");
-        pResponse.setHeader(CONTROL_MAX_AGE, "3600");
+    public static void allowCorsRequest(HttpServletRequest request, HttpServletResponse response,
+            FilterChain filterChain) throws IOException, ServletException {
+        response.setHeader(ALLOW_ORIGIN, "*");
+        response.setHeader(ALLOW_METHOD, "POST, PUT, GET, OPTIONS, DELETE");
+        response.setHeader(ALLOW_HEADER, "authorization, content-type, scope");
+        response.setHeader(CONTROL_MAX_AGE, "3600");
     }
 
 }

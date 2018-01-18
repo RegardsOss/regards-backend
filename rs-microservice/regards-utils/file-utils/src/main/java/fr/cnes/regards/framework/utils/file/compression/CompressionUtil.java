@@ -8,22 +8,22 @@ import java.io.File;
 /**
  * Cette classe definit des utilitaires associe au module de compression
  */
-public class CompressionUtil {
+public final class CompressionUtil {
 
     /**
      * Extension de fichier gz
      */
-    final static String GZ_EXT = ".gz";
+    static final String GZ_EXT = ".gz";
 
     /**
      * Extension de fichier tar
      */
-    final static String TAR_EXT = ".tar";
+    static final String TAR_EXT = ".tar";
 
     /**
      * Extension de fichier zip
      */
-    final static String ZIP_EXT = ".zip";
+    static final String ZIP_EXT = ".zip";
 
     /**
      * Constructeur
@@ -38,7 +38,7 @@ public class CompressionUtil {
      * @param pFile le fichier à tester
      * @return un booleen
      */
-    public static boolean hasCompressedExtensionFilename(File pFile) {
+    private static boolean hasCompressedExtensionFilename(File pFile) {
         boolean ret = false;
         String name = pFile.getName().toLowerCase();
         if (name.endsWith(GZ_EXT) || name.endsWith(ZIP_EXT) || name.endsWith(TAR_EXT)) {

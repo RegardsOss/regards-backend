@@ -54,7 +54,7 @@ public class ClientErrorDecoder extends ErrorDecoder.Default implements ErrorDec
     /**
      * Spring decoder
      */
-    private SpringDecoder springDecoder;
+    private final SpringDecoder springDecoder;
 
     /**
      * Constructor setting the sprind decoder as attribute

@@ -25,7 +25,7 @@ import com.google.common.collect.Sets;
  * @author sbinda
  *
  */
-public class CutFileUtils {
+public final class CutFileUtils {
 
     /**
      * Class logger

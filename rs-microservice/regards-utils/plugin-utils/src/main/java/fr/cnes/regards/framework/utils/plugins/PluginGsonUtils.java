@@ -32,7 +32,7 @@ import fr.cnes.regards.framework.gson.GsonCustomizer;
  * @author Marc Sordi
  *
  */
-public class PluginGsonUtils {
+public final class PluginGsonUtils {
 
     private static Gson instance;
 
@@ -44,7 +44,9 @@ public class PluginGsonUtils {
 
     public static Gson getInstance() {
         if (instance == null) {
-            instance = getBuilder().create();
+            synchronized (PluginGsonUtils.class) {
+                instance = getBuilder().create();
+            }
         }
         return instance;
     }
@@ -55,7 +57,9 @@ public class PluginGsonUtils {
      */
     private static GsonBuilder getBuilder() {
         if (builder == null) {
-            builder = GsonCustomizer.gsonBuilder(Optional.empty(), Optional.empty());
+            synchronized (PluginGsonUtils.class) {
+                builder = GsonCustomizer.gsonBuilder(Optional.empty(), Optional.empty());
+            }
         }
         return builder;
     }
@@ -66,7 +70,9 @@ public class PluginGsonUtils {
      */
     public static GsonBuilder customizeBuilder() {
         // Reset Gson instance
-        instance = null;
+        synchronized (PluginGsonUtils.class) {
+            instance = null;
+        }
         return getBuilder();
     }
 }

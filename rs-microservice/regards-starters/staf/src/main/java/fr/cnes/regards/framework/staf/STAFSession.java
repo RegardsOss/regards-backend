@@ -280,15 +280,9 @@ public class STAFSession {
 
     /**
      * Ouvre une session STAF en effectuant plusieurs tentatives en cas d'erreur
-     *
-     * @param pProject
-     *            Projet STAF avec lequel on ouvre la session
-     * @param pPassword
-     *            Mot de passe utilise pour se connecter au STAF
-     * @param pGFAccount
-     *            Indique si le projet STAF est un GF (Gros Fichiers)
-     * @throws STAFException
-     *             Erreur de connexion au STAF
+     * @param pProject Projet STAF avec lequel on ouvre la session
+     * @param pPassword Mot de passe utilise pour se connecter au STAF
+     * @throws STAFException Erreur de connexion au STAF
      */
     public void stafconOpen(String pProject, String pPassword) throws STAFException {
 
@@ -306,8 +300,9 @@ public class STAFSession {
                 attemptToConnect = attemptsBeforeFailCount < attemptsBeforeFail;
                 if (attemptToConnect) {
                     attemptsBeforeFailCount++;
-                    final String msg = String.format("Attempts %d on %d to connect to the STAF",
-                                                     attemptsBeforeFailCount, attemptsBeforeFail);
+                    final String msg = String
+                            .format("Attempts %d on %d to connect to the STAF", attemptsBeforeFailCount,
+                                    attemptsBeforeFail);
                     logger.info(msg);
                 } else {
                     throw e;
@@ -318,15 +313,9 @@ public class STAFSession {
 
     /**
      * Ouvre une session STAF
-     *
-     * @param pProject
-     *            Projet STAF avec lequel on ouvre la session
-     * @param pPassword
-     *            Mot de passe utilise pour se connecter au STAF
-     * @param pGFAccount
-     *            Indique si le projet STAF est un GF (Gros Fichiers)
-     * @throws STAFException
-     *             Erreur de connexion au STAF
+     * @param pProject Projet STAF avec lequel on ouvre la session
+     * @param pPassword Mot de passe utilise pour se connecter au STAF
+     * @throws STAFException Erreur de connexion au STAF
      */
     protected void execStafconOpen(String pProject, String pPassword) throws STAFException {
         // Prepare la commande STAF
@@ -372,9 +361,7 @@ public class STAFSession {
 
     /**
      * Ferme une session STAF
-     *
-     * @throws STAFException
-     *             si le flux de sortie du staf est illisible.
+     * @throws STAFException si le flux de sortie du staf est illisible.
      */
     public void stafconClose() throws STAFException {
         // Execute la commande STAF de fermeture
@@ -402,12 +389,9 @@ public class STAFSession {
      * kilo-octets. On notera egalement que la double troncature sur la taille du fichier, celle du STAF puis celle de
      * la conversion en kilo-octets entraine une perte de precision qui peut se traduire par une valeur inferieure d'un
      * kilo-octet a la taille reelle.
-     *
-     * @param pFilename
-     *            Chemin d'acces complet au fichier dont on souhaite obtenir la valeur des attributs.
+     * @param pFilename Chemin d'acces complet au fichier dont on souhaite obtenir la valeur des attributs.
      * @return Une map contenant les valeurs retournees par le STAF.
-     * @throws STAFException
-     *             si la reponse contient un message d'erreur.
+     * @throws STAFException si la reponse contient un message d'erreur.
      */
     public Map<String, Integer> staffilList(String pFilename) throws STAFException {
         // Resultat de la fonction
@@ -516,12 +500,9 @@ public class STAFSession {
 
     /**
      * Verifie l'existence d'un fichier heberge au STAF.
-     *
-     * @param pFilename
-     *            Chemin d'acces complet au fichier dont on souhaite tester l'existence.
+     * @param pFilename Chemin d'acces complet au fichier dont on souhaite tester l'existence.
      * @return Indicateur d'existence du fichier.
-     * @throws STAFException
-     *             si le nom du fichier est invalide.
+     * @throws STAFException si le nom du fichier est invalide.
      */
     public boolean staffilExist(String pFilename) throws STAFException {
         // Resultat de la fonction
@@ -579,13 +560,10 @@ public class STAFSession {
 
     /**
      * Restitue un ensemble de fichiers archives au STAF.
-     *
-     * @param pFiles
-     *            Ensemble des fichiers a restituer. Cet ensemble se presente sous la forme d'une map dont les cles sont
-     *            les noms des fichiers au STAF (chemin compris) et les valeurs correspondantes les noms des fichiers
-     *            issus du STAF (chemin compris).
-     * @throws STAFException
-     *             si la commande a echouee ou si le parametre pFiles est invalide.
+     * @param pFiles Ensemble des fichiers a restituer. Cet ensemble se presente sous la forme d'une map dont les cles sont
+     * les noms des fichiers au STAF (chemin compris) et les valeurs correspondantes les noms des fichiers
+     * issus du STAF (chemin compris).
+     * @throws STAFException si la commande a echouee ou si le parametre pFiles est invalide.
      */
     public void staffilRetrieve(Map<String, String> pFiles) throws STAFException {
 
@@ -662,16 +640,12 @@ public class STAFSession {
      * est inferieure ou egale au nombre max de fichier transferable dans un flow.<br>
      * La methode STAFService#dispatchFilesInSeveralFlow(java.util.Map, int, String) est utilise systematiquement afin
      * de limiter la taille du flow.<br>
-     *
-     * @param pFiles
-     *            Ensemble des fichiers a archiver. Cet ensemble se presente sous la forme d'une map dont les cles sont
-     *            les noms des fichiers (chemin compris) et les valeurs correspondantes les noms des fichiers a archiver
-     *            au STAF (chemin compris).
-     * @param pServiceClass
-     *            : la classe de service a utiliser pour les fichiers de ce flot.
+     * @param pFiles Ensemble des fichiers a archiver. Cet ensemble se presente sous la forme d'une map dont les cles sont
+     * les noms des fichiers (chemin compris) et les valeurs correspondantes les noms des fichiers a archiver
+     * au STAF (chemin compris).
+     * @param pServiceClass : la classe de service a utiliser pour les fichiers de ce flot.
      * @return une HashMap contenant les repertoire reels d'archivage pour chaque fichier passe en entree.
-     * @throws STAFException
-     *             si la commande a echouee ou si le parametre pFiles est invalide.
+     * @throws STAFException si la commande a echouee ou si le parametre pFiles est invalide.
      */
     public List<String> staffilArchive(Map<String, String> pFiles, String pServiceClass, boolean pReplace)
             throws STAFException {
@@ -771,8 +745,6 @@ public class STAFSession {
                     final String msg = "Unable to archive all files";
                     logger.error(msg);
                 }
-            } catch (final Exception e) {
-                throw e;
             } finally {
                 renameStafFilesAfterArchiving(renamedLocalFilePathMap);
             }
@@ -787,13 +759,9 @@ public class STAFSession {
     }
 
     /**
-     *
      * Retourne le chemin du fichier local archivé au STAF avant son renomage si cela a été réalisé, sinon retourne le
      * pSourceFilePath fournit en paramètre.
-     *
-     * @param pSourceFilePath
-     * @param pRenamedLocalFilePathMap
-     *            Map<OriginalFilePath, RenamedFilePath>
+     * @param pRenamedLocalFilePathMap Map<OriginalFilePath, RenamedFilePath>
      * @return {@link String} Original file path
      */
     private String getSTAFOriginalFilePath(String pSourceFilePath, Map<String, String> pRenamedLocalFilePathMap) {
@@ -819,13 +787,9 @@ public class STAFSession {
     }
 
     /**
-     *
      * Renomme les fichiers après archivage pour redonner leur nom d'origine aux fichiers si ceux-ci comportaient des
      * noms invalides pour le STAF.
-     *
-     * @param pRenamedLocalFilesPathMap
-     *            Map<OriginalFilePath, RenamedFilePath>
-     * @throws STAFException
+     * @param pRenamedLocalFilesPathMap Map<OriginalFilePath, RenamedFilePath>
      */
     private void renameStafFilesAfterArchiving(Map<String, String> pRenamedLocalFilesPathMap) throws STAFException {
 
@@ -846,14 +810,8 @@ public class STAFSession {
     }
 
     /**
-     *
      * Renomage d'un nom de fichier avant archivage pour enlever les caracteres interdits au STAF.
-     *
-     * @param pMdtFile
-     * @param pRenamedLocalFilesPathMap
-     *            Map<OriginalFilePath, RenamedFilePath>
-     * @return
-     * @throws STAFException
+     * @param pRenamedLocalFilesPathMap Map<OriginalFilePath, RenamedFilePath>
      */
     private String renameStafFileForArchiving(String pMdtFile, Map<String, String> pRenamedLocalFilesPathMap,
             Boolean pRenamePhysicalFile) throws STAFException {
@@ -875,11 +833,13 @@ public class STAFSession {
                 if (pRenamePhysicalFile.equals(Boolean.TRUE)) {
                     if (!pRenamedLocalFilesPathMap.containsValue(newFile.getPath())) {
                         if (!newFile.exists()) {
-                            logger.warn("STAF file to archive contains invalid caracters. Renaming file "
-                                    + file.getPath() + " to " + newFile.getPath() + " before archving");
+                            logger.warn(
+                                    "STAF file to archive contains invalid caracters. Renaming file " + file.getPath()
+                                            + " to " + newFile.getPath() + " before archving");
                             if (!file.renameTo(newFile)) {
-                                throw new STAFException(String.format("[STAF] Error renaming file %s to %s",
-                                                                      file.getPath(), newFile.getPath()));
+                                throw new STAFException(
+                                        String.format("[STAF] Error renaming file %s to %s", file.getPath(),
+                                                      newFile.getPath()));
                             }
                             pRenamedLocalFilesPathMap.put(originalfilePath, newFile.getPath());
                         } else {
@@ -906,8 +866,6 @@ public class STAFSession {
      * verifie si le chemin existe et le cree si besoin On test si le chemin existe en essayant de se positionner dessus
      * Si il n'existe pas, on verifie chaque partie du chemin et on le cree si besoin enfin, on repositionne le
      * repertoire courant a la racine.
-     *
-     * @param pStafFile
      */
     private void checkAndCreateDirectory(String pStafPath) throws STAFException {
 
@@ -933,8 +891,6 @@ public class STAFSession {
      * verifie si le chemin existe et le cree si besoin On test si le chemin existe en essayant de se positionner dessus
      * Si il n'existe pas, on verifie chaque partie du chemin et on le cree si besoin enfin, on repositionne le
      * repertoire courant a la racine.
-     *
-     * @param pStafFile
      */
     private void checkAndCreateDirectory(Collection<String> pStafFileList) throws STAFException {
         final List<String> list = new ArrayList<>();
@@ -953,11 +909,8 @@ public class STAFSession {
     /**
      * verifie le repertoire passe en parametre en essayant d'aller dans ce repertoire Attention, effet de bord : le
      * repertoire courant dans le staf est modifie si le repertoire existe.
-     *
-     * @param stafDirectory
-     *            le repertoire a valider
+     * @param stafDirectory le repertoire a valider
      * @return true si le repertoire est accessible, false sinon
-     * @throws STAFException
      */
     private boolean checkDirectory(String stafDirectory) throws STAFException {
         final MessageFormat staffilArchive = new MessageFormat(STAFNODE_LOCATE);
@@ -986,13 +939,9 @@ public class STAFSession {
 
     /**
      * Renomme un fichier heberge au STAF.
-     *
-     * @param pOldFilename
-     *            Chemin d'acces complet au fichier qu'on souhaite renommer.
-     * @param pNewFilename
-     *            Nom a donner au fichier (hors chemin d'acces)
-     * @throws STAFException
-     *             si le parametre est invalide ou si le STAF renvoie une reponse contenant un message d'erreur.
+     * @param pOldFilename Chemin d'acces complet au fichier qu'on souhaite renommer.
+     * @param pNewFilename Nom a donner au fichier (hors chemin d'acces)
+     * @throws STAFException si le parametre est invalide ou si le STAF renvoie une reponse contenant un message d'erreur.
      */
     public void staffilModify(String pOldFilename, String pNewFilename) throws STAFException {
 
@@ -1026,8 +975,9 @@ public class STAFSession {
                 // Traite le resultat de l'analyse de la ligne en cours
                 if (errorMessage != null) {
                     // Echec de la commande
-                    final String msg = String.format("Unable to rename the file %s with the following name %s",
-                                                     pOldFilename, pNewFilename);
+                    final String msg = String
+                            .format("Unable to rename the file %s with the following name %s", pOldFilename,
+                                    pNewFilename);
                     logger.error(msg);
                     throw new STAFException(msg);
                 } else if (successMessage != null) {
@@ -1050,13 +1000,10 @@ public class STAFSession {
     /**
      * Restitue un ensemble de fichiers archives au STAF de maniere bufferisee (c'est a dire en decoupant le lot de
      * fichiers en plusieurs flots et en executant plusieurs commandes de restitution successives).
-     *
-     * @param pFiles
-     *            Ensemble des fichiers a restituer. Cet ensemble se presente sous la forme d'une map dont les cles sont
-     *            les noms des fichiers au STAF (chemin compris) et les valeurs correspondantes les noms des fichiers
-     *            issus du STAF (chemin compris).
-     * @throws STAFException
-     *             si le parametre est invalide ou si le STAF renvoie une reponse contenant un message d'erreur.
+     * @param pFiles Ensemble des fichiers a restituer. Cet ensemble se presente sous la forme d'une map dont les cles sont
+     * les noms des fichiers au STAF (chemin compris) et les valeurs correspondantes les noms des fichiers
+     * issus du STAF (chemin compris).
+     * @throws STAFException si le parametre est invalide ou si le STAF renvoie une reponse contenant un message d'erreur.
      */
     public void staffilRetrieveBuffered(Map<String, String> pFiles) throws STAFException {
         // Iterator on files to return
@@ -1083,11 +1030,8 @@ public class STAFSession {
 
     /**
      * Creation d un nouveau noeud sur le STAF
-     *
-     * @param pNode
-     *            : noeud a creer au STAF
-     * @throws STAFException
-     *             si le parametre est invalide ou si le STAF renvoie une reponse contenant un message d'erreur.
+     * @param pNode : noeud a creer au STAF
+     * @throws STAFException si le parametre est invalide ou si le STAF renvoie une reponse contenant un message d'erreur.
      */
     public void createStafNode(String pNode) throws STAFException {
         // Prepare la commande STAF
@@ -1123,12 +1067,9 @@ public class STAFSession {
 
     /**
      * permet de supprimer une liste de fichiers .
-     *
-     * @param pFileList
-     *            une list de chaines de caracteres presentant le chemin complet du fichier dans le projet STAF :
-     *            exemple : /NOEUD1/NOEUD2/FICHIER1
+     * @param pSTAFFilePaths une list de chaines de caracteres presentant le chemin complet du fichier dans le projet STAF :
+     * exemple : /NOEUD1/NOEUD2/FICHIER1
      * @return une List contenant les noms de fichiers qui n'ont pas ete supprimes.
-     * @throws STAFException
      */
     public List<String> staffilDelete(Set<Path> pSTAFFilePaths) throws STAFException {
         final List<String> notDeletedFiles = new ArrayList<>();
@@ -1138,7 +1079,7 @@ public class STAFSession {
         final StringBuilder builder = new StringBuilder();
         boolean validity = true;
 
-        for (final Iterator<Path> iter = pSTAFFilePaths.iterator(); iter.hasNext() && validity;) {
+        for (final Iterator<Path> iter = pSTAFFilePaths.iterator(); iter.hasNext() && validity; ) {
             final Path stafFile = iter.next();
             builder.append(stafFile);
             if (!checkLongFilename(stafFile.toString())) {
@@ -1201,8 +1142,8 @@ public class STAFSession {
             stafOutput = new BufferedReader(new InputStreamReader(shellProcess.getInputStream()));
         } catch (final IOException e) {
             // Erreur de lancement du shell de pilotage
-            final String msg = String.format("An error occured while creating a STAF session shell %s",
-                                             configuration.getKshExec());
+            final String msg = String
+                    .format("An error occured while creating a STAF session shell %s", configuration.getKshExec());
             logger.error(msg, e);
             throw new STAFException(msg, e);
         }
@@ -1210,12 +1151,9 @@ public class STAFSession {
 
     /**
      * Execute une commande au sein du Shell
-     *
-     * @param pCommand
-     *            Commande executee
-     * @param pTextForCommandLog
-     *            texte a afficher dans le log, ce parametre est utile pour ne pas afficher une commande staf telle
-     *            quelle (masquage mot de passe par ex.). SI ce texte est null, on affiche la commande
+     * @param pCommand Commande executee
+     * @param pTextForCommandLog texte a afficher dans le log, ce parametre est utile pour ne pas afficher une commande staf telle
+     * quelle (masquage mot de passe par ex.). SI ce texte est null, on affiche la commande
      */
     protected void executeCommand(String pCommand, String pTextForCommandLog) {
         if (commands != null) {
@@ -1234,9 +1172,7 @@ public class STAFSession {
     /**
      * Execute une commande au sein du Shell. La commande est loggee telle quelle en mode debug (attention au mot de
      * passe).
-     *
-     * @param pCommand
-     *            Commande executee
+     * @param pCommand Commande executee
      */
     protected void executeCommand(String pCommand) {
         executeCommand(pCommand, null);
@@ -1246,9 +1182,7 @@ public class STAFSession {
      * Attente de l'obtention d'une connexion (la connexion n'est pas immediate). Elle se traduit par un un 0 en retour
      * dans le cas d'une connexion reussie et par un message d'erreur sur la sortie standard en cas d'echec et un retour
      * >0
-     *
-     * @throws STAFException
-     *             Erreur de connexion
+     * @throws STAFException Erreur de connexion
      */
     protected void checkConnection() throws STAFException {
 
@@ -1296,10 +1230,8 @@ public class STAFSession {
 
     /**
      * Lit une ligne de reponse du STAF.
-     *
      * @return La ligne lue sur la sortie du STAF
-     * @throws STAFException
-     *             Erreur de lecture du flux de sortie du shell de pilotage
+     * @throws STAFException Erreur de lecture du flux de sortie du shell de pilotage
      */
     protected String readSTAFLine() throws STAFException {
         String line = "";
@@ -1323,12 +1255,9 @@ public class STAFSession {
 
     /**
      * Verifie si la reponse du STAF est une erreur.
-     *
-     * @param response
-     *            Reponse du STAF
+     * @param pResponse Reponse du STAF
      * @return Le message d'erreur, null si le parametre n'est pas une reponse d'erreur
-     * @throws STAFException
-     *             en cas d'erreur systeme
+     * @throws STAFException en cas d'erreur systeme
      */
     protected String checkErrorMessage(String pResponse) throws STAFException {
 
@@ -1371,12 +1300,9 @@ public class STAFSession {
 
     /**
      * Verifie si la reponse du STAF est un warning ( numero d'erreur <=5).
-     *
-     * @param response
-     *            Reponse du STAF
+     * @param pResponse Reponse du STAF
      * @return Le message d'erreur, null si le parametre n'est pas une reponse d'erreur
-     * @throws STAFException
-     *             en cas d'erreur systeme
+     * @throws STAFException en cas d'erreur systeme
      */
     protected int getErrorMessageLevel(String pResponse) throws STAFException {
 
@@ -1402,9 +1328,7 @@ public class STAFSession {
 
     /**
      * Verifie si la reponse du STAF est un message de succes.
-     *
-     * @param response
-     *            Reponse du STAF
+     * @param pResponse Reponse du STAF
      * @return Le message de succes, null si le parametre n'est pas une reponse de succes
      */
     protected String checkSuccessMessage(String pResponse) {
@@ -1467,9 +1391,7 @@ public class STAFSession {
 
     /**
      * Verifie si la reponse du STAF indique la taille d'un fichier.
-     *
-     * @param response
-     *            Reponse du STAF
+     * @param pResponse Reponse du STAF
      * @return La taille si elle a ete lue, null si le parametre n'est pas une reponse specifiant une taille
      */
     protected Integer checkSizeInMessage(String pResponse) {
@@ -1488,7 +1410,7 @@ public class STAFSession {
                 // taille
                 sizeString = sizeString.trim();
                 // Puis convertit la chaine lue en valeur entiere
-                size = new Integer(sizeString);
+                size = Integer.valueOf(sizeString);
             }
         } catch (final ParseException e) {
             // Une exception est levee lorsque le message n'indique pas la
@@ -1503,8 +1425,6 @@ public class STAFSession {
 
     /**
      * verifie si le message est du type 'Communication en cours avec le STAF'
-     *
-     * @param pResponse
      * @return pResponse si le message est bien du bon type, null sinon
      */
     protected String checkOngoingCommunicationMessage(String pResponse) {
@@ -1525,9 +1445,7 @@ public class STAFSession {
 
     /**
      * Vide le flux de sortie du STAF.
-     *
-     * @throws STAFException
-     *             Erreur de lecture du flux de sortie du shell de pilotage
+     * @throws STAFException Erreur de lecture du flux de sortie du shell de pilotage
      */
     private void emptySTAFOutput() throws STAFException {
         try {
@@ -1552,9 +1470,7 @@ public class STAFSession {
      * <li>Le nom du fichier fait moins de 64 caracteres</li>
      * <li>Les caracteres interdits sont ,;-</li>
      * </ul>
-     *
-     * @param pFilename
-     *            Nom du fichier a contrôler
+     * @param pFilename Nom du fichier a contrôler
      * @return Indique si le format du parametre est valide
      */
     private boolean checkLongFilename(String pFilename) {
@@ -1582,14 +1498,12 @@ public class STAFSession {
      * <li>Le nom du fichier fait moins de 64 caracteres</li>
      * <li>Les caracteres interdits sont ,;-/</li>
      * </ul>
-     *
-     * @param pFilename
-     *            Nom du fichier a contrôler
+     * @param pFilename Nom du fichier a contrôler
      * @return Indique si le format du parametre est valide
      */
     private boolean checkShortFilename(String pFilename) {
-        return (pFilename != null) && (pFilename.length() <= FILE_MAX_LENGTH)
-                && Pattern.matches(FILE_PATTERN, pFilename);
+        return (pFilename != null) && (pFilename.length() <= FILE_MAX_LENGTH) && Pattern
+                .matches(FILE_PATTERN, pFilename);
     }
 
     /**
@@ -1598,21 +1512,17 @@ public class STAFSession {
      * <li>Le nom du noeud fait moins de 16 caracteres</li>
      * <li>Les caracteres interdits sont ,;-/</li>
      * </ul>
-     *
-     * @param pNodename
-     *            Nom du noeud a contrôler
+     * @param pNodename Nom du noeud a contrôler
      * @return Indique si le format du parametre est valide
      */
     private boolean checkNodename(String pNodename) {
-        return (pNodename != null) && (pNodename.length() <= NODE_MAX_LENGTH)
-                && Pattern.matches(FILE_PATTERN, pNodename);
+        return (pNodename != null) && (pNodename.length() <= NODE_MAX_LENGTH) && Pattern
+                .matches(FILE_PATTERN, pNodename);
     }
 
     /**
      * Contrôle le format d'un nom de projet STAF. Il s'agit d'un parametre alphanumerique d'au plus 32 caracteres.
-     *
-     * @param pProject
-     *            Nom du projet a contrôler
+     * @param pProject Nom du projet a contrôler
      * @return Indique si le format du parametre est valide
      */
     protected boolean checkProject(String pProject) {
@@ -1622,16 +1532,14 @@ public class STAFSession {
     /**
      * Contrôle le format d'un mot de passe STAF. Il s'agit d'un parametre alphanumerique d'au moins 6 caracteres et
      * d'au plus 16 caracteres. Il comporte obligatoirement au moins 2 caracteres numeriques.
-     *
-     * @param pPassword
-     *            Mot de passe a contrôler
+     * @param pPassword Mot de passe a contrôler
      * @return Indique si le format du parametre est valide
      */
     protected boolean checkPassword(String pPassword) {
         boolean valid = true;
 
-        if ((pPassword == null) || (pPassword.length() > PASSWORD_MAX_LENGTH)
-                || (pPassword.length() < PASSWORD_MIN_LENGTH) || !Pattern.matches(PASSWORD_PATTERN, pPassword)) {
+        if ((pPassword == null) || (pPassword.length() > PASSWORD_MAX_LENGTH) || (pPassword.length()
+                < PASSWORD_MIN_LENGTH) || !Pattern.matches(PASSWORD_PATTERN, pPassword)) {
             valid = false;
         }
 
@@ -1640,9 +1548,7 @@ public class STAFSession {
 
     /**
      * Contrôle le format d'un parametre alphanumerique. Seuls les caracteres a-zA-Z0-9._ sont autorises.
-     *
-     * @param pValue
-     *            Valeur du parametre a contrôler
+     * @param pValue Valeur du parametre a contrôler
      * @return Indique si le format du parametre est valide
      */
     private boolean checkAlphaNum(String pValue) {

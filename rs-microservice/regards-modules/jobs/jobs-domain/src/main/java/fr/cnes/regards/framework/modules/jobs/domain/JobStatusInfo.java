@@ -92,10 +92,7 @@ public class JobStatusInfo implements Observer {
     private String stackTrace;
 
     @Transient
-    private AtomicBoolean completionChanged = new AtomicBoolean(false);
-
-    public JobStatusInfo() {
-    }
+    private final AtomicBoolean completionChanged = new AtomicBoolean(false);
 
     public OffsetDateTime getEstimatedCompletion() {
         return estimatedCompletion;

@@ -34,7 +34,6 @@ import fr.cnes.regards.framework.utils.file.compression.CompressionTypeEnum;
 import fr.cnes.regards.framework.utils.file.compression.FileAlreadyExistException;
 
 /**
- *
  * Classe specialisee dans la compression de fichiers au format ZIP. Elle prend en compte les particularites de l'outil
  * de compression ZIP.
  */
@@ -93,7 +92,7 @@ public class ZipCompression extends AbstractRunnableCompression {
         // in the list since ZIP does not accept
         List<File> listWithoutDouble = new ArrayList<>();
         for (File aFile : pFileList) {
-            if (containsFile(listWithoutDouble, aFile) == Boolean.FALSE) {
+            if (!containsFile(listWithoutDouble, aFile)) {
                 listWithoutDouble.add(aFile);
                 totalSize += aFile.length();
             }
@@ -101,73 +100,64 @@ public class ZipCompression extends AbstractRunnableCompression {
         }
 
         // Write in this file
-        try {
-            // Prepare streams
-            FileOutputStream dest = new FileOutputStream(compressedFile);
-            CheckedOutputStream checksum = new CheckedOutputStream(dest, new Adler32());
-            ZipArchiveOutputStream out = new ZipArchiveOutputStream(new BufferedOutputStream(checksum));
+        try (ZipArchiveOutputStream out = new ZipArchiveOutputStream(new BufferedOutputStream(
+                new CheckedOutputStream(new FileOutputStream(compressedFile), new Adler32())))) {
             out.setFallbackToUTF8(true);
             if (pCharset != null) {
                 out.setEncoding(pCharset.name());
                 out.setFallbackToUTF8(true);
             }
-            try {
-                out.setMethod(ZipOutputStream.DEFLATED);
-                out.setLevel(Deflater.BEST_COMPRESSION);
+            out.setMethod(ZipOutputStream.DEFLATED);
+            out.setLevel(Deflater.BEST_COMPRESSION);
 
-                // List Files in list pFilesList and add them
-                for (File fileNow : listWithoutDouble) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(String.format("Adding %s file to %s file.", pathToRootDir(fileNow, pRootDirectory),
-                                                   compressedFile.getAbsoluteFile()));
-                    }
+            // List Files in list pFilesList and add them
+            for (File fileNow : listWithoutDouble) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug(String.format("Adding %s file to %s file.", pathToRootDir(fileNow, pRootDirectory),
+                                               compressedFile.getAbsoluteFile()));
+                }
 
-                    ZipArchiveEntry entry;
-                    if (pFlatArchive) {
-                        if (fileNow.isFile()) {
-                            entry = new ZipArchiveEntry(fileNow, fileNow.getName());
-                            out.putArchiveEntry(entry);
-                        }
-                    } else {
-                        entry = new ZipArchiveEntry(fileNow, pathToRootDir(fileNow, pRootDirectory));
+                ZipArchiveEntry entry;
+                if (pFlatArchive) {
+                    if (fileNow.isFile()) {
+                        entry = new ZipArchiveEntry(fileNow, fileNow.getName());
                         out.putArchiveEntry(entry);
                     }
+                } else {
+                    entry = new ZipArchiveEntry(fileNow, pathToRootDir(fileNow, pRootDirectory));
+                    out.putArchiveEntry(entry);
+                }
 
-                    if (fileNow.isFile()) {
+                if (fileNow.isFile()) {
 
-                        try (FileInputStream fi = new FileInputStream(fileNow);
-                                BufferedInputStream origin = new BufferedInputStream(fi, BUFFER);) {
-                            int count = 0;
-                            byte data[] = new byte[BUFFER];
+                    try (FileInputStream fi = new FileInputStream(fileNow);
+                            BufferedInputStream origin = new BufferedInputStream(fi, BUFFER);) {
+                        int count = 0;
+                        byte data[] = new byte[BUFFER];
+                        count = origin.read(data);
+
+                        while (count != -1) {
+                            compressedSize += count;
+                            out.write(data, 0, count);
                             count = origin.read(data);
-
-                            while (count != -1) {
-                                compressedSize += count;
-                                out.write(data, 0, count);
-                                count = origin.read(data);
-                                percentage = (100 * compressedSize) / totalSize;
-                                pCompressManager.setPercentage(percentage);
-                            }
-                        } catch (IOException e) {
-                            logger.error("Error copying file " + fileNow.getPath() + "to zip file "
-                                    + compressedFile.getPath());
-                            throw e;
+                            percentage = (100 * compressedSize) / totalSize;
+                            pCompressManager.setPercentage(percentage);
                         }
+                    } catch (IOException e) {
+                        logger.error("Error copying file " + fileNow.getPath() + "to zip file " + compressedFile
+                                .getPath());
+                        throw e;
                     }
-
-                    out.closeArchiveEntry();
-
                 }
-            } finally {
-                if (out != null) {
-                    out.finish();
-                    out.close();
-                }
+
+                out.closeArchiveEntry();
+
             }
+            out.finish();
         } catch (IOException ioE) {
             logger.error(ioE.getMessage(), ioE);
             throw new CompressionException(String.format("IO error during %s compression", CompressionTypeEnum.ZIP),
-                    ioE);
+                                           ioE);
         }
 
         if (logger.isDebugEnabled()) {
@@ -181,11 +171,8 @@ public class ZipCompression extends AbstractRunnableCompression {
 
     /**
      * Permet de calculer le chemin relatif d'un fichier par rapport à un répertoire de plus haut niveau.
-     *
-     * @param pFile
-     *            le fichier
-     * @param pRootDir
-     *            le répertoire racine.
+     * @param pFile le fichier
+     * @param pRootDir le répertoire racine.
      * @return une chaine sous forme de <code>String</code> contenant le chemin relatif.
      */
     private String pathToRootDir(File pFile, File pRootDir) {
@@ -237,13 +224,9 @@ public class ZipCompression extends AbstractRunnableCompression {
 
     /**
      * Permet de decompresser un fichier compresse dans un repertoire cible
-     *
-     * @param pCompressedFile
-     *            le fichier a decompresser
-     * @param pOutputDir
-     *            le repertoire destination
-     * @throws CompressionException
-     *             si l'un des paramètres est incorrect ou illisible
+     * @param pCompressedFile le fichier a decompresser
+     * @param pOutputDir le repertoire destination
+     * @throws CompressionException si l'un des paramètres est incorrect ou illisible
      */
     @Override
     public void uncompress(File pCompressedFile, File pOutputDir) throws CompressionException {
@@ -252,13 +235,9 @@ public class ZipCompression extends AbstractRunnableCompression {
 
     /**
      * Permet de decompresser un fichier compresse dans un repertoire cible
-     *
-     * @param pCompressedFile
-     *            le fichier a decompresser
-     * @param pOutputDir
-     *            le repertoire destination
-     * @throws CompressionException
-     *             si l'un des paramètres est incorrect ou illisible
+     * @param pCompressedFile le fichier a decompresser
+     * @param pOutputDir le repertoire destination
+     * @throws CompressionException si l'un des paramètres est incorrect ou illisible
      */
     @Override
     public void uncompress(File pCompressedFile, File pOutputDir, Charset pCharset) throws CompressionException {
@@ -316,7 +295,7 @@ public class ZipCompression extends AbstractRunnableCompression {
             }
         } catch (IOException ioE) {
             throw new CompressionException(String.format("IO error during %s uncompression", CompressionTypeEnum.ZIP),
-                    ioE);
+                                           ioE);
         }
     }
 

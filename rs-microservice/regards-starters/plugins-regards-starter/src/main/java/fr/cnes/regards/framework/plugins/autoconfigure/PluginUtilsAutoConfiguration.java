@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.MultitenantJpaAut
 
 /**
  * Class PluginUtilsAutoConfiguration A bean used to defined a implementation of {@link BeanFactoryAware}.
- *
+ * @deprecated
  * @author Christophe Mertz
  */
 @Configuration

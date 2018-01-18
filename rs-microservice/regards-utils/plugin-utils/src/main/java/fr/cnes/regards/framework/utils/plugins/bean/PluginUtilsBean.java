@@ -33,7 +33,7 @@ import com.google.gson.Gson;
 @Component
 public class PluginUtilsBean {
 
-    static PluginUtilsBean instance;
+    private static PluginUtilsBean instance;
 
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
@@ -45,8 +45,9 @@ public class PluginUtilsBean {
         return instance;
     }
 
+    // This method can be synchronized (and must be !!!) because it will be called only once (at init) by spring
     @Autowired
-    public void setInstance(PluginUtilsBean bean) {
+    public synchronized void setInstance(PluginUtilsBean bean) {
         instance = bean;
     }
 

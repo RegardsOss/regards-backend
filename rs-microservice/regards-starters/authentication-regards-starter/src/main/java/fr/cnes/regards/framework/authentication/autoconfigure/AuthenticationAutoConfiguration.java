@@ -44,7 +44,7 @@ public class AuthenticationAutoConfiguration {
         return new DefaultAuthenticationResolver();
     }
 
-    class DefaultAuthenticationResolver implements IAuthenticationResolver {
+    private static class DefaultAuthenticationResolver implements IAuthenticationResolver {
 
         @Override
         public String getUser() {

@@ -67,7 +67,5 @@ public abstract class AbstractProcessingStep<I, O, J extends IJob<?>> implements
      * Override this method to manage step execution error
      * @param in input object
      */
-    protected void doAfterError(I in) {
-        // Override to customize
-    }
+    protected abstract void doAfterError(I in);
 }
