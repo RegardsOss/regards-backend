@@ -34,7 +34,7 @@ public class SpringBeanHelper implements BeanFactoryAware {
     /**
      * Static instance
      */
-    private final static SpringBeanHelper INSTANCE = new SpringBeanHelper();
+    private static final SpringBeanHelper INSTANCE = new SpringBeanHelper();
 
     /**
      * Spring Bean factory

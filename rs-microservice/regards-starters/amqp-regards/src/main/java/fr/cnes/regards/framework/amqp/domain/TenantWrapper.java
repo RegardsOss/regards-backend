@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
  * @param <T> type of event that is wrapped
  * @author svissier
  */
-public class TenantWrapper<T> implements Cloneable {
+public class TenantWrapper<T> {
 
     /**
      * the event originally sent to the message broker
@@ -106,12 +106,4 @@ public class TenantWrapper<T> implements Cloneable {
         return "{\"content\" : " + content + " , \"tenant\" : \"" + tenant + "\"}";
     }
 
-    @Override
-    public TenantWrapper<T> clone() {
-        try {
-            return (TenantWrapper<T>)super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

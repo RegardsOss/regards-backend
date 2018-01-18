@@ -26,7 +26,7 @@ public class CompressionFacade {
     /**
      * Nombre d'octets dans un Ko.
      */
-    public static final int BYTES_IN_KILOBYTE = 1024;
+    private static final int BYTES_IN_KILOBYTE = 1024;
 
     /**
      * Nombre d'octets dans un Ko (en double).

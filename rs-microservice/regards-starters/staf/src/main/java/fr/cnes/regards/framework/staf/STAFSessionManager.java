@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.staf.exception.STAFException;
  * @author sbinda CS
  * @author oroussel
  */
-public final class STAFSessionManager {
+public class STAFSessionManager {
 
     private static Logger logger = Logger.getLogger(STAFSessionManager.class);
 

@@ -95,12 +95,8 @@ public class STAFService {
 
     /**
      * Cette methode permet de se connecter au systeme d'archivage.
-     *
-     * @param pProjectName
-     *            : Nom du projet STAF
-     * @param pMode
-     *            : Mode d archivage ou de restitution
-     * @throws STAFException
+     * @param pProjectName : Nom du projet STAF
+     * @param pMode : Mode d archivage ou de restitution
      */
     public void connectArchiveSystem(ArchiveAccessModeEnum pMode) throws STAFException {
         // Recupere une reference locale au gestionnaire STAF et a la
@@ -131,10 +127,7 @@ public class STAFService {
 
     /**
      * Cette methode permet de se deconnecter du systeme d'archivage.
-     *
-     * @param pMode
-     *            : Mode d archivage ou de restitution
-     * @throws ArchiveException
+     * @param pMode : Mode d archivage ou de restitution
      */
     public void disconnectArchiveSystem(ArchiveAccessModeEnum pMode) throws STAFException {
         // Ferme la connexion et libere la reservation
@@ -146,12 +139,8 @@ public class STAFService {
 
     /**
      * Permet de demander au service d'archivage la restitution d'un fichier
-     *
-     * @param pFileName
-     *            Fichier a restituer
-     * @param pDestination
-     *            Emplacement ou restituer le fichier
-     * @throws ArchiveException
+     * @param pFileName Fichier a restituer
+     * @param pDestination Emplacement ou restituer le fichier
      */
     public void restoreFile(Path pSTAFFilePath, Path pDestination) throws STAFException {
         // Prepare la liste des fichiers a restituer, liste ne contenant qu'un
@@ -166,12 +155,8 @@ public class STAFService {
     /**
      * Permet de demander au service d'archivage la restitution d'un ensemble de fichiers. Contrairement aux autres
      * methode de l'interface STAF cette methode peut s'appuyer si necessaire sur plusieurs sessions
-     *
-     * @param pStafFilePathList
-     *            : Liste de tous les fichiers a restaurer
-     * @param pDestination
-     *            : Emplacement ou restaurer le fichier
-     * @throws ArchiveException
+     * @param pStafFilePathList : Liste de tous les fichiers a restaurer
+     * @param pDestination : Emplacement ou restaurer le fichier
      */
     public void restoreAllFiles(Set<Path> pStafFilePathList, String pDestination) throws STAFException {
 
@@ -193,15 +178,15 @@ public class STAFService {
                 // Index de decompte des fichiers d'un flot
                 int fileIndex;
 
-                int maxFilesPerSession = conf.getMaxStreamFilesRestitutionMode()
-                        * conf.getMaxSessionStreamsRestitutionMode();
+                int maxFilesPerSession =
+                        conf.getMaxStreamFilesRestitutionMode() * conf.getMaxSessionStreamsRestitutionMode();
                 // Calcule le nombre de sessions a utiliser pour la restitution.
                 // Ce nombre ne correspond pas directement au nombre de sessions
                 // supplementaires a ouvrir puisque le service dispose d'une session dediee.
                 sessionNb = (int) Math.ceil(pStafFilePathList.size() / (double) maxFilesPerSession);
                 if (sessionNb > 0) {
-                    sessionsIdentifiers = stafManager.getReservations(sessionNb - 1, false,
-                                                                      ArchiveAccessModeEnum.RESTITUTION_MODE);
+                    sessionsIdentifiers = stafManager
+                            .getReservations(sessionNb - 1, false, ArchiveAccessModeEnum.RESTITUTION_MODE);
                     // Le nombre de sessions reellement alloue peut etre inferieur
                     // au nombre de sessions demandees
                     sessionNb = sessionsIdentifiers.size() + 1;
@@ -280,11 +265,8 @@ public class STAFService {
 
     /**
      * Teste l'existance d'un fichier dans le systeme d'archivage.
-     *
-     * @param pFile
-     *            : Fichier a tester
+     * @param pFile : Fichier a tester
      * @return true si le fichier est deja present dans le systeme, false sinon.
-     * @throws ArchiveException
      */
     public boolean fileExist(String pFile) throws STAFException {
         return mainSession.staffilExist(pFile);
@@ -292,12 +274,8 @@ public class STAFService {
 
     /**
      * Permet de renommer un fichier dans le systeme d'archivage.
-     *
-     * @param pOldName
-     *            : Ancien nom du fichier dans le systeme d'archivage
-     * @param pNewName
-     *            : Nouveau nom
-     * @throws ArchiveException
+     * @param pOldName : Ancien nom du fichier dans le systeme d'archivage
+     * @param pNewName : Nouveau nom
      */
     public void renameFile(String pOldName, String pNewName) throws STAFException {
         mainSession.staffilModify(pOldName, pNewName);
@@ -305,11 +283,8 @@ public class STAFService {
 
     /**
      * Permet de demander des information sur un fichier du systeme d'archivage.
-     *
-     * @param pFile
-     *            : Fichier sur lequel on veut des informations
+     * @param pFile : Fichier sur lequel on veut des informations
      * @return struture contenant les informations du fichier
-     * @throws ArchiveException
      */
     public STAFFile getFileInfo(String pFile) throws STAFException {
         // Recupere les attributs du fichier
@@ -326,13 +301,9 @@ public class STAFService {
     /**
      * Calcule le nom d'un fichier une fois restitue du STAF. Ce nom est calcule sur la base du nom complet du fichier
      * au STAF et du nom du repertoire de destination du fichier.
-     *
-     * @param pFile
-     *            Chemin d'acces complet au fichier a restituer
-     * @param pDestination
-     *            Repertoire de destination du fichier
+     * @param pFile Chemin d'acces complet au fichier a restituer
+     * @param pDestination Repertoire de destination du fichier
      * @return Nom du fichier une fois restitue du STAF
-     * @throws ArchiveException
      */
     private String computeTargetFilename(String pFile, String pDestination) {
         // Nom du fichier de destination
@@ -349,12 +320,9 @@ public class STAFService {
     /**
      * Lance la restitution de plusieurs lots de fichiers. Un des lots est assure par la session principale de
      * l'interface. Les autres (s'il y en a) sont assures par des sessions batch.
-     *
-     * @param pIdentifiers
-     *            Liste des identifiants de session (hors session principale)
-     * @param pSessionsFiles
-     *            Liste des lots de fichiers a archiver. L'un de ces lots etant assume par la sessions principale du
-     *            service, il y a un element dans cette liste que dans la liste des indentifiants de session.
+     * @param pIdentifiers Liste des identifiants de session (hors session principale)
+     * @param pSessionsFiles Liste des lots de fichiers a archiver. L'un de ces lots etant assume par la sessions principale du
+     * service, il y a un element dans cette liste que dans la liste des indentifiants de session.
      */
     private void runSessionsStaffilRetrieve(List<Integer> pIdentifiers, List<HashMap<String, String>> pSessionsFiles)
             throws STAFException {
@@ -436,14 +404,10 @@ public class STAFService {
     /**
      * Lance l archivage de plusieurs lots de fichiers. Un des lots est assure par la session principale de l'interface.
      * Les autres (s'il y en a) sont assures par des sessions batch.
-     *
-     * @param pIdentifiers
-     *            Liste des identifiants de session (hors session principale)
-     * @param pFlowFiles
-     *            Liste des flots de fichiers a archiver. L'un de ces lots etant assume par la sessions principale du
-     *            service, il y a un element dans cette liste que dans la liste des indentifiants de session.
-     * @param pDirectory
-     *            Repertoire ou archiver au STAF
+     * @param pIdentifiers Liste des identifiants de session (hors session principale)
+     * @param pFlowFiles Liste des flots de fichiers a archiver. L'un de ces lots etant assume par la sessions principale du
+     * service, il y a un element dans cette liste que dans la liste des indentifiants de session.
+     * @param pDirectory Repertoire ou archiver au STAF
      * @return une HashMap contenant les repertoire reels d'archivage pour chaque fichier passe en entree.
      */
     private List<String> runSessionsStaffilArchive(List<Integer> pIdentifiers, List<STAFArchivingFlow> pFlowList,
@@ -521,48 +485,28 @@ public class STAFService {
 
     /**
      * cree la bonne session de background pour l'archivage
-     *
-     * @param pSessionId
-     * @param pProject
-     * @param pPassword
-     * @param pFilesFlow
-     * @param pDirectory
-     * @param pArchivedFilesList
-     * @param pReplace
-     * @return
      */
     protected STAFBackgroundSessionArchive getBackgroundSessionArchive(Integer pSessionId, String pProject,
             String pPassword, List<STAFArchivingFlow> pFilesFlow, String pDirectory, List<String> pArchivedFilesList,
             boolean pReplace) {
-        final STAFBackgroundSessionArchive session = new STAFBackgroundSessionArchive(pSessionId, pProject, pPassword,
-                pFilesFlow, pDirectory, pArchivedFilesList, pReplace, stafManager.getConfiguration());
-        return session;
+        return new STAFBackgroundSessionArchive(pSessionId, pProject, pPassword, pFilesFlow, pDirectory,
+                                                pArchivedFilesList, pReplace, stafManager.getConfiguration());
     }
 
     /**
      * cree la bonne session de background pour la commande
-     *
-     * @param pSessionId
-     * @param pProject
-     * @param pPassword
-     * @param pFiles
-     * @return
      */
     protected STAFBackgroundSessionRetrieve getBackgroundSessionRetrieve(Integer pSessionId, String pProject,
             String pPassword, HashMap<String, String> pFiles) {
-        final STAFBackgroundSessionRetrieve session = new STAFBackgroundSessionRetrieve(pSessionId, pProject, pPassword,
-                pFiles, stafManager.getConfiguration(), getCollectListener());
-        return session;
+        return new STAFBackgroundSessionRetrieve(pSessionId, pProject, pPassword, pFiles,
+                                                 stafManager.getConfiguration(), getCollectListener());
     }
 
     /**
      * Cette methode permet d'archiver les fichiers dans un repertoire construit a partir du pDirectory
-     *
-     * @param pFileMap
-     *            une HashMap qui contient en clef le path du fichier local, et en valeur le path du fichier distant.
-     *            Cette map ne doit pas etre null
-     * @param pDirectory
-     *            le repertoire dans lequel ajouter les fichiers.
+     * @param pFileMap une HashMap qui contient en clef le path du fichier local, et en valeur le path du fichier distant.
+     * Cette map ne doit pas etre null
+     * @param pDirectory le repertoire dans lequel ajouter les fichiers.
      * @return une liste contenant les repertoire reels d'archivage pour chaque fichier passe en entree.
      */
     public Set<String> archiveFiles(Map<Path, Path> pFileMap, Path pDirectory, boolean pReplace) throws STAFException {
@@ -634,8 +578,8 @@ public class STAFService {
             // Number of sessions to open
             int sessionNbNeed = totalFlow / maxSessionsStream;
             if (sessionNbNeed > 0) {
-                sessionsIdentifiers = stafManager.getReservations(sessionNbNeed - 1, false,
-                                                                  ArchiveAccessModeEnum.ARCHIVE_MODE);
+                sessionsIdentifiers = stafManager
+                        .getReservations(sessionNbNeed - 1, false, ArchiveAccessModeEnum.ARCHIVE_MODE);
             }
 
             // Launch the archiving of computed lots
@@ -649,7 +593,6 @@ public class STAFService {
      * delete ginve {@link Path} files into STAF system.
      * @param pFileList list {@link Path} of files to delete
      * @return list of {@link Path} not deleted files.
-     * @throws STAFException
      */
     public Set<Path> deleteFiles(Set<Path> pFileList) throws STAFException {
         final List<String> filePaths = mainSession.staffilDelete(pFileList);
@@ -664,11 +607,8 @@ public class STAFService {
 
     /**
      * Repartit les fichiers en plusieurs flots. On otint une liste de Map (dont la taille max est pMaxStreamFiles)
-     *
-     * @param pFilesMap
-     *            : tous les fichiers à repartir (cle : emplcement source, emplacement destination)
-     * @param pMaxStreamFiles
-     *            : nombre maximum de fichiers par flots
+     * @param pFilesMap : tous les fichiers à repartir (cle : emplcement source, emplacement destination)
+     * @param pMaxStreamFiles : nombre maximum de fichiers par flots
      * @return une liste de MAP dont la taille max de chaque MAP est pMaxStreamFiles (List de Map)
      */
     public List<STAFArchivingFlow> dispatchFilesInSeveralFlow(Map<String, String> pFilesMap, int pMaxStreamFiles,
