@@ -52,7 +52,7 @@ public class CompressionRunImpl implements Runnable {
     public void run() {
 
         try {
-            System.out.println("Running thread compress");
+            LOGGER.info("Running thread compress");
             compressManager.setThread(Thread.currentThread());
             compression.runCompress(fileList, compressedFile, rootDirectory, flatArchive, charset, compressManager);
         } catch (CompressionException e) {

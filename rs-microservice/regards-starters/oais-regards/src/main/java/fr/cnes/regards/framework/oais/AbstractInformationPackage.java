@@ -117,10 +117,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
         }
         @SuppressWarnings("rawtypes")
         AbstractInformationPackage other = (AbstractInformationPackage) obj;
-        if (ipType != other.ipType) {
-            return false;
-        }
-        return true;
+        return (ipType == other.ipType);
     }
 
 }

@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
-
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 
 /**

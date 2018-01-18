@@ -3,8 +3,6 @@
  */
 package fr.cnes.regards.framework.feign;
 
-import static feign.Util.emptyToNull;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -14,6 +12,7 @@ import org.springframework.cloud.netflix.feign.annotation.RequestParamParameterP
 import org.springframework.web.bind.annotation.RequestParam;
 
 import feign.MethodMetadata;
+import static feign.Util.emptyToNull;
 
 /**
  * Improve the default {@link RequestParamParameterProcessor} in order to teach it how to handle Map<String, String> parameters in REST controllers,

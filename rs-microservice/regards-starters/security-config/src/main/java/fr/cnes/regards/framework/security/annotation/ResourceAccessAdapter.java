@@ -27,7 +27,6 @@ import org.springframework.core.annotation.AnnotationUtils;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**

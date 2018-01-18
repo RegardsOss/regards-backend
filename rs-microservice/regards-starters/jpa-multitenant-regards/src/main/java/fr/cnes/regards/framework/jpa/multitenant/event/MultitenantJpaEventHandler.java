@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.event;
 
+import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Optional;
-
-import javax.sql.DataSource;
 
 import org.hibernate.HibernateException;
 import org.slf4j.Logger;
@@ -32,7 +31,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 
 import com.mchange.v2.c3p0.DataSources;
-
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;

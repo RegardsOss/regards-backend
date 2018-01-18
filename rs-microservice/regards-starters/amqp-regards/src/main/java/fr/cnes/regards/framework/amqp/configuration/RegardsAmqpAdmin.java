@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.framework.amqp.configuration;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,7 +148,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     public Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
             Optional<Class<? extends IHandler<?>>> handlerType) {
 
-        Map<String, Object> args = new HashMap<>();
+        Map<String, Object> args = new ConcurrentHashMap<>();
         args.put("x-max-priority", MAX_PRIORITY);
 
         Queue queue;

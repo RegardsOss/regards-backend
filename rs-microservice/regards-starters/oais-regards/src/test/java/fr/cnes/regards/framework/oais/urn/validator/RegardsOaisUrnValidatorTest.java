@@ -32,7 +32,6 @@ import org.junit.Test;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.oais.urn.validator.RegardsOaisUrn;
 
 /**
  * @author Sylvain Vissiere-Guerinet

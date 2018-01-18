@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.framework.hateoas;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.validation.Valid;
 
 import org.junit.Assert;
 import org.junit.Before;

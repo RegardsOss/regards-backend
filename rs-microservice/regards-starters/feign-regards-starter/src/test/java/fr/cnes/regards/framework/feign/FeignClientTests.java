@@ -44,7 +44,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpServerErrorException;
 
 import com.google.gson.Gson;
-import feign.FeignException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 
 /**

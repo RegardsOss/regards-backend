@@ -32,7 +32,6 @@ import com.google.common.collect.Multimap;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
-
 import fr.cnes.regards.framework.gson.adapters.MimeTypeAdapter;
 import fr.cnes.regards.framework.gson.adapters.MultimapAdapter;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;

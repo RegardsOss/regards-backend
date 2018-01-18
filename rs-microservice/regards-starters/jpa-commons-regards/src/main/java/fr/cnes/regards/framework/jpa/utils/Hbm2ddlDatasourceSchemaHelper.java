@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
+import javax.sql.DataSource;
 import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
-
-import javax.sql.DataSource;
 
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;

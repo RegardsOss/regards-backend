@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.geojson.gson;
 
 import com.google.gson.JsonElement;
-
 import fr.cnes.regards.framework.geojson.GeoJsonType;
 import fr.cnes.regards.framework.geojson.geometry.GeometryCollection;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;

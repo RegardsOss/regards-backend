@@ -26,7 +26,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 
 /**

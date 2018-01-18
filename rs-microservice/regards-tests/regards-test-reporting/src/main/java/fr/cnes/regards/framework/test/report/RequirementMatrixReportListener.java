@@ -36,9 +36,7 @@ import fr.cnes.regards.framework.test.report.xml.XmlTest;
 
 /**
  * JUnit listener to help writing requirement matrix report
- *
  * @author msordi
- *
  */
 public class RequirementMatrixReportListener extends RunListener {
 
@@ -103,15 +101,10 @@ public class RequirementMatrixReportListener extends RunListener {
     }
 
     /**
-     *
      * Init a new report element if requirement exists
-     *
-     * @param pDescription
-     *            Test description
-     * @param pRequirement
-     *            Requirement
-     * @param pPurpose
-     *            Test purpose
+     * @param pDescription Test description
+     * @param pRequirement Requirement
+     * @param pPurpose Test purpose
      */
     private void handleRequirementTest(Description pDescription, Requirement pRequirement, Purpose pPurpose) {
         if (pRequirement == null) {
@@ -136,7 +129,7 @@ public class RequirementMatrixReportListener extends RunListener {
     @Override
     public void testRunFinished(Result pResult) throws Exception {
         if (xmlRequirements.getRequirements() != null) {
-            LOG.debug("" + xmlRequirements.getRequirements().size());
+            LOG.debug(Integer.toString(xmlRequirements.getRequirements().size()));
             XmlHelper.write(Paths.get(MVN_OUTPUT_DIRECTORY, REPORT_DIR), filename, XmlRequirements.class,
                             xmlRequirements);
         }
