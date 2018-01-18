@@ -16,8 +16,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-
-import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -52,16 +50,16 @@ public class Basket implements IIdentifiable<Long> {
     @SortNatural
     private SortedSet<BasketDatasetSelection> datasetSelections = new TreeSet<>();
 
-    @Override
-    public Long getId() {
-        return id;
-    }
-
     public Basket() {
     }
 
     public Basket(String owner) {
         this.owner = owner;
+    }
+
+    @Override
+    public Long getId() {
+        return id;
     }
 
     public void setId(Long id) {

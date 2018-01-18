@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.order.dao;
 
-import org.junit.Test;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
 
 /**

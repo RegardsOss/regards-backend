@@ -20,7 +20,6 @@ import feign.Response;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
-import fr.cnes.regards.modules.entities.gson.IAttributeHelper;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.ISearchClient;

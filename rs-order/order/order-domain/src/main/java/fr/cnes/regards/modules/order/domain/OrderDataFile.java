@@ -20,7 +20,6 @@ import javax.persistence.Table;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.hibernate.annotations.Parameter;
 import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -85,10 +84,6 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
      */
     private UniformResourceName ipId;
 
-    public void setState(FileState state) {
-        this.state = state;
-    }
-
     public OrderDataFile() {
     }
 
@@ -103,6 +98,10 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
         setOnline(dataFile.getOnline());
         setIpId(ipId);
         setOrderId(orderId);
+    }
+
+    public void setState(FileState state) {
+        this.state = state;
     }
 
     @Override

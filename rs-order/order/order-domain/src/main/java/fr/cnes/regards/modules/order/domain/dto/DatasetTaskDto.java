@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.order.domain.dto;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.PropertyAccessorUtils;
 
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 

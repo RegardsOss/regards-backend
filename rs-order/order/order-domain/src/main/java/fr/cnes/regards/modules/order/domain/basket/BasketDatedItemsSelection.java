@@ -3,7 +3,6 @@ package fr.cnes.regards.modules.order.domain.basket;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Embeddable;
-
 import java.time.OffsetDateTime;
 
 import org.hibernate.annotations.Type;

@@ -5,10 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
-import javax.persistence.NamedSubgraph;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
-
 import java.util.Comparator;
 
 import org.hibernate.annotations.Type;

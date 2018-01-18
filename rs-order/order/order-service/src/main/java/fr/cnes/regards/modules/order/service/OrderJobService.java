@@ -19,11 +19,9 @@
 package fr.cnes.regards.modules.order.service;
 
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 import java.util.List;
 import java.util.UUID;
-
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

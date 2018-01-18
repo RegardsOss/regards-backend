@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.order.service;
 import javax.transaction.Transactional;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
@@ -37,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -46,6 +46,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriUtils;
+import org.xml.sax.SAXException;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multimap;
@@ -580,7 +581,7 @@ public class OrderService implements IOrderService {
             // Marshall data
             jaxbMarshaller.marshal(factory.createMetalink(xmlMetalink), os);
             os.close();
-        } catch (Throwable t) {
+        } catch (JAXBException | SAXException | IOException t) {
             LOGGER.error("Error while generating metalink order file", t);
             throw new RuntimeException(t);
         }

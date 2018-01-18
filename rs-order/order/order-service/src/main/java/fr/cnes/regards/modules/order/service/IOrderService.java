@@ -1,11 +1,8 @@
 package fr.cnes.regards.modules.order.service;
 
-import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.Writer;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,7 +18,6 @@ import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException
 import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotWaitForEffectivePauseException;
 import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
 
 /**
