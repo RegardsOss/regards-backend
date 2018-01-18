@@ -28,7 +28,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
-import fr.cnes.regards.framework.test.repository.JpaRepositoryStub;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
