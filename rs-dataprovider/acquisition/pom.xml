@@ -43,27 +43,27 @@
 		<dependencies>
 			<!-- Module layers -->
 			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
+				<groupId>fr.cnes.regards.modules.acquisition</groupId>
 				<artifactId>acquisition-dao</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
+				<groupId>fr.cnes.regards.modules.acquisition</groupId>
 				<artifactId>acquisition-domain</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
+				<groupId>fr.cnes.regards.modules.acquisition</groupId>
 				<artifactId>acquisition-plugins-ssalto</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
+				<groupId>fr.cnes.regards.modules.acquisition</groupId>
 				<artifactId>acquisition-rest</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
+				<groupId>fr.cnes.regards.modules.acquisition</groupId>
 				<artifactId>acquisition-service</artifactId>
 				<version>${project.version}</version>
 			</dependency>

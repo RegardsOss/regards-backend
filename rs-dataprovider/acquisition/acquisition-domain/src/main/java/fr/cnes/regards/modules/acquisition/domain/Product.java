@@ -64,21 +64,21 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
  */
 @Entity
 @Table(name = "t_acquisition_product",
-        indexes = { @Index(name = "idx_acq_product_name", columnList = "product_name"),
-                @Index(name = "idx_acq_ingest_chain", columnList = "ingest_chain"),
-                @Index(name = "idx_acq_product_session", columnList = "session") },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name"),
-                @UniqueConstraint(name = "uk_acq_product_ipId", columnNames = "ip_id") })
+        indexes = { @Index(name = "idx_acq_processing_chain", columnList = "processing_chain_id"),
+                @Index(name = "idx_acq_product_name", columnList = "product_name") },
+        uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_ipId", columnNames = "ip_id"),
+                @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @NamedEntityGraphs({
         @NamedEntityGraph(name = "graph.acquisition.file.complete",
                 attributeNodes = @NamedAttributeNode(value = "fileList")),
-        @NamedEntityGraph(name = "graph.metaproduct.complete",
+        @NamedEntityGraph(name = "graph.product.complete",
                 attributeNodes = {
-                        @NamedAttributeNode(value = "metaProduct", subgraph = "graph.metaproduct.complete.metafiles"),
+                        @NamedAttributeNode(value = "processingChain",
+                                subgraph = "graph.acquisition.file.info.complete"),
                         @NamedAttributeNode(value = "fileList") },
-                subgraphs = { @NamedSubgraph(name = "graph.metaproduct.complete.metafiles",
-                        attributeNodes = { @NamedAttributeNode(value = "metaFiles") }) })
+                subgraphs = { @NamedSubgraph(name = "graph.acquisition.file.info.complete",
+                        attributeNodes = { @NamedAttributeNode(value = "fileInfos") }) })
 
 })
 public class Product {

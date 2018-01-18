@@ -47,13 +47,13 @@ public interface IAcquisitionProcessingChainRepository extends JpaRepository<Acq
      * @return all chains
      */
     @Lock(LockModeType.PESSIMISTIC_READ)
-    List<AcquisitionProcessingChain> findByActiveTrueAndRunningFalseAndByMode(AcquisitionProcessingChainMode mode);
+    List<AcquisitionProcessingChain> findByModeAndActiveTrueAndRunningFalse(AcquisitionProcessingChainMode mode);
 
     /**
      * @return all automatic chains that might be started
      */
     default List<AcquisitionProcessingChain> findAllBootableAutomaticChains() {
-        return findByActiveTrueAndRunningFalseAndByMode(AcquisitionProcessingChainMode.AUTO);
+        return findByModeAndActiveTrueAndRunningFalse(AcquisitionProcessingChainMode.AUTO);
     }
 
     @Query("select chain.validationPluginConf from AcquisitionProcessingChain chain,PluginConfiguration conf where chain.id = ?1 and chain.validationPluginConf.id = conf.id")

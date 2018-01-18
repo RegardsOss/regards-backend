@@ -45,7 +45,7 @@
 			<artifactId>module-regards</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
+			<groupId>fr.cnes.regards.modules.acquisition</groupId>
 			<artifactId>acquisition-domain</artifactId>
 		</dependency>
 		<dependency>
@@ -90,7 +90,7 @@
 			<artifactId>file-utils</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
+			<groupId>fr.cnes.regards.modules.acquisition</groupId>
 			<artifactId>acquisition-service</artifactId>
 		</dependency>
 		<dependency>
@@ -98,4 +98,5 @@
 			<artifactId>plugins-service</artifactId>
 		</dependency>
 	</dependencies>
+	<groupId>fr.cnes.regards.modules.acquisition</groupId>
 </project>

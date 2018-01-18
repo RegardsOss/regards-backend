@@ -46,13 +46,13 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 @Repository
 public interface IProductRepository extends JpaRepository<Product, Long> {
 
-    @EntityGraph("graph.metaproduct.complete")
+    @EntityGraph("graph.product.complete")
     Product findCompleteByProductName(String productName);
 
-    @EntityGraph("graph.metaproduct.complete")
+    @EntityGraph("graph.product.complete")
     Product findCompleteByIpId(String ipId);
 
-    Set<Product> findByStatus(ProductState status);
+    Set<Product> findByState(ProductState state);
 
     // FIXME remove
     // @Query(value = "select p.* from {h-schema}t_acquisition_product p, {h-schema}t_acquisition_meta_product mp,
@@ -85,7 +85,7 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
      * @param pageable page limit
      * @return a page of products with the above properties
      */
-    Page<Product> findByIngestChainAndSessionAndSipState(String ingestChain, String session, ISipState sipState,
+    Page<Product> findByProcessingChainAndSessionAndSipState(String ingestChain, String session, ISipState sipState,
             Pageable pageable);
 
     /**
@@ -95,7 +95,7 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
      * @param pageable page limit
      * @return all products with the above properties
      */
-    Set<Product> findByIngestChainAndSessionAndSipState(String ingestChain, String session, ISipState sipState);
+    Set<Product> findByProcessingChainAndSessionAndSipState(String ingestChain, String session, ISipState sipState);
 
     /**
      * @param sipState {@link ISipState}

@@ -151,7 +151,7 @@ public class ProductService implements IProductService {
 
     @Override
     public Set<Product> findByStatus(ProductState status) {
-        return productRepository.findByStatus(status);
+        return productRepository.findByState(status);
     }
 
     private void computeProductState(Product product) {
@@ -214,9 +214,9 @@ public class ProductService implements IProductService {
 
     @Override
     public Page<Product> findProductsToSubmit(String ingestChain, String session) {
-        return productRepository.findByIngestChainAndSessionAndSipState(ingestChain, session,
-                                                                        ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                        new PageRequest(0, bulkRequestLimit));
+        return productRepository.findByProcessingChainAndSessionAndSipState(ingestChain, session,
+                                                                            ProductSIPState.SUBMISSION_SCHEDULED,
+                                                                            new PageRequest(0, bulkRequestLimit));
     }
 
     /**
@@ -286,7 +286,8 @@ public class ProductService implements IProductService {
             String session = params.get(SIPSubmissionJob.SESSION_PARAMETER).getValue();
             // Update product status
             Set<Product> products = productRepository
-                    .findByIngestChainAndSessionAndSipState(ingestChain, session, ProductSIPState.SUBMISSION_SCHEDULED);
+                    .findByProcessingChainAndSessionAndSipState(ingestChain, session,
+                                                                ProductSIPState.SUBMISSION_SCHEDULED);
             for (Product product : products) {
                 product.setSipState(ProductSIPState.SUBMISSION_ERROR);
                 save(product);

@@ -35,6 +35,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.NamedEntityGraphs;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -59,6 +62,8 @@ import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
  */
 @Entity
 @Table(name = "t_acq_processing_chain")
+@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.info.complete",
+        attributeNodes = @NamedAttributeNode(value = "fileInfos")) })
 public class AcquisitionProcessingChain {
 
     /**
