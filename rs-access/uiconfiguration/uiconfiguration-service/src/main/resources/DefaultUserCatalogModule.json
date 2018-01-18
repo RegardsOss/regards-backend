@@ -1,5 +1,5 @@
 {
-  "displayMode": "dataobjects",
+  "displayMode": "data",
   "attributes": [
     {
       "attributeFullQualifiedName": "ipId",
