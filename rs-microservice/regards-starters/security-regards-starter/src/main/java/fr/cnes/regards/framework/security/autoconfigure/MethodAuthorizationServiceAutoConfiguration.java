@@ -98,7 +98,7 @@ public class MethodAuthorizationServiceAutoConfiguration {
     }
 
     @Bean
-    public SecurityEventHandler securityEventHandler(final ISubscriber subscriber) {
-        return new SecurityEventHandler(microserviceName, subscriber, methodAuthorizationService());
+    public SecurityEventHandler securityEventHandler(final ISubscriber subscriber, MethodAuthorizationService methodAuthorizationService) {
+        return new SecurityEventHandler(microserviceName, subscriber, methodAuthorizationService);
     }
 }
