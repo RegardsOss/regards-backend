@@ -46,6 +46,7 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 import fr.cnes.regards.modules.accessrights.service.encryption.EncryptionUtils;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
@@ -255,7 +256,8 @@ public class RegistrationServiceTest {
         Mockito.when(accountsClient.retrieveAccounByEmail(dto.getEmail()))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
                             new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
-        Mockito.when(accountsClient.createAccount(account))
+        AccountNPassword accountWithPassword = new AccountNPassword(account, account.getPassword());
+        Mockito.when(accountsClient.createAccount(accountWithPassword))
                 .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.CREATED));
         Mockito.when(accountSettingsClient.retrieveAccountSettings())
                 .thenReturn(new ResponseEntity<>(new Resource<>(accountSettings), HttpStatus.OK));

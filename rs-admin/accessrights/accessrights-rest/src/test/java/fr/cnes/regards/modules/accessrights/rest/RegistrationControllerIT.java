@@ -50,6 +50,7 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 
 /**
@@ -203,7 +204,8 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         Mockito.when(accountsClient.retrieveAccounByEmail(newAccessRequest.getEmail()))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
                             new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
-        Mockito.when(accountsClient.createAccount(account))
+        AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
+        Mockito.when(accountsClient.createAccount(accountNPassword))
                 .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.CREATED));
         Mockito.when(accountSettingsClient.retrieveAccountSettings())
                 .thenReturn(new ResponseEntity<>(new Resource<>(accountSettings), HttpStatus.OK));

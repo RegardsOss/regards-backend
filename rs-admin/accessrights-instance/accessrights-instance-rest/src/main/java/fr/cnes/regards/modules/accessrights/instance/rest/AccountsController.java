@@ -51,6 +51,7 @@ import fr.cnes.regards.framework.module.rest.utils.Validity;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.PerformUnlockAccountDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.RequestAccountUnlockDto;
@@ -176,7 +177,7 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Create a new {@link Account} in state PENDING from the passed values
      *
-     * @param pNewAccount
+     * @param newAccountWithPassword
      *            The data transfer object containing values to create the account from
      * @return the {@link Account} created
      * @throws EntityException
@@ -184,10 +185,12 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "create an new account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody final Account pNewAccount)
+    public ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody final AccountNPassword newAccountWithPassword)
             throws EntityException {
-        accountService.checkPassword(pNewAccount);
-        final Account created = accountService.createAccount(pNewAccount);
+        Account newAccount = newAccountWithPassword.getAccount();
+        newAccount.setPassword(newAccountWithPassword.getPassword());
+        accountService.checkPassword(newAccount);
+        final Account created = accountService.createAccount(newAccount);
         final Resource<Account> resource = new Resource<>(created);
         return new ResponseEntity<>(resource, HttpStatus.CREATED);
     }

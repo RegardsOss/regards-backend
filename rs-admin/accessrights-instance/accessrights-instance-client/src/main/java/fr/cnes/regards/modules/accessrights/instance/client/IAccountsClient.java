@@ -37,6 +37,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.CodeType;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.RequestResetPasswordDto;
@@ -74,12 +75,12 @@ public interface IAccountsClient {
     /**
      * Create a new account in state PENDING from the passed values
      *
-     * @param pNewAccount
+     * @param newAccountWithPassword
      *            The data transfer object containing values to create the account from
      * @return the created account
      */
     @RequestMapping(method = RequestMethod.POST)
-    ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody Account pNewAccount);
+    ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody AccountNPassword newAccountWithPassword);
 
     /**
      * Retrieve the {@link Account} of passed <code>id</code>.

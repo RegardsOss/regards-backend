@@ -42,6 +42,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.CodeType;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
@@ -109,7 +110,8 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     public void createAccountFromFeignClient() {
         try {
             final Account account = new Account(MAIL_TEST, "feign", "feign", "password");
-            final ResponseEntity<Resource<Account>> response = accountsClient.createAccount(account);
+            AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
+            final ResponseEntity<Resource<Account>> response = accountsClient.createAccount(accountNPassword);
             Assert.assertTrue(response.getStatusCode().equals(HttpStatus.CREATED));
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);

@@ -41,6 +41,7 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.encryption.EncryptionUtils;
@@ -148,8 +149,9 @@ public class RegistrationService implements IRegistrationService {
             Assert.isTrue(AccountStatus.PENDING.equals(account.getStatus()),
                           "Trying to create an Account with other status than PENDING.");
 
+            AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
             // Create
-            account = accountsClient.createAccount(account).getBody().getContent();
+            account = accountsClient.createAccount(accountNPassword).getBody().getContent();
 
             // Auto-accept if configured so
             ResponseEntity<Resource<AccountSettings>> accountSettingsResponse = accountSettingsClient

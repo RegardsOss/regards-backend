@@ -56,6 +56,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.RegardsStreamUtils;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
@@ -367,7 +368,8 @@ public class ProjectUserService implements IProjectUserService {
             final Account newAccount = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(),
                                                    pDto.getPassword());
             newAccount.setStatus(AccountStatus.ACTIVE);
-            accountsClient.createAccount(newAccount);
+            AccountNPassword newAccountWithPassword = new AccountNPassword(newAccount, newAccount.getPassword());
+            accountsClient.createAccount(newAccountWithPassword);
         }
 
         if (!existUser(pDto.getEmail())) {

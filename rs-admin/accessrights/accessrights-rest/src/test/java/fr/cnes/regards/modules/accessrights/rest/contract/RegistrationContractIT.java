@@ -38,6 +38,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 import fr.cnes.regards.modules.accessrights.rest.RegistrationController;
 
@@ -70,7 +71,8 @@ public class RegistrationContractIT extends AbstractRegardsTransactionalIT {
         Mockito.when(accountsClient.retrieveAccounByEmail("sebastien.binda@c-s.fr"))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
                             new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
-        Mockito.when(accountsClient.createAccount(account))
+        AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
+        Mockito.when(accountsClient.createAccount(accountNPassword))
                 .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.CREATED));
         Mockito.when(accountSettingsClient.retrieveAccountSettings())
                 .thenReturn(new ResponseEntity<>(new Resource<>(accountSettings), HttpStatus.OK));
