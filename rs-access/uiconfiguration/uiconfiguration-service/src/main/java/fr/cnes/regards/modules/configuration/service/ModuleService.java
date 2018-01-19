@@ -105,9 +105,9 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
         final Gson gson = new Gson();
         try {
             gson.fromJson(pModule.getConf(), Object.class);
-        } catch (final Exception e) {
+        } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
-            throw new EntityInvalidException("Layout is not a valid json format.");
+            throw new EntityInvalidException("Layout is not a valid json format.", e);
         }
         if (pModule.isDefaultDynamicModule()) {
             disableDefaultForAllApplicationModules(pModule.getApplicationId());
@@ -121,9 +121,9 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
         final Gson gson = new Gson();
         try {
             gson.fromJson(pModule.getConf(), Object.class);
-        } catch (final Exception e) {
+        } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
-            throw new EntityInvalidException("Layout is not a valid json format.");
+            throw new EntityInvalidException("Layout is not a valid json format.", e);
         }
         if (!repository.exists(pModule.getId())) {
             throw new EntityNotFoundException(pModule.getId(), Module.class);

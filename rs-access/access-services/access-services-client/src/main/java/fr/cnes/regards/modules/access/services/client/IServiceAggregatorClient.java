@@ -23,7 +23,6 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 
 /**
  * Feign client for calling ServicesAggregatorController methods
- *
  * @author Xavier-Alexandre Brochard
  */
 @RestClient(name = "rs-access-project")
@@ -34,34 +33,30 @@ public interface IServiceAggregatorClient {
     /**
      * Logger
      */
-    static final Logger LOGGER = LoggerFactory.getLogger(IServiceAggregatorClient.class);
+    Logger LOGGER = LoggerFactory.getLogger(IServiceAggregatorClient.class);
 
-    static final String CACHE_NAME = "servicesAggregated";
+    String CACHE_NAME = "servicesAggregated";
 
     /**
      * Returns all services applied to all datasets plus those of the given dataset
-     *
-     * @param pDatasetIpId
-     *            the id of the Dataset
-     * @param pApplicationModes
-     *            the set of {@link ServiceScope}
+     * @param pDatasetIpId the id of the Dataset
+     * @param pApplicationModes the set of {@link ServiceScope}
      * @return the list of services configured for the given dataset and the given scope
-     * @throws EntityNotFoundException
      */
     @Cacheable(value = IServiceAggregatorClient.CACHE_NAME, sync = true)
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<Resource<PluginServiceDto>>> retrieveServices(
+    ResponseEntity<List<Resource<PluginServiceDto>>> retrieveServices(
             @RequestParam(value = "datasetIpId", required = false) final String pDatasetIpId,
             @RequestParam(value = "applicationMode", required = false) final ServiceScope pApplicationMode);
 
     /**
      * Empty the whole "servicesAggregated" cache. Maybe we can perform a finer eviction?
-     *  <p>Note that it is not annotated with @RequestMapping, as it does not refer to a real endpoint
-     *  We placed this method here because of
-     *  @see https://stackoverflow.com/questions/10343885/spring-3-1-cacheable-method-still-executed/10347208#10347208
+     * <p>Note that it is not annotated with @RequestMapping, as it does not refer to a real endpoint
+     * We placed this method here because of
+     * @see 'https://stackoverflow.com/questions/10343885/spring-3-1-cacheable-method-still-executed/10347208#10347208'
      */
     @CacheEvict(cacheNames = IServiceAggregatorClient.CACHE_NAME, allEntries = true)
-    public default void clearServicesAggregatedCache() {
+    default void clearServicesAggregatedCache() {
         LOGGER.debug("Rejecting all entries of servicesAggregated cache");
     }
 }

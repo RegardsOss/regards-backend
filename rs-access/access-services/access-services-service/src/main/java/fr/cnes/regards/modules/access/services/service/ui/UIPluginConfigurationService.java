@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
 
+import com.google.gson.JsonSyntaxException;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -157,8 +158,8 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
         final Gson gson = new Gson();
         try {
             gson.fromJson(pPluginConfiguration.getConf(), Object.class);
-        } catch (final Exception e) {
-            throw new EntityInvalidException("Configuration is not a valid json format.");
+        } catch (RuntimeException e) {
+            throw new EntityInvalidException("Configuration is not a valid json format.", e);
         }
 
         UIPluginConfiguration updated = repository.save(pPluginConfiguration);
@@ -177,8 +178,8 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
         final Gson gson = new Gson();
         try {
             gson.fromJson(pPluginConfiguration.getConf(), Object.class);
-        } catch (final Exception e) {
-            throw new EntityInvalidException("Configuration is not a valid json format.");
+        } catch (final RuntimeException e) {
+            throw new EntityInvalidException("Configuration is not a valid json format.", e);
         }
 
         UIPluginConfiguration created = repository.save(pPluginConfiguration);

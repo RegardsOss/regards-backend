@@ -117,9 +117,9 @@ public class LayoutService extends AbstractUiConfigurationService implements ILa
         final Gson gson = new Gson();
         try {
             gson.fromJson(pLayout.getLayout(), Object.class);
-        } catch (final Exception e) {
+        } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
-            throw new EntityInvalidException("Layout is not a valid json format.");
+            throw new EntityInvalidException("Layout is not a valid json format.", e);
         }
         return repository.save(pLayout);
     }
@@ -131,9 +131,9 @@ public class LayoutService extends AbstractUiConfigurationService implements ILa
         final Gson gson = new Gson();
         try {
             gson.fromJson(pLayout.getLayout(), Object.class);
-        } catch (final Exception e) {
+        } catch (final RuntimeException e) {
             LOG.error(e.getMessage(), e);
-            throw new EntityInvalidException("Layout is not a valid json format.");
+            throw new EntityInvalidException("Layout is not a valid json format.", e);
         }
         if (!repository.findByApplicationId(pLayout.getApplicationId()).isPresent()) {
             throw new EntityNotFoundException(pLayout.getId(), Layout.class);
