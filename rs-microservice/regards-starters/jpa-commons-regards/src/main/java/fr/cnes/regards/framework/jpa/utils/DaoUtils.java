@@ -169,7 +169,7 @@ public final class DaoUtils {
             String packageEnd = pPackageName.substring(DaoUtils.TEST_PACKAGE.length() + 1);
             return DaoUtils.TEST_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.'));
         } else {
-            throw new Error("Bullshits everywhere !!!!");
+            throw new Error("Bullshits everywhere !!!!"); // NOSONAR
         }
     }
 

@@ -52,7 +52,7 @@ public class MaintenanceFilter extends OncePerRequestFilter {
      */
     private static final String REQUEST_IGNORED = "{}@{} request from {} was ignored because the service is in Maintenance!";
 
-    private static Logger LOGGER = LoggerFactory.getLogger(MaintenanceFilter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MaintenanceFilter.class);
 
     private final IRuntimeTenantResolver resolver;
 

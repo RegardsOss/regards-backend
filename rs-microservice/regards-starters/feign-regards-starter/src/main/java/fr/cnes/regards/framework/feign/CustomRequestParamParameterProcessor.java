@@ -11,12 +11,11 @@ import org.springframework.cloud.netflix.feign.AnnotatedParameterProcessor;
 import org.springframework.cloud.netflix.feign.annotation.RequestParamParameterProcessor;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.google.common.base.Strings;
 import feign.MethodMetadata;
-import static feign.Util.emptyToNull;
 
 /**
  * Improve the default {@link RequestParamParameterProcessor} in order to teach it how to handle Map<String, String> parameters in REST controllers,
- *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
  */
@@ -32,7 +31,7 @@ public class CustomRequestParamParameterProcessor implements AnnotatedParameterP
     @Override
     public boolean processArgument(AnnotatedParameterContext pContext, Annotation pAnnotation, Method pMethod) {
         String name = ANNOTATION.cast(pAnnotation).value();
-        if (emptyToNull(name) != null) {
+        if (Strings.isNullOrEmpty(name)) {
             pContext.setParameterName(name);
 
             MethodMetadata data = pContext.getMethodMetadata();

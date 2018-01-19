@@ -37,7 +37,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
  */
 public abstract class AbstractJob<R> extends Observable implements IJob<R> {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected R result;
 

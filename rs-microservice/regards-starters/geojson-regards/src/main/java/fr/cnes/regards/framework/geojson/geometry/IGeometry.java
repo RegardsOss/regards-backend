@@ -29,16 +29,13 @@ import fr.cnes.regards.framework.geojson.coordinates.Position;
 import fr.cnes.regards.framework.geojson.coordinates.Positions;
 
 /**
- *
  * RFC 7946 -August 2016<br/>
  * GeoJson geometry declaration and geometry builder.
- *
  * @author Marc Sordi
- *
  */
 public interface IGeometry { // NOSONAR
 
-    static final Logger LOGGER = LoggerFactory.getLogger(IGeometry.class);
+    Logger LOGGER = LoggerFactory.getLogger(IGeometry.class);
 
     GeoJsonType getType();
 
@@ -116,8 +113,8 @@ public interface IGeometry { // NOSONAR
     /**
      * Create a new {@link LineString} geometry
      * @param lineString positions representing the line string. Use
-     *            {@link IGeometry#toLineStringCoordinates(Position...)}
-     *            to create line string coordinates.
+     * {@link IGeometry#toLineStringCoordinates(Position...)}
+     * to create line string coordinates.
      * @return {@link LineString}
      */
     static LineString lineString(Positions lineString) {
@@ -130,8 +127,8 @@ public interface IGeometry { // NOSONAR
     /**
      * Create a new {@link MultiLineString} geometry
      * @param lineStrings list of line strings. Use {@link IGeometry#toLineStringCoordinates(Position...)} to create
-     *            each
-     *            line string coordinates.
+     * each
+     * line string coordinates.
      * @return {@link MultiLineString}
      */
     static MultiLineString multiLineString(Positions... lineStrings) {
@@ -147,8 +144,8 @@ public interface IGeometry { // NOSONAR
      * Utility method to create closed {@link LineString} coordinates also called <b>linear ring</b>. Useful for
      * {@link Polygon} coordinates creation.
      * @param positions positions representing the linear string. At least 4 positions is required. The first and
-     *            last
-     *            positions MUST be equivalent.
+     * last
+     * positions MUST be equivalent.
      * @return {@link Positions} (i.e a list of at least 4 {@link Position})
      */
     static Positions toLinearRingCoordinates(Position... positions) {
@@ -165,9 +162,9 @@ public interface IGeometry { // NOSONAR
     /**
      * Utility method to create {@link Polygon} coordinates. Useful for {@link Polygon} creation.
      * @param exteriorRing counterclockwise exterior ring. Use {@link IGeometry#toLinearRingCoordinates(Position...)} to
-     *            create this ring.
+     * create this ring.
      * @param holes clockwise interior rings. Use {@link IGeometry#toLinearRingCoordinates(Position...)} to create
-     *            holes.
+     * holes.
      * @return {@link Polygon}
      */
     static PolygonPositions toPolygonCoordinates(Positions exteriorRing, Positions... holes) {
@@ -189,8 +186,8 @@ public interface IGeometry { // NOSONAR
     /**
      * Create a new {@link Polygon} geometry
      * @param linearRings counterclockwise exterior ring + clockwise holes. Use
-     *            {@link IGeometry#toPolygonCoordinates(Positions, Positions...)} to
-     *            create the polygon coordinates
+     * {@link IGeometry#toPolygonCoordinates(Positions, Positions...)} to
+     * create the polygon coordinates
      * @return {@link Polygon}
      */
     static Polygon polygon(PolygonPositions linearRings) {
