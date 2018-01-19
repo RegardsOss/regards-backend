@@ -28,7 +28,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;

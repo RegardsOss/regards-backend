@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;

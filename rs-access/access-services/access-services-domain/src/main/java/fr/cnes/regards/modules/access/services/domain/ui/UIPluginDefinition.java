@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.modules.access.services.domain.ui;
 
-import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -36,6 +32,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.access.services.domain.validation.NotEmptyFieldsIfService;

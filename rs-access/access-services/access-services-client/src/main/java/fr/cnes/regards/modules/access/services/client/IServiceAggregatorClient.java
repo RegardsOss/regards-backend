@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 

@@ -11,7 +11,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.modules.access.services.dao.ui.ILinkUIPluginsDatasetsRepository;

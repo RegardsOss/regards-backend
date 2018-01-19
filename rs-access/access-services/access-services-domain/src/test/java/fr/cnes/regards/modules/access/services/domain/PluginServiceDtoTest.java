@@ -12,7 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.oais.urn.EntityType;

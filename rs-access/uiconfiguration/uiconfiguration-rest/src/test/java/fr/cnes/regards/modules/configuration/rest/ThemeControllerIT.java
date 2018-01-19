@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +35,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.configuration.dao.IThemeRepository;
 import fr.cnes.regards.modules.configuration.domain.Theme;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  *

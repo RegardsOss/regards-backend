@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.access.services.rest.ui;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +32,6 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -43,6 +40,7 @@ import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginDefinitionReposit
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  *

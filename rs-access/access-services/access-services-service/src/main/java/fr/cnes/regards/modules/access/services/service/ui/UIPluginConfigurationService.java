@@ -30,8 +30,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
-
-import com.google.gson.JsonSyntaxException;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -48,11 +46,9 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 
 /**
- *
  * Class PluginConfigurationService
  *
  * Business service to manage {@link UIPluginConfiguration} entities.
- *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
@@ -65,8 +61,9 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
      * Builds a pedicate telling if the passed {@link UIPluginConfiguration} is applicable on passed {@link ServiceScope}.
      * Returns <code>true</code> if passed <code>pApplicationMode</code> is <code>null</code>.
      */
-    private static final Function<ServiceScope, Predicate<UIPluginConfiguration>> IS_APPLICABLE_ON = pApplicationMode -> pConfiguration -> (pApplicationMode == null)
-            || pConfiguration.getPluginDefinition().getApplicationModes().contains(pApplicationMode);
+    private static final Function<ServiceScope, Predicate<UIPluginConfiguration>> IS_APPLICABLE_ON = pApplicationMode -> pConfiguration ->
+            (pApplicationMode == null) || pConfiguration.getPluginDefinition().getApplicationModes()
+                    .contains(pApplicationMode);
 
     private final IUIPluginDefinitionRepository pluginRepository;
 
@@ -200,17 +197,13 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
         // Remove the config from the links
         try (Stream<LinkUIPluginsDatasets> links = linkedUiPluginRespository
                 .findAllByServicesContaining(pPluginConfiguration)) {
-            // @formatter:off
-            links
-                .peek(link -> link.getServices().remove(pPluginConfiguration))
-                .forEach(link -> {
-                    if(link.getServices().isEmpty()) {
-                        linkedUiPluginRespository.delete(link);
-                    } else {
-                        linkedUiPluginRespository.save(link);
-                    }}
-                );
-            // @formatter:on
+            links.peek(link -> link.getServices().remove(pPluginConfiguration)).forEach(link -> {
+                if (link.getServices().isEmpty()) {
+                    linkedUiPluginRespository.delete(link);
+                } else {
+                    linkedUiPluginRespository.save(link);
+                }
+            });
         }
 
         repository.delete(pPluginConfiguration);

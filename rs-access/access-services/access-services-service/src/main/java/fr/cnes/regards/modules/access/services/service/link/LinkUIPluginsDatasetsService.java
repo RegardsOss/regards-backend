@@ -73,23 +73,6 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
         subscriber.subscribeTo(BroadcastEntityEvent.class, new DeleteEntityEventHandler());
     }
 
-    private class DeleteEntityEventHandler implements IHandler<BroadcastEntityEvent> {
-
-        @Override
-        public void handle(final TenantWrapper<BroadcastEntityEvent> wrapper) {
-            if ((wrapper.getContent() != null) && (wrapper.getContent().getEventType() == EventType.DELETE)) {
-                runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                for (final UniformResourceName ipId : wrapper.getContent().getIpIds()) {
-                    final LinkUIPluginsDatasets link = linkRepo.findOneByDatasetId(ipId.toString());
-                    if (link != null) {
-                        deleteLink(link);
-                    }
-                }
-                runtimeTenantResolver.clearTenant();
-            }
-        }
-    }
-
     /**
      * @param pDatasetId
      * @return
@@ -161,5 +144,23 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
         publisher.publish(new LinkUiPluginsDatasetsEvent(newLink));
         return newLink;
     }
+
+    private class DeleteEntityEventHandler implements IHandler<BroadcastEntityEvent> {
+
+        @Override
+        public void handle(final TenantWrapper<BroadcastEntityEvent> wrapper) {
+            if ((wrapper.getContent() != null) && (wrapper.getContent().getEventType() == EventType.DELETE)) {
+                runtimeTenantResolver.forceTenant(wrapper.getTenant());
+                for (final UniformResourceName ipId : wrapper.getContent().getIpIds()) {
+                    final LinkUIPluginsDatasets link = linkRepo.findOneByDatasetId(ipId.toString());
+                    if (link != null) {
+                        deleteLink(link);
+                    }
+                }
+                runtimeTenantResolver.clearTenant();
+            }
+        }
+    }
+
 
 }
