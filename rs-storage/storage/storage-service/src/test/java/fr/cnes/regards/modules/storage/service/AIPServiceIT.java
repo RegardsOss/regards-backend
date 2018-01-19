@@ -203,7 +203,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < MAX_WAIT_TEST)) {
             // lets wait for 1 sec before checking again if all our jobs has been done or not
             Thread.sleep(1000);
-            wait = wait + 1000;
+            wait += 1000;
         }
         Assert.assertTrue("The job succeeded while it should not have", handler.isFailed());
         Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
@@ -212,7 +212,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         while (!AIPState.STORAGE_ERROR.equals(aipFromDB.get().getState()) && (wait < MAX_WAIT_TEST)) {
             aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
             Thread.sleep(1000);
-            wait = wait + 1000;
+            wait += 1000;
         }
         Assert.assertNotEquals(MAX_WAIT_TEST, wait);
         Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
@@ -233,7 +233,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
             while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < MAX_WAIT_TEST)) {
                 // lets wait for 1 sec before checking again if all our jobs has been done or not
                 Thread.sleep(1000);
-                wait = wait + 1000;
+                wait += 1000;
             }
             Assert.assertFalse("The job failed while it should not have", handler.isFailed());
             LOG.info("Waiting for AIP {} error ...", aip.getId().toString());
@@ -242,7 +242,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
             while (!AIPState.STORAGE_ERROR.equals(aipFromDB.get().getState()) && (wait < MAX_WAIT_TEST)) {
                 aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
                 Thread.sleep(1000);
-                wait = wait + 1000;
+                wait += 1000;
             }
             Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
             Set<StorageDataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
@@ -308,7 +308,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < MAX_WAIT_TEST)) {
             // lets wait for 1 sec before checking again if all our jobs has been done or not
             Thread.sleep(1000);
-            wait = wait + 1000;
+            wait += 1000;
         }
         Assert.assertNotEquals("Message from AMQP should have been received by now!", MAX_WAIT_TEST, wait);
         Assert.assertFalse("The job failed while it should not have", handler.isFailed());
