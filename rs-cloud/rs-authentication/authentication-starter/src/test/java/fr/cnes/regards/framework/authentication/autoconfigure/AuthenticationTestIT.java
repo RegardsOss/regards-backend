@@ -206,9 +206,7 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
                     .param(SCOPE, "PROJECT").param(USER_NAME, "test@regards.fr")
                     .param(PASSWORD, AuthenticationTestConfiguration.VALID_PASSWORD))
                     .andExpect(MockMvcResultMatchers.status().isOk());
-            // CHECKSTYLE:OFF
-        } catch (final Exception e) {
-            // CHECKSTYLE:ON
+        } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
         }

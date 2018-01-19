@@ -31,7 +31,6 @@ import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
-import fr.cnes.regards.framework.modules.plugins.dao.stubs.PluginConfigurationRepositoryStub;
 import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
@@ -43,13 +42,10 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
 /**
- *
  * Class AuthenticationTestConfiguration
  *
  * Test configuration class
- *
  * @author Sébastien Binda
- *
  */
 @Configuration
 @PropertySource("classpath:test.properties")
@@ -64,7 +60,7 @@ public class AuthenticationTestConfiguration {
     @Bean
     @Primary
     IPluginConfigurationRepository pluginConfigurationRepo() {
-        return new PluginConfigurationRepositoryStub();
+        return Mockito.mock(IPluginConfigurationRepository.class);
     }
 
     @Bean
