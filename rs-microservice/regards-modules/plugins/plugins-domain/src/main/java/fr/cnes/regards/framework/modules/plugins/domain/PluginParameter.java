@@ -163,7 +163,6 @@ public class PluginParameter implements IIdentifiable<Long> {
     }
 
     public boolean isValidDynamicValue(String value) {
-        boolean result = false;
         if ((dynamicsValues == null) || dynamicsValues.isEmpty()) {
             // No restriction
             return true;
@@ -172,10 +171,9 @@ public class PluginParameter implements IIdentifiable<Long> {
                 if (dyn.getValue().equals(value)) {
                     return true;
                 }
-
             }
         }
-        return result;
+        return false;
     }
 
     public void setDynamicsValues(Set<PluginParameterValue> pDynamicValues) {

@@ -54,7 +54,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 @Service
 public class JobService implements IJobService {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
 
     /**
      * A BiMap between job id (UUID) and Job (Runnable, in fact RunnableFuture&lt;Void>)

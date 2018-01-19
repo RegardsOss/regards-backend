@@ -600,7 +600,7 @@ public final class PluginParameterUtils {
      */
     private static <T> void postProcessInterface(T pluginInstance, PluginConfiguration plgConf, Field field,
             PluginParameter plgParamAnnotation, Map<Long, Object> instantiatedPluginMap) {
-        LOGGER.debug("Starting postProcessInterface :" + plgParamAnnotation.label());
+        LOGGER.debug("Starting postProcessInterface: {}", plgParamAnnotation.label());
 
         // Get setup value
         PluginConfiguration paramValue = plgConf.getParameterConfiguration(getFieldName(field, plgParamAnnotation));
@@ -618,7 +618,7 @@ public final class PluginParameterUtils {
                                   plgParamAnnotation.label(), pluginInstance.getClass(), paramValue),
                     e);
         }
-        LOGGER.debug("Ending postProcessInterface :" + plgParamAnnotation.label());
+        LOGGER.debug("Ending postProcessInterface: {}", plgParamAnnotation.label());
     }
 
     /**

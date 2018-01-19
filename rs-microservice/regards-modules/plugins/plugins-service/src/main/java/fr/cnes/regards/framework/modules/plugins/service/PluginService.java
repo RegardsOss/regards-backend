@@ -430,24 +430,25 @@ public class PluginService implements IPluginService {
             LOGGER.debug("logPluginServiceState invoked by : {}", invokingMethod);
             LOGGER.debug("This identifier: {}", this.toString());
             LOGGER.debug("List of plugin packages: {}", Joiner.on(" ,").join(pluginPackages));
+            StringBuilder buf = new StringBuilder();
             for (Entry<String, PluginMetaData> entry : pluginMap.entrySet()) {
 
                 // Interfaces
                 Iterator<String> interfaceIt = entry.getValue().getInterfaceNames().iterator();
-                StringBuilder interfaceNamesBuilder = new StringBuilder();
-                interfaceNamesBuilder.append("[");
+                buf.delete(0, buf.length());
+                buf.append("[");
                 if (interfaceIt.hasNext()) {
-                    interfaceNamesBuilder.append(interfaceIt.next());
+                    buf.append(interfaceIt.next());
                     while (interfaceIt.hasNext()) {
-                        interfaceNamesBuilder.append(",");
-                        interfaceNamesBuilder.append(interfaceIt.next());
+                        buf.append(",");
+                        buf.append(interfaceIt.next());
                     }
                 }
-                interfaceNamesBuilder.append("]");
+                buf.append("]");
 
                 LOGGER.debug("Available pluginMap metadata : {} -> {} / {} / {}", entry.getKey(),
                              entry.getValue().getPluginId(), entry.getValue().getPluginClassName(),
-                             interfaceNamesBuilder.toString());
+                             buf.toString());
             }
         }
     }

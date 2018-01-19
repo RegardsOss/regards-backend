@@ -60,7 +60,7 @@ public final class CutFileUtils {
             do {
                 // New cut file to write
                 String strFileCount = StringUtils.leftPad(String.valueOf(fileCount), 2, "0");
-                LOG.debug("creating new cut File " + pCutFileNamesPrefix + "_" + strFileCount);
+                LOG.debug("creating new cut File {}_{}", pCutFileNamesPrefix, strFileCount);
                 File cutFile = new File(pTargetDirectory, pCutFileNamesPrefix + "_" + strFileCount);
                 continueCutFile = writeInFile(inputStream, cutFile, pCutfilesMaxSize);
                 cutFiles.add(cutFile);

@@ -58,7 +58,7 @@ public class FeignClientConfiguration {
      * @return loggin level
      */
     @Bean
-    Logger.Level feignLoggerLevel() {
+    public Logger.Level feignLoggerLevel() {
         return Logger.Level.BASIC;
     }
 
