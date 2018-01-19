@@ -41,6 +41,8 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
      */
     public static final String PROPERTY_VALUE_DATA_STORAGE_MAPPING = "Property_value_data_storage_mapping";
 
+    public static final String QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID = "Quicklook_data_storage_configuration_id";
+
     /**
      * Class logger
      */
@@ -66,6 +68,11 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
             description = "Collection representing the mapping between a value and the data storage to use", label = "Property value - Data storage mappings")
     private List<PropertyDataStorageMapping> propertyDataStorageMappings;
 
+    @PluginParameter(name = QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID,
+            description = "Data storage to use if the file is a quicklook",
+            label = "Quicklook data storage configuration id")
+    private Long quicklookDataStorageConfigurationId;
+
     /**
      * Plugin init method
      */
@@ -85,21 +92,26 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
                 .toMap(PropertyDataStorageMapping::getPropertyValue, PropertyDataStorageMapping::getDataStorageConfId));
         for (StorageDataFile dataFile : dataFilesToHandle) {
             // now lets extract the property value from the AIP
-            try {
-                String propertyValue = JsonPath.read(gson.toJson(dataFile.getAip()), propertyPath);
-                Long chosenOne = valueConfIdMap.get(propertyValue);
-                if (chosenOne == null) {
-                    LOG.error(String
-                            .format("File(url: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
-                                    dataFile.getUrl()));
-                } else {
-                    dispatch.put(chosenOne, dataFile);
+            if(dataFile.isQuicklook()) {
+                dispatch.put(quicklookDataStorageConfigurationId, dataFile);
+            } else {
+                try {
+                    String propertyValue = JsonPath.read(gson.toJson(dataFile.getAip()), propertyPath);
+                    Long chosenOne = valueConfIdMap.get(propertyValue);
+                    if (chosenOne == null) {
+                        LOG.error(String.format(
+                                "File(url: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
+                                dataFile.getUrl()));
+                    } else {
+                        dispatch.put(chosenOne, dataFile);
+                    }
+                } catch (PathNotFoundException e) {
+                    LOG.error(String.format(
+                            "File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
+                            dataFile.getUrl(),
+                            dataFile.getAip().getId(),
+                            propertyPath), e);
                 }
-            } catch (PathNotFoundException e) {
-                LOG.error(String
-                        .format("File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
-                                dataFile.getUrl(), dataFile.getAip().getId(), propertyPath),
-                          e);
             }
         }
 

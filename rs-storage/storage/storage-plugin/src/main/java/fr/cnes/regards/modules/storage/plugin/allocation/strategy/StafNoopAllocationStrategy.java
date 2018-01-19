@@ -44,6 +44,8 @@ public class StafNoopAllocationStrategy implements IAllocationStrategy {
      */
     public static final String DEFAULT_DATA_STORAGE_CONFIGURATION_ID = "Default_data_storage_configuration_id";
 
+    public static final String QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID = "Quicklook_data_storage_configuration_id";
+
     /**
      * Class logger
      */
@@ -65,8 +67,14 @@ public class StafNoopAllocationStrategy implements IAllocationStrategy {
      * Default data storage to use if the file to retrieve is not in the staf
      */
     @PluginParameter(name = DEFAULT_DATA_STORAGE_CONFIGURATION_ID,
-            description = "Default data storage to use if the file to retrieve is not in the staf", label = "Default data storage configuration id")
+            description = "Default data storage to use if the file to retrieve is not in the staf",
+            label = "Default data storage configuration id")
     private Long dataStorageConfigurationId;
+
+    @PluginParameter(name = QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID,
+            description = "Data storage to use if the file is a quicklook",
+            label = "Quicklook data storage configuration id")
+    private Long quicklookDataStorageConfigurationId;
 
     @Override
     public Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle) {
@@ -98,7 +106,11 @@ public class StafNoopAllocationStrategy implements IAllocationStrategy {
                     }
                     break;
                 default:
-                    dispatch.put(dataStorageConfigurationId, dataFile);
+                    if (dataFile.isQuicklook()) {
+                        dispatch.put(quicklookDataStorageConfigurationId, dataFile);
+                    } else {
+                        dispatch.put(dataStorageConfigurationId, dataFile);
+                    }
                     break;
             }
         }

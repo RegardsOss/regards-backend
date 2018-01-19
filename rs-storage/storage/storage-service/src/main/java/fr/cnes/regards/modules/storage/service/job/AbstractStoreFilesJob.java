@@ -3,8 +3,16 @@
  */
 package fr.cnes.regards.modules.storage.service.job;
 
+import java.awt.*;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -21,6 +29,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.file.CommonFileUtils;
+import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.storage.domain.StorageException;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
@@ -215,11 +225,24 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     protected void storeFile(Map<String, JobParameter> parameterMap, boolean replaceMode) {
         // lets instantiate the plugin to use
         Long confIdToUse = parameterMap.get(PLUGIN_TO_USE_PARAMETER_NAME).getValue();
+        // before doing anything, lets get the working set and set the quicklooks into the job workspace to get their size
+        IWorkingSubset workingSubset = parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
+        Set<StorageDataFile> dataFilesNotToStore = Sets.newHashSet();
+        for (StorageDataFile dataFile : workingSubset.getDataFiles()) {
+            if (dataFile.isQuicklook()) {
+                try {
+                    setQuicklookProperties(dataFile);
+                } catch (IOException | NoSuchAlgorithmException e) {
+                    // In case of error during quicklook dimensions recovering, lets set this data file to error
+                    logger.error(e.getMessage(), e);
+                    dataFilesNotToStore.add(dataFile);
+                    progressManager.storageFailed(dataFile, "Issue occurred during quicklook dimension recovery");
+                }
+            }
+        }
+        workingSubset.getDataFiles().removeAll(dataFilesNotToStore);
         try {
             @SuppressWarnings("rawtypes") IDataStorage storagePlugin = pluginService.getPlugin(confIdToUse);
-            // now that we have the plugin instance, lets retrieve the aip from the job parameters and ask the plugin to
-            // do the storage
-            IWorkingSubset workingSubset = parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
             // before storage on file system, lets update the DataFiles by setting which data storage is used to storeAndCreate
             // them.
             PluginConfiguration storagePluginConf = pluginService.getPluginConfiguration(confIdToUse);
@@ -233,9 +256,44 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         }
     }
 
+    private void setQuicklookProperties(StorageDataFile storageDataFile) throws IOException, NoSuchAlgorithmException {
+        // first to get the quicklook properties(height and width), we need to download it.
+        // unless it is already on filesystem
+        URL dataFileUrl = storageDataFile.getUrl();
+        if (!dataFileUrl.getProtocol().equals("file")) {
+            Path destination = Paths.get(getWorkspace().toString(), storageDataFile.getName());
+            URL newURL = new URL("file", "", destination.toString());
+            boolean downloadOk = DownloadUtils.downloadAndCheckChecksum(dataFileUrl,
+                                                                        destination,
+                                                                        storageDataFile.getAlgorithm(),
+                                                                        storageDataFile.getChecksum());
+            if (!downloadOk) {
+                String errorMsg = "Download of distant quicklook failed, dimensions cannot be set.";
+                logger.error(errorMsg);
+                throw new IOException(errorMsg);
+            }
+            storageDataFile.setUrl(newURL);
+        }
+        // then we can get the dimensions
+        try {
+            Dimension dimension = CommonFileUtils
+                    .getImageDimension(Paths.get(storageDataFile.getUrl().toURI()).toFile());
+            storageDataFile.setHeight(((Number) dimension.getHeight()).intValue());
+            storageDataFile.setWidth(((Number) dimension.getWidth()).intValue());
+        } catch (URISyntaxException e) {
+            //this cannot happen as data files are validated before the job
+            logger.error(e.getMessage(), e);
+        }
+    }
+
     @Override
     public int getCompletionCount() {
         return ((IWorkingSubset) parameters.get(WORKING_SUB_SET_PARAMETER_NAME).getValue()).getDataFiles().size();
+    }
+
+    @Override
+    public boolean needWorkspace() {
+        return true;
     }
 
     /**

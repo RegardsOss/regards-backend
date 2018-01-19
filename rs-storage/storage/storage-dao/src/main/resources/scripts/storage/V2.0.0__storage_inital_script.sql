@@ -5,7 +5,7 @@ create sequence storage_parameter_sequence start 1 increment 50;
 create table t_aip (id int8 not null, json_aip jsonb, ip_id varchar(128), comment text, date timestamp, type varchar(255), sip_id varchar(128), state varchar(255), submissionDate timestamp, primary key (id));
 create table t_aip_tag (aip_id int8 not null, tags varchar(255));
 create table t_cached_file (id int8 not null, checksum varchar(255), expiration timestamp, failureCause varchar(512), fileSize int8, lastRequestDate timestamp, location varchar(255), state varchar(255), primary key (id));
-create table t_data_file (id int8 not null, algorithm varchar(255) not null, checksum varchar(128) not null, dataType varchar(255), fileSize int8, mimeType varchar(255) not null, name varchar(255), state varchar(255), url varchar(255), aip_ip_id int8, data_storage_plugin_configuration int8, primary key (id));
+create table t_data_file (id int8 not null, algorithm varchar(255) not null, checksum varchar(128) not null, dataType varchar(255), fileSize int8, mimeType varchar(255) not null, name varchar(255), state varchar(255), url varchar(255), height int8, width int8, aip_ip_id int8, data_storage_plugin_configuration int8, primary key (id));
 create table t_storage_parameter (id int8 not null, name varchar(255), value text, primary key (id));
 create index idx_aip_ip_id on t_aip (ip_id);
 create index idx_aip_state on t_aip (state);

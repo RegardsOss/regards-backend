@@ -115,6 +115,12 @@ public class StorageDataFile {
     @Convert(converter = MimeTypeConverter.class)
     private MimeType mimeType;
 
+    @Column
+    private int height;
+
+    @Column
+    private int width;
+
     /**
      * Data storage plugin configuration used to store the file
      */
@@ -377,6 +383,27 @@ public class StorageDataFile {
      */
     public void setAip(AIP aip) {
         this.aipEntity = new AIPEntity(aip);
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public boolean isQuicklook() {
+        return dataType == DataType.QUICKLOOK_HD || dataType == DataType.QUICKLOOK_MD
+                || dataType == DataType.QUICKLOOK_SD;
     }
 
     @Override
