@@ -24,11 +24,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 /**
- *
+ * Tenant wrapper.
+ * This class is Cloneable because of rs-order ForwardingDataFileEventHandlerService class. See this class for more
+ * informations
  * @param <T> type of event that is wrapped
  * @author svissier
+ * @author oroussel
  */
-public class TenantWrapper<T> {
+public class TenantWrapper<T> implements Cloneable {
 
     /**
      * the event originally sent to the message broker
@@ -106,4 +109,16 @@ public class TenantWrapper<T> {
         return "{\"content\" : " + content + " , \"tenant\" : \"" + tenant + "\"}";
     }
 
+    /**
+     * See header for more informations
+     * @return a TenantWrapper clone
+     */
+    @Override
+    public TenantWrapper<T> clone() {
+        try {
+            return (TenantWrapper<T>)super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
