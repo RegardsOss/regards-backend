@@ -3,13 +3,22 @@
  */
 package fr.cnes.regards.framework.utils.file;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
@@ -18,6 +27,8 @@ import com.google.common.collect.Sets;
  * @author Sébastien Binda
  */
 public final class CommonFileUtils {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CommonFileUtils.class);
 
     private CommonFileUtils() {
     }
@@ -42,7 +53,9 @@ public final class CommonFileUtils {
         while (fileNames.contains(availableFileName)) {
             int index = availableFileName.indexOf('.');
             if (index > 0) {
-                availableFileName = String.format("%s_%d.%s", availableFileName.substring(0, index), cpt,
+                availableFileName = String.format("%s_%d.%s",
+                                                  availableFileName.substring(0, index),
+                                                  cpt,
                                                   availableFileName.substring(index + 1));
             }
             cpt++;
@@ -67,6 +80,37 @@ public final class CommonFileUtils {
             os.write(buffer, 0, charRead);
         }
         os.flush();
+    }
+
+    /**
+     * Gets image dimensions for given file
+     * @param imgFile image file
+     * @return dimensions of image
+     * @throws IOException if the file is not a known image
+     */
+    public static Dimension getImageDimension(File imgFile) throws IOException {
+        int pos = imgFile.getName().lastIndexOf(".");
+        if (pos == -1) {
+            throw new IOException("No extension for file: " + imgFile.getAbsolutePath());
+        }
+        String suffix = imgFile.getName().substring(pos + 1);
+        Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
+        while (iter.hasNext()) {
+            ImageReader reader = iter.next();
+            try {
+                ImageInputStream stream = new FileImageInputStream(imgFile);
+                reader.setInput(stream);
+                int width = reader.getWidth(reader.getMinIndex());
+                int height = reader.getHeight(reader.getMinIndex());
+                return new Dimension(width, height);
+            } catch (IOException e) {
+                LOG.warn("Error reading: " + imgFile.getAbsolutePath(), e);
+            } finally {
+                reader.dispose();
+            }
+        }
+
+        throw new IOException("Not a known image file: " + imgFile.getAbsolutePath());
     }
 
 }
