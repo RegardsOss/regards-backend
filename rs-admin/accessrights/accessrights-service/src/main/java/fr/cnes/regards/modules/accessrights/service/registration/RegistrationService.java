@@ -143,7 +143,7 @@ public class RegistrationService implements IRegistrationService {
             Account account = new Account(pDto.getEmail(),
                                           pDto.getFirstName(),
                                           pDto.getLastName(),
-                                          EncryptionUtils.encryptPassword(pDto.getPassword()));
+                                          pDto.getPassword());
 
             // Check status
             Assert.isTrue(AccountStatus.PENDING.equals(account.getStatus()),

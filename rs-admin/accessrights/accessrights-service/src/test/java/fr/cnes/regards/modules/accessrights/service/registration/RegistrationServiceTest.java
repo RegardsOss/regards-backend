@@ -166,7 +166,7 @@ public class RegistrationServiceTest {
                                    REQUEST_LINK);
 
         // Prepare the account we expect to be create by the access request
-        account = new Account(EMAIL, FIRST_NAME, LAST_NAME, EncryptionUtils.encryptPassword(PASSOWRD));
+        account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSOWRD);
 
         // Prepare the project user we expect to be created by the access request
         projectUser = new ProjectUser();
@@ -269,7 +269,7 @@ public class RegistrationServiceTest {
 
         // Check that the repository's method was called to create a project user containing values from the DTO and
         // with status PENDING. We therefore exclude id, lastConnection and lastUpdate which we do not care about
-        Mockito.verify(accountsClient).createAccount(Mockito.refEq(account, "id", "passwordUpdateDate"));
+        Mockito.verify(accountsClient).createAccount(Mockito.refEq(accountWithPassword, "id", "passwordUpdateDate"));
 
         // Check that the repository's method was called to create a project user containing values from the DTO and
         // with status WAITING_ACCOUNT_ACTIVE. We therefore exclude id, lastConnection and lastUpdate which we do not
