@@ -85,6 +85,7 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
     private UniformResourceName ipId;
 
     public OrderDataFile() {
+        super();
     }
 
     public OrderDataFile(DataFile dataFile, UniformResourceName ipId, Long orderId) {
@@ -94,10 +95,10 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
         setChecksum(dataFile.getChecksum());
         setDigestAlgorithm(dataFile.getDigestAlgorithm());
         setMimeType(dataFile.getMimeType());
-        setState(FileState.PENDING);
+        state = FileState.PENDING;
         setOnline(dataFile.getOnline());
-        setIpId(ipId);
-        setOrderId(orderId);
+        this.ipId= ipId;
+        this.orderId = orderId;
     }
 
     public void setState(FileState state) {
@@ -188,7 +189,7 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
     }
 
     @Override
-    public void setOnline(Boolean online) {
+    public final void setOnline(Boolean online) {
         super.setOnline(online);
         if ((online != null) && online) {
             this.state = FileState.ONLINE;
