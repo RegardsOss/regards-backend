@@ -525,8 +525,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      */
     private void notifyAdmins(String title, String message, NotificationType type) {
         NotificationDTO notif = new NotificationDTO(message,
-                                                    Lists.newArrayList(),
-                                                    Lists.newArrayList(DefaultRole.ADMIN.name()),
+                                                    Sets.newHashSet(),
+                                                    Sets.newHashSet(DefaultRole.ADMIN.name()),
                                                     applicationName,
                                                     title,
                                                     type);
