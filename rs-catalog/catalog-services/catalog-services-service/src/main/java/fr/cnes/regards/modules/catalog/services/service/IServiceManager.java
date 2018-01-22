@@ -22,8 +22,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
@@ -60,7 +60,7 @@ public interface IServiceManager {
      * @return the result of the service call wrapped in a resonse entity
      * @throws ModuleException
      */
-    ResponseEntity<InputStreamResource> apply(final Long pPluginConfigurationId,
+    ResponseEntity<StreamingResponseBody> apply(final Long pPluginConfigurationId,
             final ServicePluginParameters pServicePluginParameters, HttpServletResponse response)
             throws ModuleException;
 

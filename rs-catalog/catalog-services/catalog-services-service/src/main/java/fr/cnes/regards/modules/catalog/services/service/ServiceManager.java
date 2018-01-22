@@ -29,9 +29,9 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -113,7 +113,7 @@ public class ServiceManager implements IServiceManager {
     }
 
     @Override
-    public ResponseEntity<InputStreamResource> apply(final Long pPluginConfigurationId,
+    public ResponseEntity<StreamingResponseBody> apply(final Long pPluginConfigurationId,
             final ServicePluginParameters pServicePluginParameters, HttpServletResponse response)
             throws ModuleException {
         final PluginConfiguration conf = pluginService.getPluginConfiguration(pPluginConfigurationId);

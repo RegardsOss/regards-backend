@@ -18,18 +18,14 @@
  */
 package fr.cnes.regards.modules.catalog.services.rest;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
 import java.util.LinkedHashSet;
 
-import org.assertj.core.util.Sets;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import javax.servlet.http.HttpServletResponse;
 
-import com.google.gson.GsonBuilder;
+import org.assertj.core.util.Sets;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -37,6 +33,8 @@ import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
+import fr.cnes.regards.modules.catalog.services.plugins.CatalogPluginResponseFactory;
+import fr.cnes.regards.modules.catalog.services.plugins.CatalogPluginResponseFactory.CatalogPluginResponseType;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.models.domain.Model;
 
@@ -54,13 +52,10 @@ public class TestService implements IService {
     private String para;
 
     @Override
-    public ResponseEntity<InputStreamResource> apply(ServicePluginParameters pParameters,
+    public ResponseEntity<StreamingResponseBody> apply(ServicePluginParameters pParameters,
             HttpServletResponse pResponse) {
 
         LinkedHashSet<DataObject> responseList;
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        pResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
         if (!para.equals(EXPECTED_VALUE)) {
             responseList = Sets.newLinkedHashSet();
@@ -71,13 +66,8 @@ public class TestService implements IService {
             responseList = Sets.newLinkedHashSet(do1, do2);
         }
 
-        // Format to json format
-        GsonBuilder builder = new GsonBuilder();
-
-        InputStreamResource response = new InputStreamResource(
-                new ByteArrayInputStream(builder.create().toJson(responseList).getBytes()));
-
-        return new ResponseEntity<>(response, headers, HttpStatus.OK);
+        return CatalogPluginResponseFactory.createSuccessResponse(pResponse, CatalogPluginResponseType.JSON,
+                                                                  responseList);
     }
 
 }

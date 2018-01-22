@@ -18,25 +18,24 @@
  */
 package fr.cnes.regards.modules.catalog.services.plugins;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import com.google.gson.GsonBuilder;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
+import fr.cnes.regards.modules.catalog.services.plugins.CatalogPluginResponseFactory.CatalogPluginResponseType;
 
 /**
  * SampleServicePlugin
@@ -95,7 +94,8 @@ public class SampleServicePlugin implements ISampleServicePlugin {
     }
 
     @Override
-    public ResponseEntity<InputStreamResource> applyOnEntities(List<String> pEntitiesId, HttpServletResponse response) {
+    public ResponseEntity<StreamingResponseBody> applyOnEntities(List<String> pEntitiesId,
+            HttpServletResponse response) {
         if ((pEntitiesId == null) || pEntitiesId.isEmpty()) {
             return apply("no entities", response);
         }
@@ -103,13 +103,13 @@ public class SampleServicePlugin implements ISampleServicePlugin {
     }
 
     @Override
-    public ResponseEntity<InputStreamResource> applyOnQuery(String pOpenSearchQuery, EntityType pEntityType,
+    public ResponseEntity<StreamingResponseBody> applyOnQuery(String pOpenSearchQuery, EntityType pEntityType,
             HttpServletResponse response) {
         return apply(pOpenSearchQuery, response);
     }
 
     @Override
-    public ResponseEntity<InputStreamResource> applyOnEntity(String pEntityId, HttpServletResponse response) {
+    public ResponseEntity<StreamingResponseBody> applyOnEntity(String pEntityId, HttpServletResponse response) {
         return apply(pEntityId, response);
     }
 
@@ -120,68 +120,26 @@ public class SampleServicePlugin implements ISampleServicePlugin {
      * @param response HttpResponse
      * @return {@link ResponseEntity}
      */
-    private ResponseEntity<InputStreamResource> apply(String pResultValue, HttpServletResponse response) {
+    private ResponseEntity<StreamingResponseBody> apply(String pResultValue, HttpServletResponse response) {
         ResponseObject resp = new ResponseObject(pResultValue);
-
-        GsonBuilder builder = new GsonBuilder();
-
-        InputStreamResource respin = new InputStreamResource(
-                new ByteArrayInputStream(builder.create().toJson(resp).getBytes()));
-        HttpHeaders headers = new HttpHeaders();
         switch (responseType) {
             case RESPONSE_TYPE_JSON:
-                headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=sampleServiceResults.json");
-                // Simulate return of a JSON Object
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                return new ResponseEntity<>(respin, headers, HttpStatus.OK);
+                return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
+                                                                          resp);
             case RESPONSE_TYPE_XML:
-                headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=sampleServiceResults.xml");
-                // Simulate return of a XML Object
-                headers.setContentType(MediaType.APPLICATION_XML);
-                response.setContentType(MediaType.APPLICATION_XML_VALUE);
-                String xmlString = String.format("<id>%s</id>", pResultValue);
-                return new ResponseEntity<>(new InputStreamResource(new ByteArrayInputStream(xmlString.getBytes())),
-                        headers, HttpStatus.OK);
+                return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.XML,
+                                                                          resp);
             case RESPONSE_TYPE_IMG:
-                // Simulate return of an image through the image format
-                return retrieveImage(response);
+                File file = new File(this.getClass().getClassLoader().getResource("LogoCnes.png").getPath());
+                return CatalogPluginResponseFactory
+                        .createSuccessResponseFromFile(response, CatalogPluginResponseType.FILE_IMG_PNG, file);
             case RESPONSE_TYPE_OTHER:
-                // Simulate return of an image through the octet-stream format
-                return retrieveOther(response);
+                File dowloadFile = new File(this.getClass().getClassLoader().getResource("result.other").getPath());
+                return CatalogPluginResponseFactory
+                        .createSuccessResponseFromFile(response, CatalogPluginResponseType.FILE_DOWNLOAD, dowloadFile);
 
             default:
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-    }
-
-    /**
-     * Retrieve an image as an InputStream
-     * @param response {@link HttpServletResponse}
-     * @return {@link ResponseEntity}
-     */
-    private ResponseEntity<InputStreamResource> retrieveImage(HttpServletResponse response) {
-        HttpHeaders headers = new HttpHeaders();
-        InputStreamResource resource = new InputStreamResource(
-                this.getClass().getClassLoader().getResourceAsStream("LogoCnes.png"));
-        headers.setContentType(MediaType.IMAGE_PNG);
-        response.setContentType(MediaType.IMAGE_PNG_VALUE);
-        headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=sampleService.png");
-        return new ResponseEntity<>(resource, headers, HttpStatus.OK);
-    }
-
-    /**
-     * Retrieve an unkown extension file as an InputStream
-     * @param response {@link HttpServletResponse}
-     * @return {@link ResponseEntity}
-     */
-    private ResponseEntity<InputStreamResource> retrieveOther(HttpServletResponse response) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=sampleService.other");
-        InputStreamResource resource = new InputStreamResource(
-                this.getClass().getClassLoader().getResourceAsStream("result.other"));
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-        return new ResponseEntity<>(resource, headers, HttpStatus.OK);
     }
 }

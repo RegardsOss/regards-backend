@@ -20,9 +20,9 @@ package fr.cnes.regards.modules.catalog.services.domain.plugins;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
@@ -40,7 +40,7 @@ public interface IService {
      * @param pParameters plugin parameters {@link ServicePluginParameters}
      * @return @{link ResponseEntity}
      */
-    public default ResponseEntity<InputStreamResource> apply(ServicePluginParameters pParameters,
+    public default ResponseEntity<StreamingResponseBody> apply(ServicePluginParameters pParameters,
             HttpServletResponse response) {
         if ((this instanceof ISingleEntityServicePlugin) && (pParameters.getEntityId() != null)) {
             return ((ISingleEntityServicePlugin) this).applyOnEntity(pParameters.getEntityId(), response);
