@@ -46,10 +46,9 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 
 /**
- * Test acquisition chain workflow
+ * Test acquisition chain workflow. This test cannot be done in a transaction due to transient entity!
  *
  * @author Marc Sordi
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acquisition_it" })
 public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTransactionalIT {
@@ -128,7 +127,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         String resultAsString = payload(result);
         Integer chainId = JsonPath.read(resultAsString, "$.content.id");
 
-        // - load it
+        // Load it
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         AcquisitionProcessingChain loadedChain = processingService.getChain(chainId.longValue());
         Assert.assertNotNull("Chain must exist", loadedChain);
@@ -137,7 +136,8 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         PluginConfiguration scanPlugin = PluginUtils
                 .getPluginConfiguration(Lists.newArrayList(), DefaultDiskScanning.class, Lists.newArrayList());
         scanPlugin.setIsActive(true);
-        scanPlugin.setLabel("Scan plugin update");
+        String label = "Scan plugin update";
+        scanPlugin.setLabel(label);
         loadedChain.getFileInfos().get(0).setScanPlugin(scanPlugin);
 
         customizer = getNewRequestBuilderCustomizer();
@@ -145,5 +145,10 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         performDefaultPut(AcquisitionProcessingChainController.TYPE_PATH
                 + AcquisitionProcessingChainController.CHAIN_PATH, loadedChain, customizer, "Chain should be updated",
                           loadedChain.getId());
+
+        // Load new scan plugin configuration
+        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        loadedChain = processingService.getChain(chainId.longValue());
+        Assert.assertEquals(label, loadedChain.getFileInfos().get(0).getScanPlugin().getLabel());
     }
 }
