@@ -24,7 +24,7 @@ import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
 
@@ -62,12 +62,12 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
             if (validateResponse.getBody()) {
                 accessGranted = validateResponse.getBody();
             } else {
-                errorMessage = String.format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists",
-                                             pEmail);
+                errorMessage = String
+                        .format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists", pEmail);
             }
         } else {
-            errorMessage = String.format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists",
-                                         pEmail);
+            errorMessage = String
+                    .format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists", pEmail);
         }
 
         return new AuthenticationPluginResponse(accessGranted, pEmail, errorMessage);

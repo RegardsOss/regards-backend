@@ -79,6 +79,10 @@
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>plugins-service</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
+			<artifactId>accessrights-instance-client</artifactId>
+		</dependency>
 		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
@@ -96,6 +100,6 @@
 			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+    </dependencies>
 </project>
 
