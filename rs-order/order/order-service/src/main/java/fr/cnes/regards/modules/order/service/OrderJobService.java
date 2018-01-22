@@ -131,6 +131,8 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
                 if (endedJobInfo != null) {
                     self.manageUserOrderJobInfos(endedJobInfo.getOwner());
                 }
+                break;
+            default:
         }
     }
 
