@@ -33,6 +33,8 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -94,10 +96,27 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private IAuthenticationResolver authResolver;
 
     @Override
+    public Page<AcquisitionProcessingChain> getAllChains(Pageable pageable) throws ModuleException {
+        return acqChainRepository.findAll(pageable);
+    }
+
+    @Override
     public AcquisitionProcessingChain getChain(Long id) throws ModuleException {
         AcquisitionProcessingChain chain = acqChainRepository.findCompleteById(id);
         if (chain == null) {
             throw new EntityNotFoundException(id, AcquisitionProcessingChain.class);
+        }
+        // Now load all plugin configuration (avoiding JPA graphs or subgraphs!)
+        // For file info
+        for (AcquisitionFileInfo fileInfo : chain.getFileInfos()) {
+            pluginService.loadPluginConfiguration(fileInfo.getScanPlugin().getId());
+        }
+        // And others
+        pluginService.loadPluginConfiguration(chain.getValidationPluginConf().getId());
+        pluginService.loadPluginConfiguration(chain.getProductPluginConf().getId());
+        pluginService.loadPluginConfiguration(chain.getGenerateSipPluginConf().getId());
+        if (chain.getPostProcessSipPluginConf().isPresent()) {
+            pluginService.loadPluginConfiguration(chain.getPostProcessSipPluginConf().get().getId());
         }
         return chain;
     }

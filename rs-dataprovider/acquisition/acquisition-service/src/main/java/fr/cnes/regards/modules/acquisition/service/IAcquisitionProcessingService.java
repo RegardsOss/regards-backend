@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
@@ -29,6 +32,14 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
  *
  */
 public interface IAcquisitionProcessingService {
+
+    /**
+     * List all acquisition chains
+     * @param pageable pagination filter
+     * @return list of all acquisition chains
+     * @throws ModuleException if error occurs!
+     */
+    Page<AcquisitionProcessingChain> getAllChains(Pageable pageable) throws ModuleException;
 
     /**
      * Retrieve a processing chain according to its identifier.

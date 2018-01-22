@@ -50,7 +50,7 @@
 		</dependency>
 		<!-- Module dependencies -->
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
+			<groupId>fr.cnes.regards.modules.acquisition</groupId>
 			<artifactId>acquisition-service</artifactId>
 		</dependency>
 		<!-- Test -->
