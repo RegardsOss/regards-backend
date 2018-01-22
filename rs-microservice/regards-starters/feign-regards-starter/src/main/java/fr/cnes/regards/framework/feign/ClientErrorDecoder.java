@@ -37,7 +37,7 @@ import feign.codec.ErrorDecoder;
 
 /**
  * Intercept Feign error to write custom log and decode the body into an object
- * in case the return type is defined as a {@link ResponseEntity}&#60;SOMETHING&#62;.
+ * in case the return type is defined as a {@link ResponseEntity}&lt;SOMETHING>.
  * It will deserialize the body, using {@link SpringDecoder}, into a SOMETHING instance accessible
  * into the {@link FeignResponseDecodedException} thrown.
  * @author CS
