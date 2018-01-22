@@ -31,7 +31,7 @@ public class CustomRequestParamParameterProcessor implements AnnotatedParameterP
     @Override
     public boolean processArgument(AnnotatedParameterContext pContext, Annotation pAnnotation, Method pMethod) {
         String name = ANNOTATION.cast(pAnnotation).value();
-        if (Strings.isNullOrEmpty(name)) {
+        if (!Strings.isNullOrEmpty(name)) {
             pContext.setParameterName(name);
 
             MethodMetadata data = pContext.getMethodMetadata();
