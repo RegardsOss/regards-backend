@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 
 import org.assertj.core.util.Lists;
+import org.assertj.core.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -197,7 +198,11 @@ public class AIPController implements IResourceController<AIP> {
             @RequestParam("tags") Set<String> tags,
             @RequestParam(name = "last_update", required = false) String fromLastUpdateDate,
             final Pageable pageable) {
-        Page<AipDataFiles> page = aipService.retrieveAipDataFiles(state, tags, OffsetDateTimeAdapter.parse(fromLastUpdateDate), pageable);
+        OffsetDateTime fromLastUpdate = null;
+        if(!Strings.isNullOrEmpty(fromLastUpdateDate)) {
+            fromLastUpdate = OffsetDateTimeAdapter.parse(fromLastUpdateDate);
+        }
+        Page<AipDataFiles> page = aipService.retrieveAipDataFiles(state, tags, fromLastUpdate, pageable);
         // small hack to be used thanks to GSON which does not know how to deserialize Page or PageImpl
         PagedResources<AipDataFiles> aipDataFiles = new PagedResources<>(page.getContent(), new PagedResources.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages()));
         return new ResponseEntity<>(aipDataFiles, HttpStatus.OK);

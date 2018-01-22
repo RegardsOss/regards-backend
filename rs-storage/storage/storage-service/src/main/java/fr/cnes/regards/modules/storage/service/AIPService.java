@@ -70,6 +70,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
@@ -629,7 +630,13 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      */
     private IAllocationStrategy getAllocationStrategy() throws ModuleException {
         PluginConfiguration activeAllocationStrategy = getAllocationStrategyConfiguration();
-        return pluginService.getPlugin(activeAllocationStrategy.getId());
+        try {
+            return pluginService.getPlugin(activeAllocationStrategy.getId());
+        } catch (PluginUtilsRuntimeException e) {
+            LOG.error(e.getMessage(), e);
+            notifyAdmins("Allocation Strategy miss configured", e.getMessage(), NotificationType.ERROR);
+            throw e;
+        }
     }
 
     private PluginConfiguration getAllocationStrategyConfiguration() {

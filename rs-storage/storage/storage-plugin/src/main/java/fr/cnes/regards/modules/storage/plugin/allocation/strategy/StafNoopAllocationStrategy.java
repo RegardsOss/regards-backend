@@ -12,7 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -22,6 +25,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFDataStorage;
 
 /**
@@ -72,9 +76,18 @@ public class StafNoopAllocationStrategy implements IAllocationStrategy {
     private Long dataStorageConfigurationId;
 
     @PluginParameter(name = QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID,
-            description = "Data storage to use if the file is a quicklook",
+            description = "Data storage to use if the file is a quicklook, must be an ONLINE data storage",
             label = "Quicklook data storage configuration id")
     private Long quicklookDataStorageConfigurationId;
+
+    @PluginInit
+    public void init() throws EntityNotFoundException, EntityInvalidException {
+        //lets verify that quicklook data storage is an online data storage
+        if(!pluginService.getPluginConfiguration(quicklookDataStorageConfigurationId).getInterfaceNames().contains(
+                IOnlineDataStorage.class.getName())) {
+            throw new EntityInvalidException("Current active allocation strategy does specify a quicklook data storage which is not ONLINE");
+        }
+    }
 
     @Override
     public Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle) {

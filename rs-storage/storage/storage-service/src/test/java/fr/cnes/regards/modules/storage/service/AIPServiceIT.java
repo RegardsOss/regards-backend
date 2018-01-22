@@ -226,7 +226,6 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // to make the process fail just on metadata storage, lets remove permissions from the workspace
         Path workspacePath = workspaceService.getMicroserviceWorkspace();
         Set<PosixFilePermission> oldPermissions = Files.getPosixFilePermissions(workspacePath);
-        Files.setPosixFilePermissions(workspacePath, Sets.newHashSet());
         try {
             Set<UUID> jobIds = aipService.storeAndCreate(Sets.newHashSet(aip));
             int wait = 0;
@@ -235,6 +234,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                 Thread.sleep(1000);
                 wait += 1000;
             }
+            Files.setPosixFilePermissions(workspacePath, Sets.newHashSet());
             Assert.assertFalse("The job failed while it should not have", handler.isFailed());
             LOG.info("Waiting for AIP {} error ...", aip.getId().toString());
             Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getId().toString());

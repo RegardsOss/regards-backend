@@ -161,6 +161,7 @@ public class StafNoopAllocationStrategyIT extends AbstractRegardsTransactionalIT
         List<PluginParameter> stafNoopAllocationParam = PluginParametersFactory.build()
                 .addParameter(StafNoopAllocationStrategy.DEFAULT_DATA_STORAGE_CONFIGURATION_ID,
                               defaultDataStorage.getId())
+                .addParameter(StafNoopAllocationStrategy.QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID, defaultDataStorage.getId())
                 .getParameters();
         stafNoopAllocationConf = new PluginConfiguration(stafNoopAllocationMeta, STAF_NOOP_ALLOCATION_LABEL,
                 stafNoopAllocationParam);

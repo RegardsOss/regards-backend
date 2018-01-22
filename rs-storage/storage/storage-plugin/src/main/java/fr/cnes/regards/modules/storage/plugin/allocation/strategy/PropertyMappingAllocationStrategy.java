@@ -15,12 +15,17 @@ import com.google.gson.Gson;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 
 /**
  * Allocation strategy that map a given property value to a {@link IDataStorage}
@@ -54,6 +59,9 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
     @Autowired
     private Gson gson;
 
+    @Autowired
+    private IPluginService pluginService;
+
     /**
      * Json path to the property from the AIP which value should discriminate data storages to use
      */
@@ -69,7 +77,7 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
     private List<PropertyDataStorageMapping> propertyDataStorageMappings;
 
     @PluginParameter(name = QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID,
-            description = "Data storage to use if the file is a quicklook",
+            description = "Data storage to use if the file is a quicklook, must be an ONLINE data storage",
             label = "Quicklook data storage configuration id")
     private Long quicklookDataStorageConfigurationId;
 
@@ -77,10 +85,15 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
      * Plugin init method
      */
     @PluginInit
-    public void init() {
+    public void init() throws EntityNotFoundException, EntityInvalidException {
         if (!propertyPath.startsWith("$.")) {
             // our json path lib only understand path that starts with "$.", so lets add it in case the user didn't
             propertyPath = "$." + propertyPath;
+        }
+        //lets verify that quicklook data storage is an online data storage
+        if(!pluginService.getPluginConfiguration(quicklookDataStorageConfigurationId).getInterfaceNames().contains(
+                IOnlineDataStorage.class.getName())) {
+            throw new EntityInvalidException("Current active allocation strategy does specify a quicklook data storage which is not ONLINE");
         }
     }
 

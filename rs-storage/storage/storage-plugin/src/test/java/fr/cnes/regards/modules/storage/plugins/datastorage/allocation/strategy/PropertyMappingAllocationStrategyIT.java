@@ -128,6 +128,7 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
         List<PluginParameter> propertyMappingAllocStratParam = PluginParametersFactory.build()
                 .addParameter(PropertyMappingAllocationStrategy.PROPERTY_PATH, JSON_PATH)
                 .addParameter(PropertyMappingAllocationStrategy.PROPERTY_VALUE_DATA_STORAGE_MAPPING, mappings)
+                .addParameter(PropertyMappingAllocationStrategy.QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID, MAPPED_DATA_STORAGE_CONF_ID)
                 .getParameters();
         propertyMappingAllocStratConf = new PluginConfiguration(propertyMappingAllocStratMeta,
                 PROPERTY_MAPPING_ALLOC_STRAT_LABEL, propertyMappingAllocStratParam);

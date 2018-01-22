@@ -173,7 +173,10 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         progressManager = new StorageJobProgressManager(publisher, this);
         try {
             doRun(parameters);
-        } finally {
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw e;
+        }finally {
             logger.debug("[FILE JOB] Executing some checks after execution");
             // eventually, lets see if everything went as planned
             afterRun();
