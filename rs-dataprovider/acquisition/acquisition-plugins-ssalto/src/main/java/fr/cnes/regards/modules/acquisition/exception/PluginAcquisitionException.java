@@ -21,14 +21,13 @@ package fr.cnes.regards.modules.acquisition.exception;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
- * 
+ * SSALTO plugins exception
+ *  
  * @author Christophe Mertz
  *
  */
+@SuppressWarnings("serial")
 public class PluginAcquisitionException extends ModuleException {
-
-
-    private static final long serialVersionUID = 7372056662519640802L;
 
     public PluginAcquisitionException(Throwable exception) {
         super(exception);

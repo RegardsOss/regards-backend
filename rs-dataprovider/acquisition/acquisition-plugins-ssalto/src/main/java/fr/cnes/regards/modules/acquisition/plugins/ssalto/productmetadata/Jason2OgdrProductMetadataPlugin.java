@@ -43,22 +43,39 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.LoadTranslationPr
 import fr.cnes.regards.modules.acquisition.tools.NetCdfFileHelper;
 
 /**
+ * Metadata caculation's plugin for Jason2 Ogdr products.
  * 
  * @author Christophe Mertz
  *
  */
-@Plugin(author = "CS-SI", description = "Jason2OgdrProductMetadataPlugin", owner = "CNES", contact = "CS-SI",
-        id = "Jason2OgdrProductMetadataPlugin", licence = "Apache ", url = "http://regards.org", version = "1.0")
+@Plugin(author = "CS-SI", description = "Metadata caculation's plugin for Jason2 Ogdr products", owner = "CNES",
+        contact = "CS-SI", id = "Jason2OgdrProductMetadataPlugin", licence = "Apache ", url = "http://regards.org",
+        version = "1.0")
 public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Jason2OgdrProductMetadataPlugin.class);
 
+    /**
+     * The {@link Pattern} "JA2_OP([a-zA-Z0-9]{1})_.*"
+     */
     private static Pattern fileNamePattern = Pattern.compile("JA2_OP([a-zA-Z0-9]{1})_.*");
 
+    /**
+     * Attribute PRODUCT_OPTION
+     */
     private static final String PRODUCT_OPTION = "PRODUCT_OPTION";
 
+    /**
+     * The OGDR tranlation properties file : OGDRTranslationFile.properties
+     */
     private static final String TRANSACTION_FILE = "OGDRTranslationFile.properties";
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 
@@ -76,8 +93,8 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
     /**
      * Build an {@link Attribute} PRODUCT_OPTION and add it to the {@link Attribute}'s {@link Map}.<br>
      * The attribute's value is calculated with the translation file OGDRTranslationFile.properties see {@link Jason2OgdrProductMetadataPlugin#TRANSACTION_FILE}.
-     * @param fileMap a {@link File}'s {@link Map} for which to calculate the {@link Attribute} PRODUCT_OPTION. 
-     * @param attributeMap the {@link Attribute}'s {@link Map}
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
      * @throws PluginAcquisitionException an error occurs when the new {@link Attribute} is created
      */
     private void registerOptionAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)

@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
  * @author Christophe Mertz
  *
  */
-public class AsciiFileFinder extends DataFileFinder {
+public class AsciiFileFinder extends AbstractDataFileFinder {
 
     /**
      * filePattern de la ligne a parser

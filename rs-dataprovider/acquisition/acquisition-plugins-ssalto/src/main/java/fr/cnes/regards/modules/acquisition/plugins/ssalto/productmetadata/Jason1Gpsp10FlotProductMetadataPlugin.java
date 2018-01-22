@@ -45,13 +45,13 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 /**
- * plugin specifiques au donnees jason1 Gpsp10Flot les noms des fichiers ont deux formes bien distinctes et ne peuvent
- * pas etre resolues juste par le fichier de configuration. L' attribut traite specifiquement est le TIME_PERIOD
+ * Metadata caculation's plugin for Jason1 Gpsp10_FLOT products.
+ * The TIME_PERIOD's attribute is managed specifically.
  * 
  * @author Christophe Mertz
  * 
  */
-@Plugin(description = "Jason1Gpsp10FlotProductMetadataPlugin", id = "Jason1Gpsp10FlotProductMetadataPlugin",
+@Plugin(description = "Metadata caculation's plugin for Jason1 Gpsp10_FLOT products", id = "Jason1Gpsp10FlotProductMetadataPlugin",
         version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadataPlugin {
@@ -61,16 +61,19 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(Jason1Gpsp10FlotProductMetadataPlugin.class);
 
-    private static final String TIME_PERIOD = "TIME_PERIOD";
-
-    private static final String START_DATE = "START_DATE";
-
-    private static final String STOP_DATE = "STOP_DATE";
-
+    /**
+     * A {@link DateTimeFormatter} for the pattern "yyyy-MM-dd HH:mm:ss"
+     */
     protected static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    /**
+     * A {@link Pattern} for "[A-Z]([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternd;
 
+    /**
+     * A {@link Pattern} for "[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternp;
 
     public Jason1Gpsp10FlotProductMetadataPlugin() {
@@ -89,9 +92,6 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
         patternp = Pattern.compile(prefix + "[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$");
     }
 
-    /**
-     * cree les attributs time_period et file_creation_date
-     */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
@@ -99,10 +99,10 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
     }
 
     /**
-     * 
-     * @param fileMap
-     * @param attributeMap
-     * @throws PluginAcquisitionException
+     * Add the TIME_PERIOD {@link CompositeAttribute}
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException if an error occurs
      */
     private void registerTimePeriodAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
@@ -132,9 +132,9 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
     }
 
     /**
-     * 
-     * @param files
-     * @return
+     * Get the START_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the START_DATE value of each {@link File}
      * @throws PluginAcquisitionException
      */
     protected List<OffsetDateTime> getStartDateValue(Collection<File> files) throws PluginAcquisitionException {
@@ -155,10 +155,10 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
     }
 
     /**
-     * 
-     * @param files
-     * @return
-     * @throws PluginAcquisitionException
+     * Get the STOP_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the STOP_DATE value of each {@link File}
+     * @throws PluginAcquisitionException if an error occurs
      */
     protected List<OffsetDateTime> getStopDateValue(Collection<File> files) throws PluginAcquisitionException {
         long longValue = 0;
@@ -178,10 +178,10 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
     }
 
     /**
-     * 
-     * @param files
-     * @return
-     * @throws PluginAcquisitionException
+     * Get the CREATION_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the CREATION_DATE value of each {@link File}
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
      */
     protected List<OffsetDateTime> getCreationDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();

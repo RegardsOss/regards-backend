@@ -25,6 +25,11 @@ import fr.cnes.regards.modules.acquisition.plugins.ICalculationClass;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
 /**
+ * Calculates a new date from a date parameter :<br> 
+ * the calculate date is the date parameter
+ * <li>with the hour set to <code>23</code>,
+ * <li>the minute set to <code>59</code>,
+ * <li>the seconds set to <code>59</code>
  * 
  * @author Christophe Mertz
  *

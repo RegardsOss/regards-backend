@@ -40,44 +40,49 @@ import fr.cnes.regards.modules.acquisition.finder.AsciiFileFinder;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
- * Cette classe permet de calculer de maniere specifique pour les fichiers ENVISAT PLTM, les elements suivants :
- * <ul>
- * <li>GEO_COORDINATES/LONGITUDE_MIN</li>
- * <li>GEO_COORDINATES/LONGITUDE_MAX</li>
- * <li>GEO_COORDINATES/LATITUDE_MIN</li>
- * <li>GEO_COORDINATES/LATITUDE_MAX</li>
- * </ul>
+ * Metadata caculation's plugin for Envisat PLTM products.
  * 
  * @author Christophe Mertz
  */
-@Plugin(description = "EnvisatPLTMProductMetadataPlugin", id = "EnvisatPLTMProductMetadataPlugin", version = "1.0.0",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+@Plugin(description = "Metadata caculation's plugin for Envisat PLTM products", id = "EnvisatPLTMProductMetadataPlugin",
+        version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlugin {
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 
-    private static final String GEO_COORDINATES = "GEO_COORDINATES";
-
-    private static final String LONGITUDE_MIN = "LONGITUDE_MIN";
-
-    private static final String LONGITUDE_MAX = "LONGITUDE_MAX";
-
-    private static final String LATITUDE_MIN = "LATITUDE_MIN";
-
-    private static final String LATITUDE_MAX = "LATITUDE_MAX";
-
+    /*
+     * Double value of 10exp-6 
+     */
     private static final double DIX_MOINS_6 = 0.000001;
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(EnvisatPLTMProductMetadataPlugin.class);
 
+    /**
+     * {@link List} of minimum longitude value
+     */
     private List<Double> longitudeMin = null;
 
+    /**
+     * {@link List} of maximum longitude value
+     */
     private List<Double> longitudeMax = null;
 
+    /**
+     * {@link List} of minimum latitude value
+     */
     private List<Double> latitudeMin = null;
 
+    /**
+     * {@link List} of maximum latitude value
+     */
     private List<Double> latitudeMax = null;
 
     @Override
@@ -86,9 +91,7 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
     }
 
     /**
-     * 
-     * Calcul des attributs LONGITUDE_MIN, LONGITUDE_MAX, LATITUDE_MIN, LATITUDE_MAX
-     * 
+     * LONGITUDE_MIN, LONGITUDE_MAX, LATITUDE_MIN, LATITUDE_MAX {@link Attribute}s creation
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
@@ -145,9 +148,9 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
     /**
      * Compute min longitude value
      * 
-     * @param fileMap
-     * @param attributeValueMap
-     * @throws PluginAcquisitionException
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException if an error occurs
      */
     private void computeLongitudeMin(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
@@ -171,9 +174,9 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
     /**
      * Compute max longitude
      * 
-     * @param fileMap
-     * @param attributeValueMap
-     * @throws PluginAcquisitionException
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException if an error occurs
      */
     private void computeLongitudeMax(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
@@ -195,11 +198,11 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
     }
 
     /**
-     * Calcule les latitudes
+     * Compute latitude values
      * 
-     * @param fileMap
-     * @param attributeValueMap
-     * @throws PluginAcquisitionException
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException if an error occurs
      */
     private void computeLatitude(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
@@ -227,7 +230,9 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
         List<Double> stopLatList = (List<Double>) finder.getValueList(fileMap, attributeValueMap);
 
         // Compute latitudes
-        if (!(startLatList.isEmpty() || (stopLatList.isEmpty()))) {
+        if (startLatList.isEmpty() || (stopLatList.isEmpty())) {
+            throw new PluginAcquisitionException("Unknown START_LAT or STOP_LAT in file");
+        } else {
             double startLat = Double.parseDouble(startLatList.get(0).toString());
             double stopLat = Double.parseDouble(stopLatList.get(0).toString());
             startLat = startLat * DIX_MOINS_6;
@@ -240,8 +245,6 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
                 latitudeMin.add(formatCoordinate(stopLat));
                 latitudeMax.add(formatCoordinate(startLat));
             }
-        } else {
-            throw new PluginAcquisitionException("Unknown START_LAT or STOP_LAT in file");
         }
     }
 
@@ -250,7 +253,10 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
      **************************************************************************/
 
     /**
-     * Formate la longitude pour ENVISAT PLTM
+     * Format the longitude for ENVISAT PLTM
+     * 
+     * @param newValue the value to format
+     * @return the formatted value
      */
     private Double longitudeToGreenwichCenterLongitude(Object newValue) {
         // * 10-6
@@ -264,10 +270,10 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
     }
 
     /**
-     * Limite la precision a deux chiffres apres la virgule
+     * Limit a value to 2 digits after the decimal point
      * 
-     * @param value
-     * @return Formatted object
+     * @param value the value to format
+     * @return Formatted value
      */
     public Double formatCoordinate(double value) {
         NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);

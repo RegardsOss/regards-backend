@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.tools.CalculusTypeEnum;
 
 /**
- * finder qui recuperer la valeur dans une liste de fichiers, puis  effectue eventuellement un calcul avec ces valeurs pour
+ * Finder qui recupere la valeur dans une liste de fichiers, puis  effectue eventuellement un calcul avec ces valeurs pour
  * renvoyer la valeur de l'attribut
  * 
  * @author Christophe Mertz
@@ -42,6 +42,9 @@ import fr.cnes.regards.modules.acquisition.tools.CalculusTypeEnum;
  */
 public class MultipleFileNameFinder extends FileNameFinder {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MultipleFileNameFinder.class);
 
     /**
@@ -52,7 +55,6 @@ public class MultipleFileNameFinder extends FileNameFinder {
     @Override
     public List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
-        LOGGER.debug("--> begin");
         // List<Object> le type des objets depend du type AttributeTypeEnum
         List<Object> valueList = new ArrayList<>();
         // extrait les fichiers a partir des ssalto File
@@ -65,18 +67,20 @@ public class MultipleFileNameFinder extends FileNameFinder {
             Matcher matcher = pattern.matcher(fileToProceed.getName());
             if (matcher.matches()) {
                 StringBuilder value = new StringBuilder();
-                
+
                 // la valeur finale peut etre composée de plusieurs groupes
                 for (Integer groupNumber : groupNumberList) {
                     value.append(matcher.group(groupNumber.intValue()));
                 }
                 parsedValue = valueOf(value.toString());
-                
+
                 if (parsedValue != null) {
                     valueList.add(parsedValue);
-                    LOGGER.debug("add value " + parsedValue.toString() + " for file " + fileToProceed.getName());
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("add value " + parsedValue.toString() + " for file " + fileToProceed.getName());
+                    }
                 }
-                
+
             }
         }
 
@@ -87,7 +91,6 @@ public class MultipleFileNameFinder extends FileNameFinder {
             String msg = "No filename matching pattern " + filePattern;
             LOGGER.warn(msg);
         }
-        LOGGER.debug("<-- end");
 
         return processedValuesList;
     }

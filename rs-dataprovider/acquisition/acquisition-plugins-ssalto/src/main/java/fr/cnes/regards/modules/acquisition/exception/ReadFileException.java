@@ -26,9 +26,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  * @author Christophe Mertz
  *
  */
+@SuppressWarnings("serial")
 public class ReadFileException extends ModuleException {
-
-    private static final long serialVersionUID = 9042366485731066049L;
 
     public ReadFileException(String file) {
         super(String.format("Can not read the file : %s", file));

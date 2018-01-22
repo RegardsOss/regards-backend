@@ -41,14 +41,20 @@ import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 
 /**
- * Plugin pour les produits PLTM1 des missions JASONX
+ * Plugin pour les produits PLTM1 des missions JASON1, JASON2 et JASON3.
  *
  * @author Christophe Mertz
  */
 public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJasonDoris10ProductMetadataPlugin {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJasonPltm1ProductMetadataPlugin.class);
 
+    /**
+     * The {@link String} RADICAL
+     */
     private static final String RADICAL = "RADICAL";
 
     public AbstractJasonPltm1ProductMetadataPlugin() {
@@ -57,13 +63,17 @@ public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJa
 
     /**
      *
-     * Méthode abstraite permettant de fournir le prefixe des patterns de fichier lié à la mission JASON. Exemple :
+     * Méthode abstraite permettant de fournir le prefixe des patterns de fichier lié à la mission JASON.
+     * Exemple :
      * "JA1" pour JASON1, "JA2" pour JASON2 ou "JA3" pour JASON3
      *
      * @return
      */
     protected abstract String getProjectPrefix();
 
+    /**
+     * RADICAL attribute creation
+     */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
@@ -92,9 +102,8 @@ public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJa
             } else if (matcherP.matches()) {
                 dateStr = matcherP.group(1);
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
 
             LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
@@ -117,9 +126,8 @@ public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJa
             } else if (matcherP.matches()) {
                 dateStr = matcherP.group(3);
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
 
             LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
@@ -144,32 +152,32 @@ public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJa
 
             Matcher matcherD = patternd.matcher(fileName);
             Matcher matcherP = patternp.matcher(fileName);
-            String radical = null;
 
             if (matcherP.matches()) {
                 String fileNamePattern = getProperties().getFileNamePattern();
 
                 // get the prefix
                 String prefix = fileNamePattern.substring(0, fileNamePattern.indexOf("("));
-                radical = prefix;
+                StringBuilder strBuilder = new StringBuilder(prefix);
 
                 // get the pid num
                 Pattern patternFile = Pattern.compile(fileNamePattern);
                 Matcher matcherFile = patternFile.matcher(fileName);
 
                 if (matcherFile.matches()) {
-                    radical += matcherFile.group(1);
+                    strBuilder.append(matcherFile.group(1));
                 }
 
                 // get the radical
-                radical += "_" + matcherP.group(2);
-                radical += "_" + matcherP.group(3);
-                valueList.add(radical);
+                strBuilder.append("_");
+                strBuilder.append(matcherP.group(2));
+                strBuilder.append("_");
+                strBuilder.append(matcherP.group(3));
+                valueList.add(strBuilder.toString());
             } else {
                 if (!matcherD.matches()) {
-                    String msg = "filename does not match";
-                    LOGGER.error(msg);
-                    throw new PluginAcquisitionException(msg);
+                    LOGGER.error(MSG_ERR_FILENAME);
+                    throw new PluginAcquisitionException(MSG_ERR_FILENAME);
                 }
             }
         }
@@ -180,9 +188,9 @@ public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJa
      *
      * Ajout de l'attribut RADICAL à la map des attributs
      *
-     * @param fileMap
-     * @param attributeMap
-     * @throws PluginAcquisitionException
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException if an error occurs
      */
     private void registerRadicalAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
@@ -191,7 +199,7 @@ public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJa
         try {
             Attribute radicalAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_STRING, RADICAL,
                                                                           getRadicalValue(fileMap.keySet()));
-            if ((radicalAttribute.getValueList() != null) && (radicalAttribute.getValueList().size() != 0)) {
+            if ((radicalAttribute.getValueList() != null) && (!radicalAttribute.getValueList().isEmpty())) {
                 registerAttribute(attributeMap, RADICAL, radicalAttribute);
                 attributeValueMap.put(RADICAL, radicalAttribute.getValueList());
             } else {

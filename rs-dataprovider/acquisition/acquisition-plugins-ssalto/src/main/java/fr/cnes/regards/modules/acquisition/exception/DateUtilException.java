@@ -20,9 +20,14 @@ package fr.cnes.regards.modules.acquisition.exception;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
+/**
+ * Date format exception
+ * 
+ * @author Christophe Mertz
+ *
+ */
+@SuppressWarnings("serial")
 public class DateUtilException extends ModuleException {
-
-    private static final long serialVersionUID = 216102380086780043L;
 
     public DateUtilException(Throwable exception) {
         super(exception);

@@ -22,17 +22,17 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 
 /**
- * Manage LOG_VOL_ALTIKA data.<br>
+ * Check's plugin for LOGVOL Altika products.<br>
  * This {@link Plugin} checks that the file exists and is accessible.<br>
  * The {@link Product} name is the file name less the extension file.<br>
  * 
  * @author Christophe Mertz
  *
  */
-@Plugin(description = "LogVolAltikaCheckingFilePlugin", id = "LogVolAltikaCheckingFilePlugin", version = "1.0.0",
+@Plugin(description = "Check's plugin for LOGVOL Altika products", id = "LogVolAltikaCheckingFilePlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class LogVolAltikaCheckingFilePlugin extends AbstractCheckingFilePlugin {
+public class LogVolAltikaCheckingFilePlugin extends CheckingFilePluginHelper {
 
     /**
      * The extension file HDR
@@ -49,10 +49,15 @@ public class LogVolAltikaCheckingFilePlugin extends AbstractCheckingFilePlugin {
      */
     private static String EXTENSION_TCH = "_TCH";
 
+    private LogVolAltikaCheckingFilePlugin() {
+        super();
+        initExtensionList();
+    }
+
     /**
      * Initialize the extension file to remove from the file name
      */
-    protected void initExtensionList() {
+    private void initExtensionList() {
         extensionList.add(EXTENSION_BIN);
         extensionList.add(EXTENSION_HDR);
         extensionList.add(EXTENSION_TCH);

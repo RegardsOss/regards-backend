@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.finder;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -39,14 +40,17 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
  * @author Christophe Mertz
  *
  */
-public class CompositeAttributeFinder extends AttributeFinder {
+public class CompositeAttributeFinder extends AbstractAttributeFinder {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(CompositeAttributeFinder.class);
 
     /**
-     * liste de finder associes a l'attribute compose
+     * liste de finder associes a l'attribut compose
      */
-    private List<AttributeFinder> finderList;
+    private List<AbstractAttributeFinder> finderList;
 
     /**
      * Nom de l'attribut compose, sera utilise dans le fichier descripteur pour construire la balise d' l'attribut
@@ -57,18 +61,18 @@ public class CompositeAttributeFinder extends AttributeFinder {
     @Override
     public Attribute buildAttribute(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
-
-        LOGGER.debug("START building composite attribute " + getName());
-
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("START building composite attribute {}", getName());
+        }
         CompositeAttribute attribute = new CompositeAttribute();
         attribute.setName(name);
-        for (AttributeFinder finder : finderList) {
+        for (AbstractAttributeFinder finder : finderList) {
             Attribute attribut = finder.buildAttribute(fileMap, attributeValueMap);
             attribute.addAttribute(attribut);
         }
-
-        LOGGER.debug("END building composite attribute " + getName());
-
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("END building composite attribute {}", getName());
+        }
         return attribute;
     }
 
@@ -76,15 +80,15 @@ public class CompositeAttributeFinder extends AttributeFinder {
     public List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
         // NOTHING TO DO
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
     public String toString() {
         StringBuilder buff = new StringBuilder(getClass().toString());
         buff.append(" | name : ").append(name).append("\n");
-        for (Iterator<AttributeFinder> gIter = finderList.iterator(); gIter.hasNext();) {
-            AttributeFinder finder = gIter.next();
+        for (Iterator<AbstractAttributeFinder> gIter = finderList.iterator(); gIter.hasNext();) {
+            AbstractAttributeFinder finder = gIter.next();
             buff.append(finder.toString());
             if (gIter.hasNext()) {
                 buff.append("\n");
@@ -93,7 +97,7 @@ public class CompositeAttributeFinder extends AttributeFinder {
         return buff.toString();
     }
 
-    public void addFileFinder(AttributeFinder newFinder) {
+    public void addFileFinder(AbstractAttributeFinder newFinder) {
         if (finderList == null) {
             finderList = new ArrayList<>();
         }
@@ -102,7 +106,7 @@ public class CompositeAttributeFinder extends AttributeFinder {
 
     @Override
     public void setAttributProperties(PluginConfigurationProperties confProperties) {
-        for (AttributeFinder finder : finderList) {
+        for (AbstractAttributeFinder finder : finderList) {
             finder.setAttributProperties(confProperties);
         }
     }

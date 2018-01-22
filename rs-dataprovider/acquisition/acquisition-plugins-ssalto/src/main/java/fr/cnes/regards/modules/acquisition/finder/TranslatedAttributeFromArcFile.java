@@ -37,23 +37,53 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.tools.CNESJulianDate;
 import fr.cnes.regards.modules.acquisition.tools.DateFormatter;
 
+/**
+ * Classe permettant de lire un fichier d'arcs dont le nom respecte le pattern :<br>
+ * "[0-9]{6}[A-Z]{1}\\s([0-9]+)\\s([0-9]+)\\s([0-9]+)\\s([0-9]+)\\s0*{numero d'arc}\\s.*"
+ * 
+ * @author Christophe Mertz
+ *
+ */
 public class TranslatedAttributeFromArcFile extends FileNameFinder {
 
+    /**
+     * Index du groupe de capture du jour de la date de début dans le pattern
+     */
     protected static final int START_JULIAN_DAY_GROUP = 1;
 
+    /**
+     * Index du groupe de capture de l'heure de la date de début dans le pattern
+     */
     protected static final int START_HOUR_GROUP = 2;
 
+    /**
+     * Index du groupe de capture du jour de la date de fin dans le pattern
+     */
     protected static final int STOP_JULIAN_DAY_GROUP = 3;
 
+    /**
+     * Index du groupe de capture de l'heure de la date de fin dans le pattern
+     */
     protected static final int STOP_HOUR_GROUP = 4;
 
+    /**
+    * START_DATE attribute name
+    */
     private static final String START_DATE = "START_DATE";
 
+    /**
+     * STOP_DATE attribute name
+     */
     private static final String STOP_DATE = "STOP_DATE";
 
-    // Charset and decoder for ISO-8859-15
+    /**
+     *  {@link Charset} for ISO-8859-15
+     */
     private static final Charset CHARSET = Charset.forName("ISO-8859-15");
 
+    /**
+     * {@link Charset} decoder for ISO-8859-15
+     */
     private static final CharsetDecoder DECODER = CHARSET.newDecoder();
 
     @Override
@@ -106,11 +136,11 @@ public class TranslatedAttributeFromArcFile extends FileNameFinder {
     }
 
     /**
-     * Lit un fichier sous forme de charBuffer
+     * Read a file and return a {@link CharBuffer}
      * 
-     * @param filePath
-     * @return
-     * @throws IOException
+     * @param filePath the path to the file to read
+     * @return a {@link CharBuffer} to the the current file
+     * @throws IOException an error occurs then reading the file
      */
     private CharBuffer readFile(String filePath) throws IOException {
         FileChannel fc = null;

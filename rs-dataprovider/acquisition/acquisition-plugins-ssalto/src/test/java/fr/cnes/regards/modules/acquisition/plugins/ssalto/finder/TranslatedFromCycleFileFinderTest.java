@@ -41,6 +41,7 @@ import fr.cnes.regards.modules.acquisition.finder.TranslatedFromCycleFileFinder;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
 /**
+ * Test the cycle calculation
  * 
  * @author Christophe Mertz
  *
@@ -117,7 +118,7 @@ public class TranslatedFromCycleFileFinderTest {
         Assert.assertEquals(126, ((Integer) resultList.get(0)).intValue());
     }
 
-    // CMZ ignore car passe ne pas systematiquement sur intégration continue alors que passe en local 
+    // CMZ set as ignore because does not always work on Jenkins IT while it works on local 
     @Ignore
     @Test
     public void jason2GetCycleFromDateEqualCycleStartDate() throws Exception {
@@ -212,7 +213,7 @@ public class TranslatedFromCycleFileFinderTest {
 
         Map<String, List<? extends Object>> attributMap = new HashMap<>();
         List<Integer> attValueList = new ArrayList<>();
-        // recherche du cycle 0
+        // search the cycle 0
         attValueList.add(new Integer(0));
         attributMap.put(ATT_NAME, attValueList);
 
@@ -231,7 +232,6 @@ public class TranslatedFromCycleFileFinderTest {
         Assert.assertTrue(OffsetDateTime.of(expectedLdt, ZoneOffset.UTC).isEqual((OffsetDateTime) resultList.get(0)));
     }
 
-    // Cycle inclu dans le premier fichier
     @Test
     public void jason2GetDateFromCycleFirstFile() throws Exception {
         TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
@@ -242,7 +242,7 @@ public class TranslatedFromCycleFileFinderTest {
 
         Map<String, List<? extends Object>> attributMap = new HashMap<>();
         List<Integer> attValueList = new ArrayList<>();
-        // recherche du cycle 1        
+        // search the cycle 1        
         attValueList.add(new Integer(1));
         attributMap.put(ATT_NAME, attValueList);
 
@@ -258,8 +258,7 @@ public class TranslatedFromCycleFileFinderTest {
         Assert.assertTrue(OffsetDateTime.of(expectedLdt, ZoneOffset.UTC).isEqual((OffsetDateTime) resultList.get(0)));
     }
 
-    // Cycle inclu dans le deuxieme fichier
-    // FIXME CMZ ignore car passe ne pas systematiquement sur intégration continue alors que passe en local 
+    // CMZ set as ignore because does not always work on Jenkins IT while it works on local
     @Ignore
     @Test
     public void jason2GetDateFromCycleSecondFile() {
@@ -271,7 +270,7 @@ public class TranslatedFromCycleFileFinderTest {
 
         Map<String, List<? extends Object>> attributMap = new HashMap<>();
         List<Integer> attValueList = new ArrayList<>();
-        // recherche du cycle 28 qui est dans le fichier
+        // search the cycle 28 in the file
         // JA2_ORF_AXXCNE20090624_122700_20080704_055707_20090702_080949
         attValueList.add(new Integer(28));
         attributMap.put(ATT_NAME, attValueList);
@@ -298,7 +297,6 @@ public class TranslatedFromCycleFileFinderTest {
         Assert.assertTrue(OffsetDateTime.of(expectedLdt, ZoneOffset.UTC).isEqual((OffsetDateTime) resultList.get(0)));
     }
 
-    // Cycle inclu dans aucun des fichiers
     @Test(expected = PluginAcquisitionException.class)
     public void jason2GetDateFromUnknownCycle() throws Exception {
         TranslatedFromCycleFileFinder translatedFromCycleFileFinder = new TranslatedFromCycleFileFinder();
@@ -309,7 +307,7 @@ public class TranslatedFromCycleFileFinderTest {
 
         Map<String, List<? extends Object>> attributMap = new HashMap<>();
         List<Integer> attValueList = new ArrayList<>();
-        // recherche du cycle 999 qui n'est dans aucun fichier
+        // search an unknow cycle
         attValueList.add(new Integer(999));
         attributMap.put(ATT_NAME, attValueList);
 

@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
 import fr.cnes.regards.modules.acquisition.tools.DateFormatter;
 
 /**
- * This class parses a {@link String} to extracts a date and format this date with the format "yyyy-MM-dd'T'HH:mm:ss".
+ * This class parses a {@link String} to extract a date and format this date with the format "yyyy-MM-dd'T'HH:mm:ss".
  * 
  * @author Christophe Mertz
  *
@@ -120,10 +120,25 @@ public abstract class AbstractSetDateCommon implements ICalculationClass {
         return result;
     }
 
+    /**
+     * Default hour value
+     * 
+     * @return Default hour value
+     */
     protected abstract int getDefaultHour();
 
+    /**
+     * Default minute value
+     * 
+     * @return Default minute value
+     */
     protected abstract int getDefaultMinute();
 
+    /**
+     * Default second value
+     * 
+     * @return Default second value
+     */
     protected abstract int getDefaultSecond();
 
 }

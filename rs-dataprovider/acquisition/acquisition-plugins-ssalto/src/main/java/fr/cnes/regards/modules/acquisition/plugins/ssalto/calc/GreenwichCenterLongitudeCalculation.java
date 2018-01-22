@@ -26,8 +26,8 @@ import fr.cnes.regards.modules.acquisition.plugins.ICalculationClass;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
 /**
- * Cette classe permet de passer de longitude 0 360 a des longitudes
- * -180 180, en limitant la precision a deux chiffres apres la virgule.
+ * Cette classe permet de passer de longitude 0 360 a des longitudes-180 180,
+ * en limitant la precision a deux chiffres apres la virgule.
  * 
  * @author Christophe Mertz
  *

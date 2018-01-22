@@ -24,19 +24,24 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
- * plugin specifiques au donnees jason2 doris les noms des fichiers ont deux formes bien distinctes et ne peuvent pas
- * etre resolues juste par le fichier de configuration. Les attributs traites specifiquement sont les TIME_PERIOD et
- * FILE_CREATION_DATE.
+ * Metadata caculation's plugin for Jason2 using Doris1B instrument.<br>
+ * The TIME_PERIOD and FILE_CREATION_DATE attributes are managed specifically.
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Jason2Doris10ProductMetadataPlugin", id = "Jason2Doris10ProductMetadataPlugin",
-        version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+@Plugin(description = "Metadata caculation's plugin for Jason2 using Doris1B instrument",
+        id = "Jason2Doris10ProductMetadataPlugin", version = "1.0.0", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class Jason2Doris10ProductMetadataPlugin extends AbstractJasonDoris10ProductMetadataPlugin {
 
+    /**
+     * JASON2 project name
+     */
     private static final String PROJECT_NAME = "JASON2";
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 

@@ -33,79 +33,82 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.modules.acquisition.exception.DateUtilException;
 
 /**
- * Cette classe contient des fonctionnalites permettant de formatter une date et d'en verifier le format. Elle expose un
- * ensemble de formats utilisables.
+ * Cette classe contient des fonctionnalites permettant de formatter une date et d'en verifier le format.<br>
+ * Elle expose un ensemble de formats utilisables.
  * 
  * @author Christophe Mertz
  *
  */
 public class DateFormatter {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(DateFormatter.class);
 
     /**
      * Format le plus complet possible (à la milliseconde pres) pour les dates/heures dans les IHMs
      */
-    public static final  String FULL_DATE_TIME_FORMAT = "FULL_DATE_TIME_FORMAT";
+    public static final String FULL_DATE_TIME_FORMAT = "FULL_DATE_TIME_FORMAT";
 
     /**
      * Format de timestamp sans milliseconde
      */
-    public static final  String DATE_TIMESTAMP = "DATE_TIMESTAMP";
+    public static final String DATE_TIMESTAMP = "DATE_TIMESTAMP";
 
     /**
      * Format le plus complet possible (à la milliseconde pres) pour les dates/heures dans les IHMs mais sans separateur
      */
-    public static final  String FULL_DATE_TIMESTAMP = "FULL_DATE_TIMESTAMP";
+    public static final String FULL_DATE_TIMESTAMP = "FULL_DATE_TIMESTAMP";
 
     /**
      * Format commun pour les dates/heures dans les IHMs
      */
-    public static final  String DATE_TIME_FORMAT = "DATE_TIME_FORMAT";
+    public static final String DATE_TIME_FORMAT = "DATE_TIME_FORMAT";
 
-    public static final  String DATE_TIME_FORMAT_DDMMYYYY = "DATE_TIME_FORMAT_DDMMYYYY";
+    public static final String DATE_TIME_FORMAT_DDMMYYYY = "DATE_TIME_FORMAT_DDMMYYYY";
 
-    public static final  String DATE_FORMAT_DDMMYYYY = "DATE_FORMAT_DDMMYYYY";
+    public static final String DATE_FORMAT_DDMMYYYY = "DATE_FORMAT_DDMMYYYY";
 
     /**
      * Format simple pour les dates sans heure dans les IHMs
      */
-    public static final  String DATE_ONLY_FORMAT = "DATE_ONLY_FORMAT";
+    public static final String DATE_ONLY_FORMAT = "DATE_ONLY_FORMAT";
 
     /**
      * Format simple donnant uniquement la composant "heure" de la date fournie
      */
-    public static final  String TIME_ONLY_FORMAT = "TIME_ONLY_FORMAT";
+    public static final String TIME_ONLY_FORMAT = "TIME_ONLY_FORMAT";
 
     /**
      * Format simple pour les dates sans heure dans les IHMs
      */
-    public static final  String DATE_FORMAT = "DATE_FORMAT";
+    public static final String DATE_FORMAT = "DATE_FORMAT";
 
     /**
      * Format simple pour les dates sans heure pour l'ingestion.
      */
-    public static final  String XS_DATE_FORMAT = "XS_DATE_FORMAT";
+    public static final String XS_DATE_FORMAT = "XS_DATE_FORMAT";
 
     /**
      * Format commun pour les dates/heures pour l'ingestion.
      */
-    public static final  String XS_DATE_TIME_FORMAT = "XS_DATE_TIME_FORMAT";
+    public static final String XS_DATE_TIME_FORMAT = "XS_DATE_TIME_FORMAT";
 
     /**
      * format tout attache qui s'arrete aux minutes pour les noms de fichiers
      */
-    public static final  String DATE_HOUR_MIN_FORMAT = "DATE_HOUR_MIN_FORMAT";
+    public static final String DATE_HOUR_MIN_FORMAT = "DATE_HOUR_MIN_FORMAT";
 
     /**
      * format avec separateur qui s'arrete aux minutes
      */
-    public static final  String DATE_HOUR_MIN_FORMAT_SEPARATED = "DATE_HOUR_MIN_FORMAT_SEPARATED";
+    public static final String DATE_HOUR_MIN_FORMAT_SEPARATED = "DATE_HOUR_MIN_FORMAT_SEPARATED";
 
     /**
      * format avec separateur complet
      */
-    public static final  String DATE_HOUR_FULL_FORMAT_SEPARATED = "DATE_HOUR_FULL_FORMAT_SEPARATED";
+    public static final String DATE_HOUR_FULL_FORMAT_SEPARATED = "DATE_HOUR_FULL_FORMAT_SEPARATED";
 
     /**
      * Map qui contient les informations sur les formats reconnus par la classe GuiDate (attribut statique et
@@ -117,18 +120,17 @@ public class DateFormatter {
         formats = new HashMap<>();
         // date and time down to the millisecond
         formats.put(FULL_DATE_TIME_FORMAT,
-                     new Format("yyyy/MM/dd-HH:mm:ss.SSS", "^\\d{4}/\\d{2}/\\d{2}-\\d{2}:\\d{2}:\\d{2}\\.\\d{3}$"));
+                    new Format("yyyy/MM/dd-HH:mm:ss.SSS", "^\\d{4}/\\d{2}/\\d{2}-\\d{2}:\\d{2}:\\d{2}\\.\\d{3}$"));
         // date and time
         formats.put(DATE_TIMESTAMP, new Format("yyyyMMdd_HHmmss", "^\\d{4}\\d{2}\\d{2}_\\d{2}\\d{2}\\d{2}$"));
         // date and time down to the millisecond
         formats.put(FULL_DATE_TIMESTAMP,
-                     new Format("yyyyMMddHHmmssSSS", "^\\d{4}\\d{2}\\d{2}\\d{2}\\d{2}\\d{2}\\d{3}$"));
+                    new Format("yyyyMMddHHmmssSSS", "^\\d{4}\\d{2}\\d{2}\\d{2}\\d{2}\\d{2}\\d{3}$"));
         // date and time down to the second
-        formats.put(DATE_TIME_FORMAT,
-                     new Format("yyyy/MM/dd-HH:mm:ss", "^\\d{4}/\\d{2}/\\d{2}-\\d{2}:\\d{2}:\\d{2}$"));
+        formats.put(DATE_TIME_FORMAT, new Format("yyyy/MM/dd-HH:mm:ss", "^\\d{4}/\\d{2}/\\d{2}-\\d{2}:\\d{2}:\\d{2}$"));
         // date and time down to the second
         formats.put(DATE_TIME_FORMAT_DDMMYYYY,
-                     new Format("dd/MM/yyyy HH:mm:ss", "^\\d{2}/\\d{2}/\\d{4}-\\d{2}:\\d{2}:\\d{2}$"));
+                    new Format("dd/MM/yyyy HH:mm:ss", "^\\d{2}/\\d{2}/\\d{4}-\\d{2}:\\d{2}:\\d{2}$"));
         formats.put(DATE_FORMAT_DDMMYYYY, new Format("dd/MM/yyyy", "^\\d{2}/\\d{2}/\\d{4}$"));
         // date only (no time)
         formats.put(DATE_FORMAT, new Format("yyyyMMdd", "^\\d{4}\\d{2}\\d{2}$"));
@@ -136,14 +138,14 @@ public class DateFormatter {
         formats.put(DATE_ONLY_FORMAT, new Format("yyyy/MM/dd", "^\\d{4}/\\d{2}/\\d{2}$"));
         // xs date and time down to the second
         formats.put(XS_DATE_TIME_FORMAT,
-                     new Format("yyyy-MM-dd'T'HH:mm:ss", "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"));
+                    new Format("yyyy-MM-dd'T'HH:mm:ss", "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"));
         // xs date only (no time)
         formats.put(XS_DATE_FORMAT, new Format("yyyy-MM-dd", "^\\d{4}-\\d{2}-\\d{2}$"));
 
         formats.put(DATE_HOUR_MIN_FORMAT, new Format("yyyyMMddHHmm", "^\\d{4}\\d{2}\\d{2}\\d{2}\\d{2}$"));
         formats.put(DATE_HOUR_MIN_FORMAT_SEPARATED, new Format("yyyyMMdd-HHmm", "^\\d{4}\\d{2}\\d{2}-\\d{2}\\d{2}$"));
         formats.put(DATE_HOUR_FULL_FORMAT_SEPARATED,
-                     new Format("yyyyMMdd-HHmmss", "^\\d{4}\\d{2}\\d{2}-\\d{2}\\d{2}\\d{2}$"));
+                    new Format("yyyyMMdd-HHmmss", "^\\d{4}\\d{2}\\d{2}-\\d{2}\\d{2}\\d{2}$"));
         formats.put(TIME_ONLY_FORMAT, new Format("HH:mm:ss", "^\\d{2}:\\d{2}:\\d{2}$"));
     }
 
@@ -253,8 +255,8 @@ public class DateFormatter {
         // do the matching
         final Matcher matcher = pattern.matcher(date);
         if (!matcher.matches()) {
-            
-            final String msg = String.format("No match found"); 
+
+            final String msg = String.format("No match found");
             throw new DateUtilException(msg);
         }
 

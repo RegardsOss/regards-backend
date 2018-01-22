@@ -24,17 +24,23 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
- * Plugin de generation des metadonnees produit pour la mission Cryosat2
+ * Metadata caculation's plugin for Cryosat2 products.
  * 
  * @author Christophe Mertz
  */
-@Plugin(description = "Cryosat2ProductMetadataPlugin", id = "Cryosat2ProductMetadataPlugin", version = "1.0.0",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+@Plugin(description = "Metadata caculation's plugin for Cryosat2 products", id = "Cryosat2ProductMetadataPlugin",
+        version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Cryosat2ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
+    /**
+     * CRYOSAT2 project name
+     */
     private static final String PROJECT_NAME = "CRYOSAT2";
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 

@@ -30,8 +30,9 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
 public interface ICalculationClass {
 
     /**
-     * calcule la valeur de retour a partir d'une valeur
-     * @return
+     * Calcule la valeur de retour à partir d'une valeur fournie en paramètre
+     * 
+     * @return la valeur calculée
      */
     Object calculateValue(Object value, AttributeTypeEnum attributeType, PluginConfigurationProperties properties);
 

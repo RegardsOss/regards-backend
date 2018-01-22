@@ -42,34 +42,4 @@ public class DataObjectUpdateElement extends DataObjectElement {
     protected int getOrder() {
         return 4;
     }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((getDataObjectIdentifier() == null) ? 0 : getDataObjectIdentifier().hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        DataObjectUpdateElement other = (DataObjectUpdateElement) obj;
-        if (getDataObjectIdentifier() == null) {
-            if (other.getDataObjectIdentifier() != null) {
-                return false;
-            }
-        } else if (!getDataObjectIdentifier().equals(other.getDataObjectIdentifier())) {
-            return false;
-        }
-        return true;
-    }
 }

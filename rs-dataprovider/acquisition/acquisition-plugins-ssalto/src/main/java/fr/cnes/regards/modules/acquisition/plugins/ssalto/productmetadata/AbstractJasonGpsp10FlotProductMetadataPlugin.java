@@ -28,15 +28,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
-import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 /**
- * plugin specifiques au donnees jason2 GPSP10Flot Les attributs traites specifiquement sont les TIME_PERIOD, que l'on
+ * Plugin specifique aux donnees jason2 GPSP10Flot Les attributs traites specifiquement sont les TIME_PERIOD, que l'on
  * va lire dans les blocs de mesure.
  *
  * @author Christophe Mertz
@@ -44,19 +42,13 @@ import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 public abstract class AbstractJasonGpsp10FlotProductMetadataPlugin extends AbstractJasonDoris10ProductMetadataPlugin {
 
+    /**
+     * A {@link DateTimeFormatter} for the pattern "yyyy-MM-dd HH:mm:ss"
+     */
     protected static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public AbstractJasonGpsp10FlotProductMetadataPlugin() {
         super();
-    }
-
-    /**
-     * cree les attributs time_period et file_creation_date
-     */
-    @Override
-    protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
-            throws PluginAcquisitionException {
-        super.doCreateIndependantSpecificAttributes(pFileMap, pAttributeMap);
     }
 
     @Override

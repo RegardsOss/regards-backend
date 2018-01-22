@@ -22,17 +22,17 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 
 /**
- * Manage LOG_VOL_POS3 de JASON2 data.<br>
+ * Check's plugin for Jaons2 LOGVOL_POS3 products.<br>
  * This {@link Plugin} checks that the file exists and is accessible.<br>
  * The {@link Product} name is the file name less the extension file.<br>
  * 
  * @author Christophe Mertz
  *
  */
-@Plugin(description = "LogVolPos3CheckingFilePlugin", id = "LogVolPos3CheckingFilePlugin", version = "1.0.0",
+@Plugin(description = "Check's plugin for Jaons2 LOGVOL_POS3 products", id = "LogVolPos3CheckingFilePlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class LogVolPos3CheckingFilePlugin extends AbstractCheckingFilePlugin {
+public class LogVolPos3CheckingFilePlugin extends CheckingFilePluginHelper {
 
     /**
      * The extension file BIN
@@ -44,10 +44,15 @@ public class LogVolPos3CheckingFilePlugin extends AbstractCheckingFilePlugin {
      */
     private static String EXTENSION_HDR = "_HDR";
 
+    private LogVolPos3CheckingFilePlugin() {
+        super();
+        initExtensionList();
+    }
+
     /**
      * Initialize the extension file to remove from the file name
      */
-    protected void initExtensionList() {
+    private void initExtensionList() {
         extensionList.add(EXTENSION_BIN);
         extensionList.add(EXTENSION_HDR);
     }

@@ -30,12 +30,12 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.tools.FileInformationTypeEnum;
 
 /**
- * ce finder doit aller chercher la valeur de l'attribut dans les informations systemes du fichier
+ * Ce finder doit aller chercher la valeur de l'attribut dans les informations systemes du fichier.
  * 
  * @author Christophe Mertz
  *
  */
-public class FileInfoFinder extends AttributeFinder {
+public class FileInfoFinder extends AbstractAttributeFinder {
 
     /**
      * le type d'information a aller chercher
@@ -49,7 +49,11 @@ public class FileInfoFinder extends AttributeFinder {
         for (File file : fileMap.keySet()) {
             File originalFile = (File) fileMap.get(file);
             if (fileInformation.equals(FileInformationTypeEnum.LAST_MODIFICATION_DATE)) {
-                if (!valueList.isEmpty()) {
+                if (valueList.isEmpty()) {
+                    Date date = new Date(originalFile.lastModified());
+                    OffsetDateTime offDateTime = OffsetDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
+                    valueList.add(0, offDateTime);
+                } else {
                     // check if date inside the list is before the new Date
                     OffsetDateTime oldOffSetDateTime = (OffsetDateTime) valueList.get(0);
 
@@ -57,23 +61,17 @@ public class FileInfoFinder extends AttributeFinder {
                     OffsetDateTime newOffsetDateTime = OffsetDateTime.ofInstant(newDate.toInstant(), ZoneId.of("UTC"));
 
                     if (oldOffSetDateTime.isBefore(newOffsetDateTime)) {
-                        valueList = new ArrayList<>();
+                        valueList.clear();
                         valueList.add(0, newOffsetDateTime);
                     }
-                } else {
-                    Date date = new Date(originalFile.lastModified());
-                    OffsetDateTime offDateTime = OffsetDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));
-                    valueList.add(0, offDateTime);
                 }
             } else if (fileInformation.equals(FileInformationTypeEnum.FILE_SIZE)) {
-                // reset the list
-                valueList = new ArrayList<>();
-                if (!valueList.isEmpty()) {
-                    Long oldLong = (Long) valueList.get(0);
-                    valueList = new ArrayList<>();
-                    valueList.add(Long.valueOf(oldLong.longValue() + originalFile.length()));
-                } else {
+                if (valueList.isEmpty()) {
                     valueList.add(Long.valueOf(originalFile.length()));
+                } else {
+                    Long oldLong = (Long) valueList.get(0);
+                    valueList.clear();
+                    valueList.add(Long.valueOf(oldLong.longValue() + originalFile.length()));
                 }
             }
         }

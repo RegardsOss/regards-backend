@@ -23,13 +23,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
-@Plugin(description = "EnvisatProductMetadataPlugin", id = "EnvisatProductMetadataPlugin", version = "1.0.0",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+/**
+ * Metadata caculation's plugin for Envisat products.
+ * 
+ * @author Christophe Mertz
+ *
+ */
+@Plugin(description = "Metadata caculation's plugin for Envisat products", id = "EnvisatProductMetadataPlugin",
+        version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class EnvisatProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
+    /**
+     * ENVISAT project name
+     */
     private static final String PROJECT_NAME = "ENVISAT";
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 

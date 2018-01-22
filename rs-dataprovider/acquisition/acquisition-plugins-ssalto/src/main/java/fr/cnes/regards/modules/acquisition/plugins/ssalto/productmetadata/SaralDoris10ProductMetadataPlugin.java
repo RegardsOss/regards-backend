@@ -22,7 +22,6 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -47,41 +46,44 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryP
 import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 /**
- * plugin specifiques au donnees saral doris les noms des fichiers ont deux formes bien distinctes et ne peuvent pas
- * etre resolues juste par le fichier de configuration. Les attributs traites specifiquement sont les TIME_PERIOD et
- * FILE_CREATION_DATE.
- * 
+ * Metadata caculation's plugin for SARAL using Doris1B instrument.<br>
+ * The TIME_PERIOD and FILE_CREATION_DATE attributes are managed specifically.
+ *  
  * @author Christophe Mertz
  */
-@Plugin(description = "SaralDoris10ProductMetadataPlugin", id = "SaralDoris10ProductMetadataPlugin", version = "1.0.0",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+@Plugin(description = "Metadata caculation's plugin for SARAL using Doris1B instrument",
+        id = "SaralDoris10ProductMetadataPlugin", version = "1.0.0", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugin {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(MultipleFileNameFinder.class);
 
-    private static final String TIME_PERIOD = "TIME_PERIOD";
-
-    private static final String START_DATE = "START_DATE";
-
-    private static final String STOP_DATE = "STOP_DATE";
-
-    private static final String CREATION_DATE = "FILE_CREATION_DATE";
-
-    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
-
-    private static final DateTimeFormatter DATETIME_FILE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd HHmmss");
-
-    private static final Pattern CREATION_DATE_PATTERN = Pattern.compile(".* ([0-9]{8} [0-9]{6}) UTC.*");
-
+    /**
+     * A {@link Pattern} for "[A-Z]([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternd;
 
+    /**
+     * A {@link Pattern} for "[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternp;
 
+    /**
+     * A {@link Pattern} for "([a-z]{1})([DS]{1})([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternh;
 
+    /**
+     * A {@link Pattern} for "([a-z]{1})([DS]{1})([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternl;
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 
@@ -110,7 +112,7 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
     }
 
     /**
-     * cree les attributs TIME_PERIOD et FILE_CREATION_DATE
+     * Add TIME_PERIOD and FILE_CREATION_DATE {@link Attribute}s
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
@@ -120,10 +122,10 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
     }
 
     /**
-     * Add the START_DATE and the STOP_DATE attributs
-     * @param fileMap
-     * @param attributeMap
-     * @throws PluginAcquisitionException
+     * Add the TIME_PERIOD {@link CompositeAttribute}
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException an error occurs when the new {@link Attribute} is created
      */
     private void registerTimePeriodAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
@@ -153,10 +155,10 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
     }
 
     /**
-     * Add the CREATION_DATE attribut
-     * @param fileMap
-     * @param attributeMap
-     * @throws PluginAcquisitionException
+     * Add the CREATION_DATE {@link Attribute}
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException an error occurs when the new {@link Attribute} is created
      */
     private void registerFileCreationDateAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
@@ -177,10 +179,10 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
     }
 
     /**
-     * Get the START_DATE
-     * @param files
-     * @return
-     * @throws PluginAcquisitionException
+     * Get the START_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the START_DATE value of each {@link File}
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
      */
     protected List<OffsetDateTime> getStartDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
@@ -200,9 +202,8 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
             } else if (matcherL.matches()) {
                 dateStr = matcherL.group(4);
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
 
             LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
@@ -212,10 +213,10 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
     }
 
     /**
-     * Get the STOP_DATE
-     * @param files
-     * @return
-     * @throws PluginAcquisitionException
+     * Get the STOP_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the STOP_DATE value of each {@link File}
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
      */
     protected List<OffsetDateTime> getStopDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
@@ -241,9 +242,8 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
                 valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
             n++;
         }
@@ -251,10 +251,10 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
     }
 
     /**
-     * Get the CREATION_DATE
-     * @param files
-     * @return
-     * @throws PluginAcquisitionException
+     * Get the CREATION_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the START_DATE value of each {@link File}
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
      */
     protected List<OffsetDateTime> getCreationDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
@@ -267,8 +267,7 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
             if (matcherD.matches()) {
                 // go to search into file using RINExFileHelper
                 RinexFileHelper helper = new RinexFileHelper(file);
-                Pattern cdPattern = CREATION_DATE_PATTERN;
-                String dateStr = helper.getValue(2, cdPattern, 1);
+                String dateStr = helper.getValue(2, CREATION_DATE_PATTERN, 1);
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FILE_FORMATTER);
                 valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
             } else if (matcherP.matches()) {
@@ -278,8 +277,7 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
             } else if (matcherH.matches()) {
                 // go to search into file using RINExFileHelper
                 RinexFileHelper helper = new RinexFileHelper(file);
-                Pattern cdPattern = CREATION_DATE_PATTERN;
-                String dateStr = helper.getValue(2, cdPattern, 1);
+                String dateStr = helper.getValue(2, CREATION_DATE_PATTERN, 1);
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FILE_FORMATTER);
                 valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
             } else if (matcherL.matches()) {
@@ -287,9 +285,8 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
                 valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
         }
         return valueList;

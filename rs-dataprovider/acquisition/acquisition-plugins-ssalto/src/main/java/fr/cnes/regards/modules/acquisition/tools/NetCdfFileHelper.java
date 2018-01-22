@@ -102,11 +102,13 @@ public class NetCdfFileHelper {
         }
         List<String> resultList = new ArrayList<>();
         for (Variable element : netCfdFile.getVariables()) {
-            if (!exceptionList.contains(element.getShortName())) {
+            if (exceptionList.contains(element.getShortName())) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("variable " + element.getShortName() + " skipped because present in exception list");
+                }
+            } else {
                 Attribute att = element.findAttribute(attributeName);
                 resultList.add(att.getStringValue());
-            } else {
-                LOGGER.debug("variable " + element.getShortName() + " skipped because present in exception list");
             }
         }
         return resultList;
@@ -132,8 +134,7 @@ public class NetCdfFileHelper {
             Array longArray = longitude.read();
             IndexIterator iter = longArray.getIndexIterator();
             for (; iter.hasNext();) {
-                if (valueType.equals(AttributeTypeEnum.TYPE_INTEGER)
-                        || valueType.equals(AttributeTypeEnum.TYPE_REAL)) {
+                if (valueType.equals(AttributeTypeEnum.TYPE_INTEGER) || valueType.equals(AttributeTypeEnum.TYPE_REAL)) {
                     int value = iter.getIntNext();
                     valueList.add(Double.valueOf(value * scale));
                 } else {

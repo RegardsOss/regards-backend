@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.calc;
 
 /**
- * This class parses a {@link String} to extracts a date and format this date with the format "yyyy-MM-dd'T'HH:mm:ss".<br>
+ * This class parses a {@link String} to extract a date and format this date with the format "yyyy-MM-dd'T'HH:mm:ss".<br>
  * If the incoming date does not contain hour, minute or second information,<br>
  * <li>the hour is set to 0,<br>
  * <li>the minute is set 0,<br>

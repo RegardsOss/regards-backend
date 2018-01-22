@@ -16,18 +16,36 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.finder;
+package fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor;
 
 /**
- * classe mere des finder qui vont lire le contenu des fichiers de donnees
+ * Cette classe permet de representer un Element de type DATA_STORAGE_OBJECT_DESCRIPTION
  * 
  * @author Christophe Mertz
- *
  */
-public abstract class DataFileFinder extends AttributeFinder {
 
-    public String toString() {
-        return super.toString();
+public class DataStorageObjectDescriptionElement extends DataStorageObjectElement {
+
+    /**
+     * constructeur par defaut pour le digester
+     */
+    public DataStorageObjectDescriptionElement() {
+        super();
     }
 
+    /**
+     * renvoie DESC_ELEMENT_TYPE
+     */
+    @Override
+    public ElementType getElementType() {
+        return ElementType.DESC_ELEMENT_TYPE;
+    }
+
+    /**
+     * renvoie un ordre pour pouvoir etre trie dans les fichiers descripteurs
+     */
+    @Override
+    protected int getOrder() {
+        return 1;
+    }
 }

@@ -22,7 +22,6 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -43,7 +42,7 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 /**
- * plugin specifiques au donnees jason2 doris les noms des fichiers ont deux formes bien distinctes et ne peuvent pas
+ * Plugin specifique aux donnees jason2 doris les noms des fichiers ont deux formes bien distinctes et ne peuvent pas
  * etre resolues juste par le fichier de configuration. Les attributs traites specifiquement sont les TIME_PERIOD et
  * FILE_CREATION_DATE.
  *
@@ -52,24 +51,19 @@ import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 public abstract class AbstractJasonDoris10ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJasonDoris10ProductMetadataPlugin.class);
 
-    private static final String TIME_PERIOD = "TIME_PERIOD";
-
-    private static final String START_DATE = "START_DATE";
-
-    private static final String STOP_DATE = "STOP_DATE";
-
-    private static final String CREATION_DATE = "FILE_CREATION_DATE";
-
-    protected static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
-
-    protected static final DateTimeFormatter DATETIME_FILE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd HHmmss");
-
-    private static final Pattern CREATION_DATE_PATTERN = Pattern.compile(".* ([0-9]{8} [0-9]{6}) UTC.*");
-
+    /**
+     * A {@link Pattern} for "[A-Z]([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternd;
 
+    /**
+     * A {@link Pattern} for "[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$"
+     */
     protected Pattern patternp;
 
     public AbstractJasonDoris10ProductMetadataPlugin() {
@@ -77,7 +71,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
     }
 
     /**
-     * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique
+     * Load the dataset plugin configuration and initialize the patterns based on the file name
      */
     @Override
     public void loadDataSetConfiguration(String dataSetName) throws ModuleException {
@@ -89,7 +83,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
     }
 
     /**
-     * cree les attributs TIME_PERIOD et FILE_CREATION_DATE
+     * Add TIME_PERIOD and FILE_CREATION_DATE {@link Attribute}s
      */
     @Override
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> pAttributeMap)
@@ -99,10 +93,10 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
     }
 
     /**
-     * Add the START_DATE and the STOP_DATE attributs
-     * @param fileMap
-     * @param attributeMap
-     * @throws PluginAcquisitionException
+     * Add the TIME_PERIOD {@link CompositeAttribute}
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException if an error occurs
      */
     private void registerTimePeriodAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
@@ -126,16 +120,16 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
             throw new PluginAcquisitionException(msg, e);
         }
 
-        registerAttribute( attributeMap, TIME_PERIOD,timePeriodAttribute);
+        registerAttribute(attributeMap, TIME_PERIOD, timePeriodAttribute);
 
         LOGGER.info("END building attribute " + TIME_PERIOD);
     }
 
     /**
-     * Add the CREATION_DATE attribut
-     * @param fileMap
-     * @param attributeMap
-     * @throws PluginAcquisitionException
+     * Add the CREATION_DATE {@link Attribute}
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @throws PluginAcquisitionException if an error occurs when the {@link Attribute} creation
      */
     private void registerFileCreationDateAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
@@ -145,7 +139,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
             Attribute fileCreationDateAttribute = AttributeFactory
                     .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, CREATION_DATE,
                                      getCreationDateValue(fileMap.keySet()));
-            registerAttribute(attributeMap, CREATION_DATE,fileCreationDateAttribute);
+            registerAttribute(attributeMap, CREATION_DATE, fileCreationDateAttribute);
             attributeValueMap.put(CREATION_DATE, fileCreationDateAttribute.getValueList());
         } catch (DomainModelException e) {
             String msg = "unable to create attribute" + CREATION_DATE;
@@ -156,10 +150,10 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
     }
 
     /**
-     * Get the START_DATE
-     * @param files
-     * @return
-     * @throws PluginAcquisitionException
+     * Get the START_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the START_DATE value of each {@link File}
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
      */
     protected List<OffsetDateTime> getStartDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
@@ -173,9 +167,8 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
             } else if (matcherP.matches()) {
                 dateStr = matcherP.group(2);
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
 
             LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
@@ -185,10 +178,10 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
     }
 
     /**
-     * Get the STOP_DATE
-     * @param pSsaltoFileList
-     * @return
-     * @throws PluginAcquisitionException
+     * Get the STOP_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the STOP_DATE value of each {@link File}
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
      */
     protected List<OffsetDateTime> getStopDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
@@ -205,9 +198,8 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
                 valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
             n++;
         }
@@ -215,10 +207,10 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
     }
 
     /**
-     * Get the CREATION_DATE
-     * @param files
-     * @return
-     * @throws PluginAcquisitionException
+     * Get the CREATION_DATE value to a set of {@link File}
+     * @param files a set of {@link File}
+     * @return valueList the START_DATE value of each {@link File}
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
      */
     protected List<OffsetDateTime> getCreationDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
@@ -229,8 +221,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
             if (matcherD.matches()) {
                 // go to search into file using RINExFileHelper
                 RinexFileHelper helper = new RinexFileHelper(file);
-                Pattern cdPattern = CREATION_DATE_PATTERN;
-                String dateStr = helper.getValue(2, cdPattern, 1);
+                String dateStr = helper.getValue(2, CREATION_DATE_PATTERN, 1);
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FILE_FORMATTER);
                 valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
             } else if (matcherP.matches()) {
@@ -238,9 +229,8 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
                 LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMATTER);
                 valueList.add(OffsetDateTime.of(ldt, ZoneOffset.UTC));
             } else {
-                String msg = "filename does not match";
-                LOGGER.error(msg);
-                throw new PluginAcquisitionException(msg);
+                LOGGER.error(MSG_ERR_FILENAME);
+                throw new PluginAcquisitionException(MSG_ERR_FILENAME);
             }
         }
         return valueList;

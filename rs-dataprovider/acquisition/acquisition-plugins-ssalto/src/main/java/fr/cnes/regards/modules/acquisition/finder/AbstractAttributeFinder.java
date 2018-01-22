@@ -66,9 +66,12 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
  * @author Christophe Mertz
  *
  */
-public abstract class AttributeFinder {
+public abstract class AbstractAttributeFinder {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AttributeFinder.class);
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAttributeFinder.class);
 
     /**
      * nom de l'attribut a trouver
@@ -115,8 +118,14 @@ public abstract class AttributeFinder {
      */
     private String defaultValue;
 
+    /**
+     * <code>true</code> si il est nécessaire de dézipper les fihciers avant de les lire
+     */
     private Boolean unzipBefore = Boolean.FALSE;
 
+    /**
+     * Si la décompression des fichiers est activée, le format de compression des fichiers
+     */
     private CompressionTypeEnum compression;
 
     /**
@@ -125,40 +134,27 @@ public abstract class AttributeFinder {
     private final List<File> temporaryUnzippedDirList = new ArrayList<>();
 
     /**
-     * cree un objet Attribute qui va servir a generer l'element XML dans le fichier descripteur
+     * Create an {@link Attribute}
      * 
-     * @param attributeValueMap
-     *            : map de valeurs de l'attribut
-     * @param fileMap
-     *            la liste des fichiers a traiter, en clef se trouve le fichier a traiter et en valeur, le fichier sur
-     *            l'espace de fourniture.
-     * @return
-     * @throws PluginAcquisitionException
-     *             en cas d'erreur lors de la creation de l'attribute
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
+     * @return the created {@link Attribute}
+     * @throws PluginAcquisitionException if an error occurs when the {@link Attribute} creation
      */
     @SuppressWarnings("unchecked")
     public Attribute buildAttribute(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException {
-
-        LOGGER.debug("START building attribute " + getName());
-
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("START building attribute {}", getName());
+        }
         Attribute attribute = null;
         try {
-            List<Object> valueList = null;
-
-            try {
-                // get value list
-                valueList = (List<Object>) getValueList(fileMap, attributeValueMap);
-            } catch (NumberFormatException e) {
-                throw new PluginAcquisitionException(e);
-            }
+            List<Object> valueList = (List<Object>) getValueList(fileMap, attributeValueMap);
 
             // add attribut to calculated attribut map
             List<Object> translatedValueList = new ArrayList<>();
             // translate the values
-            if (!valueList.isEmpty()) {
-                translatedValueList = translateValueList(valueList);
-            } else {
+            if (valueList.isEmpty()) {
                 if (defaultValue == null) {
                     String msg = "unable to find a value and no default value has been specified";
                     LOGGER.error(msg);
@@ -166,6 +162,8 @@ public abstract class AttributeFinder {
                 }
                 translatedValueList = new ArrayList<>();
                 translatedValueList.add(defaultValue);
+            } else {
+                translatedValueList = translateValueList(valueList);
             }
             attribute = AttributeFactory.createAttribute(getValueType(), getName(), translatedValueList);
             attributeValueMap.put(name, translatedValueList);
@@ -175,17 +173,16 @@ public abstract class AttributeFinder {
         } finally {
             deleteUnzippedFile();
         }
-
-        LOGGER.debug("END building attribute " + getName());
-
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("END building attribute {}", getName());
+        }
         return attribute;
     }
 
     /**
-     * traduit la liste des valeurs en appliquant les classes de calcul si elles sont definies
+     * Traduit la liste des valeurs en appliquant les classes de calcul si elles sont definies
      * 
-     * @param valueList
-     *            la {@link List} de valeurs a traduire
+     * @param valueList la {@link List} de valeurs a traduire
      * @return la {@link List} de valeurs traduites
      */
     protected List<Object> translateValueList(List<? extends Object> valueList) {
@@ -201,29 +198,28 @@ public abstract class AttributeFinder {
     }
 
     /**
-     * renvoie une liste d'objet dont le type depend du type de valeur de l'attribut.
+     * Renvoie une liste d'objet dont le type depend du type de valeur de l'attribut.
      * 
      * @see AttributeFactory#createAttribute(AttributeTypeEnum, String, List)
-     * @param fileMap
-     *            une liste de SsaltoFile
-     * @param attributeValueMap
+     * @param fileMap a {@link Map} of the {@link File} to acquire
+     * @param attributeValueMap {@link Map} of the {@link Attribute}
      * @return
-     * @throws PluginAcquisitionException
+     * @throws PluginAcquisitionException if an error occurs
      */
     public abstract List<?> getValueList(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap)
             throws PluginAcquisitionException;
 
     /**
-     * permet de positionner les propriete (filePattern et autre) sur les finder
+     * Permet de positionner les propriete (filePattern et autre) sur les finder
      * 
-     * @param newConfProperties
+     * @param newConfProperties la configuration {@link PluginConfigurationProperties} des fichiers cycles et ORF de toutes les missions.
      */
     public void setAttributProperties(PluginConfigurationProperties newConfProperties) {
         confProperties = newConfProperties;
     }
 
     /**
-     * permet de traduire la valeur lue du format formatRead dans le format formatInXml_ pour pouvoir inserer la valeur
+     * Permet de traduire la valeur lue du format formatRead dans le format formatInXml_ pour pouvoir inserer la valeur
      * dans la classe Attribute la traduction se fait essentiellement entre les valeur de type DATE
      */
     protected String changeFormat(Object value) {
@@ -244,8 +240,8 @@ public abstract class AttributeFinder {
     /**
      * Parse la value et cree l'objet Java en fonction du type de l'attribut
      * 
-     * @param value
-     * @return
+     * @param value à parser
+     * @return un objet Java correspondant au type et à la valeur passée en paramètre
      * @throws PluginAcquisitionException
      */
     protected Object valueOf(String value) throws PluginAcquisitionException {
@@ -289,31 +285,34 @@ public abstract class AttributeFinder {
     }
 
     /**
-     * permet de recuperer une liste de java.io.File correspondant aux fichiers qui se trouvent dans l'espace de travail
-     * de l'acquisition des ssaltoFile passes en parametre.
+     * Permet de recuperer une liste de {@link File} correspondant aux fichiers qui se trouvent dans l'espace de travail
+     * de l'acquisition des fichiers passes en parametre.
      * 
-     * @param pSsaltoFileList
-     * @return
+     * @param fileMap une {@link Map} des fichiers à acquérir
+     * @return la {@link List} des fichiers corespondants aux fichiers à acquérir
+     * @throws PluginAcquisitionException if an error occurs
      */
     protected List<File> buildFileList(Map<File, ?> fileMap) throws PluginAcquisitionException {
         if (fileMap.isEmpty()) {
             LOGGER.error("No file to acquire");
         }
-        
+
         // liste des fichiers zip
         List<File> zipFileList = new ArrayList<>();
         for (File physicalFile : fileMap.keySet()) {
             // if physical file is null, file is not in the workingDirectory
             // so metada cannot be ingested
-            if (physicalFile != null) {
-                zipFileList.add(physicalFile);
-                LOGGER.debug("Add file " + physicalFile.getName());
-            } else {
+            if (physicalFile == null) {
                 String msg = "file not found int the acquisition working Directory";
                 throw new PluginAcquisitionException(msg);
+            } else {
+                zipFileList.add(physicalFile);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Add file {}", physicalFile.getName());
+                }
             }
         }
-        
+
         List<File> unzippedFileList = new ArrayList<>();
         if (unzipBefore.booleanValue()) {
             for (File zipFile : zipFileList) {
@@ -325,7 +324,9 @@ public abstract class AttributeFinder {
         }
         // change le filePattern pour utiliser les fichiers dezippe
         if (unzippedFileList.isEmpty()) {
-            LOGGER.debug("No file found to be treated by this plugIn");
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("No file found to be treated by this plugIn");
+            }
         }
         return unzippedFileList;
     }
@@ -363,7 +364,7 @@ public abstract class AttributeFinder {
             LOGGER.error(e.getMessage());
             throw new PluginAcquisitionException(e);
         }
-        
+
         Collection<File> unzippedFileList = new HashSet<>();
         Files.fileTreeTraverser().children(temporaryDir).forEach(a -> unzippedFileList.add(a));
 
@@ -381,8 +382,10 @@ public abstract class AttributeFinder {
     private File getTemporaryUnzippedDir(File file) throws PluginAcquisitionException {
         File temporaryUnzippedDir = null;
 
-        String baseDirName = Files.getNameWithoutExtension(file.getName());
-        baseDirName += "_" + Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()).getTime();
+        StringBuilder strBuilder = new StringBuilder(Files.getNameWithoutExtension(file.getName()));
+        strBuilder.append("_");
+        strBuilder.append(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()).getTime());
+        String baseDirName = strBuilder.toString();
 
         // verifie les droits d'ecriture
         if (file.getParentFile().canWrite()) {
@@ -469,7 +472,8 @@ public abstract class AttributeFinder {
         return valueType;
     }
 
-    public void setCalculationClass(String newCalculationClass) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public void setCalculationClass(String newCalculationClass)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         calculationClass = (ICalculationClass) Class.forName(newCalculationClass).newInstance();
     }
 

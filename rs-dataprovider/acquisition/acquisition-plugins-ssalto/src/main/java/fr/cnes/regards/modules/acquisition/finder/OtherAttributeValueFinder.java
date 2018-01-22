@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
  * @author Christophe Mertz
  *
  */
-public class OtherAttributeValueFinder extends AttributeFinder {
+public class OtherAttributeValueFinder extends AbstractAttributeFinder {
 
     /**
      * Nom de l'attribut dont on doit recuperer la valeur dans la attributeValueMap

@@ -25,6 +25,8 @@ import fr.cnes.regards.modules.acquisition.plugins.ICalculationClass;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
 /**
+ * Calculates a new date from a date parameter :<br> 
+ * subtracts 3 days to the date parameter
  * 
  * @author Christophe Mertz
  *

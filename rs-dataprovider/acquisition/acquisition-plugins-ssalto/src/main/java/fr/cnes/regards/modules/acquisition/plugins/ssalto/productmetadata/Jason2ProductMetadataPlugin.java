@@ -24,20 +24,23 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
- * plugin de creation des meta donnees d'un produit jason2. Ce plugin est generique, et utilise un fichier de
- * configuration pour pouvoir initialiser un finder par attribut a trouver. Il y a differents types de finder, les
- * fileNameFinder, et les autres. Chaque finder renvoie une class Attribute qui est ajoutee ensuite dans une class
- * DataObjectDescriptionElement. Cet Element sert a creer le fichier de configuration grace à la classe descriptorFile
+ * Metadata caculation's plugin for Jason2 products.
  * 
  * @author Christophe Mertz
  */
-@Plugin(description = "Jason2ProductMetadataPlugin", id = "Jason2ProductMetadataPlugin", version = "1.0.0",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+@Plugin(description = "Metadata caculation's plugin for Jason2 products", id = "Jason2ProductMetadataPlugin",
+        version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Jason2ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
+    /**
+     * JASON2 project name
+     */
     private static final String PROJECT_NAME = "JASON2";
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 
@@ -46,6 +49,7 @@ public class Jason2ProductMetadataPlugin extends AbstractProductMetadataPlugin {
         return pluginsRepositoryProperties;
     }
 
+    @Override
     protected String getProjectName() {
         return PROJECT_NAME;
     }

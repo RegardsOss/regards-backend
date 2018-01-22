@@ -27,13 +27,13 @@ import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
- * Manage Jason3 data for the {@link Product} LTM.<br>
+ * Check's plugin for Jason3 LTM products.<br>
  * The {@link Product} name is the the file name less the extension file. 
  *
  * @author Christophe Mertz
  *
  */
-@Plugin(description = "Jason3LtmP3CheckingFilePlugin", id = "Jason3LtmP3CheckingFilePlugin", version = "1.0.0",
+@Plugin(description = "Check's plugin for Jason3 LTM products", id = "Jason3LtmP3CheckingFilePlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Jason3LtmP3CheckingFilePlugin implements ICheckFilePlugin {

@@ -26,6 +26,8 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
 import fr.cnes.regards.modules.acquisition.tools.DateFormatter;
 
 /**
+ * Calculates a new date from a arc number parameter :<br> 
+ * the calculate date is the 2002 18th June plus <code>(arc mumber - 1) * 7</code> days
  * 
  * @author Christophe Mertz
  *

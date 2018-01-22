@@ -41,6 +41,9 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.LoadTranslationPr
 @Component
 public class TranslatedFileNameFinder extends FileNameFinder {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(TranslatedAttributeFromArcFile.class);
 
     /**
@@ -64,10 +67,12 @@ public class TranslatedFileNameFinder extends FileNameFinder {
         List<Object> valueList = (List<Object>) super.getValueList(fileMap, attributeValueMap);
         List<Object> translatedValues = new ArrayList<>();
         for (Object element : valueList) {
-            if (getTranslatedValue(element) != null) {
-                translatedValues.add(getTranslatedValue(element));
+            if (getTranslatedValue(element) == null) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("unable to find translation for value " + element.toString());
+                }
             } else {
-                LOGGER.debug("unable to find translation for value " + element.toString());
+                translatedValues.add(getTranslatedValue(element));
             }
         }
         return translatedValues;

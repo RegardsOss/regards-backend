@@ -137,7 +137,7 @@ public class Jason2PluginTest extends AbstractProductMetadataPluginTest {
         addPluginTestDef("DA_TC_JASON2_HISTO_COM", "JASON2/COM",
                          "JA2_COM_AXXCNE20090609_083129_20080621_233045_20090609_060905");
 
-        // acquisition with two ssaltoFiles for 1 product
+        // acquisition with 2 files for 1 product
         List<String> fileNameList = new ArrayList<>();
         fileNameList.add("POS3_1_LV_0102_20071209_EEPROM_BIN");
         fileNameList.add("POS3_1_LV_0102_20071209_EEPROM_HDR");

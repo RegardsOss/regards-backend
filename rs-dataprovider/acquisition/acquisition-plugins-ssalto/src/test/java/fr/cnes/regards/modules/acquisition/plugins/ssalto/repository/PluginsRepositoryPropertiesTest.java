@@ -47,8 +47,8 @@ public class PluginsRepositoryPropertiesTest {
         Assert.assertTrue("Erreur de lecture du fichier de configuration des plugins",
                           (pluginConfTranslationFilesDir != null) && !pluginConfTranslationFilesDir.isEmpty());
         
-        String pluginConfDir = pluginsRepositoryProperties.getPluginConfPath();
-        Assert.assertTrue("Erreur de lecture du fichier de configuration des plugins",
+        String pluginConfDir = pluginsRepositoryProperties.getCycleOrfConfPath();
+        Assert.assertTrue("Erreur de lecture du fichier de configuration des cycles",
                           (pluginConfDir != null) && !pluginConfDir.isEmpty());
     }
 

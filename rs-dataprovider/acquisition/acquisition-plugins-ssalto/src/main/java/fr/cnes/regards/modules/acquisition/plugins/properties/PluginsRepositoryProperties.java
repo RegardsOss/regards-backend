@@ -32,11 +32,20 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "regards.acquisition.ssalto")
 public class PluginsRepositoryProperties {
 
+    /**
+     * value of regards.acquisition.ssalto.plugin-conf-files-path 
+     */
     private String pluginConfFilesPath;
 
+    /**
+     * value of regards.acquisition.ssalto.plugin-translation-files-path
+     */
     private String pluginTranslationFilesPath;
 
-    private String pluginConfPath;
+    /**
+     * value of regards.acquisition.ssalto.cycle-orf-conf-path
+     */
+    private String cycleOrfConfPath;
 
     public String getPluginConfFilesPath() {
         return pluginConfFilesPath;
@@ -54,12 +63,12 @@ public class PluginsRepositoryProperties {
         this.pluginTranslationFilesPath = pluginTranslationFilesDir;
     }
 
-    public String getPluginConfPath() {
-        return pluginConfPath;
+    public String getCycleOrfConfPath() {
+        return cycleOrfConfPath;
     }
 
-    public void setPluginConfPath(String pluginConfDir) {
-        this.pluginConfPath = pluginConfDir;
+    public void setCycleOrfConfPath(String cycleOrfConfPath) {
+        this.cycleOrfConfPath = cycleOrfConfPath;
     }
 
 }

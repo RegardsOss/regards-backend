@@ -70,6 +70,11 @@ public class Jason2Pltm1PluginTest extends AbstractProductMetadataPluginTest {
     public void initTestSoloList() {
 
     }
+    
+    @Override
+    public void createMetadataPlugin_all() {
+        super.createMetadataPlugin_all();
+    }
 
     @Override
     public IGenerateSIPPlugin buildPlugin() throws ModuleException {

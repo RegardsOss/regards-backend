@@ -27,17 +27,20 @@ import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
 import fr.cnes.regards.modules.acquisition.plugins.ICheckFilePlugin;
 
 /**
- * Manage Jason2 data.<br>
+ * Check's plugin for Jason2 products.<br>
  * This {@link Plugin} checks that the file exists and it's accessible.<br>
  * The {@link Product} name is the file name truncate to 128 characters. 
  * 
  * @author Christophe Mertz
  *
  */
-@Plugin(description = "Jason2CheckingPlugin", id = "Jason2CheckingPlugin", version = "1.0.0", author = "REGARDS Team",
+@Plugin(description = "Check's plugin for Jason2 products", id = "Jason2CheckingPlugin", version = "1.0.0", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class Jason2CheckingPlugin implements ICheckFilePlugin {
 
+    /**
+     * Max size for the product name : 128
+     */
     private static final int PRODUCT_NAME_MAX_SIZE = 128;
 
     /**

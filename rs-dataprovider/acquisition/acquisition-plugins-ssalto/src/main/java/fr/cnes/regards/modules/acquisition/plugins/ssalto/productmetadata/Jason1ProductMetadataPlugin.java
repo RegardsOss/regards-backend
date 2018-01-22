@@ -23,13 +23,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
-@Plugin(description = "Jason1ProductMetadataPlugin", id = "Jason1ProductMetadataPlugin", version = "1.0.0",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+/**
+ * Metadata caculation's plugin for Jason1 products.
+ * 
+ * @author Christophe Mertz
+ *
+ */
+@Plugin(description = "Metadata caculation's plugin for Jason1 products", id = "Jason1ProductMetadataPlugin",
+        version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Jason1ProductMetadataPlugin extends AbstractProductMetadataPlugin {
 
+    /**
+     * JASON project name
+     */
     private static final String PROJECT_NAME = "JASON";
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 

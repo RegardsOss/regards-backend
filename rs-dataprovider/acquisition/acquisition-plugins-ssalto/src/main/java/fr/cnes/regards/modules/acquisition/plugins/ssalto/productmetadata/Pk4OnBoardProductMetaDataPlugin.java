@@ -38,27 +38,35 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
- * Plugin de création des méta données PK4 pour determiner le champ "DISK_ID" depuis le chemin d'accès au fichier à
- * acquerir
+ * Metadata caculation's plugin for PK4 products.
  * 
  * @author Christophe Mertz
  *
  */
-@Plugin(description = "Pk4OnBoardProductMetaDataPlugin", id = "Pk4OnBoardProductMetaDataPlugin", version = "1.0.0",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+@Plugin(description = "Metadata caculation's plugin for PK4 products", id = "Pk4OnBoardProductMetaDataPlugin",
+        version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class Pk4OnBoardProductMetaDataPlugin extends AbstractProductMetadataPlugin {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(Pk4OnBoardProductMetaDataPlugin.class);
 
+    /**
+     * Project name
+     */
     private static final String PROJECT_NAME = "PK4";
 
     private static final String DISK_ID_ATTRIBUTE = "DISK_ID";
 
     private static final String DISK_ID_DEFAULT_VALUE = ".";
 
-    private static final String pathPattern_ = ".*/(Disk[0-9]*)/.*";
+    private static final String PATH_PATTERN = ".*/(Disk[0-9]*)/.*";
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 
@@ -76,7 +84,7 @@ public class Pk4OnBoardProductMetaDataPlugin extends AbstractProductMetadataPlug
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
 
-        final Pattern pattern = Pattern.compile(pathPattern_);
+        final Pattern pattern = Pattern.compile(PATH_PATTERN);
         String diskParam = DISK_ID_DEFAULT_VALUE;
 
         // 1. Loop on product file and get unique Disk param value in path

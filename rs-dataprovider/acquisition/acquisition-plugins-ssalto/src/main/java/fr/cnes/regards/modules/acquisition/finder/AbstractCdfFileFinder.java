@@ -16,34 +16,32 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+package fr.cnes.regards.modules.acquisition.finder;
 
 /**
+ * Classe abstraite des finder de type dataFileFinder qui s'occupent des fichiers au format netCDF
+ * 
  * @author Christophe Mertz
+ *
  */
-@SuppressWarnings("serial")
-public class DescriptorException extends ModuleException {
+public abstract class AbstractCdfFileFinder extends AbstractDataFileFinder {
 
-    public DescriptorException(Throwable exception) {
-        super(exception);
+    /**
+     * nom de l'attribut (CDF) a rechercher dans le fichier
+     */
+    protected String attributeName;
+
+    public String toString() {
+        StringBuilder buff = new StringBuilder(super.toString());
+        buff.append(" | attributeName").append(attributeName);
+        return buff.toString();
     }
 
-    public DescriptorException(ModuleException exception) {
-        super(exception);
-    }
-    
-    public DescriptorException(String message) {
-        super(message);
+    public void setAttributeName(String newAttributeName) {
+        attributeName = newAttributeName;
     }
 
-    public DescriptorException(String message, Throwable exception) {
-        super(message, exception);
+    protected String getAttributeName() {
+        return attributeName;
     }
-
-    public DescriptorException(String message, ModuleException exception) {
-        super(message, exception);
-    }
-
 }

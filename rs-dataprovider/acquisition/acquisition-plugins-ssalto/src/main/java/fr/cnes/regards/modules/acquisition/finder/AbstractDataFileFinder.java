@@ -19,29 +19,15 @@
 package fr.cnes.regards.modules.acquisition.finder;
 
 /**
- * classe abstraite des finder de type dataFileFinder qui s'occupent des fichiers au format netCDF
+ * Classe mere des finder qui vont lire le contenu des fichiers de donnees
  * 
  * @author Christophe Mertz
  *
  */
-public abstract class CdfFileFinder extends DataFileFinder {
-
-    /**
-     * nom de l'attribut (CDF) a rechercher dans le fichier
-     */
-    protected String attributeName;
+public abstract class AbstractDataFileFinder extends AbstractAttributeFinder {
 
     public String toString() {
-        StringBuilder buff = new StringBuilder(super.toString());
-        buff.append(" | attributeName").append(attributeName);
-        return buff.toString();
+        return super.toString();
     }
 
-    public void setAttributeName(String newAttributeName) {
-        attributeName = newAttributeName;
-    }
-
-    protected String getAttributeName() {
-        return attributeName;
-    }
 }

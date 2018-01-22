@@ -43,7 +43,7 @@ public class SetCryosat2Doris1bPoeCddisCycle implements ICalculationClass {
             PluginConfigurationProperties properties) {
         String cycle = "";
         SetCryosat2Doris1bPoeCddisDate calculationDate = new SetCryosat2Doris1bPoeCddisDate();
-        Date date = calculationDate.calculate(value, attributeType);
+        Date date = calculationDate.calculate(value);
 
         if (date != null) {
             OffsetDateTime odt = OffsetDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC"));

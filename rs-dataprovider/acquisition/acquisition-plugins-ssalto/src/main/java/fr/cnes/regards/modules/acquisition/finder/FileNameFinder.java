@@ -33,13 +33,16 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 
 /**
- * classe mere des finder qui trouvent les valeurs des attributs dans le nom des fichiers
+ * Classe mere des finder qui trouvent les valeurs des attributs dans le nom des fichiers.
  * 
  * @author Christophe Mertz
  *
  */
-public class FileNameFinder extends AttributeFinder {
+public class FileNameFinder extends AbstractAttributeFinder {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(FileNameFinder.class);
 
     /**
@@ -85,7 +88,9 @@ public class FileNameFinder extends AttributeFinder {
         Object parsedValue = null;
         for (File fileToProceed : fileToProceedList) {
             Matcher matcher = pattern.matcher(fileToProceed.getName());
-            LOGGER.debug("testing file " + fileToProceed.getName());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("testing file " + fileToProceed.getName());
+            }
             if (matcher.matches()) {
                 StringBuilder value = new StringBuilder();
 
@@ -97,7 +102,9 @@ public class FileNameFinder extends AttributeFinder {
                 parsedValue = valueOf(value.toString());
 
                 if (parsedValue != null) {
-                    LOGGER.debug("add value " + parsedValue.toString() + " for file " + fileToProceed.getName());
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("add value " + parsedValue.toString() + " for file " + fileToProceed.getName());
+                    }
                 }
             }
         }
@@ -106,8 +113,7 @@ public class FileNameFinder extends AttributeFinder {
         }
         // warn if no file are found
         if (valueList.isEmpty()) {
-            String msg = "No filename matching the pattern " + filePattern;
-            LOGGER.warn(msg);
+            LOGGER.warn("No filename matching the pattern ", filePattern);
         }
         return valueList;
     }

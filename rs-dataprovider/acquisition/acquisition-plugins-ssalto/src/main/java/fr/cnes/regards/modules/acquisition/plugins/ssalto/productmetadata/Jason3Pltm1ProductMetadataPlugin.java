@@ -24,18 +24,23 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
- *
- * Plugin JASON 3 pour les produits PLTM1
+ * Metadata caculation's plugin for Jason2 Pltm1 products.
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Jason3Pltm1ProductMetadataPlugin", id = "Jason3Pltm1ProductMetadataPlugin", version = "1.0.0",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+@Plugin(description = "Metadata caculation's plugin for Jason2 Pltm1 products.",
+        id = "Jason3Pltm1ProductMetadataPlugin", version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr",
+        licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class Jason3Pltm1ProductMetadataPlugin extends AbstractJasonPltm1ProductMetadataPlugin {
 
+    /**
+     * JASON3 project name
+     */
     private static final String PROJECT_NAME = "JASON3";
 
+    /**
+     * Plugin Ssalto repository configuration
+     */
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 
