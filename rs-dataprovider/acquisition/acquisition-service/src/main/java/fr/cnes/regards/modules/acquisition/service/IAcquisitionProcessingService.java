@@ -76,7 +76,7 @@ public interface IAcquisitionProcessingService {
      * @param processingChainId identifier of the chain to start
      * @throws ModuleException if error occurs!
      */
-    void startManualChain(Long processingChainId) throws ModuleException;
+    AcquisitionProcessingChain startManualChain(Long processingChainId) throws ModuleException;
 
     /**
      * Scan and register detected files for specified {@link AcquisitionProcessingChain}

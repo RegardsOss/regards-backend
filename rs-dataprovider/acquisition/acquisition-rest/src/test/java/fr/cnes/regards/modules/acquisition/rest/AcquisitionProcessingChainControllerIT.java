@@ -35,6 +35,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
@@ -59,7 +61,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    private AcquisitionProcessingChain getAChain() {
+    private AcquisitionProcessingChain getNewChain(String labelPrefix) {
 
         // Create a processing chain
         AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
@@ -79,7 +81,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         PluginConfiguration scanPlugin = PluginUtils
                 .getPluginConfiguration(Lists.newArrayList(), DefaultDiskScanning.class, Lists.newArrayList());
         scanPlugin.setIsActive(true);
-        scanPlugin.setLabel("Scan plugin");
+        scanPlugin.setLabel(labelPrefix + " : " + "Scan plugin");
         fileInfo.setScanPlugin(scanPlugin);
 
         processingChain.addFileInfo(fileInfo);
@@ -88,21 +90,21 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         PluginConfiguration validationPlugin = PluginUtils
                 .getPluginConfiguration(Lists.newArrayList(), DefaultFileValidation.class, Lists.newArrayList());
         validationPlugin.setIsActive(true);
-        validationPlugin.setLabel("Validation plugin");
+        validationPlugin.setLabel(labelPrefix + " : " + "Validation plugin");
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
         PluginConfiguration productPlugin = PluginUtils
                 .getPluginConfiguration(Lists.newArrayList(), DefaultProductPlugin.class, Lists.newArrayList());
         productPlugin.setIsActive(true);
-        productPlugin.setLabel("Product plugin");
+        productPlugin.setLabel(labelPrefix + " : " + "Product plugin");
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
         PluginConfiguration sipGenPlugin = PluginUtils
                 .getPluginConfiguration(Lists.newArrayList(), DefaultSIPGeneration.class, Lists.newArrayList());
         sipGenPlugin.setIsActive(true);
-        sipGenPlugin.setLabel("SIP generation plugin");
+        sipGenPlugin.setLabel(labelPrefix + " : " + "SIP generation plugin");
         processingChain.setGenerateSipPluginConf(sipGenPlugin);
 
         // SIP post processing
@@ -112,12 +114,15 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ING_PRO_020")
+    @Requirement("REGARDS_DSL_ING_PRO_030")
+    @Purpose("Create and update a manual acquisition chain")
     public void createAndUpdateChain() throws ModuleException {
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
 
-        AcquisitionProcessingChain chain = getAChain();
+        AcquisitionProcessingChain chain = getNewChain("First");
 
         // Create the chain
         ResultActions result = performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
@@ -151,4 +156,38 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         loadedChain = processingService.getChain(chainId.longValue());
         Assert.assertEquals(label, loadedChain.getFileInfos().get(0).getScanPlugin().getLabel());
     }
+
+    @Test
+    @Requirement("REGARDS_DSL_ING_PRO_020")
+    @Requirement("REGARDS_DSL_ING_PRO_030")
+    @Purpose("Create an automatic acquisition chain without a periodicity")
+    public void createAutomaticChainWithoutPeriodicity() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
+
+        AcquisitionProcessingChain chain = getNewChain("AutoError");
+        chain.setMode(AcquisitionProcessingChainMode.AUTO);
+
+        // Create the chain
+        performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
+                           "Chain should be created!");
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ING_PRO_020")
+    @Requirement("REGARDS_DSL_ING_PRO_030")
+    @Purpose("Create an automatic acquisition chain with a periodicity")
+    public void createAutomaticChain() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+
+        AcquisitionProcessingChain chain = getNewChain("Auto10s");
+        chain.setMode(AcquisitionProcessingChainMode.AUTO);
+        chain.setPeriodicity(10L);
+
+        // Create the chain
+        performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
+                           "Chain should be created!");
+    }
+
 }

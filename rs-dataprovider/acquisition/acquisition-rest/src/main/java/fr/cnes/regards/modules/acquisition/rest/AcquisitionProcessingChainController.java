@@ -63,6 +63,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 
 /**
@@ -81,6 +82,8 @@ public class AcquisitionProcessingChainController implements IResourceController
     public static final String TYPE_PATH = "/chains";
 
     public static final String CHAIN_PATH = "/{chainId}";
+
+    public static final String START_MANUAL_CHAIN_PATH = CHAIN_PATH + "/start";
 
     @Autowired
     private IAcquisitionProcessingService processingService;
@@ -145,6 +148,13 @@ public class AcquisitionProcessingChainController implements IResourceController
         return ResponseEntity.ok(toResource(processingService.updateChain(processingChain)));
     }
 
+    @RequestMapping(method = RequestMethod.GET, value = START_MANUAL_CHAIN_PATH)
+    @ResourceAccess(description = "Start a manual chain", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Resource<AcquisitionProcessingChain>> startManualChain(@PathVariable Long chainId)
+            throws ModuleException {
+        return ResponseEntity.ok(toResource(processingService.startManualChain(chainId)));
+    }
+
     @Override
     public Resource<AcquisitionProcessingChain> toResource(AcquisitionProcessingChain element, Object... extras) {
         Resource<AcquisitionProcessingChain> resource = resourceService.toResource(element);
@@ -156,6 +166,10 @@ public class AcquisitionProcessingChainController implements IResourceController
         resourceService.addLink(resource, this.getClass(), "update", LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, element.getId()),
                                 MethodParamFactory.build(AcquisitionProcessingChain.class));
+        if (AcquisitionProcessingChainMode.MANUAL.equals(element.getMode())) {
+            resourceService.addLink(resource, this.getClass(), "startManualChain", "start",
+                                    MethodParamFactory.build(Long.class, element.getId()));
+        }
         return resource;
     }
 }

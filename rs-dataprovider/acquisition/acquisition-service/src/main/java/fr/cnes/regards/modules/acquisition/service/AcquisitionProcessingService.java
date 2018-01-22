@@ -130,6 +130,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                     String.format("New chain %s must not already have and identifier.", processingChain.getLabel()));
         }
 
+        // Check mode
+        checkProcessingChainMode(processingChain);
+
         // Prevent bad values
         processingChain.setRunning(Boolean.FALSE);
         processingChain.setLastActivationDate(null);
@@ -187,6 +190,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         if (!acqChainRepository.existsChain(processingChain.getId())) {
             throw new EntityNotFoundException(processingChain.getLabel(), IngestProcessingChain.class);
         }
+
+        // Check mode
+        checkProcessingChainMode(processingChain);
 
         List<Optional<PluginConfiguration>> confsToRemove = new ArrayList<>();
         Optional<PluginConfiguration> existing;
@@ -266,6 +272,19 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         return confToRemove;
     }
 
+    /**
+     * Check if mode is configured properly
+     * @param processingChain chain to check
+     * @throws ModuleException if bad configuration
+     */
+    private void checkProcessingChainMode(AcquisitionProcessingChain processingChain) throws ModuleException {
+
+        if (AcquisitionProcessingChainMode.AUTO.equals(processingChain.getMode())
+                && (processingChain.getPeriodicity() == null)) {
+            throw new EntityInvalidException("Missing periodicity for automatic acquisition processing chain");
+        }
+    }
+
     @Override
     public void startAutomaticChains() {
 
@@ -288,7 +307,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public void startManualChain(Long processingChainId) throws ModuleException {
+    public AcquisitionProcessingChain startManualChain(Long processingChainId) throws ModuleException {
 
         // Load chain
         AcquisitionProcessingChain processingChain = getChain(processingChainId);
@@ -316,6 +335,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         // Schedule job
         scheduleProductAcquisitionJob(processingChain);
 
+        return processingChain;
     }
 
     /**
@@ -327,10 +347,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         // Mark processing chain as running
         processingChain.setRunning(true);
         acqChainRepository.save(processingChain);
-        // FIXME session?
-        // processingChain.setSession(processingChain.getLabel() + ":" +
-        // OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + ":"
-        // + OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
 
         LOGGER.debug("Scheduling product acquisition job for processing chain \"{}\"", processingChain.getLabel());
         JobInfo acquisition = new JobInfo();
@@ -465,8 +481,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             // Compute product name for each valid files
             for (AcquisitionFile validFile : validFiles) {
                 String productName = productPlugin.getProductName(validFile.getFilePath());
-                // FIXME manage session?
-                productService.linkAcquisitionFileToProduct(null, validFile, productName, processingChain);
+                productService.linkAcquisitionFileToProduct(processingChain.getSession().get(), validFile, productName,
+                                                            processingChain);
             }
         }
     }

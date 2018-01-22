@@ -41,6 +41,8 @@ import javax.persistence.NamedEntityGraphs;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -92,6 +94,10 @@ public class AcquisitionProcessingChain {
     @Enumerated(EnumType.STRING)
     private AcquisitionProcessingChainMode mode = AcquisitionProcessingChainMode.AUTO;
 
+    @Max(value = 50, message = "Session must be 50 characters length max")
+    @Column(length = 50)
+    private String session;
+
     /**
      * <code>true</code> if currently running, <code>false</code>
      * otherwise.<br/>
@@ -111,6 +117,7 @@ public class AcquisitionProcessingChain {
      * The periodicity in seconds between two acquisitions
      */
     @Column(name = "period")
+    @Min(value = 10, message = "Periodicity must be greater or equals to 10 seconds")
     private Long periodicity;
 
     /**
@@ -284,5 +291,13 @@ public class AcquisitionProcessingChain {
 
     public void setMode(AcquisitionProcessingChainMode mode) {
         this.mode = mode;
+    }
+
+    public Optional<String> getSession() {
+        return Optional.ofNullable(session);
+    }
+
+    public void setSession(String session) {
+        this.session = session;
     }
 }

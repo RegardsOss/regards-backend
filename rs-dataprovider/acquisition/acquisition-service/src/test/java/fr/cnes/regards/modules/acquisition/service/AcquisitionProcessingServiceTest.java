@@ -39,9 +39,12 @@ import org.springframework.validation.Validator;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
@@ -61,7 +64,7 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acquisition", "jwt.secret=123456789",
         "regards.workspace=target/workspace" })
 @ContextConfiguration(classes = { AcquisitionProcessingServiceTest.AcquisitionConfiguration.class })
-// @MultitenantTransactional
+@MultitenantTransactional
 public class AcquisitionProcessingServiceTest extends AbstractDaoTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingServiceTest.class);
@@ -78,6 +81,9 @@ public class AcquisitionProcessingServiceTest extends AbstractDaoTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_ING_PRO_020")
+    @Requirement("REGARDS_DSL_ING_PRO_030")
+    @Purpose("Create an acquisition chain")
     public void createChain() throws ModuleException {
 
         // Create a processing chain
@@ -137,22 +143,5 @@ public class AcquisitionProcessingServiceTest extends AbstractDaoTest {
 
         // Save processing chain
         processingService.createChain(processingChain);
-    }
-
-    @Test
-    public void updateChainTest() throws ModuleException {
-
-        // Create chain
-        // AcquisitionProcessingChain processingChain = createChain();
-
-        // // Do update
-        // PluginConfiguration scanPlugin = PluginUtils
-        // .getPluginConfiguration(Lists.newArrayList(), DefaultDiskScanning.class, Lists.newArrayList());
-        // scanPlugin.setIsActive(true);
-        // scanPlugin.setLabel("Scan plugin update");
-        // processingChain.getFileInfos().get(0).setScanPlugin(scanPlugin);
-        //
-        // // Save processing chain
-        // processingService.updateChain(processingChain);
     }
 }
