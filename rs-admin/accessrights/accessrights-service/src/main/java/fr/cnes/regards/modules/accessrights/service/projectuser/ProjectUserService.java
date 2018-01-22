@@ -32,6 +32,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -44,17 +47,18 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecification;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.RegardsStreamUtils;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
@@ -85,7 +89,7 @@ public class ProjectUserService implements IProjectUserService {
     /**
      * Account service used to manage accounts.
      */
-    private final IAccountService accountService;
+    private final IAccountsClient accountsClient;
 
     /**
      * Authentication resolver
@@ -104,14 +108,14 @@ public class ProjectUserService implements IProjectUserService {
     private final String instanceAdminUserEmail;
 
     public ProjectUserService(IAuthenticationResolver authResolver, final IProjectUserRepository pProjectUserRepository,
-            final IRoleService pRoleService, final IAccountService pAccountService,
+            final IRoleService pRoleService, final IAccountsClient accountsClient,
             @Value("${regards.accounts.root.user.login}") final String pInstanceAdminUserEmail) {
         super();
         this.authResolver = authResolver;
         projectUserRepository = pProjectUserRepository;
         roleService = pRoleService;
         instanceAdminUserEmail = pInstanceAdminUserEmail;
-        accountService = pAccountService;
+        this.accountsClient = accountsClient;
     }
 
     /*
@@ -359,11 +363,13 @@ public class ProjectUserService implements IProjectUserService {
     @Override
     public ProjectUser createProjectUser(final AccessRequestDto pDto) throws EntityAlreadyExistsException {
 
-        if (!accountService.existAccount(pDto.getEmail())) {
+        ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(pDto.getEmail());
+        if(accountResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
             final Account newAccount = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(),
-                    pDto.getPassword());
+                                                   pDto.getPassword());
             newAccount.setStatus(AccountStatus.ACTIVE);
-            accountService.createAccount(newAccount);
+            AccountNPassword newAccountWithPassword = new AccountNPassword(newAccount, newAccount.getPassword());
+            accountsClient.createAccount(newAccountWithPassword);
         }
 
         if (!existUser(pDto.getEmail())) {

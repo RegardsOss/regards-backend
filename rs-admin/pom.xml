@@ -35,12 +35,16 @@
 	<modules>
 		<module>project</module>
 		<module>bootstrap-administration</module>
+		<module>bootstrap-administration-instance</module>
 		<module>accessrights</module>
+		<module>accessrights-instance</module>
 		<module>emails</module>
 		<module>notification</module>
 		<module>metrics</module>
-		<module>remote-tenant-resolver</module>
 		<module>local-tenant-resolver</module>
+		<module>local-authorities-provider</module>
+		<module>remote-tenant-resolver</module>
+		<module>remote-authorities-provider</module>
 	</modules>
 
 </project>

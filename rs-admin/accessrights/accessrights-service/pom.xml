@@ -38,10 +38,6 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-instance-regards</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards</artifactId>
 		</dependency>
 		<dependency>
@@ -72,6 +68,10 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.emails</groupId>
 			<artifactId>emails-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
+			<artifactId>accessrights-instance-client</artifactId>
 		</dependency>
 		<!-- Tests -->
 		<dependency>

@@ -30,7 +30,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IAccessSettingsRepository;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.service.projectuser.AccessSettingsService;
 
@@ -104,7 +103,7 @@ public class AccessSettingsServiceTest {
      * Check that the system fails when trying to update a non existing access settings.
      *
      * @throws EntityNotFoundException
-     *             Thrown when an {@link AccountSettings} with passed id could not be found
+     *             Thrown when an {@link AccessSettings} with passed id could not be found
      */
     @Test(expected = EntityNotFoundException.class)
     @Requirement("?")
@@ -130,7 +129,7 @@ public class AccessSettingsServiceTest {
      * Check that the system allows to update access settings in regular case.
      *
      * @throws EntityNotFoundException
-     *             Thrown when an {@link AccountSettings} with passed id could not be found
+     *             Thrown when an {@link AccessSettings} with passed id could not be found
      */
     @Test
     @Requirement("?")

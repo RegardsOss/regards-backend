@@ -35,20 +35,11 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards-starter</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.notification</groupId>
 			<artifactId>notification-domain</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.accessrights</groupId>
-			<artifactId>accessrights-dao</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>fr.cnes.regards.framework</groupId>
-					<artifactId>jpa-instance-regards-starter</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<!-- Tests dependencies -->
 		<dependency>

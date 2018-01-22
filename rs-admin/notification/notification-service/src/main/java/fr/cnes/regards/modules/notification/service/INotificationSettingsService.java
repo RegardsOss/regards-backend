@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.notification.service;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
@@ -43,7 +42,7 @@ public interface INotificationSettingsService {
     /**
      * Retrieve {@link NotificationSettings} for the given user if any. Create it otherwise.
      */
-    NotificationSettings retrieveNotificationSettings(ProjectUser projectUser);
+    NotificationSettings retrieveNotificationSettings(String userEmail);
 
     /**
      * Define the endpoint for updating the {@link Notification#status}

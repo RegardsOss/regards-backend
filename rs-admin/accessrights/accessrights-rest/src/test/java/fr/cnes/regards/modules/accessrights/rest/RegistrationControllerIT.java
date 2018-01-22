@@ -23,9 +23,13 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -43,6 +47,11 @@ import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 
 /**
  * Integration tests for the accesses functionalities.
@@ -142,6 +151,13 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IRoleRepository roleRepository;
 
+    @Autowired
+    private IAccountsClient accountsClient;
+
+    @Autowired
+    private IAccountSettingsClient accountSettingsClient;
+
+
     /**
      * Do some setup before each test
      */
@@ -180,6 +196,19 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     public void requestAccess() {
         final AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, null,
                 new ArrayList<>(), PASSWORD, ORIGIN_URL, REQUEST_LINK);
+
+        //lets mock the feign clients
+        Account account = new Account(newAccessRequest.getEmail(), newAccessRequest.getFirstName(), newAccessRequest.getLastName(), newAccessRequest.getPassword());
+        AccountSettings accountSettings = new AccountSettings();
+
+        Mockito.when(accountsClient.retrieveAccounByEmail(newAccessRequest.getEmail()))
+                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
+                            new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
+        AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
+        Mockito.when(accountsClient.createAccount(accountNPassword))
+                .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.CREATED));
+        Mockito.when(accountSettingsClient.retrieveAccountSettings())
+                .thenReturn(new ResponseEntity<>(new Resource<>(accountSettings), HttpStatus.OK));
 
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(MockMvcResultMatchers.status().isCreated());
@@ -310,6 +339,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Check that the system allows to update access settings in regular case.")
     public void updateAccessSettings() {
+
         // First save settings
         final AccessSettings settings = new AccessSettings();
         accessSettingsRepository.save(settings);
@@ -335,6 +365,12 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
                 .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
         projectUser.setStatus(UserStatus.ACCESS_INACTIVE);
         projectUserRepository.save(projectUser);
+
+        //lets mock the feign clients
+        Account account = new Account(projectUser.getEmail(), "projectUser.getFirstName()", "projectUser.getLastName()", "projectUser.getPassword()");
+
+        Mockito.when(accountsClient.retrieveAccounByEmail(projectUser.getEmail()))
+                .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
 
         // Endpoint
         String endpoint = RegistrationController.REQUEST_MAPPING_ROOT

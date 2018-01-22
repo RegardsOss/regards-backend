@@ -27,10 +27,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
-import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
@@ -132,22 +132,35 @@ public class ProjectConnectionServiceTest {
     public void init() {
         // use a stub repository, to be able to only test the service
         final IProjectRepository projectRepoStub = new ProjectRepositoryStub();
-        projectService = new ProjectService(projectRepoStub, new MultitenantDaoProperties(),
-                Mockito.mock(IInstancePublisher.class));
+        projectService = new ProjectService(projectRepoStub,
+                                            Mockito.mock(ITenantResolver.class),
+                                            Mockito.mock(IInstancePublisher.class),
+                                            "default-project-test");
 
         projectConnectionRepoStub = new ProjectConnectionRepositoryStub();
-        projectConnectionService = new ProjectConnectionService(projectRepoStub, projectConnectionRepoStub,
-                Mockito.mock(IInstancePublisher.class));
+        projectConnectionService = new ProjectConnectionService(projectRepoStub,
+                                                                projectConnectionRepoStub,
+                                                                Mockito.mock(IInstancePublisher.class));
 
         final Project project1 = projectRepoStub
                 .save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));
         final Project project2 = projectRepoStub
                 .save(new Project(1L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_2));
 
-        projectConnectionRepoStub.save(new ProjectConnection(0L, project1, MS_TEST_1, COMMON_PROJECT_USER_NAME,
-                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL));
-        projectConnectionRepoStub.save(new ProjectConnection(1L, project2, MS_TEST_2, COMMON_PROJECT_USER_NAME,
-                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL));
+        projectConnectionRepoStub.save(new ProjectConnection(0L,
+                                                             project1,
+                                                             MS_TEST_1,
+                                                             COMMON_PROJECT_USER_NAME,
+                                                             COMMON_PROJECT_USER_PWD,
+                                                             COMMON_PROJECT_DRIVER,
+                                                             COMMON_PROJECT_URL));
+        projectConnectionRepoStub.save(new ProjectConnection(1L,
+                                                             project2,
+                                                             MS_TEST_2,
+                                                             COMMON_PROJECT_USER_NAME,
+                                                             COMMON_PROJECT_USER_PWD,
+                                                             COMMON_PROJECT_DRIVER,
+                                                             COMMON_PROJECT_URL));
     }
 
     /**
@@ -167,8 +180,13 @@ public class ProjectConnectionServiceTest {
         } catch (final ModuleException e) {
             Assert.fail(e.getMessage());
         }
-        final ProjectConnection connection = new ProjectConnection(600L, project, "microservice-test",
-                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL);
+        final ProjectConnection connection = new ProjectConnection(600L,
+                                                                   project,
+                                                                   "microservice-test",
+                                                                   COMMON_PROJECT_USER_NAME,
+                                                                   COMMON_PROJECT_USER_PWD,
+                                                                   COMMON_PROJECT_DRIVER,
+                                                                   COMMON_PROJECT_URL);
         try {
             projectConnectionService.createProjectConnection(connection, true);
         } catch (final ModuleException e) {
@@ -253,8 +271,15 @@ public class ProjectConnectionServiceTest {
 
         // Updating with an non existing project
         connection = new ProjectConnection(0L,
-                new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_3), MS_TEST_1,
-                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL);
+                                           new Project(COMMON_PROJECT_DESCRIPTION,
+                                                       COMMON_PROJECT_ICON,
+                                                       true,
+                                                       PROJECT_TEST_3),
+                                           MS_TEST_1,
+                                           COMMON_PROJECT_USER_NAME,
+                                           COMMON_PROJECT_USER_PWD,
+                                           COMMON_PROJECT_DRIVER,
+                                           COMMON_PROJECT_URL);
         try {
             connection = projectConnectionService.updateProjectConnection(0L, connection);
             Assert.fail(errorUpdate);
@@ -265,8 +290,16 @@ public class ProjectConnectionServiceTest {
         // Updating a non existing projectConnection
         final long id = 56L;
         connection = new ProjectConnection(id,
-                new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_3), MS_TEST_1,
-                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL);
+                                           new Project(0L,
+                                                       COMMON_PROJECT_DESCRIPTION,
+                                                       COMMON_PROJECT_ICON,
+                                                       true,
+                                                       PROJECT_TEST_3),
+                                           MS_TEST_1,
+                                           COMMON_PROJECT_USER_NAME,
+                                           COMMON_PROJECT_USER_PWD,
+                                           COMMON_PROJECT_DRIVER,
+                                           COMMON_PROJECT_URL);
         try {
             connection = projectConnectionService.updateProjectConnection(id, connection);
             Assert.fail(errorUpdate);

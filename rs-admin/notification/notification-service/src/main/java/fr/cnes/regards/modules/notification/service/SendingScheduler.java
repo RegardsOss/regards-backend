@@ -29,9 +29,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
 import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
@@ -47,7 +46,7 @@ import fr.cnes.regards.modules.notification.service.utils.NotificationUserSettin
  */
 @Service
 @EnableScheduling
-@MultitenantTransactional
+@RegardsTransactional
 public class SendingScheduler implements ApplicationListener<NotificationToSendEvent> {
 
     /**
@@ -154,7 +153,7 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
                                                                         notificationSettingsService
                                                                                 .retrieveNotificationSettings(
                                                                                         projectUser))).filter(pFilter)
-                        .map(n -> n.getProjectUser().getEmail()).distinct().toArray(s -> new String[s]);
+                        .map(n -> n.getProjectUser()).distinct().toArray(s -> new String[s]);
 
                 // Send the notification to recipients
                 sendNotification(notification, recipients);
@@ -198,8 +197,7 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
     @Override
     public void onApplicationEvent(NotificationToSendEvent event) {
         Notification notif = event.getNotification();
-        String[] recipients = notificationService.findRecipients(notif).distinct().map(ProjectUser::getEmail)
-                .toArray(n -> new String[n]);
+        String[] recipients = notificationService.findRecipients(notif).distinct().toArray(n -> new String[n]);
         sendNotification(notif, recipients);
     }
 }

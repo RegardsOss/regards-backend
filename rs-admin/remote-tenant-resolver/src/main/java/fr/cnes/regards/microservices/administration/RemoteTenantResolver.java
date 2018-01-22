@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.project.client.rest.ITenantClient;
  * @author Sébastien Binda
  * @author Marc Sordi
  */
-public class RemoteTenantResolver extends AbstractDiscoveryClientChecker implements ITenantResolver {
+public class RemoteTenantResolver extends AbstractInstanceDiscoveryClientChecker implements ITenantResolver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteTenantEventHandler.class);
 

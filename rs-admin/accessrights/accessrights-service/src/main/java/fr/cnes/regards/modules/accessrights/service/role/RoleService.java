@@ -560,6 +560,19 @@ public class RoleService implements IRoleService {
     }
 
     @Override
+    public Page<ProjectUser> retrieveRoleProjectUserList(final String roleName, final Pageable pPageable)
+            throws EntityNotFoundException {
+        final Optional<Role> role = roleRepository.findOneByName(roleName);
+        if (!role.isPresent()) {
+            throw new EntityNotFoundException(roleName.toString(), Role.class);
+        }
+        final Set<Role> roles = retrieveInheritedRoles(role.get());
+        roles.add(role.get());
+        final Set<String> roleNames = roles.stream().map(r -> r.getName()).collect(Collectors.toSet());
+        return projectUserRepository.findByRoleNameIn(roleNames, pPageable);
+    }
+
+    @Override
     public boolean existRole(final Long pRoleId) {
         return roleRepository.exists(pRoleId);
     }

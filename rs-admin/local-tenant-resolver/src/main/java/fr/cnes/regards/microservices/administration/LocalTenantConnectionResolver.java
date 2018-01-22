@@ -101,9 +101,12 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
         try {
             final Project project = projectService.retrieveProject(pTenantConnection.getTenant());
 
-            final ProjectConnection projectConnection = new ProjectConnection(project, microserviceName,
-                    pTenantConnection.getUserName(), pTenantConnection.getPassword(),
-                    pTenantConnection.getDriverClassName(), pTenantConnection.getUrl());
+            final ProjectConnection projectConnection = new ProjectConnection(project,
+                                                                              microserviceName,
+                                                                              pTenantConnection.getUserName(),
+                                                                              pTenantConnection.getPassword(),
+                                                                              pTenantConnection.getDriverClassName(),
+                                                                              pTenantConnection.getUrl());
 
             projectConnectionService.createStaticProjectConnection(projectConnection);
         } catch (final ModuleException e) {

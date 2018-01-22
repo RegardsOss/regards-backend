@@ -20,10 +20,9 @@ package fr.cnes.regards.modules.notification.service;
 
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
@@ -38,13 +37,13 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
  *
  */
 @Service
-@MultitenantTransactional
+@RegardsTransactional
 public class NotificationSettingsService implements INotificationSettingsService {
 
     /**
      * Service handling CRUD operations on project users. Autowired by Spring.
      */
-    private final IProjectUserService projectUserService;
+    private final IAuthenticationResolver authenticationResolver;
 
     /**
      * CRUD repository managing notification settings. Autowired by Spring.
@@ -54,15 +53,15 @@ public class NotificationSettingsService implements INotificationSettingsService
     /**
      * Creates a {@link NotificationSettingsService} wired to the given {@link INotificationRepository}.
      *
-     * @param pProjectUserService
+     * @param authenticationResolver
      *            Autowired by Spring. Must not be {@literal null}.
      * @param pNotificationSettingsRepository
      *            Autowired by Spring. Must not be {@literal null}.
      */
-    public NotificationSettingsService(final IProjectUserService pProjectUserService,
+    public NotificationSettingsService(final IAuthenticationResolver authenticationResolver,
             final INotificationSettingsRepository pNotificationSettingsRepository) {
         super();
-        projectUserService = pProjectUserService;
+        this.authenticationResolver = authenticationResolver;
         notificationSettingsRepository = pNotificationSettingsRepository;
     }
 
@@ -73,15 +72,14 @@ public class NotificationSettingsService implements INotificationSettingsService
      */
     @Override
     public NotificationSettings retrieveNotificationSettings() throws EntityNotFoundException {
-        final ProjectUser projectUser = projectUserService.retrieveCurrentUser();
-        return retrieveNotificationSettings(projectUser);
+        return retrieveNotificationSettings(authenticationResolver.getUser());
     }
 
     @Override
-    public NotificationSettings retrieveNotificationSettings(ProjectUser projectUser) {
-        NotificationSettings result = notificationSettingsRepository.findOneByProjectUser(projectUser);
+    public NotificationSettings retrieveNotificationSettings(String userEmail) {
+        NotificationSettings result = notificationSettingsRepository.findOneByProjectUserEmail(userEmail);
         if (result == null) {
-            result = createNotificationSettings(projectUser);
+            result = createNotificationSettings(userEmail);
         }
         return result;
     }
@@ -118,9 +116,9 @@ public class NotificationSettingsService implements INotificationSettingsService
      *            The target project user
      * @return The created notification settings
      */
-    private NotificationSettings createNotificationSettings(final ProjectUser pProjectUser) {
+    private NotificationSettings createNotificationSettings(final String pProjectUser) {
         final NotificationSettings settings = new NotificationSettings();
-        settings.setProjectUser(pProjectUser);
+        settings.setProjectUserEmail(pProjectUser);
         return notificationSettingsRepository.save(settings);
     }
 

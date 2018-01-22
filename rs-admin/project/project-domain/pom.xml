@@ -33,6 +33,7 @@
 
 	<dependencies>
 		<dependency>
+			<!-- dependency added so we can easily handle link between ProjectConnection and TenantConnection -->
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards</artifactId>
 		</dependency>

@@ -84,10 +84,6 @@ public class ProjectConnectionService implements IProjectConnectionService {
      *            The JPA {@link Project} repository.
      * @param pProjectConnectionRepository
      *            The JPA {@link ProjectConnection} repository.
-     * @param pDefaultProperties
-     *            multitenant DAO properties form config file
-     * @param pMicroserviceName
-     *            current microservice name
      * @param pInstancePublisher
      *            Amqp publisher
      */

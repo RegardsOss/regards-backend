@@ -59,7 +59,7 @@ public class AccessSettingsService implements IAccessSettingsService {
      * @see fr.cnes.regards.modules.accessrights.service.role.IAccessSettingsService#retrieve()
      */
     @Override
-    public AccessSettings retrieve() throws EntityNotFoundException {
+    public AccessSettings retrieve() {
         final List<AccessSettings> list = accessSettingsRepository.findAll();
         AccessSettings result;
         if (list.isEmpty()) {

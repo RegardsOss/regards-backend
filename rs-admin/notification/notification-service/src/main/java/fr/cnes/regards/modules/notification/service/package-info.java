@@ -17,7 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * 
+ *
  * @author Xavier-Alexandre Brochard
  */
 package fr.cnes.regards.modules.notification.service;

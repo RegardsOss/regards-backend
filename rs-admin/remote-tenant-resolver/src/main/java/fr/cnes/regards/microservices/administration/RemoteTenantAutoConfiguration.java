@@ -75,26 +75,6 @@ public class RemoteTenantAutoConfiguration {
 
     /**
      *
-     * Authorities provider by accessing administration microservice with Feign rest clients
-     *
-     * @param pRoleClient
-     *            Feign client to query administration service for roles
-     * @param pResourcesClient
-     *            Feign client to query administration service for resources
-     * @return IAuthoritiesProvider
-     * @since 1.0-SNAPSHOT
-     */
-    @Bean
-    @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
-    IAuthoritiesProvider authoritiesProvider(final DiscoveryClient discoveryClient,
-            final IMicroserviceResourceClient resourcesClient, final IRolesClient rolesClient,
-            final IRuntimeTenantResolver runtimeTenantResolver, final IRoleResourceClient pRoleResourceClient) {
-        return new RemoteAuthoritiesProvider(discoveryClient, resourcesClient, rolesClient, runtimeTenantResolver,
-                pRoleResourceClient);
-    }
-
-    /**
-     *
      * Remote tenant resolver. Retrieve tenants from the administration service.
      *
      * @param pInitClients

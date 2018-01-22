@@ -17,6 +17,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -25,10 +26,9 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
@@ -51,12 +51,6 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IRoleService roleService;
-
-    @Autowired
-    private IProjectUserRepository projectUserRepository;
-
-    @Autowired
     private IProjectUsersClient projectUsersClient;
 
     @Autowired
@@ -70,15 +64,16 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void testCreateNotification() throws EntityNotFoundException {
         String roleName = DefaultRole.PROJECT_ADMIN.name();
-        Role pa = roleService.retrieveRole(roleName);
-        ProjectUser pu = projectUserRepository
-                .save(new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList()));
-        Mockito.when(projectUsersClient.retrieveRoleProjectUserList(pa.getId(), 0, 100))
-                .thenReturn(new ResponseEntity<>(HateoasUtils.wrapToPagedResources(Lists.newArrayList(pu)),
-                                                 HttpStatus.OK));
+        ProjectUser pu = new ProjectUser("project.admin@test.fr",
+                                         new Role(roleName),
+                                         Lists.newArrayList(),
+                                         Lists.newArrayList());
+        Mockito.when(projectUsersClient.retrieveRoleProjectUsersList(roleName, 0, 100)).thenReturn(new ResponseEntity<>(
+                HateoasUtils.wrapToPagedResources(Lists.newArrayList(pu)),
+                HttpStatus.OK));
         NotificationDTO notif = new NotificationDTO("Lets test",
-                                                    Lists.newArrayList(),
-                                                    Lists.newArrayList(roleName),
+                                                    Sets.newHashSet(),
+                                                    Sets.newHashSet(roleName),
                                                     "microservice",
                                                     "test",
                                                     NotificationType.INFO);
@@ -94,29 +89,28 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void testListNotif() throws EntityNotFoundException {
         String roleName = DefaultRole.PROJECT_ADMIN.name();
-        Role pa = roleService.retrieveRole(roleName);
-        ProjectUser pu = projectUserRepository
-                .save(new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList()));
+        Role pa = new Role(roleName);
+        ProjectUser pu = new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList());
         Mockito.when(projectUsersClient.retrieveRoleProjectUserList(pa.getId(), 0, 100))
                 .thenReturn(new ResponseEntity<>(HateoasUtils.wrapToPagedResources(Lists.newArrayList(pu)),
                                                  HttpStatus.OK));
         NotificationDTO notif = new NotificationDTO("Bonne",
-                                                    Lists.newArrayList(),
-                                                    Lists.newArrayList(roleName),
+                                                    Sets.newHashSet(),
+                                                    Sets.newHashSet(roleName),
                                                     "microservice",
                                                     "test",
                                                     NotificationType.INFO);
         notificationService.createNotification(notif);
         notif = new NotificationDTO("Année",
-                                    Lists.newArrayList(),
-                                    Lists.newArrayList(roleName),
+                                    Sets.newHashSet(),
+                                    Sets.newHashSet(roleName),
                                     "microservice",
                                     "test",
                                     NotificationType.INFO);
         notificationService.createNotification(notif);
         notif = new NotificationDTO("2018",
-                                    Lists.newArrayList(),
-                                    Lists.newArrayList(roleName),
+                                    Sets.newHashSet(),
+                                    Sets.newHashSet(roleName),
                                     "microservice",
                                     "test",
                                     NotificationType.INFO);
@@ -124,8 +118,8 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         //some lorem ipsum so we have a notification with content
         notif = new NotificationDTO(
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus sed magna turpis. Curabitur ultrices scelerisque magna pretium mollis. Sed suscipit, ligula eu tempus pretium, lorem quam vehicula urna, vel efficitur leo mauris quis mauris. Pellentesque ac ullamcorper lectus. Aliquam sed tempor massa. Proin ex massa, sodales vel turpis non, sodales rhoncus lacus. Maecenas a convallis nisi. Aliquam felis justo, pellentesque id vestibulum id, tempus sit amet dui. Quisque quis lacus vehicula, gravida lectus a, elementum erat. In vitae venenatis turpis, et venenatis lacus. Phasellus facilisis pellentesque elit, in lacinia enim placerat quis.",
-                Lists.newArrayList(),
-                Lists.newArrayList(roleName),
+                Sets.newHashSet(),
+                Sets.newHashSet(roleName),
                 "microservice",
                 "test",
                 NotificationType.INFO);
@@ -143,15 +137,14 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void testSetNotifRead() throws EntityNotFoundException {
         String roleName = DefaultRole.PROJECT_ADMIN.name();
-        Role pa = roleService.retrieveRole(roleName);
-        ProjectUser pu = projectUserRepository
-                .save(new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList()));
+        Role pa = new Role(roleName);
+        ProjectUser pu = new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList());
         Mockito.when(projectUsersClient.retrieveRoleProjectUserList(pa.getId(), 0, 100))
                 .thenReturn(new ResponseEntity<>(HateoasUtils.wrapToPagedResources(Lists.newArrayList(pu)),
                                                  HttpStatus.OK));
         NotificationDTO notificationDTO = new NotificationDTO("Bonne",
-                                                              Lists.newArrayList(),
-                                                              Lists.newArrayList(roleName),
+                                                              Sets.newHashSet(),
+                                                              Sets.newHashSet(roleName),
                                                               "microservice",
                                                               "test",
                                                               NotificationType.INFO);
@@ -169,15 +162,14 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
     public void testSetNotifUnread() throws EntityNotFoundException {
         //create a notification
         String roleName = DefaultRole.PROJECT_ADMIN.name();
-        Role pa = roleService.retrieveRole(roleName);
-        ProjectUser pu = projectUserRepository
-                .save(new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList()));
+        Role pa = new Role(roleName);
+        ProjectUser pu = new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList());
         Mockito.when(projectUsersClient.retrieveRoleProjectUserList(pa.getId(), 0, 100))
                 .thenReturn(new ResponseEntity<>(HateoasUtils.wrapToPagedResources(Lists.newArrayList(pu)),
                                                  HttpStatus.OK));
         NotificationDTO notificationDTO = new NotificationDTO("Bonne",
-                                                              Lists.newArrayList(),
-                                                              Lists.newArrayList(roleName),
+                                                              Sets.newHashSet(),
+                                                              Sets.newHashSet(roleName),
                                                               "microservice",
                                                               "test",
                                                               NotificationType.INFO);
@@ -205,6 +197,11 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         @Bean
         public IEmailClient emailClient() {
             return Mockito.mock(IEmailClient.class);
+        }
+
+        @Bean
+        public IRolesClient rolesClient() {
+            return Mockito.mock(IRolesClient.class);
         }
 
     }
