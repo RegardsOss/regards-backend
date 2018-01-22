@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.assertj.core.util.Lists;
-import org.assertj.core.util.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -34,8 +33,8 @@ import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
-import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageInfo;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageInfo;
 import fr.cnes.regards.modules.storage.plugin.datastorage.PluginStorageInfo;
 
 /**
@@ -134,7 +133,8 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
     }
 
     @Override
-    @Scheduled(fixedRateString = "${regards.storage.check.data.storage.disk.usage.rate:60000}", initialDelay = 60*1000)
+    @Scheduled(fixedRateString = "${regards.storage.check.data.storage.disk.usage.rate:60000}",
+            initialDelay = 60 * 1000)
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void monitorDataStorages() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
@@ -146,7 +146,7 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
                     .filter(pc -> pc.isActive()).collect(Collectors.toSet());
             // lets ask the data base to calculate the used space per data storage
             Collection<MonitoringAggregation> monitoringAggregations = dataFileDao.getMonitoringAggregation();
-            if(!monitoringAggregations.isEmpty()) {
+            if (!monitoringAggregations.isEmpty()) {
                 // now lets transform it into Map<Long, Long>, it is easier to use
                 Map<Long, Long> monitoringAggregationMap = monitoringAggregations.stream().collect(Collectors.toMap(
                         MonitoringAggregation::getDataStorageUsedId,
@@ -161,7 +161,8 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
                         Long dataStorageTotalSpace = activeDataStorage.getTotalSpace();
                         DataStorageInfo dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(),
                                                                               dataStorageTotalSpace,
-                                                                              monitoringAggregationMap.get(activeDataStorageConfId));
+                                                                              monitoringAggregationMap
+                                                                                      .get(activeDataStorageConfId));
                         Double ratio = dataStorageInfo.getRatio();
                         if (ratio >= threshold) {
                             String message = String.format(
@@ -198,8 +199,8 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
      */
     private void notifyAdmins(String title, String message, NotificationType type) {
         NotificationDTO notif = new NotificationDTO(message,
-                                                    Lists.newArrayList(),
-                                                    Lists.newArrayList(DefaultRole.ADMIN.name()),
+                                                    Sets.newHashSet(),
+                                                    Sets.newHashSet(DefaultRole.ADMIN.name()),
                                                     applicationName,
                                                     title,
                                                     type);
