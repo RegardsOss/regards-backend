@@ -105,6 +105,12 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     }
 
     @Override
+    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUsersList(String pRole, int pPage,
+            int pSize) {
+        return null;
+    }
+
+    @Override
     public ResponseEntity<Resource<ProjectUser>> retrieveProjectUser(final Long pUserId) {
         return null;
     }

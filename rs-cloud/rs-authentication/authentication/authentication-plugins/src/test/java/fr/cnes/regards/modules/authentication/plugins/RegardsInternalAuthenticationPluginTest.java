@@ -37,7 +37,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
-import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.modules.authentication.plugins.regards.RegardsInternalAuthenticationPlugin;
 
@@ -69,8 +69,10 @@ public class RegardsInternalAuthenticationPluginTest {
         final List<PluginParameter> parameters = new ArrayList<>();
         try {
             // instantiate plugin
-            plugin = PluginUtils.getPlugin(parameters, RegardsInternalAuthenticationPlugin.class,
-                                           Arrays.asList("fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"),
+            plugin = PluginUtils.getPlugin(parameters,
+                                           RegardsInternalAuthenticationPlugin.class,
+                                           Arrays.asList(
+                                                   "fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"),
                                            new HashMap<>());
             Assert.assertNotNull(plugin);
         } catch (final PluginUtilsRuntimeException | IllegalArgumentException | SecurityException e) {

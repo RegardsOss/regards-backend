@@ -49,6 +49,11 @@ public class ProjectClientStub implements IProjectsClient {
     }
 
     @Override
+    public ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(int page, int size) {
+        return null;
+    }
+
+    @Override
     public ResponseEntity<Resource<Project>> createProject(final Project pNewProject) {
         pNewProject.setId(idCount++);
         projects.add(pNewProject);

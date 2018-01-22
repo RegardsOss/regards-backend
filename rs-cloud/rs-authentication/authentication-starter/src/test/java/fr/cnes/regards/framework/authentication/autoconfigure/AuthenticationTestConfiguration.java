@@ -31,13 +31,13 @@ import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
-import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
@@ -75,8 +75,9 @@ public class AuthenticationTestConfiguration {
         testUser.setRole(testRole);
         testUser.setStatus(UserStatus.ACCESS_GRANTED);
 
-        final ResponseEntity<Resource<ProjectUser>> response = new ResponseEntity<Resource<ProjectUser>>(
-                new Resource<ProjectUser>(testUser, new ArrayList<>()), HttpStatus.OK);
+        final ResponseEntity<Resource<ProjectUser>> response = new ResponseEntity<Resource<ProjectUser>>(new Resource<ProjectUser>(
+                testUser,
+                new ArrayList<>()), HttpStatus.OK);
         Mockito.when(client.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(response);
 
         return client;
@@ -87,8 +88,8 @@ public class AuthenticationTestConfiguration {
     IProjectsClient projectsClient() {
         final IProjectsClient client = Mockito.mock(IProjectsClient.class);
 
-        final ResponseEntity<Resource<Project>> response = new ResponseEntity<Resource<Project>>(
-                new Resource<Project>(new Project("", "", true, PROJECT_TEST_NAME)), HttpStatus.OK);
+        final ResponseEntity<Resource<Project>> response = new ResponseEntity<Resource<Project>>(new Resource<Project>(
+                new Project("", "", true, PROJECT_TEST_NAME)), HttpStatus.OK);
         Mockito.when(client.retrieveProject(Mockito.anyString())).thenReturn(response);
         return client;
     }
