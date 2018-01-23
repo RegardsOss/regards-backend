@@ -134,7 +134,11 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
         return (StreamingResponseBody) outputStream -> {
             try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
                 for (DataFile file : files) {
-                    zos.putNextEntry(new ZipEntry(file.getName()));
+                    String fileName = file.getName();
+                    if (fileName == null) {
+                        fileName = file.getUri().getPath();
+                    }
+                    zos.putNextEntry(new ZipEntry(fileName));
                     try {
                         ByteStreams.copy(DownloadUtils.getInputStream(new URL(file.getUri().toString())), zos);
                     } catch (IOException e) {

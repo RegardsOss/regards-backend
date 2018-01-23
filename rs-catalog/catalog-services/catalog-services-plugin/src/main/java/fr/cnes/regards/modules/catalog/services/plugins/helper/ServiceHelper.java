@@ -2,8 +2,6 @@ package fr.cnes.regards.modules.catalog.services.plugins.helper;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,8 +21,6 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseExcep
 @Service
 @MultitenantTransactional
 public class ServiceHelper implements IServiceHelper {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(CatalogPluginResponseFactory.class);
 
     @Autowired
     private ISearchService searchService;
