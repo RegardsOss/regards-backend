@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.catalog.services.rest;
 
 import java.util.LinkedHashSet;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -29,6 +30,8 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
@@ -62,7 +65,11 @@ public class TestService implements IService {
         } else {
             Model model = Model.build("pName", "pDescription", EntityType.DATA);
             DataObject do1 = new DataObject(model, "pTenant", "pLabel1");
+            do1.setIpId(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "pTenant",
+                    UUID.fromString("924d1f0d-37ba-4da1-9be3-d94aac629897"), 1));
             DataObject do2 = new DataObject(model, "pTenant", "pLabel2");
+            do2.setIpId(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "pTenant",
+                    UUID.fromString("74f2c965-0136-47f0-93e1-4fd098db701c"), 1));
             responseList = Sets.newLinkedHashSet(do1, do2);
         }
 
