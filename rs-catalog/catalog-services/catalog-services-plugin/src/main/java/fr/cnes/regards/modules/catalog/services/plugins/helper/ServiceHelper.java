@@ -41,13 +41,14 @@ public class ServiceHelper implements IServiceHelper {
     @Override
     public Page<DataObject> getDataObjects(List<String> entityIds, int pageIndex, int nbEntitiesByPage) {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
-        String[] list = entityIds.toArray(new String[entityIds.size()]);
-        for (String s : list) {
-            LOGGER.info(String.format("List of ids : %s", s));
+        ICriterion[] idCrits = new ICriterion[entityIds.size()];
+        int count = 0;
+        for (String id : entityIds) {
+            idCrits[count] = ICriterion.eq("ipId", id);
+            count++;
         }
-        ICriterion ipIdsCrit = ICriterion.in("ipId", list);
         PageRequest pageReq = new PageRequest(pageIndex, nbEntitiesByPage);
-        return searchService.search(searchKey, pageReq, ipIdsCrit);
+        return searchService.search(searchKey, pageReq, ICriterion.or(idCrits));
     }
 
     @Override
