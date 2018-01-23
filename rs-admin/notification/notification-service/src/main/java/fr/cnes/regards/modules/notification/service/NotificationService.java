@@ -134,11 +134,6 @@ public class NotificationService implements INotificationService, ApplicationLis
         this.subscriber = subscriber;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.notification.service.INotificationService#retrieveNotifications()
-     */
     @Override
     public List<Notification> retrieveNotifications() throws EntityNotFoundException {
         if (notificationMode == NotificationMode.MULTITENANT) {
@@ -149,12 +144,6 @@ public class NotificationService implements INotificationService, ApplicationLis
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.notification.service.INotificationService#sendNotification(fr.cnes.regards.modules.
-     * notification.domain.NotificationDTO)
-     */
     @Override
     public Notification createNotification(final NotificationDTO pDto) {
         Notification notification = new Notification();
@@ -181,11 +170,6 @@ public class NotificationService implements INotificationService, ApplicationLis
         return notification;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.notification.service.INotificationService#retrieveNotification(java.lang.Long)
-     */
     @Override
     public Notification retrieveNotification(final Long pId) throws EntityNotFoundException {
         if (!notificationRepository.exists(pId)) {
@@ -194,11 +178,6 @@ public class NotificationService implements INotificationService, ApplicationLis
         return notificationRepository.findOne(pId);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.notification.service.INotificationService#updateNotificationStatus(java.lang.Long)
-     */
     @Override
     public Notification updateNotificationStatus(final Long pId, final NotificationStatus pStatus)
             throws EntityNotFoundException {
@@ -210,11 +189,6 @@ public class NotificationService implements INotificationService, ApplicationLis
         return notificationRepository.save(notification);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.notification.service.INotificationService#deleteNotification(java.lang.Long)
-     */
     @Override
     public void deleteNotification(final Long pId) throws EntityNotFoundException {
         if (!notificationRepository.exists(pId)) {
@@ -223,23 +197,11 @@ public class NotificationService implements INotificationService, ApplicationLis
         notificationRepository.delete(pId);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.notification.service.INotificationService#retrieveNotificationsToSend()
-     */
     @Override
     public List<Notification> retrieveNotificationsToSend() {
         return notificationRepository.findByStatus(NotificationStatus.UNREAD);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.notification.service.INotificationService#assembleRecipients(fr.cnes.regards.modules.
-     * notification.domain.Notification)
-     */
     @Override
     public Stream<String> findRecipients(final Notification pNotification) {
         // With the stream of role recipients and project users recipients
