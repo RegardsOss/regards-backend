@@ -38,7 +38,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedEntityGraphs;
-import javax.persistence.NamedSubgraph;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -69,16 +68,8 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
         uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_ipId", columnNames = "ip_id"),
                 @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-@NamedEntityGraphs({
-        @NamedEntityGraph(name = "graph.acquisition.file.complete",
-                attributeNodes = @NamedAttributeNode(value = "fileList")),
-        @NamedEntityGraph(name = "graph.product.complete",
-                attributeNodes = {
-                        @NamedAttributeNode(value = "processingChain",
-                                subgraph = "graph.acquisition.file.info.complete"),
-                        @NamedAttributeNode(value = "fileList") },
-                subgraphs = { @NamedSubgraph(name = "graph.acquisition.file.info.complete",
-                        attributeNodes = { @NamedAttributeNode(value = "fileInfos") }) })
+@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.complete",
+        attributeNodes = @NamedAttributeNode(value = "fileList"))
 
 })
 public class Product {

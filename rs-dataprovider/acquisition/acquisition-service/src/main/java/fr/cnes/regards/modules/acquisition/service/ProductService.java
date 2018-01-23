@@ -43,8 +43,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
@@ -71,12 +73,15 @@ public class ProductService implements IProductService {
 
     private final IJobInfoService jobInfoService;
 
+    private final IAcquisitionFileRepository acqFileRepository;
+
     @Value("${regards.acquisition.sip.bulk.request.limit:10000}")
     private Integer bulkRequestLimit;
 
-    public ProductService(IProductRepository repository, IAuthenticationResolver authResolver,
-            IJobInfoService jobInfoService) {
+    public ProductService(IProductRepository repository, IAcquisitionFileRepository acqFileRepository,
+            IAuthenticationResolver authResolver, IJobInfoService jobInfoService) {
         this.productRepository = repository;
+        this.acqFileRepository = acqFileRepository;
         this.authResolver = authResolver;
         this.jobInfoService = jobInfoService;
     }
@@ -207,6 +212,10 @@ public class ProductService implements IProductService {
         currentProduct.setSession(session);
         currentProduct.addAcquisitionFile(acqFile);
         computeProductState(currentProduct);
+
+        // Mark file as acquired
+        acqFile.setState(AcquisitionFileState.ACQUIRED);
+        acqFileRepository.save(acqFile);
 
         return save(currentProduct);
     }

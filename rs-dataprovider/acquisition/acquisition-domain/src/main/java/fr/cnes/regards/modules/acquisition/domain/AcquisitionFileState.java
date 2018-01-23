@@ -19,14 +19,44 @@
 package fr.cnes.regards.modules.acquisition.domain;
 
 /**
- * {@link AcquisitionFile} state
+ *
+ * {@link AcquisitionFile} lifecycle
+ *
+ * <pre>
+ *             o
+ *             |_______ ERROR
+ *             |
+ *          IN_PROGRESS
+ *             |_______ INVALID
+ *             |
+ *           VALID
+ *             |
+ *         ACQUIRED
+ * </pre>
+ *
  * @author Christophe Mertz
  * @author Marc Sordi
  *
  */
 public enum AcquisitionFileState {
-    VALID,
-    INVALID,
+    /**
+     * File is detected by scanning process
+     */
     IN_PROGRESS,
+    /**
+     * File is declared valid by validating process
+     */
+    VALID,
+    /**
+     * File is declared unvalid by validating process
+     */
+    INVALID,
+    /**
+     * File is linked to a product
+     */
+    ACQUIRED,
+    /**
+     * If error occurs during a file processing
+     */
     ERROR;
 }

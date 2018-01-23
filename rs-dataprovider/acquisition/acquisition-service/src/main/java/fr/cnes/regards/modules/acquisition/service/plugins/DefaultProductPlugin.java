@@ -36,15 +36,15 @@ import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
         url = "https://github.com/RegardsOss")
 public class DefaultProductPlugin implements IProductPlugin {
 
-    public static final String FIELD_EXT = "maxLength";
+    public static final String FIELD_EXT = "removeExtension";
 
     public static final String FIELD_LENGTH = "maxLength";
 
-    @PluginParameter(name = FIELD_EXT, label = "Enable extension removal", optional = true)
+    @PluginParameter(name = FIELD_EXT, label = "Enable extension removal", defaultValue = "true", optional = true)
     private Boolean removeExtension;
 
     @PluginParameter(name = FIELD_LENGTH, label = "Optional max product name length",
-            description = "Product name is truncated to max length", optional = true)
+            description = "Product name is truncated to max length", defaultValue = "64", optional = true)
     private Integer maxLength;
 
     @Override
@@ -52,7 +52,7 @@ public class DefaultProductPlugin implements IProductPlugin {
         String productName = filePath.getFileName().toString();
 
         // Remove extension
-        if (removeExtension != null) {
+        if ((removeExtension != null) && removeExtension) {
             int indexExtension = productName.lastIndexOf('.');
             if (indexExtension > 0) {
                 productName = productName.substring(0, indexExtension);

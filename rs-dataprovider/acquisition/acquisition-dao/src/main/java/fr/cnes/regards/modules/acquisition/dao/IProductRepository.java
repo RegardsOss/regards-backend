@@ -46,10 +46,10 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 @Repository
 public interface IProductRepository extends JpaRepository<Product, Long> {
 
-    @EntityGraph("graph.product.complete")
+    @EntityGraph("graph.acquisition.file.complete")
     Product findCompleteByProductName(String productName);
 
-    @EntityGraph("graph.product.complete")
+    @EntityGraph("graph.acquisition.file.complete")
     Product findCompleteByIpId(String ipId);
 
     Set<Product> findByState(ProductState state);

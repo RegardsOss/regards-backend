@@ -481,8 +481,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             // Compute product name for each valid files
             for (AcquisitionFile validFile : validFiles) {
                 String productName = productPlugin.getProductName(validFile.getFilePath());
-                productService.linkAcquisitionFileToProduct(processingChain.getSession().get(), validFile, productName,
-                                                            processingChain);
+                productService.linkAcquisitionFileToProduct(processingChain.getSession().orElse(null), validFile,
+                                                            productName, processingChain);
             }
         }
     }

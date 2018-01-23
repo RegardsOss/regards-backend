@@ -18,7 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.util.HashMap;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,9 +35,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
 
 import com.google.common.collect.Lists;
 
@@ -42,53 +42,59 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultDiskScanning;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 
 /**
- * Test {@link AcquisitionProcessingService} for {@link AcquisitionProcessingChain} workflow
+ * Test {@link AcquisitionProcessingService} for {@link Product} workflow
  *
  * @author Marc Sordi
  *
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acquisition", "jwt.secret=123456789",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_product", "jwt.secret=123456789",
         "regards.workspace=target/workspace" })
-@ContextConfiguration(classes = { AcquisitionProcessingServiceTest.AcquisitionConfiguration.class })
+@ContextConfiguration(classes = { ProductAcquisitionServiceTest.AcquisitionConfiguration.class })
 @MultitenantTransactional
-public class AcquisitionProcessingServiceTest extends AbstractDaoTest {
+public class ProductAcquisitionServiceTest extends AbstractDaoTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingServiceTest.class);
+    @SuppressWarnings("unused")
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProductAcquisitionServiceTest.class);
 
     @Autowired
     private IAcquisitionProcessingService processingService;
 
     @Autowired
-    private Validator validator;
+    private IPluginService pluginService;
+
+    @Autowired
+    private IAcquisitionFileRepository acqFileRepository;
 
     @Configuration
     @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
     static class AcquisitionConfiguration {
     }
 
-    @Test
-    @Requirement("REGARDS_DSL_ING_PRO_020")
-    @Requirement("REGARDS_DSL_ING_PRO_030")
-    @Purpose("Create an acquisition chain")
-    public void createChain() throws ModuleException {
+    public AcquisitionProcessingChain createProcessingChain() throws ModuleException {
 
         // Create a processing chain
         AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
-        processingChain.setLabel("Processing chain 1");
+        processingChain.setLabel("Product");
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
@@ -101,8 +107,14 @@ public class AcquisitionProcessingServiceTest extends AbstractDaoTest {
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
         fileInfo.setDataType(DataType.RAWDATA);
 
-        PluginConfiguration scanPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), DefaultDiskScanning.class, Lists.newArrayList());
+        // Search directory
+        Path searchDir = Paths.get("src", "test", "resources", "data", "plugins", "scan");
+
+        List<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(DefaultDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
+
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, DefaultDiskScanning.class,
+                                                                            Lists.newArrayList());
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin");
         fileInfo.setScanPlugin(scanPlugin);
@@ -133,15 +145,47 @@ public class AcquisitionProcessingServiceTest extends AbstractDaoTest {
         // SIP post processing
         // Not required
 
-        // Validate
-        Errors errors = new MapBindingResult(new HashMap<>(), "apc");
-        validator.validate(processingChain, errors);
-        if (errors.hasErrors()) {
-            errors.getAllErrors().forEach(error -> LOGGER.error(error.getDefaultMessage()));
-            Assert.fail("Acquisition processing chain should be valid");
-        }
+        pluginService.addPluginPackage(IScanPlugin.class.getPackage().getName());
+        pluginService.addPluginPackage(DefaultDiskScanning.class.getPackage().getName());
 
         // Save processing chain
-        processingService.createChain(processingChain);
+        return processingService.createChain(processingChain);
     }
+
+    @Test
+    public void acquisitionWorkflowTest() throws ModuleException {
+
+        AcquisitionProcessingChain processingChain = createProcessingChain();
+        AcquisitionFileInfo fileInfo = processingChain.getFileInfos().get(0);
+
+        processingService.scanAndRegisterFiles(processingChain);
+
+        // Check registered files
+        List<AcquisitionFile> inProgressFiles = acqFileRepository
+                .findByStateAndFileInfo(AcquisitionFileState.IN_PROGRESS, fileInfo);
+        Assert.assertTrue(inProgressFiles.size() == 4);
+
+        processingService.validateFiles(processingChain);
+
+        // Check registered files
+        inProgressFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.IN_PROGRESS,
+                                                                   processingChain.getFileInfos().get(0));
+        Assert.assertTrue(inProgressFiles.size() == 0);
+        List<AcquisitionFile> validFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.VALID,
+                                                                                    fileInfo);
+        Assert.assertTrue(validFiles.size() == 4);
+
+        processingService.buildProducts(processingChain);
+
+        // Check registered files
+        inProgressFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.IN_PROGRESS,
+                                                                   processingChain.getFileInfos().get(0));
+        Assert.assertTrue(inProgressFiles.size() == 0);
+        validFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.VALID, fileInfo);
+        Assert.assertTrue(validFiles.size() == 0);
+        List<AcquisitionFile> acquiredFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.ACQUIRED,
+                                                                                       fileInfo);
+        Assert.assertTrue(acquiredFiles.size() == 4);
+    }
+
 }
