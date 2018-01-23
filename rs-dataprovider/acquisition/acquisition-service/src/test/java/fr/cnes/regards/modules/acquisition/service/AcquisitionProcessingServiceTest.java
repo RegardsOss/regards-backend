@@ -51,7 +51,7 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainReposi
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultDiskScanning;
+import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
@@ -107,7 +107,7 @@ public class AcquisitionProcessingServiceTest extends AbstractDaoTest {
         fileInfo.setDataType(DataType.RAWDATA);
 
         PluginConfiguration scanPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), DefaultDiskScanning.class, Lists.newArrayList());
+                .getPluginConfiguration(Lists.newArrayList(), GlobDiskScanning.class, Lists.newArrayList());
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin");
         fileInfo.setScanPlugin(scanPlugin);

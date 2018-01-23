@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultDiskScanning;
+import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
@@ -79,7 +79,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         fileInfo.setDataType(DataType.RAWDATA);
 
         PluginConfiguration scanPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), DefaultDiskScanning.class, Lists.newArrayList());
+                .getPluginConfiguration(Lists.newArrayList(), GlobDiskScanning.class, Lists.newArrayList());
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel(labelPrefix + " : " + "Scan plugin");
         fileInfo.setScanPlugin(scanPlugin);
@@ -139,7 +139,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
 
         // Update scan plugin
         PluginConfiguration scanPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), DefaultDiskScanning.class, Lists.newArrayList());
+                .getPluginConfiguration(Lists.newArrayList(), GlobDiskScanning.class, Lists.newArrayList());
         scanPlugin.setIsActive(true);
         String label = "Scan plugin update";
         scanPlugin.setLabel(label);

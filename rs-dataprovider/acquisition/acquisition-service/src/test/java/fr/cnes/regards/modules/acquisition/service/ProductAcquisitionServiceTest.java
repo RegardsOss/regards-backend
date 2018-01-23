@@ -61,7 +61,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultDiskScanning;
+import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
@@ -123,9 +123,9 @@ public class ProductAcquisitionServiceTest extends AbstractDaoTest {
         Path searchDir = Paths.get("src", "test", "resources", "data", "plugins", "scan");
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(DefaultDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
+                .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
 
-        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, DefaultDiskScanning.class,
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class,
                                                                             Lists.newArrayList());
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin");
@@ -158,7 +158,7 @@ public class ProductAcquisitionServiceTest extends AbstractDaoTest {
         // Not required
 
         pluginService.addPluginPackage(IScanPlugin.class.getPackage().getName());
-        pluginService.addPluginPackage(DefaultDiskScanning.class.getPackage().getName());
+        pluginService.addPluginPackage(GlobDiskScanning.class.getPackage().getName());
 
         // Save processing chain
         return processingService.createChain(processingChain);

@@ -32,7 +32,8 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultDiskScanning;
+import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
+import fr.cnes.regards.modules.acquisition.service.plugins.RegexDiskScanning;
 
 /**
  * Test scanning plugin
@@ -48,14 +49,14 @@ public class DefaultDiskScanningTest {
         // Plugin parameters
         Path searchDir = Paths.get("src", "test", "resources", "data", "plugins", "scan");
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(DefaultDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
+                .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
 
         // Plugin and plugin interface packages
         List<String> prefixes = Arrays.asList(IScanPlugin.class.getPackage().getName(),
-                                              DefaultDiskScanning.class.getPackage().getName());
+                                              GlobDiskScanning.class.getPackage().getName());
 
         // Instantiate plugin
-        IScanPlugin plugin = PluginUtils.getPlugin(parameters, DefaultDiskScanning.class, prefixes, new HashMap<>());
+        IScanPlugin plugin = PluginUtils.getPlugin(parameters, GlobDiskScanning.class, prefixes, new HashMap<>());
         Assert.assertNotNull(plugin);
 
         // Run plugin
@@ -70,15 +71,15 @@ public class DefaultDiskScanningTest {
         // Plugin parameters
         Path searchDir = Paths.get("src", "test", "resources", "data", "plugins", "scan");
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(DefaultDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString()))
-                .addParameter(DefaultDiskScanning.FIELD_GLOB, "*.DBL").getParameters();
+                .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString()))
+                .addParameter(GlobDiskScanning.FIELD_GLOB, "*.DBL").getParameters();
 
         // Plugin and plugin interface packages
         List<String> prefixes = Arrays.asList(IScanPlugin.class.getPackage().getName(),
-                                              DefaultDiskScanning.class.getPackage().getName());
+                                              GlobDiskScanning.class.getPackage().getName());
 
         // Instantiate plugin
-        IScanPlugin plugin = PluginUtils.getPlugin(parameters, DefaultDiskScanning.class, prefixes, new HashMap<>());
+        IScanPlugin plugin = PluginUtils.getPlugin(parameters, GlobDiskScanning.class, prefixes, new HashMap<>());
         Assert.assertNotNull(plugin);
 
         // Run plugin
@@ -87,4 +88,25 @@ public class DefaultDiskScanningTest {
         Assert.assertTrue(scannedFiles.size() == 2);
     }
 
+    @Test
+    public void testDirectoryScanning2() {
+
+        // Plugin parameters
+        Path searchDir = Paths.get("src", "test", "resources", "data", "plugins", "scan");
+        List<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
+
+        // Plugin and plugin interface packages
+        List<String> prefixes = Arrays.asList(IScanPlugin.class.getPackage().getName(),
+                                              RegexDiskScanning.class.getPackage().getName());
+
+        // Instantiate plugin
+        IScanPlugin plugin = PluginUtils.getPlugin(parameters, RegexDiskScanning.class, prefixes, new HashMap<>());
+        Assert.assertNotNull(plugin);
+
+        // Run plugin
+        List<Path> scannedFiles = plugin.scan(Optional.empty());
+        Assert.assertNotNull(scannedFiles);
+        Assert.assertTrue(scannedFiles.size() == 4);
+    }
 }

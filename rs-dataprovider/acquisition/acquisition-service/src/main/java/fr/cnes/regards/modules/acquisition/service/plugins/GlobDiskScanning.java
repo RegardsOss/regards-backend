@@ -43,12 +43,12 @@ import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
  * @author Marc Sordi
  *
  */
-@Plugin(id = "DefaultDiskScanning", version = "1.0.0-SNAPSHOT", description = "Scan directories to detect files",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
-public class DefaultDiskScanning implements IScanPlugin {
+@Plugin(id = "GlobDiskScanning", version = "1.0.0-SNAPSHOT",
+        description = "Scan directories to detect files filtering with a glob pattern", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
+public class GlobDiskScanning implements IScanPlugin {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDiskScanning.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GlobDiskScanning.class);
 
     public static final String FIELD_DIRS = "directories";
 
@@ -99,5 +99,4 @@ public class DefaultDiskScanning implements IScanPlugin {
 
         return scannedFiles;
     }
-
 }

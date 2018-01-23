@@ -355,6 +355,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         // Mark processing chain as running
         lockChain(processingChain);
+        processingChain.setLastActivationDate(OffsetDateTime.now());
         acqChainRepository.save(processingChain);
 
         LOGGER.debug("Scheduling product acquisition job for processing chain \"{}\"", processingChain.getLabel());
