@@ -36,12 +36,11 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 @Repository
 public interface IAcquisitionFileRepository extends JpaRepository<AcquisitionFile, Long> {
 
-    // List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
-    //
-    // List<AcquisitionFile> findByStatus(AcquisitionFileState status);
-
+    /**
+     * Search all acquisition files for specified filters
+     * @param state {@link AcquisitionFileState} filter
+     * @param fileInfo {@link AcquisitionFileInfo} filter
+     * @return
+     */
     List<AcquisitionFile> findByStateAndFileInfo(AcquisitionFileState state, AcquisitionFileInfo fileInfo);
-
-    // List<AcquisitionFile> findByProductProductName(String productName);
-
 }

@@ -103,7 +103,7 @@ public class AcquisitionProcessingChain {
      * otherwise.<br/>
      * The same acquisition chain must not be run twice!
      */
-    @Column
+    @Column(updatable = false, nullable = false)
     private Boolean running = false;
 
     /**

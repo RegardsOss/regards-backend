@@ -34,7 +34,6 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
-import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
@@ -97,10 +96,10 @@ public abstract class AbstractGenerateSIPPlugin implements ISipGenerationPlugin 
     }
 
     protected abstract void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
-            throws AcquisitionException;
+            throws ModuleException;
 
     protected abstract void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles)
-            throws AcquisitionException;
+            throws ModuleException;
 
     protected abstract SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles,
             String datasetName) throws ModuleException;

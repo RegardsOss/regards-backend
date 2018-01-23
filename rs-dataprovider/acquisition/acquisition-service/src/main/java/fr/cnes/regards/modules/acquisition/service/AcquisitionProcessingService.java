@@ -286,6 +286,16 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
+    public void lockChain(AcquisitionProcessingChain processingChain) {
+        acqChainRepository.setRunning(Boolean.TRUE, processingChain.getId());
+    }
+
+    @Override
+    public void unlockChain(AcquisitionProcessingChain processingChain) {
+        acqChainRepository.setRunning(Boolean.FALSE, processingChain.getId());
+    }
+
+    @Override
     public void startAutomaticChains() {
 
         // Load all automatic chains
@@ -303,7 +313,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 scheduleProductAcquisitionJob(processingChain);
             }
         }
-
     }
 
     @Override
@@ -345,7 +354,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private void scheduleProductAcquisitionJob(AcquisitionProcessingChain processingChain) {
 
         // Mark processing chain as running
-        processingChain.setRunning(true);
+        lockChain(processingChain);
         acqChainRepository.save(processingChain);
 
         LOGGER.debug("Scheduling product acquisition job for processing chain \"{}\"", processingChain.getLabel());

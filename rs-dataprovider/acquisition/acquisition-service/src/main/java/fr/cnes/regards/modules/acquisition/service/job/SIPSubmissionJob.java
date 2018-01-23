@@ -50,7 +50,7 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPSubmissionJob.class);
 
-    public static final String CHAIN_PARAMETER = "chain";
+    public static final String INGEST_CHAIN_PARAMETER = "chain";
 
     public static final String SESSION_PARAMETER = "session";
 
@@ -67,7 +67,7 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        ingestChain = getValue(parameters, CHAIN_PARAMETER);
+        ingestChain = getValue(parameters, INGEST_CHAIN_PARAMETER);
         session = getValue(parameters, SESSION_PARAMETER);
     }
 

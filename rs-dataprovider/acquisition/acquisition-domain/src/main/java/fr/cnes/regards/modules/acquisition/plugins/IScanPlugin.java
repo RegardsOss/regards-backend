@@ -36,7 +36,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 public interface IScanPlugin {
 
     /**
-     * Scan disk to detect and retrieve files
+     * Scan disk to detect and retrieve files.<br/>
+     * Warning : if last modification date is not used, file might be acquired several times!
      * @param lastModificationDate The last most recent last modification date of all the last scanned files. May be
      *            null for first scan!
      * @return list of detected files

@@ -26,6 +26,7 @@ import javax.persistence.LockModeType;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -77,4 +78,8 @@ public interface IAcquisitionProcessingChainRepository extends JpaRepository<Acq
 
     @Query("select chain.postProcessSipPluginConf from AcquisitionProcessingChain chain,PluginConfiguration conf where chain.id = ?1 and chain.postProcessSipPluginConf.id = conf.id")
     Optional<PluginConfiguration> findOnePostProcessSipPlugin(Long chainId);
+
+    @Modifying
+    @Query("update AcquisitionProcessingChain chain set chain.running = ?1 where chain.id = ?2")
+    int setRunning(Boolean isRunning, Long chainId);
 }

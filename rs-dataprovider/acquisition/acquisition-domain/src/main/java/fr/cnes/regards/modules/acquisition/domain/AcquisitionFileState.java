@@ -32,6 +32,8 @@ package fr.cnes.regards.modules.acquisition.domain;
  *           VALID
  *             |
  *         ACQUIRED
+ *             |
+ *         SUPERSEDED
  * </pre>
  *
  * @author Christophe Mertz
@@ -48,13 +50,17 @@ public enum AcquisitionFileState {
      */
     VALID,
     /**
-     * File is declared unvalid by validating process
+     * File is declared invalid by validating process
      */
     INVALID,
     /**
      * File is linked to a product
      */
     ACQUIRED,
+    /**
+     * New files for a same product are acquired, old ones are superseded
+     */
+    SUPERSEDED,
     /**
      * If error occurs during a file processing
      */

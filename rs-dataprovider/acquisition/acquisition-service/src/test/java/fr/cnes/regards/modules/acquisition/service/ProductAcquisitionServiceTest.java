@@ -21,7 +21,10 @@ package fr.cnes.regards.modules.acquisition.service;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,6 +32,7 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -41,6 +45,7 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -55,6 +60,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
+import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultDiskScanning;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
@@ -84,6 +90,12 @@ public class ProductAcquisitionServiceTest extends AbstractDaoTest {
 
     @Autowired
     private IAcquisitionFileRepository acqFileRepository;
+
+    @Autowired
+    private IProductService productService;
+
+    @Autowired
+    private AutowireCapableBeanFactory beanFactory;
 
     @Configuration
     @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
@@ -186,6 +198,23 @@ public class ProductAcquisitionServiceTest extends AbstractDaoTest {
         List<AcquisitionFile> acquiredFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.ACQUIRED,
                                                                                        fileInfo);
         Assert.assertTrue(acquiredFiles.size() == 4);
-    }
 
+        // Find product to schedule
+        Set<Product> products = productService.findChainProductsToSchedule(processingChain);
+        Assert.assertTrue(products.size() == 4);
+
+        // Test job algo synchronously
+        for (Product product : products) {
+            SIPGenerationJob genJob = new SIPGenerationJob();
+            beanFactory.autowireBean(genJob);
+
+            Map<String, JobParameter> parameters = new HashMap<>();
+            parameters.put(SIPGenerationJob.CHAIN_PARAMETER_ID,
+                           new JobParameter(SIPGenerationJob.CHAIN_PARAMETER_ID, processingChain.getId()));
+            parameters.put(SIPGenerationJob.PRODUCT_ID, new JobParameter(SIPGenerationJob.PRODUCT_ID, product.getId()));
+
+            genJob.setParameters(parameters);
+            genJob.run();
+        }
+    }
 }

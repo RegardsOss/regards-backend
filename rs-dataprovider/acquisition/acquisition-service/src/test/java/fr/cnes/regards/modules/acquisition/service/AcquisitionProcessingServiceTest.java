@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,6 +47,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
@@ -71,6 +73,9 @@ public class AcquisitionProcessingServiceTest extends AbstractDaoTest {
 
     @Autowired
     private IAcquisitionProcessingService processingService;
+
+    @Autowired
+    private IAcquisitionProcessingChainRepository processingChainRepository;
 
     @Autowired
     private Validator validator;
@@ -143,5 +148,12 @@ public class AcquisitionProcessingServiceTest extends AbstractDaoTest {
 
         // Save processing chain
         processingService.createChain(processingChain);
+
+        // Test loading chain by mode
+        List<AcquisitionProcessingChain> automaticChains = processingChainRepository.findAllBootableAutomaticChains();
+        Assert.assertTrue(automaticChains.isEmpty());
+        List<AcquisitionProcessingChain> manualChains = processingChainRepository
+                .findByModeAndActiveTrueAndRunningFalse(AcquisitionProcessingChainMode.MANUAL);
+        Assert.assertTrue(!manualChains.isEmpty() && (manualChains.size() == 1));
     }
 }

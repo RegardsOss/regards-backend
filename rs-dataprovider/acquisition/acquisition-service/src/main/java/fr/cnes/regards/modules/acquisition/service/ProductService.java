@@ -178,10 +178,13 @@ public class ProductService implements IProductService {
 
         // Compute product state
         for (AcquisitionFile file : product.getAcquisitionFiles()) {
-            if (file.getFileInfo().isMandatory()) {
-                nbActualMandatory++;
-            } else {
-                nbActualOptional++;
+            if (AcquisitionFileState.VALID.equals(file.getState())
+                    || AcquisitionFileState.ACQUIRED.equals(file.getState())) {
+                if (file.getFileInfo().isMandatory()) {
+                    nbActualMandatory++;
+                } else {
+                    nbActualOptional++;
+                }
             }
         }
 
@@ -198,7 +201,7 @@ public class ProductService implements IProductService {
     @Override
     public Product linkAcquisitionFileToProduct(String session, AcquisitionFile acqFile, String productName,
             AcquisitionProcessingChain processingChain) throws ModuleException {
-        // Get the product if it exists
+        // Get the product if exists
         Product currentProduct = productRepository.findCompleteByProductName(productName);
 
         if (currentProduct == null) {
@@ -207,6 +210,15 @@ public class ProductService implements IProductService {
             currentProduct.setProductName(productName);
             currentProduct.setProcessingChain(processingChain);
             currentProduct.setSipState(ProductSIPState.NOT_SCHEDULED);
+        } else {
+            // Mark old file as superseded
+            for (AcquisitionFile existing : currentProduct.getAcquisitionFiles()) {
+                if (existing.getFileInfo().equals(acqFile.getFileInfo())
+                        && AcquisitionFileState.ACQUIRED.equals(existing.getState())) {
+                    existing.setState(AcquisitionFileState.SUPERSEDED);
+                    acqFileRepository.save(existing);
+                }
+            }
         }
 
         currentProduct.setSession(session);
@@ -268,7 +280,7 @@ public class ProductService implements IProductService {
                 for (String session : sessionsByChain.get(ingestChain)) {
                     // Schedule job
                     Set<JobParameter> jobParameters = Sets.newHashSet();
-                    jobParameters.add(new JobParameter(SIPSubmissionJob.CHAIN_PARAMETER, ingestChain));
+                    jobParameters.add(new JobParameter(SIPSubmissionJob.INGEST_CHAIN_PARAMETER, ingestChain));
                     jobParameters.add(new JobParameter(SIPSubmissionJob.SESSION_PARAMETER, session));
                     JobInfo jobInfo = new JobInfo(1, jobParameters, authResolver.getUser(),
                             SIPSubmissionJob.class.getName());
@@ -290,7 +302,7 @@ public class ProductService implements IProductService {
             // Load job info
             JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
             Map<String, JobParameter> params = jobInfo.getParametersAsMap();
-            String ingestChain = params.get(SIPSubmissionJob.CHAIN_PARAMETER).getValue();
+            String ingestChain = params.get(SIPSubmissionJob.INGEST_CHAIN_PARAMETER).getValue();
             String session = params.get(SIPSubmissionJob.SESSION_PARAMETER).getValue();
             // Update product status
             Set<Product> products = productRepository

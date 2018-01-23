@@ -66,6 +66,20 @@ public interface IAcquisitionProcessingService {
     AcquisitionProcessingChain updateChain(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
+     * Lock processing chain
+     * @param processingChain processing chain to lock
+     * @throws ModuleException if error occurs!
+     */
+    void lockChain(AcquisitionProcessingChain processingChain);
+
+    /**
+     * Unlock processing chain
+     * @param processingChain processing chain to unlock
+     * @throws ModuleException if error occurs!
+     */
+    void unlockChain(AcquisitionProcessingChain processingChain);
+
+    /**
      * Start all automatic chains according to several conditions
      * @throws ModuleException if error occurs!
      */

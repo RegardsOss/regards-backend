@@ -64,7 +64,9 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 @Entity
 @Table(name = "t_acquisition_product",
         indexes = { @Index(name = "idx_acq_processing_chain", columnList = "processing_chain_id"),
-                @Index(name = "idx_acq_product_name", columnList = "product_name") },
+                @Index(name = "idx_acq_product_name", columnList = "product_name"),
+                @Index(name = "idx_acq_product_sip_state", columnList = "sip_state"),
+                @Index(name = "idx_acq_product_state", columnList = "product_state") },
         uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_ipId", columnNames = "ip_id"),
                 @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })

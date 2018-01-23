@@ -54,13 +54,6 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
 
     Set<Product> findByState(ProductState state);
 
-    // FIXME remove
-    // @Query(value = "select p.* from {h-schema}t_acquisition_product p, {h-schema}t_acquisition_meta_product mp,
-    // {h-schema}t_acquisition_chain apc where p.sip_state=?1 and p.product_state in ?2 and p.meta_product_id=mp.id and
-    // mp.id=apc.meta_product_id and apc.label=?3",
-    // nativeQuery = true)
-    // Set<Product> findChainProducts(ProductSIPState sipState, List<ProductState> productStates, String chainLabel);
-
     Set<Product> findByProcessingChainAndSipStateAndStateIn(AcquisitionProcessingChain processingChain,
             ProductSIPState sipState, List<ProductState> productStates);
 
@@ -71,9 +64,6 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
      * @return a set of {@link Product} to schedule
      */
     default Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain processingChain) {
-        // FIXME remove comments
-        // return findChainProducts(ProductSIPState.NOT_SCHEDULED,
-        // Arrays.asList(ProductState.COMPLETED, ProductState.FINISHED), chainLabel);
         return findByProcessingChainAndSipStateAndStateIn(processingChain, ProductSIPState.NOT_SCHEDULED,
                                                           Arrays.asList(ProductState.COMPLETED, ProductState.FINISHED));
     }

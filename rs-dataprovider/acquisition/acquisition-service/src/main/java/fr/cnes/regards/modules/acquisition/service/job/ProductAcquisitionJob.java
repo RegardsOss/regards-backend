@@ -99,8 +99,7 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
             }
 
             // Job is terminated ... release processing chain
-            processingChain.setRunning(false);
-            processingService.updateChain(processingChain);
+            processingService.unlockChain(processingChain);
 
         } catch (ModuleException e) {
             LOGGER.error("Business error", e);
