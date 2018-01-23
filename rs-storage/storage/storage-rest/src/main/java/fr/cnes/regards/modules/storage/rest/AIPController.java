@@ -175,7 +175,7 @@ public class AIPController implements IResourceController<AIP> {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Value("${regards.gateway.prefix}")
+    @Value("${zuul.prefix}")
     private String gatewayPrefix;
 
     @Value("${spring.application.name}")
