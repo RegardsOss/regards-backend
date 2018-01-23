@@ -133,19 +133,24 @@ public class JobService implements IJobService {
                     }
                 }
                 // Find highest priority job to execute
-                JobInfo jobInfo = jobInfoService.findHighestPriorityQueuedJobAndSetAsToBeRun();
-                if (jobInfo != null) {
-                    noJobAtAll = false;
-                    jobInfo.setTenant(tenant);
-                    this.execute(jobInfo);
+                try {
+                    JobInfo jobInfo = jobInfoService.findHighestPriorityQueuedJobAndSetAsToBeRun();
+                    if (jobInfo != null) {
+                        noJobAtAll = false;
+                        jobInfo.setTenant(tenant);
+                        this.execute(jobInfo);
+                    }
+                } catch (RuntimeException e) {
+                    LOGGER.warn("Database access problem, skipping and will try later...", e);
                 }
             }
             if (noJobAtAll) {
                 // No job to execute on any tenants, take a rest
                 try {
                     Thread.sleep(1000);
-                } catch (InterruptedException e) { // NOSONAR
-                    // Ok, i have no problem with that
+                } catch (InterruptedException e) {
+                    LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
+                                         + "of the end, pray for your soul", e);
                 }
             }
         }
