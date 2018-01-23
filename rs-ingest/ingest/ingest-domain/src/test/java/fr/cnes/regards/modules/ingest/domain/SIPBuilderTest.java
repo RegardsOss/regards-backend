@@ -32,7 +32,6 @@ import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfig
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
