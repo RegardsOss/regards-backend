@@ -47,7 +47,6 @@ import fr.cnes.regards.modules.accessrights.instance.service.encryption.Encrypti
 
 /**
  * {@link IAccountService} implementation.
- *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  * @author Christophe Mertz
@@ -67,6 +66,11 @@ public class AccountService implements IAccountService {
      * Regex that the password should respect. Provided by property file.
      */
     private final String passwordRegex;
+
+    /**
+     * Associated Pattern
+     */
+    private final Pattern passwordRegexPattern;
 
     /**
      * Description of the regex to respect in natural language. Provided by property file. Parsed according to "\n" to transform it into a list
@@ -110,7 +114,7 @@ public class AccountService implements IAccountService {
 
     /**
      * Constructor
-     * @param pAccountRepository account repository
+     * @param accountRepository account repository
      * @param passwordRegex password regex
      * @param passwordRules password rules
      * @param accountPasswordValidityDuration account password validity duration
@@ -120,7 +124,7 @@ public class AccountService implements IAccountService {
      * @param thresholdFailedAuthentication threshold faild autentication
      * @param pRuntimeTenantResolver runtime tenant resolver
      */
-    public AccountService(final IAccountRepository pAccountRepository, //NOSONAR
+    public AccountService(final IAccountRepository accountRepository, //NOSONAR
             @Value("${regards.accounts.password.regex}") final String passwordRegex,
             @Value("${regards.accounts.password.rules}") final String passwordRules,
             @Value("${regards.accounts.password.validity.duration}") final Long accountPasswordValidityDuration,
@@ -130,8 +134,9 @@ public class AccountService implements IAccountService {
             @Value("${regards.accounts.failed.authentication.max}") final Long thresholdFailedAuthentication,
             @Autowired final IRuntimeTenantResolver pRuntimeTenantResolver) {
         super();
-        accountRepository = pAccountRepository;
+        this.accountRepository = accountRepository;
         this.passwordRegex = passwordRegex;
+        this.passwordRegexPattern = Pattern.compile(this.passwordRegex);
         this.passwordRules = passwordRules;
         this.accountPasswordValidityDuration = accountPasswordValidityDuration;
         this.accountValidityDuration = accountValidityDuration;
@@ -156,11 +161,6 @@ public class AccountService implements IAccountService {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.instance.service.IAccountService#retrieveAccountList()
-     */
     @Override
     public Page<Account> retrieveAccountList(final Pageable pPageable) {
         return accountRepository.findAll(pPageable);
@@ -171,22 +171,11 @@ public class AccountService implements IAccountService {
         return accountRepository.findAllByStatus(pStatus, pPageable);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.instance.service.IAccountService#existAccount(java.lang.Long)
-     */
     @Override
     public boolean existAccount(final Long pId) {
         return accountRepository.exists(pId);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.instance.service.IAccountService#createAccount(fr.cnes.regards.modules.
-     * accessrights.domain.instance.Account)
-     */
     @Override
     public Account createAccount(final Account pAccount) {
         pAccount.setId(null);
@@ -195,23 +184,12 @@ public class AccountService implements IAccountService {
         return accountRepository.save(pAccount);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.instance.service.IAccountService#retrieveAccount(java.lang.Long)
-     */
     @Override
     public Account retrieveAccount(final Long pAccountId) throws EntityNotFoundException {
         final Optional<Account> account = Optional.ofNullable(accountRepository.findOne(pAccountId));
         return account.orElseThrow(() -> new EntityNotFoundException(pAccountId.toString(), Account.class));
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.instance.service.IAccountService#updateAccount(java.lang.Long,
-     * fr.cnes.regards.modules.accessrights.domain.instance.Account)
-     */
     @Override
     public Account updateAccount(final Long pAccountId, final Account pUpdatedAccount) throws EntityException {
         final Account account = accountRepository.findOne(pAccountId);
@@ -227,24 +205,12 @@ public class AccountService implements IAccountService {
         return accountRepository.save(account);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.instance.service.IAccountService#retrieveAccountByEmail(java.lang.String)
-     */
     @Override
     public Account retrieveAccountByEmail(final String pEmail) throws EntityNotFoundException {
         return accountRepository.findOneByEmail(pEmail)
                 .orElseThrow(() -> new EntityNotFoundException(pEmail, Account.class));
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.instance.service.IAccountService#validatePassword(java.lang.String,
-     * java.lang.String)
-     */
     @Override
     public boolean validatePassword(final String pEmail, final String pPassword) throws EntityNotFoundException {
 
@@ -258,7 +224,8 @@ public class AccountService implements IAccountService {
 
         // Check password validity and account active status.
         final boolean activeAccount = accountToValidate.getStatus().equals(AccountStatus.ACTIVE);
-        final boolean validPassword = accountToValidate.getPassword().equals(EncryptionUtils.encryptPassword(pPassword));
+        final boolean validPassword = accountToValidate.getPassword()
+                .equals(EncryptionUtils.encryptPassword(pPassword));
 
         // If password is invalid
         if (!validPassword && !runtimeTenantResolver.isInstance()) {
@@ -279,11 +246,6 @@ public class AccountService implements IAccountService {
         return activeAccount && validPassword;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.instance.service.IAccountService#existAccount(java.lang.String)
-     */
     @Override
     public boolean existAccount(final String pEmail) {
         return accountRepository.findOneByEmail(pEmail).isPresent();
@@ -298,12 +260,11 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public boolean validPassword(final String pPassword) {
-        if(pPassword == null) {
+    public boolean validPassword(final String password) {
+        if (password == null) {
             return false;
         }
-        final Pattern p = Pattern.compile(passwordRegex);
-        return pPassword != null && p.matcher(pPassword).matches();
+        return this.passwordRegexPattern.matcher(password).matches();
     }
 
     @Override
@@ -329,7 +290,6 @@ public class AccountService implements IAccountService {
 
     /**
      * Reset the authentication failed counter of an Account without explicitly saving changes into db.
-     *
      * @param account Account which authentication failed counter is to reset
      */
     private void resetAuthenticationFailedCounter(Account account) {

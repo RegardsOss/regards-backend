@@ -51,7 +51,6 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
  * {@link IRegistrationService} implementation.
- *
  * @author Xavier-Alexandre Brochard
  */
 @Service
@@ -93,14 +92,6 @@ public class RegistrationService implements IRegistrationService {
      */
     private final ProjectUserWorkflowManager projectUserWorkflowManager;
 
-    /**
-     * @param pProjectUserRepository
-     * @param pRoleService
-     * @param pTokenService
-     * @param projectUserWorkflowManager
-     * @param accountSettingsClient
-     * @param accountsClient
-     */
     public RegistrationService(IProjectUserRepository pProjectUserRepository, IRoleService pRoleService,
             IEmailVerificationTokenService pTokenService, ProjectUserWorkflowManager projectUserWorkflowManager,
             IAccountSettingsClient accountSettingsClient, IAccountsClient accountsClient) {
@@ -124,10 +115,6 @@ public class RegistrationService implements IRegistrationService {
 
     /**
      * Create the account if necessary
-     *
-     * @param pDto
-     * @return
-     * @throws EntityException
      */
     private void requestAccountIfNecessary(final AccessRequestDto pDto) throws EntityException {
         // Check existence
@@ -140,10 +127,7 @@ public class RegistrationService implements IRegistrationService {
             }
 
             // Create the new account
-            Account account = new Account(pDto.getEmail(),
-                                          pDto.getFirstName(),
-                                          pDto.getLastName(),
-                                          pDto.getPassword());
+            Account account = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(), pDto.getPassword());
 
             // Check status
             Assert.isTrue(AccountStatus.PENDING.equals(account.getStatus()),
@@ -156,8 +140,8 @@ public class RegistrationService implements IRegistrationService {
             // Auto-accept if configured so
             ResponseEntity<Resource<AccountSettings>> accountSettingsResponse = accountSettingsClient
                     .retrieveAccountSettings();
-            if (accountSettingsResponse.getStatusCode().is2xxSuccessful() && AccountSettings.AUTO_ACCEPT_MODE
-                    .equals(accountSettingsResponse.getBody().getContent())) {
+            if (accountSettingsResponse.getStatusCode().is2xxSuccessful() && accountSettingsResponse.getBody()
+                    .getContent().getMode().equals(AccountSettings.AUTO_ACCEPT_MODE)) {
                 // in case the microservice does not answer properly to us, lets decide its manual
                 accountsClient.acceptAccount(account.getEmail());
             }
@@ -168,9 +152,6 @@ public class RegistrationService implements IRegistrationService {
 
     /**
      * Create the project user
-     *
-     * @param pDto
-     * @throws EntityException
      */
     private void requestProjectUser(final AccessRequestDto pDto) throws EntityException {
         try {
