@@ -44,7 +44,6 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
-import fr.cnes.regards.modules.accessrights.service.encryption.EncryptionUtils;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
@@ -140,10 +139,7 @@ public class RegistrationService implements IRegistrationService {
             }
 
             // Create the new account
-            Account account = new Account(pDto.getEmail(),
-                                          pDto.getFirstName(),
-                                          pDto.getLastName(),
-                                          pDto.getPassword());
+            Account account = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(), pDto.getPassword());
 
             // Check status
             Assert.isTrue(AccountStatus.PENDING.equals(account.getStatus()),
