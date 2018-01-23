@@ -116,10 +116,10 @@ public class StorageDataFile {
     private MimeType mimeType;
 
     @Column
-    private int height;
+    private Integer height;
 
     @Column
-    private int width;
+    private Integer width;
 
     /**
      * Data storage plugin configuration used to store the file

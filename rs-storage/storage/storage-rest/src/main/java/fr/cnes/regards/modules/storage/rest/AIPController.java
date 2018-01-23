@@ -3,22 +3,24 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
+import javax.validation.Valid;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
-
 import org.assertj.core.util.Lists;
 import org.assertj.core.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,7 +40,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.Sets;
-
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -50,18 +52,21 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentif
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.oais.urn.validator.RegardsOaisUrnAsString;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.DataFileDto;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
@@ -161,6 +166,21 @@ public class AIPController implements IResourceController<AIP> {
     @Autowired
     private IAIPService aipService;
 
+    @Autowired
+    private IProjectsClient projectsClient;
+
+    /**
+     * {@link IRuntimeTenantResolver} instance
+     */
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Value("${regards.gateway.prefix}")
+    private String gatewayPrefix;
+
+    @Value("${spring.application.name}")
+    private String microserviceName;
+
     /**
      * Retrieve a page of aip metadata according to the given parameters
      * @param pState state the aips should be in
@@ -194,17 +214,27 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(method = RequestMethod.GET, path = INDEXING_PATH)
     @ResponseBody
     @ResourceAccess(description = "send a page of aips with indexing information on associated files")
-    public ResponseEntity<PagedResources<AipDataFiles>> retrieveAipDataFiles(@RequestParam(name = "state") AIPState state,
-            @RequestParam("tags") Set<String> tags,
-            @RequestParam(name = "last_update", required = false) String fromLastUpdateDate,
-            final Pageable pageable) {
+    public ResponseEntity<PagedResources<AipDataFiles>> retrieveAipDataFiles(
+            @RequestParam(name = "state") AIPState state, @RequestParam("tags") Set<String> tags,
+            @RequestParam(name = "last_update", required = false) String fromLastUpdateDate, final Pageable pageable)
+            throws MalformedURLException {
         OffsetDateTime fromLastUpdate = null;
-        if(!Strings.isNullOrEmpty(fromLastUpdateDate)) {
+        if (!Strings.isNullOrEmpty(fromLastUpdateDate)) {
             fromLastUpdate = OffsetDateTimeAdapter.parse(fromLastUpdateDate);
         }
         Page<AipDataFiles> page = aipService.retrieveAipDataFiles(state, tags, fromLastUpdate, pageable);
+        List<AipDataFiles> content = page.getContent();
+        for (AipDataFiles aipData : content) {
+            for (DataFileDto dataFileDto : aipData.getDataFiles()) {
+                toPublicDataFile(dataFileDto, aipData.getAip());
+            }
+        }
         // small hack to be used thanks to GSON which does not know how to deserialize Page or PageImpl
-        PagedResources<AipDataFiles> aipDataFiles = new PagedResources<>(page.getContent(), new PagedResources.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages()));
+        PagedResources<AipDataFiles> aipDataFiles = new PagedResources<>(content,
+                                                                         new PagedResources.PageMetadata(page.getSize(),
+                                                                                                         page.getNumber(),
+                                                                                                         page.getTotalElements(),
+                                                                                                         page.getTotalPages()));
         return new ResponseEntity<>(aipDataFiles, HttpStatus.OK);
     }
 
@@ -506,16 +536,53 @@ public class AIPController implements IResourceController<AIP> {
     @Override
     public Resource<AIP> toResource(AIP pElement, Object... pExtras) {
         Resource<AIP> resource = resourceService.toResource(pElement);
-        resourceService
-                .addLink(resource, this.getClass(), "retrieveAIPs", LinkRels.LIST,
-                         MethodParamFactory.build(AIPState.class), MethodParamFactory.build(OffsetDateTime.class),
-                         MethodParamFactory.build(OffsetDateTime.class), MethodParamFactory.build(Pageable.class),
-                         MethodParamFactory.build(PagedResourcesAssembler.class));
-        resourceService.addLink(resource, this.getClass(), "retrieveAip", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveAIPs",
+                                LinkRels.LIST,
+                                MethodParamFactory.build(AIPState.class),
+                                MethodParamFactory.build(OffsetDateTime.class),
+                                MethodParamFactory.build(OffsetDateTime.class),
+                                MethodParamFactory.build(Pageable.class),
+                                MethodParamFactory.build(PagedResourcesAssembler.class));
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveAip",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
-        resourceService.addLink(resource, this.getClass(), "storeRetryUnit", "retry",
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "storeRetryUnit",
+                                "retry",
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
         return resource;
+    }
+
+    /**
+     * Handles any changes that should occurred between private rs-storage information and how the rest of the world should see them.
+     * For example, change URL from file:// to http://[project_host]/[gateway prefix]/rs-storage/...
+     * @param dataFile
+     * @return
+     */
+    private void toPublicDataFile(DataFileDto dataFile, AIP owningAip) throws MalformedURLException {
+        // Lets reconstruct the public url of rs-storage
+        // First lets get the public hostname from rs-admin-instance
+        FeignSecurityManager.asSystem();
+        String projectHost = projectsClient.retrieveProject(runtimeTenantResolver.getTenant()).getBody().getContent()
+                .getHost();
+        FeignSecurityManager.reset();
+        // now lets add it the gateway prefix and the microservice name and the endpoint path to it
+        StringBuilder sb = new StringBuilder();
+        sb.append(projectHost);
+        sb.append("/");
+        sb.append(gatewayPrefix);
+        sb.append("/");
+        sb.append(microserviceName);
+        sb.append(AIP_PATH);
+        sb.append(DOWLOAD_AIP_FILE.replaceAll("\\{ip_id\\}", owningAip.getId().toString())
+                          .replaceAll("\\{checksum\\}", dataFile.getChecksum()));
+        URL downloadUrl = new URL(sb.toString());
+        dataFile.setUrl(downloadUrl);
     }
 
 }

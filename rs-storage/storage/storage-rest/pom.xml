@@ -53,6 +53,10 @@
 			<groupId>fr.cnes.regards.modules.storage</groupId>
 			<artifactId>storage-service</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.project</groupId>
+			<artifactId>project-client</artifactId>
+		</dependency>
 		<!-- Test -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>

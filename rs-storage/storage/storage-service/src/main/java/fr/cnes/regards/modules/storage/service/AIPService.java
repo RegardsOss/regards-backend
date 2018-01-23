@@ -88,21 +88,21 @@ import fr.cnes.regards.modules.storage.domain.FileCorruptedException;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
-import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
-import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
+import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFDataStorage;
 import fr.cnes.regards.modules.storage.plugin.security.CatalogSecurityDelegation;
-import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
 import fr.cnes.regards.modules.storage.service.job.DeleteDataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
@@ -436,17 +436,18 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         //first lets get the page of aips
         //we have two cases: there is a date or not
         Page<AIP> aips;
-        if(fromLastUpdateDate == null) {
+        if (fromLastUpdateDate == null) {
             aips = aipDao.findAllByStateAndTagsIn(state, tags, pageable);
         } else {
             aips = aipDao.findAllByStateAndTagsInAndLastEventDateAfter(state, tags, fromLastUpdateDate, pageable);
         }
         // now lets get the data files for each aip which are the aip metadata itself
         List<AipDataFiles> aipDataFiles = new ArrayList<>();
-        for(AIP aip: aips.getContent()) {
+        for (AIP aip : aips.getContent()) {
             Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(aip);
             // lets eliminate the metadata data file
-            dataFiles = dataFiles.stream().filter(dataFile -> dataFile.getDataType() != DataType.AIP).collect(Collectors.toSet());
+            dataFiles = dataFiles.stream().filter(dataFile -> dataFile.getDataType() != DataType.AIP)
+                    .collect(Collectors.toSet());
             aipDataFiles.add(new AipDataFiles(aip, dataFiles.toArray(new StorageDataFile[dataFiles.size()])));
         }
         return new PageImpl<>(aipDataFiles, pageable, aips.getTotalElements());
@@ -490,7 +491,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * @param dataFilesToStore {@link StorageDataFile}s
      * @param storageWorkingSetMap {@link Multimap}<{@link PluginConfiguration}, {@link StorageDataFile}>
      */
-    private void checkDispatch(Set<StorageDataFile> dataFilesToStore, Multimap<Long, StorageDataFile> storageWorkingSetMap) {
+    private void checkDispatch(Set<StorageDataFile> dataFilesToStore,
+            Multimap<Long, StorageDataFile> storageWorkingSetMap) {
         Set<StorageDataFile> dataFilesInSubSet = storageWorkingSetMap.entries().stream().map(entry -> entry.getValue())
                 .collect(Collectors.toSet());
         if (dataFilesToStore.size() != dataFilesInSubSet.size()) {
@@ -585,8 +587,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      * @return {@link IWorkingSubset}s
      * @throws ModuleException
      */
-    protected Set<IWorkingSubset> getWorkingSubsets(Collection<StorageDataFile> dataFilesToSubSet, Long dataStorageConfId)
-            throws ModuleException {
+    protected Set<IWorkingSubset> getWorkingSubsets(Collection<StorageDataFile> dataFilesToSubSet,
+            Long dataStorageConfId) throws ModuleException {
         IDataStorage<IWorkingSubset> storage = pluginService.getPlugin(dataStorageConfId);
         LOG.trace("Getting working subsets for data storage of id {}", dataStorageConfId);
         Set<IWorkingSubset> workingSubSets = storage.prepare(dataFilesToSubSet, DataStorageAccessModeEnum.STORE_MODE);
@@ -1097,7 +1099,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Set<AIP> updatedAips = aipDao.findAllByStateService(AIPState.UPDATED);
         for (AIP updatedAip : updatedAips) {
             // Store the associated dataFile.
-            Optional<StorageDataFile> optionalExistingAIPMetadataFile = dataFileDao.findByAipAndType(updatedAip, DataType.AIP);
+            Optional<StorageDataFile> optionalExistingAIPMetadataFile = dataFileDao
+                    .findByAipAndType(updatedAip, DataType.AIP);
             if (optionalExistingAIPMetadataFile.isPresent()) {
                 // Create new AIP file (descriptor file) for the given updated AIP.
                 StorageDataFile existingAIPMetadataFile = optionalExistingAIPMetadataFile.get();
@@ -1211,7 +1214,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             }
             // Now get requested StorageDataFile
             Set<StorageDataFile> aipDataFiles = dataFileDao.findAllByAip(aip);
-            Optional<StorageDataFile> odf = aipDataFiles.stream().filter(df -> pChecksum.equals(df.getChecksum())).findFirst();
+            Optional<StorageDataFile> odf = aipDataFiles.stream().filter(df -> pChecksum.equals(df.getChecksum()))
+                    .findFirst();
             if (odf.isPresent()) {
                 StorageDataFile dataFile = odf.get();
                 if (dataFile.getDataStorageUsed() != null) {
