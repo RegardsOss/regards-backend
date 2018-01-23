@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.modules.catalog.services.plugins;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -131,13 +132,27 @@ public class SampleServicePlugin implements ISampleServicePlugin {
                 return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.XML,
                                                                           resp);
             case RESPONSE_TYPE_IMG:
-                File file = new File(this.getClass().getClassLoader().getResource("LogoCnes.png").getPath());
-                return CatalogPluginResponseFactory
-                        .createSuccessResponseFromFile(response, CatalogPluginResponseType.FILE_IMG_PNG, file);
+                InputStreamResource resource = new InputStreamResource(
+                        this.getClass().getClassLoader().getResourceAsStream("LogoCnes.png"));
+                try {
+                    return CatalogPluginResponseFactory
+                            .createSuccessResponseFromInputStream(response, CatalogPluginResponseType.FILE_IMG_PNG,
+                                                                  resource.getInputStream(), "LogoCnes.png");
+                } catch (IOException e) {
+                    LOGGER.error("Error sending file", e);
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                }
             case RESPONSE_TYPE_OTHER:
-                File dowloadFile = new File(this.getClass().getClassLoader().getResource("result.other").getPath());
-                return CatalogPluginResponseFactory
-                        .createSuccessResponseFromFile(response, CatalogPluginResponseType.FILE_DOWNLOAD, dowloadFile);
+                InputStreamResource resourceDownload = new InputStreamResource(
+                        this.getClass().getClassLoader().getResourceAsStream("result.other"));
+                try {
+                    return CatalogPluginResponseFactory
+                            .createSuccessResponseFromInputStream(response, CatalogPluginResponseType.FILE_DOWNLOAD,
+                                                                  resourceDownload.getInputStream(), "result.other");
+                } catch (IOException e) {
+                    LOGGER.error("Error sending file", e);
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                }
 
             default:
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

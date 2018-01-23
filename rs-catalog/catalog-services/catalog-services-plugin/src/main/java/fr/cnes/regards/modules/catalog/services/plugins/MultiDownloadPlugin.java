@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.catalog.services.plugins;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,8 +47,8 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IEntitiesServicePlugin;
 import fr.cnes.regards.modules.catalog.services.plugins.helper.CatalogPluginResponseFactory;
-import fr.cnes.regards.modules.catalog.services.plugins.helper.IServiceHelper;
 import fr.cnes.regards.modules.catalog.services.plugins.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
+import fr.cnes.regards.modules.catalog.services.plugins.helper.IServiceHelper;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
@@ -70,26 +71,32 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
 
     private ResponseEntity<StreamingResponseBody> apply(List<DataObject> dataObjects, HttpServletResponse response) {
         Set<DataFile> toDownloadFiles = Sets.newHashSet();
-        List<String> uris = new ArrayList<>();
-        List<String> other = new ArrayList<>();
+        List<String> onlines = new ArrayList<>();
+        List<String> offlines = new ArrayList<>();
         if ((dataObjects != null) && !dataObjects.isEmpty()) {
             dataObjects.forEach(dataObject -> {
-                dataObject.getFiles().forEach((type, file) -> {
-                    if (DataType.RAWDATA.equals(type) && file.getOnline() && (file.getUri() != null)) {
-                        // Add file to zipInputStream
-                        toDownloadFiles.add(file);
-                        uris.add(file.getUri().toString());
-                    } else {
-                        other.add(file.getName());
-                    }
-                });
+                if ((dataObject != null) && (dataObject.getFiles() != null)) {
+                    dataObject.getFiles().forEach((type, file) -> {
+                        if (DataType.RAWDATA.equals(type) && Boolean.TRUE.equals(file.getOnline())
+                                && (file.getUri() != null)) {
+                            // Add file to zipInputStream
+                            toDownloadFiles.add(file);
+                            onlines.add(file.getUri().toString());
+                        } else {
+                            onlines.add(file.getName());
+                        }
+                    });
+                }
             });
         }
 
-        //        return CatalogPluginResponseFactory.createStreamSuccessResponse(response, getFilesAsZip(toDownloadFiles),
-        //                                                                        "download.zip");
-        return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
-                                                                  new DownloadResponse(uris, other));
+        if (onlines.isEmpty()) {
+            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
+                                                                      new DownloadResponse(offlines));
+        } else {
+            return CatalogPluginResponseFactory.createStreamSuccessResponse(response, getFilesAsZip(toDownloadFiles),
+                                                                            "download.zip");
+        }
     }
 
     @Override
@@ -128,8 +135,13 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
             try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
                 for (DataFile file : files) {
                     zos.putNextEntry(new ZipEntry(file.getName()));
-                    ByteStreams.copy(DownloadUtils.getInputStream(new URL(file.getUri().toString())), zos);
-                    zos.closeEntry();
+                    try {
+                        ByteStreams.copy(DownloadUtils.getInputStream(new URL(file.getUri().toString())), zos);
+                    } catch (IOException e) {
+                        LOGGER.error(String.format("Error downloading file %s", file.getUri().toString()), e);
+                    } finally {
+                        zos.closeEntry();
+                    }
                 }
             }
         };

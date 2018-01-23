@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.catalog.services.plugins.helper;
 
 import java.io.File;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -34,6 +35,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.google.common.io.ByteStreams;
 import com.google.gson.GsonBuilder;
 
 /**
@@ -132,6 +134,38 @@ public class CatalogPluginResponseFactory {
     }
 
     /**
+     * Create a success response by streaming the given file
+     * @param response {@link HttpServletResponse} spring http response
+     * @param type {@link CatalogPluginResponseType} type of response body
+     * @param file {@link File} file to stream into the response body
+     * @return {@link ResponseEntity}
+     */
+    public static ResponseEntity<StreamingResponseBody> createSuccessResponseFromInputStream(
+            HttpServletResponse response, CatalogPluginResponseType type, InputStream is, String fileName) {
+        HttpHeaders headers = new HttpHeaders();
+        switch (type) {
+            case FILE_IMG_PNG:
+                headers.setContentType(MediaType.IMAGE_PNG);
+                response.setContentType(MediaType.IMAGE_PNG_VALUE);
+                headers.set(HttpHeaders.CONTENT_DISPOSITION, fileName);
+                break;
+            case FILE_DOWNLOAD:
+                headers.set(HttpHeaders.CONTENT_DISPOSITION, fileName);
+                headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+                response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+                break;
+            case FILE_IMG_JPG:
+                headers.setContentType(MediaType.IMAGE_JPEG);
+                response.setContentType(MediaType.IMAGE_JPEG_VALUE);
+                headers.set(HttpHeaders.CONTENT_DISPOSITION, fileName);
+                break;
+            default:
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(toStreamingResponseBody(is), headers, HttpStatus.OK);
+    }
+
+    /**
      * Create a  {@link ResponseEntity<StreamingResponseBody>} by serializing into XML format the given object.
      * @param response {@link HttpServletResponse} spring http response
      * @param responseContent {@link Object} to serialize.
@@ -188,6 +222,13 @@ public class CatalogPluginResponseFactory {
         return outputStream -> {
             Path path = file.toPath();
             Files.copy(path, outputStream);
+            outputStream.flush();
+        };
+    }
+
+    public static StreamingResponseBody toStreamingResponseBody(InputStream file) {
+        return outputStream -> {
+            ByteStreams.copy(file, outputStream);
             outputStream.flush();
         };
     }

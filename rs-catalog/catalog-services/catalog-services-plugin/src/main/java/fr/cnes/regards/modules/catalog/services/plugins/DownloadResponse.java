@@ -4,14 +4,15 @@ import java.util.List;
 
 public class DownloadResponse {
 
-    private final List<String> toDownload;
+    private final List<String> offlineFiles;
 
-    private final List<String> other;
-
-    public DownloadResponse(List<String> toDownload, List<String> other) {
+    public DownloadResponse(List<String> offlineFiles) {
         super();
-        this.toDownload = toDownload;
-        this.other = other;
+        this.offlineFiles = offlineFiles;
+    }
+
+    public List<String> getOfflineFiles() {
+        return offlineFiles;
     }
 
 }
