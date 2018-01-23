@@ -71,6 +71,7 @@ import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -341,6 +342,9 @@ public class AipClientIT extends AbstractRegardsWebIT {
 
     @Configuration
     static class Conf {
+
+        @Bean
+        public IProjectsClient projectsClient() {return Mockito.mock(IProjectsClient.class);}
 
         @Bean
         public INotificationClient notificationClient() {
