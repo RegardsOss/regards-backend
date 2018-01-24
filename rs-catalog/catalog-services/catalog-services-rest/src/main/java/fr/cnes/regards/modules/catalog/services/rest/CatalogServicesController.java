@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.catalog.services.rest;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -97,7 +98,7 @@ public class CatalogServicesController {
      */
     @RequestMapping(method = RequestMethod.POST, path = PATH_SERVICE_NAME, produces = MediaType.TEXT_PLAIN_VALUE)
     @ResourceAccess(description = "Apply a given plugin service", role = DefaultRole.PUBLIC)
-    public ResponseEntity<InputStreamResource> applyService(
+    public ResponseEntity<StreamingResponseBody> applyService(
             @PathVariable("pluginConfigurationId") final Long pPluginConfigurationId,
             @RequestBody ServicePluginParameters pServiceParameters, HttpServletResponse response)
             throws ModuleException {

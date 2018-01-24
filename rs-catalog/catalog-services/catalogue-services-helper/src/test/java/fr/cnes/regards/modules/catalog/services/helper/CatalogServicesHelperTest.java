@@ -16,26 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.catalog.services.domain.plugins;
+package fr.cnes.regards.modules.catalog.services.helper;
 
-import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import org.junit.Test;
+import org.mockito.Mockito;
 
-/**
- * Interface to define a Catalog service plugin. This plugins applies on a single entity provided by is identifier.
- *
- * @author Sébastien Binda
- *
- */
-@FunctionalInterface
-public interface ISingleEntityServicePlugin extends IService {
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 
-    /**
-     * Apply the current service for the given entity identifier.
-     * @param pEntityId entity identifier
-     */
-    ResponseEntity<StreamingResponseBody> applyOnEntity(String pEntityId, HttpServletResponse response);
+@MultitenantTransactional
+public class CatalogServicesHelperTest {
+
+    @Test
+    public void searchDataObjects() throws OpenSearchParseException {
+        ServiceHelper serviceHelper = Mockito.mock(ServiceHelper.class);
+        serviceHelper.getDataObjects(new ArrayList<>(), 0, 10);
+        serviceHelper.getDataObjects("ipId:test", 0, 10);
+    }
 
 }

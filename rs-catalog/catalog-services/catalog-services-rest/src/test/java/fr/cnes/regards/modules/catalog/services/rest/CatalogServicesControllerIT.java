@@ -18,12 +18,21 @@
  */
 package fr.cnes.regards.modules.catalog.services.rest;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -32,11 +41,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -168,7 +180,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
     @Requirement("REGARDS_DSL_DAM_ARC_030")
     @Requirement("REGARDS_DSL_DAM_ARC_010")
     @Purpose("System has a joinpoint \"Service\" that allows to apply treatment on a dataset, or one of its subset. Those treatments are applied to informations contained into the catalog. A plugin \"Service\" can have as parameters: parameters defined at configuration by an administrator, parameters dynamicly defined at each request, parameters to select objects from a dataset.")
-    public void testApplyService() {
+    public void testApplyService() throws IOException {
 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put("q", "truc");
@@ -179,34 +191,66 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isArray());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
-        performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters, requestBuilderCustomizer, "there should not be any error", conf.getId());
+        ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
+                + CatalogServicesController.PATH_SERVICE_NAME, parameters, requestBuilderCustomizer,
+                                                         "there should not be any error", conf.getId());
+        validateTestPluginResponse(resultActions, new File("src/test/resources/result.json"));
+    }
+
+    private void validateTestPluginResponse(ResultActions resultActions, File expectedFileResult) throws IOException {
+        File resultFile = File.createTempFile("result.json", "");
+
+        resultFile.deleteOnExit();
+
+        try (FileOutputStream fos = new FileOutputStream(resultFile)) {
+            // Wait for availability
+            resultActions.andReturn().getAsyncResult();
+            InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
+            ByteStreams.copy(is, fos);
+            is.close();
+        }
+        logFileContent(resultFile);
+        logFileContent(expectedFileResult);
+        Assert.assertTrue("Request result is not valid", Files.equal(expectedFileResult, resultFile));
+    }
+
+    private void logFileContent(File file) {
+        try {
+            FileInputStream fstream = new FileInputStream(file);
+            BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
+            String strLine;
+            /* read log line by line */
+            while ((strLine = br.readLine()) != null) {
+                /* parse strLine to obtain what you want */
+                System.out.println(strLine);
+            }
+            fstream.close();
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+        }
     }
 
     @Test
     @Requirement("REGARDS_DSL_CMP_PLG_310")
     @Purpose("System allows to set a dynamic plugin parameter in the HTPP request")
-    public void testApplyServiceSetSpecificParamValue() {
+    public void testApplyServiceSetSpecificParamValue() throws IOException {
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put("q", "truc");
         dynamicParameters.put("para", "HelloWorld");
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isEmpty());
-
         ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
                 dynamicParameters);
-
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
-        performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters, requestBuilderCustomizer, "there should not be any error", conf.getId());
+        ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
+                + CatalogServicesController.PATH_SERVICE_NAME, parameters, requestBuilderCustomizer,
+                                                         "there should not be any error", conf.getId());
+        validateTestPluginResponse(resultActions, new File("src/test/resources/result_empty.json"));
     }
 
     @Test
-    public void testSampleServiceWithJsonResponse() {
+    public void testSampleServiceWithJsonResponse() throws IOException {
 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_JSON);
@@ -216,17 +260,17 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.value").value("ENTITY_ID"));
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
-        performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters, requestBuilderCustomizer, "there should not be any error",
-                           samplePlgConf.getId());
+        ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
+                + CatalogServicesController.PATH_SERVICE_NAME, parameters, requestBuilderCustomizer,
+                                                         "there should not be any error", samplePlgConf.getId());
+        validateTestPluginResponse(resultActions, new File("src/test/resources/samplePluginResult.json"));
     }
 
     @Test
-    public void testSampleServiceWithXmlResponse() {
+    public void testSampleServiceWithXmlResponse() throws IOException {
 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_XML);
@@ -238,13 +282,14 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
-        performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters, requestBuilderCustomizer, "there should not be any error",
-                           samplePlgConf.getId());
+        ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
+                + CatalogServicesController.PATH_SERVICE_NAME, parameters, requestBuilderCustomizer,
+                                                         "there should not be any error", samplePlgConf.getId());
+        validateTestPluginResponse(resultActions, new File("src/test/resources/samplePluginResult.xml"));
     }
 
     @Test
-    public void testSampleServiceWithImageResponse() {
+    public void testSampleServiceWithImageResponse() throws IOException {
 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_IMG);
@@ -256,13 +301,14 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.IMAGE_PNG));
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
-        performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters, requestBuilderCustomizer, "there should not be any error",
-                           samplePlgConf.getId());
+        ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
+                + CatalogServicesController.PATH_SERVICE_NAME, parameters, requestBuilderCustomizer,
+                                                         "there should not be any error", samplePlgConf.getId());
+        validateTestPluginResponse(resultActions, new File("src/test/resources/LogoCnes.png"));
     }
 
     @Test
-    public void testSampleServiceWithUnkownResponse() {
+    public void testSampleServiceWithUnkownResponse() throws IOException {
 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_OTHER);
@@ -275,9 +321,10 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_OCTET_STREAM));
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
-        performDefaultPost(CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-                           parameters, requestBuilderCustomizer, "there should not be any error",
-                           samplePlgConf.getId());
+        ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
+                + CatalogServicesController.PATH_SERVICE_NAME, parameters, requestBuilderCustomizer,
+                                                         "there should not be any error", samplePlgConf.getId());
+        validateTestPluginResponse(resultActions, new File("src/test/resources/result.other"));
     }
 
     protected Map<String, List<String>> getHeadersToApply() {
