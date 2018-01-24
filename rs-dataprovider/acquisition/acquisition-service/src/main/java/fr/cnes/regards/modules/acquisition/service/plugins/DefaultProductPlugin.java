@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
         url = "https://github.com/RegardsOss")
 public class DefaultProductPlugin implements IProductPlugin {
 
-    public static final String FIELD_EXT = "removeExtension";
+    public static final String FIELD_REMOVE_EXT = "removeExtension";
 
     public static final String FIELD_EXTS = "extensions";
 
@@ -48,7 +48,7 @@ public class DefaultProductPlugin implements IProductPlugin {
 
     public static final String FIELD_PREFIX = "prefix";
 
-    @PluginParameter(name = FIELD_EXT, label = "Enable extension removal",
+    @PluginParameter(name = FIELD_REMOVE_EXT, label = "Enable extension removal",
             description = "Remove file extension truncating from last dot index if no extension list specified",
             optional = true)
     private Boolean removeExtension;

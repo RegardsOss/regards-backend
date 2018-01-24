@@ -18,19 +18,27 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.check.Cryosat2ExtCheckingFilePlugin;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 
 /**
- * Test des plugins de niveau produit CRYOSAT2 
- * 
+ * Test des plugins de niveau produit CRYOSAT2
+ *
  * @author Christophe Mertz
  */
 public class Cryosat2CheckingPluginTest {
@@ -39,27 +47,29 @@ public class Cryosat2CheckingPluginTest {
     @Purpose("A plugin can generate a SIP for a Cryosat2's products")
     @Test
     public void testWithDblExtension() throws ModuleException {
-        // Parameters
-        String fileName = "src/test/resources/income/data/cryosat2/manoeuvres/CS_OPER_REP_MACP___20100711T145514_99999999T999999_0001.DBL";
-        String dataSetId = "DA_TC_CRYOSAT2_MANOEUVRES_ACP";
+        // Plugin parameters
+        List<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(DefaultProductPlugin.FIELD_REMOVE_EXT, Boolean.TRUE)
+                .addParameter(DefaultProductPlugin.FIELD_EXTS, Arrays.asList(".HDR", ".DBL")).getParameters();
 
-        // Launch plugin
-        Cryosat2ExtCheckingFilePlugin plugin = new Cryosat2ExtCheckingFilePlugin();
-        Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
-        Assert.assertEquals("CS_OPER_REP_MACP___20100711T145514_99999999T999999_0001", plugin.getProductName());
-    }
+        // Plugin and plugin interface packages
+        List<String> prefixes = Arrays.asList(IProductPlugin.class.getPackage().getName(),
+                                              DefaultProductPlugin.class.getPackage().getName());
 
-    @Requirement("REGARDS_DSL_ING_SSALTO_070")
-    @Purpose("A plugin can generate a SIP for a Cryosat2's products")
-    @Test
-    public void testWithHdrExtension() throws ModuleException {
-        // Parameters
-        String fileName = "src/test/resources/income/data/cryosat2/manoeuvres/CS_OPER_REP_MACP___20100711T145514_99999999T999999_0001.HDR";
-        String dataSetId = "DA_TC_CRYOSAT2_MANOEUVRES_ACP";
+        // Instantiate plugin
+        IProductPlugin plugin = PluginUtils.getPlugin(parameters, DefaultProductPlugin.class, prefixes,
+                                                      new HashMap<>());
+        Assert.assertNotNull(plugin);
 
-        // Launch plugin
-        Cryosat2ExtCheckingFilePlugin plugin = new Cryosat2ExtCheckingFilePlugin();
-        Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
-        Assert.assertEquals("CS_OPER_REP_MACP___20100711T145514_99999999T999999_0001", plugin.getProductName());
+        // Run plugin
+        Path filePath = Paths
+                .get("src/test/resources/income/data/cryosat2/manoeuvres/CS_OPER_REP_MACP___20100711T145514_99999999T999999_0001.DBL");
+        String productName = plugin.getProductName(filePath);
+        Assert.assertEquals("CS_OPER_REP_MACP___20100711T145514_99999999T999999_0001", productName);
+
+        filePath = Paths
+                .get("src/test/resources/income/data/cryosat2/manoeuvres/CS_OPER_REP_MACP___20100711T145514_99999999T999999_0001.HDR");
+        productName = plugin.getProductName(filePath);
+        Assert.assertEquals("CS_OPER_REP_MACP___20100711T145514_99999999T999999_0001", productName);
     }
 }
