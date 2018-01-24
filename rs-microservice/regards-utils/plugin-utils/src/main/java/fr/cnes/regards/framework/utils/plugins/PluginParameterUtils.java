@@ -547,8 +547,15 @@ public final class PluginParameterUtils {
         String paramValue = getParameterValue(parameterName, plgConf, dynamicPluginParameters);
 
         // If the parameter value is not defined, get the default parameter value
-        if (Strings.isNullOrEmpty(paramValue)) {
+        if (Strings.isNullOrEmpty(paramValue) && !plgParamAnnotation.defaultValue().isEmpty()) {
             paramValue = plgParamAnnotation.defaultValue();
+        }
+
+        // Stop if no value and optional parameter
+        if (Strings.isNullOrEmpty(paramValue) && plgParamAnnotation.optional()) {
+            LOGGER.debug(String.format("Skipping value injection for optional parameter %s. No value specified!",
+                                       parameterName));
+            return;
         }
 
         if (LOGGER.isDebugEnabled()) {
