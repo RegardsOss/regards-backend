@@ -923,6 +923,11 @@
                 <artifactId>catalog-services-plugin</artifactId>
                 <version>${fr.cnes.regards.modules.catalog-services.version}</version>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules</groupId>
+                <artifactId>catalog-services-helper</artifactId>
+                <version>${fr.cnes.regards.modules.catalog-services.version}</version>
+            </dependency>
             <!-- Templates -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.templates</groupId>
