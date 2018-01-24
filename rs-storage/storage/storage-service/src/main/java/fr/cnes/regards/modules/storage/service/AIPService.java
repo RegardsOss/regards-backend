@@ -652,6 +652,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             IllegalStateException e = new IllegalStateException(
                     "The application needs one and only one active configuration of " + IAllocationStrategy.class
                             .getName());
+            notifyAdmins("No active Allocation Strategy", e.getMessage(), NotificationType.ERROR);
             LOG.error(e.getMessage(), e);
             throw e;
         }
