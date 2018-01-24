@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
@@ -66,7 +67,7 @@ public class RegexDiskScanning implements IScanPlugin {
     private DirectoryStream.Filter<Path> filter;
 
     @Override
-    public List<Path> scan(Optional<OffsetDateTime> lastModificationDate) {
+    public List<Path> scan(Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
 
         // Init filter
         filter = file -> (Pattern.compile(regex).matcher(file.getFileName().toString()).matches());
@@ -107,5 +108,55 @@ public class RegexDiskScanning implements IScanPlugin {
 
         return scannedFiles;
     }
+
+    // FIXME test before regex adapting
+    // /**
+    // * Converts a a pattern to a Java pattern.<br>
+    // * The table below shows the conversions that are applied.<br>
+    // * The order of this 2 conversions is important, it should be not modified.<br>
+    // * <table border=1 cellpadding=2>
+    // * <tr>
+    // * <th>Order</th>
+    // * <th>Original pattern</th>
+    // * <th>Java pattern</th>
+    // * </tr>
+    // * <tr>
+    // * <td>1</td>
+    // * <td>.</td>
+    // * <td>\.</td>
+    // * </tr>
+    // * <tr>
+    // * <td>2</td>
+    // * <td>*</td>
+    // * <td>.*</td>
+    // * </tr>
+    // * </table>
+    // *
+    // * @param originalPattern a pattern to converts to a Java pattern
+    // * @return the Java pattern
+    // */
+    // protected String getAdaptedPattern(String originalPattern) {
+    //
+    // String adaptedPattern = originalPattern;
+    // // "." => "\."
+    // adaptedPattern = replacePattern("\\.", "\\\\.", adaptedPattern);
+    // // "*" => ".*"
+    // adaptedPattern = replacePattern("\\*", "\\.\\*", adaptedPattern);
+    // return adaptedPattern;
+    // }
+    //
+    // /**
+    // * Replace a pattern by a replacement value in a {@link String}
+    // *
+    // * @param patternToReplace the {@link String} to replace
+    // * @param replacement the replacement value
+    // * @param target the {@link String} in that apply the replacement
+    // * @return a new {@link String} where a the pattern is replaced by a replacement value
+    // */
+    // protected String replacePattern(String patternToReplace, String replacement, String target) {
+    // Pattern pattern = Pattern.compile(patternToReplace);
+    // Matcher matcher = pattern.matcher(target);
+    // return matcher.replaceAll(replacement);
+    // }
 
 }

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.plugins;
 
 import java.nio.file.Path;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
@@ -36,6 +37,7 @@ public interface IProductPlugin {
      * Compute product name for a specified file
      * @param filePath file path
      * @return product name
+     * @throws ModuleException if error occurs!
      */
-    String getProductName(Path filePath);
+    String getProductName(Path filePath) throws ModuleException;
 }

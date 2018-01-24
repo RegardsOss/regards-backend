@@ -18,42 +18,34 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.check;
 
+import java.nio.file.Path;
+
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 
 /**
- * Check's plugin for Jaons2 LOGVOL_POS3 products.<br>
- * This {@link Plugin} checks that the file exists and is accessible.<br>
- * The {@link Product} name is the file name less the extension file.<br>
- * 
+ * Jason3LtmP3 product plugin
+ *
  * @author Christophe Mertz
+ * @author Marc Sordi
  *
  */
-@Plugin(description = "Check's plugin for Jaons2 LOGVOL_POS3 products", id = "LogVolPos3CheckingFilePlugin", version = "1.0.0",
+@Plugin(description = "Check's plugin for Jason3 LTM products", id = "Jason3LtmP3ProductPlugin", version = "1.0.0",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class LogVolPos3CheckingFilePlugin extends CheckingFilePluginHelper {
+public class Jason3LtmP3ProductPlugin implements IProductPlugin {
 
-    /**
-     * The extension file BIN
-     */
-    private static String EXTENSION_BIN = "_BIN";
-
-    /**
-     * The extension file HDR
-     */
-    private static String EXTENSION_HDR = "_HDR";
-
-    private LogVolPos3CheckingFilePlugin() {
-        super();
-        initExtensionList();
-    }
-
-    /**
-     * Initialize the extension file to remove from the file name
-     */
-    private void initExtensionList() {
-        extensionList.add(EXTENSION_BIN);
-        extensionList.add(EXTENSION_HDR);
+    @Override
+    public String getProductName(Path filePath) throws ModuleException {
+        String productName = filePath.getFileName().toString();
+        if (productName.length() > 5) {
+            String partOne = productName.substring(0, 4);
+            String partTwo = productName.substring(5, productName.length());
+            productName = partOne + partTwo;
+        } else {
+            throw new ModuleException("Cannot compute product name for JSON3_LTM file : " + productName);
+        }
+        return productName;
     }
 }

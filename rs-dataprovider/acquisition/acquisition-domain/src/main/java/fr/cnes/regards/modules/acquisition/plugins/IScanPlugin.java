@@ -23,6 +23,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
@@ -41,6 +42,7 @@ public interface IScanPlugin {
      * @param lastModificationDate The last most recent last modification date of all the last scanned files. May be
      *            null for first scan!
      * @return list of detected files
+     * @throws ModuleException if error occurs!
      */
-    List<Path> scan(Optional<OffsetDateTime> lastModificationDate);
+    List<Path> scan(Optional<OffsetDateTime> lastModificationDate) throws ModuleException;
 }

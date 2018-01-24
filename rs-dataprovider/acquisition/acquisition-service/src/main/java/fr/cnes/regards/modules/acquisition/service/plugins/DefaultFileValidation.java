@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.service.plugins;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 
@@ -34,7 +35,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 public class DefaultFileValidation implements IValidationPlugin {
 
     @Override
-    public boolean validate(Path filePath) {
+    public boolean validate(Path filePath) throws ModuleException {
         return (filePath != null) && Files.isRegularFile(filePath) && Files.isReadable(filePath);
     }
 }

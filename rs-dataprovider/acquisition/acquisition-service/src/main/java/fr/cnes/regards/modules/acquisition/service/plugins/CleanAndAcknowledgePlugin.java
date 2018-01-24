@@ -123,5 +123,4 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin {
             LOGGER.warn("Cannot create acknowledgement for  file \"{}\"", acqFile.getFilePath().toString());
         }
     }
-
 }

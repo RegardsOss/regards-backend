@@ -38,7 +38,7 @@ public class DefaultSIPGeneration implements ISipGenerationPlugin {
     @Override
     public SIP generate(Product product) throws ModuleException {
         SIPBuilder builder = new SIPBuilder(product.getProductName());
-        // TODO add required elements
+        // FIXME add required elements
         return builder.build();
     }
 

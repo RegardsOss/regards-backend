@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.check.Jason3LtmP3CheckingFilePlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.check.Jason3LtmP3ProductPlugin;
 
 /**
  *
@@ -41,7 +41,7 @@ public class Jason3LtmCheckingPluginTest {
     @Purpose("A plugin can generate a SIP for a Jason3's LTM products")
     @Test
     public void testProduct() throws ModuleException {
-        Jason3LtmP3CheckingFilePlugin plugin = new Jason3LtmP3CheckingFilePlugin();
+        Jason3LtmP3ProductPlugin plugin = new Jason3LtmP3ProductPlugin();
 
         String fileNameTest = "PJ3_FI1_AXXCNE20081202_110021_20080615_115927_20081201_120000";
         String ProductNameTest = "PJ3_I1_AXXCNE20081202_110021_20080615_115927_20081201_120000";
@@ -55,7 +55,7 @@ public class Jason3LtmCheckingPluginTest {
     @Purpose("A plugin can generate a SIP for a Jason3's LTM products")
     @Test(expected = ReadFileException.class)
     public void testProductFailed() throws ModuleException {
-        Jason3LtmP3CheckingFilePlugin plugin = new Jason3LtmP3CheckingFilePlugin();
+        Jason3LtmP3ProductPlugin plugin = new Jason3LtmP3ProductPlugin();
 
         String fileNameTest = "PJ3_FI1_AXXCNE20081202_110021_20080615_115927_20081201_129999";
 

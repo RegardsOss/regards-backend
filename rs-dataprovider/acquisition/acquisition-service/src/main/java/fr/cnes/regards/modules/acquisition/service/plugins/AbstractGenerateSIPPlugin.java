@@ -39,6 +39,7 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 
 /**
+ * Common SIP generation tools
  *
  * @author Christophe Mertz
  *

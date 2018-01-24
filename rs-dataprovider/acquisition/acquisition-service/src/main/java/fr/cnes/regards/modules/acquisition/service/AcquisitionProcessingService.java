@@ -405,8 +405,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                         .setChecksum(computeMD5FileChecksum(filePath, AcquisitionProcessingChain.CHECKSUM_ALGORITHM));
                 scannedFile.setState(AcquisitionFileState.IN_PROGRESS);
             } catch (NoSuchAlgorithmException | IOException e) {
-                // Continue silently bug register error in database
-                String errorMessage = String.format("Error registering file : %s", e.getMessage());
+                // Continue silently but register error in database
+                String errorMessage = String.format("Error registering file %s : %s",
+                                                    scannedFile.getFilePath().toString(), e.getMessage());
                 LOGGER.error(errorMessage, e);
                 scannedFile.setError(errorMessage);
                 scannedFile.setState(AcquisitionFileState.ERROR);
@@ -490,9 +491,22 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
             // Compute product name for each valid files
             for (AcquisitionFile validFile : validFiles) {
-                String productName = productPlugin.getProductName(validFile.getFilePath());
-                productService.linkAcquisitionFileToProduct(processingChain.getSession().orElse(null), validFile,
-                                                            productName, processingChain);
+                String productName = null;
+                try {
+                    productName = productPlugin.getProductName(validFile.getFilePath());
+                } catch (ModuleException e) {
+                    // Continue silently but register error in database
+                    String errorMessage = String.format("Error computing product name for file %s : %s",
+                                                        validFile.getFilePath().toString(), e.getMessage());
+                    LOGGER.error(errorMessage, e);
+                    validFile.setError(errorMessage);
+                    validFile.setState(AcquisitionFileState.ERROR);
+                    acqFileRepository.save(validFile);
+                }
+                if (productName != null) {
+                    productService.linkAcquisitionFileToProduct(processingChain.getSession().orElse(null), validFile,
+                                                                productName, processingChain);
+                }
             }
         }
     }

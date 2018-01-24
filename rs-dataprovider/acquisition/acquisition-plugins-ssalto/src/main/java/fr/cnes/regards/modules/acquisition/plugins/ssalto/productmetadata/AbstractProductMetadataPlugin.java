@@ -28,7 +28,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -47,31 +46,31 @@ import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
 import fr.cnes.regards.framework.geojson.coordinates.Position;
 import fr.cnes.regards.framework.geojson.coordinates.Positions;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.domain.model.CompositeAttribute;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.AbstractAttributeFinder;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
-import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
 import fr.cnes.regards.modules.acquisition.service.plugins.AbstractGenerateSIPPlugin;
 import fr.cnes.regards.modules.entities.domain.geometry.Geometry;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 
 /**
  * Abstract class for {@link Plugin} of metadata {@link Product}.
- * 
+ *
  * @author Christophe Mertz
  */
-public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
+public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPPlugin implements ISipGenerationPlugin {
 
     /**
      * Suffix of Ssalto's plugin configuration files
@@ -87,9 +86,9 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      * Attributes order
      */
     private static final String ATTRIBUTE_ORDER_PROP_FILE = "attributeOrder.properties";
-    
+
     /**
-     * Path the 
+     * Path the
      */
     private static final String DEFAULT_CONF_PATH = "ssalto/domain/plugins/impl/tools";
 
@@ -145,7 +144,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
 
     /**
      * {@link DateTimeFormatter} "yyyyMMdd_HHmmss"
-     * 
+     *
      */
     protected static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
@@ -196,27 +195,25 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     protected abstract String getProjectName();
 
     /**
-     * Get the plugin Ssalto repository configuration 
+     * Get the plugin Ssalto repository configuration
      * @return the plugin Ssalto repository {@link PluginsRepositoryProperties}
      */
     protected abstract PluginsRepositoryProperties getPluginsRepositoryProperties();
 
-    /**
-     * cree les attributs pour le {@link Product} contenant la liste des {@link AcquisitionFile}, pour le jeu de donnees dataSetName
-     */
     @Override
-    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles,
-            Optional<String> datasetName) throws ModuleException {
+    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName)
+            throws ModuleException {
 
-        if (!datasetName.isPresent()) {
-            ModuleException ex = new ModuleException("The dataset name is required");
-            LOGGER.error(ex.getMessage());
-            throw ex;
+        // DATASET name is required to retrieve configuration file
+        if ((datasetName == null) || datasetName.isEmpty()) {
+            String message = String.format("Dataset name is required");
+            LOGGER.error(message);
+            throw new EntityInvalidException(message);
         }
+        // Load configuration
+        loadDataSetConfiguration(datasetName);
 
         Map<File, ?> fileMap = buildMapFile(acqFiles);
-
-        loadDataSetConfiguration(datasetName.get());
 
         // add attribute from attribute finders
         attributeValueMap = new HashMap<>();
@@ -237,7 +234,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
         doCreateDependantSpecificAttributes(fileMap, attributeMap);
 
         // log the calculated attributes
-        LOGGER.info("[{}] {} attributes calcultated for {} AcquisitionFile", datasetName.get(), attributeMap.size(),
+        LOGGER.info("[{}] {} attributes calcultated for {} AcquisitionFile", datasetName, attributeMap.size(),
                     acqFiles.size());
         if (LOGGER.isDebugEnabled()) {
             for (Attribute att : attributeMap.values()) {
@@ -349,22 +346,17 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
         Map<File, File> fileMap = new HashMap<>();
 
         for (AcquisitionFile acqFile : acqFiles) {
-            File originalFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
-                    acqFile.getFileName());
-
-            if (acqFile.getStatus().equals(AcquisitionFileStatus.VALID)) {
-                File newFile = acqFile.getFile();
+            File originalFile = acqFile.getFilePath().toAbsolutePath().toFile();
+            if (AcquisitionFileState.ACQUIRED.equals(acqFile.getState())) {
+                File newFile = acqFile.getFilePath().toFile();
                 fileMap.put(newFile, originalFile);
             }
-
         }
-
         return fileMap;
     }
 
     @Override
-    protected void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
-            throws AcquisitionException {
+    protected void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs) {
 
         sipBuilder.getPDIBuilder().setFacility("CNES");
         sipBuilder.addDescriptiveInformation("mission", getProjectName());
@@ -409,7 +401,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     }
 
     /**
-     * Add descriptive information to the {@link SIPBuilder} 
+     * Add descriptive information to the {@link SIPBuilder}
      * @param sipBuilder the current {@link SIPBuilder}
      * @param attr an {@link Attribute} object
      */
@@ -428,7 +420,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     /**
      * Add descriptive information of a range values to the {@link SIPBuilder}
      * @param sipBuilder the current {@link SIPBuilder}
-     * @param compAttr a {@link CompositeAttribute} 
+     * @param compAttr a {@link CompositeAttribute}
      */
     private void addSipRange(SIPBuilder sipBuilder, CompositeAttribute compAttr) {
         if (LOGGER.isDebugEnabled()) {
@@ -498,7 +490,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             }
         }
 
-        if (latMin != null && latMax != null && lonMin != null && lonMax != null) {
+        if ((latMin != null) && (latMax != null) && (lonMin != null) && (lonMax != null)) {
             Positions pos = new Positions();
 
             Position pos0 = IGeometry.position(lonMin, latMin);
@@ -517,18 +509,17 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     }
 
     @Override
-    protected void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles)
-            throws AcquisitionException {
+    protected void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles) throws ModuleException {
         for (AcquisitionFile af : acqFiles) {
             try {
-                sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, af.getFile().toURI().toURL(),
-                                                                        af.getChecksumAlgorithm(), af.getChecksum());
-                sipBuilder.getContentInformationBuilder().setSyntax("Mime name", "Mime Description",
-                                                                    af.getMetaFile().getMediaType());
+                sipBuilder.getContentInformationBuilder()
+                        .setDataObject(DataType.RAWDATA, af.getFilePath().toAbsolutePath().toUri().toURL(),
+                                       af.getChecksumAlgorithm(), af.getChecksum());
+                sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
                 sipBuilder.addContentInformation();
             } catch (MalformedURLException e) {
                 LOGGER.error(e.getMessage(), e);
-                throw new AcquisitionException(e.getMessage());
+                throw new EntityInvalidException(e.getMessage());
             }
         }
     }

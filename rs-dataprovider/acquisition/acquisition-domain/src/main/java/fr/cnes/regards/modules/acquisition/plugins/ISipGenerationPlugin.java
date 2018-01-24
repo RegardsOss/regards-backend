@@ -27,10 +27,17 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
  * This plugin is used for generating product SIP
  *
  * @author Christophe Mertz
+ * @author Marc Sordi
  *
  */
 @PluginInterface(description = "Plugin to generate SIP with product and file metadata")
 public interface ISipGenerationPlugin {
 
+    /**
+     * Generate SIP according to specified {@link Product}
+     * @param product {@link Product}
+     * @return {@link SIP}
+     * @throws ModuleException if error occurs!
+     */
     SIP generate(Product product) throws ModuleException;
 }

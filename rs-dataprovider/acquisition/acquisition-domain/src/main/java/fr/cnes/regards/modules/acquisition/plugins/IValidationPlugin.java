@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.plugins;
 
 import java.nio.file.Path;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
@@ -35,6 +36,7 @@ public interface IValidationPlugin {
      * Validate a file
      * @param filePath file to validate
      * @return true if file is valid
+     * @throws ModuleException if error occurs!
      */
-    boolean validate(Path filePath);
+    boolean validate(Path filePath) throws ModuleException;
 }
