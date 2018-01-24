@@ -18,7 +18,6 @@
  */
 // CHECKSTYLE:OFF
 /**
- *
  * Code inspired from https://github.com/google/gson/blob/master/extras/src/main/java/com/google/gson/typeadapters/RuntimeTypeAdapterFactory.java
  */
 // CHECKSTYLE:ON
@@ -34,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
@@ -510,8 +510,14 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
                     throw new JsonParseException(errorMessage);
                 }
 
-                return delegate.fromJsonTree(beforeRead(jsonElement, discriminator, getTenantDiscriminatorToSubtype(
-                        runtimeTenantResolver.getTenant()).get(discriminator)));
+                try {
+                    return delegate.fromJsonTree(beforeRead(jsonElement, discriminator, getTenantDiscriminatorToSubtype(
+                            runtimeTenantResolver.getTenant()).get(discriminator)));
+                } catch (JsonIOException e) {
+                    String errorMessage = String.format("Unexpected JSON format (%s)", jsonElement.toString());
+                    LOGGER.error(errorMessage, e);
+                    throw new JsonParseException(errorMessage);
+                }
             }
 
             @SuppressWarnings("unchecked")
