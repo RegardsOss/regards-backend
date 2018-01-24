@@ -60,9 +60,9 @@ public class EmailSendingStrategy implements ISendingStrategy {
     public void send(final Notification pNotification, final String[] pRecipients) {
         // Build the email from the notification and add recipients
         final SimpleMailMessage email = new SimpleMailMessage();
-        email.setFrom(pNotification.getSender());
+        email.setFrom("regards@noreply.com");
         email.setSentDate(new Date());
-        email.setSubject(pNotification.getTitle());
+        email.setSubject("[" + pNotification.getSender() + "]" + pNotification.getTitle());
         email.setText(pNotification.getMessage());
         email.setTo(pRecipients);
 
