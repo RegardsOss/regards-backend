@@ -125,7 +125,7 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
     }
 
     /**
-     * Get an optional parameter value
+     * Get parameter value as an Optional
      * @param parameters map of parameters
      * @param parameterName parameter name to retrieve
      * @return an {@link java.util.Optional} parameter value

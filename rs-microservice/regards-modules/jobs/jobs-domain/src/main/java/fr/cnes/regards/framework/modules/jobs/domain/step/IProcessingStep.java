@@ -27,7 +27,6 @@ package fr.cnes.regards.framework.modules.jobs.domain.step;
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-@FunctionalInterface
 public interface IProcessingStep<I, O> {
 
     O execute(I in) throws ProcessingStepException;
