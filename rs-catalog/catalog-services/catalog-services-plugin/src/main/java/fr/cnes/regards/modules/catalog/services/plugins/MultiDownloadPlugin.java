@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.catalog.services.plugins;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -40,15 +39,16 @@ import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IEntitiesServicePlugin;
-import fr.cnes.regards.modules.catalog.services.plugins.helper.CatalogPluginResponseFactory;
-import fr.cnes.regards.modules.catalog.services.plugins.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
-import fr.cnes.regards.modules.catalog.services.plugins.helper.IServiceHelper;
+import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory;
+import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
+import fr.cnes.regards.modules.catalog.services.helper.IServiceHelper;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
@@ -67,32 +67,20 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
     @Autowired
     private IServiceHelper serviceHelper;
 
-    public static final int MAX_NUMBER_OF_RESULTS = 1000;
+    @PluginParameter(label = "Maximum number of files", name = "maxFilesToDownload", defaultValue = "1000",
+            description = "Maximum number of files that this plugin allow to download.")
+    private int maxFilesToDownload;
 
     private ResponseEntity<StreamingResponseBody> apply(List<DataObject> dataObjects, HttpServletResponse response) {
         Set<DataFile> toDownloadFiles = Sets.newHashSet();
-        List<String> onlines = new ArrayList<>();
-        List<String> offlines = new ArrayList<>();
         if ((dataObjects != null) && !dataObjects.isEmpty()) {
-            dataObjects.forEach(dataObject -> {
-                if ((dataObject != null) && (dataObject.getFiles() != null)) {
-                    dataObject.getFiles().forEach((type, file) -> {
-                        if (DataType.RAWDATA.equals(type) && Boolean.TRUE.equals(file.getOnline())
-                                && (file.getUri() != null)) {
-                            // Add file to zipInputStream
-                            toDownloadFiles.add(file);
-                            onlines.add(file.getUri().toString());
-                        } else {
-                            onlines.add(file.getName());
-                        }
-                    });
-                }
-            });
+            dataObjects.forEach(dataObject -> addOnlineFiles(dataObject, toDownloadFiles));
         }
 
-        if (onlines.isEmpty()) {
-            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
-                                                                      new DownloadResponse(offlines));
+        if (toDownloadFiles.isEmpty()) {
+            return CatalogPluginResponseFactory
+                    .createSuccessResponse(response, CatalogPluginResponseType.JSON,
+                                           "None of the selected files are available for download");
         } else {
             return CatalogPluginResponseFactory.createStreamSuccessResponse(response, getFilesAsZip(toDownloadFiles),
                                                                             "download.zip");
@@ -102,8 +90,8 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
     @Override
     public ResponseEntity<StreamingResponseBody> applyOnEntities(List<String> pEntitiesId,
             HttpServletResponse response) {
-        Page<DataObject> results = serviceHelper.getDataObjects(pEntitiesId, 0, MAX_NUMBER_OF_RESULTS);
-        if (results.getTotalElements() > MAX_NUMBER_OF_RESULTS) {
+        Page<DataObject> results = serviceHelper.getDataObjects(pEntitiesId, 0, maxFilesToDownload);
+        if (results.getTotalElements() > maxFilesToDownload) {
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         } else {
             return apply(results.getContent(), response);
@@ -115,8 +103,8 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
             HttpServletResponse response) {
         Page<DataObject> results;
         try {
-            results = serviceHelper.getDataObjects(pOpenSearchQuery, 0, MAX_NUMBER_OF_RESULTS);
-            if (results.getTotalElements() > MAX_NUMBER_OF_RESULTS) {
+            results = serviceHelper.getDataObjects(pOpenSearchQuery, 0, maxFilesToDownload);
+            if (results.getTotalElements() > maxFilesToDownload) {
                 return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
             } else {
                 return apply(results.getContent(), response);
@@ -130,6 +118,26 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
 
     }
 
+    /**
+     * Add into the files parameter all the online {@link DataFile} of the given {@link DataObject}
+     * @param dataObject
+     * @param files
+     */
+    private void addOnlineFiles(DataObject dataObject, Set<DataFile> files) {
+        if ((dataObject != null) && (dataObject.getFiles() != null)) {
+            dataObject.getFiles().forEach((type, file) -> {
+                if (DataType.RAWDATA.equals(type) && Boolean.TRUE.equals(file.getOnline()) && (file.getUri() != null)) {
+                    files.add(file);
+                }
+            });
+        }
+    }
+
+    /**
+     * Create a StreamingResponseBody by writting a ZIP containing all given {@link DataFile}
+     * @param files {@link DataFile}s to write into the ZIP.
+     * @return {@link StreamingResponseBody}
+     */
     private StreamingResponseBody getFilesAsZip(Set<DataFile> files) {
         return (StreamingResponseBody) outputStream -> {
             try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {

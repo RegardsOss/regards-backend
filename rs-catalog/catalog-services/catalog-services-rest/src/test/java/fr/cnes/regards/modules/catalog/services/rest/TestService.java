@@ -36,8 +36,8 @@ import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
-import fr.cnes.regards.modules.catalog.services.plugins.helper.CatalogPluginResponseFactory;
-import fr.cnes.regards.modules.catalog.services.plugins.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
+import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory;
+import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.models.domain.Model;
 

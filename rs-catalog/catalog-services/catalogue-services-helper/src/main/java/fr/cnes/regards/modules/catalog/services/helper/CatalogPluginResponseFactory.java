@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.catalog.services.plugins.helper;
+package fr.cnes.regards.modules.catalog.services.helper;
 
 import java.io.File;
 import java.io.InputStream;
@@ -96,6 +96,9 @@ public class CatalogPluginResponseFactory {
                 return createXmlSuccessResponse(response, responseContent);
             case JSON:
                 return createJsonSuccessResponse(response, responseContent);
+            case FILE_IMG_PNG:
+            case FILE_IMG_JPG:
+            case FILE_DOWNLOAD:
             default:
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -117,6 +120,8 @@ public class CatalogPluginResponseFactory {
                 response.setContentType(MediaType.IMAGE_PNG_VALUE);
                 headers.set(HttpHeaders.CONTENT_DISPOSITION, file.getName());
                 break;
+            case JSON:
+            case XML:
             case FILE_DOWNLOAD:
                 headers.set(HttpHeaders.CONTENT_DISPOSITION, file.getName());
                 headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
@@ -149,6 +154,8 @@ public class CatalogPluginResponseFactory {
                 response.setContentType(MediaType.IMAGE_PNG_VALUE);
                 headers.set(HttpHeaders.CONTENT_DISPOSITION, fileName);
                 break;
+            case JSON:
+            case XML:
             case FILE_DOWNLOAD:
                 headers.set(HttpHeaders.CONTENT_DISPOSITION, fileName);
                 headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
@@ -226,9 +233,14 @@ public class CatalogPluginResponseFactory {
         };
     }
 
-    public static StreamingResponseBody toStreamingResponseBody(InputStream file) {
+    /**
+     * Create a {@link StreamingResponseBody} by writting the given {@link InputStream}
+     * @param is {@link InputStream} to stream as response body
+     * @return {@link StreamingResponseBody}
+     */
+    public static StreamingResponseBody toStreamingResponseBody(InputStream is) {
         return outputStream -> {
-            ByteStreams.copy(file, outputStream);
+            ByteStreams.copy(is, outputStream);
             outputStream.flush();
         };
     }

@@ -5,11 +5,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>fr.cnes.regards.modules</groupId>
-	<artifactId>catalog-services-plugin</artifactId>
+	<artifactId>catalog-services-helper</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Catalog Services Plugins</name>
-	<description>Plugins of the Catalog Services module</description>
+	<name>Catalog Services Helper</name>
+	<description>Helpers to handle Calalogue services plugin data searces and response creation</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
 	<licenses>
@@ -39,16 +39,18 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-			<artifactId>plugins-domain</artifactId>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>catalog-services-domain</artifactId>
+			<groupId>fr.cnes.regards.modules.search</groupId>
+			<artifactId>search-service</artifactId>
 		</dependency>
+		<!-- Test -->
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>catalog-services-helper</artifactId>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>
