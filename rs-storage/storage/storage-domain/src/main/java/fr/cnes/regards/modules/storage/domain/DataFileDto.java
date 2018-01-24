@@ -58,6 +58,10 @@ public class DataFileDto {
      */
     private boolean online = false;
 
+    private Integer height;
+
+    private Integer width;
+
     /**
      * Transform a {@link StorageDataFile} to a {@link DataFileDto}.
      * @param dataFile origin data file
@@ -199,6 +203,22 @@ public class DataFileDto {
      */
     public void setOnline(boolean online) {
         this.online = online;
+    }
+
+    public Integer getHeight() {
+        return height;
+    }
+
+    public void setHeight(Integer height) {
+        this.height = height;
+    }
+
+    public Integer getWidth() {
+        return width;
+    }
+
+    public void setWidth(Integer width) {
+        this.width = width;
     }
 
     @Override
