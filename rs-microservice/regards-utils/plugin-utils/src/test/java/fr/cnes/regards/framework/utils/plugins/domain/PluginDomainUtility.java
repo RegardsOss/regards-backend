@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;

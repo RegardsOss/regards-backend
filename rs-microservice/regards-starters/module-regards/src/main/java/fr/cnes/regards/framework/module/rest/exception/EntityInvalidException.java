@@ -35,21 +35,25 @@ public class EntityInvalidException extends EntityException {
     /**
      * Detailed messages
      */
-    private final List<String> messages;
+    private final List<String> messages = new ArrayList<>();
 
     /**
      * Constructor setting the exception message
-     * @param pMessage
+     * @param message
      */
-    public EntityInvalidException(final String pMessage) {
-        super(pMessage);
-        this.messages = new ArrayList<>();
-        this.messages.add(pMessage);
+    public EntityInvalidException(final String message) {
+        super(message);
+        this.messages.add(message);
     }
 
-    public EntityInvalidException(final List<String> pMessages) {
+    public EntityInvalidException(final List<String> messages) {
         super("Invalid entity");
-        this.messages = pMessages;
+        this.messages.addAll(messages);
+    }
+
+    public EntityInvalidException(String message, Throwable cause) {
+        super(message, cause);
+        this.messages.add(message);
     }
 
     public List<String> getMessages() {

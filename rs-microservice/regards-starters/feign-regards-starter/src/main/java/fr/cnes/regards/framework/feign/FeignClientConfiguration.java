@@ -21,11 +21,8 @@ package fr.cnes.regards.framework.feign;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
-import org.springframework.cloud.netflix.feign.FeignClientsConfiguration;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
-import org.springframework.cloud.netflix.feign.support.SpringDecoder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import com.google.gson.Gson;
@@ -61,7 +58,7 @@ public class FeignClientConfiguration {
      * @return loggin level
      */
     @Bean
-    Logger.Level feignLoggerLevel() {
+    public Logger.Level feignLoggerLevel() {
         return Logger.Level.BASIC;
     }
 
@@ -74,7 +71,7 @@ public class FeignClientConfiguration {
      */
     @Bean
     public ClientErrorDecoder errorDecoder() {
-        return new ClientErrorDecoder(new SpringDecoder(messageConverters));
+        return new ClientErrorDecoder();
     }
 
     /**

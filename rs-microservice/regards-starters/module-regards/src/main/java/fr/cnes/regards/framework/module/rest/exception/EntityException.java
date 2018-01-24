@@ -22,7 +22,6 @@ package fr.cnes.regards.framework.module.rest.exception;
  * Unqualified entity exception
  *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class EntityException extends ModuleException {
@@ -31,4 +30,7 @@ public class EntityException extends ModuleException {
         super(message);
     }
 
+    public EntityException(final String message, Throwable cause) {
+        super(message, cause);
+    }
 }

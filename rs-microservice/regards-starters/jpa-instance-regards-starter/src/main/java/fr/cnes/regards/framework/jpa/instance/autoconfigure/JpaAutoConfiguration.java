@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.framework.jpa.instance.autoconfigure;
 
-import java.lang.annotation.Annotation;
-
 import javax.persistence.Entity;
+import java.lang.annotation.Annotation;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

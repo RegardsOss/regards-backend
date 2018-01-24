@@ -48,7 +48,6 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
-
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**

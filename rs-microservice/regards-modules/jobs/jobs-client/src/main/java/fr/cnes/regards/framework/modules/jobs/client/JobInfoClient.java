@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import feign.Headers;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.JobResult;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 
 /**
  * Feign client exposing the jobs module endpoints to other microservices plugged through Eureka.

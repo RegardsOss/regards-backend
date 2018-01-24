@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.utils;
 
+import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
 import java.sql.SQLException;
-
-import javax.sql.DataSource;
 
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;

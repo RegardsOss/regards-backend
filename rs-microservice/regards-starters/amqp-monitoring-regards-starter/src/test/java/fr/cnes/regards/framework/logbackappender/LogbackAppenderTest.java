@@ -33,7 +33,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -81,7 +80,7 @@ public class LogbackAppenderTest {
     private IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
     @Autowired
-    SubscriberLogEvent receiverLogEvent;
+    private SubscriberLogEvent receiverLogEvent;
 
     @Before
     public void init() {

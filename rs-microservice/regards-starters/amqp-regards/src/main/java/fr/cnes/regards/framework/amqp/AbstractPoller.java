@@ -36,10 +36,8 @@ import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
 /**
  * Common poller methods
- *
  * @author svissier
  * @author Marc Sordi
- *
  */
 public abstract class AbstractPoller implements IPollerContract {
 
@@ -91,18 +89,12 @@ public abstract class AbstractPoller implements IPollerContract {
 
     /**
      * Poll an event
-     *
-     * @param <T>
-     *            event object
-     * @param tenant
-     *            tenant
+     * @param <T> event object
+     * @param tenant tenant
      * @param virtualHost virtual host
-     * @param eventType
-     *            event to poll
-     * @param workerMode
-     *            {@link WorkerMode}
-     * @param target
-     *            {@link Target}
+     * @param eventType event to poll
+     * @param workerMode {@link WorkerMode}
+     * @param target {@link Target}
      * @return event in a {@link TenantWrapper}
      */
     @SuppressWarnings("unchecked")

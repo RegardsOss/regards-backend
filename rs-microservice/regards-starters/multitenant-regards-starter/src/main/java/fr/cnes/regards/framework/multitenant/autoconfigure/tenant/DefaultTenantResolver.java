@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.framework.multitenant.autoconfigure.tenant;
 
+import javax.annotation.PostConstruct;
 import java.util.Set;
 import java.util.TreeSet;
-
-import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
 

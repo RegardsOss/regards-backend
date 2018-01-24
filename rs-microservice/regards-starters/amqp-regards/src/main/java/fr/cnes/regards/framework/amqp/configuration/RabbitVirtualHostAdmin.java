@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.framework.amqp.configuration;
 
+import javax.annotation.PostConstruct;
 import java.util.Base64;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

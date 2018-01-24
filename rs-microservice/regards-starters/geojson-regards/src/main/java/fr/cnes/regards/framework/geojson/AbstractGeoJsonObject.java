@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.framework.geojson;
 
+import javax.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.Optional;
-
-import javax.validation.constraints.NotNull;
 
 /**
  * RFC 7946 -August 2016<br/>
@@ -102,9 +101,6 @@ public abstract class AbstractGeoJsonObject {
         } else if (!crs.equals(other.crs)) {
             return false;
         }
-        if (type != other.type) {
-            return false;
-        }
-        return true;
+        return (type == other.type);
     }
 }

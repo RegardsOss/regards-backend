@@ -58,10 +58,10 @@ public class RegardsAmqpAppender extends AppenderBase<ILoggingEvent> {
     private final IPublisher publisher;
 
     @Autowired
-    IRuntimeTenantResolver runtimeTenantResolver;
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    IAuthenticationResolver authResolver;
+    private IAuthenticationResolver authResolver;
 
     /**
      * The microservice name
@@ -84,8 +84,9 @@ public class RegardsAmqpAppender extends AppenderBase<ILoggingEvent> {
         String tenant = runtimeTenantResolver.getTenant();
 
         if (tenant != null) {
-            LOGGER.debug("[" + tenant + "] <" + microserviceName + "> send message  <"
-                    + eventObject.getFormattedMessage() + ">");
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("[" + tenant + "] <" + microserviceName + "> send message  <" + eventObject.getFormattedMessage() + ">");
+            }
 
             Instant instant = Instant.ofEpochMilli(eventObject.getTimeStamp());
             LocalDateTime ldt = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
@@ -95,7 +96,9 @@ public class RegardsAmqpAppender extends AppenderBase<ILoggingEvent> {
                     ldt.toString(), eventObject.getLevel().toString(), user);
             publisher.publish(sended);
 
-            LOGGER.debug("[" + tenant + "] message sended : " + sended.toString());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("[" + tenant + "] message sended : " + sended.toString());
+            }
         }
     }
 

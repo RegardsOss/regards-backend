@@ -37,10 +37,9 @@ import feign.codec.ErrorDecoder;
 
 /**
  * Intercept Feign error to write custom log and decode the body into an object
- * in case the return type is defined as a {@link ResponseEntity}&#60;SOMETHING&#62;.
+ * in case the return type is defined as a {@link ResponseEntity}&lt;SOMETHING>.
  * It will deserialize the body, using {@link SpringDecoder}, into a SOMETHING instance accessible
  * into the {@link FeignResponseDecodedException} thrown.
- *
  * @author CS
  * @since 1.0-SNAPSHOT
  */
@@ -51,31 +50,13 @@ public class ClientErrorDecoder extends ErrorDecoder.Default implements ErrorDec
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientErrorDecoder.class);
 
-    /**
-     * Spring decoder
-     */
-    private final SpringDecoder springDecoder;
-
-    /**
-     * Constructor setting the sprind decoder as attribute
-     * @param springDecoder
-     */
-    public ClientErrorDecoder(SpringDecoder springDecoder) {
-        this.springDecoder = springDecoder;
-    }
-
     @Override
     public Exception decode(final String methodKey, final Response response) {
-        LOGGER.error(String.format("Remote call to %s. Response is : %d - %s",
-                                   methodKey,
-                                   response.status(),
+        LOGGER.error(String.format("Remote call to %s. Response is : %d - %s", methodKey, response.status(),
                                    response.reason()));
         HttpHeaders responseHeaders = new HttpHeaders();
         response.headers().entrySet().stream()
                 .forEach(entry -> responseHeaders.put(entry.getKey(), new ArrayList<>(entry.getValue())));
-
-        HttpStatus statusCode = HttpStatus.valueOf(response.status());
-        String statusText = response.reason();
 
         byte[] responseBody;
         try {
@@ -91,6 +72,8 @@ public class ClientErrorDecoder extends ErrorDecoder.Default implements ErrorDec
             responseCharset = responseHeaders.getContentType().getCharset();
         }
 
+        HttpStatus statusCode = HttpStatus.valueOf(response.status());
+        String statusText = response.reason();
         if (response.status() >= 400 && response.status() <= 499) {
             return new HttpClientErrorException(statusCode, statusText, responseHeaders, responseBody, responseCharset);
         }

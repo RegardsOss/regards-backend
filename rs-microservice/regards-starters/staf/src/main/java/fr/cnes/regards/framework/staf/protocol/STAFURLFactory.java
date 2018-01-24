@@ -16,7 +16,6 @@ import java.util.regex.Pattern;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.staf.domain.AbstractPhysicalFile;
 import fr.cnes.regards.framework.staf.domain.PhysicalCutFile;
 import fr.cnes.regards.framework.staf.domain.PhysicalCutPartFile;

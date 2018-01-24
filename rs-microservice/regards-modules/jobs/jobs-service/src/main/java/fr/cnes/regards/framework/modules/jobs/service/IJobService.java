@@ -1,6 +1,6 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 
 /**
  * Job service. It's a daemon that listen for jobs to be executed and a service that handles abort, suspend or
@@ -9,7 +9,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
  */
 public interface IJobService {
 
-    void onApplicationEvent(ContextRefreshedEvent event);
+    void onApplicationEvent(ApplicationReadyEvent event);
 
     /**
      * Daemon method

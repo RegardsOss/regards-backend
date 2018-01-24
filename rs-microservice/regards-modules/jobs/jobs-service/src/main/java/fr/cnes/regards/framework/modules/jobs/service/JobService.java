@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -54,7 +54,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 @Service
 public class JobService implements IJobService {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
 
     /**
      * A BiMap between job id (UUID) and Job (Runnable, in fact RunnableFuture&lt;Void>)
@@ -111,7 +111,7 @@ public class JobService implements IJobService {
 
     @Override
     @EventListener
-    public void onApplicationEvent(ContextRefreshedEvent event) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(StopJobEvent.class, new StopJobHandler());
     }
 
@@ -133,19 +133,24 @@ public class JobService implements IJobService {
                     }
                 }
                 // Find highest priority job to execute
-                JobInfo jobInfo = jobInfoService.findHighestPriorityQueuedJobAndSetAsToBeRun();
-                if (jobInfo != null) {
-                    noJobAtAll = false;
-                    jobInfo.setTenant(tenant);
-                    this.execute(jobInfo);
+                try {
+                    JobInfo jobInfo = jobInfoService.findHighestPriorityQueuedJobAndSetAsToBeRun();
+                    if (jobInfo != null) {
+                        noJobAtAll = false;
+                        jobInfo.setTenant(tenant);
+                        this.execute(jobInfo);
+                    }
+                } catch (RuntimeException e) {
+                    LOGGER.warn("Database access problem, skipping and will try later...", e);
                 }
             }
             if (noJobAtAll) {
                 // No job to execute on any tenants, take a rest
                 try {
                     Thread.sleep(1000);
-                } catch (InterruptedException e) { // NOSONAR
-                    // Ok, i have no problem with that
+                } catch (InterruptedException e) {
+                    LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
+                                         + "of the end, pray for your soul", e);
                 }
             }
         }

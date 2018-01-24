@@ -25,8 +25,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.IJob;
  *
  * @param <I> input object
  * @param <0> output object
- * @param <R> result type
- *
+ * @param <J> associated processing job
+ * FIXME Write the doc please !!!!!
  * @author Marc Sordi
  */
 public abstract class AbstractProcessingStep<I, O, J extends IJob<?>> implements IProcessingStep<I, O> {

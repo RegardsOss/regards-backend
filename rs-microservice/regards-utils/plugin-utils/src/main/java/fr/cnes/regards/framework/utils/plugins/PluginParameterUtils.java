@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -608,7 +607,7 @@ public final class PluginParameterUtils {
      */
     private static <T> void postProcessInterface(T pluginInstance, PluginConfiguration plgConf, Field field,
             PluginParameter plgParamAnnotation, Map<Long, Object> instantiatedPluginMap) {
-        LOGGER.debug("Starting postProcessInterface :" + plgParamAnnotation.label());
+        LOGGER.debug("Starting postProcessInterface: {}", plgParamAnnotation.label());
 
         // Get setup value
         PluginConfiguration paramValue = plgConf.getParameterConfiguration(getFieldName(field, plgParamAnnotation));
@@ -626,7 +625,7 @@ public final class PluginParameterUtils {
                                   plgParamAnnotation.label(), pluginInstance.getClass(), paramValue),
                     e);
         }
-        LOGGER.debug("Ending postProcessInterface :" + plgParamAnnotation.label());
+        LOGGER.debug("Ending postProcessInterface: {}", plgParamAnnotation.label());
     }
 
     /**

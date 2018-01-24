@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.framework.jpa.instance.autoconfigure;
 
-import java.beans.PropertyVetoException;
-
 import javax.sql.DataSource;
+import java.beans.PropertyVetoException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 
 /**
@@ -250,12 +249,12 @@ public class PluginMetaData {
     
     @Override
     public String toString() {
-        StringBuffer strBuffer = new StringBuffer(pluginId);
-        strBuffer.append(" : ");
-        strBuffer.append(pluginClassName);
-        strBuffer.append(" : ");
-        strBuffer.append(version);
-        return strBuffer.toString();
+        StringBuilder buf = new StringBuilder(pluginId);
+        buf.append(" : ");
+        buf.append(pluginClassName);
+        buf.append(" : ");
+        buf.append(version);
+        return buf.toString();
     }
 
 }

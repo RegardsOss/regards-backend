@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.framework.microservice.maintenance;
 
-import java.io.IOException;
-
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +30,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.google.common.net.HttpHeaders;
-
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.microservice.rest.MaintenanceController;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -54,7 +52,7 @@ public class MaintenanceFilter extends OncePerRequestFilter {
      */
     private static final String REQUEST_IGNORED = "{}@{} request from {} was ignored because the service is in Maintenance!";
 
-    private static Logger LOGGER = LoggerFactory.getLogger(MaintenanceFilter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MaintenanceFilter.class);
 
     private final IRuntimeTenantResolver resolver;
 

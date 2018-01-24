@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.security.autoconfigure;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,6 +35,7 @@ import fr.cnes.regards.framework.security.endpoint.DefaultAuthorityProvider;
 import fr.cnes.regards.framework.security.endpoint.DefaultPluginResourceManager;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.endpoint.IPluginResourceManager;
+import fr.cnes.regards.framework.security.endpoint.InstanceMethodAuthorizationService;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.event.SecurityEventHandler;
 
@@ -77,8 +79,16 @@ public class MethodAuthorizationServiceAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "regards.microservice.type", havingValue = "multitenant", matchIfMissing = true)
     public MethodAuthorizationService methodAuthorizationService() {
         return new MethodAuthorizationService();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "regards.microservice.type", havingValue = "instance", matchIfMissing = false)
+    public MethodAuthorizationService instanceMethodAuthorizationService() {
+        return new InstanceMethodAuthorizationService();
     }
 
     @Bean
@@ -88,7 +98,7 @@ public class MethodAuthorizationServiceAutoConfiguration {
     }
 
     @Bean
-    public SecurityEventHandler securityEventHandler(final ISubscriber subscriber) {
-        return new SecurityEventHandler(microserviceName, subscriber, methodAuthorizationService());
+    public SecurityEventHandler securityEventHandler(final ISubscriber subscriber, MethodAuthorizationService methodAuthorizationService) {
+        return new SecurityEventHandler(microserviceName, subscriber, methodAuthorizationService);
     }
 }

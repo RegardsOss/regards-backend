@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.framework.module.rest;
 
+import javax.validation.ValidationException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.validation.ValidationException;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;

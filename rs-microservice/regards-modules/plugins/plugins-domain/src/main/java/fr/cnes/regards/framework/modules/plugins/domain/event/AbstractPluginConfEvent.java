@@ -5,7 +5,7 @@ import java.util.Set;
 /**
  * @author oroussel
  */
-public class AbstractPluginConfEvent {
+public abstract class AbstractPluginConfEvent {
 
     /**
      * The plugin configuration id

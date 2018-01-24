@@ -18,11 +18,20 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.reflections.Reflections;
@@ -160,7 +169,7 @@ public final class DaoUtils {
             String packageEnd = pPackageName.substring(DaoUtils.TEST_PACKAGE.length() + 1);
             return DaoUtils.TEST_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.'));
         } else {
-            throw new Error("Bullshits everywhere !!!!");
+            throw new Error("Bullshits everywhere !!!!"); // NOSONAR
         }
     }
 

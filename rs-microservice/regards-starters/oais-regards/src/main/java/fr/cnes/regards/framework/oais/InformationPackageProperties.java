@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
 

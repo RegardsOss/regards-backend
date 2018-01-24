@@ -27,7 +27,6 @@ import java.lang.annotation.Target;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.google.gson.annotations.JsonAdapter;
-
 import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
