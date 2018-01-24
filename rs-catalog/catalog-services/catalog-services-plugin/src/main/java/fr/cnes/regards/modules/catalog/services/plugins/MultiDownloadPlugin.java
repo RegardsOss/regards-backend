@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
@@ -82,7 +83,8 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
                                            "None of the selected files are available for download");
         } else {
             return CatalogPluginResponseFactory.createStreamSuccessResponse(response, getFilesAsZip(toDownloadFiles),
-                                                                            "download.zip");
+                                                                            "download.zip",
+                                                                            MediaType.APPLICATION_OCTET_STREAM);
         }
     }
 
