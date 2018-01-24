@@ -107,7 +107,7 @@ public class IngestProcessingService implements IIngestProcessingService {
     @Override
     public void initDefaultServiceConfiguration() throws ModuleException {
 
-        LOGGER.debug("Trying to inialize default ingest chain {}", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
+        LOGGER.debug("Trying to initialize default ingest chain {}", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
 
         // Check if the default IngestProcessingChain is defined
         if (!ingestChainRepository.findOneByName(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL).isPresent()) {
@@ -161,7 +161,7 @@ public class IngestProcessingService implements IIngestProcessingService {
 
     /**
      * Schedule a new {@link IngestProcessingJob} to ingest given {@link SIPEntity}
-     * @param pSipToProcess {@link SIPEntity} to ingest
+     * @param sipIdToProcess {@link SIPEntity} to ingest
      */
     private void scheduleIngestProcessingJob(Long sipIdToProcess, String processingChain) {
         LOGGER.debug("Scheduling new IngestProcessingJob for SIP {} and processing chain {}", sipIdToProcess,
