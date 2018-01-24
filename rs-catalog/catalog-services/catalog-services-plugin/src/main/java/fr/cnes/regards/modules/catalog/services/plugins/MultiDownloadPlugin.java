@@ -71,10 +71,44 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
             description = "Maximum number of files that this plugin allow to download.")
     private int maxFilesToDownload;
 
+    @PluginParameter(label = "Maximum total size for download (Mo)", name = "maxFilesSizeToDownload",
+            defaultValue = "100", description = "Maximum total size of selected files for one download.")
+    private int maxFilesSizeToDownload;
+
+    @PluginParameter(label = "Archive file name", name = "archiveFileName", defaultValue = "download.zip",
+            description = "Name of the archive containing all selected files for download.")
+    private String archiveFileName;
+
     private ResponseEntity<StreamingResponseBody> apply(List<DataObject> dataObjects, HttpServletResponse response) {
         Set<DataFile> toDownloadFiles = Sets.newHashSet();
         if ((dataObjects != null) && !dataObjects.isEmpty()) {
             dataObjects.forEach(dataObject -> addOnlineFiles(dataObject, toDownloadFiles));
+        }
+
+        // Check for maximum number of files limit
+        if (toDownloadFiles.size() > maxFilesToDownload) {
+            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
+                                                                      String.format("Number of files to download %d exceed maximum allowed of %d",
+                                                                                    toDownloadFiles
+                                                                                            .size(),
+                                                                                    maxFilesToDownload));
+        }
+
+        // Check for maximum file size limit
+        long filesSizeInBytes = 0;
+        for (DataFile f : toDownloadFiles) {
+            if (f.getSize() != null) {
+                filesSizeInBytes = filesSizeInBytes + f.getSize();
+            }
+        }
+        if (filesSizeInBytes > (maxFilesSizeToDownload * 1024 * 1024)) {
+            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON, String
+                    .format("Total size of selected files exceeded maximum allowed of %d (Mo)", maxFilesToDownload));
+        }
+
+        String fileName = archiveFileName;
+        if (!fileName.endsWith(".zip")) {
+            fileName = String.format("%s.zip", fileName);
         }
 
         if (toDownloadFiles.isEmpty()) {
@@ -83,23 +117,17 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
                                            "None of the selected files are available for download");
         } else {
             return CatalogPluginResponseFactory.createStreamSuccessResponse(response, getFilesAsZip(toDownloadFiles),
-                                                                            "download.zip",
+                                                                            fileName,
                                                                             MediaType.APPLICATION_OCTET_STREAM);
         }
+
     }
 
     @Override
     public ResponseEntity<StreamingResponseBody> applyOnEntities(List<String> pEntitiesId,
             HttpServletResponse response) {
-        Page<DataObject> results = serviceHelper.getDataObjects(pEntitiesId, 0, maxFilesToDownload);
-        long nbResults = results.getTotalElements();
-        if (nbResults > maxFilesToDownload) {
-            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
-                                                                      String.format("Number of files to download %d exceed maximum allowed of %d",
-                                                                                    nbResults, maxFilesToDownload));
-        } else {
-            return apply(results.getContent(), response);
-        }
+        Page<DataObject> results = serviceHelper.getDataObjects(pEntitiesId, 0, 10000);
+        return apply(results.getContent(), response);
     }
 
     @Override
@@ -107,15 +135,8 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
             HttpServletResponse response) {
         Page<DataObject> results;
         try {
-            results = serviceHelper.getDataObjects(pOpenSearchQuery, 0, maxFilesToDownload);
-            long nbResults = results.getTotalElements();
-            if (nbResults > maxFilesToDownload) {
-                return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
-                                                                          String.format("Number of files to download %d exceed maximum allowed of %d",
-                                                                                        nbResults, maxFilesToDownload));
-            } else {
-                return apply(results.getContent(), response);
-            }
+            results = serviceHelper.getDataObjects(pOpenSearchQuery, 0, 10000);
+            return apply(results.getContent(), response);
         } catch (OpenSearchParseException e) {
             String message = String.format("Error applying service. OpenSearchQuery is not a valid query : %s",
                                            pOpenSearchQuery);
