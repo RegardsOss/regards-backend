@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
@@ -91,8 +90,11 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
     public ResponseEntity<StreamingResponseBody> applyOnEntities(List<String> pEntitiesId,
             HttpServletResponse response) {
         Page<DataObject> results = serviceHelper.getDataObjects(pEntitiesId, 0, maxFilesToDownload);
-        if (results.getTotalElements() > maxFilesToDownload) {
-            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        long nbResults = results.getTotalElements();
+        if (nbResults > maxFilesToDownload) {
+            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
+                                                                      String.format("Number of files to download %d exceed maximum allowed of %d",
+                                                                                    nbResults, maxFilesToDownload));
         } else {
             return apply(results.getContent(), response);
         }
@@ -104,16 +106,20 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
         Page<DataObject> results;
         try {
             results = serviceHelper.getDataObjects(pOpenSearchQuery, 0, maxFilesToDownload);
-            if (results.getTotalElements() > maxFilesToDownload) {
-                return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            long nbResults = results.getTotalElements();
+            if (nbResults > maxFilesToDownload) {
+                return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
+                                                                          String.format("Number of files to download %d exceed maximum allowed of %d",
+                                                                                        nbResults, maxFilesToDownload));
             } else {
                 return apply(results.getContent(), response);
             }
         } catch (OpenSearchParseException e) {
-            LOGGER.error(String.format("Error applying service. OpenSearchQuery is not a valid query : %s",
-                                       pOpenSearchQuery),
-                         e);
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            String message = String.format("Error applying service. OpenSearchQuery is not a valid query : %s",
+                                           pOpenSearchQuery);
+            LOGGER.error(message, e);
+            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
+                                                                      message);
         }
 
     }
