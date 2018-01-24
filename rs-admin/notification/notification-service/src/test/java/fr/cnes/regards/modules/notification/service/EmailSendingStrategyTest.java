@@ -92,7 +92,7 @@ public class EmailSendingStrategyTest {
     public void send() {
         // Define expected mail
         final SimpleMailMessage expected = new SimpleMailMessage();
-        expected.setFrom(SENDER);
+        expected.setFrom("regards@noreply.com");
         expected.setText(MESSAGE);
         expected.setTo(RECIPIENTS);
 
