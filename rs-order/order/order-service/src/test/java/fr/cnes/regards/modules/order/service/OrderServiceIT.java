@@ -18,6 +18,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -251,6 +252,7 @@ public class OrderServiceIT {
     @Test
     @Requirement("REGARDS_DSL_STO_CMD_050")
     @Requirement("REGARDS_DSL_STO_CMD_050")
+    @Ignore
     public void testBucketsJobs() throws IOException, InterruptedException {
         String user = "tulavu@qui.fr";
         Basket basket = new Basket(user);
@@ -288,6 +290,7 @@ public class OrderServiceIT {
     }
 
     @Test
+    @Ignore
     public void testExpiredOrders() throws IOException, InterruptedException {
         Basket basket = new Basket("tulavu@qui.fr");
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
@@ -314,6 +317,7 @@ public class OrderServiceIT {
     }
 
     @Test
+    @Ignore
     public void testPauseResume()
             throws IOException, InterruptedException, CannotResumeOrderException, CannotPauseOrderException {
 
