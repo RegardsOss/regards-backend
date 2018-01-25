@@ -46,7 +46,7 @@ public class Cryosat2CheckingPluginTest {
     @Requirement("REGARDS_DSL_ING_SSALTO_070")
     @Purpose("A plugin can generate a SIP for a Cryosat2's products")
     @Test
-    public void testWithDblExtension() throws ModuleException {
+    public void testProductPlugin() throws ModuleException {
         // Plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(DefaultProductPlugin.FIELD_REMOVE_EXT, Boolean.TRUE)
