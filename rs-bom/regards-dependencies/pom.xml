@@ -91,6 +91,7 @@
 
         <!-- Regards utils -->
         <file.utils.version>2.0.0-SNAPSHOT</file.utils.version>
+        <exception.utils.version>2.0.0-SNAPSHOT</exception.utils.version>
 
         <!-- Regards Modules -->
         <fr.cnes.regards.framework.modules.jobs.version>2.0.0-SNAPSHOT</fr.cnes.regards.framework.modules.jobs.version>
@@ -332,6 +333,11 @@
                 <groupId>fr.cnes.regards.framework.utils</groupId>
                 <artifactId>file-utils</artifactId>
                 <version>${file.utils.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.utils</groupId>
+                <artifactId>exception-utils</artifactId>
+                <version>${exception.utils.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework</groupId>
