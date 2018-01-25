@@ -19,14 +19,22 @@
 package fr.cnes.regards.modules.catalog.services.plugins;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +43,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 
@@ -42,6 +51,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
@@ -67,6 +78,9 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
     @Autowired
     private IServiceHelper serviceHelper;
 
+    @Autowired
+    private JWTService jwtService;
+
     @PluginParameter(label = "Maximum number of files", name = "maxFilesToDownload", defaultValue = "1000",
             description = "Maximum number of files that this plugin allow to download.")
     private int maxFilesToDownload;
@@ -78,50 +92,6 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
     @PluginParameter(label = "Archive file name", name = "archiveFileName", defaultValue = "download.zip",
             description = "Name of the archive containing all selected files for download.")
     private String archiveFileName;
-
-    private ResponseEntity<StreamingResponseBody> apply(List<DataObject> dataObjects, HttpServletResponse response) {
-        Set<DataFile> toDownloadFiles = Sets.newHashSet();
-        if ((dataObjects != null) && !dataObjects.isEmpty()) {
-            dataObjects.forEach(dataObject -> addOnlineFiles(dataObject, toDownloadFiles));
-        }
-
-        // Check for maximum number of files limit
-        if (toDownloadFiles.size() > maxFilesToDownload) {
-            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
-                                                                      String.format("Number of files to download %d exceed maximum allowed of %d",
-                                                                                    toDownloadFiles
-                                                                                            .size(),
-                                                                                    maxFilesToDownload));
-        }
-
-        // Check for maximum file size limit
-        long filesSizeInBytes = 0;
-        for (DataFile f : toDownloadFiles) {
-            if (f.getSize() != null) {
-                filesSizeInBytes = filesSizeInBytes + f.getSize();
-            }
-        }
-        if (filesSizeInBytes > (maxFilesSizeToDownload * 1024 * 1024)) {
-            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON, String
-                    .format("Total size of selected files exceeded maximum allowed of %d (Mo)", maxFilesToDownload));
-        }
-
-        String fileName = archiveFileName;
-        if (!fileName.endsWith(".zip")) {
-            fileName = String.format("%s.zip", fileName);
-        }
-
-        if (toDownloadFiles.isEmpty()) {
-            return CatalogPluginResponseFactory
-                    .createSuccessResponse(response, CatalogPluginResponseType.JSON,
-                                           "None of the selected files are available for download");
-        } else {
-            return CatalogPluginResponseFactory.createStreamSuccessResponse(response, getFilesAsZip(toDownloadFiles),
-                                                                            fileName,
-                                                                            MediaType.APPLICATION_OCTET_STREAM);
-        }
-
-    }
 
     @Override
     public ResponseEntity<StreamingResponseBody> applyOnEntities(List<String> pEntitiesId,
@@ -148,11 +118,71 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
     }
 
     /**
-     * Add into the files parameter all the online {@link DataFile} of the given {@link DataObject}
-     * @param dataObject
-     * @param files
+     * Global application for DataObjects datafiles download. A ZIPStream is created containing all onlines {@link DataFile}
+     * for each fiven {@link DataObject}
+     * @param dataObjects
+     * @param response
+     * @return
      */
-    private void addOnlineFiles(DataObject dataObject, Set<DataFile> files) {
+    private ResponseEntity<StreamingResponseBody> apply(List<DataObject> dataObjects, HttpServletResponse response) {
+        // Retrieve all onlines files from each DataObject
+        Map<DataObject, Set<DataFile>> toDownloadFilesMap = Maps.newHashMap();
+        if ((dataObjects != null) && !dataObjects.isEmpty()) {
+            dataObjects.forEach(dataObject -> toDownloadFilesMap.put(dataObject, getOnlineFiles(dataObject)));
+        }
+
+        // Check for maximum number of files limit
+        int nbFiles = toDownloadFilesMap.values().stream().mapToInt(list -> list.size()).sum();
+        // If files number exceed maximum configured, return a JSON message with the error.
+        LOGGER.debug(String.format("Number of files to download : %d", nbFiles));
+        if (nbFiles > maxFilesToDownload) {
+            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
+                                                                      String.format("Number of files to download %d exceed maximum allowed of %d",
+                                                                                    nbFiles, maxFilesToDownload));
+        }
+
+        // Check for maximum file size limit
+        long filesSizeInBytes = toDownloadFilesMap.values().stream()
+                .mapToLong(list -> list.stream().mapToLong(d -> d.getSize() != null ? d.getSize() : 0).sum()).sum();
+        LOGGER.debug(String.format("Total size of files to download : %d", filesSizeInBytes));
+        // If size exceed maximum configured, return a JSON message with the error.
+        if (filesSizeInBytes > (maxFilesSizeToDownload * 1024 * 1024)) {
+            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON, String
+                    .format("Total size of selected files exceeded maximum allowed of %d (Mo)", maxFilesToDownload));
+        }
+
+        // If tere is no file downloadable, return a JSON message.
+        if (nbFiles == 0) {
+            return CatalogPluginResponseFactory
+                    .createSuccessResponse(response, CatalogPluginResponseType.JSON,
+                                           "None of the selected files are available for download");
+        }
+
+        // Create and stream the ZIP archive containg all downloadable files
+        return CatalogPluginResponseFactory.createStreamSuccessResponse(response, getFilesAsZip(toDownloadFilesMap),
+                                                                        getArchiveName(),
+                                                                        MediaType.APPLICATION_OCTET_STREAM);
+    }
+
+    /**
+     * Get the archive name by reading plugin parameters configuration.
+     * @return String archive name
+     */
+    private String getArchiveName() {
+        String fileName = archiveFileName;
+        if (!fileName.endsWith(".zip")) {
+            fileName = String.format("%s.zip", fileName);
+        }
+        return fileName;
+    }
+
+    /**
+     * Get all the online {@link DataFile} of the given {@link DataObject}
+     * @param dataObject {@link DataObject}
+     * @return online {@link DataFile}s
+     */
+    private Set<DataFile> getOnlineFiles(DataObject dataObject) {
+        Set<DataFile> files = Sets.newHashSet();
         if ((dataObject != null) && (dataObject.getFiles() != null)) {
             dataObject.getFiles().forEach((type, file) -> {
                 if (DataType.RAWDATA.equals(type) && Boolean.TRUE.equals(file.getOnline()) && (file.getUri() != null)) {
@@ -160,6 +190,7 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
                 }
             });
         }
+        return files;
     }
 
     /**
@@ -167,25 +198,80 @@ public class MultiDownloadPlugin implements IEntitiesServicePlugin {
      * @param files {@link DataFile}s to write into the ZIP.
      * @return {@link StreamingResponseBody}
      */
-    private StreamingResponseBody getFilesAsZip(Set<DataFile> files) {
-        return (StreamingResponseBody) outputStream -> {
-            try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
-                for (DataFile file : files) {
-                    String fileName = file.getName();
-                    if (fileName == null) {
-                        fileName = file.getUri().getPath();
-                    }
-                    zos.putNextEntry(new ZipEntry(fileName));
-                    try {
-                        ByteStreams.copy(DownloadUtils.getInputStream(new URL(file.getUri().toString())), zos);
-                    } catch (IOException e) {
-                        LOGGER.error(String.format("Error downloading file %s", file.getUri().toString()), e);
-                    } finally {
-                        zos.closeEntry();
-                    }
+    private StreamingResponseBody getFilesAsZip(Map<DataObject, Set<DataFile>> files) {
+        return (StreamingResponseBody) outputStream -> createZipArchive(outputStream, files);
+    }
+
+    /**
+     * Write a ZIP Archive with the given {@link DataFile}s into the given {@link OutputStream}
+     * @param outputStream {@link OutputStream}
+     * @param dataFiles {@link DataFile}s
+     */
+    private void createZipArchive(OutputStream outputStream, Map<DataObject, Set<DataFile>> dataFiles) {
+        try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
+            for (Entry<DataObject, Set<DataFile>> entry : dataFiles.entrySet()) {
+                DataObject dataobject = entry.getKey();
+                Set<DataFile> dataobjectFiles = entry.getValue();
+                for (DataFile file : dataobjectFiles) {
+                    writeDataFileIntoZip(file, dataobject, zos);
                 }
             }
-        };
+        } catch (IOException e) {
+            LOGGER.error("Error creating zip archive file for download", e);
+        }
+    }
+
+    /**
+     * Add a new file in the streaming ZIP Archive by Writing a {@link DataFile} into the given {@link ZipOutputStream}
+     * @param file {@link DataFile}
+     * @param dataobject {@link DataObject} of the given {@link DataFile}
+     * @param zos {@link ZipOutputStream} to write into
+     */
+    private void writeDataFileIntoZip(DataFile file, DataObject dataobject, ZipOutputStream zos) {
+        String fileName = getDataObjectFileNameForDownload(dataobject, file);
+        try {
+            LOGGER.debug(String.format("Adding file %s into ZIP archive", fileName));
+            zos.putNextEntry(new ZipEntry(fileName));
+            ByteStreams.copy(DownloadUtils.getInputStream(getDataFileURL(file)), zos);
+        } catch (IOException e) {
+            LOGGER.error(String.format("Error downloading file %s", file.getUri().toString()), e);
+        } finally {
+            try {
+                zos.closeEntry();
+            } catch (IOException e) {
+                LOGGER.error(String.format("Error closing new entry %s into ZipOutputStream", fileName), e);
+            }
+        }
+    }
+
+    /**
+     * File name for download is : <dataobjectName/dataFileName>. The dataFile name is the name of {@link DataFile} or name of URI if name is null.
+     * @param dataobject {@link DataObject}
+     * @param datafile {@link DataFile}
+     * @return String fileName
+     */
+    private String getDataObjectFileNameForDownload(DataObject dataobject, DataFile datafile) {
+        String fileName = datafile.getName() != null ? datafile.getName()
+                : FilenameUtils.getName(datafile.getUri().getPath());
+        String dataObjectName = dataobject.getLabel() != null ? dataobject.getLabel().replaceAll(" ", "") : "files";
+        return String.format("%s/%s", dataObjectName, fileName);
+    }
+
+    /**
+     * Generate URL to download the given {@link DataFile}
+     * @param file {@link DataFile} to download
+     * @return {@link URL}
+     * @throws MalformedURLException
+     */
+    private URL getDataFileURL(DataFile file) throws MalformedURLException {
+        URI fileUri = file.getUri();
+        try {
+            fileUri = new URIBuilder(fileUri).addParameter("token", jwtService.getCurrentToken().getJwt()).build();
+            LOGGER.debug(String.format("File url is : %s", fileUri.toString()));
+        } catch (JwtException | URISyntaxException e) {
+            LOGGER.error("Error generating URI with current security token", e);
+        }
+        return fileUri.toURL();
     }
 
 }

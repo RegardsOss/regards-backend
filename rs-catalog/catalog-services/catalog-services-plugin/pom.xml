@@ -38,6 +38,10 @@
 	</parent>
 
 	<dependencies>
+	<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>plugins-domain</artifactId>
