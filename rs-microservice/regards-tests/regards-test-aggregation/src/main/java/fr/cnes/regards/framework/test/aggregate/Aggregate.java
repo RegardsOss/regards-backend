@@ -48,7 +48,7 @@ public class Aggregate {
         LOGGER.info("Starting report aggregation");
 
         // Check argument length
-        if ((args == null) || (args.length != 1)) {
+        if ((args == null) || (args.length != 2)) {
             usage();
             return;
         }
@@ -60,9 +60,16 @@ public class Aggregate {
             usage();
         }
 
+        // Get destination directory and check if it exists
+        Path destinationDir = Paths.get(args[1]);
+        if (!Files.isDirectory(basePath)) {
+            LOGGER.error("Destination directory {} does not exists or is not a directory", destinationDir);
+            usage();
+        }
+
         Aggregator a = new Aggregator(basePath);
         try {
-            a.aggregate();
+            a.aggregate(destinationDir);
         } catch (AggregationException | ReportException e) {
             LOGGER.info("Aborting report aggregation");
             throw e;
@@ -72,7 +79,7 @@ public class Aggregate {
     }
 
     public static void usage() {
-        LOGGER.info("Usage : java -jar {} <basedir>");
+        LOGGER.info("Usage : java -jar {} <basedir> <destinationDir>");
     }
 
 }

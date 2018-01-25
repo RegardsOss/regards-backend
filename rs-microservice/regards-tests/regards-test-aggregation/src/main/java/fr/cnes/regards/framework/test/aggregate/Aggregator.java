@@ -56,14 +56,14 @@ public class Aggregator {
         this.basePath = pBasePath;
     }
 
-    public void aggregate() throws AggregationException, ReportException {
+    public void aggregate(Path destinationDir) throws AggregationException, ReportException {
 
         // From base directory, list all contained directories
         List<Path> jobPaths = getJobPaths();
 
         // Initialize result file
         String radical = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
-        Path result = basePath.resolve(radical + ".xlsx");
+        Path result = destinationDir.resolve(radical + ".xlsx");
 
         LOGGER.info("Aggregating reports in file {}", result);
 
