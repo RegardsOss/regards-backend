@@ -16,18 +16,30 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.modules.jobs.domain.step;
+package fr.cnes.regards.framework.jpa.converters;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
 
 /**
- * Step interface
- *
- * @param <I> input object
- * @param <0> output object
- *
+ * This class allows to convert {@link Path} attribute to {@link String} to persist with JPA
  * @author Marc Sordi
- * @author Sébastien Binda
+ *
  */
-public interface IProcessingStep<I, O> {
+@Converter(autoApply = true)
+public class PathAttributeConverter implements AttributeConverter<Path, String> {
 
-    O execute(I in) throws ProcessingStepException;
+    @Override
+    public String convertToDatabaseColumn(Path attribute) {
+        return attribute == null ? null : attribute.toAbsolutePath().toString();
+    }
+
+    @Override
+    public Path convertToEntityAttribute(String dbData) {
+        return dbData == null ? null : Paths.get(dbData);
+    }
+
 }

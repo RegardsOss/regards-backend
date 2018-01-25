@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -546,8 +547,19 @@ public final class PluginParameterUtils {
         String paramValue = getParameterValue(parameterName, plgConf, dynamicPluginParameters);
 
         // If the parameter value is not defined, get the default parameter value
+        // FIXME
+        // if (Strings.isNullOrEmpty(paramValue) && !plgParamAnnotation.defaultValue().isEmpty()) {
+        // paramValue = plgParamAnnotation.defaultValue();
+        // }
         if (Strings.isNullOrEmpty(paramValue)) {
             paramValue = plgParamAnnotation.defaultValue();
+        }
+
+        // Stop if no value and optional parameter
+        if (Strings.isNullOrEmpty(paramValue) && plgParamAnnotation.optional()) {
+            LOGGER.debug(String.format("Skipping value injection for optional parameter %s. No value specified!",
+                                       parameterName));
+            return;
         }
 
         if (LOGGER.isDebugEnabled()) {
