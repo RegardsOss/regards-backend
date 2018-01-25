@@ -66,6 +66,10 @@
 			<artifactId>spring-hateoas</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.framework.utils</groupId>
+			<artifactId>exception-utils</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test-reporting</artifactId>
 		</dependency>

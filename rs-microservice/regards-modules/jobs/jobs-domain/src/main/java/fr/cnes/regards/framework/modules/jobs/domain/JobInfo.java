@@ -43,6 +43,7 @@ import org.hibernate.annotations.Type;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 
 /**
  * Store Job Information
@@ -193,7 +194,7 @@ public class JobInfo {
         try {
             return (this.resultClassName == null) ? null : GsonUtil.fromString(result, Class.forName(resultClassName));
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e); // NOSONAR
+            throw new RsRuntimeException(e);
         }
     }
 

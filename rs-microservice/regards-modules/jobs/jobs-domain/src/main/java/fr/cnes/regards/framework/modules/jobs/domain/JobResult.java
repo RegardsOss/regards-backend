@@ -25,6 +25,8 @@ import java.net.URISyntaxException;
 
 import org.hibernate.annotations.Type;
 
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+
 /**
  * Job result
  * @author Léo Mieulet
@@ -76,7 +78,7 @@ public class JobResult {
         try {
             return new URI(uri);
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e); // NOSONAR
+            throw new RsRuntimeException(e);
         }
     }
 

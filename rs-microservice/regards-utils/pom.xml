@@ -49,5 +49,6 @@
 	<modules>
 		<module>plugin-utils</module>
 		<module>file-utils</module>
+		<module>exception-utils</module>
 	</modules>
 </project>

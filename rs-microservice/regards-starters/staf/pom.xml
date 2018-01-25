@@ -49,6 +49,10 @@
 			<artifactId>file-utils</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.framework.utils</groupId>
+			<artifactId>exception-utils</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-logging</artifactId>
 		</dependency>

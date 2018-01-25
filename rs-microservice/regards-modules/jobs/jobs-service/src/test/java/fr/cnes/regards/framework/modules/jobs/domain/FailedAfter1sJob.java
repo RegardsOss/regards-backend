@@ -16,7 +16,7 @@ public class FailedAfter1sJob extends AbstractNoParamJob<Void> {
             Thread.sleep(1_000);
             System.out.println("... END WAITING");
             if (true) {
-                throw new RuntimeException("DIE YOU BLOODY RASCAL !");
+                throw new RuntimeException("DIE YOU BLOODY RASCAL !"); // NOSONAR
             }
         } catch (InterruptedException e) {
             System.out.println("INTERRUPTED in sleep");

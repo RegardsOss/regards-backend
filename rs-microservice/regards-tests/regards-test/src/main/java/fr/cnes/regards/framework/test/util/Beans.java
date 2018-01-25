@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Objects;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 
 public final class Beans {
 
@@ -98,7 +99,7 @@ public final class Beans {
             }
             return true;
         } catch (IntrospectionException | IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e); // NOSONAR
+            throw new RsRuntimeException(e);
         }
     }
 

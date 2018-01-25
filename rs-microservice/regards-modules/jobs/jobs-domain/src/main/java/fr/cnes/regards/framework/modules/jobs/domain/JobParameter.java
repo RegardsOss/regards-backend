@@ -6,6 +6,7 @@ import javax.persistence.Embeddable;
 import org.hibernate.annotations.Type;
 
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 
 /**
  * Job parameter ie a name/value pair.
@@ -44,7 +45,7 @@ public class JobParameter {
         try {
             return (className == null) ? null : GsonUtil.fromString(value, Class.forName(className));
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e); // NOSONAR
+            throw new RsRuntimeException(e);
         }
     }
 

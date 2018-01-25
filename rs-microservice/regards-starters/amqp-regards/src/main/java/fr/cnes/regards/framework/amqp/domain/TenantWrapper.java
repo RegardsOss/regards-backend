@@ -22,6 +22,7 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 
 /**
  * Tenant wrapper.
@@ -118,7 +119,7 @@ public class TenantWrapper<T> implements Cloneable {
         try {
             return (TenantWrapper<T>)super.clone();
         } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
+            throw new RsRuntimeException(e);
         }
     }
 }

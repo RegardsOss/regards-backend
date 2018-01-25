@@ -17,6 +17,7 @@ import fr.cnes.regards.framework.staf.domain.ArchiveAccessModeEnum;
 import fr.cnes.regards.framework.staf.domain.STAFArchive;
 import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
 import fr.cnes.regards.framework.staf.exception.STAFException;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 
 /**
  * Le gestionnaire STAF est une classe qui permet de centraliser les informations communes necessaires au traitement des
@@ -104,7 +105,7 @@ public class STAFSessionManager {
                 try {
                     semaphore.acquire();
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e); // NOSONAR
+                    throw new RsRuntimeException(e);
                 }
                 currentReservations.add(getReservationIdentifier());
             }
@@ -112,7 +113,7 @@ public class STAFSessionManager {
             try {
                 semaphore.acquire();
             } catch (InterruptedException e) {
-                throw new RuntimeException(e); // NOSONAR
+                throw new RsRuntimeException(e);
             }
             currentReservations.add(getReservationIdentifier());
         } else { // non blocking unique reservation
