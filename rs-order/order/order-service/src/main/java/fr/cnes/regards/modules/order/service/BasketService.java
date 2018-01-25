@@ -196,7 +196,7 @@ public class BasketService implements IBasketService {
     private void computeSummaryAndUpdateDatasetSelection(BasketDatasetSelection datasetSelection) {
         // Compute summary on dataset selection, need to recompute because of fileTypes differences between
         // previous call to computeDatasetSummary or because of opensearch request on dataset selection that is
-        // a "OR" between previous one and nes item selection
+        // a "OR" between previous one and new item selection
         Map<String, String> dsQueryMap = new ImmutableMap.Builder<String, String>()
                 .put("q", datasetSelection.getOpenSearchRequest()).build();
         DocFilesSummary curDsSelectionSummary = searchClient
