@@ -514,7 +514,7 @@ public class AIPController implements IResourceController<AIP> {
 
     @RequestMapping(path = DOWLOAD_AIP_FILE, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    @ResourceAccess(description = "Dowload one file from a given AIP by checksum.")
+    @ResourceAccess(description = "Dowload one file from a given AIP by checksum.", role = DefaultRole.PUBLIC)
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("ip_id") String aipId,
             @PathVariable("checksum") String checksum) throws ModuleException, IOException {
         // Retrieve file locale path
