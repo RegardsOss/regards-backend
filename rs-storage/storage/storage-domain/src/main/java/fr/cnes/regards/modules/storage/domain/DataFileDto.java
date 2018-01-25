@@ -72,7 +72,15 @@ public class DataFileDto {
             throw new IllegalArgumentException("DataFileDto cannot be created unless the data file is already stored");
         }
         DataFileDto dto = new DataFileDto();
-        BeanUtils.copyProperties(dataFile, dto, "state", "id", "dataStorageUsed", "aipEntity");
+        dto.url = dataFile.getUrl();
+        dto.name = dataFile.getName();
+        dto.checksum = dataFile.getChecksum();
+        dto.algorithm = dataFile.getAlgorithm();
+        dto.dataType = dataFile.getDataType();
+        dto.fileSize = dataFile.getFileSize();
+        dto.mimeType = dataFile.getMimeType();
+        dto.height = dataFile.getHeight();
+        dto.width = dataFile.getWidth();
         // lets compute the online attribute
         if (dataFile.getDataStorageUsed().getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
             dto.setOnline(true);
