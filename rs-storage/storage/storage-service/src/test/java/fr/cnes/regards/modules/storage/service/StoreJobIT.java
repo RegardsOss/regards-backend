@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.storage.service;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -168,22 +167,25 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
 
     @Test
     public void storeQuicklookJobTest() throws IOException {
-        URL source = new URL("file", "", Paths.get("src", "test", "resources", "quicklook.png").toAbsolutePath().toString());
+        URL source = new URL("file",
+                             "",
+                             Paths.get("src", "test", "resources", "quicklook.png").toAbsolutePath().toString());
         AIP aip = getAipFromFile(true);
         aip.addEvent(EventType.SUBMISSION.name(), "submission into our beautiful system");
         StorageDataFile df = new StorageDataFile(source,
-                                 "540e72d5ac22f25c70d9c72b9b36fb96",
-                                 "MD5",
-                                 DataType.QUICKLOOK_SD,
-                                 0L,
-                                 new MimeType("image", "png"),
-                                 aip,
-                                 "quicklook.png");
+                                                 "540e72d5ac22f25c70d9c72b9b36fb96",
+                                                 "MD5",
+                                                 DataType.QUICKLOOK_SD,
+                                                 0L,
+                                                 new MimeType("image", "png"),
+                                                 aip,
+                                                 "quicklook.png");
         df.setDataStorageUsed(localStorageConf);
         IWorkingSubset workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
 
         Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, localStorageConf.getId()));
+        jobParameters
+                .add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, localStorageConf.getId()));
         jobParameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
 
         JobInfo toTest = new JobInfo(0, jobParameters, DEFAULT_USER_EMAIL, StoreDataFilesJob.class.getName());
@@ -191,9 +193,13 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         // now that we synchronously ran the job, lets do some asserts
         StorageJobProgressManager progressManager = job.getProgressManager();
         Assert.assertFalse("there was a problem during the job", progressManager.isProcessError());
-        Assert.assertTrue(progressManager.getHandledDataFile().size()==1);
-        Assert.assertEquals("PNG should have a width of 1123 pixel", 1123, progressManager.getHandledDataFile().toArray(new StorageDataFile[0])[0].getWidth());
-        Assert.assertEquals("PNG should have a height of 764 pixel", 794, progressManager.getHandledDataFile().toArray(new StorageDataFile[0])[0].getHeight());
+        Assert.assertTrue(progressManager.getHandledDataFile().size() == 1);
+        Assert.assertEquals("PNG should have a width of 1123 pixel",
+                            Integer.valueOf(1123),
+                            progressManager.getHandledDataFile().toArray(new StorageDataFile[0])[0].getWidth());
+        Assert.assertEquals("PNG should have a height of 764 pixel",
+                            Integer.valueOf(794),
+                            progressManager.getHandledDataFile().toArray(new StorageDataFile[0])[0].getHeight());
     }
 
     @Test
@@ -237,7 +243,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
 
     private AIP getAipFromFile(boolean quicklook) throws IOException {
         String fileName;
-        if(quicklook) {
+        if (quicklook) {
             fileName = "src/test/resources/aip_quicklook.json";
         } else {
             fileName = "src/test/resources/aip_sample.json";
