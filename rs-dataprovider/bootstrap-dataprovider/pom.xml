@@ -65,6 +65,14 @@
 			<artifactId>microservice-core-starter</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.microservices.administration</groupId>
+			<artifactId>remote-authorities-provider</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.microservices.administration</groupId>
+			<artifactId>remote-tenant-resolver</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>plugins-regards-starter</artifactId>
 		</dependency>
