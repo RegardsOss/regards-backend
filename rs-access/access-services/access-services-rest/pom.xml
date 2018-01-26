@@ -78,10 +78,5 @@
 			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>catalog-services-plugin</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 </project>

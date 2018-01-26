@@ -39,7 +39,6 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
-import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
@@ -51,8 +50,6 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
  * @author Xavier-Alexandre Brochard
  */
 public class BackendForFrontendTestUtils {
-
-    private static Gson gson = new Gson();
 
     /**
      * Default tenant configured in application properties
@@ -70,54 +67,102 @@ public class BackendForFrontendTestUtils {
      * A dummy dataset
      */
     public static final Dataset DATASET_1;
-    static {
-        DATASET_1 = new Dataset(null, DEFAULT_TENANT, "dataset1");
-        DATASET_1.setTags(Sets.newHashSet(DATASET_0.getIpId().toString()));
-    }
 
     /**
      * A dummy dataobject tagging DATASET_0
      */
     public static final DataObject DATAOBJECT;
-    static {
-        DATAOBJECT = new DataObject(null, DEFAULT_TENANT, "dataobject");
-        DATAOBJECT.setTags(Sets.newHashSet(DATASET_0.getIpId().toString(), "string_tag"));
-    }
 
     /**
      * A dummy collection tagging DATASET_1
      */
     public static final Collection COLLECTION;
-    static {
-        COLLECTION = new Collection(null, DEFAULT_TENANT, "collection");
-        COLLECTION.setTags(Sets.newHashSet(DATASET_1.getIpId().toString()));
-    }
 
     /**
      * A dummy document tagging DATASET_0 and DATASET_1
      */
     public static final DataObject DOCUMENT;
-    static {
-        DOCUMENT = new DataObject(null, DEFAULT_TENANT, "document");
-        DOCUMENT.setTags(Sets.newHashSet(DATASET_0.getIpId().toString(), DATASET_1.getIpId().toString()));
-    }
 
     /**
      * The result a call to IJsonSearchClient#searchAll
      */
     public static final ResponseEntity<JsonObject> SEARCH_ALL_RESULT;
-    static {
-        List<AbstractEntity> entities = Lists.newArrayList(BackendForFrontendTestUtils.DATAOBJECT,
-                                                           BackendForFrontendTestUtils.COLLECTION);
-        PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
-        JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
-        SEARCH_ALL_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
-    }
 
     /**
      * The result a call to IJsonSearchClient#searchCollections
      */
     public static final ResponseEntity<JsonObject> SEARCH_COLLECTIONS_RESULT;
+
+    /**
+     * The result a call to IJsonSearchClient#searchDatasets
+     */
+    public static final ResponseEntity<JsonObject> SEARCH_DATASETS_RESULT;
+
+    /**
+     * The result a call to IJsonSearchClient#searchDataobjects
+     */
+    public static final ResponseEntity<JsonObject> SEARCH_DATAOBJECTS_RESULT;
+
+    /**
+     * The result a call to IJsonSearchClient#searchDocuments
+     */
+    public static final ResponseEntity<JsonObject> SEARCH_DOCUMENTS_RESULT;
+
+    /**
+     * A dummy {@link PluginServiceDto} from a {@link PluginConfiguration}
+     */
+    public static final PluginServiceDto PLUGIN_SERVICE_DTO_A;
+
+    /**
+     * A dummy {@link PluginServiceDto} from a {@link PluginConfiguration}
+     */
+    public static final PluginServiceDto PLUGIN_SERVICE_DTO_B;
+
+    /**
+     * A dummy {@link PluginServiceDto} from a {@link UIPluginConfiguration}
+     */
+    public static final PluginServiceDto PLUGIN_SERVICE_DTO_C;
+
+    /**
+     * The services applicable to DATASET_0
+     */
+    public static final ResponseEntity<List<Resource<PluginServiceDto>>> SERVICES_FOR_DATASET_0;
+
+    /**
+     * The services applicable to DATASET_1
+     */
+    public static final ResponseEntity<List<Resource<PluginServiceDto>>> SERVICES_FOR_DATASET_1;
+
+    private static Gson gson = new Gson();
+
+    static {
+        DATASET_1 = new Dataset(null, DEFAULT_TENANT, "dataset1");
+        DATASET_1.setTags(Sets.newHashSet(DATASET_0.getIpId().toString()));
+    }
+
+    static {
+        DATAOBJECT = new DataObject(null, DEFAULT_TENANT, "dataobject");
+        DATAOBJECT.setTags(Sets.newHashSet(DATASET_0.getIpId().toString(), "string_tag"));
+    }
+
+    static {
+        COLLECTION = new Collection(null, DEFAULT_TENANT, "collection");
+        COLLECTION.setTags(Sets.newHashSet(DATASET_1.getIpId().toString()));
+    }
+
+    static {
+        DOCUMENT = new DataObject(null, DEFAULT_TENANT, "document");
+        DOCUMENT.setTags(Sets.newHashSet(DATASET_0.getIpId().toString(), DATASET_1.getIpId().toString()));
+    }
+
+    static {
+        List<AbstractEntity> entities = Lists
+                .newArrayList(BackendForFrontendTestUtils.DATAOBJECT, BackendForFrontendTestUtils.COLLECTION);
+        PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
+        JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
+        SEARCH_ALL_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
+    }
+
     static {
         List<AbstractEntity> entities = Lists.newArrayList(BackendForFrontendTestUtils.COLLECTION);
         PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
@@ -125,22 +170,14 @@ public class BackendForFrontendTestUtils {
         SEARCH_COLLECTIONS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
 
-    /**
-     * The result a call to IJsonSearchClient#searchDatasets
-     */
-    public static final ResponseEntity<JsonObject> SEARCH_DATASETS_RESULT;
     static {
-        List<AbstractEntity> entities = Lists.newArrayList(BackendForFrontendTestUtils.DATASET_0,
-                                                           BackendForFrontendTestUtils.DATASET_1);
+        List<AbstractEntity> entities = Lists
+                .newArrayList(BackendForFrontendTestUtils.DATASET_0, BackendForFrontendTestUtils.DATASET_1);
         PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
         JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
         SEARCH_DATASETS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
 
-    /**
-     * The result a call to IJsonSearchClient#searchDataobjects
-     */
-    public static final ResponseEntity<JsonObject> SEARCH_DATAOBJECTS_RESULT;
     static {
         List<AbstractEntity> entities = Lists.newArrayList(BackendForFrontendTestUtils.DATAOBJECT);
         PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
@@ -148,10 +185,6 @@ public class BackendForFrontendTestUtils {
         SEARCH_DATAOBJECTS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
 
-    /**
-     * The result a call to IJsonSearchClient#searchDocuments
-     */
-    public static final ResponseEntity<JsonObject> SEARCH_DOCUMENTS_RESULT;
     static {
         List<AbstractEntity> entities = Lists.newArrayList(BackendForFrontendTestUtils.DOCUMENT);
         PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
@@ -159,10 +192,6 @@ public class BackendForFrontendTestUtils {
         SEARCH_DOCUMENTS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
 
-    /**
-     * A dummy {@link PluginServiceDto} from a {@link PluginConfiguration}
-     */
-    public static final PluginServiceDto PLUGIN_SERVICE_DTO_A;
     static {
         PluginMetaData metaData = new PluginMetaData();
         metaData.getInterfaceNames().add(IService.class.getName());
@@ -172,10 +201,6 @@ public class BackendForFrontendTestUtils {
         PLUGIN_SERVICE_DTO_A = PluginServiceDto.fromPluginConfigurationDto(pluginConfigurationDto);
     }
 
-    /**
-     * A dummy {@link PluginServiceDto} from a {@link PluginConfiguration}
-     */
-    public static final PluginServiceDto PLUGIN_SERVICE_DTO_B;
     static {
         PluginMetaData metaData = new PluginMetaData();
         metaData.getInterfaceNames().add(IService.class.getName());
@@ -185,10 +210,6 @@ public class BackendForFrontendTestUtils {
         PLUGIN_SERVICE_DTO_B = PluginServiceDto.fromPluginConfigurationDto(pluginConfigurationDto);
     }
 
-    /**
-     * A dummy {@link PluginServiceDto} from a {@link UIPluginConfiguration}
-     */
-    public static final PluginServiceDto PLUGIN_SERVICE_DTO_C;
     static {
         UIPluginConfiguration uiPluginConfiguration = new UIPluginConfiguration();
         UIPluginDefinition pluginDefinition = new UIPluginDefinition();
@@ -201,10 +222,6 @@ public class BackendForFrontendTestUtils {
         PLUGIN_SERVICE_DTO_C = PluginServiceDto.fromUIPluginConfiguration(uiPluginConfiguration);
     }
 
-    /**
-     * The services applicable to DATASET_0
-     */
-    public static final ResponseEntity<List<Resource<PluginServiceDto>>> SERVICES_FOR_DATASET_0;
     static {
         List<PluginServiceDto> asList = Lists.newArrayList(BackendForFrontendTestUtils.PLUGIN_SERVICE_DTO_A,
                                                            BackendForFrontendTestUtils.PLUGIN_SERVICE_DTO_C);
@@ -212,10 +229,6 @@ public class BackendForFrontendTestUtils {
         SERVICES_FOR_DATASET_0 = new ResponseEntity<>(asResources, HttpStatus.OK);
     }
 
-    /**
-     * The services applicable to DATASET_1
-     */
-    public static final ResponseEntity<List<Resource<PluginServiceDto>>> SERVICES_FOR_DATASET_1;
     static {
         List<PluginServiceDto> asList = Lists.newArrayList(BackendForFrontendTestUtils.PLUGIN_SERVICE_DTO_B);
         List<Resource<PluginServiceDto>> asResources = HateoasUtils.wrapList(asList);

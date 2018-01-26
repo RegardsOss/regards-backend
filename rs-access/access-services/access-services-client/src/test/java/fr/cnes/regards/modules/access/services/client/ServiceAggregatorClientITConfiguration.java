@@ -34,7 +34,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
-import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
 
 /**
  * Module-wide configuration for Integration Tests
@@ -49,7 +48,8 @@ public class ServiceAggregatorClientITConfiguration {
         ICatalogServicesClient client = Mockito.mock(ICatalogServicesClient.class);
 
         ResponseEntity<List<Resource<PluginConfigurationDto>>> result = new ResponseEntity<List<Resource<PluginConfigurationDto>>>(
-                HateoasUtils.wrapList(Lists.newArrayList(dummyPluginConfigurationDto())), HttpStatus.OK);
+                HateoasUtils.wrapList(Lists.newArrayList(dummyPluginConfigurationDto())),
+                HttpStatus.OK);
 
         Mockito.when(client.retrieveServices(Mockito.anyString(), Mockito.any())).thenReturn(result);
 

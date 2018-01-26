@@ -40,7 +40,6 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
-import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
 
 /**
  * Module-wide configuration for tests.
@@ -54,19 +53,21 @@ public class AccessServicesITConfiguration {
 
     private static final String LABEL = "the label";
 
-    private static URL ICON_URL;
-
     private static final Set<ServiceScope> APPLICATION_MODES = Sets.newHashSet(ServiceScope.MANY);
 
     private static final Set<EntityType> ENTITY_TYPES = Sets.newHashSet(EntityType.COLLECTION);
+
+    private static URL ICON_URL;
 
     @Bean
     public ICatalogServicesClient catalogServicesClient() {
         ICatalogServicesClient client = Mockito.mock(ICatalogServicesClient.class);
 
         Mockito.when(client.retrieveServices("datasetFromConfigClass", ServiceScope.MANY))
-                .thenReturn(new ResponseEntity<List<Resource<PluginConfigurationDto>>>(
-                        HateoasUtils.wrapList(Lists.newArrayList(dummyPluginConfigurationDto())), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<List<Resource<PluginConfigurationDto>>>(HateoasUtils
+                                                                                               .wrapList(Lists.newArrayList(
+                                                                                                       dummyPluginConfigurationDto())),
+                                                                                       HttpStatus.OK));
 
         return client;
     }
