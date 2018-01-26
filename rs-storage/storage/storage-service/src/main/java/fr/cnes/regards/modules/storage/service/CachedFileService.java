@@ -46,6 +46,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
@@ -328,7 +329,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         } catch (MalformedURLException e) {
             // this should not happens
             LOG.error(e.getMessage(), e);
-            throw new RuntimeException(e);
+            throw new RsRuntimeException(e);
         }
     }
 
