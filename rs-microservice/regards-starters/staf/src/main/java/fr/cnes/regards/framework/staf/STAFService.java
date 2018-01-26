@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.staf.domain.ArchiveAccessModeEnum;
 import fr.cnes.regards.framework.staf.domain.STAFArchive;
 import fr.cnes.regards.framework.staf.domain.STAFArchivingFlow;
@@ -176,15 +177,15 @@ public class STAFService {
                 // Index de decompte des fichiers d'un flot
                 int fileIndex;
 
-                int maxFilesPerSession =
-                        conf.getMaxStreamFilesRestitutionMode() * conf.getMaxSessionStreamsRestitutionMode();
+                int maxFilesPerSession = conf.getMaxStreamFilesRestitutionMode()
+                        * conf.getMaxSessionStreamsRestitutionMode();
                 // Calcule le nombre de sessions a utiliser pour la restitution.
                 // Ce nombre ne correspond pas directement au nombre de sessions
                 // supplementaires a ouvrir puisque le service dispose d'une session dediee.
                 sessionNb = (int) Math.ceil(pStafFilePathList.size() / (double) maxFilesPerSession);
                 if (sessionNb > 0) {
-                    sessionsIdentifiers = stafManager
-                            .getReservations(sessionNb - 1, false, ArchiveAccessModeEnum.RESTITUTION_MODE);
+                    sessionsIdentifiers = stafManager.getReservations(sessionNb - 1, false,
+                                                                      ArchiveAccessModeEnum.RESTITUTION_MODE);
                     // Le nombre de sessions reellement alloue peut etre inferieur
                     // au nombre de sessions demandees
                     sessionNb = sessionsIdentifiers.size() + 1;
@@ -488,7 +489,7 @@ public class STAFService {
             String pPassword, List<STAFArchivingFlow> pFilesFlow, String pDirectory, List<String> pArchivedFilesList,
             boolean pReplace) {
         return new STAFBackgroundSessionArchive(pSessionId, pProject, pPassword, pFilesFlow, pDirectory,
-                                                pArchivedFilesList, pReplace, stafManager.getConfiguration());
+                pArchivedFilesList, pReplace, stafManager.getConfiguration());
     }
 
     /**
@@ -497,7 +498,7 @@ public class STAFService {
     protected STAFBackgroundSessionRetrieve getBackgroundSessionRetrieve(Integer pSessionId, String pProject,
             String pPassword, HashMap<String, String> pFiles) {
         return new STAFBackgroundSessionRetrieve(pSessionId, pProject, pPassword, pFiles,
-                                                 stafManager.getConfiguration(), getCollectListener());
+                stafManager.getConfiguration(), getCollectListener());
     }
 
     /**
@@ -576,8 +577,8 @@ public class STAFService {
             // Number of sessions to open
             int sessionNbNeed = totalFlow / maxSessionsStream;
             if (sessionNbNeed > 0) {
-                sessionsIdentifiers = stafManager
-                        .getReservations(sessionNbNeed - 1, false, ArchiveAccessModeEnum.ARCHIVE_MODE);
+                sessionsIdentifiers = stafManager.getReservations(sessionNbNeed - 1, false,
+                                                                  ArchiveAccessModeEnum.ARCHIVE_MODE);
             }
 
             // Launch the archiving of computed lots
@@ -643,6 +644,36 @@ public class STAFService {
         }
         // Return several flow of files
         return flowList;
+    }
+
+    /**
+     * Get the first available STAFNode to add new files for the given STAFNode.
+     * A STAFNode is available if the number of files in it does not exceed the maximum configured.
+     * @param pStafNode {@link Path} original STAFNode path.
+     * @return {@link Path} available stafNode path
+     * @throws STAFException
+     */
+    public Path getFirstAvailableStafNode(Path pStafNode) throws STAFException {
+        STAFConfiguration conf = stafManager.getConfiguration();
+        int count = countFilesInStafNode(pStafNode.toString());
+        logger.info(String.format("[STAF] Number of files in staf node %s : %d", pStafNode.toString(), count));
+        int index = 0;
+        String availableStafNode = pStafNode.toString();
+        while (count > conf.getMaxNumberOfFilesPerNode()) {
+            index++;
+            availableStafNode = String.format("%s_%d", pStafNode, index);
+            count = countFilesInStafNode(availableStafNode);
+            logger.info(String.format("[STAF] Number of files in staf node %s : %d", availableStafNode, count));
+        }
+        if (index > 0) {
+            logger.info(String.format("[STAF] STAF Node %s is full. First available node is %s.", pStafNode.toString(),
+                                      availableStafNode));
+        }
+        return Paths.get(availableStafNode);
+    }
+
+    public int countFilesInStafNode(String pStafNode) throws STAFException {
+        return mainSession.staffCount(pStafNode);
     }
 
     public List<String> getStatistics() throws STAFException {
