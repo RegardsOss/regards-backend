@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
 
 /**
  * Test des plugins DORIS1b SPOT2
@@ -53,7 +53,7 @@ public class Spot2Doris1bPluginTest extends AbstractProductMetadataPluginTest {
     }
 
     @Override
-    public IGenerateSIPPlugin buildPlugin() throws ModuleException {
+    public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
         PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Spot2ProductMetadataPlugin");
 
         return pluginService.getPlugin(pluginConfiguration.getId());
@@ -61,9 +61,9 @@ public class Spot2Doris1bPluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public void initTestList() {
-        //        addPluginTestDef("DA_TC_SPOT2_DORIS1B_MOE_CDDIS", "spot2/doris1b_moe_cddis");
-        //        addPluginTestDef("DA_TC_SPOT2_DORIS1B_MOE_CDDIS_COM", "spot2/doris1b_moe_cddis_com");
-        //        addPluginTestDef("DA_TC_SPOT2_DORIS1B_POE_CDDIS_COM", "spot2/doris1b_poe_cddis_com");
+        // addPluginTestDef("DA_TC_SPOT2_DORIS1B_MOE_CDDIS", "spot2/doris1b_moe_cddis");
+        // addPluginTestDef("DA_TC_SPOT2_DORIS1B_MOE_CDDIS_COM", "spot2/doris1b_moe_cddis_com");
+        // addPluginTestDef("DA_TC_SPOT2_DORIS1B_POE_CDDIS_COM", "spot2/doris1b_poe_cddis_com");
     }
 
     @Override

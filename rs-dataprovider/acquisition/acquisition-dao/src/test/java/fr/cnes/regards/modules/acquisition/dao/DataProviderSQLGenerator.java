@@ -22,8 +22,8 @@ package fr.cnes.regards.modules.acquisition.dao;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
 
 /**
+ * Generate data provider database
  * @author Christophe Mertz
- *
  */
 public class DataProviderSQLGenerator extends AbstractScriptGeneratorTest {
 

@@ -23,15 +23,21 @@ import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
+import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
 /**
- * 
+ *
  * @author Christophe Mertz
- * 
+ *
  */
 public interface IProductService {
 
@@ -43,16 +49,16 @@ public interface IProductService {
     Page<Product> retrieveAll(Pageable page);
 
     /**
-     * Retrieve one specified {@link Product}
+     * Load one specified {@link Product}
      * @param id {@link Product}
      */
-    Product retrieve(Long id);
+    Product loadProduct(Long id) throws ModuleException;
 
     /**
      * Retrieve one specified {@link Product}
      * @param productName a product name
      */
-    Product retrieve(String productName);
+    Product retrieve(String productName) throws ModuleException;
 
     /**
      * Delete one specified {@link Product}
@@ -66,62 +72,62 @@ public interface IProductService {
      */
     void delete(Product product);
 
-    Set<Product> findByStatus(ProductStatus status);
-
-    Set<Product> findBySendedAndStatusIn(Boolean sended, ProductStatus... status);
-
-    Set<String> findDistinctIngestChainBySendedAndStatusIn(Boolean sended, ProductStatus... status);
-
-    Set<String> findDistinctSessionByIngestChainAndSendedAndStatusIn(String ingestChain, Boolean sended,
-            ProductStatus... status);
-
-    Page<Product> findAllByIngestChainAndSessionAndSendedAndStatusIn(String ingestChain, String session, Boolean sended,
-            Pageable pageable, ProductStatus... status);
-
     /**
-     * Calcul the {@link ProductStatus} :
-     * 
-     * <li>{@link ProductStatus#ACQUIRING} : the initial state, at least a mandatory file is missing</br></br>
-     * 
-     * <li>{@link ProductStatus#COMPLETED} : all mandatory files is acquired</br></br>
-     * 
-     * <li>{@link ProductStatus#FINISHED} : the mandatory and optional files are acquired</br></br>
-     * 
-     * <li>{@link ProductStatus#SAVED} : the {@link Product} is saved by the microservice Ingest</br></br>
-     * 
-     * <li>{@link ProductStatus#ERROR} : the {@link Product} is in error</br></br>
-     * 
-     * @param product the {@link Product}
+     * @return list of {@link ProductState#FINISHED} or {@link ProductState#COMPLETED} products for specified
+     *         acquisition chain <b>not already scheduled</b>.
      */
-    void calcProductStatus(Product product);
+    Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain chain);
 
     /**
-     * Get the {@link Product} corresponding to the productName and calculate the {@link ProductStatus}.<br>
-     * If it does not exists, create this {@link Product}.
-     * 
+     * Schedule {@link Product} SIP generation
+     * @param product product for which SIP generation has to be scheduled
+     * @param chain related chain reference
+     * @return scheduled {@link JobInfo}
+     */
+    JobInfo scheduleProductSIPGeneration(Product product, AcquisitionProcessingChain chain);
+
+    Set<Product> findByStatus(ProductState status);
+
+    /**
+     * Get the {@link Product} corresponding to the productName and calculate the {@link ProductState}.<br>
+     * If it does not exists, create this {@link Product}. Create or update the product in database.
+     *
      * @param session the current session
      * @param acqFile the {@link AcquisitionFile} to add to the {@link Product}
      * @param productName the {@link Product} name
-     * @param metaProduct the {@link MetaProduct} of the {@link Product}
-     * @param ingestChain the current ingest processing chain
+     * @param processingChain the related {@link AcquisitionProcessingChain}
      * @return the existing {@link Product} corresponding to the product name
      */
     Product linkAcquisitionFileToProduct(String session, AcquisitionFile acqFile, String productName,
-            MetaProduct metaProduct, String ingestChain);
+            AcquisitionProcessingChain processingChain) throws ModuleException;
 
-    //    /**
-    //     * Set the {@link SIP} to the {@link Product} and ppersist it.
-    //     * @param product the current {@link Product}
-    //     * @param sip the {@link SIP}
-    //     */
-    //    void setSipAndSave(Product product, SIP sip);
+    /**
+     * @param ingestChain ingest processing chain name
+     * @param session ingest session name
+     * @return the first page of products with state {@link ProductSIPState#SUBMISSION_SCHEDULED}
+     *
+     */
+    Page<Product> findProductsToSubmit(String ingestChain, String session);
 
-    //    /**
-    //     * Mark the {@link Product} as send to ingest and persists it.
-    //     * @param sipId the {@link Product} identifier
-    //     */
-    //    void setProductAsSend(String sipId);
-    //    
-    //    void setStatusAndSaved(String sipId, ProductStatus status);
+    /**
+     * Schedule {@link SIPSubmissionJob}s according to available SIPs
+     */
+    void scheduleProductSIPSubmission();
 
+    /**
+     * Handle product SIP submission failure
+     */
+    void handleProductSIPSubmissionFailure(JobEvent jobEvent);
+
+    /**
+     * Retry product SIP submission for resetting product SIP state to {@link ProductSIPState#GENERATED}
+     */
+    void retryProductSIPSubmission();
+
+    /**
+     * Update a product state
+     * @param ipId ipId of the product
+     * @param sipState new SIP state
+     */
+    void updateProductSIPState(String ipId, ISipState sipState);
 }

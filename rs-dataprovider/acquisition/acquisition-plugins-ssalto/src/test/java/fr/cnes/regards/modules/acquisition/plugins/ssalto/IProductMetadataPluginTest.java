@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 
 public interface IProductMetadataPluginTest {
 
@@ -40,8 +40,8 @@ public interface IProductMetadataPluginTest {
 
     /**
      * Permet d'initialiser le plugin a tester.
-     * 
+     *
      * @return
      */
-    public IGenerateSIPPlugin buildPlugin() throws ModuleException;
+    public ISipGenerationPlugin buildPlugin() throws ModuleException;
 }

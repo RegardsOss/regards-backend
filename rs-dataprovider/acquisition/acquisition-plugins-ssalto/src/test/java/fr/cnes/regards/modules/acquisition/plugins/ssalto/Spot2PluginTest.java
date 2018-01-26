@@ -27,11 +27,11 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
 
 /**
  * Test des plugins SPOT2
- * 
+ *
  * @author Christophe Mertz
  */
 public class Spot2PluginTest extends AbstractProductMetadataPluginTest {
@@ -53,7 +53,7 @@ public class Spot2PluginTest extends AbstractProductMetadataPluginTest {
     }
 
     @Override
-    public IGenerateSIPPlugin buildPlugin() throws ModuleException {
+    public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
         PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Spot2ProductMetadataPlugin");
 
         return pluginService.getPlugin(pluginConfiguration.getId());

@@ -27,9 +27,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.dao.IExecAcquisitionProcessingChainRepository;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 
 /**
  *
@@ -43,7 +45,7 @@ public class ExecAcquisitionProcessingChainService implements IExecAcquisitionPr
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(ExecAcquisitionProcessingChainService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExecAcquisitionProcessingChainService.class);
 
     /**
      * {@link IExecAcquisitionProcessingChainRepository} bean
@@ -75,7 +77,8 @@ public class ExecAcquisitionProcessingChainService implements IExecAcquisitionPr
     }
 
     @Override
-    public Page<ExecAcquisitionProcessingChain> findByChainGeneration(AcquisitionProcessingChain chainGeneration, Pageable pageable) {
+    public Page<ExecAcquisitionProcessingChain> findByChainGeneration(AcquisitionProcessingChain chainGeneration,
+            Pageable pageable) {
         return processRepository.findByChainGeneration(chainGeneration, pageable);
     }
 
@@ -86,8 +89,8 @@ public class ExecAcquisitionProcessingChainService implements IExecAcquisitionPr
     }
 
     @Override
-    public Page<ExecAcquisitionProcessingChain> findByStartDateAfterAndStopDateBefore(OffsetDateTime start, OffsetDateTime stop,
-            Pageable pageable) {
+    public Page<ExecAcquisitionProcessingChain> findByStartDateAfterAndStopDateBefore(OffsetDateTime start,
+            OffsetDateTime stop, Pageable pageable) {
         return processRepository.findByStartDateAfterAndStopDateBefore(start, stop, pageable);
     }
 
@@ -97,28 +100,13 @@ public class ExecAcquisitionProcessingChainService implements IExecAcquisitionPr
     }
 
     @Override
-    public ExecAcquisitionProcessingChain findBySession(String session) {
-        return processRepository.findBySession(session);
-    }
-
-    @Override
-    public void updateExecProcessingChain(String session, int nbSipCreated, int nbSipStored, int nbSipError) {
-        ExecAcquisitionProcessingChain execProcessingChain = this.findBySession(session);
-        if (execProcessingChain != null) {
-            LOG.info("[{}] add nb SIP in process : created:{} - stored:{} - error:{}", session, nbSipCreated,
-                     nbSipStored, nbSipError);
-            execProcessingChain.setNbSipCreated(execProcessingChain.getNbSipCreated() + nbSipCreated);
-            execProcessingChain.setNbSipStored(execProcessingChain.getNbSipStored() + nbSipStored);
-            execProcessingChain.setNbSipError(execProcessingChain.getNbSipError() + nbSipError);
-
-            if (execProcessingChain.getNbSipCreated() == execProcessingChain.getNbSipStored()
-                    + execProcessingChain.getNbSipError()) {
-                execProcessingChain.setStopDate(OffsetDateTime.now());
-                LOG.info("[{}] set stop date in process : {}", execProcessingChain.getStopDate().toString());
-            }
-
-            this.save(execProcessingChain);
+    public ExecAcquisitionProcessingChain findBySession(String session) throws ModuleException {
+        ExecAcquisitionProcessingChain chain = processRepository.findBySession(session);
+        if (chain == null) {
+            String message = String.format("Unknown exec processing chain for session %s", session);
+            LOGGER.error(message);
+            throw new EntityNotFoundException(message);
         }
+        return chain;
     }
-
 }

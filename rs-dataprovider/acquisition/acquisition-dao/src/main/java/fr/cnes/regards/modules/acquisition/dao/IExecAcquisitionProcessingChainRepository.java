@@ -28,8 +28,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.ExecAcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 
 /**
  * {@link ExecAcquisitionProcessingChain} repository
@@ -41,12 +41,15 @@ public interface IExecAcquisitionProcessingChainRepository extends JpaRepository
 
     @Lock(LockModeType.PESSIMISTIC_READ)
     ExecAcquisitionProcessingChain findBySession(String session);
-    
-    Page<ExecAcquisitionProcessingChain> findByChainGeneration(AcquisitionProcessingChain chainGeneration, Pageable pageable);
-    
-    Page<ExecAcquisitionProcessingChain> findByStartDateBetween(OffsetDateTime start, OffsetDateTime stop, Pageable pageable);
-    
-    Page<ExecAcquisitionProcessingChain> findByStartDateAfterAndStopDateBefore(OffsetDateTime start, OffsetDateTime stop, Pageable pageable);
-    
+
+    Page<ExecAcquisitionProcessingChain> findByChainGeneration(AcquisitionProcessingChain chainGeneration,
+            Pageable pageable);
+
+    Page<ExecAcquisitionProcessingChain> findByStartDateBetween(OffsetDateTime start, OffsetDateTime stop,
+            Pageable pageable);
+
+    Page<ExecAcquisitionProcessingChain> findByStartDateAfterAndStopDateBefore(OffsetDateTime start,
+            OffsetDateTime stop, Pageable pageable);
+
     Page<ExecAcquisitionProcessingChain> findByStartDateAfter(OffsetDateTime start, Pageable pageable);
 }

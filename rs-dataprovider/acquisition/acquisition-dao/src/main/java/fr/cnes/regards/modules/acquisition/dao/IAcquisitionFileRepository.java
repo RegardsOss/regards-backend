@@ -24,23 +24,25 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 
 /**
  * {@link AcquisitionFile} repository
  *
  * @author Christophe Mertz
+ * @author Marc Sordi
  */
 @Repository
 public interface IAcquisitionFileRepository extends JpaRepository<AcquisitionFile, Long> {
 
-    List<AcquisitionFile> findByMetaFile(MetaFile metaFile);
+    /**
+     * Search all acquisition files for specified filters
+     * @param state {@link AcquisitionFileState} filter
+     * @param fileInfo {@link AcquisitionFileInfo} filter
+     * @return
+     */
+    List<AcquisitionFile> findByStateAndFileInfo(AcquisitionFileState state, AcquisitionFileInfo fileInfo);
 
-    List<AcquisitionFile> findByStatus(AcquisitionFileStatus status);
-
-    List<AcquisitionFile> findByStatusAndMetaFile(AcquisitionFileStatus status, MetaFile metaFile);
-
-    List<AcquisitionFile> findByProduct(Product product);
+    List<AcquisitionFile> findByState(AcquisitionFileState state);
 }
