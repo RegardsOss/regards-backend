@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.time.OffsetDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +39,7 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequestException;
@@ -116,10 +120,15 @@ public class BasketController implements IResourceController<Basket> {
     public ResponseEntity<Resource<Basket>> removeDatedItemsSelection(
             @PathVariable("datasetSelectionId") Long dsSelectionId,
             @PathVariable("itemsSelectionDate") String itemsSelectionDateStr) throws EmptyBasketException {
-        OffsetDateTime itemsSelectionDate = OffsetDateTimeAdapter.parse(itemsSelectionDateStr);
-        Basket basket = basketService.find(authResolver.getUser());
-        return ResponseEntity
-                .ok(toResource(basketService.removeDatedItemsSelection(basket, dsSelectionId, itemsSelectionDate)));
+        try {
+            OffsetDateTime itemsSelectionDate = OffsetDateTimeAdapter
+                    .parse(URLDecoder.decode(itemsSelectionDateStr, Charset.defaultCharset().toString()));
+            Basket basket = basketService.find(authResolver.getUser());
+            return ResponseEntity
+                    .ok(toResource(basketService.removeDatedItemsSelection(basket, dsSelectionId, itemsSelectionDate)));
+        } catch (UnsupportedEncodingException e) {
+            throw new RsRuntimeException(e);
+        }
     }
 
     /**
