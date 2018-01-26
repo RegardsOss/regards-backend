@@ -150,6 +150,7 @@ public class BasketService implements IBasketService {
     public Basket removeDatedItemsSelection(Basket basket, Long datasetId, OffsetDateTime itemsSelectionDate) {
         for (BasketDatasetSelection dsSelection : basket.getDatasetSelections()) {
             if (dsSelection.getId().equals(datasetId)) {
+                // Search for item selections to remove
                 for (Iterator<BasketDatedItemsSelection> i = dsSelection.getItemsSelections().iterator(); i
                         .hasNext(); ) {
                     if (i.next().getDate().equals(itemsSelectionDate)) {
@@ -157,6 +158,7 @@ public class BasketService implements IBasketService {
                         break;
                     }
                 }
+                computeSummaryAndUpdateDatasetSelection(dsSelection);
                 repos.save(basket);
                 break;
             }
