@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.utils.file.compression.CompressionTypeEnum;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.FileNameFinder;
@@ -47,9 +47,8 @@ import fr.cnes.regards.modules.acquisition.finder.MultipleFileNameFinder;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 import fr.cnes.regards.modules.acquisition.tools.CalculusTypeEnum;
 
-
 /**
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -82,8 +81,7 @@ public class MultipleFileNameFinderTest {
         AcquisitionFile testFile = initAcquisitionFile(tclogZipFileName);
 
         Map<File, File> fileMap = new HashMap<>();
-        fileMap.put(new File(testFile.getAcquisitionInformations().getAcquisitionDirectory(), testFile.getFileName()),
-                    null);
+        fileMap.put(testFile.getFilePath().toAbsolutePath().toFile(), null);
 
         MultipleFileNameFinder fileNameFinder = new MultipleFileNameFinder();
         fileNameFinder.setFileInZipNamePattern(filenamePattern);
@@ -106,8 +104,7 @@ public class MultipleFileNameFinderTest {
         AcquisitionFile testFile = initAcquisitionFile(tclogZipFileName);
 
         Map<File, ?> fileMap = new HashMap<>();
-        fileMap.put(new File(testFile.getAcquisitionInformations().getAcquisitionDirectory(), testFile.getFileName()),
-                    null);
+        fileMap.put(testFile.getFilePath().toAbsolutePath().toFile(), null);
 
         MultipleFileNameFinder fileNameFinder = new MultipleFileNameFinder();
         fileNameFinder.setFormatRead(DATE_FORMAT);
@@ -134,8 +131,7 @@ public class MultipleFileNameFinderTest {
         AcquisitionFile testFile = initAcquisitionFile(tclogZipFileName);
 
         Map<File, ?> fileMap = new HashMap<>();
-        fileMap.put(new File(testFile.getAcquisitionInformations().getAcquisitionDirectory(), testFile.getFileName()),
-                    null);
+        fileMap.put(testFile.getFilePath().toAbsolutePath().toFile(), null);
 
         MultipleFileNameFinder fileNameFinder = new MultipleFileNameFinder();
         fileNameFinder.setFormatRead(DATE_FORMAT);
@@ -160,21 +156,20 @@ public class MultipleFileNameFinderTest {
     @After
     public void clean() throws IOException {
         Path rootPath = Paths.get(FINDER_PATH);
-        Files.walk(rootPath).filter(p -> !p.toFile().getName().endsWith(rootPath.getFileName().toString())) // do not delete the root path
+        Files.walk(rootPath).filter(p -> !p.toFile().getName().endsWith(rootPath.getFileName().toString())) // do not
+                                                                                                            // delete
+                                                                                                            // the root
+                                                                                                            // path
                 .filter(p -> !p.toFile().getName().equals(tclogZipFileName)).sorted(Comparator.reverseOrder())
                 .map(Path::toFile).peek(f -> LOGGER.debug(f.getName())).forEach(File::delete);
     }
 
-    private AcquisitionFile initAcquisitionFile(String pFileName) {
-        AcquisitionFile acquisitionFile = new AcquisitionFile();
+    private AcquisitionFile initAcquisitionFile(String fileName) {
 
-        FileAcquisitionInformations acquisitionInformations = new FileAcquisitionInformations();
-        acquisitionInformations.setAcquisitionDirectory(FINDER_PATH);
-        acquisitionFile.setAcquisitionInformations(acquisitionInformations);
-
-        acquisitionFile.setFileName(pFileName);
-
-        return acquisitionFile;
+        AcquisitionFile acqFile = new AcquisitionFile();
+        acqFile.setFilePath(Paths.get(FINDER_PATH, fileName));
+        acqFile.setState(AcquisitionFileState.ACQUIRED);
+        return acqFile;
     }
 
     private PluginConfigurationProperties initPluginConfigurationProperties() {
