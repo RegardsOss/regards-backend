@@ -18,15 +18,22 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.check.Jason3LtmP3ProductPlugin;
 
 /**
@@ -40,29 +47,23 @@ public class Jason3LtmCheckingPluginTest {
     @Requirement("REGARDS_DSL_ING_SSALTO_070")
     @Purpose("A plugin can generate a SIP for a Jason3's LTM products")
     @Test
-    public void testProduct() throws ModuleException {
-        Jason3LtmP3ProductPlugin plugin = new Jason3LtmP3ProductPlugin();
+    public void testProductPlugin() throws ModuleException {
+        // Plugin parameters
+        List<PluginParameter> parameters = PluginParametersFactory.build().getParameters();
 
-        String fileNameTest = "PJ3_FI1_AXXCNE20081202_110021_20080615_115927_20081201_120000";
-        String ProductNameTest = "PJ3_I1_AXXCNE20081202_110021_20080615_115927_20081201_120000";
+        // Plugin and plugin interface packages
+        List<String> prefixes = Arrays.asList(IProductPlugin.class.getPackage().getName(),
+                                              Jason3LtmP3ProductPlugin.class.getPackage().getName());
 
-        File testFile = new File("src/test/resources/income/data/JASON3/LTM", fileNameTest);
-        Assert.assertTrue(plugin.runPlugin(testFile, "DA_TC_JASON3_LTM"));
-        Assert.assertEquals(ProductNameTest, plugin.getProductName());
+        // Instantiate plugin
+        IProductPlugin plugin = PluginUtils.getPlugin(parameters, Jason3LtmP3ProductPlugin.class, prefixes,
+                                                      new HashMap<>());
+        Assert.assertNotNull(plugin);
+
+        // Run plugin
+        Path filePath = Paths
+                .get("src/test/resources/income/data/JASON3/LTM/PJ3_FI1_AXXCNE20081202_110021_20080615_115927_20081201_120000");
+        String productName = plugin.getProductName(filePath);
+        Assert.assertEquals("PJ3_I1_AXXCNE20081202_110021_20080615_115927_20081201_120000", productName);
     }
-
-    @Requirement("REGARDS_DSL_ING_SSALTO_070")
-    @Purpose("A plugin can generate a SIP for a Jason3's LTM products")
-    @Test(expected = ReadFileException.class)
-    public void testProductFailed() throws ModuleException {
-        Jason3LtmP3ProductPlugin plugin = new Jason3LtmP3ProductPlugin();
-
-        String fileNameTest = "PJ3_FI1_AXXCNE20081202_110021_20080615_115927_20081201_129999";
-
-        File testFile = new File("src/test/resources/income/data/JASON3/LTM", fileNameTest);
-        Assert.assertTrue(plugin.runPlugin(testFile, "DA_TC_JASON3_LTM"));
-        Assert.fail();
-        ;
-    }
-
 }

@@ -18,50 +18,53 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.acquisition.exception.ReadFileException;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.check.Jason2CheckingPlugin;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 
 /**
- * 
+ *
  * @author Christophe Mertz
  *
  */
 public class Jason2CheckingPluginTest {
 
     @Requirement("REGARDS_DSL_ING_SSALTO_070")
-    @Purpose("A plugin can generate a SIP for a Jason2's IGDR products")
+    @Purpose("A plugin can generate a SIP for a Jason1's Doris1B products")
     @Test
-    public void testJason2Igdr() throws ModuleException {
+    public void testProductPlugin() throws ModuleException {
+        // Plugin parameters
+        List<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(DefaultProductPlugin.FIELD_LENGTH, 128).getParameters();
 
-        // Parameters
-        String fileName = "src/test/resources/income/data/JASON2/IGDR/JA2_IPN_2PcP016_166_20081214_053324_20081214_062937";
-        String dataSetId = "DA_TC_JASON2_IGDR";
-        // Launch plugin
-        Jason2CheckingPlugin plugin = new Jason2CheckingPlugin();
-        Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
-        Assert.assertEquals("JA2_IPN_2PcP016_166_20081214_053324_20081214_062937", plugin.getProductName());
-    }
+        // Plugin and plugin interface packages
+        List<String> prefixes = Arrays.asList(IProductPlugin.class.getPackage().getName(),
+                                              DefaultProductPlugin.class.getPackage().getName());
 
-    @Requirement("REGARDS_DSL_ING_SSALTO_070")
-    @Purpose("A plugin can generate a SIP for a Jason2's IGDR products")
-    @Test(expected = ReadFileException.class)
-    public void testJason2IgdrFailed() throws ModuleException {
+        // Instantiate plugin
+        IProductPlugin plugin = PluginUtils.getPlugin(parameters, DefaultProductPlugin.class, prefixes,
+                                                      new HashMap<>());
+        Assert.assertNotNull(plugin);
 
-        // Parameters
-        String fileName = "src/test/resources/income/data/JASON2/IGDR/JA2_IPN_2PcP016_166_20081214_053324_20081214_099999";
-        String dataSetId = "DA_TC_JASON2_IGDR";
-        // Launch plugin
-        Jason2CheckingPlugin plugin = new Jason2CheckingPlugin();
-        Assert.assertTrue(plugin.runPlugin(new File(fileName), dataSetId));
-        Assert.fail();
+        // Run plugin
+        Path filePath = Paths
+                .get("src/test/resources/income/data/JASON2/IGDR/JA2_IPN_2PcP016_166_20081214_053324_20081214_062937");
+        String productName = plugin.getProductName(filePath);
+        Assert.assertEquals("JA2_IPN_2PcP016_166_20081214_053324_20081214_062937", productName);
     }
 
 }
