@@ -44,11 +44,8 @@ import fr.cnes.regards.framework.test.report.xml.XmlRequirements;
 import fr.cnes.regards.framework.test.report.xml.XmlTest;
 
 /**
- *
  * Help to write xlsx report
- *
  * @author msordi
- *
  */
 public final class XlsxHelper {
 
@@ -72,80 +69,70 @@ public final class XlsxHelper {
 
     /**
      * Write data to file with XLSX format
-     *
-     * @param pFilePath
-     *            file path
-     * @param pRequirements
-     *            list of requirements
-     * @param pSheetName
-     *            sheet name
-     * @throws ReportException
-     *             If report cannot be created
+     * @param filePath file path
+     * @param requirements list of requirements
+     * @param sheetName sheet name
+     * @throws ReportException If report cannot be created
      */
-    public static void write(Path pFilePath, XmlRequirements pRequirements, String pSheetName) throws ReportException {
+    public static void write(Path filePath, XmlRequirements requirements, String sheetName) throws ReportException {
         // Validate
-        assertNotNull(pFilePath, "Missing file path");
-        assertNotNull(pRequirements, NO_REQUIREMENT_FOUND);
-        assertNotNull(pSheetName, MISSING_SHEET_NAME);
+        assertNotNull(filePath, "Missing file path");
+        assertNotNull(requirements, NO_REQUIREMENT_FOUND);
+        assertNotNull(sheetName, MISSING_SHEET_NAME);
 
-        if (pRequirements.getRequirements() != null) {
+        if (requirements.getRequirements() != null) {
 
-            Workbook wb;
-            try {
-                if (Files.exists(pFilePath)) {
-                    wb = readFile(pFilePath);
-                } else {
-                    wb = new HSSFWorkbook();
+            try (Workbook wb = Files.exists(filePath) ? readFile(filePath) : new HSSFWorkbook()) {
+                try (OutputStream out = Files.newOutputStream(filePath)) {
+
+                    final CreationHelper createHelper = wb.getCreationHelper();
+
+                    // Create sheet
+                    final String safeName = WorkbookUtil.createSafeSheetName(sheetName);
+                    final Sheet sheet = wb.createSheet(safeName);
+
+                    // Init requirement style
+                    final CellStyle style = wb.createCellStyle();
+                    style.setFillBackgroundColor(IndexedColors.AQUA.getIndex());
+                    style.setFillPattern(FillPatternType.BIG_SPOTS);
+
+                    int rownum = 0;
+                    for (XmlRequirement req : requirements.getRequirements()) {
+                        // Write requirement row
+                        final Row row = sheet.createRow(rownum);
+                        final Cell cell = row.createCell(0);
+                        cell.setCellValue(createHelper.createRichTextString(req.getRequirement()));
+                        cell.setCellStyle(style);
+                        sheet.addMergedRegion(new CellRangeAddress(rownum, rownum, 0, 2));
+                        rownum++;
+
+                        // Write tests
+                        if (req.getTests() != null) {
+                            for (XmlTest test : req.getTests()) {
+                                final Row testRow = sheet.createRow(rownum);
+                                rownum++;
+                                testRow.createCell(0)
+                                        .setCellValue(createHelper.createRichTextString(test.getPurpose()));
+                                testRow.createCell(1)
+                                        .setCellValue(createHelper.createRichTextString(test.getTestClass()));
+                                testRow.createCell(2)
+                                        .setCellValue(createHelper.createRichTextString(test.getTestMethodName()));
+                            }
+                        } else {
+                            LOG.error("No test found for requirement " + req.getRequirement());
+                        }
+                    }
+
+                    // Write file
+                    wb.write(out);
+                    wb.close();
+                } catch (IOException e) {
+                    final String message = "Error while writing XLSX file";
+                    LOG.error(message, e);
+                    throw new ReportException(message);
                 }
             } catch (IOException e) {
                 final String message = "Error while reading XLSX file";
-                LOG.error(message, e);
-                throw new ReportException(message);
-            }
-
-            try (OutputStream out = Files.newOutputStream(pFilePath)) {
-
-                final CreationHelper createHelper = wb.getCreationHelper();
-
-                // Create sheet
-                final String safeName = WorkbookUtil.createSafeSheetName(pSheetName);
-                final Sheet sheet = wb.createSheet(safeName);
-
-                // Init requirement style
-                final CellStyle style = wb.createCellStyle();
-                style.setFillBackgroundColor(IndexedColors.AQUA.getIndex());
-                style.setFillPattern(FillPatternType.BIG_SPOTS);
-
-                int rownum = 0;
-                for (XmlRequirement req : pRequirements.getRequirements()) {
-                    // Write requirement row
-                    final Row row = sheet.createRow(rownum);
-                    final Cell cell = row.createCell(0);
-                    cell.setCellValue(createHelper.createRichTextString(req.getRequirement()));
-                    cell.setCellStyle(style);
-                    sheet.addMergedRegion(new CellRangeAddress(rownum, rownum, 0, 2));
-                    rownum++;
-
-                    // Write tests
-                    if (req.getTests() != null) {
-                        for (XmlTest test : req.getTests()) {
-                            final Row testRow = sheet.createRow(rownum);
-                            rownum++;
-                            testRow.createCell(0).setCellValue(createHelper.createRichTextString(test.getPurpose()));
-                            testRow.createCell(1).setCellValue(createHelper.createRichTextString(test.getTestClass()));
-                            testRow.createCell(2)
-                                    .setCellValue(createHelper.createRichTextString(test.getTestMethodName()));
-                        }
-                    } else {
-                        LOG.error("No test found for requirement " + req.getRequirement());
-                    }
-                }
-
-                // Write file
-                wb.write(out);
-                wb.close();
-            } catch (IOException e) {
-                final String message = "Error while writing XLSX file";
                 LOG.error(message, e);
                 throw new ReportException(message);
             }
@@ -154,32 +141,26 @@ public final class XlsxHelper {
 
     /**
      * Read an existing file
-     *
-     * @param pFilePath the file to read
+     * @param filePath the file to read
      * @return an {@link HSSFWorkbook} representing the file
-     * @throws IOException
-     *             if problem occurs
+     * @throws IOException if problem occurs
      */
-    private static HSSFWorkbook readFile(Path pFilePath) throws IOException {
-        try (InputStream in = Files.newInputStream(pFilePath)) {
+    private static HSSFWorkbook readFile(Path filePath) throws IOException {
+        try (InputStream in = Files.newInputStream(filePath)) {
             return new HSSFWorkbook(in);
         }
     }
 
     /**
      * Check if object is not null
-     *
-     * @param pObject
-     *            objet to check
-     * @param pMessage
-     *            error message
-     * @throws ReportException
-     *             if a report parameter is null
+     * @param object objet to check
+     * @param message error message
+     * @throws ReportException if a report parameter is null
      */
-    private static void assertNotNull(Object pObject, String pMessage) throws ReportException {
-        if (pObject == null) {
-            LOG.error(pMessage);
-            throw new ReportException(pMessage);
+    private static void assertNotNull(Object object, String message) throws ReportException {
+        if (object == null) {
+            LOG.error(message);
+            throw new ReportException(message);
         }
     }
 }

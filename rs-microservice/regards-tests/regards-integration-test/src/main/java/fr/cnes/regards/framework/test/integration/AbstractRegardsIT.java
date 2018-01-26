@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.test.integration;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -382,9 +383,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         MockHttpServletResponse response = pResultActions.andReturn().getResponse();
         try {
             return response.getContentAsString();
-            // CHECKSTYLE:OFF
-        } catch (Exception e) {
-            // CHECKSTYLE:ON
+        } catch (UnsupportedEncodingException | RuntimeException e) {
             getLogger().error("Cannot parse payload data");
             throw new AssertionError(e);
         }

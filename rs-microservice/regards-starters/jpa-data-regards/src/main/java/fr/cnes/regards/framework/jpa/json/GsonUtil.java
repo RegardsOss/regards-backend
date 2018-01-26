@@ -96,7 +96,7 @@ public final class GsonUtil {
      * Initialize utility class with common GSON instance managing system custom adapters and factories
      * @param gsonInstance GSON system instance
      */
-    public static void setGson(Gson gsonInstance) {
+    public static synchronized void setGson(Gson gsonInstance) {
         gson = gsonInstance;
     }
 
