@@ -22,6 +22,8 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+
 /**
  *
  * Class EncryptionUtils

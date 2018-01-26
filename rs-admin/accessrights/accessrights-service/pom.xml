@@ -33,6 +33,10 @@
 	<dependencies>
 		<!-- REGARDS Framework -->
 		<dependency>
+			<groupId>fr.cnes.regards.framework.utils</groupId>
+			<artifactId>exception-utils</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>authentication-regards</artifactId>
 		</dependency>
