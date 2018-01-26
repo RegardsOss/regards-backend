@@ -30,6 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.google.common.base.Strings;
+
 /**
  * Add the allow origin in the response headers to allow CORS requests.
  * @author Sébastien Binda
@@ -133,11 +135,9 @@ public class CorsFilter extends OncePerRequestFilter {
      */
     private static String getClientOrigin(HttpServletRequest request) {
         String remoteAddr = null;
-        if (request != null) {
-            remoteAddr = request.getHeader(REQUEST_HEADER_ORIGIN);
-            if ((remoteAddr == null) || "".equals(remoteAddr)) {
-                remoteAddr = request.getRemoteAddr();
-            }
+        remoteAddr = request.getHeader(REQUEST_HEADER_ORIGIN);
+        if (Strings.isNullOrEmpty(remoteAddr)) {
+            remoteAddr = request.getRemoteAddr();
         }
         return remoteAddr;
     }
