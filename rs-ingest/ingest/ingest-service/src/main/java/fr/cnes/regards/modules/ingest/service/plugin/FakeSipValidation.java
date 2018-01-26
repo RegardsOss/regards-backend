@@ -86,7 +86,7 @@ public class FakeSipValidation implements ISipValidation {
         // Nothing to do
     }
 
-    public class Pojo {
+    public static class Pojo {
 
         String message;
 
@@ -99,7 +99,7 @@ public class FakeSipValidation implements ISipValidation {
         }
     }
 
-    public class Constraints {
+    public static class Constraints {
 
         @PluginParameter(label = "List of constraints")
         private List<Constraint> constraints;
@@ -113,7 +113,7 @@ public class FakeSipValidation implements ISipValidation {
         }
     }
 
-    public class Constraint {
+    public static class Constraint {
 
         @PluginParameter(label = "Pattern", description = "JAVA regular expression")
         private String pattern;

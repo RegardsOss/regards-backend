@@ -35,6 +35,7 @@ public class SIPEvent implements ISubscribable {
 
     private String ipId;
 
+    @SuppressWarnings("unused") // Used for (de)serialization
     private SIPEvent() {
     }
 
