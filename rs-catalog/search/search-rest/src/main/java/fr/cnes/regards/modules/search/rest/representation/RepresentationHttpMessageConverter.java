@@ -49,6 +49,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginCon
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
 
@@ -313,7 +314,7 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             LOG.error("Couldn't add the newly defined Representation plugin for tenant: {}, configuration id: {}",
                       tenantOfEvent, event.getPluginConfId());
-            throw new RuntimeException(e);// NOSONAR
+            throw new RsRuntimeException(e);
         } catch (ModuleException e) {
             // if the event represent a creation and the configuration has already been removed then
             // lets do nothing
@@ -330,7 +331,7 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             LOG.error("Couldn't add the newly activated Representation plugin for tenant: {}, configuration id: {}",
                       tenantOfEvent, event.getPluginConfId());
-            throw new RuntimeException(e);// NOSONAR
+            throw new RsRuntimeException(e);
         } catch (ModuleException e) {
             // if the event represents an activation and the configuration has already been removed then
             // we do not have anything to do because the plugin was previously desactivated

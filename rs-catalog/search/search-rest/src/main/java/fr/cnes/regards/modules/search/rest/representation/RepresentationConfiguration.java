@@ -37,6 +37,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 
 /**
@@ -129,7 +130,7 @@ public class RepresentationConfiguration implements BeanFactoryAware, Applicatio
         try {
             pluginService.savePluginConfiguration(geoJsonConf);
         } catch (ModuleException e) {
-            throw new RuntimeException(e);// NOSONAR: developpment exception, should not be thrown!
+            throw new RsRuntimeException(e);
         }
     }
 

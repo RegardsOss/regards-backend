@@ -23,6 +23,7 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,7 +88,7 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
  * criterion request. This is done with a plugin of type IFilter.
  * <li>Adds user group and data access filters. This is done with {@link IAccessRightFilter} service.
  * <li>Performs the ElasticSearch request on the project index. This is done with
- * {@link fr.cnes.regards.modules.indexer.service.IIndexerService}.
+ * fr.cnes.regards.modules.indexer.service.IIndexerService.
  * <li>Applies {@link IRepresentation} type plugins to the response.
  * <ol>
  * @author Xavier-Alexandre Brochard
@@ -134,6 +135,8 @@ public class SearchController {
     public static final String DATAOBJECTS_URN = "/dataobjects/{urn}";
 
     public static final String DOCUMENTS_URN = "/documents/{urn}";
+
+    public static final String DATAOBJECT_PROPERTIES_VALUES = "/dataobjects/properties/{name}/values";
 
     /**
      * Service performing the search from the query string.
@@ -527,6 +530,18 @@ public class SearchController {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
         DocFilesSummary summary = searchService.computeDatasetsSummary(allParams, searchKey, datasetIpId, fileTypes);
         return new ResponseEntity<>(summary, HttpStatus.OK);
+    }
+
+    /**
+     * Retrieve given property enumerated values (limited by maxCount, partial text conytains and dataobjects
+     * openSearch request from allParams (as usual)).
+     */
+    @RequestMapping(path = DATAOBJECT_PROPERTIES_VALUES, method = RequestMethod.GET)
+    @ResourceAccess(description = "Retrieve enumerated property values", role = DefaultRole.PUBLIC)
+    public ResponseEntity<List<String>> retrieveEnumeratedPropertyValues(@PathVariable("name") String propertyPath,
+            @RequestParam Map<String, String> allParams, @RequestParam(value = "maxCount") int maxCount,
+            @RequestParam(value = "partialText", required = false) String partialText) {
+        return null;
     }
 
     /**
