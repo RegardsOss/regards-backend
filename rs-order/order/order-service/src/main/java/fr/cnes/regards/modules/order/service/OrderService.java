@@ -66,6 +66,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
@@ -275,7 +276,7 @@ public class OrderService implements IOrderService {
             email = templateService
                     .writeToEmail(TemplateServiceConfiguration.ORDER_CREATED_TEMPLATE_CODE, dataMap, order.getOwner());
         } catch (EntityNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new RsRuntimeException(e);
         }
 
         // Send it
@@ -406,7 +407,7 @@ public class OrderService implements IOrderService {
                     self.pause(order.getId());
                 } catch (CannotPauseOrderException e) {
                     // Cannot occur because order has pending state
-                    throw new RuntimeException(e); // NOSONAR
+                    throw new RsRuntimeException(e); // NOSONAR
                 }
                 if (!this.orderEffectivelyInPause(order)) {
                     // Too late !!! order finally wasn't in PENDING state when asked to be paused
@@ -583,7 +584,7 @@ public class OrderService implements IOrderService {
             os.close();
         } catch (JAXBException | SAXException | IOException t) {
             LOGGER.error("Error while generating metalink order file", t);
-            throw new RuntimeException(t);
+            throw new RsRuntimeException(t);
         }
     }
 
@@ -593,7 +594,7 @@ public class OrderService implements IOrderService {
                               StandardCharsets.US_ASCII);
         } catch (UnsupportedEncodingException e) {
             // Will never occurs
-            throw new RuntimeException(e);
+            throw new RsRuntimeException(e);
         }
     }
 
@@ -645,7 +646,7 @@ public class OrderService implements IOrderService {
                         .writeToEmail(TemplateServiceConfiguration.ASIDE_ORDERS_NOTIFICATION_TEMPLATE_CODE, dataMap,
                                       entry.getKey());
             } catch (EntityNotFoundException e) {
-                throw new RuntimeException(e);
+                throw new RsRuntimeException(e);
             }
 
             // Send it
@@ -706,7 +707,7 @@ public class OrderService implements IOrderService {
             try {
                 Thread.sleep(1_000);
             } catch (InterruptedException e) {
-                throw new RuntimeException(e); // NOSONAR
+                throw new RsRuntimeException(e); // NOSONAR
             }
             order = self.loadComplete(order.getId());
         }

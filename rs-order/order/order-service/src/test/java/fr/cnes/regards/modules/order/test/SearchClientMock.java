@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
@@ -331,7 +332,7 @@ public class SearchClientMock implements ISearchClient {
                                                                                               0,
                                                                                               list.size())));
             } catch (URISyntaxException e) {
-                throw new RuntimeException(e);
+                throw new RsRuntimeException(e);
             }
         }
         return ResponseEntity.ok(new PagedResources<Resource<DataObject>>(Collections.emptyList(),
