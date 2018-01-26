@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -204,6 +205,8 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
                                                     applicationName,
                                                     title,
                                                     type);
+        FeignSecurityManager.asSystem();
         notificationClient.createNotification(notif);
+        FeignSecurityManager.reset();
     }
 }
