@@ -472,6 +472,9 @@ public class STAFController {
             for (Entry<Path, Set<Path>> stafNode : pFileToArchivePerStafNode.entrySet()) {
                 Path availableStafNode = stafNode.getKey();
                 try {
+                    // Handle mximum number of files per node.
+                    // If the number of files already exceed the maximum configured, archive in a new node by adding a suffix "_x"
+                    // where x is the first available number or first node not full.
                     availableStafNode = stafService.getFirstAvailableStafNode(stafNode.getKey());
                 } catch (STAFException e) {
                     LOG.error(String.format("[STAF] Error calculating first available staf node for node %s",
