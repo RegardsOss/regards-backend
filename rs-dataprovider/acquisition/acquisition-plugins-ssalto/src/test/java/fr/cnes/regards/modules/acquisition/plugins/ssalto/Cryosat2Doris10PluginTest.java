@@ -26,11 +26,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
 
 /**
  * Test des plugins CRYOSAT2 de niveau produit
- * 
+ *
  * @author Christophe Mertz
  */
 public class Cryosat2Doris10PluginTest extends AbstractProductMetadataPluginTest {
@@ -57,8 +57,8 @@ public class Cryosat2Doris10PluginTest extends AbstractProductMetadataPluginTest
     }
 
     @Override
-    public IGenerateSIPPlugin buildPlugin() throws ModuleException {
-        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Cryosat2Doris10ProductMetadataPlugin");
+    public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
+        PluginConfiguration pluginConfiguration = getPluginConfiguration("Cryosat2Doris10ProductMetadataPlugin");
 
         return pluginService.getPlugin(pluginConfiguration.getId());
     }

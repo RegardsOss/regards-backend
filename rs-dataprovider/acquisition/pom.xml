@@ -76,6 +76,7 @@
 		<module>acquisition-rest</module>
 		<module>acquisition-service</module>
 		<module>acquisition-plugins-ssalto</module>
+		<module>acquisition-plugins</module>
 	</modules>
 
 </project>

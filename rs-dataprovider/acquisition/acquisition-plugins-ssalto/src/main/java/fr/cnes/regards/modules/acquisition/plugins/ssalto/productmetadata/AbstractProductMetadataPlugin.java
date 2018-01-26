@@ -58,7 +58,6 @@ import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.domain.model.CompositeAttribute;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.AbstractAttributeFinder;
-import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.acquisition.service.plugins.AbstractGenerateSIPPlugin;
@@ -70,7 +69,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  *
  * @author Christophe Mertz
  */
-public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPPlugin implements ISipGenerationPlugin {
+public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPPlugin {
 
     /**
      * Suffix of Ssalto's plugin configuration files

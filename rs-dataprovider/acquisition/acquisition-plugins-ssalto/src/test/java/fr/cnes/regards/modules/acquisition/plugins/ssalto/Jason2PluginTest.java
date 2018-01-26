@@ -32,11 +32,11 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
 
 /**
  * Test des plugins JASON2 de niveau produit
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -117,7 +117,8 @@ public class Jason2PluginTest extends AbstractProductMetadataPluginTest {
                          "R_JA2_QUATERNION_2008_10_24_22_00_00_2008_10_26_08_00_00");
         addPluginTestDef("DA_TC_JASON2_SELECTED_HKTMR_SOLARPANEL", "JASON2/PANNEAU_SOLAIRE",
                          "R_JA2_SOLARPANEL_2008_10_24_22_00_00_2008_10_26_08_00_00");
-        // KO addPluginTestDef("DA_TC_JASON2_DORIS1B_POE_CDDIS", "JASON2/DORIS1B_POE_CDDIS", "ja2data001.dat.Z"); pas de donnees
+        // KO addPluginTestDef("DA_TC_JASON2_DORIS1B_POE_CDDIS", "JASON2/DORIS1B_POE_CDDIS", "ja2data001.dat.Z"); pas de
+        // donnees
         addPluginTestDef("DA_TC_JASON2_PLTM2", "JASON2/PLTM2", "JA2_PLTM2_P_CARMEN2MC_20081204_114541.zip");
         addPluginTestDef("DA_TC_JASON2_HKTM_PASSMC", "JASON2/HKTM_PASSMC", "JA2_HKTMR_P_CARMEN2MC_20081204_151215.zip");
         addPluginTestDef("DA_TC_JASON2_TC_FILE_PASSMC", "JASON2/TC_PASSMC", "JA2_TC_T2L2MC_2008_06_23_14_07_05.zip");
@@ -159,7 +160,7 @@ public class Jason2PluginTest extends AbstractProductMetadataPluginTest {
     }
 
     @Override
-    public IGenerateSIPPlugin buildPlugin() throws ModuleException {
+    public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
         PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Jason2ProductMetadataPlugin");
 
         return pluginService.getPlugin(pluginConfiguration.getId());
