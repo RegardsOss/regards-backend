@@ -16,7 +16,6 @@
 	<artifactId>dataprovider</artifactId>
 	<packaging>pom</packaging>
 
-	<name>REGARDS Data Provider</name>
 	<description>Microservice crawling directoreis in order to find data to ingest</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

@@ -43,4 +43,6 @@ public interface IAcquisitionFileRepository extends JpaRepository<AcquisitionFil
      * @return
      */
     List<AcquisitionFile> findByStateAndFileInfo(AcquisitionFileState state, AcquisitionFileInfo fileInfo);
+
+    List<AcquisitionFile> findByState(AcquisitionFileState state);
 }

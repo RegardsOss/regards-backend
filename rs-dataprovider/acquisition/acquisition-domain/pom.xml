@@ -8,7 +8,6 @@
 	<artifactId>acquisition-domain</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Acquisition Domain</name>
 	<description>Model layer of the Acquisition module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

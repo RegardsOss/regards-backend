@@ -47,6 +47,9 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 public interface IProductRepository extends JpaRepository<Product, Long> {
 
     @EntityGraph("graph.acquisition.file.complete")
+    Product findCompleteById(Long id);
+
+    @EntityGraph("graph.acquisition.file.complete")
     Product findCompleteByProductName(String productName);
 
     @EntityGraph("graph.acquisition.file.complete")
@@ -93,4 +96,6 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
      */
     @Lock(LockModeType.PESSIMISTIC_READ)
     Set<Product> findBySipState(ISipState sipState);
+
+    Set<Product> findNoLockBySipState(ISipState sipState);
 }

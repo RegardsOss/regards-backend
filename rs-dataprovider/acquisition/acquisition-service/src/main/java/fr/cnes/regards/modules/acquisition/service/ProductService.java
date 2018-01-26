@@ -94,7 +94,7 @@ public class ProductService implements IProductService {
 
     @Override
     public Product loadProduct(Long id) throws ModuleException {
-        Product product = productRepository.findOne(id);
+        Product product = productRepository.findCompleteById(id);
         if (product == null) {
             throw new EntityNotFoundException(id, Product.class);
         }
