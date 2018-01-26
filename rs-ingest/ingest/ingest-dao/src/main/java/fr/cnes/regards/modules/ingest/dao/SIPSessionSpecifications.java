@@ -18,15 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import javax.persistence.criteria.Predicate;
 import java.time.OffsetDateTime;
 import java.util.Set;
-
-import javax.persistence.criteria.Predicate;
 
 import org.springframework.data.jpa.domain.Specification;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 
 /**
@@ -35,7 +33,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
  */
 public final class SIPSessionSpecifications {
 
-    private static final String SIPSessionLastActivationDate = "lastActivationDate";
+    private static final String SIP_SESSION_LAST_ACTIVATION_DATE = "lastActivationDate";
 
     private static final String LIKE_CHAR = "%";
 
@@ -56,12 +54,12 @@ public final class SIPSessionSpecifications {
                 predicates.add(cb.like(root.get("id"), LIKE_CHAR + id + LIKE_CHAR));
             }
             if (from != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get(SIPSessionLastActivationDate), from));
+                predicates.add(cb.greaterThanOrEqualTo(root.get(SIP_SESSION_LAST_ACTIVATION_DATE), from));
             }
             if (to != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get(SIPSessionLastActivationDate), to));
+                predicates.add(cb.lessThanOrEqualTo(root.get(SIP_SESSION_LAST_ACTIVATION_DATE), to));
             }
-            query.orderBy(cb.desc(root.get(SIPSessionLastActivationDate)));
+            query.orderBy(cb.desc(root.get(SIP_SESSION_LAST_ACTIVATION_DATE)));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

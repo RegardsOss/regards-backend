@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
-import java.util.Collection;
-
 import javax.validation.Valid;
+import java.util.Collection;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

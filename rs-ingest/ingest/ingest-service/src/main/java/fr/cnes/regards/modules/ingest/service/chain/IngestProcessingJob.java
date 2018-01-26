@@ -49,13 +49,10 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
  * This job manages processing chain for AIP generation from a SIP
- *
  * @author Marc Sordi
  * @author Sébastien Binda
  */
 public class IngestProcessingJob extends AbstractJob<Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestProcessingJob.class);
 
     public static final String CHAIN_NAME_PARAMETER = "chain";
 
@@ -101,14 +98,15 @@ public class IngestProcessingJob extends AbstractJob<Void> {
             handleInvalidParameter(SIP_PARAMETER, message);
         }
 
-        LOGGER.info("Parameters set for SIP \"{}\" (\"{}\") and processing chain \"{}\"", entity.getIpId(),
-                    entity.getSipId(), processingChainName);
+        super.logger.info("Parameters set for SIP \"{}\" (\"{}\") and processing chain \"{}\"", entity.getIpId(),
+                          entity.getSipId(), processingChainName);
     }
 
     @Override
     public void run() {
 
-        LOGGER.debug("Launching processing chain \"{}\" for SIP \"{}\"", processingChain.getName(), entity.getIpId());
+        super.logger
+                .debug("Launching processing chain \"{}\" for SIP \"{}\"", processingChain.getName(), entity.getIpId());
 
         try {
             // Step 1 : optional preprocessing
@@ -130,7 +128,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
             IProcessingStep<SIP, Void> postprocessingStep = new PostprocessingStep(this);
             postprocessingStep.execute(sip);
         } catch (ProcessingStepException e) {
-            LOGGER.error("Business error", e);
+            super.logger.error("Business error", e);
             throw new JobRuntimeException(e);
         }
     }

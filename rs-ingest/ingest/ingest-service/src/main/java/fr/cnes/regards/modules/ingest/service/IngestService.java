@@ -38,7 +38,7 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.gson.Gson;
-
+import com.google.gson.JsonIOException;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -157,9 +157,9 @@ public class IngestService implements IIngestService {
         try {
             SIPCollection sips = gson.fromJson(json, SIPCollection.class);
             return ingest(sips);
-        } catch (Exception e) {
+        } catch (JsonIOException e) {
             LOGGER.error("Cannot read JSON file containing SIP collection", e);
-            throw new EntityInvalidException(e.getMessage());
+            throw new EntityInvalidException(e.getMessage(), e);
         }
     }
 

@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +32,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
@@ -109,7 +107,7 @@ public class IngestProcessingService implements IIngestProcessingService {
     @Override
     public void initDefaultServiceConfiguration() throws ModuleException {
 
-        LOGGER.debug("Trying to inialize default ingest chain {}", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
+        LOGGER.debug("Trying to initialize default ingest chain {}", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
 
         // Check if the default IngestProcessingChain is defined
         if (!ingestChainRepository.findOneByName(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL).isPresent()) {
@@ -163,7 +161,7 @@ public class IngestProcessingService implements IIngestProcessingService {
 
     /**
      * Schedule a new {@link IngestProcessingJob} to ingest given {@link SIPEntity}
-     * @param pSipToProcess {@link SIPEntity} to ingest
+     * @param sipIdToProcess {@link SIPEntity} to ingest
      */
     private void scheduleIngestProcessingJob(Long sipIdToProcess, String processingChain) {
         LOGGER.debug("Scheduling new IngestProcessingJob for SIP {} and processing chain {}", sipIdToProcess,

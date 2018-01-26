@@ -41,7 +41,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -212,7 +211,7 @@ public class SIPController implements IResourceController<SIPEntity> {
                                         MethodParamFactory.build(String.class, sipEntity.getIpId()));
             }
             if (sipService.isRetryable(sipEntity.getIpId())) {
-                resourceService.addLink(resource, this.getClass(), "retrySipEntityIngest", LinkRels.DELETE,
+                resourceService.addLink(resource, this.getClass(), "retrySipEntityIngest", "retry",
                                         MethodParamFactory.build(String.class, sipEntity.getIpId()));
             }
         } catch (EntityNotFoundException e) {

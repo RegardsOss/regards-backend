@@ -18,15 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import javax.persistence.criteria.Predicate;
 import java.time.OffsetDateTime;
 import java.util.Set;
-
-import javax.persistence.criteria.Predicate;
 
 import org.springframework.data.jpa.domain.Specification;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
 /**

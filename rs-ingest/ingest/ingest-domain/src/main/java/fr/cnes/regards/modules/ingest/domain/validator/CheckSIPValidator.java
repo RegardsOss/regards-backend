@@ -41,9 +41,6 @@ public class CheckSIPValidator implements ConstraintValidator<CheckSIP, SIP> {
         if ((sip.getRef() == null) && (sip.getProperties() == null)) {
             return false;
         }
-        if ((sip.getRef() != null) && (sip.getProperties() != null)) {
-            return false;
-        }
-        return true;
+        return ((sip.getRef() == null) || (sip.getProperties() == null));
     }
 }

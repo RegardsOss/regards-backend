@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
+import javax.validation.constraints.NotNull;
 import java.net.URL;
 import java.security.MessageDigest;
-
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
 
