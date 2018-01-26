@@ -97,9 +97,7 @@ public final class GsonUtil {
      * @param gsonInstance GSON system instance
      */
     public static synchronized void setGson(Gson gsonInstance) {
-        if (gson != null) {
-            gson = gsonInstance;
-        }
+        gson = gsonInstance;
     }
 
     /**
