@@ -151,7 +151,7 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
             data.put("confirmationUrl", confirmationUrl);
         } catch (UnsupportedEncodingException e) {
             LOGGER.error("This system does not support UTF-8", e);
-            throw new RsRuntimeException(e);//NOSONAR: this should only be a development error, if it happens the system has to explode
+            throw new RsRuntimeException(e);
         }
 
         SimpleMailMessage email;

@@ -65,7 +65,7 @@ public class EncryptionUtils {
             }
             return sb.toString();
         } catch (final NoSuchAlgorithmException e) {
-            throw new RsRuntimeException(e);// NOSONAR: this is only a developpement exception and should never happens
+            throw new RsRuntimeException(e);
         }
     }
 
