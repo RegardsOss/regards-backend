@@ -22,6 +22,8 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+
 /**
  *
  * Class EncryptionUtils
@@ -63,7 +65,7 @@ public class EncryptionUtils {
             }
             return sb.toString();
         } catch (final NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);// NOSONAR: this is only a developpement exception and should never happens
+            throw new RsRuntimeException(e);
         }
     }
 

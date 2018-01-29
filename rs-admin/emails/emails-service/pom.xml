@@ -39,6 +39,10 @@
 		</dependency>
 		<!-- Microservice internal dependencies -->
 		<dependency>
+			<groupId>fr.cnes.regards.framework.utils</groupId>
+			<artifactId>exception-utils</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards</artifactId>
 		</dependency>

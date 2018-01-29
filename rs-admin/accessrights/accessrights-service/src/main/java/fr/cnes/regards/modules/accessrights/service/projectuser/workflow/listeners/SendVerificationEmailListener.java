@@ -35,6 +35,7 @@ import org.springframework.web.util.UriUtils;
 import feign.FeignException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
@@ -150,7 +151,7 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
             data.put("confirmationUrl", confirmationUrl);
         } catch (UnsupportedEncodingException e) {
             LOGGER.error("This system does not support UTF-8", e);
-            throw new RuntimeException(e);//NOSONAR: this should only be a development error, if it happens the system has to explode
+            throw new RsRuntimeException(e);
         }
 
         SimpleMailMessage email;

@@ -40,6 +40,7 @@ import com.google.common.io.ByteStreams;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
 import fr.cnes.regards.modules.emails.domain.Email;
 
@@ -202,7 +203,7 @@ public class EmailService extends AbstractEmailService {
                     email.setAttachment(baos.toByteArray());
                 }
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RsRuntimeException(e);
             }
         }
         return email;
