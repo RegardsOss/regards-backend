@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.acquisition.service.plugins;
 import java.net.MalformedURLException;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -44,19 +43,18 @@ import fr.cnes.regards.modules.acquisition.domain.model.DateTimeAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.GeoAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.LongAttribute;
 import fr.cnes.regards.modules.acquisition.domain.model.StringAttribute;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
-import fr.cnes.regards.modules.acquisition.service.exception.AcquisitionException;
+import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 
 /**
- * A simple {@link Plugin} of type {@link IGenerateSIPPlugin}.
+ * A simple {@link Plugin} of type {@link ISipGenerationPlugin}.
  *
  * @author Christophe Mertz
  */
 @Plugin(id = "TestGenerateSipPlugin", version = "1.0.0-SNAPSHOT", description = "TestGenerateSipPlugin",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements IGenerateSIPPlugin {
+public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements ISipGenerationPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestGenerateSipPlugin.class);
 
@@ -76,24 +74,24 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     }
 
     @Override
-    protected void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles)
-            throws AcquisitionException {
+    protected void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles) throws ModuleException {
         for (AcquisitionFile af : acqFiles) {
             try {
-                sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, af.getFile().toURI().toURL(),
-                                                                        af.getChecksumAlgorithm(), af.getChecksum());
-                sipBuilder.getContentInformationBuilder().setSyntax("Mime name", "Mime Description",
-                                                                    af.getMetaFile().getMediaType());
+                sipBuilder.getContentInformationBuilder()
+                        .setDataObject(DataType.RAWDATA, af.getFilePath().toAbsolutePath().toUri().toURL(),
+                                       af.getChecksumAlgorithm(), af.getChecksum());
+                sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
                 sipBuilder.addContentInformation();
             } catch (MalformedURLException e) {
                 LOGGER.error(e.getMessage(), e);
-                throw new AcquisitionException(e.getMessage());
+                throw new ModuleException(e.getMessage());
             }
         }
     }
 
+    @Override
     protected void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
-            throws AcquisitionException {
+            throws ModuleException {
         mapAttrs.forEach((k, v) -> {
             switch (v.getAttributeKey()) {
                 case MISSION_ATTRIBUE:
@@ -118,8 +116,8 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     }
 
     @Override
-    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles,
-            Optional<String> datasetName) throws ModuleException {
+    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName)
+            throws ModuleException {
         int n = 0;
         String productName = acqFiles.get(0).getProduct().getProductName();
 

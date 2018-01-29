@@ -4,11 +4,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules</groupId>
+	<groupId>fr.cnes.regards.modules.acquisition</groupId>
 	<artifactId>acquisition-dao</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Acquisition DAO</name>
 	<description>DAO layer of the Acquisition module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
@@ -45,13 +44,18 @@
 		</dependency>
 		<!-- Module -->
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
+			<groupId>fr.cnes.regards.modules.acquisition</groupId>
 			<artifactId>acquisition-domain</artifactId>
 		</dependency>
 		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+			<artifactId>plugins-dao</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

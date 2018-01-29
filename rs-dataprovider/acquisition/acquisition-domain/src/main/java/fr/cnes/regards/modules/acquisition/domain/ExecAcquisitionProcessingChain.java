@@ -37,9 +37,10 @@ import javax.persistence.UniqueConstraint;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 
 /**
- * 
+ * Register an acquisition chain execution
  * @author Christophe Mertz
  */
 @Entity
@@ -67,7 +68,7 @@ public class ExecAcquisitionProcessingChain implements IIdentifiable<Long> {
     private String session;
 
     /**
-     * The {@link AcquisitionProcessingChain} associate to the current {@link ExecAcquisitionProcessingChain}
+     * The {@link AcquisitionProcessingChain2} associate to the current {@link ExecAcquisitionProcessingChain}
      */
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name = "chain_id", foreignKey = @ForeignKey(name = "fk_acq_exec_chain_id"), updatable = false)
@@ -86,24 +87,6 @@ public class ExecAcquisitionProcessingChain implements IIdentifiable<Long> {
     @Column(name = "stop_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime stopDate;
-
-    /**
-     * The number of SIP created for the current {@link ExecAcquisitionProcessingChain}
-     */
-    @Column(name = "nb_sip_created", nullable = false)
-    private int nbSipCreated = 0;
-
-    /**
-     * The number of SIP in error for the current {@link ExecAcquisitionProcessingChain}
-     */
-    @Column(name = "nb_sip_in_error", nullable = false)
-    private int nbSipError = 0;
-
-    /**
-     * The number of SIP stored for the current {@link ExecAcquisitionProcessingChain}
-     */
-    @Column(name = "nb_sip_stored", nullable = false)
-    private int nbSipStored = 0;
 
     @Override
     public Long getId() {
@@ -142,48 +125,12 @@ public class ExecAcquisitionProcessingChain implements IIdentifiable<Long> {
         this.stopDate = stopDate;
     }
 
-    public int getNbSipCreated() {
-        return nbSipCreated;
-    }
-
-    public void setNbSipCreated(int nbSipCreated) {
-        this.nbSipCreated = nbSipCreated;
-    }
-
-    public void sipCreatedIncrease() {
-        this.nbSipCreated++;
-    }
-
-    public int getNbSipError() {
-        return nbSipError;
-    }
-
-    public void setNbSipError(int nbSipError) {
-        this.nbSipError = nbSipError;
-    }
-
-    public void sipErrorIncrease() {
-        this.nbSipError++;
-    }
-
-    public int getNbSipStored() {
-        return nbSipStored;
-    }
-
-    public void setNbSipStored(int nbSipStored) {
-        this.nbSipStored = nbSipStored;
-    }
-
-    public void sipStoredIncrease() {
-        this.nbSipStored++;
-    }
-
     @Override
     public int hashCode() { // NOSONAR
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((session == null) ? 0 : session.hashCode());
+        result = (prime * result) + ((id == null) ? 0 : id.hashCode());
+        result = (prime * result) + ((session == null) ? 0 : session.hashCode());
         return result;
     }
 

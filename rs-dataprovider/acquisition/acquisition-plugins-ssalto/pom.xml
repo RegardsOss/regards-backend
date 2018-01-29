@@ -5,7 +5,6 @@
 	<artifactId>acquisition-plugins-ssalto</artifactId>
 	<packaging>jar</packaging>
 	
-	<name>Acquisition Plugins SSALTO</name>
 	<description>SSALTO-specific plugins of the Acquisition module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
@@ -45,7 +44,7 @@
 			<artifactId>module-regards</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
+			<groupId>fr.cnes.regards.modules.acquisition</groupId>
 			<artifactId>acquisition-domain</artifactId>
 		</dependency>
 		<dependency>
@@ -90,7 +89,7 @@
 			<artifactId>file-utils</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
+			<groupId>fr.cnes.regards.modules.acquisition</groupId>
 			<artifactId>acquisition-service</artifactId>
 		</dependency>
 		<dependency>
@@ -98,4 +97,5 @@
 			<artifactId>plugins-service</artifactId>
 		</dependency>
 	</dependencies>
+	<groupId>fr.cnes.regards.modules.acquisition</groupId>
 </project>

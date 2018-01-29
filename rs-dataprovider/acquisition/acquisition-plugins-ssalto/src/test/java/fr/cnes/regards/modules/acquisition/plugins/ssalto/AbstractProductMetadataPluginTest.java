@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.SortedMap;
 
@@ -57,14 +56,11 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileStatus;
-import fr.cnes.regards.modules.acquisition.domain.FileAcquisitionInformations;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
-import fr.cnes.regards.modules.acquisition.domain.metadata.ScanDirectory;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorException;
@@ -81,6 +77,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.xsd.XMLValidator
  *
  * @author Christophe Mertz
  */
+@SuppressWarnings("deprecation")
 @ActiveProfiles({ "disableDataProviderTask" })
 public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsIT
         implements IProductMetadataPluginTest {
@@ -140,7 +137,8 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         super();
     }
 
-    public abstract IGenerateSIPPlugin buildPlugin() throws ModuleException;
+    @Override
+    public abstract ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException;
 
     /**
      * Initialisation des proprietes et création du répertoire de travail
@@ -206,7 +204,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
 
     /**
      * Lance le ou les tests
-     * @throws ModuleException 
+     * @throws ModuleException
      */
     protected void launchTest() throws ModuleException {
         List<String> errorList = new ArrayList<String>();
@@ -272,7 +270,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      * @param errorList
      * @param sucessList
      * @return
-     * @throws ModuleException 
+     * @throws ModuleException
      */
     protected boolean createMetadataPlugIn(PluginTestDef pluginTestDef, List<String> errorList, List<String> sucessList)
             throws ModuleException {
@@ -281,7 +279,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
 
         LOGGER.debug("Testing METADATA GENERATION FOR DATASET " + pluginTestDef.getDataSetName());
 
-        IGenerateSIPPlugin plugin = buildPlugin();
+        ISIPGenerationPluginWithMetadataToolbox plugin = buildPlugin();
 
         if (pluginTestDef.isMultipleFileTest()) {
             for (String fileName : pluginTestDef.getFileNameList()) {
@@ -348,26 +346,14 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      * @return an {@link AcquisitionFile}
      */
     protected AcquisitionFile initAcquisitionFile(File aFile, String productName) {
-        AcquisitionFile acqFile = new AcquisitionFile();
-        acqFile.setFileName(aFile.getName());
-
-        ScanDirectory dir = new ScanDirectory();
-        dir.setScanDir(aFile.getParent());
-
-        FileAcquisitionInformations acqInfos = new FileAcquisitionInformations();
-        acqInfos.setWorkingDirectory(aFile.getParent());
-        acqInfos.setAcquisitionDirectory(aFile.getParent());
-
-        acqFile.setAcquisitionInformations(acqInfos);
-        acqFile.setStatus(AcquisitionFileStatus.VALID);
-
-        MetaProduct metaProduct = new MetaProduct();
-        metaProduct.setLabel(productName);
 
         Product product = new Product();
         product.setProductName(productName);
-        product.setMetaProduct(metaProduct);
-        product.setStatus(ProductStatus.ACQUIRING);
+        product.setState(ProductState.ACQUIRING);
+
+        AcquisitionFile acqFile = new AcquisitionFile();
+        acqFile.setFilePath(aFile.toPath());
+        acqFile.setState(AcquisitionFileState.ACQUIRED);
         acqFile.setProduct(product);
 
         return acqFile;
@@ -380,16 +366,16 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      * @param acqFiles
      * @return
      */
-    protected boolean createAndValidate(PluginTestDef pluginTestDef, IGenerateSIPPlugin pluginGenerateSIP,
-            List<AcquisitionFile> acqFiles) {
+    protected boolean createAndValidate(PluginTestDef pluginTestDef,
+            ISIPGenerationPluginWithMetadataToolbox pluginGenerateSIP, List<AcquisitionFile> acqFiles) {
         boolean isValidate = false;
 
         for (AcquisitionFile acqFile : acqFiles) {
             // get the original file from supplyDirectory
-            File originalFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
-                    acqFile.getFileName());
+            File originalFile = acqFile.getFilePath().toAbsolutePath().toFile();
 
-            // Mise a jour de la date de creation pour les plugins qui l'utilise afin qu'elle corresponde au fichier de référence
+            // Mise a jour de la date de creation pour les plugins qui l'utilise afin qu'elle corresponde au fichier de
+            // référence
             OffsetDateTime odt = OffsetDateTime.of(2009, 11, 9, 16, 59, 41, 0, ZoneOffset.UTC);
             originalFile.setLastModified(1000 * odt.toEpochSecond());
         }
@@ -446,16 +432,16 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      * @param acqFiles
      * @param pluginTestDef
      * @param pluginGenerateSIP
-     * 
+     *
      * @return
-     * 
+     *
      * @throws ModuleException
      */
     protected String createMetaData(List<AcquisitionFile> acqFiles, PluginTestDef pluginTestDef,
-            IGenerateSIPPlugin pluginGenerateSIP) throws ModuleException {
+            ISIPGenerationPluginWithMetadataToolbox pluginGenerateSIP) throws ModuleException {
 
-        SortedMap<Integer, Attribute> attrMaps = pluginGenerateSIP
-                .createMetadataPlugin(acqFiles, Optional.of(pluginTestDef.getDataSetName()));
+        SortedMap<Integer, Attribute> attrMaps = pluginGenerateSIP.createMetadataPlugin(acqFiles,
+                                                                                        pluginTestDef.getDataSetName());
 
         String xml;
         try {
@@ -560,7 +546,8 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     }
 
     /**
-     * Definit une liste de fichiers a traiter contenus dans le repertoire fileDirectory et associe au dataset dataSetName
+     * Definit une liste de fichiers a traiter contenus dans le repertoire fileDirectory et associe au dataset
+     * dataSetName
      *
      * @param dataSetName
      * @param fileDirectory
@@ -571,16 +558,16 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
 
     /**
      * Get an existing configuration if exists otherwise creates it
-     * 
+     *
      * @return an existing {@link PluginConfiguration}
-     * 
+     *
      * @throws ModuleException if an error occurs
      */
     protected PluginConfiguration getPluginConfiguration(String pluginId) throws ModuleException {
 
         // Test if a configuration exists for this pluginId
         List<PluginConfiguration> pluginConfigurations = pluginService
-                .getPluginConfigurationsByType(IGenerateSIPPlugin.class);
+                .getPluginConfigurationsByType(ISIPGenerationPluginWithMetadataToolbox.class);
 
         if (!pluginConfigurations.isEmpty()) {
             PluginConfiguration plgConf = loadPluginConfiguration(pluginId, pluginConfigurations);
@@ -590,7 +577,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         }
 
         // Get the PluginMetadata
-        List<PluginMetaData> metaDatas = pluginService.getPluginsByType(IGenerateSIPPlugin.class);
+        List<PluginMetaData> metaDatas = pluginService.getPluginsByType(ISIPGenerationPluginWithMetadataToolbox.class);
 
         PluginConfiguration pluginConfiguration = new PluginConfiguration(metaDatas.get(0),
                 "Automatic plugin configuration for plugin id : " + pluginId);
@@ -601,9 +588,9 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
 
     /**
      * Return a {@link PluginConfiguration} for a pluginId
-     *  
+     *
      * @param pluginId the pluginid to search
-     * 
+     *
      * @return the found {@link PluginConfiguration}
      */
     private PluginConfiguration loadPluginConfiguration(String pluginId, List<PluginConfiguration> pluginConfs) {
@@ -626,17 +613,12 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         Map<File, File> fileMap = new HashMap<>();
 
         for (AcquisitionFile acqFile : acqFiles) {
-            // get the original file from supplyDirectory
-            File originalFile = new File(acqFile.getAcquisitionInformations().getAcquisitionDirectory(),
-                    acqFile.getFileName());
-
-            if (acqFile.getStatus().equals(AcquisitionFileStatus.VALID)) {
-                File newFile = new File(acqFile.getAcquisitionInformations().getWorkingDirectory(),
-                        acqFile.getFileName());
+            File originalFile = acqFile.getFilePath().toAbsolutePath().toFile();
+            if (AcquisitionFileState.ACQUIRED.equals(acqFile.getState())) {
+                File newFile = acqFile.getFilePath().toFile();
                 fileMap.put(newFile, originalFile);
             }
         }
-
         return fileMap;
     }
 
@@ -720,7 +702,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      *
      * @param descFile
      *            Objet descripteur
-     *            
+     *
      * @throws IOException
      */
     @SuppressWarnings("deprecation")

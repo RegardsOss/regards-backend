@@ -24,80 +24,74 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionProcessingChain;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
+import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.job.SIPEventJobParameter;
-import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingChainService;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
-import fr.cnes.regards.modules.acquisition.service.step.IPostAcquisitionStep;
-import fr.cnes.regards.modules.acquisition.service.step.IStep;
-import fr.cnes.regards.modules.acquisition.service.step.PostSipAcquisitionStep;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
 /**
  * This job runs a set of step :<br>
  * <li>a step {@link IPostAcquisitionStep}
- * 
- * This job runs for one {@link Product} 
- *  
+ *
+ * This job runs for one {@link Product}
+ *
  * @author Christophe Mertz
+ * @author Marc Sordi
  *
  */
 public class PostAcquisitionJob extends AbstractJob<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostAcquisitionJob.class);
 
+    public static final String EVENT_PARAMETER = "event";
+
     @Autowired
-    private AutowireCapableBeanFactory beanFactory;
+    private PluginService pluginService;
 
     @Autowired
     private IProductService productService;
 
-    @Autowired
-    private IAcquisitionProcessingChainService acqProcessChainService;
-
     private SIPEvent sipEvent;
+
+    @Override
+    public void setParameters(Map<String, JobParameter> parameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
+        sipEvent = getValue(parameters, EVENT_PARAMETER);
+    }
 
     @Override
     public void run() {
         LOGGER.info("Start POST acquisition SIP job for the product <{}>", sipEvent.getIpId());
 
-        Product product = productService.retrieve(sipEvent.getIpId());
-        AcquisitionProcessingChain acqProcessingChain = acqProcessChainService.findByMetaProduct(product.getMetaProduct());
+        try {
+            // Load product
+            Product product = productService.retrieve(sipEvent.getIpId());
 
-        AcquisitionProcess process = new AcquisitionProcess(acqProcessingChain, product);
+            // Update product (store ingest state)
+            product.setSipState(sipEvent.getState());
+            productService.save(product);
 
-        // IPostAcquisitionStep is the first step
-        IStep postSipStep = new PostSipAcquisitionStep(sipEvent);
-        postSipStep.setProcess(process);
-        beanFactory.autowireBean(postSipStep);
-        process.setCurrentStep(postSipStep);
-
-        process.run();
-    }
-
-    @Override
-    public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
-        if (parameters.isEmpty()) {
-            throw new JobParameterMissingException("No parameter provided");
-        }
-        if (parameters.size() != 1) {
-            throw new JobParameterInvalidException("One parameter is expected");
-        }
-
-        for (JobParameter jp : parameters.values()) {
-            if (SIPEventJobParameter.isCompatible(jp)) {
-                sipEvent = jp.getValue();
-            } else {
-                throw new JobParameterInvalidException("Please use SIPEventJobParameter in place of JobParameter");
+            // Retrieve acquisition chain
+            AcquisitionProcessingChain acqProcessingChain = product.getProcessingChain();
+            // Launch post processing plugin if present
+            if (acqProcessingChain.getPostProcessSipPluginConf().isPresent()) {
+                // Get an instance of the plugin
+                ISipPostProcessingPlugin postProcessPlugin = pluginService
+                        .getPlugin(acqProcessingChain.getPostProcessSipPluginConf().get().getId());
+                postProcessPlugin.postProcess(product);
             }
+        } catch (ModuleException pse) {
+            LOGGER.error("Business error", pse);
+            throw new JobRuntimeException(pse);
         }
     }
 

@@ -18,11 +18,12 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
-import java.util.HashSet;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -37,7 +38,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedEntityGraphs;
-import javax.persistence.NamedSubgraph;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -49,45 +49,32 @@ import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 import org.hibernate.validator.constraints.NotBlank;
 
-import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.modules.acquisition.domain.metadata.MetaProduct;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
 /**
- * 
+ *
  * @author Christophe Mertz
  *
  */
 @Entity
 @Table(name = "t_acquisition_product",
-        indexes = { @Index(name = "idx_acq_product_name", columnList = "product_name"),
-                @Index(name = "idx_acq_ingest_chain", columnList = "ingest_chain"),
-                @Index(name = "idx_acq_product_session", columnList = "session") },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name") })
+        indexes = { @Index(name = "idx_acq_processing_chain", columnList = "processing_chain_id"),
+                @Index(name = "idx_acq_product_name", columnList = "product_name"),
+                @Index(name = "idx_acq_product_sip_state", columnList = "sip_state"),
+                @Index(name = "idx_acq_product_state", columnList = "product_state") },
+        uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_ipId", columnNames = "ip_id"),
+                @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-@NamedEntityGraphs({
-        @NamedEntityGraph(name = "graph.acquisition.file.complete",
-                attributeNodes = @NamedAttributeNode(value = "fileList")),
-        @NamedEntityGraph(name = "graph.metaproduct.complete",
-                attributeNodes = {
-                        @NamedAttributeNode(value = "metaProduct", subgraph = "graph.metaproduct.complete.metafiles"),
-                        @NamedAttributeNode(value = "fileList") },
-                subgraphs = { @NamedSubgraph(name = "graph.metaproduct.complete.metafiles",
-                        attributeNodes = { @NamedAttributeNode(value = "metaFiles") }) })
+@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.complete",
+        attributeNodes = @NamedAttributeNode(value = "fileList"))
 
 })
-public class Product implements IIdentifiable<Long> {
-
-    /**
-     * A constant used to define a {@link String} constraint with length 128
-     */
-    private static final int MAX_STRING_LENGTH = 128;
-
-    /**
-     * Maximum enum size constraint with length 16
-     */
-    private static final int MAX_ENUM_LENGTH = 16;
+public class Product {
 
     /**
      * Unique id
@@ -100,53 +87,55 @@ public class Product implements IIdentifiable<Long> {
     /**
      * The {@link Product} status
      */
-    @Column(name = "status", length = MAX_ENUM_LENGTH)
+    @Column(name = "product_state", length = 32, nullable = false)
     @Enumerated(EnumType.STRING)
-    private ProductStatus status;
+    private ProductState state;
 
-    /**
-     * <li><code>true</code> if the {@link Product} has been sended by ingest</br>
-     * <li><code>false</code> otherwise
-     */
-    @Column(name = "sended")
-    private Boolean sended = false;
+    @Column(name = "sip_state", length = 32, nullable = false)
+    @Convert(converter = SipStateConverter.class)
+    private ISipState sipState;
+
+    @Column(name = "last_update", nullable = false)
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime lastUpdate;
 
     /**
      * The product name
      */
     @NotBlank
-    @Column(name = "product_name", length = MAX_STRING_LENGTH)
+    @Column(name = "product_name", length = 128)
     private String productName;
 
     /**
-     * The session identifier that create the current product 
+     * The session identifier that create the current product
      */
-    @Column(name = "session", length = MAX_STRING_LENGTH)
+    @Column(name = "session", length = 128)
     private String session;
 
-    /**
-     * The {@link MetaProduct}
-     */
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "meta_product_id", foreignKey = @ForeignKey(name = "fk_product_id"), updatable = false)
-    private MetaProduct metaProduct;
+    @JoinColumn(name = "processing_chain_id", foreignKey = @ForeignKey(name = "fk_processing_chain_id"),
+            updatable = false)
+    private AcquisitionProcessingChain processingChain;
 
     /**
      * {@link List} of file include in the {@link Product}
      */
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
-    private final Set<AcquisitionFile> fileList = new HashSet<AcquisitionFile>();
+    private final List<AcquisitionFile> fileList = new ArrayList<>();
 
     @Column(columnDefinition = "jsonb", name = "json_sip")
     @Type(type = "jsonb")
     private SIP sip;
 
-    @Column(name = "ingest_chain")
-    private String ingestChain;
+    /**
+     * The unique ingest IP identifier : only available if product SIP has been properly submitted to INGEST
+     * microservice.
+     */
+    @Column(name = "ip_id", length = UniformResourceName.MAX_SIZE)
+    private String ipId;
 
-    @Override
     public Long getId() {
         return id;
     }
@@ -155,7 +144,7 @@ public class Product implements IIdentifiable<Long> {
     public int hashCode() { // NOSONAR
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((productName == null) ? 0 : productName.hashCode()); // NOSONAR
+        result = (prime * result) + ((productName == null) ? 0 : productName.hashCode()); // NOSONAR
         return result;
     }
 
@@ -185,14 +174,6 @@ public class Product implements IIdentifiable<Long> {
         this.id = id;
     }
 
-    public ProductStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(ProductStatus status) {
-        this.status = status;
-    }
-
     public String getProductName() {
         return productName;
     }
@@ -201,20 +182,12 @@ public class Product implements IIdentifiable<Long> {
         this.productName = productName;
     }
 
-    public MetaProduct getMetaProduct() {
-        return metaProduct;
-    }
-
-    public void setMetaProduct(MetaProduct metaProduct) {
-        this.metaProduct = metaProduct;
-    }
-
     public void addAcquisitionFile(AcquisitionFile acqFile) {
         this.fileList.add(acqFile);
     }
 
-    public Set<AcquisitionFile> getAcquisitionFile() {
-        return this.fileList;
+    public List<AcquisitionFile> getAcquisitionFiles() {
+        return fileList;
     }
 
     public void removeAcquisitionFile(AcquisitionFile acqFile) {
@@ -229,14 +202,6 @@ public class Product implements IIdentifiable<Long> {
         this.session = session;
     }
 
-    public Boolean isSended() {
-        return sended;
-    }
-
-    public void setSended(Boolean send) {
-        this.sended = send;
-    }
-
     public SIP getSip() {
         return sip;
     }
@@ -245,12 +210,12 @@ public class Product implements IIdentifiable<Long> {
         this.sip = sip;
     }
 
-    public String getIngestChain() {
-        return ingestChain;
+    public ProductState getState() {
+        return state;
     }
 
-    public void setIngestChain(String ingestProcessingChain) {
-        this.ingestChain = ingestProcessingChain;
+    public void setState(ProductState state) {
+        this.state = state;
     }
 
     @Override
@@ -260,14 +225,43 @@ public class Product implements IIdentifiable<Long> {
         strBuilder.append(" - ");
         strBuilder.append(productName);
         strBuilder.append(" - ");
-        strBuilder.append(status);
+        strBuilder.append(state);
         strBuilder.append(" - ");
-        strBuilder.append(sended);
+        strBuilder.append(sipState);
         strBuilder.append(" - ");
         strBuilder.append(session);
-        strBuilder.append(" - ");
-        strBuilder.append(ingestChain);
         return strBuilder.toString();
     }
 
+    public ISipState getSipState() {
+        return sipState;
+    }
+
+    public void setSipState(ISipState sipState) {
+        this.sipState = sipState;
+    }
+
+    public OffsetDateTime getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(OffsetDateTime lastUpdate) {
+        this.lastUpdate = lastUpdate;
+    }
+
+    public String getIpId() {
+        return ipId;
+    }
+
+    public void setIpId(String ipId) {
+        this.ipId = ipId;
+    }
+
+    public AcquisitionProcessingChain getProcessingChain() {
+        return processingChain;
+    }
+
+    public void setProcessingChain(AcquisitionProcessingChain processingChain) {
+        this.processingChain = processingChain;
+    }
 }

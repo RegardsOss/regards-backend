@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.LockModeType;
@@ -27,36 +29,73 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductStatus;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
 /**
  * {@link Product} repository
  *
  * @author Christophe Mertz
+ * @author Marc Sordi
  */
 @Repository
 public interface IProductRepository extends JpaRepository<Product, Long> {
 
-    @EntityGraph("graph.metaproduct.complete")
+    @EntityGraph("graph.acquisition.file.complete")
+    Product findCompleteById(Long id);
+
+    @EntityGraph("graph.acquisition.file.complete")
     Product findCompleteByProductName(String productName);
 
-    Set<Product> findByStatus(ProductStatus status);
+    @EntityGraph("graph.acquisition.file.complete")
+    Product findCompleteByIpId(String ipId);
 
-    Set<Product> findBySendedAndStatusIn(Boolean sended, ProductStatus... status);
+    Set<Product> findByState(ProductState state);
 
-    @Query("select distinct p.ingestChain from Product p where p.sended=?1 and p.status in ?2")
-    Set<String> findDistinctIngestChainBySendedAndStatusIn(Boolean sended, ProductStatus... status);
+    Set<Product> findByProcessingChainAndSipStateAndStateIn(AcquisitionProcessingChain processingChain,
+            ProductSIPState sipState, List<ProductState> productStates);
 
-    @Query("select distinct p.session from Product p where p.ingestChain=?1 and p.sended=?2 and p.status in ?3")
-    Set<String> findDistinctSessionByIngestChainAndSendedAndStatusIn(String ingestChain, Boolean sended,
-            ProductStatus... status);
+    /**
+     * Find {@link ProductState#COMPLETED} or{@link ProductState#FINISHED} products not already scheduled for SIP
+     * generation and for the specified acquisition chain.
+     * @param processingChain acquisition processing chain
+     * @return a set of {@link Product} to schedule
+     */
+    default Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain processingChain) {
+        return findByProcessingChainAndSipStateAndStateIn(processingChain, ProductSIPState.NOT_SCHEDULED,
+                                                          Arrays.asList(ProductState.COMPLETED, ProductState.FINISHED));
+    }
 
+    /**
+     * @param ingestChain ingest processing chain name
+     * @param session session name
+     * @param sipState {@link ISipState}
+     * @param pageable page limit
+     * @return a page of products with the above properties
+     */
+    Page<Product> findByProcessingChainAndSessionAndSipState(String ingestChain, String session, ISipState sipState,
+            Pageable pageable);
+
+    /**
+     * @param ingestChain ingest processing chain name
+     * @param session session name
+     * @param sipState {@link ISipState}
+     * @param pageable page limit
+     * @return all products with the above properties
+     */
+    Set<Product> findByProcessingChainAndSessionAndSipState(String ingestChain, String session, ISipState sipState);
+
+    /**
+     * @param sipState {@link ISipState}
+     * @return a set of products with the above properties
+     */
     @Lock(LockModeType.PESSIMISTIC_READ)
-    Page<Product> findAllByIngestChainAndSessionAndSendedAndStatusIn(String ingestChain, String session, Boolean sended,
-            Pageable pageable, ProductStatus... status);
+    Set<Product> findBySipState(ISipState sipState);
 
+    Set<Product> findNoLockBySipState(ISipState sipState);
 }

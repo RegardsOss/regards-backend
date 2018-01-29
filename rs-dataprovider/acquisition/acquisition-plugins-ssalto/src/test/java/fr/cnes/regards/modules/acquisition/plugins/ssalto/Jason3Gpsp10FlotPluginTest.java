@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
 
 /**
  *
@@ -51,7 +51,7 @@ public class Jason3Gpsp10FlotPluginTest extends AbstractProductMetadataPluginTes
     }
 
     @Override
-    public IGenerateSIPPlugin buildPlugin() throws ModuleException {
+    public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
         PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Jason3Gpsp10FlotProductMetadataPlugin");
 
         return pluginService.getPlugin(pluginConfiguration.getId());

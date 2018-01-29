@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.acquisition.plugins.IGenerateSIPPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
 
 /**
  *
@@ -70,17 +70,18 @@ public class Jason2Pltm1PluginTest extends AbstractProductMetadataPluginTest {
     public void initTestSoloList() {
 
     }
-    
+
     @Override
     public void createMetadataPlugin_all() {
         super.createMetadataPlugin_all();
     }
 
     @Override
-    public IGenerateSIPPlugin buildPlugin() throws ModuleException {
+    public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
         PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Jason2Ptlm1ProductMetadataPlugin");
 
-        return pluginService.getPlugin(pluginConfiguration.getId());    }
+        return pluginService.getPlugin(pluginConfiguration.getId());
+    }
 
     @Override
     protected Logger getLogger() {

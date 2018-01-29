@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules</groupId>
+	<groupId>fr.cnes.regards.modules.acquisition</groupId>
 	<artifactId>acquisition-service</artifactId>
 	<packaging>jar</packaging>
 
@@ -39,11 +39,11 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
+			<groupId>fr.cnes.regards.modules.acquisition</groupId>
 			<artifactId>acquisition-dao</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
+			<groupId>fr.cnes.regards.modules.acquisition</groupId>
 			<artifactId>acquisition-domain</artifactId>
 		</dependency>
 		<dependency>
@@ -84,7 +84,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.utils</groupId>
 			<artifactId>file-utils</artifactId>
@@ -92,15 +91,16 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.entities</groupId>
 			<artifactId>entities-client</artifactId>
- 		</dependency>
+		</dependency>
+		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-integration-test</artifactId>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-multitenant-regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
