@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -78,36 +79,42 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
         AvailabilityRequest request = new AvailabilityRequest();
         request.setChecksums(dataFilesMap.keySet());
         request.setExpirationDate(expirationDate);
-        AvailabilityResponse response = aipClient.makeFilesAvailable(request).getBody();
-        // Update all already available files
-        boolean atLeastOneDataFileIntoResponse = false;
-        for (String checksum : response.getAlreadyAvailable()) {
-            OrderDataFile dataFile = dataFilesMap.get(checksum);
-            // If dataFile is ONLINE, don't set its state to AVAILABLE, it is mandatory to keep ONLINE state
-            if (dataFile.getState() != FileState.ONLINE) {
-                dataFile.setState(FileState.AVAILABLE);
-            }
-            atLeastOneDataFileIntoResponse = true;
-            this.semaphore.release();
-        }
-        // Update all files in error
-        for (String checksum : response.getErrors()) {
-            dataFilesMap.get(checksum).setState(FileState.ERROR);
-            atLeastOneDataFileIntoResponse = true;
-            this.semaphore.release();
-        }
-        // Update all dataFiles state if at least one is already available or in error
-        if (atLeastOneDataFileIntoResponse) {
-            dataFileService.save(dataFilesMap.values());
-        }
-        // Wait for remaining files availability from storage
         try {
-            this.semaphore.acquire();
-        } catch (InterruptedException e) {
-            return;
+            FeignSecurityManager.asSystem();
+            AvailabilityResponse response = aipClient.makeFilesAvailable(request).getBody();
+
+            // Update all already available files
+            boolean atLeastOneDataFileIntoResponse = false;
+            for (String checksum : response.getAlreadyAvailable()) {
+                OrderDataFile dataFile = dataFilesMap.get(checksum);
+                // If dataFile is ONLINE, don't set its state to AVAILABLE, it is mandatory to keep ONLINE state
+                if (dataFile.getState() != FileState.ONLINE) {
+                    dataFile.setState(FileState.AVAILABLE);
+                }
+                atLeastOneDataFileIntoResponse = true;
+                this.semaphore.release();
+            }
+            // Update all files in error
+            for (String checksum : response.getErrors()) {
+                dataFilesMap.get(checksum).setState(FileState.ERROR);
+                atLeastOneDataFileIntoResponse = true;
+                this.semaphore.release();
+            }
+            // Update all dataFiles state if at least one is already available or in error
+            if (atLeastOneDataFileIntoResponse) {
+                dataFileService.save(dataFilesMap.values());
+            }
+            // Wait for remaining files availability from storage
+            try {
+                this.semaphore.acquire();
+            } catch (InterruptedException e) {
+                return;
+            }
+            subscriber.unsubscribe(this);
+            dataFileService.save(dataFilesMap.values());
+        } finally {
+            FeignSecurityManager.reset();
         }
-        subscriber.unsubscribe(this);
-        dataFileService.save(dataFilesMap.values());
     }
 
     @Override
