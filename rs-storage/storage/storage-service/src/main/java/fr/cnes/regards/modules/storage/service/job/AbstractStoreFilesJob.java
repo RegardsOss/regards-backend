@@ -74,11 +74,6 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     protected static final String PARAMETER_INVALID = "%s requires a valid %s(identifier: %s)";
 
     /**
-     * Class logger
-     */
-    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    /**
      * {@link IPluginService} instance
      */
     @Autowired
@@ -125,7 +120,6 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         // now lets check it is an id of a plugin configuration
         Long confId = pluginToUseId.getValue();
         // rather than duplicating the code, lets just catch the exception
-        ModuleException noConfigurationExist = null;
         PluginConfiguration confToUse = null;
         try {
             confToUse = pluginService.getPluginConfiguration(confId);
@@ -173,10 +167,10 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         progressManager = new StorageJobProgressManager(publisher, this);
         try {
             doRun(parameters);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             logger.error(e.getMessage(), e);
             throw e;
-        }finally {
+        } finally {
             logger.debug("[FILE JOB] Executing some checks after execution");
             // eventually, lets see if everything went as planned
             afterRun();
