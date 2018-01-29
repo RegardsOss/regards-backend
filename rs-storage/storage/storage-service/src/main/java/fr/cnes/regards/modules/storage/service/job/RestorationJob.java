@@ -11,6 +11,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
@@ -63,7 +64,7 @@ public class RestorationJob extends AbstractStoreFilesJob {
             storagePlugin.retrieve(workingSubset, destination, progressManager);
         } catch (ModuleException e) {
             // throwing new runtime allows us to make the job fail.
-            throw new RuntimeException(e);
+            throw new RsRuntimeException(e);
         }
     }
 

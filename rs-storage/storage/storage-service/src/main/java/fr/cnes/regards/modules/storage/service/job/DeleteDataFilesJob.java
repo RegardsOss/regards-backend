@@ -4,6 +4,7 @@ import java.util.Map;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
@@ -29,7 +30,7 @@ public class DeleteDataFilesJob extends AbstractStoreFilesJob {
             }
         } catch (ModuleException e) {
             //throwing new runtime allows us to make the job fail.
-            throw new RuntimeException(e);
+            throw new RsRuntimeException(e);
         }
     }
 
