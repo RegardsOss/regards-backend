@@ -21,7 +21,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.staf.domain.STAFConfiguration;
 import fr.cnes.regards.framework.staf.exception.STAFException;
@@ -35,7 +36,7 @@ import fr.cnes.regards.framework.staf.exception.STAFException;
  */
 public class STAFSession {
 
-    protected static Logger logger = Logger.getLogger(STAFSession.class);
+    protected static Logger logger = LoggerFactory.getLogger(STAFSession.class);
 
     /**
      * Commande d'initialisation du client STAF
@@ -91,6 +92,11 @@ public class STAFSession {
      * Commande permettant de creer un noeud au STAF
      */
     private static final String STAFNODE_CREATE = "stafnod -create -n {0}";
+
+    /**
+     * Commande permettant de compter le nombre de fichiers dans un noeud STAF
+     */
+    private static final String STAFNODE_COUNT = "stafnod -list -n {0} | grep \"FILE=\" | wc -l";
 
     /**
      * deplacement dans l'arborescence d'un projet STAF
@@ -300,9 +306,8 @@ public class STAFSession {
                 attemptToConnect = attemptsBeforeFailCount < attemptsBeforeFail;
                 if (attemptToConnect) {
                     attemptsBeforeFailCount++;
-                    final String msg = String
-                            .format("Attempts %d on %d to connect to the STAF", attemptsBeforeFailCount,
-                                    attemptsBeforeFail);
+                    final String msg = String.format("Attempts %d on %d to connect to the STAF",
+                                                     attemptsBeforeFailCount, attemptsBeforeFail);
                     logger.info(msg);
                 } else {
                     throw e;
@@ -380,6 +385,43 @@ public class STAFSession {
                 stafOutput = null;
             }
         }
+    }
+
+    public int staffCount(String pStafNode) throws STAFException {
+
+        // Prepare la commande STAF
+        final MessageFormat staffNodeCount = new MessageFormat(STAFNODE_COUNT);
+        final List<String> parameters = new ArrayList<>();
+        parameters.add(pStafNode);
+        String command = staffNodeCount.format(parameters.toArray());
+
+        logger.info(String.format("Running command -----> %s", command));
+        // Execute la commande STAF
+        executeCommand(command);
+
+        // Analyse la reponse du STAF
+        // Decode la ligne en cours
+        String response = readSTAFLine();
+        String errorMessage = checkErrorMessage(response);
+        int count = 0;
+        try {
+            count = Integer.parseInt(response.replaceAll(" ", ""));
+        } catch (NumberFormatException e) {
+            errorMessage = e.getMessage();
+        }
+
+        // Traite le resultat de l'analyse de la ligne en cours
+        if (errorMessage != null) {
+            // Echec de la commande (le fichier n'existe peut etre pas)
+            final String msg = String.format("Unable to count number of files in node.%s Cause : %s", pStafNode,
+                                             errorMessage);
+            logger.error(msg);
+            throw new STAFException(msg);
+        }
+
+        // Purge le flux de sortie du STAF
+        emptySTAFOutput();
+        return count;
     }
 
     /**
@@ -833,13 +875,11 @@ public class STAFSession {
                 if (pRenamePhysicalFile.equals(Boolean.TRUE)) {
                     if (!pRenamedLocalFilesPathMap.containsValue(newFile.getPath())) {
                         if (!newFile.exists()) {
-                            logger.warn(
-                                    "STAF file to archive contains invalid caracters. Renaming file " + file.getPath()
-                                            + " to " + newFile.getPath() + " before archving");
+                            logger.warn("STAF file to archive contains invalid caracters. Renaming file "
+                                    + file.getPath() + " to " + newFile.getPath() + " before archving");
                             if (!file.renameTo(newFile)) {
-                                throw new STAFException(
-                                        String.format("[STAF] Error renaming file %s to %s", file.getPath(),
-                                                      newFile.getPath()));
+                                throw new STAFException(String.format("[STAF] Error renaming file %s to %s",
+                                                                      file.getPath(), newFile.getPath()));
                             }
                             pRenamedLocalFilesPathMap.put(originalfilePath, newFile.getPath());
                         } else {
@@ -975,9 +1015,8 @@ public class STAFSession {
                 // Traite le resultat de l'analyse de la ligne en cours
                 if (errorMessage != null) {
                     // Echec de la commande
-                    final String msg = String
-                            .format("Unable to rename the file %s with the following name %s", pOldFilename,
-                                    pNewFilename);
+                    final String msg = String.format("Unable to rename the file %s with the following name %s",
+                                                     pOldFilename, pNewFilename);
                     logger.error(msg);
                     throw new STAFException(msg);
                 } else if (successMessage != null) {
@@ -1079,7 +1118,7 @@ public class STAFSession {
         final StringBuilder builder = new StringBuilder();
         boolean validity = true;
 
-        for (final Iterator<Path> iter = pSTAFFilePaths.iterator(); iter.hasNext() && validity; ) {
+        for (final Iterator<Path> iter = pSTAFFilePaths.iterator(); iter.hasNext() && validity;) {
             final Path stafFile = iter.next();
             builder.append(stafFile);
             if (!checkLongFilename(stafFile.toString())) {
@@ -1142,8 +1181,8 @@ public class STAFSession {
             stafOutput = new BufferedReader(new InputStreamReader(shellProcess.getInputStream()));
         } catch (final IOException e) {
             // Erreur de lancement du shell de pilotage
-            final String msg = String
-                    .format("An error occured while creating a STAF session shell %s", configuration.getKshExec());
+            final String msg = String.format("An error occured while creating a STAF session shell %s",
+                                             configuration.getKshExec());
             logger.error(msg, e);
             throw new STAFException(msg, e);
         }
@@ -1502,8 +1541,8 @@ public class STAFSession {
      * @return Indique si le format du parametre est valide
      */
     private boolean checkShortFilename(String pFilename) {
-        return (pFilename != null) && (pFilename.length() <= FILE_MAX_LENGTH) && Pattern
-                .matches(FILE_PATTERN, pFilename);
+        return (pFilename != null) && (pFilename.length() <= FILE_MAX_LENGTH)
+                && Pattern.matches(FILE_PATTERN, pFilename);
     }
 
     /**
@@ -1516,8 +1555,8 @@ public class STAFSession {
      * @return Indique si le format du parametre est valide
      */
     private boolean checkNodename(String pNodename) {
-        return (pNodename != null) && (pNodename.length() <= NODE_MAX_LENGTH) && Pattern
-                .matches(FILE_PATTERN, pNodename);
+        return (pNodename != null) && (pNodename.length() <= NODE_MAX_LENGTH)
+                && Pattern.matches(FILE_PATTERN, pNodename);
     }
 
     /**
@@ -1538,8 +1577,8 @@ public class STAFSession {
     protected boolean checkPassword(String pPassword) {
         boolean valid = true;
 
-        if ((pPassword == null) || (pPassword.length() > PASSWORD_MAX_LENGTH) || (pPassword.length()
-                < PASSWORD_MIN_LENGTH) || !Pattern.matches(PASSWORD_PATTERN, pPassword)) {
+        if ((pPassword == null) || (pPassword.length() > PASSWORD_MAX_LENGTH)
+                || (pPassword.length() < PASSWORD_MIN_LENGTH) || !Pattern.matches(PASSWORD_PATTERN, pPassword)) {
             valid = false;
         }
 

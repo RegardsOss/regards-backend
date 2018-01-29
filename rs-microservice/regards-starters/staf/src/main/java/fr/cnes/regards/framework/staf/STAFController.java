@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.staf.domain.AbstractPhysicalFile;
 import fr.cnes.regards.framework.staf.domain.ArchiveAccessModeEnum;
 import fr.cnes.regards.framework.staf.domain.PhysicalCutFile;
@@ -464,21 +465,45 @@ public class STAFController {
      */
     public Set<AbstractPhysicalFile> prepareFilesToArchive(Map<Path, Set<Path>> pFileToArchivePerStafNode) {
         Set<AbstractPhysicalFile> preparedFiles = Sets.newHashSet();
-        for (Entry<Path, Set<Path>> stafNode : pFileToArchivePerStafNode.entrySet()) {
-            for (Path fileToArchive : stafNode.getValue()) {
+
+        try {
+            stafService.connectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
+
+            for (Entry<Path, Set<Path>> stafNode : pFileToArchivePerStafNode.entrySet()) {
+                Path availableStafNode = stafNode.getKey();
                 try {
-                    preparedFiles.addAll(prepareFileToArchive(fileToArchive, stafNode.getKey(), preparedFiles));
+                    // Handle mximum number of files per node.
+                    // If the number of files already exceed the maximum configured, archive in a new node by adding a suffix "_x"
+                    // where x is the first available number or first node not full.
+                    availableStafNode = stafService.getFirstAvailableStafNode(stafNode.getKey());
                 } catch (STAFException e) {
-                    LOG.error("[STAF] Error preparing file for STAF transfer. " + e.getMessage());
-                    LOG.debug(e.getMessage(), e);
+                    LOG.error(String.format("[STAF] Error calculating first available staf node for node %s",
+                                            availableStafNode.toString()));
+                    LOG.error(e.getMessage(), e);
+                }
+                for (Path fileToArchive : stafNode.getValue()) {
+                    try {
+                        preparedFiles.addAll(prepareFileToArchive(fileToArchive, availableStafNode, preparedFiles));
+                    } catch (STAFException e) {
+                        LOG.error("[STAF] Error preparing file for STAF transfer. " + e.getMessage());
+                        LOG.debug(e.getMessage(), e);
+                    }
                 }
             }
-        }
-        // After all files added, check if TAR files are in TO_STORE state in order to create associated TAR.
-        try {
-            tarController.createPreparedTAR(getPhysicalTARFilesFromAbstractPhysicalFiles(preparedFiles));
-        } catch (STAFTarException e) {
-            LOG.error("[STAF] Error creating TAR File", e);
+            // After all files added, check if TAR files are in TO_STORE state in order to create associated TAR.
+            try {
+                tarController.createPreparedTAR(getPhysicalTARFilesFromAbstractPhysicalFiles(preparedFiles));
+            } catch (STAFTarException e) {
+                LOG.error("[STAF] Error creating TAR File", e);
+            }
+        } catch (STAFException e) {
+            LOG.error("[STAF] Error during staf connection", e);
+        } finally {
+            try {
+                stafService.disconnectArchiveSystem(ArchiveAccessModeEnum.ARCHIVE_MODE);
+            } catch (STAFException e) {
+                LOG.error("Error disconecting from STAF", e);
+            }
         }
         return preparedFiles;
     }

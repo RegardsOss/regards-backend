@@ -30,6 +30,7 @@ import org.mockito.Mockito;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.staf.domain.AbstractPhysicalFile;
 import fr.cnes.regards.framework.staf.domain.PhysicalFileStatusEnum;
 import fr.cnes.regards.framework.staf.domain.PhysicalTARFile;
@@ -132,6 +133,7 @@ public class STAFControllerTest {
         configuration.setMaxSessionStreamsRestitutionMode(10);
         configuration.setMaxStreamFilesArchivingMode(10);
         configuration.setMaxStreamFilesRestitutionMode(10);
+        configuration.setMaxNumberOfFilesPerNode(5000L);
 
         stafArchive = new STAFArchive();
         stafArchive.setArchiveName(STAF_ARCHIVE_NAME);
@@ -204,14 +206,14 @@ public class STAFControllerTest {
         localFileToArchiveMap.put("src/test/resources/staf/income/file_test_1.txt",
                                   "/test/node/eadcc622739d58e8a78170b67c6ff9f5");
 
-        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(Mockito.any(), Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
-        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
-        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
-        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(localFileToArchiveMap, "CS1", false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
+        Mockito.verify(stafSessionMock, Mockito.times(2)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(localFileToArchiveMap, "CS1", false);
+        Mockito.verify(stafSessionMock, Mockito.times(2)).stafconClose();
 
         Assert.assertEquals(5, archivedFiles.size());
 
@@ -275,15 +277,15 @@ public class STAFControllerTest {
         Assert.assertEquals("2 Tars should be ready to send to STAF. Last one is not big enougth.", 2,
                             tarToSendToStaf.size());
 
-        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(Mockito.any(), Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
-        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
         Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
-        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
+        Mockito.verify(stafSessionMock, Mockito.times(2)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
-        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+        Mockito.verify(stafSessionMock, Mockito.times(2)).stafconClose();
 
         // Check that 2 tars has been sent to STAF
         Assert.assertEquals("2 Tars should have beed stored into STAF System.", 2, archivedFiles.size());
@@ -352,15 +354,15 @@ public class STAFControllerTest {
         Assert.assertEquals("3 Tars shloud be ready to send to STAF. No remaining current TAR.", 3,
                             tarToSendToStaf.size());
 
-        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(Mockito.any(), Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
-        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
         Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
-        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
+        Mockito.verify(stafSessionMock, Mockito.times(2)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
-        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+        Mockito.verify(stafSessionMock, Mockito.times(2)).stafconClose();
 
         // Check that 3 tars has been sent to STAF
         Assert.assertEquals("3 Tars should have been stored into STAF System.", 3, archivedFiles.size());
@@ -437,15 +439,15 @@ public class STAFControllerTest {
         Assert.assertEquals("1 Tar should be ready to send to STAF. No remaining current TAR.", 1,
                             tarToSendToStaf.size());
 
-        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(Mockito.any(), Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
-        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
         Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
-        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
+        Mockito.verify(stafSessionMock, Mockito.times(2)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
-        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+        Mockito.verify(stafSessionMock, Mockito.times(2)).stafconClose();
 
         // Check that 3 tars has been sent to STAF
         Assert.assertEquals("1 Tar should have been stored into STAF System.", 1, archivedFiles.size());
@@ -522,15 +524,15 @@ public class STAFControllerTest {
         Assert.assertEquals("No Tar should be ready to send to STAF. One remaining current TAR.", 0,
                             tarToSendToStaf.size());
 
-        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(Mockito.any(), Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
-        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
         Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
-        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
-        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
 
         // Check that 3 tars has been sent to STAF
         Assert.assertEquals("No Tar should have been stored into STAF System.", 0, archivedFiles.size());
@@ -582,16 +584,16 @@ public class STAFControllerTest {
                 .filter(pf -> PhysicalFileStatusEnum.TO_STORE.equals(pf.getStatus())).collect(Collectors.toSet());
         Assert.assertEquals(20, tarToSendToStaf.size());
 
-        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(Mockito.any(), Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
-        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
         Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
-        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
+        Mockito.verify(stafSessionMock, Mockito.times(2)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
         // 20 files to archive. Max number of files per archive session = 10 -> 2xarchive command
         Mockito.verify(stafSessionMock, Mockito.times(2)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
-        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+        Mockito.verify(stafSessionMock, Mockito.times(2)).stafconClose();
 
         // Check that the number of files archived in STAF is 5(files)*4(parts per file) = 20(cuted files).
         Assert.assertEquals(20, archivedFiles.size());
@@ -1354,14 +1356,17 @@ public class STAFControllerTest {
         localFileToArchiveMap.put("src/test/resources/staf/income/file_test_1.txt",
                                   node1 + "eadcc622739d58e8a78170b67c6ff9f5");
 
-        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconOpen(Mockito.any(), Mockito.any());
+        // One connection and deconnection to check nodes during file preparation.
+        // No filleArchive during preparation
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(Mockito.any(), Mockito.any());
         Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
                                                                          Mockito.anyString(), Mockito.anyBoolean());
-        Mockito.verify(stafSessionMock, Mockito.times(0)).stafconClose();
-        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
-        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
-        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(localFileToArchiveMap, "CS1", false);
         Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
+        // One connection and deconnection more.
+        Mockito.verify(stafSessionMock, Mockito.times(2)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(localFileToArchiveMap, "CS1", false);
+        Mockito.verify(stafSessionMock, Mockito.times(2)).stafconClose();
 
         Assert.assertEquals(4, archivedFiles.size());
 
