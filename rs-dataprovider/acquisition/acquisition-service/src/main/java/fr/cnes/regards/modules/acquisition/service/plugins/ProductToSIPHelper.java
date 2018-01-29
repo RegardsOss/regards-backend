@@ -25,27 +25,27 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 
 /**
- * Default SIP generation
+ *
+ * Help to fill the {@link SIP} required field according to the related {@link Product}
  *
  * @author Marc Sordi
+ *
  */
-@Plugin(id = "DefaultSIPGeneration", version = "1.0.0-SNAPSHOT", description = "Generate SIP using product information",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
-public class DefaultSIPGeneration implements ISipGenerationPlugin {
+public class ProductToSIPHelper {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSIPGeneration.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProductToSIPHelper.class);
 
-    @Override
-    public SIP generate(Product product) throws ModuleException {
+    private ProductToSIPHelper() {
+        // Nothing to do
+    }
+
+    public static SIPBuilder initFrom(Product product) throws ModuleException {
 
         // Init the builder
         SIPBuilder sipBuilder = new SIPBuilder(product.getProductName());
@@ -64,11 +64,6 @@ public class DefaultSIPGeneration implements ISipGenerationPlugin {
                 throw new EntityInvalidException(e.getMessage());
             }
         }
-
-        // Add creation event
-        sipBuilder.addEvent("Product SIP generation");
-
-        return sipBuilder.build();
+        return sipBuilder;
     }
-
 }

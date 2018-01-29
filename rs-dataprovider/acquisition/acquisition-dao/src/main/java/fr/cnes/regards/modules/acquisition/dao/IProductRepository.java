@@ -72,30 +72,62 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
     }
 
     /**
-     * @param ingestChain ingest processing chain name
+     * Find all products according to specified filters
+     *
+     * @param ingestChain ingest chain
      * @param session session name
      * @param sipState {@link ISipState}
      * @param pageable page limit
      * @return a page of products with the above properties
      */
-    Page<Product> findByProcessingChainAndSessionAndSipState(String ingestChain, String session, ISipState sipState,
+    Page<Product> findByProcessingChainIngestChainAndSessionAndSipState(String ingestChain, String session,
+            ISipState sipState, Pageable pageable);
+
+    /**
+     * Find all products according to specified filters (no session)
+     *
+     * @param ingestChain ingest chain
+     * @param sipState {@link ISipState}
+     * @param pageable page limit
+     * @return a page of products with the above properties
+     */
+    Page<Product> findByProcessingChainIngestChainAndSipState(String ingestChain, ISipState sipState,
             Pageable pageable);
 
     /**
-     * @param ingestChain ingest processing chain name
+     * Find all products according to specified filters
+     *
+     * @param ingestChain ingest chain
      * @param session session name
      * @param sipState {@link ISipState}
      * @param pageable page limit
-     * @return all products with the above properties
+     * @return a page of products with the above properties
      */
-    Set<Product> findByProcessingChainAndSessionAndSipState(String ingestChain, String session, ISipState sipState);
+    Set<Product> findByProcessingChainIngestChainAndSessionAndSipState(String ingestChain, String session,
+            ISipState sipState);
 
     /**
+     * Find all products according to specified filters (no session)
+     *
+     * @param ingestChain ingest chain
+     * @param sipState {@link ISipState}
+     * @param pageable page limit
+     * @return a page of products with the above properties
+     */
+    Set<Product> findByProcessingChainIngestChainAndSipState(String ingestChain, ISipState sipState);
+
+    /**
+     * Find {@link Product} by state in transaction with pessimistic read lock
      * @param sipState {@link ISipState}
      * @return a set of products with the above properties
      */
     @Lock(LockModeType.PESSIMISTIC_READ)
-    Set<Product> findBySipState(ISipState sipState);
+    Set<Product> findWithLockBySipState(ISipState sipState);
 
-    Set<Product> findNoLockBySipState(ISipState sipState);
+    /**
+     * Find {@link Product} by state
+     * @param sipState {@link ISipState}
+     * @return a set of products with the above properties
+     */
+    Set<Product> findBySipState(ISipState sipState);
 }

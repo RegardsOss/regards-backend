@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -233,10 +234,16 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Page<Product> findProductsToSubmit(String ingestChain, String session) {
-        return productRepository.findByProcessingChainAndSessionAndSipState(ingestChain, session,
-                                                                            ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                            new PageRequest(0, bulkRequestLimit));
+    public Page<Product> findProductsToSubmit(String ingestChain, Optional<String> session) {
+
+        if (session.isPresent()) {
+            return productRepository.findByProcessingChainIngestChainAndSessionAndSipState(ingestChain, session
+                    .get(), ProductSIPState.SUBMISSION_SCHEDULED, new PageRequest(0, bulkRequestLimit));
+        } else {
+            return productRepository.findByProcessingChainIngestChainAndSipState(ingestChain,
+                                                                                 ProductSIPState.SUBMISSION_SCHEDULED,
+                                                                                 new PageRequest(0, bulkRequestLimit));
+        }
     }
 
     /**
@@ -247,18 +254,21 @@ public class ProductService implements IProductService {
     @Override
     public void scheduleProductSIPSubmission() {
         // Find all products already scheduled for submission
-        Set<Product> products = productRepository.findBySipState(ProductSIPState.SUBMISSION_SCHEDULED);
+        Set<Product> products = productRepository.findWithLockBySipState(ProductSIPState.SUBMISSION_SCHEDULED);
 
         // Register all chains and sessions already scheduled
         Multimap<String, String> scheduledSessionsByChain = ArrayListMultimap.create();
         if ((products != null) && !products.isEmpty()) {
             for (Product product : products) {
-                scheduledSessionsByChain.put(product.getProcessingChain().getIngestChain(), product.getSession());
+                if (!scheduledSessionsByChain.containsEntry(product.getProcessingChain().getIngestChain(),
+                                                            product.getSession())) {
+                    scheduledSessionsByChain.put(product.getProcessingChain().getIngestChain(), product.getSession());
+                }
             }
         }
 
         // Find all products with available SIPs ready for submission
-        products = productRepository.findBySipState(ProductSIPState.GENERATED);
+        products = productRepository.findWithLockBySipState(ProductSIPState.GENERATED);
 
         if ((products != null) && !products.isEmpty()) {
 
@@ -268,7 +278,11 @@ public class ProductService implements IProductService {
                 if (!scheduledSessionsByChain.containsEntry(product.getProcessingChain().getIngestChain(),
                                                             product.getSession())) {
                     // Register chains and sessions for scheduling
-                    sessionsByChain.put(product.getProcessingChain().getIngestChain(), product.getSession());
+                    if (!sessionsByChain.containsEntry(product.getProcessingChain().getIngestChain(),
+                                                       product.getSession())) {
+                        sessionsByChain.put(product.getProcessingChain().getIngestChain(), product.getSession());
+                    }
+
                     // Update SIP state
                     product.setSipState(ProductSIPState.SUBMISSION_SCHEDULED);
                     save(product);
@@ -305,9 +319,15 @@ public class ProductService implements IProductService {
             String ingestChain = params.get(SIPSubmissionJob.INGEST_CHAIN_PARAMETER).getValue();
             String session = params.get(SIPSubmissionJob.SESSION_PARAMETER).getValue();
             // Update product status
-            Set<Product> products = productRepository
-                    .findByProcessingChainAndSessionAndSipState(ingestChain, session,
-                                                                ProductSIPState.SUBMISSION_SCHEDULED);
+            Set<Product> products;
+            if (session == null) {
+                products = productRepository
+                        .findByProcessingChainIngestChainAndSipState(ingestChain, ProductSIPState.SUBMISSION_SCHEDULED);
+            } else {
+                products = productRepository
+                        .findByProcessingChainIngestChainAndSessionAndSipState(ingestChain, session,
+                                                                               ProductSIPState.SUBMISSION_SCHEDULED);
+            }
             for (Product product : products) {
                 product.setSipState(ProductSIPState.SUBMISSION_ERROR);
                 save(product);
@@ -317,7 +337,7 @@ public class ProductService implements IProductService {
 
     @Override
     public void retryProductSIPSubmission() {
-        Set<Product> products = productRepository.findBySipState(ProductSIPState.SUBMISSION_ERROR);
+        Set<Product> products = productRepository.findWithLockBySipState(ProductSIPState.SUBMISSION_ERROR);
         for (Product product : products) {
             product.setSipState(ProductSIPState.GENERATED);
             save(product);

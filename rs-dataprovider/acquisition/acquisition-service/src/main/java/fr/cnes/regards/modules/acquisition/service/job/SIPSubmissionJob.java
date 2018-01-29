@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.service.job;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -56,7 +57,7 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
 
     private String ingestChain;
 
-    private String session;
+    private Optional<String> session;
 
     @Autowired
     private IProductService productService;
@@ -68,7 +69,7 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
         ingestChain = getValue(parameters, INGEST_CHAIN_PARAMETER);
-        session = getValue(parameters, SESSION_PARAMETER);
+        session = getOptionalValue(parameters, SESSION_PARAMETER);
     }
 
     @Override
@@ -90,7 +91,7 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
             LOGGER.debug("Ingest chain {} - session {} : processing {} products of {}", ingestChain, session,
                          products.getNumberOfElements(), products.getTotalElements());
             // Create SIP collection
-            SIPCollectionBuilder sipCollectionBuilder = new SIPCollectionBuilder(ingestChain, session);
+            SIPCollectionBuilder sipCollectionBuilder = new SIPCollectionBuilder(ingestChain, session.orElse(null));
             products.getContent().forEach(p -> sipCollectionBuilder.add(p.getSip()));
             // Submit SIP collection
             ResponseEntity<Collection<SIPDto>> response = ingestClient.ingest(sipCollectionBuilder.build());

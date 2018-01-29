@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -107,7 +108,7 @@ public interface IProductService {
      * @return the first page of products with state {@link ProductSIPState#SUBMISSION_SCHEDULED}
      *
      */
-    Page<Product> findProductsToSubmit(String ingestChain, String session);
+    Page<Product> findProductsToSubmit(String ingestChain, Optional<String> session);
 
     /**
      * Schedule {@link SIPSubmissionJob}s according to available SIPs

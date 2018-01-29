@@ -49,7 +49,6 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -511,9 +510,10 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     protected void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles) throws ModuleException {
         for (AcquisitionFile af : acqFiles) {
             try {
-                sipBuilder.getContentInformationBuilder()
-                        .setDataObject(DataType.RAWDATA, af.getFilePath().toAbsolutePath().toUri().toURL(),
-                                       af.getChecksumAlgorithm(), af.getChecksum());
+                sipBuilder.getContentInformationBuilder().setDataObject(af.getFileInfo().getDataType(),
+                                                                        af.getFilePath().toAbsolutePath().toUri()
+                                                                                .toURL(),
+                                                                        af.getChecksumAlgorithm(), af.getChecksum());
                 sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
                 sipBuilder.addContentInformation();
             } catch (MalformedURLException e) {

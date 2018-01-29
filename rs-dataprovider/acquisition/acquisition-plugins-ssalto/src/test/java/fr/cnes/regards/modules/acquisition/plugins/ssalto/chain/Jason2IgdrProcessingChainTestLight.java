@@ -20,52 +20,27 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.chain;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
-import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
-import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.Jason2ProductMetadataPlugin;
-import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.RegexDiskScanning;
-import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.entities.domain.Dataset;
-import fr.cnes.regards.modules.ingest.client.IIngestClient;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * Test JASON2 IGDR processing chain
@@ -73,89 +48,12 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * @author Marc Sordi
  *
  */
-@Ignore("Replaced by generic implementation")
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=jason2idgr", "jwt.secret=123456789",
         "regards.workspace=target/workspace" })
-@ContextConfiguration(classes = { Jason2IgdrProcessingChainTest.AcquisitionConfiguration.class })
-public class Jason2IgdrProcessingChainTest extends AbstractDaoTest {
+public class Jason2IgdrProcessingChainTestLight extends AbstractAcquisitionChainTest {
 
-    @Autowired
-    private IAcquisitionProcessingService processingService;
-
-    @Autowired
-    private IDatasetClient datasetClient;
-
-    @Autowired
-    private IAcquisitionFileRepository fileRepository;
-
-    @Autowired
-    private IProductRepository productRepository;
-
-    @Configuration
-    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
-    static class AcquisitionConfiguration {
-
-        @Bean
-        public IIngestClient ingestClient() {
-            return new IngestClientMock();
-        }
-
-        @Bean
-        public IDatasetClient datasetClient() {
-            return Mockito.mock(IDatasetClient.class);
-        }
-    }
-
-    @Test
-    public void startChain() throws ModuleException, InterruptedException {
-        AcquisitionProcessingChain processingChain = createJason2IgdrChain();
-        processingService.startManualChain(processingChain.getId());
-
-        // 1 job is created for scanning, registering files and creating products
-        // 1 job per product is created for SIP generation
-        // 1 job is for submission to ingest
-
-        // Wait until all files are registered as acquired
-        int fileAcquired = 0;
-        int loops = 10;
-        do {
-            Thread.sleep(1_000);
-            fileAcquired = fileRepository.findByState(AcquisitionFileState.ACQUIRED).size();
-            loops--;
-        } while ((fileAcquired != 3) && (loops != 0));
-
-        if (fileAcquired != 3) {
-            Assert.fail();
-        }
-
-        // Wait until SIP are generated
-        int productGenerated = 0;
-        loops = 10;
-        do {
-            Thread.sleep(1_000);
-            productGenerated = productRepository.findBySipState(ProductSIPState.GENERATED).size();
-            loops--;
-        } while ((productGenerated != 3) && (loops != 0));
-
-        if (productGenerated != 3) {
-            Assert.fail();
-        }
-
-        // Wait until SIP are submitted to INGEST (mock!)
-        int productSubmitted = 0;
-        loops = 10;
-        do {
-            Thread.sleep(1_000);
-            productSubmitted = productRepository.findBySipState(SIPState.VALID).size();
-            loops--;
-        } while ((productSubmitted != 3) && (loops != 0));
-
-        if (productSubmitted != 3) {
-            Assert.fail();
-        }
-    }
-
-    private AcquisitionProcessingChain createJason2IgdrChain() throws ModuleException {
+    @Override
+    protected AcquisitionProcessingChain createAcquisitionChain() throws ModuleException {
 
         // Create a processing chain
         AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
@@ -164,7 +62,7 @@ public class Jason2IgdrProcessingChainTest extends AbstractDaoTest {
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
 
-        Dataset dataSet = initJason2IGDRDataset();
+        Dataset dataSet = getDataset("DA_TC_JASON2_IGDR");
         processingChain.setDatasetIpId(dataSet.getIpId().toString());
 
         // Create an acquisition file info
@@ -220,18 +118,17 @@ public class Jason2IgdrProcessingChainTest extends AbstractDaoTest {
         // SIP post processing
         // Not required
 
-        // Save processing chain
-        return processingService.createChain(processingChain);
+        return processingChain;
     }
 
-    private Dataset initJason2IGDRDataset() {
-        Dataset dataSet = new Dataset();
-        final UniformResourceName aipUrn = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, "SSALTO",
-                UUID.randomUUID(), 1);
-        dataSet.setIpId(aipUrn);
-        dataSet.setSipId("DA_TC_JASON2_IGDR");
-        Mockito.when(datasetClient.retrieveDataset(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(new Resource<Dataset>(dataSet), HttpStatus.OK));
-        return dataSet;
+    @Override
+    protected int getExpectedFiles() {
+        return 3;
     }
+
+    @Override
+    protected int getExpectedProducts() {
+        return 3;
+    }
+
 }
