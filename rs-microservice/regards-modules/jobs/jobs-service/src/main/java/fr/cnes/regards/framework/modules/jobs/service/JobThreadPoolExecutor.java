@@ -12,6 +12,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.FileSystemUtils;
 
 import com.google.common.collect.BiMap;
@@ -28,7 +30,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * @author oroussel
  */
 public class JobThreadPoolExecutor extends ThreadPoolExecutor {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
     /**
      * Only for the thread names
      */
@@ -82,8 +84,9 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
                 jobInfo.updateStatus(JobStatus.ABORTED);
                 jobInfoService.save(jobInfo);
                 publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
-            } catch (ExecutionException ee) { // NOSONAR
+            } catch (ExecutionException ee) {
                 t = ee.getCause();
+                LOGGER.error("Job failed", t);;
                 jobInfo.updateStatus(JobStatus.FAILED);
                 StringWriter sw = new StringWriter();
                 t.printStackTrace(new PrintWriter(sw));
