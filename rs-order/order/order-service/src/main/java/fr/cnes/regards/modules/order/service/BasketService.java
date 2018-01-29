@@ -148,7 +148,8 @@ public class BasketService implements IBasketService {
 
     @Override
     public Basket removeDatedItemsSelection(Basket basket, Long datasetId, OffsetDateTime itemsSelectionDate) {
-        for (BasketDatasetSelection dsSelection : basket.getDatasetSelections()) {
+        for (Iterator<BasketDatasetSelection> j = basket.getDatasetSelections().iterator(); j.hasNext(); ) {
+            BasketDatasetSelection dsSelection = j.next();
             if (dsSelection.getId().equals(datasetId)) {
                 // Search for item selections to remove
                 for (Iterator<BasketDatedItemsSelection> i = dsSelection.getItemsSelections().iterator(); i
@@ -157,6 +158,21 @@ public class BasketService implements IBasketService {
                         i.remove();
                         break;
                     }
+                }
+                // Must recompute dataset opensearch request from its associated dated items selections
+                switch (dsSelection.getItemsSelections().size()) {
+                    case 0:
+                        // must delete dsSelection (no more dated items selections => no more datasetSelection)
+                        j.remove();
+                        break;
+                    case 1: // only one dated items selection :
+                        dsSelection.setOpenSearchRequest(
+                                "(" + dsSelection.getItemsSelections().iterator().next().getOpenSearchRequest() + ")");
+                        break;
+                    default: // more than one dated items selections
+                        dsSelection.setOpenSearchRequest(dsSelection.getItemsSelections().stream()
+                                                                 .map(BasketDatedItemsSelection::getOpenSearchRequest)
+                                                                 .collect(Collectors.joining(") OR (", "((", "))")));
                 }
                 computeSummaryAndUpdateDatasetSelection(dsSelection);
                 repos.save(basket);
