@@ -160,6 +160,10 @@
                 </filters>
             </build>
         </profile>
+		<profile>
+			<!-- profile to desactivate resource filtering -->
+			<id>install</id>
+		</profile>
     </profiles>
 
     <build>
