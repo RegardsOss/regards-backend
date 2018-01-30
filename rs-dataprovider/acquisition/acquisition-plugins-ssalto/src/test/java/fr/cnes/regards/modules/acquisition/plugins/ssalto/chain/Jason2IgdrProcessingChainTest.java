@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=jason2idgr", "jwt.secret=123456789",
         "regards.workspace=target/workspace" })
-public class Jason2IgdrProcessingChainTestLight extends AbstractAcquisitionChainTest {
+public class Jason2IgdrProcessingChainTest extends AbstractAcquisitionChainTest {
 
     @Override
     protected AcquisitionProcessingChain createAcquisitionChain() throws ModuleException {
