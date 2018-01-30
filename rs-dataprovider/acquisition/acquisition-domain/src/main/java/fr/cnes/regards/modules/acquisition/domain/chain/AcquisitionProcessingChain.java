@@ -41,7 +41,6 @@ import javax.persistence.NamedEntityGraphs;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -78,14 +77,14 @@ public class AcquisitionProcessingChain {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "AcquisitionChainSequence")
     private Long id;
 
-    @NotBlank
+    @NotBlank(message = "Processing chain label is required")
     @Column(name = "label", length = 64, nullable = false)
     private String label;
 
     /**
      * <code>true</code> if active, <code>false</code> otherwise
      */
-    @NotNull
+    @NotNull(message = "Processing chain state is required")
     @Column
     private Boolean active = false;
 
@@ -94,7 +93,7 @@ public class AcquisitionProcessingChain {
     @Enumerated(EnumType.STRING)
     private AcquisitionProcessingChainMode mode = AcquisitionProcessingChainMode.AUTO;
 
-    @Max(value = 50, message = "Session must be 50 characters length max")
+    // FIXME @Max(value = 50, message = "Session must be 50 characters length max")
     @Column(length = 50)
     private String session;
 
@@ -123,21 +122,21 @@ public class AcquisitionProcessingChain {
     /**
      * Then INGEST chain name for SIP submission
      */
-    @NotBlank
+    @NotBlank(message = "Ingest chain is required")
     @Column(name = "ingest_chain")
     private String ingestChain;
 
     /**
      * The ipId of the dataset for which the acquired files are set
      */
-    @NotBlank
+    @NotBlank(message = "Dataset IP ID is required")
     @Column(length = 256)
     private String datasetIpId;
 
     /**
      * The {@link List} of files to build a product
      */
-    @NotNull
+    @NotNull(message = "A processing chain must have at least one acquisition file information")
     @Size(min = 1)
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "acq_chain_id", foreignKey = @ForeignKey(name = "fk_acq_chain_id"))
@@ -146,7 +145,7 @@ public class AcquisitionProcessingChain {
     /**
      * An optional {@link PluginConfiguration} of a {@link IValidationPlugin}
      */
-    @NotNull
+    @NotNull(message = "Validation plugin configuration is required")
     @ManyToOne
     @JoinColumn(name = "validation_conf_id", foreignKey = @ForeignKey(name = "fk_validation_conf_id"))
     private PluginConfiguration validationPluginConf;
@@ -154,7 +153,7 @@ public class AcquisitionProcessingChain {
     /**
      * A {@link PluginConfiguration} of a {@link IProductPlugin}
      */
-    @NotNull
+    @NotNull(message = "Product plugin configuration is required")
     @ManyToOne
     @JoinColumn(name = "product_conf_id", foreignKey = @ForeignKey(name = "fk_product_conf_id"))
     private PluginConfiguration productPluginConf;
@@ -162,7 +161,7 @@ public class AcquisitionProcessingChain {
     /**
      * A {@link PluginConfiguration} of a {@link ISipGenerationPlugin}
      */
-    @NotNull
+    @NotNull(message = "SIP generation plugin configuration is required")
     @ManyToOne
     @JoinColumn(name = "generatesip_conf_id", foreignKey = @ForeignKey(name = "fk_generatesip_conf_id"))
     private PluginConfiguration generateSipPluginConf;

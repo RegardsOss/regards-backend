@@ -60,7 +60,7 @@ public class AcquisitionFileInfo {
     /**
      * <code>true</code> if the related data file is mandatory, <code>false</code> otherwise
      */
-    @NotNull
+    @NotNull(message = "Mandatory state is required")
     @Column(name = "mandatory")
     private Boolean mandatory = Boolean.FALSE;
 
