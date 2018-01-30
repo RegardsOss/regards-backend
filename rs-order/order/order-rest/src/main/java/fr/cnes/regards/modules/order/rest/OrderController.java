@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import com.google.common.base.Strings;
+import feign.Body;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -105,7 +107,7 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Validate current basket and create corresponding order",
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, path = USER_ROOT_PATH)
-    public ResponseEntity<Resource<OrderDto>> createOrder(@RequestParam(name = "onSuccessUrl") String url)
+    public ResponseEntity<Resource<OrderDto>> createOrder(@RequestBody @RequestParam(name = "onSuccessUrl") String url)
             throws EmptyBasketException {
         String user = authResolver.getUser();
         Basket basket = basketService.find(user);
