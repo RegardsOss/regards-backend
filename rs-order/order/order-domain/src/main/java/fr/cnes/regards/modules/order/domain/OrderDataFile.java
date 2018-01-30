@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
                 resultSetMapping = "sumMapping", name = "selectSumSizesByOrderIdAndStates"),
         @NamedNativeQuery(
                 query = "SELECT o.*, count(df.*) as count FROM {h-schema}t_data_file df, {h-schema}t_order o WHERE "
-                + "df.order_id = o.id AND df. df.size is not NULL AND "
+                + "df.order_id = o.id AND df.size is not NULL AND "
                 + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND status = 'RUNNING') "
                 + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates"),
