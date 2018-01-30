@@ -92,6 +92,12 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     @Column(name = "waiting_for_user", nullable = false)
     private boolean waitingForUser = false;
 
+    /**
+     * URL provided by frontend when order is created and that permits to directly access order page
+     */
+    @Column(name = "url", columnDefinition = "text")
+    private String frontendUrl;
+
     @Override
     public Long getId() {
         return id;
@@ -190,6 +196,14 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
 
     public void setWaitingForUser(boolean waitingForUser) {
         this.waitingForUser = waitingForUser;
+    }
+
+    public String getFrontendUrl() {
+        return frontendUrl;
+    }
+
+    public void setFrontendUrl(String frontendUrl) {
+        this.frontendUrl = frontendUrl;
     }
 
     @Override

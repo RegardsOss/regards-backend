@@ -33,9 +33,10 @@ public interface IOrderService {
     /**
      * Create an order
      * @param basket basket from which order is created
+     * @param url frontent URL
      * @return copletely loaded order
      */
-    Order createOrder(Basket basket);
+    Order createOrder(Basket basket, String url);
 
     /**
      * Load an order.
@@ -140,13 +141,12 @@ public interface IOrderService {
     void sendTenantPeriodicNotifications();
 
     /**
-     * Search for expired orders, pause them then delete them
+     * Search for expired orders then mark them as EXPIRED
      */
     void cleanExpiredOrders();
 
     /**
-     * Search for a pending, running or paused order that has reached its expiration date and change its status to
-     * EXPIRED.
+     * Search for ONE order that has reached its expiration date and change sets its status to EXPIRED.
      */
     Optional<Order> findOneOrderAndMarkAsExpired();
 

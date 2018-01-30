@@ -43,7 +43,12 @@ public interface IFilesTasksRepository extends JpaRepository<FilesTask, Long> {
 
     long countByOwnerAndEndedAndJobInfoStatusStatusIn(String user, Boolean ended, JobStatus... statuses);
 
-    default long countFinishedJobsOnNotEndedFilesTaskCount(String user) {
+    /**
+     * Count filesTasks (or jobs because 1 filesTask = 1 job) with a false ended attribute value (associated jobInfo
+     * not finished OR at least one remaining file to download) and a "finished" status
+     * @param user user specific tasks and jobs
+     */
+    default long countFilesTasksToBeDownloaded(String user) {
         return countByOwnerAndEndedAndJobInfoStatusStatusIn(user, false, JobStatus.SUCCEEDED, JobStatus.FAILED,
                                                             JobStatus.ABORTED);
     }

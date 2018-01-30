@@ -110,13 +110,19 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
             } catch (InterruptedException e) {
                 return;
             }
+            // All files have bean treated by storage, no more event subscriber needed...
             subscriber.unsubscribe(this);
+            // ...and all order data files statuses are updated into database
             dataFileService.save(dataFilesMap.values());
         } finally {
             FeignSecurityManager.reset();
         }
     }
 
+    /**
+     * Handle Events from storage about all files availability asking
+     * Each time an event come back from storage, a token is released through semaphore
+     */
     @Override
     public void handle(TenantWrapper<DataFileEvent> wrapper) {
         DataFileEvent event = wrapper.getContent();

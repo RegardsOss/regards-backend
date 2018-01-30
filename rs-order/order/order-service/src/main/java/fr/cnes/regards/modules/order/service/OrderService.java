@@ -180,11 +180,12 @@ public class OrderService implements IOrderService {
             .collect(Collectors.toSet());
 
     @Override
-    public Order createOrder(Basket basket) {
+    public Order createOrder(Basket basket, String url) {
         Order order = new Order();
         order.setCreationDate(OffsetDateTime.now());
         order.setExpirationDate(order.getCreationDate().plus(orderValidationPeriodDays, ChronoUnit.DAYS));
         order.setOwner(basket.getOwner());
+        order.setFrontendUrl(url);
         order.setStatus(OrderStatus.PENDING);
         // To generate orderId
         order = repos.save(order);

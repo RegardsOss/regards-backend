@@ -182,7 +182,7 @@ public class OrderServiceIT {
 
         basket = basketRepos.save(basket);
 
-        Order order = orderService.createOrder(basket);
+        Order order = orderService.createOrder(basket, "http://perdu.com");
         Assert.assertNotNull(order);
     }
 
@@ -266,7 +266,7 @@ public class OrderServiceIT {
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
-        Order order = orderService.createOrder(basket);
+        Order order = orderService.createOrder(basket, "http://perdu.com");
         // Wait for end of jobs AND update of order completion values
         Thread.sleep(15_000);
         // Some files are in error
@@ -303,7 +303,7 @@ public class OrderServiceIT {
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
-        Order order = orderService.createOrder(basket);
+        Order order = orderService.createOrder(basket, "http://perdu.com");
         order.setExpirationDate(OffsetDateTime.now().minus(1, ChronoUnit.DAYS));
         orderRepos.save(order);
 
@@ -332,7 +332,7 @@ public class OrderServiceIT {
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
-        Order order = orderService.createOrder(basket);
+        Order order = orderService.createOrder(basket, "http://perdu.com");
 
         Thread.sleep(1_000);
         orderService.pause(order.getId());

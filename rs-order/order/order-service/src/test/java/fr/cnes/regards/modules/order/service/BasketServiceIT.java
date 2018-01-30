@@ -168,7 +168,7 @@ public class BasketServiceIT {
             return new ResponseEntity<>(HttpStatus.CREATED);
         });
 
-        Order order = orderService.createOrder(basket);
+        Order order = orderService.createOrder(basket, "http://perdu.com");
 
         // Email sending test
         Assert.assertNotNull(mailMessage);

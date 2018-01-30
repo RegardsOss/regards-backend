@@ -22,10 +22,12 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
+import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 
 /**
@@ -158,7 +160,7 @@ public class OrderDataFileService implements IOrderDataFileService {
         Function<Object[], Long> getOrderIdFct = array -> ((Order) array[0]).getId();
         // All following methods returns a Collection of Object[] whom second elt is a Long (a sum or a count)
         Function<Object[], Long> getValueFct = array -> ((Long) array[1]);
-        // Set or orders not yet finished
+        // Set of orders not yet finished
         Set<Order> orders = totalOrderFiles.stream().map(array -> (Order) array[0]).collect(Collectors.toSet());
         // Map { order_id -> total files size }
         Map<Long, Long> totalSizeMap = totalOrderFiles.stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
@@ -190,6 +192,18 @@ public class OrderDataFileService implements IOrderDataFileService {
             // If number of available files has changed...
             if (order.getAvailableFilesCount() != availableCount) {
                 order.setAvailableFilesCount((int) availableCount);
+            }
+            // Update order status if percent_complete has reached 100%
+            if (order.getPercentCompleted() == 100) {
+                // If no files in error = DONE
+                if (errorCount == 0) {
+                    order.setStatus(OrderStatus.DONE);
+                } else if (errorCount == order.getDatasetTasks().stream().mapToInt(DatasetTask::getFilesCount).sum()) {
+                    // If all files in error => FAILED
+                    order.setStatus(OrderStatus.FAILED);
+                } else { // DONE_WITH_WARNING
+                    order.setStatus(OrderStatus.DONE_WITH_WARNING);
+                }
             }
         }
         return orders;

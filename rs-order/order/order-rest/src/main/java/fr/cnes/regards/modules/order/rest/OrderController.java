@@ -102,14 +102,15 @@ public class OrderController implements IResourceController<OrderDto> {
     @Value("${regards.order.secret}")
     private String secret;
 
-    @ResourceAccess(description = "Validate current basket and find or create corresponding order",
+    @ResourceAccess(description = "Validate current basket and create corresponding order",
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, path = USER_ROOT_PATH)
-    public ResponseEntity<Resource<OrderDto>> createOrder() throws EmptyBasketException {
+    public ResponseEntity<Resource<OrderDto>> createOrder(@RequestParam(name = "onSuccessUrl") String url)
+            throws EmptyBasketException {
         String user = authResolver.getUser();
         Basket basket = basketService.find(user);
 
-        Order order = orderService.createOrder(basket);
+        Order order = orderService.createOrder(basket, url);
         // Order has been created, basket can be emptied
         basketService.deleteIfExists(user);
 

@@ -25,7 +25,8 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
@@ -47,7 +48,8 @@ import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
  */
 @Service
 @MultitenantTransactional
-public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
+public class OrderJobService
+        implements IOrderJobService, IHandler<JobEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     /**
      * Number of concurrent storage files retrieval jobs per user
@@ -73,7 +75,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
     @Override
     @EventListener
     @Transactional(TxType.NOT_SUPPORTED) // Doesn't need a transaction (make Controller IT tests failed otherwise)
-    public void onApplicationEvent(ContextRefreshedEvent event) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(JobEvent.class, this);
     }
 
@@ -96,15 +98,17 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
 
     @Override
     public void manageUserOrderJobInfos(String user) {
-        int currentUserJobCount = (int) jobInfoRepository.countUserPlannedAndRunningJobs(user);
+        // Current count of user jobs running, planned or to be run
+        int currentJobsCount = (int) jobInfoRepository.countUserPlannedAndRunningJobs(user);
 
-        int finishedJobsOnNotEndedFilesTaskCount = (int) filesTasksRepository
-                .countFinishedJobsOnNotEndedFilesTaskCount(user);
+        // Current finished user jobs BUT with remaining files to be downloaded
+        int finishedJobsWithFilesToBeDownloadedCount = (int) filesTasksRepository.countFilesTasksToBeDownloaded(user);
 
-        // There is room for several jobs to be executed for this user
-        if (currentUserJobCount + finishedJobsOnNotEndedFilesTaskCount < maxJobsPerUser) {
-            List<JobInfo> jobInfos = jobInfoRepository.findTopUserPendingJobs(user, maxJobsPerUser - currentUserJobCount
-                    - finishedJobsOnNotEndedFilesTaskCount);
+        // There is room for several jobs to be executed for this user if sum of theses 2 values is less than maximum
+        // defined one
+        if (currentJobsCount + finishedJobsWithFilesToBeDownloadedCount < maxJobsPerUser) {
+            List<JobInfo> jobInfos = jobInfoRepository.findTopUserPendingJobs(user, maxJobsPerUser - currentJobsCount
+                    - finishedJobsWithFilesToBeDownloadedCount);
             if (!jobInfos.isEmpty()) {
                 for (JobInfo jobInfo : jobInfos) {
                     jobInfo.updateStatus(JobStatus.QUEUED);

@@ -81,10 +81,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                 if ((cpt >= pageRequest.getOffset()) && (cpt < pageRequest.getOffset() + pageRequest.getPageSize())) {
                     Resource<OrderDataFile> resource = toResource(dataFile);
                     resourceService.addLink(resource, this.getClass(), "downloadFile", "download",
-                                            MethodParamFactory.build(Long.class, orderId),
-                                            MethodParamFactory.build(Long.class, datasetId),
-                                            MethodParamFactory.build(String.class, dataFile.getIpId().toString()),
-                                            MethodParamFactory.build(String.class, dataFile.getChecksum()));
+                                            MethodParamFactory.build(Long.class, dataFile.getId()));
                     dataFiles.add(resource);
                 } else if (cpt >= pageRequest.getOffset() + pageRequest.getPageSize()) {
                     return ResponseEntity.ok(new PageImpl<>(dataFiles, pageRequest, dataFiles.size()));
@@ -98,7 +95,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     @ResourceAccess(description = "Download a file that is part of an order", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_FILES_DATA_FILE_ID)
     public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("dataFileId") Long dataFileId,
-            HttpServletResponse response) throws NoSuchElementException, IOException {
+            HttpServletResponse response) throws NoSuchElementException {
         // Throws a NoSuchElementException if not found
         OrderDataFile dataFile = dataFileService.load(dataFileId);
         response.addHeader("Content-disposition", "attachment;filename=" + dataFile.getName());
