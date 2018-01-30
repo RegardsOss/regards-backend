@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +96,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Autowired
     private IAuthenticationResolver authResolver;
+
+    @PostConstruct
+    public void init() {
+        pluginService.addPluginPackage("fr.cnes.regards.modules.acquisition");
+    }
 
     @Override
     public Page<AcquisitionProcessingChain> getAllChains(Pageable pageable) throws ModuleException {
