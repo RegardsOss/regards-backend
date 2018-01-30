@@ -73,7 +73,6 @@ public class OrderJobService
     private IRuntimeTenantResolver tenantResolver;
 
     @Override
-    @EventListener
     @Transactional(TxType.NOT_SUPPORTED) // Doesn't need a transaction (make Controller IT tests failed otherwise)
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(JobEvent.class, this);
