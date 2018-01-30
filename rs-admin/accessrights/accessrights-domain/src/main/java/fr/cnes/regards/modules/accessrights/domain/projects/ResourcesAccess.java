@@ -78,7 +78,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
      * The controller simple name
      */
     @NotBlank
-    @Column(name = "controller_name", length = 32)
+    @Column(name = "controller_name", length = 256)
     private String controllerSimpleName;
 
     /**
