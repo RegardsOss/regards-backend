@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -41,6 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -135,7 +137,8 @@ public class SIPController implements IResourceController<SIPEntity> {
     public ResponseEntity<PagedResources<Resource<SIPEntity>>> search(
             @RequestParam(name = "sipId", required = false) String sipId,
             @RequestParam(name = "owner", required = false) String owner,
-            @RequestParam(name = "from", required = false) OffsetDateTime from,
+            @RequestParam(name = "from",
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
             @RequestParam(name = "state", required = false) SIPState state,
             @RequestParam(name = "processing", required = false) String processing,
             @RequestParam(name = "sessionId", required = false) String sessionId, Pageable pageable,
