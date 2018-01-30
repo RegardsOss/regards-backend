@@ -78,7 +78,7 @@ public class STAFConfiguration {
     /**
      * Nombre maximum de fichier à stocker dans un noeud STAF.
      */
-    private Long maxNumberOfFilesPerNode;
+    private Integer maxNumberOfFilesPerNode;
 
     /**
      * Taille minimal d'un TAR pour archivage au STAF.
@@ -261,11 +261,11 @@ public class STAFConfiguration {
         initShellCommand = pInitShellCommand;
     }
 
-    public Long getMaxNumberOfFilesPerNode() {
+    public Integer getMaxNumberOfFilesPerNode() {
         return maxNumberOfFilesPerNode;
     }
 
-    public void setMaxNumberOfFilesPerNode(Long maxNumberOfFilesPerNode) {
+    public void setMaxNumberOfFilesPerNode(Integer maxNumberOfFilesPerNode) {
         this.maxNumberOfFilesPerNode = maxNumberOfFilesPerNode;
     }
 

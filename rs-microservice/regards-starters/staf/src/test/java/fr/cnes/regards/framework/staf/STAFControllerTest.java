@@ -133,7 +133,7 @@ public class STAFControllerTest {
         configuration.setMaxSessionStreamsRestitutionMode(10);
         configuration.setMaxStreamFilesArchivingMode(10);
         configuration.setMaxStreamFilesRestitutionMode(10);
-        configuration.setMaxNumberOfFilesPerNode(5000L);
+        configuration.setMaxNumberOfFilesPerNode(5000);
 
         stafArchive = new STAFArchive();
         stafArchive.setArchiveName(STAF_ARCHIVE_NAME);
