@@ -107,12 +107,12 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Validate current basket and create corresponding order",
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, path = USER_ROOT_PATH)
-    public ResponseEntity<Resource<OrderDto>> createOrder(@RequestBody @RequestParam(name = "onSuccessUrl") String url)
+    public ResponseEntity<Resource<OrderDto>> createOrder(@RequestBody OrderRequest orderRequest)
             throws EmptyBasketException {
         String user = authResolver.getUser();
         Basket basket = basketService.find(user);
 
-        Order order = orderService.createOrder(basket, url);
+        Order order = orderService.createOrder(basket, orderRequest.getOnSuccessUrl());
         // Order has been created, basket can be emptied
         basketService.deleteIfExists(user);
 
@@ -253,9 +253,20 @@ public class OrderController implements IResourceController<OrderDto> {
         return new ResponseEntity<>(os -> orderService.downloadOrderMetalink(orderId, os), HttpStatus.OK);
     }
 
-    // TODO : add links
     @Override
     public Resource<OrderDto> toResource(OrderDto order, Object... extras) {
         return resourceService.toResource(order);
+    }
+
+    public static class OrderRequest {
+        private String onSuccessUrl;
+
+        public String getOnSuccessUrl() {
+            return onSuccessUrl;
+        }
+
+        public void setOnSuccessUrl(String onSuccessUrl) {
+            this.onSuccessUrl = onSuccessUrl;
+        }
     }
 }

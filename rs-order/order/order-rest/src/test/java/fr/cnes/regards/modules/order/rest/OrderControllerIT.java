@@ -142,7 +142,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         basketRepos.save(basket);
 
         // Test POST without argument : order should be created with RUNNING status
-        ResultActions results = performDefaultPost(OrderController.USER_ROOT_PATH, null,
+        ResultActions results = performDefaultPost(OrderController.USER_ROOT_PATH, new OrderController.OrderRequest(),
                                                    Lists.newArrayList(MockMvcResultMatchers.status().isCreated()),
                                                    "error");
         String jsonResult = results.andReturn().getResponse().getContentAsString();
@@ -196,7 +196,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
     public void testCreateNOK() {
         // All baskets have been deleted so order creation must fail
         // Test POST without argument
-        performDefaultPost(OrderController.USER_ROOT_PATH, null,
+        performDefaultPost(OrderController.USER_ROOT_PATH, new OrderController.OrderRequest(),
                            Lists.newArrayList(MockMvcResultMatchers.status().isNoContent()), "error");
     }
 
