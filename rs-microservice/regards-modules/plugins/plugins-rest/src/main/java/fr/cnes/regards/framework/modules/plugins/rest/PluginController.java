@@ -344,22 +344,22 @@ public class PluginController implements IResourceController<PluginConfiguration
     }
 
     @Override
-    public Resource<PluginConfiguration> toResource(PluginConfiguration pElement, Object... pExtras) {
+    public Resource<PluginConfiguration> toResource(PluginConfiguration element, Object... extras) {
         Resource<PluginConfiguration> resource = null;
-        if ((pElement != null) && (pElement.getId() != null)) {
-            resource = resourceService.toResource(pElement);
+        if ((element != null) && (element.getId() != null)) {
+            resource = resourceService.toResource(element);
             resourceService.addLink(resource, this.getClass(), "getPluginConfiguration", LinkRels.SELF,
-                                    MethodParamFactory.build(String.class, pElement.getPluginId()),
-                                    MethodParamFactory.build(Long.class, pElement.getId()));
+                                    MethodParamFactory.build(String.class, element.getPluginId()),
+                                    MethodParamFactory.build(Long.class, element.getId()));
             resourceService.addLink(resource, this.getClass(), "deletePluginConfiguration", LinkRels.DELETE,
-                                    MethodParamFactory.build(String.class, pElement.getPluginId()),
-                                    MethodParamFactory.build(Long.class, pElement.getId()));
+                                    MethodParamFactory.build(String.class, element.getPluginId()),
+                                    MethodParamFactory.build(Long.class, element.getId()));
             resourceService.addLink(resource, this.getClass(), "updatePluginConfiguration", LinkRels.UPDATE,
-                                    MethodParamFactory.build(String.class, pElement.getPluginId()),
-                                    MethodParamFactory.build(Long.class, pElement.getId()),
+                                    MethodParamFactory.build(String.class, element.getPluginId()),
+                                    MethodParamFactory.build(Long.class, element.getId()),
                                     MethodParamFactory.build(PluginConfiguration.class));
             resourceService.addLink(resource, this.getClass(), "getPluginConfigurations", LinkRels.LIST,
-                                    MethodParamFactory.build(String.class, pElement.getPluginId()));
+                                    MethodParamFactory.build(String.class, element.getPluginId()));
         }
         return resource;
     }

@@ -150,17 +150,17 @@ public class TemplateController implements IResourceController<Template> {
      * @see fr.cnes.regards.framework.hateoas.IResourceController#toResource(java.lang.Object, java.lang.Object[])
      */
     @Override
-    public Resource<Template> toResource(final Template pElement, final Object... pExtras) {
-        final Resource<Template> resource = resourceService.toResource(pElement);
+    public Resource<Template> toResource(final Template element, final Object... extras) {
+        final Resource<Template> resource = resourceService.toResource(element);
         resourceService.addLink(resource, getClass(), "findById", LinkRels.SELF,
-                                MethodParamFactory.build(Long.class, pElement.getId()));
+                                MethodParamFactory.build(Long.class, element.getId()));
         resourceService.addLink(resource, getClass(), "delete", LinkRels.DELETE,
-                                MethodParamFactory.build(Long.class, pElement.getId()));
+                                MethodParamFactory.build(Long.class, element.getId()));
         resourceService.addLink(resource, getClass(), "update", LinkRels.UPDATE,
-                                MethodParamFactory.build(Long.class, pElement.getId()),
-                                MethodParamFactory.build(Template.class, pElement));
+                                MethodParamFactory.build(Long.class, element.getId()),
+                                MethodParamFactory.build(Template.class, element));
         resourceService.addLink(resource, getClass(), "create", LinkRels.CREATE,
-                                MethodParamFactory.build(Template.class, pElement));
+                                MethodParamFactory.build(Template.class, element));
         return resource;
     }
 
