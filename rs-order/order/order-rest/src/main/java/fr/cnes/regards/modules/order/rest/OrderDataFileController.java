@@ -79,10 +79,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
         for (FilesTask filesTask : dsTask.getReliantTasks()) {
             for (OrderDataFile dataFile : filesTask.getFiles()) {
                 if ((cpt >= pageRequest.getOffset()) && (cpt < pageRequest.getOffset() + pageRequest.getPageSize())) {
-                    Resource<OrderDataFile> resource = toResource(dataFile);
-                    resourceService.addLink(resource, this.getClass(), "downloadFile", "download",
-                                            MethodParamFactory.build(Long.class, dataFile.getId()));
-                    dataFiles.add(resource);
+                    dataFiles.add(toResource(dataFile));
                 } else if (cpt >= pageRequest.getOffset() + pageRequest.getPageSize()) {
                     return ResponseEntity.ok(new PageImpl<>(dataFiles, pageRequest, dataFiles.size()));
                 }
@@ -142,7 +139,11 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     }
 
     @Override
-    public Resource<OrderDataFile> toResource(OrderDataFile dataFile, Object... pExtras) {
-        return resourceService.toResource(dataFile);
+    public Resource<OrderDataFile> toResource(OrderDataFile dataFile, Object... extras) {
+        Resource<OrderDataFile> resource = resourceService.toResource(dataFile);
+        resourceService.addLink(resource, this.getClass(), "downloadFile", "download",
+                                MethodParamFactory.build(Long.class, dataFile.getId()),
+                                MethodParamFactory.build(HttpServletResponse.class));
+        return resource;
     }
 }
