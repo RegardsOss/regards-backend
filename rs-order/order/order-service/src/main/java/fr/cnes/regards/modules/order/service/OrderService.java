@@ -262,14 +262,14 @@ public class OrderService implements IOrderService {
         FeignSecurityManager.reset();
 
         // FIXME => Sylvain Vessière Guerinet (cf. OpenSearchDescriptionBuilder)
-        String urlStart = host + "/api/v2/" + encode4Uri(microserviceName);
+        String urlStart = host + "/api/v1/" + encode4Uri(microserviceName);
 
         // Metalink file public url
         Map<String, String> dataMap = new HashMap<>();
         dataMap.put("expiration_date", order.getExpirationDate().toString());
         dataMap.put("metalink_download_url", urlStart + "/user/orders/metalink/download?" + tokenRequestParam);
-        dataMap.put("regards_downloader_url", "http://perdu.com");
-        dataMap.put("orders_url", urlStart + "/orders");
+        dataMap.put("regards_downloader_url", "https://github.com/RegardsOss/RegardsDownloader/releases");
+        dataMap.put("orders_url", host + order.getFrontendUrl());
 
         // Create mail
         SimpleMailMessage email;
