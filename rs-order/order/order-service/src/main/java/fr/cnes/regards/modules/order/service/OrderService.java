@@ -554,7 +554,7 @@ public class OrderService implements IOrderService {
             StringBuilder buff = new StringBuilder();
             buff.append(host);
             // FIXME => Sylvain Vessière Guerinet (cf. OpenSearchDescriptionBuilder)
-            buff.append("/api/v2/").append(encode4Uri(microserviceName));
+            buff.append("/api/v1/").append(encode4Uri(microserviceName));
             buff.append("/orders/aips/").append(encode4Uri(file.getIpId().toString())).append("/files/");
             buff.append(file.getChecksum()).append("?").append(tokenRequestParam);
             xmlUrl.setValue(buff.toString());
