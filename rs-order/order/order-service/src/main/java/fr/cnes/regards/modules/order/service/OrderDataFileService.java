@@ -14,9 +14,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.google.common.io.ByteStreams;
+import feign.Response;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
@@ -136,13 +138,18 @@ public class OrderDataFileService implements IOrderDataFileService {
 
     @Override
     public void downloadFile(OrderDataFile dataFile, OutputStream os) throws IOException {
-        try (InputStream is = aipClient.downloadFile(dataFile.getIpId().toString(), dataFile.getChecksum()).body()
-                .asInputStream()) {
-            ByteStreams.copy(is, os);
-            os.close();
+        Response response = aipClient.downloadFile(dataFile.getIpId().toString(), dataFile.getChecksum());
+        if (response.status() == HttpStatus.OK.value()) {
+            try (InputStream is = response.body().asInputStream()) {
+                ByteStreams.copy(is, os);
+                os.close();
+            }
+            // Update OrderDataFile (set State as DOWNLOADED, even if it is online)
+            dataFile.setState(FileState.DOWNLOADED);
+        } else {
+            // Update OrderDataFile (set State as ERROR because file cannot be downloaded)
+            dataFile.setState(FileState.ERROR);
         }
-        // Update OrderDataFile (set State as DOWNLOADED, even if it is online)
-        dataFile.setState(FileState.DOWNLOADED);
         dataFile = self.save(dataFile);
         Order order = orderRepository.findSimpleById(dataFile.getOrderId());
         orderJobService.manageUserOrderJobInfos(order.getOwner());

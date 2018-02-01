@@ -482,9 +482,10 @@ public class OrderService implements IOrderService {
                 try (InputStream is = aipClient.downloadFile(aip, dataFile.getChecksum()).body().asInputStream()) {
                     // If storage cannot provide file
                     if (is == null) {
-                        if (!dataFile.getOnline()) {
+                        // By now, only state is ised for everything
+//                        if (!dataFile.getOnline()) {
                             inErrorFiles.add(dataFile);
-                        }
+//                        }
                         i.remove();
                         LOGGER.warn(
                                 String.format("Cannot retrieve data file from storage (aip : %s, checksum : %s)", aip,
