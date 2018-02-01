@@ -71,4 +71,32 @@ public class Event {
     public void setType(String type) {
         this.type = type;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Event event = (Event) o;
+
+        if (type != null ? !type.equals(event.type) : event.type != null) {
+            return false;
+        }
+        if (!comment.equals(event.comment)) {
+            return false;
+        }
+        return date.isEqual(event.date);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = type != null ? type.hashCode() : 0;
+        result = 31 * result + comment.hashCode();
+        result = 31 * result + date.hashCode();
+        return result;
+    }
 }

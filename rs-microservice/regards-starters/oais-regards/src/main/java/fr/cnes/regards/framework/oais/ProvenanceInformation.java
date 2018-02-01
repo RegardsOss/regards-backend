@@ -36,6 +36,12 @@ import java.util.Map;
 public class ProvenanceInformation {
 
     /**
+     * The history
+     */
+    @NotNull
+    private final List<Event> history = new ArrayList<>();
+
+    /**
      * The facility
      */
     private String facility;
@@ -59,12 +65,6 @@ public class ProvenanceInformation {
      * The proposal
      */
     private String proposal;
-
-    /**
-     * The history
-     */
-    @NotNull
-    private final List<Event> history = new ArrayList<>();
 
     private Map<String, Object> additional;
 
@@ -152,7 +152,10 @@ public class ProvenanceInformation {
         event.setType(type);
         event.setComment(comment);
         event.setDate(date);
-        getHistory().add(event);
+        List<Event> actualHistory = getHistory();
+        if (!actualHistory.contains(event)) {
+            actualHistory.add(event);
+        }
     }
 
     public void addEvent(@Nullable String type, String comment) {

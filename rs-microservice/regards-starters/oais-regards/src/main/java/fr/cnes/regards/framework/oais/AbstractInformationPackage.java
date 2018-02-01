@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -65,11 +66,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
     }
 
     public void addEvent(String type, String comment, OffsetDateTime date) {
-        Event event = new Event();
-        event.setType(type);
-        event.setComment(comment);
-        event.setDate(date);
-        getHistory().add(event);
+        properties.getPdi().getProvenanceInformation().addEvent(type, comment, date);
     }
 
     /**

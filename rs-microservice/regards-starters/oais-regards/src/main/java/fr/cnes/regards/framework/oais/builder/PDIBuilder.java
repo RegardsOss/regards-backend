@@ -221,7 +221,7 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
         for (Event event : events) {
             Assert.hasLength(event.getComment(), "Event comment is required");
             Assert.notNull(event.getDate(), "Event date is required");
-            pdi.getProvenanceInformation().getHistory().add(event);
+            pdi.getProvenanceInformation().addEvent(event.getType(), event.getComment(), event.getDate());
         }
     }
 
