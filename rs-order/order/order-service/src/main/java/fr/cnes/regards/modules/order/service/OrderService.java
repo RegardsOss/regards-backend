@@ -155,10 +155,8 @@ public class OrderService implements IOrderService {
     @Autowired
     private ISubscriber subscriber;
 
-//    @Value("${regards.order.files.bucket.size.Mb:100}")
-//    private int bucketSizeMb;
-    private int bucketSizeMb = 1;
-
+    @Value("${regards.order.files.bucket.size.Mb:100}")
+    private int bucketSizeMb;
 
     @Value("${regards.order.validation.period.days:3}")
     private int orderValidationPeriodDays;
