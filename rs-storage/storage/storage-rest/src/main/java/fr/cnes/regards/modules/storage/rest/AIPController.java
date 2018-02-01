@@ -31,6 +31,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -517,20 +518,29 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "Dowload one file from a given AIP by checksum.", role = DefaultRole.PUBLIC)
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("ip_id") String aipId,
             @PathVariable("checksum") String checksum) throws ModuleException, IOException {
-        // Retrieve file locale path
-        Optional<StorageDataFile> dataFile = aipService.getAIPDataFile(aipId, checksum);
-        if (dataFile.isPresent()) {
-            File file = new File(dataFile.get().getUrl().getPath());
+        // Retrieve file locale path, 404 if aip not found or bad checksum or no storage plugin
+        // 403 if user has not right
+        Optional<StorageDataFile> dataFileOpt = aipService.getAIPDataFile(aipId, checksum);
+        if (dataFileOpt.isPresent()) {
+            StorageDataFile dataFile = dataFileOpt.get();
+            File file = new File(dataFile.getUrl().getPath());
             InputStreamResource isr = new InputStreamResource(new FileInputStream(file));
             Long fileSize = file.length();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentLength(fileSize);
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("attachement", dataFile.get().getName());
+            headers.setContentType(asMediaType(dataFile.getMimeType()));
+            headers.setContentDispositionFormData("attachement;filename=", dataFile.getName());
             return new ResponseEntity<>(isr, headers, HttpStatus.OK);
-        } else {
+        } else { // NEARLINE file not in cache
             return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
         }
+    }
+
+    public static MediaType asMediaType(MimeType mimeType) {
+        if (mimeType instanceof MediaType) {
+            return (MediaType) mimeType;
+        }
+        return new MediaType(mimeType.getType(), mimeType.getSubtype(), mimeType.getParameters());
     }
 
     @Override

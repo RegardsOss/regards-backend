@@ -42,6 +42,7 @@ public class STAFDataStorageConfiguration {
         configuration.setMaxSessionStreamsRestitutionMode(10);
         configuration.setMaxStreamFilesArchivingMode(10);
         configuration.setMaxStreamFilesRestitutionMode(10);
+        configuration.setMaxNumberOfFilesPerNode(10);
 
         STAFSession stafSessionMock = Mockito.mock(STAFSession.class);
         STAFSessionManager stafManagerMock = Mockito.mock(STAFSessionManager.class);
