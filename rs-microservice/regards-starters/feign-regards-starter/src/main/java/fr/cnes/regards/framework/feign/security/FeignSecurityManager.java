@@ -147,9 +147,11 @@ public class FeignSecurityManager {
     }
 
     /**
-     * Disable system mode call enabled in {{@link #asSystem()}
+     * Disable system or user mode call enabled in {{@link #asSystem()}  or {{@link #asUser(String, String)}}
      */
     public static void reset() {
         systemFlagHolder.remove();
+        usurpationFlagHolder.remove();
+        usurpedUserHolder.remove();
     }
 }
