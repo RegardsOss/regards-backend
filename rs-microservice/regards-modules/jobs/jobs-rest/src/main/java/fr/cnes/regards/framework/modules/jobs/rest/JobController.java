@@ -146,17 +146,17 @@ public class JobController implements IResourceController<JobInfo> {
     }
 
     @Override
-    public Resource<JobInfo> toResource(JobInfo jobInfo, Object... extras) {
+    public Resource<JobInfo> toResource(JobInfo element, Object... extras) {
         Resource<JobInfo> resource = null;
-        if ((jobInfo != null) && (jobInfo.getId() != null)) {
-            resource = resourceService.toResource(jobInfo);
+        if ((element != null) && (element.getId() != null)) {
+            resource = resourceService.toResource(element);
             resourceService.addLink(resource, this.getClass(), "retrieveJobInfo", LinkRels.SELF,
-                                    MethodParamFactory.build(UUID.class, jobInfo.getId()));
+                                    MethodParamFactory.build(UUID.class, element.getId()));
             resourceService.addLink(resource, this.getClass(), "retrieveJobs", LinkRels.LIST);
             resourceService.addLink(resource, this.getClass(), "stopJob", "stop",
-                                    MethodParamFactory.build(UUID.class, jobInfo.getId()));
+                                    MethodParamFactory.build(UUID.class, element.getId()));
             resourceService.addLink(resource, this.getClass(), "getJobResults", "results",
-                                    MethodParamFactory.build(UUID.class, jobInfo.getId()));
+                                    MethodParamFactory.build(UUID.class, element.getId()));
         }
         return resource;
     }

@@ -79,9 +79,9 @@ public class WorkspaceController implements IResourceController<WorkspaceMonitor
     }
 
     @Override
-    public Resource<WorkspaceMonitoringInformation> toResource(WorkspaceMonitoringInformation pElement,
-            Object... pExtras) {
-        Resource<WorkspaceMonitoringInformation> resource = resourceService.toResource(pElement);
+    public Resource<WorkspaceMonitoringInformation> toResource(WorkspaceMonitoringInformation element,
+            Object... extras) {
+        Resource<WorkspaceMonitoringInformation> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "getMonitoringInformation", LinkRels.SELF);
         return resource;
     }
