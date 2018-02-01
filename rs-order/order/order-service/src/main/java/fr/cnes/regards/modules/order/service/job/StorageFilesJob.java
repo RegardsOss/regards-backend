@@ -30,6 +30,10 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
 
     private OffsetDateTime expirationDate;
 
+    private String user;
+
+    private String role;
+
     @Autowired
     private IForwardingDataFileEventHandlerService subscriber;
 
@@ -52,13 +56,16 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
         if (parameters.isEmpty()) {
             throw new JobParameterMissingException("No parameter provided");
         }
-        if (parameters.size() != 2) {
-            throw new JobParameterInvalidException("Two parameters are expected : 'files' and 'expirationDate'.");
+        if (parameters.size() != 4) {
+            throw new JobParameterInvalidException(
+                    "Four parameters are expected : 'files', 'expirationDate', 'user' and 'userRole'.");
         }
         for (JobParameter param : parameters.values()) {
-            if (!FilesJobParameter.isCompatible(param) && !(ExpirationDateJobParameter.isCompatible(param))) {
+            if (!FilesJobParameter.isCompatible(param) && !(ExpirationDateJobParameter.isCompatible(param)) &&
+                    !UserJobParameter.isCompatible(param) && !UserRoleJobParameter.isCompatible(param)) {
                 throw new JobParameterInvalidException(
-                        "Please use FilesJobParameter and ExpirarionDateJobParameter in place of JobParameter (these "
+                        "Please use FilesJobParameter, ExpirationDateJobParameter, UserJobParameter and "
+                                + "UserRoleJobParameter in place of JobParameter (these "
                                 + "classes are here to facilitate your life so please use them.");
             }
             if (FilesJobParameter.isCompatible(param)) {
@@ -68,6 +75,10 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
                 }
             } else if (ExpirationDateJobParameter.isCompatible(param)) {
                 expirationDate = param.getValue();
+            } else if (UserJobParameter.isCompatible(param)) {
+                user = param.getValue();
+            } else if (UserRoleJobParameter.isCompatible(param)) {
+                role = param.getValue();
             }
         }
     }
@@ -80,17 +91,14 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
         request.setChecksums(dataFilesMap.keySet());
         request.setExpirationDate(expirationDate);
         try {
-            FeignSecurityManager.asSystem();
+            FeignSecurityManager.asUser(user, role);
             AvailabilityResponse response = aipClient.makeFilesAvailable(request).getBody();
 
             // Update all already available files
             boolean atLeastOneDataFileIntoResponse = false;
             for (String checksum : response.getAlreadyAvailable()) {
                 OrderDataFile dataFile = dataFilesMap.get(checksum);
-                // If dataFile is ONLINE, don't set its state to AVAILABLE, it is mandatory to keep ONLINE state
-                if (dataFile.getState() != FileState.ONLINE) {
-                    dataFile.setState(FileState.AVAILABLE);
-                }
+                dataFile.setState(FileState.AVAILABLE);
                 atLeastOneDataFileIntoResponse = true;
                 this.semaphore.release();
             }

@@ -223,10 +223,10 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
         FilesTask files1Task = new FilesTask();
         files1Task.setOwner(DEFAULT_USER_EMAIL);
-        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1.txt", FileState.ONLINE));
-        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_hd.txt", FileState.ONLINE));
-        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_md.txt", FileState.ONLINE));
-        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_sd.txt", FileState.ONLINE));
+        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1.txt", FileState.AVAILABLE, true));
+        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_hd.txt", FileState.AVAILABLE, true));
+        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_md.txt", FileState.AVAILABLE, true));
+        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_sd.txt", FileState.AVAILABLE, true));
         ds1Task.addReliantTask(files1Task);
 
         // dataset task 2
@@ -399,10 +399,10 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
         FilesTask files1Task = new FilesTask();
         files1Task.setOwner(DEFAULT_USER_EMAIL);
-        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1.txt", FileState.ONLINE));
-        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_hd.txt", FileState.ONLINE));
-        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_md.txt", FileState.ONLINE));
-        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_sd.txt", FileState.ONLINE));
+        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1.txt", FileState.AVAILABLE, true));
+        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_hd.txt", FileState.AVAILABLE, true));
+        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_md.txt", FileState.AVAILABLE, true));
+        files1Task.addFile(createOrderDataFile(order, DO1_IP_ID, "file1_ql_sd.txt", FileState.AVAILABLE, true));
         ds1Task.addReliantTask(files1Task);
 
         // dataset task 2
@@ -442,18 +442,19 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
     private OrderDataFile createOrderDataFile(Order order, UniformResourceName aipId, String filename, FileState state)
             throws URISyntaxException {
+        return createOrderDataFile(order, aipId, filename, state, false);
+    }
+
+
+        private OrderDataFile createOrderDataFile(Order order, UniformResourceName aipId, String filename, FileState state, boolean online)
+            throws URISyntaxException {
         OrderDataFile dataFile1 = new OrderDataFile();
         dataFile1.setUrl("file:///test/files/" + filename);
         dataFile1.setName(filename);
         File file = new File("src/test/resources/files/" + filename);
         dataFile1.setSize(file.length());
         dataFile1.setIpId(aipId);
-        if (state == FileState.ONLINE) {
-            dataFile1.setOnline(true);
-        } else {
-            dataFile1.setOnline(false);
-            dataFile1.setState(state);
-        }
+        dataFile1.setOnline(online);
         dataFile1.setChecksum(filename);
         dataFile1.setOrderId(order.getId());
         dataFile1.setMimeType(MediaType.TEXT_PLAIN);

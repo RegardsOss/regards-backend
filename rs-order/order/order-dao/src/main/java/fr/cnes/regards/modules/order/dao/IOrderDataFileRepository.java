@@ -28,10 +28,10 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
 
     /**
      * Find all available OrderDataFiles for an order.
-     * An OrderDataFile 'available' is an order with 'AVAILABLE' or 'ONLINE' state (not 'DOWNLOADED')
+     * An OrderDataFile 'available' is an order with 'AVAILABLE' state (not 'DOWNLOADED')
      */
     default List<OrderDataFile> findAllAvailables(Long orderId) {
-        return findByOrderIdAndStateIn(orderId, FileState.AVAILABLE, FileState.ONLINE);
+        return findByOrderIdAndStateIn(orderId, FileState.AVAILABLE);
     }
 
     List<OrderDataFile> findByOrderIdAndStateIn(Long orderId, FileState... states);

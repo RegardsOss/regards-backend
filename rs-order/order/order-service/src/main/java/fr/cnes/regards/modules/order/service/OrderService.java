@@ -91,6 +91,8 @@ import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
 import fr.cnes.regards.modules.order.metalink.schema.ResourcesType;
 import fr.cnes.regards.modules.order.service.job.ExpirationDateJobParameter;
 import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
+import fr.cnes.regards.modules.order.service.job.UserJobParameter;
+import fr.cnes.regards.modules.order.service.job.UserRoleJobParameter;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.client.ISearchClient;
@@ -153,8 +155,10 @@ public class OrderService implements IOrderService {
     @Autowired
     private ISubscriber subscriber;
 
-    @Value("${regards.order.files.bucket.size.Mb:100}")
-    private int bucketSizeMb;
+//    @Value("${regards.order.files.bucket.size.Mb:100}")
+//    private int bucketSizeMb;
+    private int bucketSizeMb = 1;
+
 
     @Value("${regards.order.validation.period.days:3}")
     private int orderValidationPeriodDays;
@@ -310,7 +314,9 @@ public class OrderService implements IOrderService {
 
         JobInfo storageJobInfo = new JobInfo();
         storageJobInfo.setParameters(new FilesJobParameter(bucketFiles.toArray(new OrderDataFile[bucketFiles.size()])),
-                                     new ExpirationDateJobParameter(expirationDate));
+                                     new ExpirationDateJobParameter(expirationDate),
+                                     new UserJobParameter(authResolver.getUser()),
+                                     new UserRoleJobParameter(authResolver.getRole()));
         storageJobInfo.setOwner(basket.getOwner());
         storageJobInfo.setClassName("fr.cnes.regards.modules.order.service.job.StorageFilesJob");
         storageJobInfo.setPriority(priority);
@@ -482,7 +488,7 @@ public class OrderService implements IOrderService {
                 try (InputStream is = aipClient.downloadFile(aip, dataFile.getChecksum()).body().asInputStream()) {
                     // If storage cannot provide file
                     if (is == null) {
-                        // By now, only state is ised for everything
+                        // By now, only state is used for everything
 //                        if (!dataFile.getOnline()) {
                             inErrorFiles.add(dataFile);
 //                        }

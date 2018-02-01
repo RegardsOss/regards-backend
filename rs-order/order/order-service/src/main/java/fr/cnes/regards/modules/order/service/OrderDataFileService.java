@@ -174,17 +174,15 @@ public class OrderDataFileService implements IOrderDataFileService {
 
         // Map { order_id -> treated files size  }
         Map<Long, Long> treatedSizeMap = repos
-                .selectSumSizesByOrderIdAndStates(now, FileState.ONLINE, FileState.AVAILABLE, FileState.DOWNLOADED,
-                                                  FileState.ERROR).stream()
-                .collect(Collectors.toMap(getOrderIdFct, getValueFct));
+                .selectSumSizesByOrderIdAndStates(now, FileState.AVAILABLE, FileState.DOWNLOADED, FileState.ERROR)
+                .stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
         // Map { order_id -> files in error count }
         Map<Long, Long> errorCountMap = repos.selectCountFilesByOrderIdAndStates(now, FileState.ERROR).stream()
                 .collect(Collectors.toMap(getOrderIdFct, getValueFct));
 
         // Map {order_id -> available files count }
-        Map<Long, Long> availableCountMap = repos
-                .selectCountFilesByOrderIdAndStates4AllOrders(now, FileState.AVAILABLE, FileState.ONLINE).stream()
-                .collect(Collectors.toMap(getOrderIdFct, getValueFct));
+        Map<Long, Long> availableCountMap = repos.selectCountFilesByOrderIdAndStates4AllOrders(now, FileState.AVAILABLE)
+                .stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
 
         // Update all orders completion values
         for (Order order : orders) {
