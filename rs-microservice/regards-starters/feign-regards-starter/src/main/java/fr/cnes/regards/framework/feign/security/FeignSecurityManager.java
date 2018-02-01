@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.util.Pair;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -30,26 +31,32 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
- *
  * Manage security information for system call. At the moment, this holder manages the system JWT.
- *
  * @author Marc Sordi
- *
  */
 public class FeignSecurityManager {
-
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(FeignSecurityManager.class);
 
     /**
      * Thread safe flag holder to activate system call<br/>
      *
      * If {@link Boolean#TRUE}, a system (i.e. internal) call will be done (with a system token)<br/>
-     * Else the user token within security context holder will be used.
+     * Else the user token will be used either it is an usurpation or not (within security context holder).
      */
     private static final ThreadLocal<Boolean> systemFlagHolder = new ThreadLocal<>();
+
+    /**
+     * Thread safe flag holder to activate usurpated call<br/>
+     *
+     * If {@link Boolean#TRUE}, a system (i.e. internal) call will be done in behalf of a user<br/>
+     * Else the user token within security context holder will be used.
+     */
+    private static final ThreadLocal<Boolean> usurpationFlagHolder = new ThreadLocal<>();
+
+    /**
+     * Thread safe user holder
+     */
+    private static final ThreadLocal<Pair<String, String>> usurpedUserHolder = new ThreadLocal<>();
 
     /**
      * Application name
@@ -72,16 +79,22 @@ public class FeignSecurityManager {
     /**
      * If system flag is enabled, this method return a system (i.e. internal) token else propagate the
      * {@link SecurityContextHolder} user token.
-     *
      * @return a JWT according to thread context
      */
     public String getToken() {
         Boolean asSysCall = systemFlagHolder.get();
         if ((asSysCall != null) && asSysCall) {
             return getSystemToken();
+        } else if (usurpationFlagHolder.get()) {
+            return getUsurpedToken();
         } else {
             return getUserToken();
         }
+    }
+
+    private String getUsurpedToken() {
+        return jwtService.generateToken(runtimeTenantResolver.getTenant(), usurpedUserHolder.get().getFirst(),
+                                        usurpedUserHolder.get().getSecond());
     }
 
     private String getUserToken() {
@@ -98,7 +111,6 @@ public class FeignSecurityManager {
 
     /**
      * Generate a new system JWT for each call
-     *
      * @return a new system token for each call of each thread with its own tenant
      */
     private String getSystemToken() {
@@ -124,6 +136,14 @@ public class FeignSecurityManager {
      */
     public static void asSystem() {
         systemFlagHolder.set(Boolean.TRUE);
+    }
+
+    /**
+     * Allows to usurp user identity if feign call needed into separate thread
+     */
+    public static void asUser(String user, String role) {
+        usurpationFlagHolder.set(Boolean.TRUE);
+        usurpedUserHolder.set(Pair.of(user, role));
     }
 
     /**
