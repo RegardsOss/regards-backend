@@ -362,7 +362,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Set<StorageDataFile> nearlineFiles = Sets.newHashSet();
 
         // 2. Check for online files. Online files doesn't need to be stored in the cache
-        // they can be access directly where they are stored.
+        // they can be accessed directly where they are stored.
         for (StorageDataFile df : dataFilesWithAccess) {
             if (df.getDataStorageUsed() != null) {
                 if (df.getDataStorageUsed().getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {

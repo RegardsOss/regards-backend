@@ -366,7 +366,8 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(path = PREPARE_DATA_FILES, method = RequestMethod.POST)
     @ResponseBody
     @ResourceAccess(
-            description = "allows to request that files are made available for downloading, return the list of file already available via their checksums")
+            description = "allows to request that files are made available for downloading, return the list of file "
+                    + "already available via their checksums")
     public ResponseEntity<AvailabilityResponse> makeFilesAvailable(@RequestBody AvailabilityRequest availabilityRequest)
             throws ModuleException {
         return ResponseEntity.ok(aipService.loadFiles(availabilityRequest));
