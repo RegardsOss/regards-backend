@@ -920,11 +920,12 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     @Override
     public Set<UUID> deleteAip(String ipId) throws ModuleException {
-        Optional<AIP> toBeDeleted = aipDao.findOneByIpId(ipId);
-        if (toBeDeleted.isPresent()) {
+        Optional<AIP> toBeDeletedOpt = aipDao.findOneByIpId(ipId);
+        if (toBeDeletedOpt.isPresent()) {
+            AIP toBeDeleted = toBeDeletedOpt.get();
             Set<StorageDataFile> dataFilesToDelete = Sets.newHashSet();
             // check if data file are use by any other aip
-            Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(toBeDeleted.get());
+            Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(toBeDeleted);
             for (StorageDataFile dataFile : dataFiles) {
                 // we order deletion of a file if and only if no other aip references the same file
                 Set<StorageDataFile> dataFilesWithSameFile = dataFileDao
@@ -940,8 +941,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 }
             }
             // schedule removal of data and metadata
-            toBeDeleted.get().setState(AIPState.DELETED);
-            aipDao.save(toBeDeleted.get());
+            toBeDeleted.setState(AIPState.DELETED);
+            aipDao.save(toBeDeleted);
             return scheduleDeletion(dataFilesToDelete);
         }
         return Sets.newHashSet();
