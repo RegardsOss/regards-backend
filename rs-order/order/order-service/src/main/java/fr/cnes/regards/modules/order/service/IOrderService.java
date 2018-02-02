@@ -28,6 +28,8 @@ public interface IOrderService {
 
     String ORDER_TOKEN = "orderToken";
 
+    String SCOPE = "scope";
+
     String ORDER_ID_KEY = "ORDER_ID";
 
     /**

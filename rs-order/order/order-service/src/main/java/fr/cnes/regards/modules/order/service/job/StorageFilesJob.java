@@ -7,6 +7,7 @@ import java.util.concurrent.Semaphore;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import feign.FeignException;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -122,6 +123,11 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
             subscriber.unsubscribe(this);
             // ...and all order data files statuses are updated into database
             dataFileService.save(dataFilesMap.values());
+        } catch (RuntimeException e) { // Feign or network or ... exception
+            // Put All data files in ERROR and propagate exception to make job fail
+            dataFilesMap.values().forEach(df -> df.setState(FileState.ERROR));
+            dataFileService.save(dataFilesMap.values());
+            throw e;
         } finally {
             FeignSecurityManager.reset();
         }

@@ -44,6 +44,10 @@ public interface IOrderRepository extends JpaRepository<Order, Long> {
             Pageable pageRequest);
 
     @EntityGraph("graph.order.simple")
+    List<Order> findAllByWaitingForUserAndAvailableFilesCountGreaterThanAndStatusIn(boolean waitingForUser,
+            int minAvailableCount, OrderStatus... statuses);
+
+    @EntityGraph("graph.order.simple")
     List<Order> findByAvailableFilesCountGreaterThanAndAvailableUpdateDateLessThanOrderByOwner(int count,
             OffsetDateTime date);
 
@@ -66,5 +70,15 @@ public interface IOrderRepository extends JpaRepository<Order, Long> {
     default Optional<Order> findOneExpiredOrder() {
         return findOneByExpirationDateLessThanAndStatusIn(OffsetDateTime.now(), OrderStatus.PENDING,
                                                           OrderStatus.RUNNING, OrderStatus.PAUSED);
+    }
+
+    /**
+     * Find all finished orders not waiting for user with availableCount > 0
+     */
+    default List<Order> findFinishedOrdersToUpdate() {
+        return findAllByWaitingForUserAndAvailableFilesCountGreaterThanAndStatusIn(false, 0, OrderStatus.EXPIRED,
+                                                                                   OrderStatus.DONE,
+                                                                                   OrderStatus.DONE_WITH_WARNING,
+                                                                                   OrderStatus.FAILED);
     }
 }

@@ -157,6 +157,8 @@ public class OrderService implements IOrderService {
 
     @Value("${regards.order.files.bucket.size.Mb:100}")
     private int bucketSizeMb;
+//    private int bucketSizeMb = 1;
+
 
     @Value("${regards.order.validation.period.days:3}")
     private int orderValidationPeriodDays;
@@ -532,6 +534,7 @@ public class OrderService implements IOrderService {
     public void downloadOrderMetalink(Long orderId, OutputStream os) {
         Order order = repos.findSimpleById(orderId);
         String tokenRequestParam = ORDER_TOKEN + "=" + generateToken4PublicEndpoint(order);
+        String scopeRequestParam = SCOPE + "=" + runtimeTenantResolver.getTenant();
 
         List<OrderDataFile> files = dataFileService.findAll(orderId);
 
@@ -562,6 +565,7 @@ public class OrderService implements IOrderService {
             buff.append("/api/v1/").append(encode4Uri(microserviceName));
             buff.append("/orders/aips/").append(encode4Uri(file.getIpId().toString())).append("/files/");
             buff.append(file.getChecksum()).append("?").append(tokenRequestParam);
+            buff.append("&").append(scopeRequestParam);
             xmlUrl.setValue(buff.toString());
             xmlResources.getUrl().add(xmlUrl);
             xmlFile.setResources(xmlResources);
@@ -622,6 +626,12 @@ public class OrderService implements IOrderService {
         if (!orders.isEmpty()) {
             repos.save(orders);
         }
+        List<Order> finishedOrders = repos.findFinishedOrdersToUpdate();
+        if (!finishedOrders.isEmpty()) {
+            finishedOrders.forEach(o -> o.setAvailableFilesCount(0));
+            repos.save(finishedOrders);
+        }
+
     }
 
     @Override

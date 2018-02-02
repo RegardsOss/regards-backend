@@ -188,7 +188,7 @@ public class OrderDataFileService implements IOrderDataFileService {
         for (Order order : orders) {
             long totalSize = totalSizeMap.get(order.getId());
             long treatedSize = treatedSizeMap.containsKey(order.getId()) ? treatedSizeMap.get(order.getId()) : 0l;
-            order.setPercentCompleted(Math.floorDiv(100 * (int) treatedSize, (int) totalSize));
+            order.setPercentCompleted((int) Math.floorDiv(100l * treatedSize, totalSize));
             long errorCount = errorCountMap.containsKey(order.getId()) ? errorCountMap.get(order.getId()) : 0l;
             order.setFilesInErrorCount((int) errorCount);
             long availableCount = availableCountMap.containsKey(order.getId()) ?

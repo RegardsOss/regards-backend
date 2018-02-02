@@ -27,6 +27,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import org.springframework.web.util.UriUtils;
 
 import com.google.common.base.Preconditions;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
@@ -113,9 +114,13 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
             @PathVariable("checksum") String checksum, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
             HttpServletResponse response) throws NoSuchElementException, IOException {
         OrderDataFile dataFile;
+        String user;
+        String role;
         try {
             Claims claims = jwtService.parseToken(token, secret);
             Long orderId = Long.parseLong(claims.get(IOrderService.ORDER_ID_KEY, String.class));
+            user = claims.get(JWTService.CLAIM_SUBJECT).toString();
+            role = claims.get(JWTService.CLAIM_ROLE).toString();
             // Throws a NoSuchElementException if not found
             dataFile = dataFileService.find(orderId, decodeUrn(aipId), checksum);
         } catch (InvalidJwtException | MalformedJwtException e) {
@@ -134,7 +139,14 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                 return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
             default:
                 // Stream the response
-                return new ResponseEntity<>(os -> dataFileService.downloadFile(dataFile, os), HttpStatus.OK);
+                return new ResponseEntity<>(os -> {
+                    FeignSecurityManager.asUser(user, role);
+                    try {
+                        dataFileService.downloadFile(dataFile, os);
+                    } finally {
+                        FeignSecurityManager.reset();
+                    }
+                }, HttpStatus.OK);
         }
     }
 
