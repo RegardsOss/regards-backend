@@ -43,7 +43,7 @@ public class FeignSecurityManager {
      * If {@link Boolean#TRUE}, a system (i.e. internal) call will be done (with a system token)<br/>
      * Else the user token will be used either it is an usurpation or not (within security context holder).
      */
-    private static final ThreadLocal<Boolean> systemFlagHolder = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> systemFlagHolder = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
     /**
      * Thread safe flag holder to activate usurpated call<br/>
@@ -51,7 +51,7 @@ public class FeignSecurityManager {
      * If {@link Boolean#TRUE}, a system (i.e. internal) call will be done in behalf of a user<br/>
      * Else the user token within security context holder will be used.
      */
-    private static final ThreadLocal<Boolean> usurpationFlagHolder = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> usurpationFlagHolder = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
     /**
      * Thread safe user holder
@@ -82,8 +82,7 @@ public class FeignSecurityManager {
      * @return a JWT according to thread context
      */
     public String getToken() {
-        Boolean asSysCall = systemFlagHolder.get();
-        if ((asSysCall != null) && asSysCall) {
+        if (systemFlagHolder.get()) {
             return getSystemToken();
         } else if (usurpationFlagHolder.get()) {
             return getUsurpedToken();
@@ -150,8 +149,8 @@ public class FeignSecurityManager {
      * Disable system or user mode call enabled in {{@link #asSystem()}  or {{@link #asUser(String, String)}}
      */
     public static void reset() {
-        systemFlagHolder.remove();
-        usurpationFlagHolder.remove();
-        usurpedUserHolder.remove();
+        systemFlagHolder.set(false);
+        usurpationFlagHolder.set(false);
+        usurpedUserHolder.set(null);
     }
 }
