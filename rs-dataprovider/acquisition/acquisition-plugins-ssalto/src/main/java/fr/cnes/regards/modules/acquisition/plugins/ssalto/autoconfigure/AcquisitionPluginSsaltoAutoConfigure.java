@@ -33,13 +33,14 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryP
  */
 @Configuration
 @ConditionalOnProperty(prefix = "regards.acquisition.ssalto", name = "enabled", matchIfMissing = true)
-@EnableConfigurationProperties({ PluginsRepositoryProperties.class})
+@EnableConfigurationProperties({ PluginsRepositoryProperties.class })
 @EnableTransactionManagement
 public class AcquisitionPluginSsaltoAutoConfigure {
 
     /**
      * Plugin Ssalto repository configuration
      */
+    @SuppressWarnings("unused")
     @Autowired
     private PluginsRepositoryProperties pluginsRepositoryProperties;
 

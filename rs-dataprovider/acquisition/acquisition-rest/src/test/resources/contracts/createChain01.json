@@ -1,0 +1,75 @@
+{
+    "active": true,
+    "fileInfos": [
+        {
+            "mandatory": true,
+            "comment": "test",
+            "scanPlugin": {
+                "id": null,
+                "pluginId": "GlobDiskScanning",
+                "label": "scanPlugin-1517331029111",
+                "version": "1.0.0-SNAPSHOT",
+                "priorityOrder": 0,
+                "active": true,
+                "pluginClassName": "fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning",
+                "parameters": [
+                    {
+                        "value": [
+                            "/DATA/test"
+                        ]
+                    }
+                ],
+                "iconUrl": null
+            },
+            "fileType": "application/json",
+            "dataType": "RAWDATA"
+        }
+    ],
+    "label": "PremiereChaine",
+    "mode": "AUTO",
+    "periodicity": "600",
+    "ingestChain": "DefaultProcessingChain",
+    "datasetIpId": "URN:AIP:DATASET:project1:a090190d-04ae-439a-b755-be8c67469b90:V1",
+    "validationPluginConf": {
+        "id": null,
+        "pluginId": "DefaultFileValidation",
+        "label": "validationPluginConf-1517330993036",
+        "version": "1.0.0-SNAPSHOT",
+        "priorityOrder": 0,
+        "active": true,
+        "pluginClassName": "fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation",
+        "parameters": [],
+        "iconUrl": null
+    },
+    "productPluginConf": {
+        "id": null,
+        "pluginId": "DefaultProductPlugin",
+        "label": "productPluginConf-1517330993038",
+        "version": "1.0.0-SNAPSHOT",
+        "priorityOrder": 0,
+        "active": true,
+        "pluginClassName": "fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin",
+        "parameters": [
+            {
+                "value": false
+            },
+            null,
+            null,
+            {
+                "value": false
+            }
+        ],
+        "iconUrl": null
+    },
+    "generateSipPluginConf": {
+        "id": null,
+        "pluginId": "DefaultSIPGeneration",
+        "label": "generateSipPluginConf-1517330993038",
+        "version": "1.0.0-SNAPSHOT",
+        "priorityOrder": 0,
+        "active": true,
+        "pluginClassName": "fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration",
+        "parameters": [],
+        "iconUrl": null
+    }
+}

@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.rest;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -42,10 +43,10 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
-import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
+import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 
 /**
  * Test acquisition chain workflow. This test cannot be done in a transaction due to transient entity!
@@ -187,6 +188,19 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
 
         // Create the chain
         performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
+                           "Chain should be created!");
+    }
+
+    @Ignore("Development test")
+    @Test
+    public void createFromContract01() {
+        String processingChain = readJsonContract("createChain01.json");
+
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+
+        // Create the chain
+        performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, processingChain, customizer,
                            "Chain should be created!");
     }
 
