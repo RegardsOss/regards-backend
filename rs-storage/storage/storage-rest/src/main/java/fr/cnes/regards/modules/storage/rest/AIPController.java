@@ -365,9 +365,8 @@ public class AIPController implements IResourceController<AIP> {
      */
     @RequestMapping(path = PREPARE_DATA_FILES, method = RequestMethod.POST)
     @ResponseBody
-    @ResourceAccess(
-            description = "allows to request that files are made available for downloading, return the list of file "
-                    + "already available via their checksums")
+    @ResourceAccess(description = "allow to request download availability for given files and return already "
+            + "available files", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<AvailabilityResponse> makeFilesAvailable(@RequestBody AvailabilityRequest availabilityRequest)
             throws ModuleException {
         return ResponseEntity.ok(aipService.loadFiles(availabilityRequest));
@@ -380,7 +379,7 @@ public class AIPController implements IResourceController<AIP> {
      * @throws EntityNotFoundException
      */
     @RequestMapping(value = AIP_BULK, method = RequestMethod.POST)
-    @ResourceAccess(description = "allows to retrieve a collection of aip corresponding to the given set of ids")
+    @ResourceAccess(description = "allow to retrieve a collection of aip corresponding to the given set of ids")
     @ResponseBody
     public ResponseEntity<AIPCollection> retrieveAipsBulk(@RequestBody @Valid @RegardsOaisUrnAsString Set<String> ipIds)
             throws EntityNotFoundException {
@@ -403,7 +402,7 @@ public class AIPController implements IResourceController<AIP> {
      * @throws EntityNotFoundException
      */
     @RequestMapping(value = ID_PATH, method = RequestMethod.GET)
-    @ResourceAccess(description = "allows to retrieve a given aip metadata thanks to its ipId")
+    @ResourceAccess(description = "allow to retrieve a given aip metadata thanks to its ipId")
     @ResponseBody
     public ResponseEntity<AIP> retrieveAip(@PathVariable(name = "ip_id") String ipId) throws EntityNotFoundException {
         return new ResponseEntity<>(aipService.retrieveAip(ipId), HttpStatus.OK);
@@ -418,7 +417,7 @@ public class AIPController implements IResourceController<AIP> {
      * @throws EntityInconsistentIdentifierException
      */
     @RequestMapping(value = TAG_PATH, method = RequestMethod.POST)
-    @ResourceAccess(description = "allows to add multiple tags to a given aip")
+    @ResourceAccess(description = "allow to add multiple tags to a given aip")
     @ResponseBody
     public ResponseEntity<Void> addTags(@PathVariable(name = "ip_id") String ipId, @RequestBody Set<String> tagsToAdd)
             throws EntityNotFoundException, EntityOperationForbiddenException, EntityInconsistentIdentifierException {
@@ -435,7 +434,7 @@ public class AIPController implements IResourceController<AIP> {
      * @throws EntityInconsistentIdentifierException
      */
     @RequestMapping(value = TAG_PATH, method = RequestMethod.DELETE)
-    @ResourceAccess(description = "allows to remove multiple tags to a given aip")
+    @ResourceAccess(description = "allow to remove multiple tags to a given aip")
     @ResponseBody
     public ResponseEntity<Void> removeTags(@PathVariable(name = "ip_id") String ipId,
             @RequestBody Set<String> tagsToRemove)
@@ -455,7 +454,7 @@ public class AIPController implements IResourceController<AIP> {
      */
     @RequestMapping(value = ID_PATH, method = RequestMethod.PUT,
             consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
-    @ResourceAccess(description = "allows to update a given aip metadata")
+    @ResourceAccess(description = "allow to update a given aip metadata")
     @ResponseBody
     public ResponseEntity<AIP> updateAip(@PathVariable(name = "ip_id") String ipId, @RequestBody @Valid AIP updated)
             throws EntityInconsistentIdentifierException, EntityOperationForbiddenException, EntityNotFoundException {
@@ -468,7 +467,7 @@ public class AIPController implements IResourceController<AIP> {
      * @throws ModuleException
      */
     @RequestMapping(value = ID_PATH, method = RequestMethod.DELETE)
-    @ResourceAccess(description = "allows to update a given aip metadata", role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "allow to update a given aip metadata", role = DefaultRole.ADMIN)
     @ResponseBody
     public ResponseEntity<Void> deleteAip(@PathVariable(name = "ip_id") String ipId) throws ModuleException {
         aipService.deleteAip(ipId);
@@ -516,7 +515,7 @@ public class AIPController implements IResourceController<AIP> {
 
     @RequestMapping(path = DOWLOAD_AIP_FILE, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    @ResourceAccess(description = "Dowload one file from a given AIP by checksum.", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "download one file from a given AIP by checksum.", role = DefaultRole.PUBLIC)
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("ip_id") String aipId,
             @PathVariable("checksum") String checksum) throws ModuleException, IOException {
         // Retrieve file locale path, 404 if aip not found or bad checksum or no storage plugin
