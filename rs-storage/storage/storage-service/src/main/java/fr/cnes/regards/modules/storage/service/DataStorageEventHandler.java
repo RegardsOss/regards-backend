@@ -255,7 +255,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                 switch (type) {
                     case SUCCESSFULL:
                         handleStoreSuccess(data, event.getChecksum(), event.getNewUrl(), event.getFileSize(),
-                                           event.getStorageConfId(), associatedAIP);
+                                           event.getStorageConfId(), event.getWidth(), event.getHeight(), associatedAIP);
                         break;
                     case FAILED:
                         handleStoreFailed(data, associatedAIP, event.getNewUrl());
@@ -279,7 +279,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
      * @param associatedAIP {@link AIP} associated to the given {@link StorageDataFile} successfully stored
      */
     private void handleStoreSuccess(StorageDataFile storedDataFile, String storedFileChecksum, URL storedFileNewURL,
-            Long storedFileSize, Long dataStoragePluginConfId, AIP associatedAIP) {
+            Long storedFileSize, Long dataStoragePluginConfId, Integer dataWidth, Integer dataHeight, AIP associatedAIP) {
         // update data status
         PluginConfiguration dataStorageUsed = null;
         try {
@@ -295,6 +295,8 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
         storedDataFile.setDataStorageUsed(dataStorageUsed);
         storedDataFile.setState(DataFileState.STORED);
         storedDataFile.setUrl(storedFileNewURL);
+        storedDataFile.setHeight(dataHeight);
+        storedDataFile.setWidth(dataWidth);
         dataFileDao.save(storedDataFile);
         LOG.debug("[STORE FILE SUCCESS] DATA FILE {} is in STORED state", storedDataFile.getUrl());
         if (storedDataFile.getDataType() == DataType.AIP) {

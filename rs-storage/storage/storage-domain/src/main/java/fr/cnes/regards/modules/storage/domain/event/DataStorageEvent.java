@@ -20,6 +20,16 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 public class DataStorageEvent implements ISubscribable {
 
     /**
+     * The data height
+     */
+    private Integer height;
+
+    /**
+     * The data width
+     */
+    private Integer width;
+
+    /**
      * The data file size
      */
     private Long fileSize;
@@ -79,6 +89,8 @@ public class DataStorageEvent implements ISubscribable {
         this.storageConfId = dataFile.getDataStorageUsed().getId();
         this.fileSize = dataFile.getFileSize();
         this.checksum = dataFile.getChecksum();
+        this.width = dataFile.getWidth();
+        this.height = dataFile.getHeight();
     }
 
     /**
@@ -199,6 +211,22 @@ public class DataStorageEvent implements ISubscribable {
      */
     public void setRestorationPath(Path restorationPath) {
         this.restorationPath = restorationPath;
+    }
+
+    public Integer getHeight() {
+        return height;
+    }
+
+    public void setHeight(Integer height) {
+        this.height = height;
+    }
+
+    public Integer getWidth() {
+        return width;
+    }
+
+    public void setWidth(Integer width) {
+        this.width = width;
     }
 
     @Override
