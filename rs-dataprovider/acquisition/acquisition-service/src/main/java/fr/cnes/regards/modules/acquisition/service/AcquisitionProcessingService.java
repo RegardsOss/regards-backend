@@ -27,8 +27,10 @@ import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -36,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -50,14 +53,17 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.acquisition.dao.AcquisitionProcessingChainSpecifications;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
@@ -90,6 +96,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Autowired
     private IProductService productService;
+
+    @Autowired
+    private IAcquisitionFileService acqFileService;
 
     @Autowired
     private IJobInfoService jobInfoService;
@@ -516,5 +525,49 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 }
             }
         }
+    }
+
+    @Override
+    public Page<AcquisitionProcessingChainMonitor> buildAcquisitionProcessingChainSummaries(String label,
+            Boolean running, AcquisitionProcessingChainMode mode, Pageable pageable) throws ModuleException {
+        Page<AcquisitionProcessingChain> acqChains = acqChainRepository
+                .findAll(AcquisitionProcessingChainSpecifications.search(label, running, mode), pageable);
+        List<AcquisitionProcessingChainMonitor> summaries = acqChains.getContent().stream()
+                .map(this::buildAcquisitionProcessingChainSummary).collect(Collectors.toList());
+        return new PageImpl<>(summaries, pageable, acqChains.getTotalElements());
+    }
+
+    private AcquisitionProcessingChainMonitor buildAcquisitionProcessingChainSummary(AcquisitionProcessingChain chain) {
+        AcquisitionProcessingChainMonitor summary = new AcquisitionProcessingChainMonitor(chain);
+
+        // 1.Handle products summary
+        long nbProductErrors = productService.countByChainAndStateIn(chain, Arrays.asList(ProductState.ERROR));
+        summary.setNbProductErrors(nbProductErrors);
+        long nbProducts = productService.countByChain(chain);
+        summary.setNbProducts(nbProducts);
+        long nbProductsInProgress = productService
+                .countByChainAndStateIn(chain, Arrays.asList(ProductState.ACQUIRING, ProductState.COMPLETED));
+        summary.setNbProductsInProgress(nbProductsInProgress);
+
+        // 2. Handle files summary
+        long nbFileErrors = acqFileService.countByChainAndStateIn(chain, Arrays.asList(AcquisitionFileState.ERROR));
+        summary.setNbFileErrors(nbFileErrors);
+        long nbFiles = acqFileService.countByChain(chain);
+        summary.setNbFiles(nbFiles);
+        long nbFileInProgress = acqFileService
+                .countByChainAndStateIn(chain,
+                                        Arrays.asList(AcquisitionFileState.IN_PROGRESS, AcquisitionFileState.VALID));
+        summary.setNbFilesInProgress(nbFileInProgress);
+
+        // 3. Handle scan job
+        // TODO
+        // 4. Handle productGeneration jobs
+        // TODO
+        // 5. Handle SIP submission jobs
+        // TODO
+        // 6. Handle post processing jobs
+        // TODO
+
+        return summary;
     }
 }

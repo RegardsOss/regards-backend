@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -348,5 +349,15 @@ public class ProductService implements IProductService {
     public void updateProductSIPState(String ipId, ISipState sipState) {
         Product product = productRepository.findCompleteByIpId(ipId);
         product.setSipState(sipState);
+    }
+
+    @Override
+    public long countByChainAndStateIn(AcquisitionProcessingChain processingChain, List<ProductState> productStates) {
+        return productRepository.countByProcessingChainAndStateIn(processingChain, productStates);
+    }
+
+    @Override
+    public long countByChain(AcquisitionProcessingChain chain) {
+        return productRepository.countByProcessingChain(chain);
     }
 }

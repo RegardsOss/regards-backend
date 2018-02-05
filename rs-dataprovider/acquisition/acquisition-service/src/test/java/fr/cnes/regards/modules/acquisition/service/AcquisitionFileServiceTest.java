@@ -18,24 +18,24 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.util.HashMap;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
 
 import com.google.common.collect.Lists;
 
@@ -43,57 +43,72 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
- * Test {@link AcquisitionProcessingService} for {@link AcquisitionProcessingChain} workflow
+ * Test {@link AcquisitionFileService}
  *
- * @author Marc Sordi
+ * @author Sébastien Binda
  *
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acquisition", "jwt.secret=123456789",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_product", "jwt.secret=123456789",
         "regards.workspace=target/workspace" })
-@ContextConfiguration(classes = { AcquisitionProcessingServiceTest.AcquisitionConfiguration.class })
+@ContextConfiguration(classes = { ProductAcquisitionServiceTest.AcquisitionConfiguration.class })
 @MultitenantTransactional
-public class AcquisitionProcessingServiceTest extends AbstractDaoTest {
+public class AcquisitionFileServiceTest extends AbstractDaoTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingServiceTest.class);
+    @SuppressWarnings("unused")
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProductAcquisitionServiceTest.class);
 
     @Autowired
     private IAcquisitionProcessingService processingService;
 
     @Autowired
-    private IAcquisitionProcessingChainRepository processingChainRepository;
+    private IPluginService pluginService;
 
     @Autowired
-    private Validator validator;
+    private IAcquisitionFileRepository acqFileRepository;
 
-    @Configuration
-    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
-    static class AcquisitionConfiguration {
+    @Autowired
+    private IProductService productService;
+
+    @Autowired
+    private AutowireCapableBeanFactory beanFactory;
+
+    @Autowired
+    private IAcquisitionFileService fileService;
+
+    private AcquisitionProcessingChain processingChain;
+
+    @Before
+    public void init() throws ModuleException {
+        createFiles();
     }
 
-    @Test
-    @Requirement("REGARDS_DSL_ING_PRO_020")
-    @Requirement("REGARDS_DSL_ING_PRO_030")
-    @Purpose("Create an acquisition chain")
-    public void createChain() throws ModuleException {
+    public AcquisitionProcessingChain createProcessingChain() throws ModuleException {
 
         // Create a processing chain
-        AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
-        processingChain.setLabel("Processing chain 1");
+        processingChain = new AcquisitionProcessingChain();
+        processingChain.setLabel("Product");
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
@@ -106,8 +121,14 @@ public class AcquisitionProcessingServiceTest extends AbstractDaoTest {
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
         fileInfo.setDataType(DataType.RAWDATA);
 
-        PluginConfiguration scanPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), GlobDiskScanning.class, Lists.newArrayList());
+        // Search directory
+        Path searchDir = Paths.get("src", "test", "resources", "data", "plugins", "scan");
+
+        List<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
+
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class,
+                                                                            Lists.newArrayList());
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin");
         fileInfo.setScanPlugin(scanPlugin);
@@ -138,22 +159,48 @@ public class AcquisitionProcessingServiceTest extends AbstractDaoTest {
         // SIP post processing
         // Not required
 
-        // Validate
-        Errors errors = new MapBindingResult(new HashMap<>(), "apc");
-        validator.validate(processingChain, errors);
-        if (errors.hasErrors()) {
-            errors.getAllErrors().forEach(error -> LOGGER.error(error.getDefaultMessage()));
-            Assert.fail("Acquisition processing chain should be valid");
-        }
+        pluginService.addPluginPackage(IScanPlugin.class.getPackage().getName());
+        pluginService.addPluginPackage(GlobDiskScanning.class.getPackage().getName());
 
         // Save processing chain
-        processingService.createChain(processingChain);
-
-        // Test loading chain by mode
-        List<AcquisitionProcessingChain> automaticChains = processingChainRepository.findAllBootableAutomaticChains();
-        Assert.assertTrue(automaticChains.isEmpty());
-        List<AcquisitionProcessingChain> manualChains = processingChainRepository
-                .findByModeAndActiveTrueAndRunningFalse(AcquisitionProcessingChainMode.MANUAL);
-        Assert.assertTrue(!manualChains.isEmpty() && (manualChains.size() == 1));
+        return processingService.createChain(processingChain);
     }
+
+    public void createFiles() throws ModuleException {
+
+        AcquisitionProcessingChain processingChain = createProcessingChain();
+        Product product = new Product();
+        product.setIpId("IpId");
+        product.setLastUpdate(OffsetDateTime.now());
+        product.setProcessingChain(processingChain);
+        product.setProductName("product name");
+        product.setSession("session");
+        product.setSipState(SIPState.INDEXED);
+        product.setState(ProductState.COMPLETED);
+        product = productService.save(product);
+
+        // Add acquisition files
+        for (AcquisitionFileState fileState : AcquisitionFileState.values()) {
+            AcquisitionFile file = new AcquisitionFile();
+            file.setAcqDate(OffsetDateTime.now());
+            file.setChecksum("123445");
+            file.setChecksumAlgorithm("MD5");
+            file.setError("");
+            file.setFileInfo(processingChain.getFileInfos().get(0));
+            file.setFilePath(Paths.get("/tmp/file"));
+            file.setProduct(product);
+            file.setState(fileState);
+            fileService.save(file);
+        }
+    }
+
+    @Test
+    public void testCountFilesforProcessingChain() {
+        Assert.assertTrue(fileService.countByChain(processingChain) == AcquisitionFileState.values().length);
+        for (AcquisitionFileState fileState : AcquisitionFileState.values()) {
+            Assert.assertTrue(fileService.countByChainAndStateIn(processingChain, Arrays.asList(fileState)) == 1);
+        }
+
+    }
+
 }

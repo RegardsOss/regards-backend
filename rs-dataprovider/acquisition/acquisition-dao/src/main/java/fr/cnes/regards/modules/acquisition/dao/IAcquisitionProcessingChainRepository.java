@@ -25,6 +25,7 @@ import javax.persistence.LockModeType;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -41,7 +42,8 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
  * @author Marc Sordi
  */
 @Repository
-public interface IAcquisitionProcessingChainRepository extends JpaRepository<AcquisitionProcessingChain, Long> {
+public interface IAcquisitionProcessingChainRepository
+        extends JpaRepository<AcquisitionProcessingChain, Long>, JpaSpecificationExecutor<AcquisitionProcessingChain> {
 
     Long countById(Long id);
 

@@ -35,6 +35,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -59,12 +61,13 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
-import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
+import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 
 /**
  * Test {@link AcquisitionProcessingService} for {@link Product} workflow
@@ -96,6 +99,9 @@ public class ProductAcquisitionServiceTest extends AbstractDaoTest {
 
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
+
+    @Autowired
+    private IAcquisitionFileService fileService;
 
     @Configuration
     @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
@@ -216,5 +222,22 @@ public class ProductAcquisitionServiceTest extends AbstractDaoTest {
             genJob.setParameters(parameters);
             genJob.run();
         }
+
+        Assert.assertTrue(fileService.countByChain(processingChain) == 4);
+        Assert.assertTrue(fileService.countByChainAndStateIn(processingChain,
+                                                             Arrays.asList(AcquisitionFileState.ACQUIRED)) == 4);
+        Assert.assertTrue(fileService.countByChainAndStateIn(processingChain,
+                                                             Arrays.asList(AcquisitionFileState.ERROR)) == 0);
+
+        Page<AcquisitionProcessingChainMonitor> monitor = processingService
+                .buildAcquisitionProcessingChainSummaries(null, null, null, new PageRequest(0, 10));
+        Assert.assertTrue(!monitor.getContent().isEmpty());
+        Assert.assertTrue(monitor.getContent().get(0).getNbFileErrors() == 0);
+        Assert.assertTrue(monitor.getContent().get(0).getNbFiles() == 4);
+        Assert.assertTrue(monitor.getContent().get(0).getNbFilesInProgress() == 0);
+        Assert.assertTrue(monitor.getContent().get(0).getNbProducts() == 4);
+        Assert.assertTrue(monitor.getContent().get(0).getNbProductErrors() == 0);
+        Assert.assertTrue(monitor.getContent().get(0).getNbProductsInProgress() == 0);
+
     }
 }
