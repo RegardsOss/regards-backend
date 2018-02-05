@@ -39,6 +39,7 @@ import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedEntityGraphs;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -53,6 +54,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.job.JobReport;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
@@ -135,6 +137,14 @@ public class Product {
      */
     @Column(name = "ip_id", length = UniformResourceName.MAX_SIZE)
     private String ipId;
+
+    @OneToOne
+    @JoinColumn(name = "sip_gen_job_report_id", foreignKey = @ForeignKey(name = "fk_sip_gen_job_report_id"))
+    private JobReport lastSIPGenerationJobReport;
+
+    @OneToOne
+    @JoinColumn(name = "post_prod_job_report_id", foreignKey = @ForeignKey(name = "fk_post_prod_job_report_id"))
+    private JobReport lastPostProductionJobReport;
 
     public Long getId() {
         return id;

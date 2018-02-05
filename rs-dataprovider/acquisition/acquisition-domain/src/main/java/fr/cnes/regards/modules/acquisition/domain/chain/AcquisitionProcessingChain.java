@@ -39,6 +39,7 @@ import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedEntityGraphs;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
@@ -49,6 +50,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.acquisition.domain.job.JobReport;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
@@ -172,6 +174,14 @@ public class AcquisitionProcessingChain {
     @ManyToOne
     @JoinColumn(name = "postprocesssip_conf_id", foreignKey = @ForeignKey(name = "fk_postprocesssip_conf_id"))
     private PluginConfiguration postProcessSipPluginConf;
+
+    @OneToOne
+    @JoinColumn(name = "acq_job_report_id", foreignKey = @ForeignKey(name = "fk_acq_job_report_id"))
+    private JobReport lastProductAcquisitionJobReport;
+
+    @OneToOne
+    @JoinColumn(name = "sip_sub_job_report_id", foreignKey = @ForeignKey(name = "fk_sip_sub_job_report_id"))
+    private JobReport lastSIPSubmissionJobReport;
 
     public String getLabel() {
         return label;
@@ -298,5 +308,21 @@ public class AcquisitionProcessingChain {
 
     public void setSession(String session) {
         this.session = session;
+    }
+
+    public JobReport getLastProductAcquisitionJobReport() {
+        return lastProductAcquisitionJobReport;
+    }
+
+    public void setLastProductAcquisitionJobReport(JobReport lastProductAcquisitionJobReport) {
+        this.lastProductAcquisitionJobReport = lastProductAcquisitionJobReport;
+    }
+
+    public JobReport getLastSIPSubmissionJobReport() {
+        return lastSIPSubmissionJobReport;
+    }
+
+    public void setLastSIPSubmissionJobReport(JobReport lastSIPSubmissionJobReport) {
+        this.lastSIPSubmissionJobReport = lastSIPSubmissionJobReport;
     }
 }
