@@ -411,7 +411,7 @@ public class StorageDataFile {
         if (this == o) {
             return true;
         }
-        if ((o == null) || (getClass() != o.getClass())) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
 
@@ -423,14 +423,18 @@ public class StorageDataFile {
         if (algorithm != null ? !algorithm.equals(dataFile.algorithm) : dataFile.algorithm != null) {
             return false;
         }
+        if (dataType != dataFile.dataType) {
+            return false;
+        }
         return aipEntity != null ? aipEntity.equals(dataFile.aipEntity) : dataFile.aipEntity == null;
     }
 
     @Override
     public int hashCode() {
         int result = checksum != null ? checksum.hashCode() : 0;
-        result = (31 * result) + (algorithm != null ? algorithm.hashCode() : 0);
-        result = (31 * result) + (aipEntity != null ? aipEntity.hashCode() : 0);
+        result = 31 * result + (algorithm != null ? algorithm.hashCode() : 0);
+        result = 31 * result + (dataType != null ? dataType.hashCode() : 0);
+        result = 31 * result + (aipEntity != null ? aipEntity.hashCode() : 0);
         return result;
     }
 }
