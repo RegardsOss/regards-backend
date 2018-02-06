@@ -348,7 +348,12 @@ public class ProductService implements IProductService {
     @Override
     public void updateProductSIPState(String ipId, ISipState sipState) {
         Product product = productRepository.findCompleteByIpId(ipId);
-        product.setSipState(sipState);
+        if (product != null) {
+            product.setSipState(sipState);
+            productRepository.save(product);
+        } else {
+            LOGGER.debug("SIP with IP ID \"{}\" is not managed by data provider", ipId);
+        }
     }
 
     @Override
