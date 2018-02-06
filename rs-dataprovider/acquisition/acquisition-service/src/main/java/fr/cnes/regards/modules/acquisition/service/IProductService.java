@@ -163,4 +163,12 @@ public interface IProductService {
      */
     Page<Product> search(ProductState state, SIPState sipState, String productName, String session,
             Long processingChainId, OffsetDateTime from, Pageable pageable);
+
+    /**
+     * Search for a {@link Product} by his name
+     * @param productName
+     * @return
+     * @throws ModuleException
+     */
+    Optional<Product> searchProduct(String productName) throws ModuleException;
 }

@@ -117,6 +117,11 @@ public class ProductService implements IProductService {
     }
 
     @Override
+    public Optional<Product> searchProduct(String productName) throws ModuleException {
+        return Optional.of(productRepository.findCompleteByProductName(productName));
+    }
+
+    @Override
     public Page<Product> retrieveAll(Pageable page) {
         return productRepository.findAll(page);
     }
