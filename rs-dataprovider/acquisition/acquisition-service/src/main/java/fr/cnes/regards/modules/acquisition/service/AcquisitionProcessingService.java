@@ -143,6 +143,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         // Prevent bad values
         processingChain.setRunning(Boolean.FALSE);
         processingChain.setLastActivationDate(null);
+        processingChain.setLastProductAcquisitionJobReport(null);
+        processingChain.setLastSIPSubmissionJobReports(null);
 
         // Manage acquisition file info
         for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {

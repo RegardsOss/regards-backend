@@ -1,0 +1,12 @@
+create table t_acq_job_report (id int8 not null, job_id uuid, schedule_date timestamp, start_date timestamp, stop_date timestamp, session varchar(255), primary key (id));
+alter table t_acq_processing_chain add column acq_job_report_id int8;
+alter table t_acquisition_product add column post_prod_job_report_id int8;
+alter table t_acquisition_product add column sip_gen_job_report_id int8;
+create table ta_chain_session_sub (chain_id int8 not null, sub_job_id int8 not null, primary key (chain_id, sub_job_id));
+alter table ta_chain_session_sub add constraint uk_sub_job_id unique (sub_job_id);
+create sequence seq_acq_job_report start 1 increment 50;
+alter table t_acq_processing_chain add constraint fk_acq_job_report_id foreign key (acq_job_report_id) references t_acq_job_report;
+alter table t_acquisition_product add constraint fk_post_prod_job_report_id foreign key (post_prod_job_report_id) references t_acq_job_report;
+alter table t_acquisition_product add constraint fk_sip_gen_job_report_id foreign key (sip_gen_job_report_id) references t_acq_job_report;
+alter table ta_chain_session_sub add constraint fk_sub_job_id foreign key (sub_job_id) references t_acq_job_report;
+alter table ta_chain_session_sub add constraint fk_sub_job_chain_id foreign key (chain_id) references t_acq_processing_chain;

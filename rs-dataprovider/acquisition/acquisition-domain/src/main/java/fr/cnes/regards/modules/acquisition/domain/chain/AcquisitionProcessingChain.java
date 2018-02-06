@@ -22,7 +22,9 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -34,6 +36,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
@@ -42,6 +45,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -50,7 +54,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.acquisition.domain.job.JobReport;
+import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
@@ -65,8 +69,8 @@ import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
  */
 @Entity
 @Table(name = "t_acq_processing_chain")
-@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.info.complete",
-        attributeNodes = @NamedAttributeNode(value = "fileInfos")) })
+@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.info.complete", attributeNodes = {
+        @NamedAttributeNode(value = "fileInfos"), @NamedAttributeNode(value = "lastSIPSubmissionJobReports") }) })
 public class AcquisitionProcessingChain {
 
     /**
@@ -175,13 +179,21 @@ public class AcquisitionProcessingChain {
     @JoinColumn(name = "postprocesssip_conf_id", foreignKey = @ForeignKey(name = "fk_postprocesssip_conf_id"))
     private PluginConfiguration postProcessSipPluginConf;
 
-    @OneToOne
+    @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
     @JoinColumn(name = "acq_job_report_id", foreignKey = @ForeignKey(name = "fk_acq_job_report_id"))
-    private JobReport lastProductAcquisitionJobReport;
+    private AcquisitionJobReport lastProductAcquisitionJobReport;
 
-    @OneToOne
-    @JoinColumn(name = "sip_sub_job_report_id", foreignKey = @ForeignKey(name = "fk_sip_sub_job_report_id"))
-    private JobReport lastSIPSubmissionJobReport;
+    /**
+     * Job reports per session.
+     */
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
+    @JoinTable(name = "ta_chain_session_sub",
+            joinColumns = { @JoinColumn(name = "chain_id", referencedColumnName = "id",
+                    foreignKey = @ForeignKey(name = "fk_sub_job_chain_id")) },
+            inverseJoinColumns = { @JoinColumn(name = "sub_job_id", referencedColumnName = "id",
+                    foreignKey = @ForeignKey(name = "fk_sub_job_id")) },
+            uniqueConstraints = @UniqueConstraint(name = "uk_sub_job_id", columnNames = "sub_job_id"))
+    private Set<AcquisitionJobReport> lastSIPSubmissionJobReports;
 
     public String getLabel() {
         return label;
@@ -310,19 +322,22 @@ public class AcquisitionProcessingChain {
         this.session = session;
     }
 
-    public JobReport getLastProductAcquisitionJobReport() {
+    public AcquisitionJobReport getLastProductAcquisitionJobReport() {
         return lastProductAcquisitionJobReport;
     }
 
-    public void setLastProductAcquisitionJobReport(JobReport lastProductAcquisitionJobReport) {
+    public void setLastProductAcquisitionJobReport(AcquisitionJobReport lastProductAcquisitionJobReport) {
         this.lastProductAcquisitionJobReport = lastProductAcquisitionJobReport;
     }
 
-    public JobReport getLastSIPSubmissionJobReport() {
-        return lastSIPSubmissionJobReport;
+    public Set<AcquisitionJobReport> getLastSIPSubmissionJobReports() {
+        if (lastSIPSubmissionJobReports == null) {
+            lastSIPSubmissionJobReports = new java.util.HashSet<>();
+        }
+        return lastSIPSubmissionJobReports;
     }
 
-    public void setLastSIPSubmissionJobReport(JobReport lastSIPSubmissionJobReport) {
-        this.lastSIPSubmissionJobReport = lastSIPSubmissionJobReport;
+    public void setLastSIPSubmissionJobReports(Set<AcquisitionJobReport> lastSIPSubmissionJobReports) {
+        this.lastSIPSubmissionJobReports = lastSIPSubmissionJobReports;
     }
 }

@@ -51,10 +51,10 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainReposi
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
+import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 
 /**
  * Test {@link AcquisitionProcessingService} for {@link AcquisitionProcessingChain} workflow

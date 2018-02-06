@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -54,7 +55,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.job.JobReport;
+import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
@@ -138,13 +139,13 @@ public class Product {
     @Column(name = "ip_id", length = UniformResourceName.MAX_SIZE)
     private String ipId;
 
-    @OneToOne
+    @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
     @JoinColumn(name = "sip_gen_job_report_id", foreignKey = @ForeignKey(name = "fk_sip_gen_job_report_id"))
-    private JobReport lastSIPGenerationJobReport;
+    private AcquisitionJobReport lastSIPGenerationJobReport;
 
-    @OneToOne
+    @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
     @JoinColumn(name = "post_prod_job_report_id", foreignKey = @ForeignKey(name = "fk_post_prod_job_report_id"))
-    private JobReport lastPostProductionJobReport;
+    private AcquisitionJobReport lastPostProductionJobReport;
 
     public Long getId() {
         return id;

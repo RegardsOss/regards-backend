@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -32,21 +32,30 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
 
 /**
  * Test complex queries
  * @author Marc Sordi
  *
  */
-@Ignore("Development testing for complex queries")
-@TestPropertySource(properties = "spring.jpa.properties.hibernate.default_schema=jason2idgr")
+// @Ignore("Development testing for complex queries")
+// @TestPropertySource(properties = "spring.jpa.properties.hibernate.default_schema=jason2idgr")
+@TestPropertySource(properties = "spring.jpa.properties.hibernate.default_schema=acquisition_it")
 public class ProductRepositoryTest extends AbstractDaoTest {
+
+    @Autowired
+    private IAcquisitionJobReportRepository jobReportRepository;
 
     @Autowired
     private IProductRepository productRepository;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private IAcquisitionProcessingChainRepository processingChainRepository;
 
     @Test
     public void test() {
@@ -62,5 +71,39 @@ public class ProductRepositoryTest extends AbstractDaoTest {
                                                                        new PageRequest(0, 10));
         Assert.assertNotNull(productByState);
 
+    }
+
+    @Test
+    public void jobReportTest() {
+        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+
+        AcquisitionProcessingChain chain = processingChainRepository.findCompleteById(1L);
+        Assert.assertNotNull(chain);
+
+        AcquisitionJobReport report = new AcquisitionJobReport();
+        report.setScheduleDate(OffsetDateTime.now());
+        jobReportRepository.save(report);
+
+        chain.setLastProductAcquisitionJobReport(report);
+        processingChainRepository.save(chain);
+
+        AcquisitionJobReport newReport = new AcquisitionJobReport();
+        newReport.setScheduleDate(OffsetDateTime.now());
+        newReport.setStartDate(OffsetDateTime.now());
+        jobReportRepository.save(newReport);
+
+        chain.getLastSIPSubmissionJobReports().add(newReport);
+        processingChainRepository.save(chain);
+
+        chain.getLastSIPSubmissionJobReports().clear();
+        processingChainRepository.save(chain);
+
+        newReport = new AcquisitionJobReport();
+        newReport.setScheduleDate(OffsetDateTime.now());
+        newReport.setStartDate(OffsetDateTime.now());
+        jobReportRepository.save(newReport);
+
+        chain.getLastSIPSubmissionJobReports().add(newReport);
+        processingChainRepository.save(chain);
     }
 }

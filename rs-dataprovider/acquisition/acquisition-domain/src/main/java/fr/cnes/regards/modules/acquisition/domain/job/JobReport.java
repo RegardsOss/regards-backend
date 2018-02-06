@@ -23,12 +23,7 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
@@ -40,47 +35,41 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
  * @author Marc Sordi
  *
  */
-@Entity
-@Table(name = "t_job_report")
-public class JobReport {
-
-    @Id
-    @SequenceGenerator(name = "JobReportSequence", initialValue = 1, sequenceName = "seq_job_report")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "JobReportSequence")
-    private Long id;
+@MappedSuperclass
+public abstract class JobReport {
 
     /**
      * The active job id. If job is finished, this id should be null
      */
     @Column(name = "job_id")
-    private UUID jobId;
+    protected UUID jobId;
 
     /**
      * If jobId exists, allows to load a transient {@link JobInfo}
      */
     @Transient
-    private JobInfo jobInfo;
+    protected JobInfo jobInfo;
 
     /**
      * the job schedule date
      */
     @Column(name = "schedule_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime scheduleDate;
+    protected OffsetDateTime scheduleDate;
 
     /**
      * the job creation date
      */
     @Column(name = "start_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime startDate;
+    protected OffsetDateTime startDate;
 
     /**
      * the job end date
      */
     @Column(name = "stop_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime stopDate;
+    protected OffsetDateTime stopDate;
 
     public UUID getJobId() {
         return jobId;
