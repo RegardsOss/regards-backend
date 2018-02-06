@@ -53,19 +53,13 @@ public class AcquisitionJobReport extends JobReport {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = (prime * result) + ((session == null) ? 0 : session.hashCode());
-        return result;
+        return ((session == null) ? 0 : session.hashCode());
     }
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
         }
         if (getClass() != obj.getClass()) {
             return false;

@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -40,7 +41,7 @@ import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
  * @author Marc Sordi
  *
  */
-// @Ignore("Development testing for complex queries")
+@Ignore("Development testing for complex queries")
 // @TestPropertySource(properties = "spring.jpa.properties.hibernate.default_schema=jason2idgr")
 @TestPropertySource(properties = "spring.jpa.properties.hibernate.default_schema=acquisition_it")
 public class ProductRepositoryTest extends AbstractDaoTest {
@@ -80,30 +81,60 @@ public class ProductRepositoryTest extends AbstractDaoTest {
         AcquisitionProcessingChain chain = processingChainRepository.findCompleteById(1L);
         Assert.assertNotNull(chain);
 
-        AcquisitionJobReport report = new AcquisitionJobReport();
-        report.setScheduleDate(OffsetDateTime.now());
-        jobReportRepository.save(report);
+        // AcquisitionJobReport report = new AcquisitionJobReport();
+        // report.setScheduleDate(OffsetDateTime.now());
+        // jobReportRepository.save(report);
+        //
+        // chain.setLastProductAcquisitionJobReport(report);
+        // processingChainRepository.save(chain);
 
-        chain.setLastProductAcquisitionJobReport(report);
-        processingChainRepository.save(chain);
+        // SIP submission report
+        // String session = "SESS1";
+        String session = null;
 
+        // First step : remove existing report if any
+        AcquisitionJobReport reportToRemove = null;
+        for (AcquisitionJobReport report : chain.getLastSIPSubmissionJobReports()) {
+            // Manage null session
+            if (((session == null) && (report.getSession() == null))
+                    || ((session != null) && session.equals(report.getSession()))) {
+                reportToRemove = report;
+                break;
+            }
+        }
+        if (reportToRemove != null) {
+            chain.getLastSIPSubmissionJobReports().remove(reportToRemove);
+            // processingChainRepository.save(chain);
+        }
+
+        // Second step : add new report
         AcquisitionJobReport newReport = new AcquisitionJobReport();
         newReport.setScheduleDate(OffsetDateTime.now());
         newReport.setStartDate(OffsetDateTime.now());
+        newReport.setSession(session);
         jobReportRepository.save(newReport);
-
         chain.getLastSIPSubmissionJobReports().add(newReport);
+
         processingChainRepository.save(chain);
 
-        chain.getLastSIPSubmissionJobReports().clear();
-        processingChainRepository.save(chain);
+        // AcquisitionJobReport newReport2 = new AcquisitionJobReport();
+        // newReport2.setScheduleDate(OffsetDateTime.now());
+        // newReport2.setStartDate(OffsetDateTime.now());
+        // newReport2.setSession(session);
+        // jobReportRepository.save(newReport2);
+        // chain.getLastSIPSubmissionJobReports().add(newReport2);
 
-        newReport = new AcquisitionJobReport();
-        newReport.setScheduleDate(OffsetDateTime.now());
-        newReport.setStartDate(OffsetDateTime.now());
-        jobReportRepository.save(newReport);
+        // Clean reports
+        // chain.getLastSIPSubmissionJobReports().r
+        // chain.getLastSIPSubmissionJobReports().
+        // processingChainRepository.save(chain);
 
-        chain.getLastSIPSubmissionJobReports().add(newReport);
-        processingChainRepository.save(chain);
+        // newReport = new AcquisitionJobReport();
+        // newReport.setScheduleDate(OffsetDateTime.now());
+        // newReport.setStartDate(OffsetDateTime.now());
+        // jobReportRepository.save(newReport);
+        //
+        // chain.getLastSIPSubmissionJobReports().add(newReport);
+        // processingChainRepository.save(chain);
     }
 }
