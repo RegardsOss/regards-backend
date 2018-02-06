@@ -47,6 +47,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
+import fr.cnes.regards.modules.acquisition.dao.ProductSpecifications;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -57,6 +58,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * Manage acquisition {@link Product}
@@ -364,5 +366,13 @@ public class ProductService implements IProductService {
     @Override
     public long countByChain(AcquisitionProcessingChain chain) {
         return productRepository.countByProcessingChain(chain);
+    }
+
+    @Override
+    public Page<Product> search(ProductState state, SIPState sipState, String productName, String session,
+            Long processingChainId, OffsetDateTime from, Pageable pageable) {
+        return productRepository
+                .findAll(ProductSpecifications.search(state, sipState, productName, session, processingChainId, from),
+                         pageable);
     }
 }

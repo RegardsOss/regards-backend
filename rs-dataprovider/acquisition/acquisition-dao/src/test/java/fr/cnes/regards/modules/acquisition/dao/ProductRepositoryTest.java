@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -40,7 +41,7 @@ import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
  * @author Marc Sordi
  *
  */
-// @Ignore("Development testing for complex queries")
+@Ignore("Development testing for complex queries")
 // @TestPropertySource(properties = "spring.jpa.properties.hibernate.default_schema=jason2idgr")
 @TestPropertySource(properties = "spring.jpa.properties.hibernate.default_schema=acquisition_it")
 public class ProductRepositoryTest extends AbstractDaoTest {

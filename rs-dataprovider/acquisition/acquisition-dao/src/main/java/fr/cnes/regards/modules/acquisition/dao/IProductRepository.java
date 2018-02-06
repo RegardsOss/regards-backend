@@ -28,6 +28,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
 
@@ -44,7 +45,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
  * @author Marc Sordi
  */
 @Repository
-public interface IProductRepository extends JpaRepository<Product, Long> {
+public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
     @EntityGraph("graph.acquisition.file.complete")
     Product findCompleteById(Long id);

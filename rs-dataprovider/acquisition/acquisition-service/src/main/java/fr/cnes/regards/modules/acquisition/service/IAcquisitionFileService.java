@@ -18,10 +18,15 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 
 /**
@@ -31,10 +36,39 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
  */
 public interface IAcquisitionFileService {
 
-    public long countByChainAndStateIn(AcquisitionProcessingChain chain, List<AcquisitionFileState> asList);
+    /**
+     * Count number of {@link AcquisitionFile}s associated to the given {@link AcquisitionProcessingChain} and matching
+     * the given states.
+     * @param chain {@link AcquisitionProcessingChain}
+     * @param states {@link AcquisitionFileState}s
+     * @return number of matching {@link AcquisitionFile}s
+     */
+    public long countByChainAndStateIn(AcquisitionProcessingChain chain, List<AcquisitionFileState> states);
 
+    /**
+     * Count number of {@link AcquisitionFile}s associated to the given {@link AcquisitionProcessingChain}
+     * @param chain {@link AcquisitionProcessingChain}
+     * @return number of matching {@link AcquisitionFile}s
+     */
     public long countByChain(AcquisitionProcessingChain chain);
 
+    /**
+     * Save or update given {@link AcquisitionFile}
+     * @param file {@link AcquisitionFile}
+     * @return saved or updated {@link AcquisitionFile}
+     */
     public AcquisitionFile save(AcquisitionFile file);
+
+    /**
+     * Search for {@link AcquisitionFile} entities matching parameters
+     * @param filePath {@link String}
+     * @param state {@link AcquisitionFileState}
+     * @param productId {@link Long} identifier of {@link Product}
+     * @param from {@link OffsetDateTime}
+     * @param pageable
+     * @return {@link AcquisitionFile}s
+     */
+    public Page<AcquisitionFile> search(String filePath, AcquisitionFileState state, Long productId,
+            OffsetDateTime from, Pageable pageable);
 
 }
