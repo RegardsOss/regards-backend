@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -93,10 +94,14 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
             // Create SIP collection
             SIPCollectionBuilder sipCollectionBuilder = new SIPCollectionBuilder(ingestChain, session.orElse(null));
             products.getContent().forEach(p -> sipCollectionBuilder.add(p.getSip()));
+            // Enable system call as follow (thread safe action)
+            FeignSecurityManager.asSystem();
             // Submit SIP collection
             ResponseEntity<Collection<SIPDto>> response = ingestClient.ingest(sipCollectionBuilder.build());
             // Handle response
             handleResponse(response, products.getContent());
+            // Disable system call if necessary after client request(s)
+            FeignSecurityManager.reset();
         }
 
         // Continue if remaining page
