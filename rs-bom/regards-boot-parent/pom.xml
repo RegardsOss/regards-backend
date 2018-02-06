@@ -56,6 +56,7 @@
 	</parent>
 
 	<properties>
+		<!-- Default entrypoint for microservices, it should be overridden if needed -->
 		<docker.entryPoint>["./wait-for-it.sh", "rs_config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs_registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs_admin:9033", "-t", "0", "--", "java", "-Xmx128m", "-Djava.security.egd=file:/dev/./urandom", "-agentlib:jdwp=transport=dt_socket,address=10500,server=y,suspend=n", "-jar", "/${project.build.finalName}.${project.packaging}"]</docker.entryPoint>
 	</properties>
 
