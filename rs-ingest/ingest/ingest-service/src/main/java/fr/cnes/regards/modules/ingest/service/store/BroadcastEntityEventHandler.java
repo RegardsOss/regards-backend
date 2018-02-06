@@ -69,13 +69,14 @@ public class BroadcastEntityEventHandler
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(BroadcastEntityEvent.class, this);
-
     }
 
     @Override
     public void handle(TenantWrapper<BroadcastEntityEvent> wrapper) {
         BroadcastEntityEvent event = wrapper.getContent();
+        LOGGER.info("BroadcastEntityEvent received");
         if ((event != null) && (event.getEventType() != null)) {
+            LOGGER.info("BroadcastEntityEvent received type={}", event.getEventType());
             switch (event.getEventType()) {
                 case INDEXED:
                     handleEntitiesIndexed(event.getIpIds());
