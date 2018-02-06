@@ -85,6 +85,9 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
     public void run() {
 
         try {
+            // Report starting
+            processingService.reportJobStarted(processingChain.getLastProductAcquisitionJobReport());
+
             // First step : scan and register files
             processingService.scanAndRegisterFiles(processingChain);
             // Second step : validate in progress files
@@ -98,12 +101,15 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
                 productService.scheduleProductSIPGeneration(p, processingChain);
             }
 
-            // Job is terminated ... release processing chain
-            processingService.unlockChain(processingChain);
-
         } catch (ModuleException e) {
             LOGGER.error("Business error", e);
             throw new JobRuntimeException(e);
+        } finally {
+            // Job is terminated ... release processing chain
+            processingService.unlockChain(processingChain);
+
+            // Report stopping
+            processingService.reportJobStopped(processingChain.getLastProductAcquisitionJobReport());
         }
     }
 

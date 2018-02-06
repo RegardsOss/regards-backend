@@ -56,6 +56,7 @@ import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.acquisition.dao.AcquisitionProcessingChainSpecifications;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionJobReportRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
@@ -64,6 +65,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
+import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
@@ -81,6 +83,9 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 public class AcquisitionProcessingService implements IAcquisitionProcessingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingService.class);
+
+    @Autowired
+    private IAcquisitionJobReportRepository jobReportRepository;
 
     @Autowired
     private IAcquisitionProcessingChainRepository acqChainRepository;
@@ -382,7 +387,16 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         acquisition.setClassName(ProductAcquisitionJob.class.getName());
         acquisition.setOwner(authResolver.getUser());
 
-        jobInfoService.createAsQueued(acquisition);
+        JobInfo jobInfo = jobInfoService.createAsQueued(acquisition);
+
+        // Initialize related report
+        AcquisitionJobReport jobReport = new AcquisitionJobReport();
+        jobReport.setScheduleDate(OffsetDateTime.now());
+        jobReport.setJobId(jobInfo.getId());
+        jobReportRepository.save(jobReport);
+
+        processingChain.setLastProductAcquisitionJobReport(jobReport);
+        acqChainRepository.save(processingChain);
     }
 
     @Override
@@ -571,5 +585,18 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         // TODO
 
         return summary;
+    }
+
+    @Override
+    public void reportJobStarted(AcquisitionJobReport jobReport) {
+        jobReport.setStartDate(OffsetDateTime.now());
+        jobReportRepository.save(jobReport);
+    }
+
+    @Override
+    public void reportJobStopped(AcquisitionJobReport jobReport) {
+        jobReport.setJobId(null);
+        jobReport.setStopDate(OffsetDateTime.now());
+        jobReportRepository.save(jobReport);
     }
 }

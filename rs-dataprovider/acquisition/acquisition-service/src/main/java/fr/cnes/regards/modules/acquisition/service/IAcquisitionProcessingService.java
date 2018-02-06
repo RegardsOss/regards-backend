@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
+import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
 
 /**
  * Acquisition processing service interface
@@ -125,4 +126,16 @@ public interface IAcquisitionProcessingService {
      */
     Page<AcquisitionProcessingChainMonitor> buildAcquisitionProcessingChainSummaries(String label, Boolean running,
             AcquisitionProcessingChainMode mode, Pageable pageable) throws ModuleException;
+
+    /**
+     * Update a report related to a starting job
+     * @param jobReport job report to update
+     */
+    void reportJobStarted(AcquisitionJobReport jobReport);
+
+    /**
+     * Update a report related to a stopping job
+     * @param jobReport job report to update
+     */
+    void reportJobStopped(AcquisitionJobReport jobReport);
 }
