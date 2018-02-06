@@ -60,11 +60,10 @@ public interface ISearchClient {
 
     /**
      * Unified entity retrieval endpoint
-     * @param pUrn the entity URN
+     * @param urn the entity URN
      * @return an entity
      */
     @RequestMapping(path = ENTITY_GET_MAPPING, method = RequestMethod.GET)
-    @ResourceAccess(description = "Return the entity of passed URN.", role = DefaultRole.PUBLIC)
     <E extends AbstractEntity> ResponseEntity<Resource<E>> getEntity(
-            @Valid @PathVariable("urn") UniformResourceName pUrn);
+            @Valid @PathVariable("urn") UniformResourceName urn);
 }

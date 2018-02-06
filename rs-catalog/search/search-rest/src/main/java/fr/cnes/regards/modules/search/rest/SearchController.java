@@ -449,7 +449,7 @@ public class SearchController {
      */
     @SuppressWarnings("unchecked")
     @RequestMapping(path = ENTITY_GET_MAPPING, method = RequestMethod.GET)
-    @ResourceAccess(description = "Return the entity of passed URN.", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Return given URN entity.", role = DefaultRole.PUBLIC)
     public <E extends AbstractEntity> ResponseEntity<Resource<E>> getEntity(
             @Valid @PathVariable("urn") UniformResourceName urn, DatasetResourcesAssembler assembler)
             throws EntityOperationForbiddenException, EntityNotFoundException {
