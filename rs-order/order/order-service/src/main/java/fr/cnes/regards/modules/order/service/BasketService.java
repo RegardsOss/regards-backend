@@ -148,8 +148,10 @@ public class BasketService implements IBasketService {
 
     @Override
     public Basket removeDatedItemsSelection(Basket basket, Long datasetId, OffsetDateTime itemsSelectionDate) {
-        for (BasketDatasetSelection dsSelection : basket.getDatasetSelections()) {
+        for (Iterator<BasketDatasetSelection> j = basket.getDatasetSelections().iterator(); j.hasNext(); ) {
+            BasketDatasetSelection dsSelection = j.next();
             if (dsSelection.getId().equals(datasetId)) {
+                // Search for item selections to remove
                 for (Iterator<BasketDatedItemsSelection> i = dsSelection.getItemsSelections().iterator(); i
                         .hasNext(); ) {
                     if (i.next().getDate().equals(itemsSelectionDate)) {
@@ -157,6 +159,22 @@ public class BasketService implements IBasketService {
                         break;
                     }
                 }
+                // Must recompute dataset opensearch request from its associated dated items selections
+                switch (dsSelection.getItemsSelections().size()) {
+                    case 0:
+                        // must delete dsSelection (no more dated items selections => no more datasetSelection)
+                        j.remove();
+                        break;
+                    case 1: // only one dated items selection :
+                        dsSelection.setOpenSearchRequest(
+                                "(" + dsSelection.getItemsSelections().iterator().next().getOpenSearchRequest() + ")");
+                        break;
+                    default: // more than one dated items selections
+                        dsSelection.setOpenSearchRequest(dsSelection.getItemsSelections().stream()
+                                                                 .map(BasketDatedItemsSelection::getOpenSearchRequest)
+                                                                 .collect(Collectors.joining(") OR (", "((", "))")));
+                }
+                computeSummaryAndUpdateDatasetSelection(dsSelection);
                 repos.save(basket);
                 break;
             }
@@ -196,7 +214,7 @@ public class BasketService implements IBasketService {
     private void computeSummaryAndUpdateDatasetSelection(BasketDatasetSelection datasetSelection) {
         // Compute summary on dataset selection, need to recompute because of fileTypes differences between
         // previous call to computeDatasetSummary or because of opensearch request on dataset selection that is
-        // a "OR" between previous one and nes item selection
+        // a "OR" between previous one and new item selection
         Map<String, String> dsQueryMap = new ImmutableMap.Builder<String, String>()
                 .put("q", datasetSelection.getOpenSearchRequest()).build();
         DocFilesSummary curDsSelectionSummary = searchClient

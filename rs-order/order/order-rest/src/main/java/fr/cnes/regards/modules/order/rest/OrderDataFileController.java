@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.web.util.UriUtils;
 
+import com.google.common.base.Preconditions;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
@@ -71,34 +75,30 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
 
     @ResourceAccess(description = "Find all files from order for specified dataset", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES)
-    public ResponseEntity<Page<Resource<OrderDataFile>>> findFiles(@PathVariable("orderId") Long orderId,
-            @PathVariable("datasetId") Long datasetId, Pageable pageRequest) {
+    public ResponseEntity<PagedResources<Resource<OrderDataFile>>> findFiles(@PathVariable("orderId") Long orderId,
+            @PathVariable("datasetId") Long datasetId, Pageable pageRequest,
+            PagedResourcesAssembler<OrderDataFile> assembler) {
         DatasetTask dsTask = datasetTaskService.loadComplete(datasetId);
         int cpt = 0;
-        List<Resource<OrderDataFile>> dataFiles = new ArrayList<>();
+        List<OrderDataFile> dataFiles = new ArrayList<>();
         for (FilesTask filesTask : dsTask.getReliantTasks()) {
             for (OrderDataFile dataFile : filesTask.getFiles()) {
                 if ((cpt >= pageRequest.getOffset()) && (cpt < pageRequest.getOffset() + pageRequest.getPageSize())) {
-                    Resource<OrderDataFile> resource = toResource(dataFile);
-                    resourceService.addLink(resource, this.getClass(), "downloadFile", "download",
-                                            MethodParamFactory.build(Long.class, orderId),
-                                            MethodParamFactory.build(Long.class, datasetId),
-                                            MethodParamFactory.build(String.class, dataFile.getIpId().toString()),
-                                            MethodParamFactory.build(String.class, dataFile.getChecksum()));
-                    dataFiles.add(resource);
+                    dataFiles.add(dataFile);
                 } else if (cpt >= pageRequest.getOffset() + pageRequest.getPageSize()) {
-                    return ResponseEntity.ok(new PageImpl<>(dataFiles, pageRequest, dataFiles.size()));
+                    return ResponseEntity
+                            .ok(toPagedResources(new PageImpl<>(dataFiles, pageRequest, dataFiles.size()), assembler));
                 }
                 cpt++;
             }
         }
-        return ResponseEntity.ok(new PageImpl<>(dataFiles, pageRequest, dataFiles.size()));
+        return ResponseEntity.ok(toPagedResources(new PageImpl<>(dataFiles, pageRequest, dataFiles.size()), assembler));
     }
 
     @ResourceAccess(description = "Download a file that is part of an order", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_FILES_DATA_FILE_ID)
     public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("dataFileId") Long dataFileId,
-            HttpServletResponse response) throws NoSuchElementException, IOException {
+            HttpServletResponse response) throws NoSuchElementException {
         // Throws a NoSuchElementException if not found
         OrderDataFile dataFile = dataFileService.load(dataFileId);
         response.addHeader("Content-disposition", "attachment;filename=" + dataFile.getName());
@@ -114,9 +114,13 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
             @PathVariable("checksum") String checksum, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
             HttpServletResponse response) throws NoSuchElementException, IOException {
         OrderDataFile dataFile;
+        String user;
+        String role;
         try {
             Claims claims = jwtService.parseToken(token, secret);
             Long orderId = Long.parseLong(claims.get(IOrderService.ORDER_ID_KEY, String.class));
+            user = claims.get(JWTService.CLAIM_SUBJECT).toString();
+            role = claims.get(JWTService.CLAIM_ROLE).toString();
             // Throws a NoSuchElementException if not found
             dataFile = dataFileService.find(orderId, decodeUrn(aipId), checksum);
         } catch (InvalidJwtException | MalformedJwtException e) {
@@ -135,8 +139,14 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                 return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
             default:
                 // Stream the response
-                return new ResponseEntity<>(
-                        os -> dataFileService.downloadFile(dataFile, os), HttpStatus.OK);
+                return new ResponseEntity<>(os -> {
+                    FeignSecurityManager.asUser(user, role);
+                    try {
+                        dataFileService.downloadFile(dataFile, os);
+                    } finally {
+                        FeignSecurityManager.reset();
+                    }
+                }, HttpStatus.OK);
         }
     }
 
@@ -145,7 +155,11 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     }
 
     @Override
-    public Resource<OrderDataFile> toResource(OrderDataFile dataFile, Object... pExtras) {
-        return resourceService.toResource(dataFile);
+    public Resource<OrderDataFile> toResource(OrderDataFile dataFile, Object... extras) {
+        Resource<OrderDataFile> resource = resourceService.toResource(dataFile);
+        resourceService.addLink(resource, this.getClass(), "downloadFile", "download",
+                                MethodParamFactory.build(Long.class, dataFile.getId()),
+                                MethodParamFactory.build(HttpServletResponse.class));
+        return resource;
     }
 }

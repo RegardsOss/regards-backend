@@ -16,26 +16,36 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.order.service;
+package fr.cnes.regards.modules.order.service.job;
+
+import java.time.OffsetDateTime;
+
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 
 /**
- * Order job service.
- * This service is responsible of managing order jobs taken into account user restrictions on priorities and number of
- * concurrent jobs
+ * User email specific job parameter, it contains the pair "user" : user email
  * @author oroussel
  */
-public interface IOrderJobService {
-    /**
-     * Compute priority for next order/jobInfo(s)
-     * @param user user concerned by priority computing
-     * @param role user role
-     * @return a number between 0 and 100
-     */
-    int computePriority(String user, String role);
+public class UserJobParameter extends JobParameter {
+    public static final String NAME = "user";
+
+    public UserJobParameter(String value) {
+        super(NAME, value);
+    }
+
+    @Override
+    public String getValue() {
+        return super.getValue();
+    }
+
+    public void setValue(String value) {
+        super.setValue(value);
+    }
 
     /**
-     * Manage user order jobs ie look if restriction on user concurrent jobs count permits new ones to be added and add
-     * them if it is the case
+     * Check if given JobParameter is compatible with UserJobParameter ie same name
      */
-    void manageUserOrderJobInfos(String user);
+    public static boolean isCompatible(JobParameter param) {
+        return param.getName().equals(NAME);
+    }
 }

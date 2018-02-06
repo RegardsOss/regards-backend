@@ -36,27 +36,27 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 @Table(name = "t_data_file",
         indexes = @Index(name = "data_file_idx", columnList = "checksum, order_id, state, data_objects_ip_id"))
 @NamedNativeQueries({
-        @NamedNativeQuery(query = "SELECT o.*, sum(df.size) as size FROM {h-schema}t_data_file df, {h-schema}t_order o WHERE "
-                + "df.size is not NULL AND "
-                + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND percent_complete != 100) "
+        @NamedNativeQuery(query = "SELECT o.*, sum(df.size) as size FROM {h-schema}t_data_file df, {h-schema}t_order o "
+                + "WHERE df.order_id = o.id AND df.size is not NULL AND "
+                + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND status = 'RUNNING') "
                 + "GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "sumMapping",
                 name = "selectSumSizesByOrderId"),
         @NamedNativeQuery(
                 query = "SELECT o.*, sum(df.size) as size FROM {h-schema}t_data_file df, {h-schema}t_order o WHERE "
-                + "df.size is not NULL AND "
-                + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND percent_complete != 100) "
+                + "df.order_id = o.id AND df.size is not NULL AND "
+                + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND status = 'RUNNING') "
                 + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "sumMapping", name = "selectSumSizesByOrderIdAndStates"),
         @NamedNativeQuery(
                 query = "SELECT o.*, count(df.*) as count FROM {h-schema}t_data_file df, {h-schema}t_order o WHERE "
-                + "df.size is not NULL AND "
-                + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND percent_complete != 100) "
+                + "df.order_id = o.id AND df.size is not NULL AND "
+                + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND status = 'RUNNING') "
                 + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates"),
         @NamedNativeQuery(
                 query = "SELECT o.*, count(df.*) as count FROM {h-schema}t_data_file df, {h-schema}t_order o WHERE "
-                + "df.size is not NULL AND "
+                + "df.order_id = o.id AND df.size is not NULL AND "
                 + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date) "
                 + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates4AllOrders")
@@ -191,8 +191,5 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
     @Override
     public final void setOnline(Boolean online) {
         super.setOnline(online);
-        if ((online != null) && online) {
-            this.state = FileState.ONLINE;
-        }
     }
 }

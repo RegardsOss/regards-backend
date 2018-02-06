@@ -14,18 +14,22 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.google.common.io.ByteStreams;
+import feign.Response;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
+import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 
 /**
@@ -134,13 +138,18 @@ public class OrderDataFileService implements IOrderDataFileService {
 
     @Override
     public void downloadFile(OrderDataFile dataFile, OutputStream os) throws IOException {
-        try (InputStream is = aipClient.downloadFile(dataFile.getIpId().toString(), dataFile.getChecksum()).body()
-                .asInputStream()) {
-            ByteStreams.copy(is, os);
-            os.close();
+        Response response = aipClient.downloadFile(dataFile.getIpId().toString(), dataFile.getChecksum());
+        if (response.status() == HttpStatus.OK.value()) {
+            try (InputStream is = response.body().asInputStream()) {
+                ByteStreams.copy(is, os);
+                os.close();
+            }
+            // Update OrderDataFile (set State as DOWNLOADED, even if it is online)
+            dataFile.setState(FileState.DOWNLOADED);
+        } else {
+            // Update OrderDataFile (set State as ERROR because file cannot be downloaded)
+            dataFile.setState(FileState.ERROR);
         }
-        // Update OrderDataFile (set State as DOWNLOADED, even if it is online)
-        dataFile.setState(FileState.DOWNLOADED);
         dataFile = self.save(dataFile);
         Order order = orderRepository.findSimpleById(dataFile.getOrderId());
         orderJobService.manageUserOrderJobInfos(order.getOwner());
@@ -158,30 +167,28 @@ public class OrderDataFileService implements IOrderDataFileService {
         Function<Object[], Long> getOrderIdFct = array -> ((Order) array[0]).getId();
         // All following methods returns a Collection of Object[] whom second elt is a Long (a sum or a count)
         Function<Object[], Long> getValueFct = array -> ((Long) array[1]);
-        // Set or orders not yet finished
+        // Set of orders not yet finished
         Set<Order> orders = totalOrderFiles.stream().map(array -> (Order) array[0]).collect(Collectors.toSet());
         // Map { order_id -> total files size }
         Map<Long, Long> totalSizeMap = totalOrderFiles.stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
 
         // Map { order_id -> treated files size  }
         Map<Long, Long> treatedSizeMap = repos
-                .selectSumSizesByOrderIdAndStates(now, FileState.ONLINE, FileState.AVAILABLE, FileState.DOWNLOADED,
-                                                  FileState.ERROR).stream()
-                .collect(Collectors.toMap(getOrderIdFct, getValueFct));
+                .selectSumSizesByOrderIdAndStates(now, FileState.AVAILABLE, FileState.DOWNLOADED, FileState.ERROR)
+                .stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
         // Map { order_id -> files in error count }
         Map<Long, Long> errorCountMap = repos.selectCountFilesByOrderIdAndStates(now, FileState.ERROR).stream()
                 .collect(Collectors.toMap(getOrderIdFct, getValueFct));
 
         // Map {order_id -> available files count }
-        Map<Long, Long> availableCountMap = repos
-                .selectCountFilesByOrderIdAndStates4AllOrders(now, FileState.AVAILABLE, FileState.ONLINE).stream()
-                .collect(Collectors.toMap(getOrderIdFct, getValueFct));
+        Map<Long, Long> availableCountMap = repos.selectCountFilesByOrderIdAndStates4AllOrders(now, FileState.AVAILABLE)
+                .stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
 
         // Update all orders completion values
         for (Order order : orders) {
             long totalSize = totalSizeMap.get(order.getId());
             long treatedSize = treatedSizeMap.containsKey(order.getId()) ? treatedSizeMap.get(order.getId()) : 0l;
-            order.setPercentCompleted(Math.floorDiv(100 * (int) treatedSize, (int) totalSize));
+            order.setPercentCompleted((int) Math.floorDiv(100l * treatedSize, totalSize));
             long errorCount = errorCountMap.containsKey(order.getId()) ? errorCountMap.get(order.getId()) : 0l;
             order.setFilesInErrorCount((int) errorCount);
             long availableCount = availableCountMap.containsKey(order.getId()) ?
@@ -190,6 +197,18 @@ public class OrderDataFileService implements IOrderDataFileService {
             // If number of available files has changed...
             if (order.getAvailableFilesCount() != availableCount) {
                 order.setAvailableFilesCount((int) availableCount);
+            }
+            // Update order status if percent_complete has reached 100%
+            if (order.getPercentCompleted() == 100) {
+                // If no files in error = DONE
+                if (errorCount == 0) {
+                    order.setStatus(OrderStatus.DONE);
+                } else if (errorCount == order.getDatasetTasks().stream().mapToInt(DatasetTask::getFilesCount).sum()) {
+                    // If all files in error => FAILED
+                    order.setStatus(OrderStatus.FAILED);
+                } else { // DONE_WITH_WARNING
+                    order.setStatus(OrderStatus.DONE_WITH_WARNING);
+                }
             }
         }
         return orders;

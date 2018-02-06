@@ -7,8 +7,10 @@ import java.util.concurrent.Semaphore;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import feign.FeignException;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -28,6 +30,10 @@ import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataFileEvent> {
 
     private OffsetDateTime expirationDate;
+
+    private String user;
+
+    private String role;
 
     @Autowired
     private IForwardingDataFileEventHandlerService subscriber;
@@ -51,13 +57,16 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
         if (parameters.isEmpty()) {
             throw new JobParameterMissingException("No parameter provided");
         }
-        if (parameters.size() != 2) {
-            throw new JobParameterInvalidException("Two parameters are expected : 'files' and 'expirationDate'.");
+        if (parameters.size() != 4) {
+            throw new JobParameterInvalidException(
+                    "Four parameters are expected : 'files', 'expirationDate', 'user' and 'userRole'.");
         }
         for (JobParameter param : parameters.values()) {
-            if (!FilesJobParameter.isCompatible(param) && !(ExpirationDateJobParameter.isCompatible(param))) {
+            if (!FilesJobParameter.isCompatible(param) && !(ExpirationDateJobParameter.isCompatible(param)) &&
+                    !UserJobParameter.isCompatible(param) && !UserRoleJobParameter.isCompatible(param)) {
                 throw new JobParameterInvalidException(
-                        "Please use FilesJobParameter and ExpirarionDateJobParameter in place of JobParameter (these "
+                        "Please use FilesJobParameter, ExpirationDateJobParameter, UserJobParameter and "
+                                + "UserRoleJobParameter in place of JobParameter (these "
                                 + "classes are here to facilitate your life so please use them.");
             }
             if (FilesJobParameter.isCompatible(param)) {
@@ -67,6 +76,10 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
                 }
             } else if (ExpirationDateJobParameter.isCompatible(param)) {
                 expirationDate = param.getValue();
+            } else if (UserJobParameter.isCompatible(param)) {
+                user = param.getValue();
+            } else if (UserRoleJobParameter.isCompatible(param)) {
+                role = param.getValue();
             }
         }
     }
@@ -78,38 +91,52 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
         AvailabilityRequest request = new AvailabilityRequest();
         request.setChecksums(dataFilesMap.keySet());
         request.setExpirationDate(expirationDate);
-        AvailabilityResponse response = aipClient.makeFilesAvailable(request).getBody();
-        // Update all already available files
-        boolean atLeastOneDataFileIntoResponse = false;
-        for (String checksum : response.getAlreadyAvailable()) {
-            OrderDataFile dataFile = dataFilesMap.get(checksum);
-            // If dataFile is ONLINE, don't set its state to AVAILABLE, it is mandatory to keep ONLINE state
-            if (dataFile.getState() != FileState.ONLINE) {
-                dataFile.setState(FileState.AVAILABLE);
-            }
-            atLeastOneDataFileIntoResponse = true;
-            this.semaphore.release();
-        }
-        // Update all files in error
-        for (String checksum : response.getErrors()) {
-            dataFilesMap.get(checksum).setState(FileState.ERROR);
-            atLeastOneDataFileIntoResponse = true;
-            this.semaphore.release();
-        }
-        // Update all dataFiles state if at least one is already available or in error
-        if (atLeastOneDataFileIntoResponse) {
-            dataFileService.save(dataFilesMap.values());
-        }
-        // Wait for remaining files availability from storage
         try {
-            this.semaphore.acquire();
-        } catch (InterruptedException e) {
-            return;
+            FeignSecurityManager.asUser(user, role);
+            AvailabilityResponse response = aipClient.makeFilesAvailable(request).getBody();
+
+            // Update all already available files
+            boolean atLeastOneDataFileIntoResponse = false;
+            for (String checksum : response.getAlreadyAvailable()) {
+                OrderDataFile dataFile = dataFilesMap.get(checksum);
+                dataFile.setState(FileState.AVAILABLE);
+                atLeastOneDataFileIntoResponse = true;
+                this.semaphore.release();
+            }
+            // Update all files in error
+            for (String checksum : response.getErrors()) {
+                dataFilesMap.get(checksum).setState(FileState.ERROR);
+                atLeastOneDataFileIntoResponse = true;
+                this.semaphore.release();
+            }
+            // Update all dataFiles state if at least one is already available or in error
+            if (atLeastOneDataFileIntoResponse) {
+                dataFileService.save(dataFilesMap.values());
+            }
+            // Wait for remaining files availability from storage
+            try {
+                this.semaphore.acquire();
+            } catch (InterruptedException e) {
+                return;
+            }
+            // All files have bean treated by storage, no more event subscriber needed...
+            subscriber.unsubscribe(this);
+            // ...and all order data files statuses are updated into database
+            dataFileService.save(dataFilesMap.values());
+        } catch (RuntimeException e) { // Feign or network or ... exception
+            // Put All data files in ERROR and propagate exception to make job fail
+            dataFilesMap.values().forEach(df -> df.setState(FileState.ERROR));
+            dataFileService.save(dataFilesMap.values());
+            throw e;
+        } finally {
+            FeignSecurityManager.reset();
         }
-        subscriber.unsubscribe(this);
-        dataFileService.save(dataFilesMap.values());
     }
 
+    /**
+     * Handle Events from storage about all files availability asking
+     * Each time an event come back from storage, a token is released through semaphore
+     */
     @Override
     public void handle(TenantWrapper<DataFileEvent> wrapper) {
         DataFileEvent event = wrapper.getContent();

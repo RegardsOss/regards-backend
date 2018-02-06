@@ -66,6 +66,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
@@ -90,6 +91,8 @@ import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
 import fr.cnes.regards.modules.order.metalink.schema.ResourcesType;
 import fr.cnes.regards.modules.order.service.job.ExpirationDateJobParameter;
 import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
+import fr.cnes.regards.modules.order.service.job.UserJobParameter;
+import fr.cnes.regards.modules.order.service.job.UserRoleJobParameter;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.client.ISearchClient;
@@ -154,6 +157,8 @@ public class OrderService implements IOrderService {
 
     @Value("${regards.order.files.bucket.size.Mb:100}")
     private int bucketSizeMb;
+//    private int bucketSizeMb = 1;
+
 
     @Value("${regards.order.validation.period.days:3}")
     private int orderValidationPeriodDays;
@@ -179,11 +184,12 @@ public class OrderService implements IOrderService {
             .collect(Collectors.toSet());
 
     @Override
-    public Order createOrder(Basket basket) {
+    public Order createOrder(Basket basket, String url) {
         Order order = new Order();
         order.setCreationDate(OffsetDateTime.now());
         order.setExpirationDate(order.getCreationDate().plus(orderValidationPeriodDays, ChronoUnit.DAYS));
         order.setOwner(basket.getOwner());
+        order.setFrontendUrl(url);
         order.setStatus(OrderStatus.PENDING);
         // To generate orderId
         order = repos.save(order);
@@ -260,14 +266,14 @@ public class OrderService implements IOrderService {
         FeignSecurityManager.reset();
 
         // FIXME => Sylvain Vessière Guerinet (cf. OpenSearchDescriptionBuilder)
-        String urlStart = host + "/api/v2/" + encode4Uri(microserviceName);
+        String urlStart = host + "/api/v1/" + encode4Uri(microserviceName);
 
         // Metalink file public url
         Map<String, String> dataMap = new HashMap<>();
         dataMap.put("expiration_date", order.getExpirationDate().toString());
         dataMap.put("metalink_download_url", urlStart + "/user/orders/metalink/download?" + tokenRequestParam);
-        dataMap.put("regards_downloader_url", "http://perdu.com");
-        dataMap.put("orders_url", urlStart + "/orders");
+        dataMap.put("regards_downloader_url", "https://github.com/RegardsOss/RegardsDownloader/releases");
+        dataMap.put("orders_url", host + order.getFrontendUrl());
 
         // Create mail
         SimpleMailMessage email;
@@ -275,7 +281,7 @@ public class OrderService implements IOrderService {
             email = templateService
                     .writeToEmail(TemplateServiceConfiguration.ORDER_CREATED_TEMPLATE_CODE, dataMap, order.getOwner());
         } catch (EntityNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new RsRuntimeException(e);
         }
 
         // Send it
@@ -308,7 +314,9 @@ public class OrderService implements IOrderService {
 
         JobInfo storageJobInfo = new JobInfo();
         storageJobInfo.setParameters(new FilesJobParameter(bucketFiles.toArray(new OrderDataFile[bucketFiles.size()])),
-                                     new ExpirationDateJobParameter(expirationDate));
+                                     new ExpirationDateJobParameter(expirationDate),
+                                     new UserJobParameter(authResolver.getUser()),
+                                     new UserRoleJobParameter(authResolver.getRole()));
         storageJobInfo.setOwner(basket.getOwner());
         storageJobInfo.setClassName("fr.cnes.regards.modules.order.service.job.StorageFilesJob");
         storageJobInfo.setPriority(priority);
@@ -406,7 +414,7 @@ public class OrderService implements IOrderService {
                     self.pause(order.getId());
                 } catch (CannotPauseOrderException e) {
                     // Cannot occur because order has pending state
-                    throw new RuntimeException(e); // NOSONAR
+                    throw new RsRuntimeException(e); // NOSONAR
                 }
                 if (!this.orderEffectivelyInPause(order)) {
                     // Too late !!! order finally wasn't in PENDING state when asked to be paused
@@ -480,7 +488,10 @@ public class OrderService implements IOrderService {
                 try (InputStream is = aipClient.downloadFile(aip, dataFile.getChecksum()).body().asInputStream()) {
                     // If storage cannot provide file
                     if (is == null) {
-                        inErrorFiles.add(dataFile);
+                        // By now, only state is used for everything
+//                        if (!dataFile.getOnline()) {
+                            inErrorFiles.add(dataFile);
+//                        }
                         i.remove();
                         LOGGER.warn(
                                 String.format("Cannot retrieve data file from storage (aip : %s, checksum : %s)", aip,
@@ -523,6 +534,7 @@ public class OrderService implements IOrderService {
     public void downloadOrderMetalink(Long orderId, OutputStream os) {
         Order order = repos.findSimpleById(orderId);
         String tokenRequestParam = ORDER_TOKEN + "=" + generateToken4PublicEndpoint(order);
+        String scopeRequestParam = SCOPE + "=" + runtimeTenantResolver.getTenant();
 
         List<OrderDataFile> files = dataFileService.findAll(orderId);
 
@@ -550,9 +562,10 @@ public class OrderService implements IOrderService {
             StringBuilder buff = new StringBuilder();
             buff.append(host);
             // FIXME => Sylvain Vessière Guerinet (cf. OpenSearchDescriptionBuilder)
-            buff.append("/api/v2/").append(encode4Uri(microserviceName));
+            buff.append("/api/v1/").append(encode4Uri(microserviceName));
             buff.append("/orders/aips/").append(encode4Uri(file.getIpId().toString())).append("/files/");
             buff.append(file.getChecksum()).append("?").append(tokenRequestParam);
+            buff.append("&").append(scopeRequestParam);
             xmlUrl.setValue(buff.toString());
             xmlResources.getUrl().add(xmlUrl);
             xmlFile.setResources(xmlResources);
@@ -583,7 +596,7 @@ public class OrderService implements IOrderService {
             os.close();
         } catch (JAXBException | SAXException | IOException t) {
             LOGGER.error("Error while generating metalink order file", t);
-            throw new RuntimeException(t);
+            throw new RsRuntimeException(t);
         }
     }
 
@@ -593,7 +606,7 @@ public class OrderService implements IOrderService {
                               StandardCharsets.US_ASCII);
         } catch (UnsupportedEncodingException e) {
             // Will never occurs
-            throw new RuntimeException(e);
+            throw new RsRuntimeException(e);
         }
     }
 
@@ -613,6 +626,12 @@ public class OrderService implements IOrderService {
         if (!orders.isEmpty()) {
             repos.save(orders);
         }
+        List<Order> finishedOrders = repos.findFinishedOrdersToUpdate();
+        if (!finishedOrders.isEmpty()) {
+            finishedOrders.forEach(o -> o.setAvailableFilesCount(0));
+            repos.save(finishedOrders);
+        }
+
     }
 
     @Override
@@ -645,7 +664,7 @@ public class OrderService implements IOrderService {
                         .writeToEmail(TemplateServiceConfiguration.ASIDE_ORDERS_NOTIFICATION_TEMPLATE_CODE, dataMap,
                                       entry.getKey());
             } catch (EntityNotFoundException e) {
-                throw new RuntimeException(e);
+                throw new RsRuntimeException(e);
             }
 
             // Send it
@@ -706,7 +725,7 @@ public class OrderService implements IOrderService {
             try {
                 Thread.sleep(1_000);
             } catch (InterruptedException e) {
-                throw new RuntimeException(e); // NOSONAR
+                throw new RsRuntimeException(e); // NOSONAR
             }
             order = self.loadComplete(order.getId());
         }

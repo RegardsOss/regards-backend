@@ -6,9 +6,10 @@ package fr.cnes.regards.modules.order.domain;
  * - AVAILABLE : available to be downloaded,
  * - DOWNLOADED : already downloaded (maybe no more available),
  * - ERROR : in error while asked to be made available.
- * Else, status is :
- * - ONLINE : not stored into rs-storage BUT managed by rs-storage as immediately available.
- * <b>NOTE : even online files are marked as DOWNLOADED when user downloads them</b>
+ * BEWARE !!!
+ * - ONLINE files are not stored into rs-storage BUT are managed by rs-storage. Hence, it is mandatory to
+ * ask storage for their availability and storage respond they are immediately available.
+ * So, from order point of view, an online data file is the same as a NEARLINE data file.
  * @author oroussel
  */
 public enum FileState {
@@ -16,6 +17,4 @@ public enum FileState {
     DOWNLOADED,
     ERROR,
     PENDING,
-
-    ONLINE
 }

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.domain.FileState;
+import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 
 /**
@@ -28,10 +29,10 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
 
     /**
      * Find all available OrderDataFiles for an order.
-     * An OrderDataFile 'available' is an order with 'AVAILABLE' or 'ONLINE' state (not 'DOWNLOADED')
+     * An OrderDataFile 'available' is an order with 'AVAILABLE' state (not 'DOWNLOADED')
      */
     default List<OrderDataFile> findAllAvailables(Long orderId) {
-        return findByOrderIdAndStateIn(orderId, FileState.AVAILABLE, FileState.ONLINE);
+        return findByOrderIdAndStateIn(orderId, FileState.AVAILABLE);
     }
 
     List<OrderDataFile> findByOrderIdAndStateIn(Long orderId, FileState... states);
