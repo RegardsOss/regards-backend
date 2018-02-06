@@ -3,6 +3,7 @@
  */
 package fr.cnes.regards.modules.storage.plugin.datastorage.local;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -157,7 +158,11 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                 Files.deleteIfExists(Paths.get(fullPathToFile));
                 progressManager.storageFailed(data, failureCause);
             } else {
-                Long fileSize = Paths.get(fullPathToFile).toFile().length();
+                File file = Paths.get(fullPathToFile).toFile();
+                if(file.canWrite()) {
+                    file.setReadOnly();
+                }
+                Long fileSize = file.length();
                 data.setFileSize(fileSize);
                 progressManager.storageSucceed(data, new URL("file", "", fullPathToFile), fileSize);
             }
