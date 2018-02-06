@@ -24,6 +24,8 @@ import org.springframework.data.domain.Pageable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
 
 /**
  * Acquisition processing service interface
@@ -113,4 +115,14 @@ public interface IAcquisitionProcessingService {
      * @throws ModuleException if error occurs!
      */
     void buildProducts(AcquisitionProcessingChain processingChain) throws ModuleException;
+
+    /**
+     * Build summaries list of {@link AcquisitionProcessingChain}s.
+     * Each summary allow to monitor chain progress.
+     * @param label {@link String} optional search parameter on {@link AcquisitionProcessingChain}s label
+     * @param running {@link Boolean} optional search parameter on {@link AcquisitionProcessingChain}s running
+     * @throws ModuleException
+     */
+    Page<AcquisitionProcessingChainMonitor> buildAcquisitionProcessingChainSummaries(String label, Boolean running,
+            AcquisitionProcessingChainMode mode, Pageable pageable) throws ModuleException;
 }

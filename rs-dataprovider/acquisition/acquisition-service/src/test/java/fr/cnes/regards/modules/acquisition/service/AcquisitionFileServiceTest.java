@@ -20,23 +20,18 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -47,7 +42,6 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -58,21 +52,21 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
-import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
- * Test {@link AcquisitionProcessingService} for {@link Product} workflow
+ * Test {@link AcquisitionFileService}
  *
- * @author Marc Sordi
+ * @author Sébastien Binda
  *
  */
 @RunWith(SpringRunner.class)
@@ -80,7 +74,7 @@ import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
         "regards.workspace=target/workspace" })
 @ContextConfiguration(classes = { ProductAcquisitionServiceTest.AcquisitionConfiguration.class })
 @MultitenantTransactional
-public class ProductAcquisitionServiceTest extends AbstractDaoTest {
+public class AcquisitionFileServiceTest extends AbstractDaoTest {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductAcquisitionServiceTest.class);
@@ -103,15 +97,17 @@ public class ProductAcquisitionServiceTest extends AbstractDaoTest {
     @Autowired
     private IAcquisitionFileService fileService;
 
-    @Configuration
-    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
-    static class AcquisitionConfiguration {
+    private AcquisitionProcessingChain processingChain;
+
+    @Before
+    public void init() throws ModuleException {
+        createFiles();
     }
 
     public AcquisitionProcessingChain createProcessingChain() throws ModuleException {
 
         // Create a processing chain
-        AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
+        processingChain = new AcquisitionProcessingChain();
         processingChain.setLabel("Product");
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
@@ -170,74 +166,41 @@ public class ProductAcquisitionServiceTest extends AbstractDaoTest {
         return processingService.createChain(processingChain);
     }
 
-    @Test
-    public void acquisitionWorkflowTest() throws ModuleException {
+    public void createFiles() throws ModuleException {
 
         AcquisitionProcessingChain processingChain = createProcessingChain();
-        AcquisitionFileInfo fileInfo = processingChain.getFileInfos().get(0);
+        Product product = new Product();
+        product.setIpId("IpId");
+        product.setLastUpdate(OffsetDateTime.now());
+        product.setProcessingChain(processingChain);
+        product.setProductName("product name");
+        product.setSession("session");
+        product.setSipState(SIPState.INDEXED);
+        product.setState(ProductState.COMPLETED);
+        product = productService.save(product);
 
-        processingService.scanAndRegisterFiles(processingChain);
+        // Add acquisition files
+        for (AcquisitionFileState fileState : AcquisitionFileState.values()) {
+            AcquisitionFile file = new AcquisitionFile();
+            file.setAcqDate(OffsetDateTime.now());
+            file.setChecksum("123445");
+            file.setChecksumAlgorithm("MD5");
+            file.setError("");
+            file.setFileInfo(processingChain.getFileInfos().get(0));
+            file.setFilePath(Paths.get("/tmp/file"));
+            file.setProduct(product);
+            file.setState(fileState);
+            fileService.save(file);
+        }
+    }
 
-        // Check registered files
-        List<AcquisitionFile> inProgressFiles = acqFileRepository
-                .findByStateAndFileInfo(AcquisitionFileState.IN_PROGRESS, fileInfo);
-        Assert.assertTrue(inProgressFiles.size() == 4);
-
-        processingService.validateFiles(processingChain);
-
-        // Check registered files
-        inProgressFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.IN_PROGRESS,
-                                                                   processingChain.getFileInfos().get(0));
-        Assert.assertTrue(inProgressFiles.size() == 0);
-        List<AcquisitionFile> validFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.VALID,
-                                                                                    fileInfo);
-        Assert.assertTrue(validFiles.size() == 4);
-
-        processingService.buildProducts(processingChain);
-
-        // Check registered files
-        inProgressFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.IN_PROGRESS,
-                                                                   processingChain.getFileInfos().get(0));
-        Assert.assertTrue(inProgressFiles.size() == 0);
-        validFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.VALID, fileInfo);
-        Assert.assertTrue(validFiles.size() == 0);
-        List<AcquisitionFile> acquiredFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.ACQUIRED,
-                                                                                       fileInfo);
-        Assert.assertTrue(acquiredFiles.size() == 4);
-
-        // Find product to schedule
-        Set<Product> products = productService.findChainProductsToSchedule(processingChain);
-        Assert.assertTrue(products.size() == 4);
-
-        // Test job algo synchronously
-        for (Product product : products) {
-            SIPGenerationJob genJob = new SIPGenerationJob();
-            beanFactory.autowireBean(genJob);
-
-            Map<String, JobParameter> parameters = new HashMap<>();
-            parameters.put(SIPGenerationJob.CHAIN_PARAMETER_ID,
-                           new JobParameter(SIPGenerationJob.CHAIN_PARAMETER_ID, processingChain.getId()));
-            parameters.put(SIPGenerationJob.PRODUCT_ID, new JobParameter(SIPGenerationJob.PRODUCT_ID, product.getId()));
-
-            genJob.setParameters(parameters);
-            genJob.run();
+    @Test
+    public void testCountFilesforProcessingChain() {
+        Assert.assertTrue(fileService.countByChain(processingChain) == AcquisitionFileState.values().length);
+        for (AcquisitionFileState fileState : AcquisitionFileState.values()) {
+            Assert.assertTrue(fileService.countByChainAndStateIn(processingChain, Arrays.asList(fileState)) == 1);
         }
 
-        Assert.assertTrue(fileService.countByChain(processingChain) == 4);
-        Assert.assertTrue(fileService.countByChainAndStateIn(processingChain,
-                                                             Arrays.asList(AcquisitionFileState.ACQUIRED)) == 4);
-        Assert.assertTrue(fileService.countByChainAndStateIn(processingChain,
-                                                             Arrays.asList(AcquisitionFileState.ERROR)) == 0);
-
-        Page<AcquisitionProcessingChainMonitor> monitor = processingService
-                .buildAcquisitionProcessingChainSummaries(null, null, null, new PageRequest(0, 10));
-        Assert.assertTrue(!monitor.getContent().isEmpty());
-        Assert.assertTrue(monitor.getContent().get(0).getNbFileErrors() == 0);
-        Assert.assertTrue(monitor.getContent().get(0).getNbFiles() == 4);
-        Assert.assertTrue(monitor.getContent().get(0).getNbFilesInProgress() == 0);
-        Assert.assertTrue(monitor.getContent().get(0).getNbProducts() == 4);
-        Assert.assertTrue(monitor.getContent().get(0).getNbProductErrors() == 0);
-        Assert.assertTrue(monitor.getContent().get(0).getNbProductsInProgress() == 0);
-
     }
+
 }

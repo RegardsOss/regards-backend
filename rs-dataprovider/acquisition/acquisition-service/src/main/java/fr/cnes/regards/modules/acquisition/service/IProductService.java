@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -90,6 +91,14 @@ public interface IProductService {
     Set<Product> findByStatus(ProductState status);
 
     /**
+     * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
+     * @param processingChain {@link AcquisitionProcessingChain}
+     * @param states {@link ProductState}s
+     * @return number of matching {@link Product}
+     */
+    long countByChainAndStateIn(AcquisitionProcessingChain processingChain, List<ProductState> productStates);
+
+    /**
      * Get the {@link Product} corresponding to the productName and calculate the {@link ProductState}.<br>
      * If it does not exists, create this {@link Product}. Create or update the product in database.
      *
@@ -131,4 +140,11 @@ public interface IProductService {
      * @param sipState new SIP state
      */
     void updateProductSIPState(String ipId, ISipState sipState);
+
+    /**
+     * Count number of {@link Product} associated to the given {@link AcquisitionProcessingChain}
+     * @param chain {@link AcquisitionProcessingChain}
+     * @return number of {@link Product}
+     */
+    long countByChain(AcquisitionProcessingChain chain);
 }

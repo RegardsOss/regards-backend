@@ -44,5 +44,27 @@ public interface IAcquisitionFileRepository extends JpaRepository<AcquisitionFil
      */
     List<AcquisitionFile> findByStateAndFileInfo(AcquisitionFileState state, AcquisitionFileInfo fileInfo);
 
+    /**
+     * Search all acquisition files for the given {@link AcquisitionFileState}
+     * @param state {@link AcquisitionFileState}
+     * @return {@link AcquisitionFile}s
+     */
     List<AcquisitionFile> findByState(AcquisitionFileState state);
+
+    /**
+     * Count number of {@link AcquisitionFile} associated to the given {@link AcquisitionFileInfo}
+     * and with one of the given {@link AcquisitionFileState}s
+     * @param fileInfo {@link AcquisitionFile}
+     * @param fileStates {@link AcquisitionFileInfo}
+     * @return number of matching {@link AcquisitionFile}
+     */
+    long countByFileInfoAndStateIn(AcquisitionFileInfo fileInfo, List<AcquisitionFileState> fileStates);
+
+    /**
+     * Count number of {@link AcquisitionFile} associated to the given {@link AcquisitionFileInfo}
+     * @param fileInfo {@link AcquisitionFile}
+     * @return number of matching {@link AcquisitionFile}
+     */
+    long countByFileInfo(AcquisitionFileInfo fileInfo);
+
 }

@@ -130,4 +130,19 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
      * @return a set of products with the above properties
      */
     Set<Product> findBySipState(ISipState sipState);
+
+    /**
+     * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
+     * @param processingChain {@link AcquisitionProcessingChain}
+     * @param states {@link ProductState}s
+     * @return number of matching {@link Product}
+     */
+    long countByProcessingChainAndStateIn(AcquisitionProcessingChain processingChain, List<ProductState> productStates);
+
+    /**
+     * Count number of {@link Product} associated to the given {@link AcquisitionProcessingChain}
+     * @param chain {@link AcquisitionProcessingChain}
+     * @return number of {@link Product}
+     */
+    long countByProcessingChain(AcquisitionProcessingChain chain);
 }
