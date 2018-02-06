@@ -20,6 +20,7 @@
 package fr.cnes.regards.modules.acquisition.service.job;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,20 +75,25 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
 
         try {
             // Load product
-            Product product = productService.retrieve(sipEvent.getIpId());
+            Optional<Product> oProduct = productService.searchProduct(sipEvent.getIpId());
 
-            // Update product (store ingest state)
-            product.setSipState(sipEvent.getState());
-            productService.save(product);
+            if (oProduct.isPresent()) {
+                Product product = oProduct.get();
+                // Update product (store ingest state)
+                product.setSipState(sipEvent.getState());
+                productService.save(product);
 
-            // Retrieve acquisition chain
-            AcquisitionProcessingChain acqProcessingChain = product.getProcessingChain();
-            // Launch post processing plugin if present
-            if (acqProcessingChain.getPostProcessSipPluginConf().isPresent()) {
-                // Get an instance of the plugin
-                ISipPostProcessingPlugin postProcessPlugin = pluginService
-                        .getPlugin(acqProcessingChain.getPostProcessSipPluginConf().get().getId());
-                postProcessPlugin.postProcess(product);
+                // Retrieve acquisition chain
+                AcquisitionProcessingChain acqProcessingChain = product.getProcessingChain();
+                // Launch post processing plugin if present
+                if (acqProcessingChain.getPostProcessSipPluginConf().isPresent()) {
+                    // Get an instance of the plugin
+                    ISipPostProcessingPlugin postProcessPlugin = pluginService
+                            .getPlugin(acqProcessingChain.getPostProcessSipPluginConf().get().getId());
+                    postProcessPlugin.postProcess(product);
+                }
+            } else {
+                LOGGER.debug("No product associated to SIP id\"{}\"", sipEvent.getIpId());
             }
         } catch (ModuleException pse) {
             LOGGER.error("Business error", pse);

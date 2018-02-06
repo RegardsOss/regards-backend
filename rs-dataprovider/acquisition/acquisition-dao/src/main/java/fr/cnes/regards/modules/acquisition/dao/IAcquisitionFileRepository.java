@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.dao;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
@@ -34,7 +35,8 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
  * @author Marc Sordi
  */
 @Repository
-public interface IAcquisitionFileRepository extends JpaRepository<AcquisitionFile, Long> {
+public interface IAcquisitionFileRepository
+        extends JpaRepository<AcquisitionFile, Long>, JpaSpecificationExecutor<AcquisitionFile> {
 
     /**
      * Search all acquisition files for specified filters

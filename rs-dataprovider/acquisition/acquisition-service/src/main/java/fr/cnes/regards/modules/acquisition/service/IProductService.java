@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,6 +36,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  *
@@ -147,4 +149,26 @@ public interface IProductService {
      * @return number of {@link Product}
      */
     long countByChain(AcquisitionProcessingChain chain);
+
+    /**
+     * Search for {@link Product} entities matching parameters
+     * @param state {@link ProductState}
+     * @param sipState {@link SIPState}
+     * @param productName {@link String}
+     * @param session {@link String}
+     * @param processingChainId {@likn Long} id of {@link AcquisitionProcessingChain}
+     * @param from {@link OffsetDateTime}
+     * @param pageable
+     * @return {@link Product}s
+     */
+    Page<Product> search(ProductState state, SIPState sipState, String productName, String session,
+            Long processingChainId, OffsetDateTime from, Pageable pageable);
+
+    /**
+     * Search for a {@link Product} by his name
+     * @param productName
+     * @return
+     * @throws ModuleException
+     */
+    Optional<Product> searchProduct(String productName) throws ModuleException;
 }
