@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
 
 import org.junit.After;
 import org.junit.Before;
@@ -29,19 +30,24 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
 import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPEntityBuilder;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 
 /**
  * Abstract test class to provide SIP Creation tool.
@@ -114,6 +120,17 @@ public abstract class AbstractSIPTest extends AbstractRegardsServiceTransactiona
         SIPEntity sipEntity = createSIP(sipId, sessionId, processing, owner, version);
         sipEntity.setState(state);
         return sipRepository.save(sipEntity);
+    }
+
+    protected AIPEntity createAIP(UniformResourceName aipId, SIPEntity sip, AIPState state) {
+        AIPEntity aip = new AIPEntity();
+        aip.setAip(new AIPBuilder(aipId, sip.getIpId(), EntityType.DATA).build());
+        aip.setCreationDate(OffsetDateTime.now());
+        aip.setIpId(aipId.toString());
+        aip.setSip(sip);
+        aip.setState(state);
+        aipRepository.save(aip);
+        return aip;
     }
 
     public abstract void doInit() throws Exception;

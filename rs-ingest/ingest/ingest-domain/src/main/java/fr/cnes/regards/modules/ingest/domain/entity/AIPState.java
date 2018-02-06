@@ -38,5 +38,9 @@ public enum AIPState {
     /**
      * AIP is stored
      */
-    STORED;
+    STORED,
+    /**
+     * AIP is indexed
+     */
+    INDEXED;
 }

@@ -25,14 +25,11 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
-import fr.cnes.regards.modules.ingest.service.ISIPService;
-import fr.cnes.regards.modules.storage.client.IAipEntityClient;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 
 /**
@@ -49,15 +46,6 @@ public class AIPEventHandler implements IHandler<AIPEvent>, ApplicationListener<
 
     @Autowired
     private IAIPService aipService;
-
-    @Autowired
-    private ISIPService sipService;
-
-    @Autowired
-    private IPublisher publisher;
-
-    @Autowired
-    private IAipEntityClient aipEntityClient;
 
     /**
      * {@link ISubscriber} instance

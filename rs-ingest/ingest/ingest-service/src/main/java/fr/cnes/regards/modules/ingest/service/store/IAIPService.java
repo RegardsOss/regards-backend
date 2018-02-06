@@ -18,15 +18,53 @@
  */
 package fr.cnes.regards.modules.ingest.service.store;
 
+import java.util.Optional;
+
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 
+/**
+ * AIP Service interface. Service to handle business aroud {@link AIPEntity}s
+ * @author Sébastien Binda
+ */
 public interface IAIPService {
 
+    /**
+     * Send a bulk request to storage microservice with all {@link AIPEntity}s in {@link AIPState#CREATED} state
+     */
     void postAIPStorageBulkRequest();
 
+    /**
+     * Set the status of the given AIP to {@link AIPState#STORE_ERROR}
+     * @param ipId
+     * @param storeError
+     * @param failureCause
+     */
     void setAipInError(String ipId, AIPState storeError, String failureCause);
 
+    /**
+     * Delete the {@link AIPEntity} by his ipId
+     */
     void deleteAip(String ipId, String sipIpId);
 
+    /**
+     * Set {@link AIPEntity} state to {@link AIPState#STORED}
+     * @param ipId
+     */
     void setAipToStored(String ipId);
+
+    /**
+     * Set {@link AIPEntity} state to {@link AIPState#INDEXED}
+     * @param ipId
+     * @return {@link AIPEntity} updated
+     */
+    AIPEntity setAipToIndexed(AIPEntity aip);
+
+    /**
+     * Search for a {@link AIPEntity} by his ipId
+     * @param ipId
+     * @return
+     */
+    Optional<AIPEntity> searchAip(UniformResourceName ipId);
 }
