@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
@@ -50,6 +51,9 @@ public class BroadcastEntityEventHandler
         implements IHandler<BroadcastEntityEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BroadcastEntityEventHandler.class);
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private IAIPService aipService;
@@ -79,7 +83,7 @@ public class BroadcastEntityEventHandler
             LOGGER.info("BroadcastEntityEvent received type={}", event.getEventType());
             switch (event.getEventType()) {
                 case INDEXED:
-                    handleEntitiesIndexed(event.getIpIds());
+                    handleEntitiesIndexed(event.getIpIds(), wrapper.getTenant());
                     break;
                 case DELETE:
                 case CREATE:
@@ -95,7 +99,8 @@ public class BroadcastEntityEventHandler
      * Handle the case of entities indexed
      * @param ipIds of all new indexed entities
      */
-    private void handleEntitiesIndexed(UniformResourceName[] ipIds) {
+    private void handleEntitiesIndexed(UniformResourceName[] ipIds, String tenant) {
+        runtimeTenantResolver.forceTenant(tenant);
         // Check if AIPs matchs ipIds
         for (UniformResourceName ipId : ipIds) {
             Optional<AIPEntity> oAip = aipService.searchAip(ipId);
@@ -115,6 +120,7 @@ public class BroadcastEntityEventHandler
                 }
             }
         }
+        runtimeTenantResolver.clearTenant();
     }
 
 }
