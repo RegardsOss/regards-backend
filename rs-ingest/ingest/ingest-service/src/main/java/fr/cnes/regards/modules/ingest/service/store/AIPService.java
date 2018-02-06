@@ -39,8 +39,10 @@ import org.springframework.web.client.HttpClientErrorException;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
@@ -113,8 +115,8 @@ public class AIPService implements IAIPService {
                 // so lets catch the exception and if it not one of our API normal status rethrow it
                 if (e.getStatusCode() != HttpStatus.UNPROCESSABLE_ENTITY) {
                     // Response error. Microservice may be not available at the time. Update all AIPs to CREATE state to be handle next time
-                    aipsInRequest.forEach(aipId -> aipRepository
-                            .updateAIPEntityStateAndErrorMessage(AIPState.CREATED, aipId, null));
+                    aipsInRequest.forEach(aipId -> aipRepository.updateAIPEntityStateAndErrorMessage(AIPState.CREATED,
+                                                                                                     aipId, null));
                     throw e;
                 }
                 // first lets get the string from the body then lets deserialize it using gson
@@ -169,12 +171,11 @@ public class AIPService implements IAIPService {
             aipRepository.save(aip);
             // If all AIP are stored update SIP state to STORED
             Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
-            if (sipAips.stream().allMatch(a -> AIPState.STORED.equals(a.getState()))) {
+            if (sipAips.stream()
+                    .allMatch(a -> AIPState.STORED.equals(a.getState()) || AIPState.INDEXED.equals(a.getState()))) {
                 SIPEntity sip = aip.getSip();
                 sip.setState(SIPState.STORED);
                 sipService.saveSIPEntity(sip);
-                // AIPs are no longer usefull here we can delete them
-                aipRepository.delete(sipAips);
             }
         }
     }
@@ -209,6 +210,28 @@ public class AIPService implements IAIPService {
                 sipService.saveSIPEntity(sip);
             }
         }
+    }
+
+    @Override
+    public Optional<AIPEntity> searchAip(UniformResourceName ipId) {
+        return aipRepository.findByIpId(ipId.toString());
+    }
+
+    @Override
+    public AIPEntity setAipToIndexed(AIPEntity aip) {
+        aip.setState(AIPState.INDEXED);
+        aip.setErrorMessage(null);
+        aipRepository.save(aip);
+        // If all AIP are stored update SIP state to STORED
+        Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
+        if (sipAips.stream().allMatch(a -> AIPState.INDEXED.equals(a.getState()))) {
+            SIPEntity sip = aip.getSip();
+            sip.setState(SIPState.INDEXED);
+            sipService.saveSIPEntity(sip);
+            // AIPs are no longer usefull here we can delete them
+            aipRepository.delete(sipAips);
+        }
+        return aip;
     }
 
 }

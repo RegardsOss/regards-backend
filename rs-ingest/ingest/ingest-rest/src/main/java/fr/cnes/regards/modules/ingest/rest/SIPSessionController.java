@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -67,9 +68,11 @@ public class SIPSessionController implements IResourceController<SIPSession> {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<SIPSession>>> search(
             @RequestParam(name = "id", required = false) String id,
-            @RequestParam(name = "from", required = false) OffsetDateTime from,
-            @RequestParam(name = "to", required = false) OffsetDateTime to, Pageable pageable,
-            PagedResourcesAssembler<SIPSession> pAssembler) {
+            @RequestParam(name = "from",
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @RequestParam(name = "to",
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
+            Pageable pageable, PagedResourcesAssembler<SIPSession> pAssembler) {
         Page<SIPSession> sipSessions = sipSessionService.search(id, from, to, pageable);
         PagedResources<Resource<SIPSession>> resources = toPagedResources(sipSessions, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);

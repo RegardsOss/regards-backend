@@ -16,31 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.validator;
-
-import javax.validation.Constraint;
-import javax.validation.Payload;
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package fr.cnes.regards.modules.ingest.domain.entity;
 
 /**
- * Check that a SIP has a valid SIP identifier
+ * Interface representing a SIP state (for state extension)
  *
  * @author Marc Sordi
  *
  */
-@Target({ ElementType.TYPE })
-@Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = CheckSIPIdValidator.class)
-@Documented
-public @interface CheckSIPId {
+public interface ISipState {
 
-    String message() default "{fr.cnes.regards.modules.ingest.domain.validator.CheckSIPId." + "message}";
-
-    Class<?>[] groups() default {};
-
-    Class<? extends Payload>[] payload() default {};
+    String getName();
 }

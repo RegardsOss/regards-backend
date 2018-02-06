@@ -26,7 +26,6 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;

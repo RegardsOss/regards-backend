@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.ingest.service;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;

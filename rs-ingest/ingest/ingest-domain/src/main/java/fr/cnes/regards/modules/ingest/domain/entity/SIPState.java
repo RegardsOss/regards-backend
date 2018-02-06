@@ -48,7 +48,7 @@ package fr.cnes.regards.modules.ingest.domain.entity;
  * @author Marc Sordi
  *
  */
-public enum SIPState {
+public enum SIPState implements ISipState {
 
     /**
      * SIP is stored in database and has to be processed
@@ -75,7 +75,8 @@ public enum SIPState {
      */
     AIP_GEN_ERROR,
     /**
-     * AIP(s) associated to the SIP has been successfully localy stored and are waiting to be handle by storage microservice.
+     * AIP(s) associated to the SIP has been successfully localy stored and are waiting to be handle by storage
+     * microservice.
      */
     AIP_CREATED,
     /**
@@ -98,4 +99,9 @@ public enum SIPState {
      * SIP deleted
      */
     DELETED;
+
+    @Override
+    public String getName() {
+        return this.name();
+    }
 }
