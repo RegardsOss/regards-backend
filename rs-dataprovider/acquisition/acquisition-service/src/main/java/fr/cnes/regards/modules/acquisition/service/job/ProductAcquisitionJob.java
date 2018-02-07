@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeExcepti
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionJobReportService;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 
@@ -65,6 +66,9 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
     @Autowired
     private IAcquisitionProcessingService processingService;
 
+    @Autowired
+    private IAcquisitionJobReportService jobReportService;
+
     /**
      * The current chain to work with!
      */
@@ -86,7 +90,7 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
 
         try {
             // Report starting
-            processingService.reportJobStarted(processingChain.getLastProductAcquisitionJobReport());
+            jobReportService.reportJobStarted(processingChain.getLastProductAcquisitionJobReport());
 
             // First step : scan and register files
             processingService.scanAndRegisterFiles(processingChain);
@@ -109,7 +113,7 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
             processingService.unlockChain(processingChain);
 
             // Report stopping
-            processingService.reportJobStopped(processingChain.getLastProductAcquisitionJobReport());
+            jobReportService.reportJobStopped(processingChain.getLastProductAcquisitionJobReport());
         }
     }
 

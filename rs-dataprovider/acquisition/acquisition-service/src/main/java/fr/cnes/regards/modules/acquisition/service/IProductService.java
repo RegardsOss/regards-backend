@@ -35,8 +35,8 @@ import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
-import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
 /**
  *
@@ -137,11 +137,10 @@ public interface IProductService {
     void retryProductSIPSubmission();
 
     /**
-     * Update a product state
-     * @param ipId ipId of the product
-     * @param sipState new SIP state
+     * Handle a SIP event
+     * @param event {@link SIPEvent}
      */
-    void updateProductSIPState(String ipId, ISipState sipState);
+    void handleSIPEvent(SIPEvent event);
 
     /**
      * Count number of {@link Product} associated to the given {@link AcquisitionProcessingChain}

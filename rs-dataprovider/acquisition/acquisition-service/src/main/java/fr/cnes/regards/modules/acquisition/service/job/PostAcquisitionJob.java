@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionJobReportService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
@@ -61,6 +62,9 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
     @Autowired
     private IProductService productService;
 
+    @Autowired
+    private IAcquisitionJobReportService jobReportService;
+
     private SIPEvent sipEvent;
 
     @Override
@@ -73,12 +77,18 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
     public void run() {
         LOGGER.info("Start POST acquisition SIP job for the product <{}>", sipEvent.getIpId());
 
+        Optional<Product> oProduct = Optional.empty();
+
         try {
             // Load product
-            Optional<Product> oProduct = productService.searchProduct(sipEvent.getIpId());
+            oProduct = productService.searchProduct(sipEvent.getIpId());
 
             if (oProduct.isPresent()) {
                 Product product = oProduct.get();
+
+                // Report starting
+                jobReportService.reportJobStarted(product.getLastPostProductionJobReport());
+
                 // Update product (store ingest state)
                 product.setSipState(sipEvent.getState());
                 productService.save(product);
@@ -98,6 +108,11 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
         } catch (ModuleException pse) {
             LOGGER.error("Business error", pse);
             throw new JobRuntimeException(pse);
+        } finally {
+            if (oProduct.isPresent()) {
+                // Report stopping
+                jobReportService.reportJobStopped(oProduct.get().getLastPostProductionJobReport());
+            }
         }
     }
 

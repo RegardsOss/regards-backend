@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,6 +28,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -42,6 +45,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
@@ -55,10 +59,12 @@ import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
+import fr.cnes.regards.modules.acquisition.service.job.PostAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
-import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
 /**
  * Manage acquisition {@link Product}
@@ -71,24 +77,23 @@ public class ProductService implements IProductService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
 
-    private final IProductRepository productRepository;
+    @Autowired
+    private IAcquisitionJobReportService jobReportService;
 
-    private final IAuthenticationResolver authResolver;
+    @Autowired
+    private IProductRepository productRepository;
 
-    private final IJobInfoService jobInfoService;
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
-    private final IAcquisitionFileRepository acqFileRepository;
+    @Autowired
+    private IJobInfoService jobInfoService;
+
+    @Autowired
+    private IAcquisitionFileRepository acqFileRepository;
 
     @Value("${regards.acquisition.sip.bulk.request.limit:10000}")
     private Integer bulkRequestLimit;
-
-    public ProductService(IProductRepository repository, IAcquisitionFileRepository acqFileRepository,
-            IAuthenticationResolver authResolver, IJobInfoService jobInfoService) {
-        this.productRepository = repository;
-        this.acqFileRepository = acqFileRepository;
-        this.authResolver = authResolver;
-        this.jobInfoService = jobInfoService;
-    }
 
     @Override
     public Product save(Product product) {
@@ -148,18 +153,27 @@ public class ProductService implements IProductService {
     public JobInfo scheduleProductSIPGeneration(Product product, AcquisitionProcessingChain chain) {
 
         // Schedule job
-        JobInfo acquisition = new JobInfo();
-        acquisition.setParameters(new JobParameter(SIPGenerationJob.CHAIN_PARAMETER_ID, chain.getId()),
-                                  new JobParameter(SIPGenerationJob.PRODUCT_ID, product.getId()));
-        acquisition.setClassName(SIPGenerationJob.class.getName());
-        acquisition.setOwner(authResolver.getUser());
-        acquisition = jobInfoService.createAsQueued(acquisition);
+        JobInfo jobInfo = new JobInfo();
+        jobInfo.setParameters(new JobParameter(SIPGenerationJob.CHAIN_PARAMETER_ID, chain.getId()),
+                              new JobParameter(SIPGenerationJob.PRODUCT_ID, product.getId()));
+        jobInfo.setClassName(SIPGenerationJob.class.getName());
+        jobInfo.setOwner(authResolver.getUser());
+        jobInfo = jobInfoService.createAsPending(jobInfo);
 
         // Change product SIP state
         product.setSipState(ProductSIPState.SCHEDULED);
+
+        // Initialize related report
+        AcquisitionJobReport jobReport = jobReportService.createJobReport(jobInfo);
+        product.setLastSIPGenerationJobReport(jobReport);
+
         productRepository.save(product);
 
-        return acquisition;
+        // Enable job
+        jobInfo.updateStatus(JobStatus.QUEUED);
+        jobInfoService.save(jobInfo);
+
+        return jobInfo;
     }
 
     @Override
@@ -280,6 +294,9 @@ public class ProductService implements IProductService {
 
         if ((products != null) && !products.isEmpty()) {
 
+            // Register products per ingest chain and session for reporting
+            Map<String, Map<String, List<Product>>> productsPerIngestChain = new HashMap<>();
+
             Multimap<String, String> sessionsByChain = ArrayListMultimap.create();
             for (Product product : products) {
                 // Check if chain and session not already scheduled
@@ -290,6 +307,9 @@ public class ProductService implements IProductService {
                                                        product.getSession())) {
                         sessionsByChain.put(product.getProcessingChain().getIngestChain(), product.getSession());
                     }
+
+                    // Register product
+                    registerProduct(productsPerIngestChain, product);
 
                     // Update SIP state
                     product.setSipState(ProductSIPState.SUBMISSION_SCHEDULED);
@@ -306,10 +326,66 @@ public class ProductService implements IProductService {
                     jobParameters.add(new JobParameter(SIPSubmissionJob.SESSION_PARAMETER, session));
                     JobInfo jobInfo = new JobInfo(1, jobParameters, authResolver.getUser(),
                             SIPSubmissionJob.class.getName());
-                    jobInfoService.createAsQueued(jobInfo);
+                    jobInfoService.createAsPending(jobInfo);
+
+                    // Initialize related report
+                    AcquisitionJobReport jobReport = jobReportService.createJobReport(jobInfo, session);
+                    // Link report to all related products
+                    linkSubmissionReport(productsPerIngestChain, jobReport, ingestChain, session);
+
+                    // Enable job
+                    jobInfo.updateStatus(JobStatus.QUEUED);
+                    jobInfoService.save(jobInfo);
                 }
             }
         }
+    }
+
+    /**
+     * Register product
+     * @param productPerIngestChain list of product per session per ingest chain
+     * @param product {@link Product} to register
+     */
+    private void registerProduct(Map<String, Map<String, List<Product>>> productsPerIngestChain, Product product) {
+        String ingestChain = product.getProcessingChain().getIngestChain();
+        String session = product.getSession();
+
+        Map<String, List<Product>> productsPerSession = productsPerIngestChain.get(ingestChain);
+        if (productsPerSession == null) {
+            productsPerSession = new HashMap<>();
+            productsPerIngestChain.put(ingestChain, productsPerSession);
+        }
+
+        List<Product> products = productsPerSession.get(session);
+        if (products == null) {
+            products = new ArrayList<>();
+            productsPerSession.put(session, products);
+        }
+
+        products.add(product);
+    }
+
+    /**
+     * Link submission report to related products
+     * @param productsPerIngestChain list of registered products
+     * @param jobReport report to link
+     * @param ingestChain INGEST chain
+     * @param session INGEST session
+     */
+    private void linkSubmissionReport(Map<String, Map<String, List<Product>>> productsPerIngestChain,
+            AcquisitionJobReport jobReport, String ingestChain, String session) {
+
+        Map<String, List<Product>> productsPerSession = productsPerIngestChain.get(ingestChain);
+        if (productsPerSession != null) {
+            List<Product> products = productsPerSession.get(session);
+            if (products != null) {
+                for (Product product : products) {
+                    product.setLastSIPSubmissionJobReport(jobReport);
+                    save(product);
+                }
+            }
+        }
+
     }
 
     /**
@@ -353,13 +429,26 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public void updateProductSIPState(String ipId, ISipState sipState) {
-        Product product = productRepository.findCompleteByIpId(ipId);
+    public void handleSIPEvent(SIPEvent event) {
+        Product product = productRepository.findCompleteByIpId(event.getIpId());
         if (product != null) {
-            product.setSipState(sipState);
+            // Do post processing if SIP properly stored
+            if (SIPState.STORED.equals(event.getState())) {
+                JobInfo jobInfo = new JobInfo();
+                jobInfo.setParameters(new JobParameter(PostAcquisitionJob.EVENT_PARAMETER, event));
+                jobInfo.setClassName(PostAcquisitionJob.class.getName());
+                jobInfo.setOwner(authResolver.getUser());
+                jobInfo = jobInfoService.createAsQueued(jobInfo);
+
+                // Initialize related report
+                AcquisitionJobReport jobReport = jobReportService.createJobReport(jobInfo);
+                product.setLastPostProductionJobReport(jobReport);
+            }
+
+            product.setSipState(event.getState());
             productRepository.save(product);
         } else {
-            LOGGER.debug("SIP with IP ID \"{}\" is not managed by data provider", ipId);
+            LOGGER.debug("SIP with IP ID \"{}\" is not managed by data provider", event.getIpId());
         }
     }
 

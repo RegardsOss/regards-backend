@@ -37,6 +37,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionJobReportService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
@@ -66,6 +68,9 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
     @Autowired
     private IIngestClient ingestClient;
 
+    @Autowired
+    private IAcquisitionJobReportService jobReportService;
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
@@ -76,19 +81,27 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
     @Override
     public void run() {
         LOGGER.debug("Processing SIP submission for ingest chain \"{}\" and session \"{}\"", ingestChain, session);
-        runByPage();
+        runByPage(null);
     }
 
     /**
      * Make a SIP submission by page
+     * @param common SIP submission job report
      */
-    private void runByPage() {
+    private void runByPage(AcquisitionJobReport jobReport) {
 
         // Retrieve all products to submit by ingest chain, session page
         // Page size is limited by the property "bulkRequestLimit"
         Page<Product> products = productService.findProductsToSubmit(ingestChain, session);
 
         if (products.getNumberOfElements() > 0) {
+
+            if (jobReport == null) {
+                // There is a single report for a same submission
+                jobReport = products.getContent().get(0).getLastSIPSubmissionJobReport();
+                jobReportService.reportJobStarted(jobReport);
+            }
+
             LOGGER.debug("Ingest chain {} - session {} : processing {} products of {}", ingestChain, session,
                          products.getNumberOfElements(), products.getTotalElements());
             // Create SIP collection
@@ -106,7 +119,11 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
 
         // Continue if remaining page
         if (products.hasNext()) {
-            runByPage();
+            runByPage(jobReport);
+        }
+
+        if (jobReport != null) {
+            jobReportService.reportJobStopped(jobReport);
         }
     }
 

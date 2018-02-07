@@ -49,6 +49,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -56,7 +57,6 @@ import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.acquisition.dao.AcquisitionProcessingChainSpecifications;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionJobReportRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
@@ -85,7 +85,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingService.class);
 
     @Autowired
-    private IAcquisitionJobReportRepository jobReportRepository;
+    private IAcquisitionJobReportService jobReportService;
 
     @Autowired
     private IAcquisitionProcessingChainRepository acqChainRepository;
@@ -158,7 +158,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         processingChain.setRunning(Boolean.FALSE);
         processingChain.setLastActivationDate(null);
         processingChain.setLastProductAcquisitionJobReport(null);
-        processingChain.setLastSIPSubmissionJobReports(null);
 
         // Manage acquisition file info
         for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
@@ -387,16 +386,17 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         acquisition.setClassName(ProductAcquisitionJob.class.getName());
         acquisition.setOwner(authResolver.getUser());
 
-        JobInfo jobInfo = jobInfoService.createAsQueued(acquisition);
+        JobInfo jobInfo = jobInfoService.createAsPending(acquisition);
 
         // Initialize related report
-        AcquisitionJobReport jobReport = new AcquisitionJobReport();
-        jobReport.setScheduleDate(OffsetDateTime.now());
-        jobReport.setJobId(jobInfo.getId());
-        jobReportRepository.save(jobReport);
+        AcquisitionJobReport jobReport = jobReportService.createJobReport(jobInfo);
 
         processingChain.setLastProductAcquisitionJobReport(jobReport);
         acqChainRepository.save(processingChain);
+
+        // Enable job
+        jobInfo.updateStatus(JobStatus.QUEUED);
+        jobInfoService.save(jobInfo);
     }
 
     @Override
@@ -585,18 +585,5 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         // TODO
 
         return summary;
-    }
-
-    @Override
-    public void reportJobStarted(AcquisitionJobReport jobReport) {
-        jobReport.setStartDate(OffsetDateTime.now());
-        jobReportRepository.save(jobReport);
-    }
-
-    @Override
-    public void reportJobStopped(AcquisitionJobReport jobReport) {
-        jobReport.setJobId(null);
-        jobReport.setStopDate(OffsetDateTime.now());
-        jobReportRepository.save(jobReport);
     }
 }

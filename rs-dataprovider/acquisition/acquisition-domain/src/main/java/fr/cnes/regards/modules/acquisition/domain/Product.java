@@ -147,6 +147,11 @@ public class Product {
     @JoinColumn(name = "post_prod_job_report_id", foreignKey = @ForeignKey(name = "fk_post_prod_job_report_id"))
     private AcquisitionJobReport lastPostProductionJobReport;
 
+    @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
+    @JoinColumn(name = "sip_submission_job_report_id",
+            foreignKey = @ForeignKey(name = "fk_sip_submission_job_report_id"))
+    private AcquisitionJobReport lastSIPSubmissionJobReport;
+
     public Long getId() {
         return id;
     }
@@ -274,5 +279,29 @@ public class Product {
 
     public void setProcessingChain(AcquisitionProcessingChain processingChain) {
         this.processingChain = processingChain;
+    }
+
+    public AcquisitionJobReport getLastSIPGenerationJobReport() {
+        return lastSIPGenerationJobReport;
+    }
+
+    public void setLastSIPGenerationJobReport(AcquisitionJobReport lastSIPGenerationJobReport) {
+        this.lastSIPGenerationJobReport = lastSIPGenerationJobReport;
+    }
+
+    public AcquisitionJobReport getLastPostProductionJobReport() {
+        return lastPostProductionJobReport;
+    }
+
+    public void setLastPostProductionJobReport(AcquisitionJobReport lastPostProductionJobReport) {
+        this.lastPostProductionJobReport = lastPostProductionJobReport;
+    }
+
+    public AcquisitionJobReport getLastSIPSubmissionJobReport() {
+        return lastSIPSubmissionJobReport;
+    }
+
+    public void setLastSIPSubmissionJobReport(AcquisitionJobReport lastSIPSubmissionJobReport) {
+        this.lastSIPSubmissionJobReport = lastSIPSubmissionJobReport;
     }
 }

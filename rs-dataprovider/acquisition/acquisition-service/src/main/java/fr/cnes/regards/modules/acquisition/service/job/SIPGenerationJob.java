@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionJobReportService;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.ingest.domain.SIP;
@@ -64,6 +65,9 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
     @Autowired
     private IAcquisitionProcessingService processingService;
+
+    @Autowired
+    private IAcquisitionJobReportService jobReportService;
 
     /**
      * The current chain to work with!
@@ -100,6 +104,10 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                     product.getProductName());
 
         try {
+
+            // Report starting
+            jobReportService.reportJobStarted(processingChain.getLastProductAcquisitionJobReport());
+
             // Get an instance of the plugin
             ISipGenerationPlugin generateSipPlugin = pluginService
                     .getPlugin(processingChain.getGenerateSipPluginConf().getId());
@@ -120,6 +128,9 @@ public class SIPGenerationJob extends AbstractJob<Void> {
             product.setSipState(ProductSIPState.GENERATION_ERROR);
             productService.save(product);
             throw new JobRuntimeException(e.getMessage());
+        } finally {
+            // Report stopping
+            jobReportService.reportJobStopped(processingChain.getLastProductAcquisitionJobReport());
         }
     }
 }

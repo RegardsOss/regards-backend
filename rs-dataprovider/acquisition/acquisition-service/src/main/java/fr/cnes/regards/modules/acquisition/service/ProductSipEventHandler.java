@@ -29,12 +29,8 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.acquisition.service.job.PostAcquisitionJob;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
 /**
@@ -85,18 +81,8 @@ public class ProductSipEventHandler implements ApplicationListener<ApplicationRe
             runtimeTenantResolver.forceTenant(wrapper.getTenant());
             SIPEvent event = wrapper.getContent();
             LOGGER.debug("[{}] received event {}", event.getIpId(), event.getState());
-
-            // Update product state
-            productService.updateProductSIPState(event.getIpId(), event.getState());
-
-            // Do post processing if SIP properly stored
-            if (SIPState.STORED.equals(event.getState())) {
-                JobInfo acquisition = new JobInfo();
-                acquisition.setParameters(new JobParameter(PostAcquisitionJob.EVENT_PARAMETER, event));
-                acquisition.setClassName(PostAcquisitionJob.class.getName());
-                acquisition.setOwner(authResolver.getUser());
-                acquisition = jobInfoService.createAsQueued(acquisition);
-            }
+            // Handle SIP event
+            productService.handleSIPEvent(event);
         }
     }
 

@@ -18,22 +18,54 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.time.OffsetDateTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionJobReportRepository;
+import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
 
 /**
- * Job report service
+ * Acquisition job report service
  *
  * @author Marc Sordi
  *
  */
 @Service
 @MultitenantTransactional
-public class JobReportService implements IJobReportService {
+public class AcquisitionJobReportService implements IAcquisitionJobReportService {
 
     @Autowired
     private IAcquisitionJobReportRepository jobReportRepository;
+
+    @Override
+    public AcquisitionJobReport createJobReport(JobInfo jobInfo) {
+        return createJobReport(jobInfo, null);
+    }
+
+    @Override
+    public AcquisitionJobReport createJobReport(JobInfo jobInfo, String session) {
+        AcquisitionJobReport jobReport = new AcquisitionJobReport();
+        jobReport.setScheduleDate(OffsetDateTime.now());
+        jobReport.setJobId(jobInfo.getId());
+        jobReport.setSession(session);
+        return jobReportRepository.save(jobReport);
+    }
+
+    @Override
+    public void reportJobStarted(AcquisitionJobReport jobReport) {
+        jobReport.setStartDate(OffsetDateTime.now());
+        jobReportRepository.save(jobReport);
+    }
+
+    @Override
+    public void reportJobStopped(AcquisitionJobReport jobReport) {
+        jobReport.setJobId(null);
+        jobReport.setStopDate(OffsetDateTime.now());
+        jobReportRepository.save(jobReport);
+    }
+
 }

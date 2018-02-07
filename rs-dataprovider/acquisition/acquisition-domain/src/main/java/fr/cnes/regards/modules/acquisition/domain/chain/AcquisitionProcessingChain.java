@@ -22,7 +22,6 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -36,7 +35,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
@@ -45,7 +43,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -69,8 +66,8 @@ import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
  */
 @Entity
 @Table(name = "t_acq_processing_chain")
-@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.info.complete", attributeNodes = {
-        @NamedAttributeNode(value = "fileInfos"), @NamedAttributeNode(value = "lastSIPSubmissionJobReports") }) })
+@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.info.complete",
+        attributeNodes = { @NamedAttributeNode(value = "fileInfos") }) })
 public class AcquisitionProcessingChain {
 
     /**
@@ -182,18 +179,6 @@ public class AcquisitionProcessingChain {
     @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
     @JoinColumn(name = "acq_job_report_id", foreignKey = @ForeignKey(name = "fk_acq_job_report_id"))
     private AcquisitionJobReport lastProductAcquisitionJobReport;
-
-    /**
-     * Job reports per session.
-     */
-    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
-    @JoinTable(name = "ta_chain_session_sub",
-            joinColumns = { @JoinColumn(name = "chain_id", referencedColumnName = "id",
-                    foreignKey = @ForeignKey(name = "fk_sub_job_chain_id")) },
-            inverseJoinColumns = { @JoinColumn(name = "sub_job_id", referencedColumnName = "id",
-                    foreignKey = @ForeignKey(name = "fk_sub_job_id")) },
-            uniqueConstraints = @UniqueConstraint(name = "uk_sub_job_id", columnNames = "sub_job_id"))
-    private Set<AcquisitionJobReport> lastSIPSubmissionJobReports;
 
     public String getLabel() {
         return label;
@@ -328,16 +313,5 @@ public class AcquisitionProcessingChain {
 
     public void setLastProductAcquisitionJobReport(AcquisitionJobReport lastProductAcquisitionJobReport) {
         this.lastProductAcquisitionJobReport = lastProductAcquisitionJobReport;
-    }
-
-    public Set<AcquisitionJobReport> getLastSIPSubmissionJobReports() {
-        if (lastSIPSubmissionJobReports == null) {
-            lastSIPSubmissionJobReports = new java.util.HashSet<>();
-        }
-        return lastSIPSubmissionJobReports;
-    }
-
-    public void setLastSIPSubmissionJobReports(Set<AcquisitionJobReport> lastSIPSubmissionJobReports) {
-        this.lastSIPSubmissionJobReports = lastSIPSubmissionJobReports;
     }
 }
