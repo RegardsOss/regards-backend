@@ -70,13 +70,6 @@ public class JobInfo {
     private Integer priority = 0;
 
     /**
-     * Job description
-     */
-    @Column(name = "description")
-    @Type(type = "text")
-    private String description;
-
-    /**
      * Date when the job should be expired
      */
     @Column(name = "expire_date")
@@ -211,7 +204,7 @@ public class JobInfo {
 
     /**
      * @return a non null parameter {@link Map} with key representing the parameter name and value the
-     *         {@link JobParameter}
+     * {@link JobParameter}
      */
     public Map<String, JobParameter> getParametersAsMap() {
         Map<String, JobParameter> parameterMap = new HashMap<>();
@@ -262,14 +255,6 @@ public class JobInfo {
         return status;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public String getTenant() {
         return tenant;
     }
@@ -316,8 +301,8 @@ public class JobInfo {
 
     @Override
     public String toString() {
-        return "JobInfo{" + "id=" + id + ", priority=" + priority + ", description='" + description + '\''
-                + ", expirationDate=" + expirationDate + ", owner='" + owner + '\'' + ", className='" + className + '\''
-                + ", status=" + status + ", tenant='" + tenant + '\'' + '}';
+        return "JobInfo{" + "id=" + id + ", priority=" + priority + ", expirationDate=" + expirationDate + ", owner='"
+                + owner + '\'' + ", className='" + className + '\'' + ", status=" + status + ", tenant='" + tenant
+                + '\'' + '}';
     }
 }

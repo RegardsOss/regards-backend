@@ -169,7 +169,6 @@ public class MultitenantJobTest {
         JobInfo waitJobInfo1 = new JobInfo();
         waitJobInfo1.setPriority(10);
         waitJobInfo1.setClassName(WaiterJob.class.getName());
-        waitJobInfo1.setDescription("Job that wait 500ms");
         waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
         waitJobInfo1 = jobInfoService.createAsQueued(waitJobInfo1);
@@ -178,7 +177,6 @@ public class MultitenantJobTest {
         JobInfo waitJobInfo2 = new JobInfo();
         waitJobInfo2.setPriority(10);
         waitJobInfo2.setClassName(WaiterJob.class.getName());
-        waitJobInfo2.setDescription("Job that wait 500ms");
         waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
         waitJobInfo2 = jobInfoService.createAsQueued(waitJobInfo2);
@@ -211,7 +209,6 @@ public class MultitenantJobTest {
         JobInfo waitJobInfo1 = new JobInfo();
         waitJobInfo1.setPriority(10);
         waitJobInfo1.setClassName(WaiterJob.class.getName());
-        waitJobInfo1.setDescription("Job that wait 3 x 1s");
         waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
@@ -219,7 +216,6 @@ public class MultitenantJobTest {
         JobInfo waitJobInfo2 = new JobInfo();
         waitJobInfo2.setPriority(10);
         waitJobInfo2.setClassName(WaiterJob.class.getName());
-        waitJobInfo2.setDescription("Job that wait 3 x 1s");
         waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
@@ -246,7 +242,6 @@ public class MultitenantJobTest {
         JobInfo waitJobInfo1 = new JobInfo();
         waitJobInfo1.setPriority(10);
         waitJobInfo1.setClassName(WaiterJob.class.getName());
-        waitJobInfo1.setDescription("Job that wait 3 x 1s");
         waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
@@ -254,7 +249,6 @@ public class MultitenantJobTest {
         JobInfo waitJobInfo2 = new JobInfo();
         waitJobInfo2.setPriority(10);
         waitJobInfo2.setClassName(WaiterJob.class.getName());
-        waitJobInfo2.setDescription("Job that wait 3 x 1s");
         waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
@@ -284,14 +278,12 @@ public class MultitenantJobTest {
         JobInfo failedJobInfo1 = new JobInfo();
         failedJobInfo1.setPriority(10);
         failedJobInfo1.setClassName(FailedAfter1sJob.class.getName());
-        failedJobInfo1.setDescription("Job that failed after 1s");
         failedJobInfo1 = jobInfoService.createAsQueued(failedJobInfo1);
 
         tenantResolver.forceTenant(TENANT2);
         JobInfo failedJobInfo2 = new JobInfo();
         failedJobInfo2.setPriority(10);
         failedJobInfo2.setClassName(FailedAfter1sJob.class.getName());
-        failedJobInfo2.setDescription("Job that failed after 1s");
         failedJobInfo2 = jobInfoService.createAsQueued(failedJobInfo2);
 
         LOGGER.info("Failed job : {}", failedJobInfo1.getId());
@@ -325,7 +317,6 @@ public class MultitenantJobTest {
             jobInfos[i] = new JobInfo();
             jobInfos[i].setPriority(20 - i); // Makes it easier to know which ones are launched first
             jobInfos[i].setClassName(WaiterJob.class.getName());
-            jobInfos[i].setDescription(String.format("Job %d that wait 2 x 1s", i));
             jobInfos[i].setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
                                       new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 2));
         }
@@ -363,7 +354,6 @@ public class MultitenantJobTest {
         JobInfo springJobInfo = new JobInfo();
         springJobInfo.setPriority(100);
         springJobInfo.setClassName(SpringJob.class.getName());
-        springJobInfo.setDescription("Job with spring beans");
 
         jobInfoService.createAsQueued(springJobInfo);
 

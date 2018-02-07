@@ -82,4 +82,20 @@ public interface IJobInfoService {
      * Update jobInfos completion ie percentCompleted and estimatedCompletion date
      */
     void updateJobInfosCompletion(Iterable<JobInfo> jobInfos);
+
+    /**
+     * On all tenants, remove out-of-date jobs ie :
+     * - expired jobs
+     * - terminated on success jobs several days ago
+     * - terminated on error jobs several days ago
+     */
+    void cleanOutOfDateJobs();
+
+    /**
+     * On one tenant, remove out-of-date jobs ie :
+     * - expired jobs
+     * - terminated on success jobs several days ago
+     * - terminated on error jobs several days ago
+     */
+    void cleanOutOfDateJobsOnTenant();
 }

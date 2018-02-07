@@ -23,7 +23,11 @@ import java.util.UUID;
 
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.ImmutableList;
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -33,6 +37,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
  * @author oroussel
@@ -40,9 +46,23 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 @Service
 @MultitenantTransactional
 public class JobInfoService implements IJobInfoService {
+    @Autowired
+    private ITenantResolver tenantResolver;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Value("${regards.jobs.succeeded.retention.days:1}")
+    private int succeededJobsRetentionDays;
+
+    @Value("${regards.jobs.failed.retention.days:30}")
+    private int failedJobsRetentionDays;
 
     @Autowired
     private IPublisher publisher;
+
+    @Autowired
+    private IJobInfoService self;
 
     /**
      * {@link JobInfo} JPA Repository
@@ -78,12 +98,18 @@ public class JobInfoService implements IJobInfoService {
 
     @Override
     public JobInfo createAsPending(JobInfo jobInfo) {
+        if (jobInfo.getId() != null) {
+            throw new IllegalArgumentException("Please use create method for creating, you dumb...");
+        }
         jobInfo.updateStatus(JobStatus.PENDING);
         return jobInfoRepository.save(jobInfo);
     }
 
     @Override
     public JobInfo createAsQueued(JobInfo jobInfo) {
+        if (jobInfo.getId() != null) {
+            throw new IllegalArgumentException("Please use create method for creating, you dumb...");
+        }
         jobInfo.updateStatus(JobStatus.QUEUED);
         return jobInfoRepository.save(jobInfo);
     }
@@ -108,5 +134,26 @@ public class JobInfoService implements IJobInfoService {
             jobInfoRepository
                     .updateCompletion(status.getPercentCompleted(), status.getEstimatedCompletion(), jobInfo.getId());
         }
+    }
+
+
+    @Scheduled(fixedDelayString = "${regards.jobs.out.of.date.cleaning.rate.ms:3600000}", initialDelay = 0)
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public void cleanOutOfDateJobs() {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            self.cleanOutOfDateJobsOnTenant();
+        }
+        runtimeTenantResolver.clearTenant();
+    }
+
+    @Override
+    public void cleanOutOfDateJobsOnTenant() {
+        // Delete expired jobs
+        jobInfoRepository.deleteExpiredJobs();
+        // Delete succeeded jobs since configured retention days
+        jobInfoRepository.deleteSucceededJobsSince(succeededJobsRetentionDays);
+        // Delete failed or aborted jobs since configured retention days
+        jobInfoRepository.deleteFailedOrAbortedJobsSince(failedJobsRetentionDays);
     }
 }

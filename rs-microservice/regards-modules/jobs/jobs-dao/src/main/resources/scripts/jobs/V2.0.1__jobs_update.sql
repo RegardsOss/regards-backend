@@ -1,0 +1,1 @@
+alter table t_job_info drop column description;

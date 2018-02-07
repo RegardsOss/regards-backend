@@ -66,6 +66,43 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     Long countByStatusStatusIn(JobStatus... statuses);
 
     /**
+     * Delete jobs expired at given date
+     */
+    @Modifying
+    @Query("delete JobInfo j where j.expirationDate < ?1 and j.status.status not in ('QUEUED', 'TO_BE_RUN', 'RUNNING')")
+    void deleteAtDateExpiredJobs(OffsetDateTime date);
+
+    /**
+     * Delete currently expired jobs
+     */
+    default void deleteExpiredJobs() {
+        deleteAtDateExpiredJobs(OffsetDateTime.now());
+    }
+
+    /**
+     * Delete jobs with given status at given date
+     */
+    @Modifying
+    @Query("delete JobInfo j where j.status.stopDate < ?1 and j.status.status in ?2")
+    void deleteWithStatusAtDateJobs(OffsetDateTime date, JobStatus... statuses);
+
+    /**
+     * Delete succeeded jobs since given number of days
+     */
+    default void deleteSucceededJobsSince(int days) {
+        deleteWithStatusAtDateJobs(OffsetDateTime.now().minusDays((long)days), JobStatus.SUCCEEDED);
+    }
+
+    /**
+     * Delete failed and aborted jobs since given number of days
+     */
+    default void deleteFailedOrAbortedJobsSince(int days) {
+        deleteWithStatusAtDateJobs(OffsetDateTime.now().minusDays((long)days), JobStatus.FAILED, JobStatus.ABORTED);
+    }
+
+
+
+    /**
      * Count all jobs that will be launched in the future and jobs that are currently running
      */
     default long countFutureAndRunningJobs() {

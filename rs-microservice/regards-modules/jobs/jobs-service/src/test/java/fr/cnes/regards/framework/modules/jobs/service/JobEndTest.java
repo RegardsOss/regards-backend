@@ -69,7 +69,6 @@ public class JobEndTest {
     @Test
     public void test() throws InterruptedException {
         JobInfo longJob = new JobInfo();
-        longJob.setDescription("A long job updating its completion");
         longJob.setClassName(LongJob.class.getName());
         longJob.setPriority(100);
         longJob = jobInfoService.createAsQueued(longJob);
@@ -94,7 +93,6 @@ public class JobEndTest {
     @Test
     public void testWithResults1() throws InterruptedException {
         JobInfo blowJob = new JobInfo();
-        blowJob.setDescription("A job that set a random float as result");
         blowJob.setClassName(BlowJob.class.getName());
         blowJob = jobInfoService.createAsQueued(blowJob);
 
@@ -114,7 +112,6 @@ public class JobEndTest {
     @Test
     public void testWithResults2() throws InterruptedException {
         JobInfo handJob = new JobInfo();
-        handJob.setDescription("A job that set a complex object result");
         handJob.setClassName(HandJob.class.getName());
         handJob = jobInfoService.createAsQueued(handJob);
 
@@ -140,7 +137,6 @@ public class JobEndTest {
     @Test
     public void testWithResults3() throws InterruptedException {
         JobInfo footJob = new JobInfo();
-        footJob.setDescription("A job that set a complex object result");
         footJob.setClassName(FootJob.class.getName());
         footJob = jobInfoService.createAsQueued(footJob);
 

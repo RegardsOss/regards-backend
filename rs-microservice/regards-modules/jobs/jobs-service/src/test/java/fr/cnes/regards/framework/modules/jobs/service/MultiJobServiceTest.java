@@ -74,13 +74,11 @@ public class MultiJobServiceTest {
         waitJobInfo = new JobInfo();
         waitJobInfo.setPriority(10);
         waitJobInfo.setClassName(WaiterJob.class.getName());
-        waitJobInfo.setDescription("Job that wait 500ms");
         waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
         waitJobInfo = jobInfoService.createAsQueued(waitJobInfo);
 
         blowJob = new JobInfo();
-        blowJob.setDescription("A job that set a random float as result");
         blowJob.setClassName(BlowJob.class.getName());
         blowJob = jobInfoService.createAsQueued(blowJob);
     }
