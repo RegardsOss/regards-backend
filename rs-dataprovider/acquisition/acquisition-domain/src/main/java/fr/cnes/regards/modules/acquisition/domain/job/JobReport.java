@@ -23,6 +23,8 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
 
@@ -39,7 +41,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 public abstract class JobReport {
 
     /**
-     * The active job id. If job is finished, this id should be null
+     * The job id. If job is finished, related job info might not exist in database because job table was cleaned!
      */
     @Column(name = "job_id")
     protected UUID jobId;
@@ -49,6 +51,10 @@ public abstract class JobReport {
      */
     @Transient
     protected JobInfo jobInfo;
+
+    @Column(name = "job_report_state", length = 32)
+    @Enumerated(EnumType.STRING)
+    protected JobReportState reportState;
 
     /**
      * the job schedule date
@@ -109,5 +115,13 @@ public abstract class JobReport {
 
     public void setStopDate(OffsetDateTime stopDate) {
         this.stopDate = stopDate;
+    }
+
+    public JobReportState getReportState() {
+        return reportState;
+    }
+
+    public void setReportState(JobReportState reportState) {
+        this.reportState = reportState;
     }
 }

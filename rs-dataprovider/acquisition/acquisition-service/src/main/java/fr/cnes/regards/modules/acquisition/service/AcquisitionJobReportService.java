@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionJobReportRepository;
 import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
+import fr.cnes.regards.modules.acquisition.domain.job.JobReportState;
 
 /**
  * Acquisition job report service
@@ -49,6 +50,7 @@ public class AcquisitionJobReportService implements IAcquisitionJobReportService
     @Override
     public AcquisitionJobReport createJobReport(JobInfo jobInfo, String session) {
         AcquisitionJobReport jobReport = new AcquisitionJobReport();
+        jobReport.setReportState(JobReportState.SCHEDULED);
         jobReport.setScheduleDate(OffsetDateTime.now());
         jobReport.setJobId(jobInfo.getId());
         jobReport.setSession(session);
@@ -57,13 +59,14 @@ public class AcquisitionJobReportService implements IAcquisitionJobReportService
 
     @Override
     public void reportJobStarted(AcquisitionJobReport jobReport) {
+        jobReport.setReportState(JobReportState.STARTED);
         jobReport.setStartDate(OffsetDateTime.now());
         jobReportRepository.save(jobReport);
     }
 
     @Override
     public void reportJobStopped(AcquisitionJobReport jobReport) {
-        jobReport.setJobId(null);
+        jobReport.setReportState(JobReportState.STOPPED);
         jobReport.setStopDate(OffsetDateTime.now());
         jobReportRepository.save(jobReport);
     }
