@@ -106,7 +106,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         try {
 
             // Report starting
-            jobReportService.reportJobStarted(processingChain.getLastProductAcquisitionJobReport());
+            jobReportService.reportJobStarted(product.getLastSIPGenerationJobReport());
 
             // Get an instance of the plugin
             ISipGenerationPlugin generateSipPlugin = pluginService
@@ -130,7 +130,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
             throw new JobRuntimeException(e.getMessage());
         } finally {
             // Report stopping
-            jobReportService.reportJobStopped(processingChain.getLastProductAcquisitionJobReport());
+            jobReportService.reportJobStopped(product.getLastSIPGenerationJobReport());
         }
     }
 }
