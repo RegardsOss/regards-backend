@@ -24,7 +24,9 @@
 			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
 		</encoder>
 	</appender>
-	
+
+	<logger name="fr.cnes.regards.framework.amqp" level="DEBUG"/>
+
 	<root level="info">
 		<appender-ref ref="STDOUT" />
 	</root>
