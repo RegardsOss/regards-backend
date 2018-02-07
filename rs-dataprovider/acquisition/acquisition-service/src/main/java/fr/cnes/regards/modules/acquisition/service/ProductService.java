@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.service;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -468,5 +469,58 @@ public class ProductService implements IProductService {
         return productRepository
                 .findAll(ProductSpecifications.search(state, sipState, productName, session, processingChainId, from),
                          pageable);
+    }
+
+    @Override
+    public void stopProductJobs(AcquisitionProcessingChain processingChain) throws ModuleException {
+
+        // Handle SIP generation jobs
+        Set<Product> products = productRepository.findWithLockByProcessingChainAndSipState(processingChain,
+                                                                                           ProductSIPState.SCHEDULED);
+        for (Product product : products) {
+            jobInfoService.stopJob(product.getLastSIPGenerationJobReport().getJobId());
+        }
+
+        // Handle SIP submission jobs
+        products = productRepository.findWithLockByProcessingChainAndSipState(processingChain,
+                                                                              ProductSIPState.SUBMISSION_SCHEDULED);
+        Set<AcquisitionJobReport> submissionReports = new HashSet<>();
+        for (Product product : products) {
+            submissionReports.add(product.getLastSIPSubmissionJobReport());
+        }
+        for (AcquisitionJobReport subReport : submissionReports) {
+            jobInfoService.stopJob(subReport.getJobId());
+        }
+    }
+
+    @Override
+    public boolean isProductJobStoppedAndCleaned(AcquisitionProcessingChain processingChain) throws ModuleException {
+        // Handle SIP generation jobs
+        Set<Product> products = productRepository.findWithLockByProcessingChainAndSipState(processingChain,
+                                                                                           ProductSIPState.SCHEDULED);
+        for (Product product : products) {
+            if (!jobReportService.isJobStopped(product.getLastSIPGenerationJobReport())) {
+                return false;
+            } else {
+                // Clean product state
+                product.setSipState(ProductSIPState.NOT_SCHEDULED);
+                productRepository.save(product);
+            }
+        }
+
+        // Handle SIP submission jobs
+        products = productRepository.findWithLockByProcessingChainAndSipState(processingChain,
+                                                                              ProductSIPState.SUBMISSION_SCHEDULED);
+        for (Product product : products) {
+            if (!jobReportService.isJobStopped(product.getLastSIPSubmissionJobReport())) {
+                return false;
+            } else {
+                // Clean product state
+                product.setSipState(ProductSIPState.GENERATED);
+                productRepository.save(product);
+            }
+        }
+
+        return true;
     }
 }

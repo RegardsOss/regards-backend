@@ -60,13 +60,13 @@ public interface IAcquisitionProcessingChainRepository
      * @return all chains
      */
     @Lock(LockModeType.PESSIMISTIC_READ)
-    List<AcquisitionProcessingChain> findByModeAndActiveTrueAndRunningFalse(AcquisitionProcessingChainMode mode);
+    List<AcquisitionProcessingChain> findByModeAndActiveTrueAndLockedFalse(AcquisitionProcessingChainMode mode);
 
     /**
      * @return all automatic chains that might be started
      */
     default List<AcquisitionProcessingChain> findAllBootableAutomaticChains() {
-        return findByModeAndActiveTrueAndRunningFalse(AcquisitionProcessingChainMode.AUTO);
+        return findByModeAndActiveTrueAndLockedFalse(AcquisitionProcessingChainMode.AUTO);
     }
 
     @Query("select chain.validationPluginConf from AcquisitionProcessingChain chain,PluginConfiguration conf where chain.id = ?1 and chain.validationPluginConf.id = conf.id")
@@ -82,6 +82,6 @@ public interface IAcquisitionProcessingChainRepository
     Optional<PluginConfiguration> findOnePostProcessSipPlugin(Long chainId);
 
     @Modifying
-    @Query("update AcquisitionProcessingChain chain set chain.running = ?1 where chain.id = ?2")
-    int setRunning(Boolean isRunning, Long chainId);
+    @Query("update AcquisitionProcessingChain chain set chain.locked = ?1 where chain.id = ?2")
+    int setLocked(Boolean isLocked, Long chainId);
 }

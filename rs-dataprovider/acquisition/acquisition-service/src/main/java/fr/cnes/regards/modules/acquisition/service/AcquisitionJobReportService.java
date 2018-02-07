@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionJobReportRepository;
 import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
 import fr.cnes.regards.modules.acquisition.domain.job.JobReportState;
@@ -41,6 +42,9 @@ public class AcquisitionJobReportService implements IAcquisitionJobReportService
 
     @Autowired
     private IAcquisitionJobReportRepository jobReportRepository;
+
+    @Autowired
+    private IJobInfoService jobInfoService;
 
     @Override
     public AcquisitionJobReport createJobReport(JobInfo jobInfo) {
@@ -71,4 +75,28 @@ public class AcquisitionJobReportService implements IAcquisitionJobReportService
         jobReportRepository.save(jobReport);
     }
 
+    @Override
+    public boolean isJobStopped(AcquisitionJobReport jobReport) {
+        if (jobReport == null) {
+            return true; // No job scheduled
+        }
+
+        if (!JobReportState.STOPPED.equals(jobReport.getReportState())) {
+            // Check job info
+            JobInfo jobInfo = jobInfoService.retrieveJob(jobReport.getJobId());
+            if (jobInfo != null) { // If null, job should have finished properly
+                if (jobInfo.getStatus().getStatus().isCompatibleWithPause()) {
+                    // Update job report
+                    jobReport.setReportState(JobReportState.STOPPED);
+                    jobReport.setStopDate(jobInfo.getStatus().getStopDate());
+                    jobReportRepository.save(jobReport);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 }

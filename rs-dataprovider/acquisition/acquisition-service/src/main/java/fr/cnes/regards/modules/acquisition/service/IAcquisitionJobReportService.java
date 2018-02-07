@@ -56,4 +56,11 @@ public interface IAcquisitionJobReportService {
      */
     void reportJobStopped(AcquisitionJobReport jobReport);
 
+    /**
+     * Check if a job is stopped
+     * @param jobReport job report to check
+     * @return true if stopped else false
+     */
+    boolean isJobStopped(AcquisitionJobReport jobReport);
+
 }

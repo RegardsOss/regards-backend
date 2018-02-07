@@ -37,10 +37,12 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -66,10 +68,12 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
 import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
+import fr.cnes.regards.modules.acquisition.domain.job.JobReportState;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
+import fr.cnes.regards.modules.acquisition.service.job.StopChainThread;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
 /**
@@ -110,6 +114,12 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Autowired
     private IAuthenticationResolver authResolver;
+
+    @Autowired
+    private IAcquisitionProcessingService self;
+
+    @Autowired
+    private AutowireCapableBeanFactory beanFactory;
 
     @PostConstruct
     public void init() {
@@ -155,7 +165,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         checkProcessingChainMode(processingChain);
 
         // Prevent bad values
-        processingChain.setRunning(Boolean.FALSE);
+        processingChain.setLocked(Boolean.FALSE);
         processingChain.setLastActivationDate(null);
         processingChain.setLastProductAcquisitionJobReport(null);
 
@@ -309,12 +319,65 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Override
     public void lockChain(AcquisitionProcessingChain processingChain) {
-        acqChainRepository.setRunning(Boolean.TRUE, processingChain.getId());
+        acqChainRepository.setLocked(Boolean.TRUE, processingChain.getId());
     }
 
     @Override
     public void unlockChain(AcquisitionProcessingChain processingChain) {
-        acqChainRepository.setRunning(Boolean.FALSE, processingChain.getId());
+        acqChainRepository.setLocked(Boolean.FALSE, processingChain.getId());
+    }
+
+    @Override
+    public void stopChainJobs(Long processingChainId) throws ModuleException {
+
+        AcquisitionProcessingChain processingChain = getChain(processingChainId);
+
+        if (!processingChain.isLocked()) {
+            String message = String.format("Jobs cannot be stopped on unlocked processing chain \"%s\"",
+                                           processingChain.getLabel());
+            LOGGER.error(message);
+            throw new EntityInvalidException(message);
+        }
+
+        // Stop all active jobs for current processing chain
+        AcquisitionJobReport productAcquisitionJobReport = processingChain.getLastProductAcquisitionJobReport();
+        if ((productAcquisitionJobReport != null)
+                && !JobReportState.STOPPED.equals(productAcquisitionJobReport.getReportState())) {
+            jobInfoService.stopJob(productAcquisitionJobReport.getJobId());
+        }
+        productService.stopProductJobs(processingChain);
+    }
+
+    @Override
+    public boolean isChainJobStoppedAndCleaned(Long processingChainId) throws ModuleException {
+        AcquisitionProcessingChain processingChain = getChain(processingChainId);
+        return jobReportService.isJobStopped(processingChain.getLastProductAcquisitionJobReport())
+                && productService.isProductJobStoppedAndCleaned(processingChain);
+    }
+
+    @MultitenantTransactional(propagation = Propagation.NOT_SUPPORTED)
+    @Override
+    public AcquisitionProcessingChain stopAndCleanChain(Long processingChainId) throws ModuleException {
+
+        AcquisitionProcessingChain processingChain = getChain(processingChainId);
+
+        // Prevent chain from being run during stopping to avoid a real mess
+        if (processingChain.isLocked()) {
+            // FIXME lock is used for chain start and stop!
+            LOGGER.warn("There can be an issue with processing chain locking because already locked!");
+        } else {
+            lockChain(processingChain);
+        }
+
+        // Stop chain jobs "synchronously"
+        self.stopChainJobs(processingChainId);
+
+        // Wait for jobs to stop and clean related products
+        Thread stopChainThread = new StopChainThread(processingChain);
+        beanFactory.autowireBean(stopChainThread);
+        stopChainThread.start();
+
+        return processingChain;
     }
 
     @Override
@@ -357,7 +420,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             throw new EntityInvalidException(message);
         }
 
-        if (processingChain.isRunning()) {
+        if (processingChain.isLocked()) {
             String message = String.format("Processing chain \"%s\" already running", processingChain.getLabel());
             LOGGER.error(message);
             throw new EntityInvalidException(message);

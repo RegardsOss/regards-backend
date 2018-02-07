@@ -101,12 +101,10 @@ public class AcquisitionProcessingChain {
     private String session;
 
     /**
-     * <code>true</code> if currently running, <code>false</code>
-     * otherwise.<br/>
-     * The same acquisition chain must not be run twice!
+     * Flag to allow to run an action only once at a time
      */
     @Column(updatable = false, nullable = false)
-    private Boolean running = false;
+    private boolean locked = false;
 
     /**
      * The last activation date when an acquisition were running.
@@ -259,14 +257,6 @@ public class AcquisitionProcessingChain {
         return mode;
     }
 
-    public boolean isRunning() {
-        return running;
-    }
-
-    public void setRunning(Boolean running) {
-        this.running = running;
-    }
-
     public Long getId() {
         return id;
     }
@@ -313,5 +303,13 @@ public class AcquisitionProcessingChain {
 
     public void setLastProductAcquisitionJobReport(AcquisitionJobReport lastProductAcquisitionJobReport) {
         this.lastProductAcquisitionJobReport = lastProductAcquisitionJobReport;
+    }
+
+    public Boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(Boolean locked) {
+        this.locked = locked;
     }
 }
