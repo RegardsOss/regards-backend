@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +38,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.modules.configuration.dao.IModuleRepository;
 import fr.cnes.regards.modules.configuration.domain.Module;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import fr.cnes.regards.modules.configuration.domain.UIPage;
 
 /**
  *
@@ -68,13 +70,13 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
         return LOG;
     }
 
-    private Module createModule(final boolean pActive, final boolean pDefault) {
+    private Module createModule(boolean active, UIPage page) {
         final Module module = new Module();
-        module.setActive(pActive);
+        module.setActive(active);
         module.setApplicationId(APPLICATION_TEST);
         module.setConf("{\"test\":\"test\"}");
         module.setContainer("TestContainer");
-        module.setDefaultDynamicModule(pDefault);
+        module.setPage(page);
         module.setDescription("Description");
         module.setType("Module");
         return module;
@@ -83,9 +85,9 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
     @Before
     public void init() {
 
-        final Module module = createModule(true, false);
+        final Module module = createModule(true, new UIPage(false, null, null, null));
 
-        final Module module2 = createModule(false, true);
+        final Module module2 = createModule(false, new UIPage(true, null, null, null));
 
         moduleTest = repository.save(module);
         repository.save(module2);
@@ -119,7 +121,7 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void saveNewModule() {
-        final Module module = createModule(true, true);
+        final Module module = createModule(true, new UIPage(true, null, null, null));
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDefaultPost("/applications/{applicationId}/modules", module, expectations,

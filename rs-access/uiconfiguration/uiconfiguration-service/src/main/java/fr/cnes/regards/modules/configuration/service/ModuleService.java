@@ -31,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -38,6 +39,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.dao.IModuleRepository;
 import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
 import fr.cnes.regards.modules.configuration.domain.Module;
+import fr.cnes.regards.modules.configuration.domain.UIPage;
 import fr.cnes.regards.modules.configuration.service.exception.InitUIException;
 
 /**
@@ -108,8 +110,9 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             LOG.error(e.getMessage(), e);
             throw new EntityInvalidException("Layout is not a valid json format.", e);
         }
-        if (pModule.isDefaultDynamicModule()) {
-            disableDefaultForAllApplicationModules(pModule.getApplicationId());
+        UIPage page = pModule.getPage();
+        if ((page != null) && page.isHome()) {
+            disableHomeForAllApplicationModules(pModule.getApplicationId());
         }
         return repository.save(pModule);
     }
@@ -127,8 +130,9 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
         if (!repository.exists(pModule.getId())) {
             throw new EntityNotFoundException(pModule.getId(), Module.class);
         }
-        if (pModule.isDefaultDynamicModule()) {
-            disableDefaultForAllApplicationModules(pModule.getApplicationId());
+        UIPage page = pModule.getPage();
+        if ((page != null) && page.isHome()) {
+            disableHomeForAllApplicationModules(pModule.getApplicationId());
         }
         return repository.save(pModule);
     }
@@ -149,10 +153,12 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
      * @param pApplicationId
      * @since 1.0-SNAPSHOT
      */
-    private void disableDefaultForAllApplicationModules(final String pApplicationId) {
-        final List<Module> modules = repository.findByApplicationIdAndDefaultDynamicModuleTrue(pApplicationId);
+    private void disableHomeForAllApplicationModules(final String pApplicationId) {
+        final List<Module> modules = repository.findByApplicationIdAndPageHomeTrue(pApplicationId);
         for (final Module module : modules) {
-            module.setDefaultDynamicModule(false);
+            if ((module.getPage() != null) && module.getPage().isHome()) {
+                module.getPage().setHome(false);
+            }
             repository.save(module);
         }
     }
@@ -165,7 +171,6 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             menu.setActive(true);
             menu.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
             menu.setContainer("page-top-header");
-            menu.setDefaultDynamicModule(false);
             menu.setDescription(String.format("%s menu", pTenant));
             menu.setType("menu");
             try {
@@ -180,7 +185,6 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             catalog.setActive(true);
             catalog.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
             catalog.setContainer("page-content-module");
-            catalog.setDefaultDynamicModule(true);
             catalog.setDescription("Catalog");
             catalog.setType("search-results");
             try {
@@ -201,7 +205,6 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             menu.setActive(true);
             menu.setApplicationId(LayoutDefaultApplicationIds.PORTAL.toString());
             menu.setContainer("header");
-            menu.setDefaultDynamicModule(false);
             menu.setDescription(String.format("Portal menu"));
             menu.setType("menu");
             try {
@@ -216,7 +219,6 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             projectList.setActive(true);
             projectList.setApplicationId(LayoutDefaultApplicationIds.PORTAL.toString());
             projectList.setContainer("content");
-            projectList.setDefaultDynamicModule(false);
             projectList.setDescription("List of projects");
             projectList.setType("projects-list");
             projectList.setConf("{}");
