@@ -151,6 +151,15 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     long countByProcessingChainAndStateIn(AcquisitionProcessingChain processingChain, List<ProductState> productStates);
 
     /**
+     * Count number of products of the given {@link AcquisitionProcessingChain} accord to above filters
+     * @param processingChain {@link AcquisitionProcessingChain}
+     * @param productSipStates {@link ISipState}s
+     * @return number of matching {@link Product}
+     */
+    long countByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
+            List<ISipState> productSipStates);
+
+    /**
      * Count number of {@link Product} associated to the given {@link AcquisitionProcessingChain}
      * @param chain {@link AcquisitionProcessingChain}
      * @return number of {@link Product}

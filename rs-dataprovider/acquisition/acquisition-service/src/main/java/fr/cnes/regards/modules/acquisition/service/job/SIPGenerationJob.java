@@ -34,7 +34,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeExcepti
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
-import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
@@ -116,7 +115,6 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             // Update product
-            product.setState(ProductState.ERROR);
             product.setSipState(ProductSIPState.GENERATION_ERROR);
             productService.save(product);
             throw new JobRuntimeException(e.getMessage());

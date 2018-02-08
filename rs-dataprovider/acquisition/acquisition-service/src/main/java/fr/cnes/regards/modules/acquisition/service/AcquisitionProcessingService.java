@@ -62,6 +62,7 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
@@ -618,7 +619,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         AcquisitionProcessingChainMonitor summary = new AcquisitionProcessingChainMonitor(chain);
 
         // 1.Handle products summary
-        long nbProductErrors = productService.countByChainAndStateIn(chain, Arrays.asList(ProductState.ERROR));
+        long nbProductErrors = productService.countByProcessingChainAndSipStateIn(chain, Arrays
+                .asList(ProductSIPState.GENERATION_ERROR, ProductSIPState.SUBMISSION_ERROR));
         summary.setNbProductErrors(nbProductErrors);
         long nbProducts = productService.countByChain(chain);
         summary.setNbProducts(nbProducts);

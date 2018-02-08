@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
+import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
@@ -99,6 +100,15 @@ public interface IProductService {
      * @return number of matching {@link Product}
      */
     long countByChainAndStateIn(AcquisitionProcessingChain processingChain, List<ProductState> productStates);
+
+    /**
+     * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
+     * @param processingChain {@link AcquisitionProcessingChain}
+     * @param states {@link ProductState}s
+     * @return number of matching {@link Product}
+     */
+    long countByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
+            List<ISipState> productSipStates);
 
     /**
      * Get the {@link Product} corresponding to the productName and calculate the {@link ProductState}.<br>

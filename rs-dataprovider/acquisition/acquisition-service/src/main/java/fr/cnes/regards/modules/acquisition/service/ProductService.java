@@ -62,6 +62,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.service.job.PostAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
+import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
@@ -451,6 +452,12 @@ public class ProductService implements IProductService {
     @Override
     public long countByChainAndStateIn(AcquisitionProcessingChain processingChain, List<ProductState> productStates) {
         return productRepository.countByProcessingChainAndStateIn(processingChain, productStates);
+    }
+
+    @Override
+    public long countByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
+            List<ISipState> productSipStates) {
+        return productRepository.countByProcessingChainAndSipStateIn(processingChain, productSipStates);
     }
 
     @Override
