@@ -226,7 +226,6 @@ public class ProductService implements IProductService {
             currentProduct = new Product();
             currentProduct.setProductName(productName);
             currentProduct.setProcessingChain(processingChain);
-            currentProduct.setSipState(ProductSIPState.NOT_SCHEDULED);
         } else {
             // Mark old file as superseded
             for (AcquisitionFile existing : currentProduct.getAcquisitionFiles()) {
@@ -238,6 +237,7 @@ public class ProductService implements IProductService {
             }
         }
 
+        currentProduct.setSipState(ProductSIPState.NOT_SCHEDULED); // Required to be re-integrated in SIP workflow
         currentProduct.setSession(session);
         currentProduct.addAcquisitionFile(acqFile);
         computeProductState(currentProduct);
