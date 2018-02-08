@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.rest;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -77,12 +78,13 @@ public class AcquisitionFileController implements IResourceController<Acquisitio
     @ResourceAccess(description = "Search for acquisition files", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedResources<Resource<AcquisitionFile>>> search(
             @RequestParam(name = "filePath", required = false) String filePath,
-            @RequestParam(name = "state", required = false) AcquisitionFileState state,
+            @RequestParam(name = "state", required = false) List<AcquisitionFileState> state,
             @RequestParam(name = "productId", required = false) Long productId,
+            @RequestParam(name = "chainId", required = false) Long chainId,
             @RequestParam(name = "from",
                     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
             Pageable pageable, PagedResourcesAssembler<AcquisitionFile> assembler) {
-        Page<AcquisitionFile> files = fileService.search(filePath, state, productId, from, pageable);
+        Page<AcquisitionFile> files = fileService.search(filePath, state, productId, chainId, from, pageable);
         return new ResponseEntity<>(toPagedResources(files, assembler), HttpStatus.OK);
     }
 

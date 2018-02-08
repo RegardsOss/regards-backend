@@ -161,8 +161,8 @@ public interface IProductService {
 
     /**
      * Search for {@link Product} entities matching parameters
-     * @param state {@link ProductState}
-     * @param sipState {@link SIPState}
+     * @param state {@link ProductState}s
+     * @param sipState {@link SIPState}s
      * @param productName {@link String}
      * @param session {@link String}
      * @param processingChainId {@likn Long} id of {@link AcquisitionProcessingChain}
@@ -170,7 +170,7 @@ public interface IProductService {
      * @param pageable
      * @return {@link Product}s
      */
-    Page<Product> search(ProductState state, SIPState sipState, String productName, String session,
+    Page<Product> search(List<ProductState> state, List<SIPState> sipState, String productName, String session,
             Long processingChainId, OffsetDateTime from, Pageable pageable);
 
     /**

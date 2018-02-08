@@ -38,6 +38,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.converters.PathAttributeConverter;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
@@ -79,6 +80,7 @@ public class AcquisitionFile {
     /**
      * The {@link Product} associated to the data file
      */
+    @GsonIgnore
     @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_acq_file_id"), updatable = false)
     private Product product;

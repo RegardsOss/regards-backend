@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.dao;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.criteria.Predicate;
@@ -53,7 +54,7 @@ public class ProductSpecifications {
      * @param from {@link OffsetDateTime}
      * @return {@link Specification}<{@link Product}>
      */
-    public static Specification<Product> search(ProductState state, SIPState sipState, String productName,
+    public static Specification<Product> search(List<ProductState> states, List<SIPState> sipStates, String productName,
             String session, Long processingChainId, OffsetDateTime from) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
@@ -63,8 +64,12 @@ public class ProductSpecifications {
             if (session != null) {
                 predicates.add(cb.like(root.get("session"), LIKE_CHAR + session + LIKE_CHAR));
             }
-            if (state != null) {
-                predicates.add(cb.equal(root.get("state"), state));
+            if ((states != null) && !states.isEmpty()) {
+                Set<Predicate> statePredicates = Sets.newHashSet();
+                for (ProductState state : states) {
+                    statePredicates.add(cb.equal(root.get("state"), state));
+                }
+                predicates.add(cb.or(statePredicates.toArray(new Predicate[statePredicates.size()])));
             }
             if (processingChainId != null) {
                 AcquisitionProcessingChain chain = new AcquisitionProcessingChain();
@@ -74,8 +79,12 @@ public class ProductSpecifications {
             if (from != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), from));
             }
-            if (sipState != null) {
-                predicates.add(cb.equal(root.get("sipState"), sipState));
+            if ((sipStates != null) && !sipStates.isEmpty()) {
+                Set<Predicate> sipStatesPredicates = Sets.newHashSet();
+                for (SIPState state : sipStates) {
+                    sipStatesPredicates.add(cb.equal(root.get("sipState"), state));
+                }
+                predicates.add(cb.or(sipStatesPredicates.toArray(new Predicate[sipStatesPredicates.size()])));
             }
             query.orderBy(cb.desc(root.get("lastUpdate")));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));

@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.rest;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -85,8 +86,8 @@ public class ProductController implements IResourceController<Product> {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Search for products", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedResources<Resource<Product>>> search(
-            @RequestParam(name = "state", required = false) ProductState state,
-            @RequestParam(name = "sipState", required = false) SIPState sipState,
+            @RequestParam(name = "state", required = false) List<ProductState> state,
+            @RequestParam(name = "sipState", required = false) List<SIPState> sipState,
             @RequestParam(name = "productName", required = false) String productName,
             @RequestParam(name = "session", required = false) String session,
             @RequestParam(name = "chainId", required = false) Long processingChainId,

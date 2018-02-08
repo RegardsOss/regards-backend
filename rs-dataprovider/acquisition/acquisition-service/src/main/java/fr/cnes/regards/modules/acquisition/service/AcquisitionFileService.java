@@ -76,9 +76,10 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     }
 
     @Override
-    public Page<AcquisitionFile> search(String filePath, AcquisitionFileState state, Long productId,
+    public Page<AcquisitionFile> search(String filePath, List<AcquisitionFileState> state, Long productId, Long chainId,
             OffsetDateTime from, Pageable pageable) {
-        return fileRepository.findAll(AcquisitionFileSpecifications.search(filePath, state, productId, from), pageable);
+        return fileRepository.findAll(AcquisitionFileSpecifications.search(filePath, state, productId, chainId, from),
+                                      pageable);
     }
 
 }

@@ -638,14 +638,12 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                         Arrays.asList(AcquisitionFileState.IN_PROGRESS, AcquisitionFileState.VALID));
         summary.setNbFilesInProgress(nbFileInProgress);
 
-        // 3. Handle scan job
-        // TODO
-        // 4. Handle productGeneration jobs
-        // TODO
+        // 4. Handle sipGeneration jobs
+        // TODO : Compter le nombre de produits en etat (sipState) SCHEDULED
         // 5. Handle SIP submission jobs
-        // TODO
+        // TODO : Compter le nombre de produits en etat (sipState) SUBMISSION_SCHEDULED
         // 6. Handle post processing jobs
-        // TODO
+        // TODO: JbReport associé dans les products
 
         return summary;
     }
