@@ -444,8 +444,14 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         jobInfo.setOwner(authResolver.getUser());
 
         jobInfoService.createAsQueued(jobInfo);
+
+        // Release lock
+        if (processingChain.getLastProductAcquisitionJobInfo() != null) {
+            jobInfoService.unlock(processingChain.getLastProductAcquisitionJobInfo());
+        }
         processingChain.setLastProductAcquisitionJobInfo(jobInfo);
         acqChainRepository.save(processingChain);
+
     }
 
     @Override

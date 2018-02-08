@@ -156,6 +156,11 @@ public class ProductService implements IProductService {
         jobInfo.setOwner(authResolver.getUser());
         jobInfo = jobInfoService.createAsQueued(jobInfo);
 
+        // Release lock
+        if (product.getLastSIPGenerationJobInfo() != null) {
+            jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
+        }
+
         // Change product SIP state
         product.setSipState(ProductSIPState.SCHEDULED);
         product.setLastSIPGenerationJobInfo(jobInfo);
@@ -365,6 +370,10 @@ public class ProductService implements IProductService {
             List<Product> products = productsPerSession.get(session);
             if (products != null) {
                 for (Product product : products) {
+                    // Release lock
+                    if (product.getLastSIPSubmissionJobInfo() != null) {
+                        jobInfoService.unlock(product.getLastSIPSubmissionJobInfo());
+                    }
                     product.setLastSIPSubmissionJobInfo(jobInfo);
                     save(product);
                 }
@@ -424,6 +433,11 @@ public class ProductService implements IProductService {
                 jobInfo.setClassName(PostAcquisitionJob.class.getName());
                 jobInfo.setOwner(authResolver.getUser());
                 jobInfo = jobInfoService.createAsQueued(jobInfo);
+
+                // Release lock
+                if (product.getLastPostProductionJobInfo() != null) {
+                    jobInfoService.unlock(product.getLastPostProductionJobInfo());
+                }
                 product.setLastPostProductionJobInfo(jobInfo);
             }
 
