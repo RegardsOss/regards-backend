@@ -149,7 +149,7 @@ public class ProductService implements IProductService {
     public JobInfo scheduleProductSIPGeneration(Product product, AcquisitionProcessingChain chain) {
 
         // Schedule job
-        JobInfo jobInfo = new JobInfo();
+        JobInfo jobInfo = new JobInfo(true);
         jobInfo.setParameters(new JobParameter(SIPGenerationJob.CHAIN_PARAMETER_ID, chain.getId()),
                               new JobParameter(SIPGenerationJob.PRODUCT_ID, product.getId()));
         jobInfo.setClassName(SIPGenerationJob.class.getName());
@@ -312,8 +312,11 @@ public class ProductService implements IProductService {
                     Set<JobParameter> jobParameters = Sets.newHashSet();
                     jobParameters.add(new JobParameter(SIPSubmissionJob.INGEST_CHAIN_PARAMETER, ingestChain));
                     jobParameters.add(new JobParameter(SIPSubmissionJob.SESSION_PARAMETER, session));
-                    JobInfo jobInfo = new JobInfo(1, jobParameters, authResolver.getUser(),
-                            SIPSubmissionJob.class.getName());
+
+                    JobInfo jobInfo = new JobInfo(true);
+                    jobInfo.setParameters(jobParameters);
+                    jobInfo.setClassName(SIPSubmissionJob.class.getName());
+                    jobInfo.setOwner(authResolver.getUser());
                     jobInfoService.createAsQueued(jobInfo);
 
                     // Link report to all related products
@@ -416,7 +419,7 @@ public class ProductService implements IProductService {
         if (product != null) {
             // Do post processing if SIP properly stored
             if (SIPState.STORED.equals(event.getState())) {
-                JobInfo jobInfo = new JobInfo();
+                JobInfo jobInfo = new JobInfo(true);
                 jobInfo.setParameters(new JobParameter(PostAcquisitionJob.EVENT_PARAMETER, event));
                 jobInfo.setClassName(PostAcquisitionJob.class.getName());
                 jobInfo.setOwner(authResolver.getUser());
@@ -477,7 +480,7 @@ public class ProductService implements IProductService {
         Set<Product> products = productRepository.findWithLockByProcessingChainAndSipState(processingChain,
                                                                                            ProductSIPState.SCHEDULED);
         for (Product product : products) {
-            if (!product.getLastSIPGenerationJobInfo().getStatus().getStatus().isCompatibleWithPause()) {
+            if (!product.getLastSIPGenerationJobInfo().getStatus().getStatus().isFinished()) {
                 return false;
             } else {
                 // Clean product state
@@ -490,7 +493,7 @@ public class ProductService implements IProductService {
         products = productRepository.findWithLockByProcessingChainAndSipState(processingChain,
                                                                               ProductSIPState.SUBMISSION_SCHEDULED);
         for (Product product : products) {
-            if (!product.getLastSIPSubmissionJobInfo().getStatus().getStatus().isCompatibleWithPause()) {
+            if (!product.getLastSIPSubmissionJobInfo().getStatus().getStatus().isFinished()) {
                 return false;
             } else {
                 // Clean product state
