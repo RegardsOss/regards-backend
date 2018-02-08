@@ -120,7 +120,7 @@ public class ProductService implements IProductService {
 
     @Override
     public Optional<Product> searchProduct(String productName) throws ModuleException {
-        return Optional.of(productRepository.findCompleteByProductName(productName));
+        return Optional.ofNullable(productRepository.findCompleteByProductName(productName));
     }
 
     @Override
