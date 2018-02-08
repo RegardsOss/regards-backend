@@ -137,10 +137,18 @@ public class JobInfo {
         super();
     }
 
+    /**
+     * locked parameter permits to inform that this job is used by another entity (ie has a foreign key on it).
+     * Locked jobs are not cleaned by automatic cleaning process (cf. JobInfoService)
+     */
     public JobInfo(boolean locked) {
         this.locked = locked;
     }
 
+    /**
+     * locked parameter permits to inform that this job is used by another entity (ie has a foreign key on it).
+     * Locked jobs are not cleaned by automatic cleaning process (cf. JobInfoService)
+     */
     public JobInfo(boolean locked, Integer priority, Set<JobParameter> parameters, String owner, String className) {
         this(locked);
         this.priority = priority;
