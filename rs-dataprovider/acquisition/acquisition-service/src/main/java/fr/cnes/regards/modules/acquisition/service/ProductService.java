@@ -46,7 +46,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
@@ -60,7 +59,6 @@ import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
 import fr.cnes.regards.modules.acquisition.service.job.PostAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
@@ -77,9 +75,6 @@ import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 public class ProductService implements IProductService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
-
-    @Autowired
-    private IAcquisitionJobReportService jobReportService;
 
     @Autowired
     private IProductRepository productRepository;
@@ -159,20 +154,12 @@ public class ProductService implements IProductService {
                               new JobParameter(SIPGenerationJob.PRODUCT_ID, product.getId()));
         jobInfo.setClassName(SIPGenerationJob.class.getName());
         jobInfo.setOwner(authResolver.getUser());
-        jobInfo = jobInfoService.createAsPending(jobInfo);
+        jobInfo = jobInfoService.createAsQueued(jobInfo);
 
         // Change product SIP state
         product.setSipState(ProductSIPState.SCHEDULED);
-
-        // Initialize related report
-        AcquisitionJobReport jobReport = jobReportService.createJobReport(jobInfo);
-        product.setLastSIPGenerationJobReport(jobReport);
-
+        product.setLastSIPGenerationJobInfo(jobInfo);
         productRepository.save(product);
-
-        // Enable job
-        jobInfo.updateStatus(JobStatus.QUEUED);
-        jobInfoService.save(jobInfo);
 
         return jobInfo;
     }
@@ -327,16 +314,10 @@ public class ProductService implements IProductService {
                     jobParameters.add(new JobParameter(SIPSubmissionJob.SESSION_PARAMETER, session));
                     JobInfo jobInfo = new JobInfo(1, jobParameters, authResolver.getUser(),
                             SIPSubmissionJob.class.getName());
-                    jobInfoService.createAsPending(jobInfo);
+                    jobInfoService.createAsQueued(jobInfo);
 
-                    // Initialize related report
-                    AcquisitionJobReport jobReport = jobReportService.createJobReport(jobInfo, session);
                     // Link report to all related products
-                    linkSubmissionReport(productsPerIngestChain, jobReport, ingestChain, session);
-
-                    // Enable job
-                    jobInfo.updateStatus(JobStatus.QUEUED);
-                    jobInfoService.save(jobInfo);
+                    linkSubmissionJobInfo(productsPerIngestChain, jobInfo, ingestChain, session);
                 }
             }
         }
@@ -369,19 +350,19 @@ public class ProductService implements IProductService {
     /**
      * Link submission report to related products
      * @param productsPerIngestChain list of registered products
-     * @param jobReport report to link
+     * @param jobInfo {@link JobInfo} to link
      * @param ingestChain INGEST chain
      * @param session INGEST session
      */
-    private void linkSubmissionReport(Map<String, Map<String, List<Product>>> productsPerIngestChain,
-            AcquisitionJobReport jobReport, String ingestChain, String session) {
+    private void linkSubmissionJobInfo(Map<String, Map<String, List<Product>>> productsPerIngestChain, JobInfo jobInfo,
+            String ingestChain, String session) {
 
         Map<String, List<Product>> productsPerSession = productsPerIngestChain.get(ingestChain);
         if (productsPerSession != null) {
             List<Product> products = productsPerSession.get(session);
             if (products != null) {
                 for (Product product : products) {
-                    product.setLastSIPSubmissionJobReport(jobReport);
+                    product.setLastSIPSubmissionJobInfo(jobInfo);
                     save(product);
                 }
             }
@@ -440,10 +421,7 @@ public class ProductService implements IProductService {
                 jobInfo.setClassName(PostAcquisitionJob.class.getName());
                 jobInfo.setOwner(authResolver.getUser());
                 jobInfo = jobInfoService.createAsQueued(jobInfo);
-
-                // Initialize related report
-                AcquisitionJobReport jobReport = jobReportService.createJobReport(jobInfo);
-                product.setLastPostProductionJobReport(jobReport);
+                product.setLastPostProductionJobInfo(jobInfo);
             }
 
             product.setSipState(event.getState());
@@ -478,18 +456,18 @@ public class ProductService implements IProductService {
         Set<Product> products = productRepository.findWithLockByProcessingChainAndSipState(processingChain,
                                                                                            ProductSIPState.SCHEDULED);
         for (Product product : products) {
-            jobInfoService.stopJob(product.getLastSIPGenerationJobReport().getJobId());
+            jobInfoService.stopJob(product.getLastSIPGenerationJobInfo().getId());
         }
 
         // Handle SIP submission jobs
         products = productRepository.findWithLockByProcessingChainAndSipState(processingChain,
                                                                               ProductSIPState.SUBMISSION_SCHEDULED);
-        Set<AcquisitionJobReport> submissionReports = new HashSet<>();
+        Set<JobInfo> submissionJobInfos = new HashSet<>();
         for (Product product : products) {
-            submissionReports.add(product.getLastSIPSubmissionJobReport());
+            submissionJobInfos.add(product.getLastSIPSubmissionJobInfo());
         }
-        for (AcquisitionJobReport subReport : submissionReports) {
-            jobInfoService.stopJob(subReport.getJobId());
+        for (JobInfo jobInfo : submissionJobInfos) {
+            jobInfoService.stopJob(jobInfo.getId());
         }
     }
 
@@ -499,7 +477,7 @@ public class ProductService implements IProductService {
         Set<Product> products = productRepository.findWithLockByProcessingChainAndSipState(processingChain,
                                                                                            ProductSIPState.SCHEDULED);
         for (Product product : products) {
-            if (!jobReportService.isJobStopped(product.getLastSIPGenerationJobReport())) {
+            if (!product.getLastSIPGenerationJobInfo().getStatus().getStatus().isCompatibleWithPause()) {
                 return false;
             } else {
                 // Clean product state
@@ -512,7 +490,7 @@ public class ProductService implements IProductService {
         products = productRepository.findWithLockByProcessingChainAndSipState(processingChain,
                                                                               ProductSIPState.SUBMISSION_SCHEDULED);
         for (Product product : products) {
-            if (!jobReportService.isJobStopped(product.getLastSIPSubmissionJobReport())) {
+            if (!product.getLastSIPSubmissionJobInfo().getStatus().getStatus().isCompatibleWithPause()) {
                 return false;
             } else {
                 // Clean product state

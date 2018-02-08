@@ -51,7 +51,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -67,8 +66,6 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
-import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
-import fr.cnes.regards.modules.acquisition.domain.job.JobReportState;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
@@ -87,9 +84,6 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 public class AcquisitionProcessingService implements IAcquisitionProcessingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingService.class);
-
-    @Autowired
-    private IAcquisitionJobReportService jobReportService;
 
     @Autowired
     private IAcquisitionProcessingChainRepository acqChainRepository;
@@ -167,7 +161,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         // Prevent bad values
         processingChain.setLocked(Boolean.FALSE);
         processingChain.setLastActivationDate(null);
-        processingChain.setLastProductAcquisitionJobReport(null);
+        processingChain.setLastProductAcquisitionJobInfo(null);
 
         // Manage acquisition file info
         for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
@@ -340,10 +334,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         // Stop all active jobs for current processing chain
-        AcquisitionJobReport productAcquisitionJobReport = processingChain.getLastProductAcquisitionJobReport();
-        if ((productAcquisitionJobReport != null)
-                && !JobReportState.STOPPED.equals(productAcquisitionJobReport.getReportState())) {
-            jobInfoService.stopJob(productAcquisitionJobReport.getJobId());
+        JobInfo jobInfo = processingChain.getLastProductAcquisitionJobInfo();
+        if ((jobInfo != null) && !jobInfo.getStatus().getStatus().isCompatibleWithPause()) {
+            jobInfoService.stopJob(jobInfo.getId());
         }
         productService.stopProductJobs(processingChain);
     }
@@ -351,8 +344,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @Override
     public boolean isChainJobStoppedAndCleaned(Long processingChainId) throws ModuleException {
         AcquisitionProcessingChain processingChain = getChain(processingChainId);
-        return jobReportService.isJobStopped(processingChain.getLastProductAcquisitionJobReport())
-                && productService.isProductJobStoppedAndCleaned(processingChain);
+        JobInfo jobInfo = processingChain.getLastProductAcquisitionJobInfo();
+        boolean acqJobStopped = (jobInfo == null) || jobInfo.getStatus().getStatus().isCompatibleWithPause();
+        return acqJobStopped && productService.isProductJobStoppedAndCleaned(processingChain);
     }
 
     @MultitenantTransactional(propagation = Propagation.NOT_SUPPORTED)
@@ -444,22 +438,14 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         acqChainRepository.save(processingChain);
 
         LOGGER.debug("Scheduling product acquisition job for processing chain \"{}\"", processingChain.getLabel());
-        JobInfo acquisition = new JobInfo();
-        acquisition.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID, processingChain.getId()));
-        acquisition.setClassName(ProductAcquisitionJob.class.getName());
-        acquisition.setOwner(authResolver.getUser());
+        JobInfo jobInfo = new JobInfo();
+        jobInfo.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID, processingChain.getId()));
+        jobInfo.setClassName(ProductAcquisitionJob.class.getName());
+        jobInfo.setOwner(authResolver.getUser());
 
-        JobInfo jobInfo = jobInfoService.createAsPending(acquisition);
-
-        // Initialize related report
-        AcquisitionJobReport jobReport = jobReportService.createJobReport(jobInfo);
-
-        processingChain.setLastProductAcquisitionJobReport(jobReport);
+        jobInfoService.createAsQueued(jobInfo);
+        processingChain.setLastProductAcquisitionJobInfo(jobInfo);
         acqChainRepository.save(processingChain);
-
-        // Enable job
-        jobInfo.updateStatus(JobStatus.QUEUED);
-        jobInfoService.save(jobInfo);
     }
 
     @Override

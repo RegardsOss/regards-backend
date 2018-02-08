@@ -22,7 +22,6 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -53,9 +52,9 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
@@ -139,18 +138,17 @@ public class Product {
     @Column(name = "ip_id", length = UniformResourceName.MAX_SIZE)
     private String ipId;
 
-    @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
-    @JoinColumn(name = "sip_gen_job_report_id", foreignKey = @ForeignKey(name = "fk_sip_gen_job_report_id"))
-    private AcquisitionJobReport lastSIPGenerationJobReport;
+    @OneToOne
+    @JoinColumn(name = "sip_gen_job_info_id", foreignKey = @ForeignKey(name = "fk_sip_gen_job_info_id"))
+    private JobInfo lastSIPGenerationJobInfo;
 
-    @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
-    @JoinColumn(name = "post_prod_job_report_id", foreignKey = @ForeignKey(name = "fk_post_prod_job_report_id"))
-    private AcquisitionJobReport lastPostProductionJobReport;
+    @OneToOne
+    @JoinColumn(name = "post_prod_job_info_id", foreignKey = @ForeignKey(name = "fk_post_prod_job_info_id"))
+    private JobInfo lastPostProductionJobInfo;
 
-    @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
-    @JoinColumn(name = "sip_submission_job_report_id",
-            foreignKey = @ForeignKey(name = "fk_sip_submission_job_report_id"))
-    private AcquisitionJobReport lastSIPSubmissionJobReport;
+    @OneToOne
+    @JoinColumn(name = "sip_submission_job_info_id", foreignKey = @ForeignKey(name = "fk_sip_submission_job_info_id"))
+    private JobInfo lastSIPSubmissionJobInfo;
 
     public Long getId() {
         return id;
@@ -281,27 +279,27 @@ public class Product {
         this.processingChain = processingChain;
     }
 
-    public AcquisitionJobReport getLastSIPGenerationJobReport() {
-        return lastSIPGenerationJobReport;
+    public JobInfo getLastSIPGenerationJobInfo() {
+        return lastSIPGenerationJobInfo;
     }
 
-    public void setLastSIPGenerationJobReport(AcquisitionJobReport lastSIPGenerationJobReport) {
-        this.lastSIPGenerationJobReport = lastSIPGenerationJobReport;
+    public void setLastSIPGenerationJobInfo(JobInfo lastSIPGenerationJobInfo) {
+        this.lastSIPGenerationJobInfo = lastSIPGenerationJobInfo;
     }
 
-    public AcquisitionJobReport getLastPostProductionJobReport() {
-        return lastPostProductionJobReport;
+    public JobInfo getLastPostProductionJobInfo() {
+        return lastPostProductionJobInfo;
     }
 
-    public void setLastPostProductionJobReport(AcquisitionJobReport lastPostProductionJobReport) {
-        this.lastPostProductionJobReport = lastPostProductionJobReport;
+    public void setLastPostProductionJobInfo(JobInfo lastPostProductionJobInfo) {
+        this.lastPostProductionJobInfo = lastPostProductionJobInfo;
     }
 
-    public AcquisitionJobReport getLastSIPSubmissionJobReport() {
-        return lastSIPSubmissionJobReport;
+    public JobInfo getLastSIPSubmissionJobInfo() {
+        return lastSIPSubmissionJobInfo;
     }
 
-    public void setLastSIPSubmissionJobReport(AcquisitionJobReport lastSIPSubmissionJobReport) {
-        this.lastSIPSubmissionJobReport = lastSIPSubmissionJobReport;
+    public void setLastSIPSubmissionJobInfo(JobInfo lastSIPSubmissionJobInfo) {
+        this.lastSIPSubmissionJobInfo = lastSIPSubmissionJobInfo;
     }
 }
