@@ -551,10 +551,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConfId));
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
                 if (storingData) {
-                    jobsToSchedule
-                            .add(new JobInfo(0, parameters, authResolver.getUser(), StoreDataFilesJob.class.getName()));
+                    jobsToSchedule.add(new JobInfo(false, 0, parameters, authResolver.getUser(),
+                                                   StoreDataFilesJob.class.getName()));
                 } else {
-                    jobsToSchedule.add(new JobInfo(0, parameters, authResolver.getUser(),
+                    jobsToSchedule.add(new JobInfo(false, 0, parameters, authResolver.getUser(),
                                                    StoreMetadataFilesJob.class.getName()));
                 }
 
@@ -984,8 +984,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 Set<JobParameter> parameters = Sets.newHashSet();
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConf));
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
-                jobsToSchedule
-                        .add(new JobInfo(0, parameters, authResolver.getUser(), DeleteDataFilesJob.class.getName()));
+                jobsToSchedule.add(new JobInfo(false, 0, parameters, authResolver.getUser(),
+                                               DeleteDataFilesJob.class.getName()));
 
             }
         }
@@ -1169,8 +1169,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                                                 oldOneCorrespondingToWorkingSubset.toArray(
                                                         new StorageDataFile[oldOneCorrespondingToWorkingSubset
                                                                 .size()])));
-                jobsToSchedule
-                        .add(new JobInfo(0, parameters, authResolver.getUser(), UpdateDataFilesJob.class.getName()));
+                jobsToSchedule.add(new JobInfo(false, 0, parameters, authResolver.getUser(),
+                                               UpdateDataFilesJob.class.getName()));
             }
         }
         // scheduleJob for files just give to the job the AIP ipId or id

@@ -551,7 +551,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, storageConfId));
             parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
             JobInfo jobInfo = jobService
-                    .createAsPending(new JobInfo(0, parameters, getOwner(), RestorationJob.class.getName()));
+                    .createAsPending(new JobInfo(false, 0, parameters, getOwner(), RestorationJob.class.getName()));
             Path destination = Paths.get(getTenantCachePath().toString(), jobInfo.getId().toString());
             jobInfo.getParameters().add(new JobParameter(RestorationJob.DESTINATION_PATH_PARAMETER_NAME, destination));
             jobInfo.updateStatus(JobStatus.QUEUED);

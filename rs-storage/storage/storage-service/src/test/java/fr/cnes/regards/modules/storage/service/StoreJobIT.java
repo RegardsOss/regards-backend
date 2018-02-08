@@ -158,7 +158,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
     @Test
     public void storeDataFilesJobTest() throws IOException, URISyntaxException, ModuleException {
 
-        JobInfo toTest = new JobInfo(0, parameters, DEFAULT_USER_EMAIL, StoreDataFilesJob.class.getName());
+        JobInfo toTest = new JobInfo(false, 0, parameters, DEFAULT_USER_EMAIL, StoreDataFilesJob.class.getName());
         StoreDataFilesJob job = (StoreDataFilesJob) runJob(toTest);
         // now that we synchronously ran the job, lets do some asserts
         StorageJobProgressManager progressManager = job.getProgressManager();
@@ -188,7 +188,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
                 .add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, localStorageConf.getId()));
         jobParameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
 
-        JobInfo toTest = new JobInfo(0, jobParameters, DEFAULT_USER_EMAIL, StoreDataFilesJob.class.getName());
+        JobInfo toTest = new JobInfo(false, 0, jobParameters, DEFAULT_USER_EMAIL, StoreDataFilesJob.class.getName());
         StoreDataFilesJob job = (StoreDataFilesJob) runJob(toTest);
         // now that we synchronously ran the job, lets do some asserts
         StorageJobProgressManager progressManager = job.getProgressManager();
@@ -204,7 +204,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
 
     @Test
     public void storeMetadataFilesJobTest() {
-        JobInfo toTest = new JobInfo(0, parameters, DEFAULT_USER_EMAIL, StoreMetadataFilesJob.class.getName());
+        JobInfo toTest = new JobInfo(false, 0, parameters, DEFAULT_USER_EMAIL, StoreMetadataFilesJob.class.getName());
         StoreMetadataFilesJob job = (StoreMetadataFilesJob) runJob(toTest);
         // now that we synchronously ran the job, lets do some asserts
         StorageJobProgressManager progressManager = job.getProgressManager();
