@@ -10,10 +10,11 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -44,11 +45,9 @@ public abstract class AbstractReliantTask<K extends AbstractReliantTask> impleme
             inverseJoinColumns = @JoinColumn(name = "job_info_id", foreignKey = @ForeignKey(name = "fk_job_info")))
     protected JobInfo jobInfo;
 
-    @ManyToMany(targetEntity = AbstractReliantTask.class, cascade = CascadeType.ALL)
-    @JoinTable(name = "ta_tasks_reliant_tasks",
-            joinColumns = @JoinColumn(name = "task_id", foreignKey = @ForeignKey(name = "fk_task_2")),
-            inverseJoinColumns = @JoinColumn(name = "reliant_task_id",
-                    foreignKey = @ForeignKey(name = "fk_reliant_task")))
+    // OneToMany and not ManyToMany because a graph can always be transformed into tree using convenient structure
+    @OneToMany(targetEntity = AbstractReliantTask.class, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "fk_task_parent_task"))
     protected Set<K> reliantTasks = new HashSet<>();
 
     @Override
