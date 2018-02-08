@@ -152,7 +152,7 @@ public class JobServiceTest {
 
     @Test
     public void testSucceeded() throws InterruptedException {
-        JobInfo waitJobInfo = new JobInfo();
+        JobInfo waitJobInfo = new JobInfo(false);
         waitJobInfo.setPriority(10);
         waitJobInfo.setClassName(WaiterJob.class.getName());
         waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
@@ -169,7 +169,7 @@ public class JobServiceTest {
 
     @Test
     public void testAbortion() throws InterruptedException {
-        JobInfo waitJobInfo = new JobInfo();
+        JobInfo waitJobInfo = new JobInfo(false);
         waitJobInfo.setPriority(10);
         waitJobInfo.setClassName(WaiterJob.class.getName());
         waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
@@ -184,7 +184,7 @@ public class JobServiceTest {
 
     @Test
     public void testAborted() throws InterruptedException {
-        JobInfo waitJobInfo = new JobInfo();
+        JobInfo waitJobInfo = new JobInfo(false);
         waitJobInfo.setPriority(10);
         waitJobInfo.setClassName(WaiterJob.class.getName());
         waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
@@ -202,7 +202,7 @@ public class JobServiceTest {
 
     @Test
     public void testFailed() throws InterruptedException {
-        JobInfo failedJobInfo = new JobInfo();
+        JobInfo failedJobInfo = new JobInfo(false);
         failedJobInfo.setPriority(10);
         failedJobInfo.setClassName(FailedAfter1sJob.class.getName());
         failedJobInfo = jobInfoService.createAsQueued(failedJobInfo);
@@ -223,7 +223,7 @@ public class JobServiceTest {
         // Create 6 waitJob
         JobInfo[] jobInfos = new JobInfo[6];
         for (int i = 0; i < jobInfos.length; i++) {
-            jobInfos[i] = new JobInfo();
+            jobInfos[i] = new JobInfo(false);
             jobInfos[i].setPriority(20 - i); // Makes it easier to know which ones are launched first
             jobInfos[i].setClassName(WaiterJob.class.getName());
             jobInfos[i].setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
@@ -258,7 +258,7 @@ public class JobServiceTest {
 
     @Test
     public void testSpringJob() throws InterruptedException {
-        JobInfo springJobInfo = new JobInfo();
+        JobInfo springJobInfo = new JobInfo(false);
         springJobInfo.setPriority(100);
         springJobInfo.setClassName(SpringJob.class.getName());
 

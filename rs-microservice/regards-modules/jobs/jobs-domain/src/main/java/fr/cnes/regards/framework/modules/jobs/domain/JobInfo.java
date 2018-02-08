@@ -110,6 +110,14 @@ public class JobInfo {
     private String className;
 
     /**
+     * locked column permits to inform the business user of jobs (ie microservice developer) that this job is used by
+     * another entity (ie has a foreign key on it). Locked jobs are not cleaned by automatic cleaning process
+     * (cf. JobInfoService)
+     */
+    @Column(name = "locked", nullable = false)
+    private boolean locked = false;
+
+    /**
      * Field characteristics of this job. Saved on cascade
      */
     @Embedded
@@ -123,13 +131,18 @@ public class JobInfo {
     private IJob job;
 
     /**
-     * Default constructor
+     * Default constructor only used by Hb9
      */
-    public JobInfo() {
+    private JobInfo() {
         super();
     }
 
-    public JobInfo(Integer priority, Set<JobParameter> parameters, String owner, String className) {
+    public JobInfo(boolean locked) {
+        this.locked = locked;
+    }
+
+    public JobInfo(boolean locked, Integer priority, Set<JobParameter> parameters, String owner, String className) {
+        this(locked);
         this.priority = priority;
         this.parameters = parameters;
         this.owner = owner;
@@ -139,8 +152,9 @@ public class JobInfo {
     public void updateStatus(JobStatus status) {
         this.status.setStatus(status);
         switch (status) {
-            case PENDING:
             case QUEUED:
+                this.status.setQueuedDate(OffsetDateTime.now());
+            case PENDING:
             case TO_BE_RUN:
                 this.status.setPercentCompleted(0);
                 break;
@@ -159,16 +173,16 @@ public class JobInfo {
         }
     }
 
-    public void setId(UUID pId) {
-        id = pId;
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public UUID getId() {
         return id;
     }
 
-    public void setPriority(int pPriority) {
-        priority = Integer.valueOf(pPriority);
+    public void setPriority(int priority) {
+        this.priority = Integer.valueOf(priority);
     }
 
     public void setParameters(Set<JobParameter> parameters) {
@@ -179,8 +193,8 @@ public class JobInfo {
         setParameters(Sets.newHashSet(params));
     }
 
-    public void setOwner(String pOwner) {
-        owner = pOwner;
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     public <T> T getResult() {
@@ -237,10 +251,10 @@ public class JobInfo {
     }
 
     /**
-     * @param pClassName the className to set
+     * @param className the className to set
      */
-    public void setClassName(String pClassName) {
-        className = pClassName;
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     public void setPriority(Integer priority) {
@@ -274,6 +288,14 @@ public class JobInfo {
         if (this.job instanceof AbstractJob) {
             ((AbstractJob) this.job).addObserver(this.status);
         }
+    }
+
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
     }
 
     /**

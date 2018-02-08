@@ -71,14 +71,14 @@ public class MultiJobServiceTest {
     public void tearUp() {
         repository.deleteAll();
 
-        waitJobInfo = new JobInfo();
+        waitJobInfo = new JobInfo(false);
         waitJobInfo.setPriority(10);
         waitJobInfo.setClassName(WaiterJob.class.getName());
         waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
         waitJobInfo = jobInfoService.createAsQueued(waitJobInfo);
 
-        blowJob = new JobInfo();
+        blowJob = new JobInfo(false);
         blowJob.setClassName(BlowJob.class.getName());
         blowJob = jobInfoService.createAsQueued(blowJob);
     }

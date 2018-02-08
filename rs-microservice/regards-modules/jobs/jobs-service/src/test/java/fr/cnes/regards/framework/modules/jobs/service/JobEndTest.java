@@ -68,7 +68,7 @@ public class JobEndTest {
 
     @Test
     public void test() throws InterruptedException {
-        JobInfo longJob = new JobInfo();
+        JobInfo longJob = new JobInfo(false);
         longJob.setClassName(LongJob.class.getName());
         longJob.setPriority(100);
         longJob = jobInfoService.createAsQueued(longJob);
@@ -92,7 +92,7 @@ public class JobEndTest {
 
     @Test
     public void testWithResults1() throws InterruptedException {
-        JobInfo blowJob = new JobInfo();
+        JobInfo blowJob = new JobInfo(false);
         blowJob.setClassName(BlowJob.class.getName());
         blowJob = jobInfoService.createAsQueued(blowJob);
 
@@ -111,7 +111,7 @@ public class JobEndTest {
 
     @Test
     public void testWithResults2() throws InterruptedException {
-        JobInfo handJob = new JobInfo();
+        JobInfo handJob = new JobInfo(false);
         handJob.setClassName(HandJob.class.getName());
         handJob = jobInfoService.createAsQueued(handJob);
 
@@ -136,7 +136,7 @@ public class JobEndTest {
 
     @Test
     public void testWithResults3() throws InterruptedException {
-        JobInfo footJob = new JobInfo();
+        JobInfo footJob = new JobInfo(false);
         footJob.setClassName(FootJob.class.getName());
         footJob = jobInfoService.createAsQueued(footJob);
 
@@ -163,7 +163,7 @@ public class JobEndTest {
 
     @Test
     public void testExpirationDate() throws InterruptedException {
-        JobInfo jobSnow = new JobInfo();
+        JobInfo jobSnow = new JobInfo(false);
         jobSnow.setExpirationDate(OffsetDateTime.now());
         jobSnow = jobInfoService.createAsQueued(jobSnow);
         Thread.sleep(1_000);

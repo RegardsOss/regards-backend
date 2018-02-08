@@ -85,6 +85,13 @@ public class JobStatusInfo implements Observer {
     private OffsetDateTime stopDate;
 
     /**
+     * The date when job is queued
+     */
+    @Column(name = "queued_date")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime queuedDate;
+
+    /**
      * In case of error, contains the stack trace
      */
     @Column(name = "stacktrace")
@@ -98,32 +105,32 @@ public class JobStatusInfo implements Observer {
         return estimatedCompletion;
     }
 
-    public void setEstimatedCompletion(final OffsetDateTime pEstimatedCompletion) {
-        estimatedCompletion = pEstimatedCompletion;
+    public void setEstimatedCompletion(final OffsetDateTime estimatedCompletion) {
+        this.estimatedCompletion = estimatedCompletion;
     }
 
     public int getPercentCompleted() {
         return percentCompleted;
     }
 
-    public void setPercentCompleted(final int pPercentCompleted) {
-        percentCompleted = pPercentCompleted;
+    public void setPercentCompleted(final int percentCompleted) {
+        this.percentCompleted = percentCompleted;
     }
 
     public OffsetDateTime getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(final OffsetDateTime pStartDate) {
-        startDate = pStartDate;
+    public void setStartDate(final OffsetDateTime startDate) {
+        this.startDate = startDate;
     }
 
     public JobStatus getStatus() {
         return status;
     }
 
-    public void setStatus(final JobStatus pStatus) {
-        status = pStatus;
+    public void setStatus(final JobStatus status) {
+        this.status = status;
         statusDate = OffsetDateTime.now();
     }
 
@@ -131,8 +138,16 @@ public class JobStatusInfo implements Observer {
         return stopDate;
     }
 
-    public void setStopDate(final OffsetDateTime pStopDate) {
-        stopDate = pStopDate;
+    public void setStopDate(final OffsetDateTime stopDate) {
+        this.stopDate = stopDate;
+    }
+
+    public OffsetDateTime getQueuedDate() {
+        return queuedDate;
+    }
+
+    public void setQueuedDate(OffsetDateTime queuedDate) {
+        this.queuedDate = queuedDate;
     }
 
     public OffsetDateTime getStatusDate() {

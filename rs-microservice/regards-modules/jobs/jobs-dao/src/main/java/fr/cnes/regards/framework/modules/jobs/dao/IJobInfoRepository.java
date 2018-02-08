@@ -66,10 +66,11 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     Long countByStatusStatusIn(JobStatus... statuses);
 
     /**
-     * Delete jobs expired at given date
+     * Delete jobs expired at given date (only unlocked)
      */
     @Modifying
-    @Query("delete JobInfo j where j.expirationDate < ?1 and j.status.status not in ('QUEUED', 'TO_BE_RUN', 'RUNNING')")
+    @Query("delete JobInfo j where j.expirationDate < ?1 and j.status.status not in ('QUEUED', 'TO_BE_RUN', 'RUNNING') "
+            + "and j.locked = FALSE")
     void deleteAtDateExpiredJobs(OffsetDateTime date);
 
     /**
@@ -80,10 +81,10 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     }
 
     /**
-     * Delete jobs with given status at given date
+     * Delete jobs with given status at given date (only unlocked)
      */
     @Modifying
-    @Query("delete JobInfo j where j.status.stopDate < ?1 and j.status.status in ?2")
+    @Query("delete JobInfo j where j.status.stopDate < ?1 and j.status.status in ?2 and j.locked = FALSE")
     void deleteWithStatusAtDateJobs(OffsetDateTime date, JobStatus... statuses);
 
     /**

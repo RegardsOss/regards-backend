@@ -166,7 +166,7 @@ public class MultitenantJobTest {
     @Test
     public void testSucceeded() throws InterruptedException {
         tenantResolver.forceTenant(TENANT1);
-        JobInfo waitJobInfo1 = new JobInfo();
+        JobInfo waitJobInfo1 = new JobInfo(false);
         waitJobInfo1.setPriority(10);
         waitJobInfo1.setClassName(WaiterJob.class.getName());
         waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
@@ -174,7 +174,7 @@ public class MultitenantJobTest {
         waitJobInfo1 = jobInfoService.createAsQueued(waitJobInfo1);
 
         tenantResolver.forceTenant(TENANT2);
-        JobInfo waitJobInfo2 = new JobInfo();
+        JobInfo waitJobInfo2 = new JobInfo(false);
         waitJobInfo2.setPriority(10);
         waitJobInfo2.setClassName(WaiterJob.class.getName());
         waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
@@ -206,14 +206,14 @@ public class MultitenantJobTest {
     @Test
     public void testAbortion() throws InterruptedException {
         tenantResolver.forceTenant(TENANT1);
-        JobInfo waitJobInfo1 = new JobInfo();
+        JobInfo waitJobInfo1 = new JobInfo(false);
         waitJobInfo1.setPriority(10);
         waitJobInfo1.setClassName(WaiterJob.class.getName());
         waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         tenantResolver.forceTenant(TENANT2);
-        JobInfo waitJobInfo2 = new JobInfo();
+        JobInfo waitJobInfo2 = new JobInfo(false);
         waitJobInfo2.setPriority(10);
         waitJobInfo2.setClassName(WaiterJob.class.getName());
         waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
@@ -239,14 +239,14 @@ public class MultitenantJobTest {
     @Test
     public void testAborted() throws InterruptedException {
         tenantResolver.forceTenant(TENANT1);
-        JobInfo waitJobInfo1 = new JobInfo();
+        JobInfo waitJobInfo1 = new JobInfo(false);
         waitJobInfo1.setPriority(10);
         waitJobInfo1.setClassName(WaiterJob.class.getName());
         waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         tenantResolver.forceTenant(TENANT2);
-        JobInfo waitJobInfo2 = new JobInfo();
+        JobInfo waitJobInfo2 = new JobInfo(false);
         waitJobInfo2.setPriority(10);
         waitJobInfo2.setClassName(WaiterJob.class.getName());
         waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
@@ -275,13 +275,13 @@ public class MultitenantJobTest {
     @Test
     public void testFailed() throws InterruptedException {
         tenantResolver.forceTenant(TENANT1);
-        JobInfo failedJobInfo1 = new JobInfo();
+        JobInfo failedJobInfo1 = new JobInfo(false);
         failedJobInfo1.setPriority(10);
         failedJobInfo1.setClassName(FailedAfter1sJob.class.getName());
         failedJobInfo1 = jobInfoService.createAsQueued(failedJobInfo1);
 
         tenantResolver.forceTenant(TENANT2);
-        JobInfo failedJobInfo2 = new JobInfo();
+        JobInfo failedJobInfo2 = new JobInfo(false);
         failedJobInfo2.setPriority(10);
         failedJobInfo2.setClassName(FailedAfter1sJob.class.getName());
         failedJobInfo2 = jobInfoService.createAsQueued(failedJobInfo2);
@@ -314,7 +314,7 @@ public class MultitenantJobTest {
         // Create 6 waitJob
         JobInfo[] jobInfos = new JobInfo[6];
         for (int i = 0; i < jobInfos.length; i++) {
-            jobInfos[i] = new JobInfo();
+            jobInfos[i] = new JobInfo(false);
             jobInfos[i].setPriority(20 - i); // Makes it easier to know which ones are launched first
             jobInfos[i].setClassName(WaiterJob.class.getName());
             jobInfos[i].setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
@@ -351,7 +351,7 @@ public class MultitenantJobTest {
 
     @Test
     public void testSpringJob() throws InterruptedException {
-        JobInfo springJobInfo = new JobInfo();
+        JobInfo springJobInfo = new JobInfo(false);
         springJobInfo.setPriority(100);
         springJobInfo.setClassName(SpringJob.class.getName());
 

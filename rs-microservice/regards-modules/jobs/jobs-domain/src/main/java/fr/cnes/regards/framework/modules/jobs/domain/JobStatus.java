@@ -29,7 +29,7 @@ public enum JobStatus {
      */
     PENDING {
         @Override
-        public boolean isCompatibleWithPause() {
+        public boolean isFinished() {
             return false;
         }
     },
@@ -38,7 +38,7 @@ public enum JobStatus {
      */
     QUEUED {
         @Override
-        public boolean isCompatibleWithPause() {
+        public boolean isFinished() {
             return false;
         }
     },
@@ -47,7 +47,7 @@ public enum JobStatus {
      */
     TO_BE_RUN {
         @Override
-        public boolean isCompatibleWithPause() {
+        public boolean isFinished() {
             return false;
         }
     },
@@ -56,7 +56,7 @@ public enum JobStatus {
      */
     RUNNING {
         @Override
-        public boolean isCompatibleWithPause() {
+        public boolean isFinished() {
             return false;
         }
     },
@@ -65,7 +65,7 @@ public enum JobStatus {
      */
     SUCCEEDED {
         @Override
-        public boolean isCompatibleWithPause() {
+        public boolean isFinished() {
             return true;
         }
     },
@@ -74,7 +74,7 @@ public enum JobStatus {
      */
     FAILED {
         @Override
-        public boolean isCompatibleWithPause() {
+        public boolean isFinished() {
             return true;
         }
     },
@@ -83,7 +83,7 @@ public enum JobStatus {
      */
     ABORTED {
         @Override
-        public boolean isCompatibleWithPause() {
+        public boolean isFinished() {
             return true;
         }
     };
@@ -94,7 +94,7 @@ public enum JobStatus {
     }
 
     /**
-     * Tell wether or not specified status is compatible with a paused Job (ie job is ended or aborted)
+     * Tell wether or not specified status correspond to a finished job
      */
-    public abstract boolean isCompatibleWithPause();
+    public abstract boolean isFinished();
 }
