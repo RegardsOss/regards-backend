@@ -312,7 +312,8 @@ public class OrderService implements IOrderService {
         currentFilesTask.setOwner(order.getOwner());
         currentFilesTask.addAllFiles(bucketFiles);
 
-        JobInfo storageJobInfo = new JobInfo();
+        // storageJobInfo is pointed by currentFilesTask so it must be locked to avoid being cleaned before FilesTask
+        JobInfo storageJobInfo = new JobInfo(true);
         storageJobInfo.setParameters(new FilesJobParameter(bucketFiles.toArray(new OrderDataFile[bucketFiles.size()])),
                                      new ExpirationDateJobParameter(expirationDate),
                                      new UserJobParameter(authResolver.getUser()),
@@ -320,6 +321,7 @@ public class OrderService implements IOrderService {
         storageJobInfo.setOwner(basket.getOwner());
         storageJobInfo.setClassName("fr.cnes.regards.modules.order.service.job.StorageFilesJob");
         storageJobInfo.setPriority(priority);
+        storageJobInfo.setExpirationDate(order.getExpirationDate());
         // Create JobInfo and associate to FilesTask
         currentFilesTask.setJobInfo(jobInfoService.createAsPending(storageJobInfo));
         dsTask.addReliantTask(currentFilesTask);
@@ -393,6 +395,12 @@ public class OrderService implements IOrderService {
         }
         // Delete all order data files
         dataFileService.removeAll(order.getId());
+        // Delete all filesTasks
+        for (DatasetTask dsTask : order.getDatasetTasks()) {
+            dsTask.getReliantTasks().clear();
+        }
+        // Deactivate waitingForUser tag
+        order.setWaitingForUser(false);
         order.setStatus(OrderStatus.DELETED);
         repos.save(order);
     }
@@ -402,7 +410,7 @@ public class OrderService implements IOrderService {
      */
     private boolean orderEffectivelyInPause(Order order) {
         return order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                .map(ft -> ft.getJobInfo().getStatus().getStatus()).allMatch(JobStatus::isCompatibleWithPause);
+                .map(ft -> ft.getJobInfo().getStatus().getStatus()).allMatch(JobStatus::isFinished);
     }
 
     @Override
@@ -626,12 +634,13 @@ public class OrderService implements IOrderService {
         if (!orders.isEmpty()) {
             repos.save(orders);
         }
+        // Because previous method (updateCurrentOrdersComputedValues) takes care of CURRENT jobs, it is necessary
+        // to update finished ones ie setting availableFilesCount to 0 for finished jobs not waiting for user
         List<Order> finishedOrders = repos.findFinishedOrdersToUpdate();
         if (!finishedOrders.isEmpty()) {
             finishedOrders.forEach(o -> o.setAvailableFilesCount(0));
             repos.save(finishedOrders);
         }
-
     }
 
     @Override
@@ -712,7 +721,7 @@ public class OrderService implements IOrderService {
     // - loadComplete use a new one and so when delete is called, order state is at start of transaction (so with state
     // EXPIRED)
     // - loadComplete needs a new transaction each time it is called. If nothing is specified, it seems that the same
-    // transaction is used each time loadComplete is called (I think it is due to Hibernate Flush mode set a NEVER
+    // transaction is used each time loadComplete is called (I think it is due to Hibernate Flush mode set as NEVER
     // specified by Spring so it is cached in first level)
     public void cleanExpiredOrder(Order order) {
         // Ask for all jobInfos abortion (don't call self.pause() because of status, order must stay EXPIRED)
@@ -732,6 +741,13 @@ public class OrderService implements IOrderService {
         // Delete all its data files
         // Don't forget no relation is hardly mapped between OrderDataFile and Order
         dataFileService.removeAll(order.getId());
+        // Delete all filesTasks
+        for (DatasetTask dsTask : order.getDatasetTasks()) {
+            dsTask.getReliantTasks().clear();
+        }
+        // Deactivate waitingForUser tag
+        order.setWaitingForUser(false);
         // Order is already at EXPIRED state so let it be
+        repos.save(order);
     }
 }

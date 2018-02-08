@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Service;
 import com.google.common.io.ByteStreams;
 import feign.Response;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
@@ -198,20 +201,48 @@ public class OrderDataFileService implements IOrderDataFileService {
             if (order.getAvailableFilesCount() != availableCount) {
                 order.setAvailableFilesCount((int) availableCount);
             }
-            // Update order status if percent_complete has reached 100%
-            if (order.getPercentCompleted() == 100) {
-                // If no files in error = DONE
-                if (errorCount == 0) {
-                    order.setStatus(OrderStatus.DONE);
-                } else if (errorCount == order.getDatasetTasks().stream().mapToInt(DatasetTask::getFilesCount).sum()) {
-                    // If all files in error => FAILED
-                    order.setStatus(OrderStatus.FAILED);
-                } else { // DONE_WITH_WARNING
-                    order.setStatus(OrderStatus.DONE_WITH_WARNING);
+            updateOrderIfFinished(order, errorCount);
+        }
+        return orders;
+    }
+
+    /**
+     * Update finished order status and clean associated FileTasks not in error
+     */
+    private void updateOrderIfFinished(Order order, long errorCount) {
+        // Update order status if percent_complete has reached 100%
+        if (order.getPercentCompleted() == 100) {
+            // If no files in error = DONE
+            if (errorCount == 0) {
+                order.setStatus(OrderStatus.DONE);
+                // Remove all filesTask and so all associated jobs
+                order.getDatasetTasks().forEach(dsTask -> dsTask.getReliantTasks().clear());
+            } else if (errorCount == order.getDatasetTasks().stream().mapToInt(DatasetTask::getFilesCount).sum()) {
+                // If all files in error => FAILED
+                order.setStatus(OrderStatus.FAILED);
+                cleanSucceededFilesTasks(order);
+
+            } else { // DONE_WITH_WARNING
+                order.setStatus(OrderStatus.DONE_WITH_WARNING);
+                // Remove all filesTask with no jobs in error (and so all associated jobs)
+                cleanSucceededFilesTasks(order);
+            }
+        }
+    }
+
+    /**
+     * Remove all FilesTasks without failed job
+     */
+    private void cleanSucceededFilesTasks(Order order) {
+        // Remove all filesTask with no jobs in error (and so all associated jobs)
+        for (DatasetTask dsTask : order.getDatasetTasks()) {
+            for (Iterator<FilesTask> i = dsTask.getReliantTasks().iterator(); i.hasNext(); ) {
+                JobInfo jobInfo = i.next().getJobInfo();
+                if (jobInfo.getStatus().getStatus() != JobStatus.FAILED) {
+                    i.remove();
                 }
             }
         }
-        return orders;
     }
 
     @Override

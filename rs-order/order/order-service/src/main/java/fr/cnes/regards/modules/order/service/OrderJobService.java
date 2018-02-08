@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -100,8 +99,8 @@ public class OrderJobService
         // Current count of user jobs running, planned or to be run
         int currentJobsCount = (int) jobInfoRepository.countUserPlannedAndRunningJobs(user);
 
-        // Current finished user jobs BUT with remaining files to be downloaded
-        int finishedJobsWithFilesToBeDownloadedCount = (int) filesTasksRepository.countFilesTasksToBeDownloaded(user);
+        // Current Waiting for user jobs
+        int finishedJobsWithFilesToBeDownloadedCount = (int) filesTasksRepository.countWaitingForUserFilesTasks(user);
 
         // There is room for several jobs to be executed for this user if sum of theses 2 values is less than maximum
         // defined one

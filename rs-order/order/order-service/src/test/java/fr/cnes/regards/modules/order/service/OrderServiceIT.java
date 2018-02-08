@@ -213,6 +213,9 @@ public class OrderServiceIT {
         dataFile1.setSize(1_000_000l);
         dataFile1.setName("tutu");
         OrderDataFile df1 = new OrderDataFile(dataFile1, DO1_IP_ID, order.getId());
+        // dataFile is ONLINE, its state will be AVAILABLE after asking Storage
+        df1.setState(FileState.AVAILABLE);
+
         dataFileRepos.save(df1);
         ds1SubOrder1Task.addFile(df1);
 
@@ -225,9 +228,8 @@ public class OrderServiceIT {
         dataFileRepos.save(df2);
         ds1SubOrder1Task.addFile(df2);
 
-        JobInfo storageJobInfo = new JobInfo();
+        JobInfo storageJobInfo = new JobInfo(false);
         storageJobInfo.setClassName("...");
-        storageJobInfo.setDescription("description");
         storageJobInfo.setOwner(USER_EMAIL);
         storageJobInfo.setPriority(1);
         storageJobInfo.updateStatus(JobStatus.PENDING);
@@ -344,7 +346,7 @@ public class OrderServiceIT {
         Set<JobInfo> jobInfos = order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
                 .map(FilesTask::getJobInfo).collect(Collectors.toSet());
         Assert.assertTrue(jobInfos.stream().map(jobInfo -> jobInfo.getStatus().getStatus())
-                                  .allMatch(JobStatus::isCompatibleWithPause));
+                                  .allMatch(JobStatus::isFinished));
         // Sometime, pause/resume has been asked toolate (and so percent is at 100 %)
         Assert.assertTrue(order.getPercentCompleted() <= 100);
 
