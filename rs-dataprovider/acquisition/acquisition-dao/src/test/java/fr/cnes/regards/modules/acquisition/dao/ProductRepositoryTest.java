@@ -44,10 +44,6 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 @TestPropertySource(properties = "spring.jpa.properties.hibernate.default_schema=acquisition_it")
 public class ProductRepositoryTest extends AbstractDaoTest {
 
-    @SuppressWarnings("unused")
-    @Autowired
-    private IAcquisitionJobReportRepository jobReportRepository;
-
     @Autowired
     private IProductRepository productRepository;
 

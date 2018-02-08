@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -50,8 +49,8 @@ import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
@@ -101,12 +100,10 @@ public class AcquisitionProcessingChain {
     private String session;
 
     /**
-     * <code>true</code> if currently running, <code>false</code>
-     * otherwise.<br/>
-     * The same acquisition chain must not be run twice!
+     * Flag to allow to run an action only once at a time
      */
     @Column(updatable = false, nullable = false)
-    private Boolean running = false;
+    private boolean locked = false;
 
     /**
      * The last activation date when an acquisition were running.
@@ -176,9 +173,9 @@ public class AcquisitionProcessingChain {
     @JoinColumn(name = "postprocesssip_conf_id", foreignKey = @ForeignKey(name = "fk_postprocesssip_conf_id"))
     private PluginConfiguration postProcessSipPluginConf;
 
-    @OneToOne(orphanRemoval = true, cascade = CascadeType.ALL)
-    @JoinColumn(name = "acq_job_report_id", foreignKey = @ForeignKey(name = "fk_acq_job_report_id"))
-    private AcquisitionJobReport lastProductAcquisitionJobReport;
+    @OneToOne
+    @JoinColumn(name = "acq_job_info_id", foreignKey = @ForeignKey(name = "fk_acq_job_info_id"))
+    private JobInfo lastProductAcquisitionJobInfo;
 
     public String getLabel() {
         return label;
@@ -259,14 +256,6 @@ public class AcquisitionProcessingChain {
         return mode;
     }
 
-    public boolean isRunning() {
-        return running;
-    }
-
-    public void setRunning(Boolean running) {
-        this.running = running;
-    }
-
     public Long getId() {
         return id;
     }
@@ -307,11 +296,19 @@ public class AcquisitionProcessingChain {
         this.session = session;
     }
 
-    public AcquisitionJobReport getLastProductAcquisitionJobReport() {
-        return lastProductAcquisitionJobReport;
+    public Boolean isLocked() {
+        return locked;
     }
 
-    public void setLastProductAcquisitionJobReport(AcquisitionJobReport lastProductAcquisitionJobReport) {
-        this.lastProductAcquisitionJobReport = lastProductAcquisitionJobReport;
+    public void setLocked(Boolean locked) {
+        this.locked = locked;
+    }
+
+    public JobInfo getLastProductAcquisitionJobInfo() {
+        return lastProductAcquisitionJobInfo;
+    }
+
+    public void setLastProductAcquisitionJobInfo(JobInfo lastProductAcquisitionJobInfo) {
+        this.lastProductAcquisitionJobInfo = lastProductAcquisitionJobInfo;
     }
 }

@@ -28,8 +28,6 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
@@ -55,15 +53,6 @@ public class ProductSipEventHandler implements ApplicationListener<ApplicationRe
      */
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
-
-    /**
-     * Resolver to retrieve authentication information
-     */
-    @Autowired
-    private IAuthenticationResolver authResolver;
-
-    @Autowired
-    private IJobInfoService jobInfoService;
 
     @Autowired
     IProductService productService;

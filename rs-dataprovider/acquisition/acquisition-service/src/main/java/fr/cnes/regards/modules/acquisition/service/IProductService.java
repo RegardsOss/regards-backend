@@ -170,4 +170,21 @@ public interface IProductService {
      * @throws ModuleException
      */
     Optional<Product> searchProduct(String productName) throws ModuleException;
+
+    /**
+     * Stop all product jobs for a specified processing chain
+     * @param processingChain related processing chain
+     * @throws ModuleException if error occurs!
+     */
+    void stopProductJobs(AcquisitionProcessingChain processingChain) throws ModuleException;
+
+    /**
+     * Check if all product jobs for a specified processing chain are stopped. Unstable product states are rolled back
+     * programmatically when related product job is stopped.
+     * @param processingChain related processing chain
+     * @return true if all jobs are stopped and cleaned
+     * @throws ModuleException if error occurs!
+     */
+    boolean isProductJobStoppedAndCleaned(AcquisitionProcessingChain processingChain) throws ModuleException;
+
 }

@@ -28,6 +28,7 @@ public class AcquisitionProcessingChainMonitor {
 
     private AcquisitionProcessingChain chain;
 
+    @SuppressWarnings("unused")
     private final Long chainId;
 
     private Long nbProductErrors = 0L;

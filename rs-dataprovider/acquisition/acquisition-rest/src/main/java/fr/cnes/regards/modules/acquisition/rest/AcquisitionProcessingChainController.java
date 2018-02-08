@@ -166,7 +166,7 @@ public class AcquisitionProcessingChainController implements IResourceController
         resourceService.addLink(resource, this.getClass(), "update", LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, element.getId()),
                                 MethodParamFactory.build(AcquisitionProcessingChain.class));
-        if (AcquisitionProcessingChainMode.MANUAL.equals(element.getMode()) && !element.isRunning()) {
+        if (AcquisitionProcessingChainMode.MANUAL.equals(element.getMode()) && !element.isLocked()) {
             resourceService.addLink(resource, this.getClass(), "startManualChain", "start",
                                     MethodParamFactory.build(Long.class, element.getId()));
         }

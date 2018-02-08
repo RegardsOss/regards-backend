@@ -90,9 +90,33 @@ public interface IAcquisitionProcessingService {
     /**
      * Start a chain manually
      * @param processingChainId identifier of the chain to start
+     * @return started processing chain
      * @throws ModuleException if error occurs!
      */
     AcquisitionProcessingChain startManualChain(Long processingChainId) throws ModuleException;
+
+    /**
+     * Stop a chain regardless of its mode.
+     * @param processingChainId identifier of the chain to stop
+     * @throws ModuleException if error occurs!
+     */
+    void stopChainJobs(Long processingChainId) throws ModuleException;
+
+    /**
+     * Check if a chain is stopped and cleaned
+     * @param processingChainId identifier of the stopping chain
+     * @return true if all jobs are stopped and related products are cleaned
+     * @throws ModuleException if error occurs!
+     */
+    boolean isChainJobStoppedAndCleaned(Long processingChainId) throws ModuleException;
+
+    /**
+     * Stop a chain and clean all inconsistencies after all jobs are aborted
+     * @param processingChainId identifier of the chain to stop
+     * @return processing chain
+     * @throws ModuleException if error occurs!
+     */
+    AcquisitionProcessingChain stopAndCleanChain(Long processingChainId) throws ModuleException;
 
     /**
      * Scan and register detected files for specified {@link AcquisitionProcessingChain}

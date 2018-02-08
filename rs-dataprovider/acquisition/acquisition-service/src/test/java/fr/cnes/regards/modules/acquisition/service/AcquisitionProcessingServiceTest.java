@@ -153,7 +153,7 @@ public class AcquisitionProcessingServiceTest extends AbstractDaoTest {
         List<AcquisitionProcessingChain> automaticChains = processingChainRepository.findAllBootableAutomaticChains();
         Assert.assertTrue(automaticChains.isEmpty());
         List<AcquisitionProcessingChain> manualChains = processingChainRepository
-                .findByModeAndActiveTrueAndRunningFalse(AcquisitionProcessingChainMode.MANUAL);
+                .findByModeAndActiveTrueAndLockedFalse(AcquisitionProcessingChainMode.MANUAL);
         Assert.assertTrue(!manualChains.isEmpty() && (manualChains.size() == 1));
     }
 }

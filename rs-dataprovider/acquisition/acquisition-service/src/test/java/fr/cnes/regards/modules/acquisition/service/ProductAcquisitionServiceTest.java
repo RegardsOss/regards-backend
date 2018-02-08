@@ -47,7 +47,6 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -56,7 +55,6 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
-import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -64,7 +62,6 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
-import fr.cnes.regards.modules.acquisition.domain.job.AcquisitionJobReport;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
@@ -105,12 +102,6 @@ public class ProductAcquisitionServiceTest extends AbstractDaoTest {
 
     @Autowired
     private IAcquisitionFileService fileService;
-
-    @Autowired
-    private IAcquisitionJobReportService jobReportService;
-
-    @Autowired
-    private IProductRepository productRepository;
 
     @Configuration
     @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
@@ -220,11 +211,6 @@ public class ProductAcquisitionServiceTest extends AbstractDaoTest {
 
         // Test job algo synchronously
         for (Product product : products) {
-
-            // Initialize related report
-            AcquisitionJobReport jobReport = jobReportService.createJobReport(new JobInfo());
-            product.setLastSIPGenerationJobReport(jobReport);
-            productRepository.save(product);
 
             SIPGenerationJob genJob = new SIPGenerationJob();
             beanFactory.autowireBean(genJob);

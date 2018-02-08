@@ -126,6 +126,16 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     Set<Product> findWithLockBySipState(ISipState sipState);
 
     /**
+     * Find {@link Product} by state in transaction with pessimistic read lock
+     * @param processingChain {@link AcquisitionProcessingChain}
+     * @param sipState {@link ISipState}
+     * @return a set of products with the above properties
+     */
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    Set<Product> findWithLockByProcessingChainAndSipState(AcquisitionProcessingChain processingChain,
+            ProductSIPState sipState);
+
+    /**
      * Find {@link Product} by state
      * @param sipState {@link ISipState}
      * @return a set of products with the above properties
