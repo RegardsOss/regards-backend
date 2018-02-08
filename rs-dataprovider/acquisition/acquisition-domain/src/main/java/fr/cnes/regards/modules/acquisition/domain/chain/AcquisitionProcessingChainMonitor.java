@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
-import java.util.Set;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-
 public class AcquisitionProcessingChainMonitor {
 
     private AcquisitionProcessingChain chain;
@@ -31,25 +25,28 @@ public class AcquisitionProcessingChainMonitor {
     @SuppressWarnings("unused")
     private final Long chainId;
 
-    private Long nbProductErrors = 0L;
-
-    private Long nbProducts = 0L;
-
+    // FILES
     private Long nbFileErrors = 0L;
 
     private Long nbFiles = 0L;
 
     private Long nbFilesInProgress = 0L;
 
+    // PRODUCTS
+    private Long nbProductErrors = 0L;
+
+    private Long nbProducts = 0L;
+
     private Long nbProductsInProgress = 0L;
 
-    private JobInfo scanJob = null;
+    // JOBS
+    private long nbProductAcquisitionJob = 0;
 
-    private Set<JobInfo> productGenerationJobs = Sets.newHashSet();
+    private long nbSIPGenerationJobs = 0;
 
-    private Set<JobInfo> sipSubmissionJobs = Sets.newHashSet();
+    private long nbSIPSubmissionJobs = 0;
 
-    private Set<JobInfo> postProcessingJobs = Sets.newHashSet();
+    // Post processing jobs not managed here ... can be seen in product
 
     public AcquisitionProcessingChainMonitor(AcquisitionProcessingChain chain) {
         super();
@@ -113,36 +110,27 @@ public class AcquisitionProcessingChainMonitor {
         this.nbProductsInProgress = nbProductsInProgress;
     }
 
-    public JobInfo getScanJob() {
-        return scanJob;
+    public long getNbProductAcquisitionJob() {
+        return nbProductAcquisitionJob;
     }
 
-    public void setScanJob(JobInfo scanJob) {
-        this.scanJob = scanJob;
+    public void setNbProductAcquisitionJob(long nbProductAcquisitionJob) {
+        this.nbProductAcquisitionJob = nbProductAcquisitionJob;
     }
 
-    public Set<JobInfo> getProductGenerationJobs() {
-        return productGenerationJobs;
+    public long getNbSIPGenerationJobs() {
+        return nbSIPGenerationJobs;
     }
 
-    public void setProductGenerationJobs(Set<JobInfo> productGenerationJobs) {
-        this.productGenerationJobs = productGenerationJobs;
+    public void setNbSIPGenerationJobs(long nbSIPGenerationJobs) {
+        this.nbSIPGenerationJobs = nbSIPGenerationJobs;
     }
 
-    public Set<JobInfo> getSipSubmissionJobs() {
-        return sipSubmissionJobs;
+    public long getNbSIPSubmissionJobs() {
+        return nbSIPSubmissionJobs;
     }
 
-    public void setSipSubmissionJobs(Set<JobInfo> sipSubmissionJobs) {
-        this.sipSubmissionJobs = sipSubmissionJobs;
+    public void setNbSIPSubmissionJobs(long nbSIPSubmissionJobs) {
+        this.nbSIPSubmissionJobs = nbSIPSubmissionJobs;
     }
-
-    public Set<JobInfo> getPostProcessingJobs() {
-        return postProcessingJobs;
-    }
-
-    public void setPostProcessingJobs(Set<JobInfo> postProcessingJobs) {
-        this.postProcessingJobs = postProcessingJobs;
-    }
-
 }

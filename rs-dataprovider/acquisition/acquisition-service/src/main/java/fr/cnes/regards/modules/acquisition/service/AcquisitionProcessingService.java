@@ -616,36 +616,33 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     private AcquisitionProcessingChainMonitor buildAcquisitionProcessingChainSummary(AcquisitionProcessingChain chain) {
+
         AcquisitionProcessingChainMonitor summary = new AcquisitionProcessingChainMonitor(chain);
 
-        // 1.Handle products summary
-        long nbProductErrors = productService.countByProcessingChainAndSipStateIn(chain, Arrays
-                .asList(ProductSIPState.GENERATION_ERROR, ProductSIPState.SUBMISSION_ERROR));
-        summary.setNbProductErrors(nbProductErrors);
-        long nbProducts = productService.countByChain(chain);
-        summary.setNbProducts(nbProducts);
-        long nbProductsInProgress = productService
-                .countByChainAndStateIn(chain, Arrays.asList(ProductState.ACQUIRING, ProductState.COMPLETED));
-        summary.setNbProductsInProgress(nbProductsInProgress);
+        // Handle product summary
+        summary.setNbProductErrors(productService.countByProcessingChainAndSipStateIn(chain, Arrays
+                .asList(ProductSIPState.GENERATION_ERROR, ProductSIPState.SUBMISSION_ERROR)));
+        summary.setNbProducts(productService.countByChain(chain));
+        summary.setNbProductsInProgress(productService
+                .countByChainAndStateIn(chain, Arrays.asList(ProductState.ACQUIRING, ProductState.COMPLETED)));
 
-        // 2. Handle files summary
-        long nbFileErrors = acqFileService.countByChainAndStateIn(chain, Arrays.asList(AcquisitionFileState.ERROR));
-        summary.setNbFileErrors(nbFileErrors);
-        long nbFiles = acqFileService.countByChain(chain);
-        summary.setNbFiles(nbFiles);
-        long nbFileInProgress = acqFileService
+        // Handle file summary
+        summary.setNbFileErrors(acqFileService.countByChainAndStateIn(chain,
+                                                                      Arrays.asList(AcquisitionFileState.ERROR)));
+        summary.setNbFiles(acqFileService.countByChain(chain));
+        summary.setNbFilesInProgress(acqFileService
                 .countByChainAndStateIn(chain,
-                                        Arrays.asList(AcquisitionFileState.IN_PROGRESS, AcquisitionFileState.VALID));
-        summary.setNbFilesInProgress(nbFileInProgress);
+                                        Arrays.asList(AcquisitionFileState.IN_PROGRESS, AcquisitionFileState.VALID)));
 
-        // 3. Handle scan job
-        // TODO
-        // 4. Handle productGeneration jobs
-        // TODO
-        // 5. Handle SIP submission jobs
-        // TODO
-        // 6. Handle post processing jobs
-        // TODO
+        // Handle job summary
+        if ((chain.getLastProductAcquisitionJobInfo() != null)
+                && !chain.getLastProductAcquisitionJobInfo().getStatus().getStatus().isFinished()) {
+            summary.setNbProductAcquisitionJob(1);
+        }
+        summary.setNbSIPGenerationJobs(productService
+                .countByProcessingChainAndSipStateIn(chain, Arrays.asList(ProductSIPState.SCHEDULED)));
+        summary.setNbSIPSubmissionJobs(productService
+                .countByProcessingChainAndSipStateIn(chain, Arrays.asList(ProductSIPState.SUBMISSION_SCHEDULED)));
 
         return summary;
     }
