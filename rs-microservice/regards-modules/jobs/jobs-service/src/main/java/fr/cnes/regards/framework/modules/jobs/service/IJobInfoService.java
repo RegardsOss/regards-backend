@@ -57,6 +57,13 @@ public interface IJobInfoService {
     JobInfo save(JobInfo jobInfo);
 
     /**
+     * Unlock job info, make it candidate for cleaning
+     * @param jobInfo
+     * @return the update job info
+     */
+    JobInfo unlock(JobInfo jobInfo);
+
+    /**
      * @return all jobs
      */
     List<JobInfo> retrieveJobs();
