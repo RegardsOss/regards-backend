@@ -120,7 +120,7 @@ public class ProductService implements IProductService {
 
     @Override
     public Optional<Product> searchProduct(String productName) throws ModuleException {
-        return Optional.of(productRepository.findCompleteByProductName(productName));
+        return Optional.ofNullable(productRepository.findCompleteByProductName(productName));
     }
 
     @Override
@@ -466,7 +466,7 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Page<Product> search(ProductState state, SIPState sipState, String productName, String session,
+    public Page<Product> search(List<ProductState> state, List<SIPState> sipState, String productName, String session,
             Long processingChainId, OffsetDateTime from, Pageable pageable) {
         return productRepository
                 .findAll(ProductSpecifications.search(state, sipState, productName, session, processingChainId, from),

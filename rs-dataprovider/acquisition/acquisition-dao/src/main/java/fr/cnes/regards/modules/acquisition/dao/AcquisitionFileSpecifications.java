@@ -19,9 +19,11 @@
 package fr.cnes.regards.modules.acquisition.dao;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 import org.springframework.data.jpa.domain.Specification;
 
@@ -30,6 +32,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 
 /**
  * Specification class to filter DAO searches on {@link AcquisitionFile} entities.
@@ -50,15 +53,26 @@ public class AcquisitionFileSpecifications {
      * @param from {@link OffsetDateTime}
      * @return @return {@link Specification}<{@link AcquisitionFile}>
      */
-    public static Specification<AcquisitionFile> search(String filePath, AcquisitionFileState state, Long productId,
-            OffsetDateTime from) {
+    public static Specification<AcquisitionFile> search(String filePath, List<AcquisitionFileState> states,
+            Long productId, Long chainId, OffsetDateTime from) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
-            if (filePath != null) {
-                predicates.add(cb.like(root.get("filePath"), LIKE_CHAR + filePath + LIKE_CHAR));
+
+            if (chainId != null) {
+                Root<AcquisitionProcessingChain> chainRoot = query.from(AcquisitionProcessingChain.class);
+                predicates.add(cb.equal(chainRoot.join("fileInfos").get("id"), root.get("fileInfo").get("id")));
+                predicates.add(cb.equal(chainRoot.get("id"), chainId));
             }
-            if (state != null) {
-                predicates.add(cb.equal(root.get("state"), state));
+
+            if (filePath != null) {
+                predicates.add(cb.like(root.get("filePath").as(String.class), LIKE_CHAR + filePath + LIKE_CHAR));
+            }
+            if ((states != null) && !states.isEmpty()) {
+                Set<Predicate> statePredicates = Sets.newHashSet();
+                for (AcquisitionFileState state : states) {
+                    statePredicates.add(cb.equal(root.get("state"), state));
+                }
+                predicates.add(cb.or(statePredicates.toArray(new Predicate[statePredicates.size()])));
             }
             if (productId != null) {
                 Product product = new Product();

@@ -32,6 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -101,16 +103,20 @@ public class AcquisitionFileServiceTest extends AbstractDaoTest {
 
     private AcquisitionProcessingChain processingChain;
 
+    private AcquisitionProcessingChain processingChain2;
+
+    private Product product;
+
     @Before
     public void init() throws ModuleException {
         createFiles();
     }
 
-    public AcquisitionProcessingChain createProcessingChain() throws ModuleException {
+    public AcquisitionProcessingChain createProcessingChain(String label) throws ModuleException {
 
         // Create a processing chain
-        processingChain = new AcquisitionProcessingChain();
-        processingChain.setLabel("Product");
+        AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
+        processingChain.setLabel(label);
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
@@ -132,7 +138,7 @@ public class AcquisitionFileServiceTest extends AbstractDaoTest {
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class,
                                                                             Lists.newArrayList());
         scanPlugin.setIsActive(true);
-        scanPlugin.setLabel("Scan plugin");
+        scanPlugin.setLabel("Scan plugin - " + label);
         fileInfo.setScanPlugin(scanPlugin);
 
         processingChain.addFileInfo(fileInfo);
@@ -141,21 +147,21 @@ public class AcquisitionFileServiceTest extends AbstractDaoTest {
         PluginConfiguration validationPlugin = PluginUtils
                 .getPluginConfiguration(Lists.newArrayList(), DefaultFileValidation.class, Lists.newArrayList());
         validationPlugin.setIsActive(true);
-        validationPlugin.setLabel("Validation plugin");
+        validationPlugin.setLabel("Validation plugin " + label);
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
         PluginConfiguration productPlugin = PluginUtils
                 .getPluginConfiguration(Lists.newArrayList(), DefaultProductPlugin.class, Lists.newArrayList());
         productPlugin.setIsActive(true);
-        productPlugin.setLabel("Product plugin");
+        productPlugin.setLabel("Product plugin" + label);
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
         PluginConfiguration sipGenPlugin = PluginUtils
                 .getPluginConfiguration(Lists.newArrayList(), DefaultSIPGeneration.class, Lists.newArrayList());
         sipGenPlugin.setIsActive(true);
-        sipGenPlugin.setLabel("SIP generation plugin");
+        sipGenPlugin.setLabel("SIP generation plugin" + label);
         processingChain.setGenerateSipPluginConf(sipGenPlugin);
 
         // SIP post processing
@@ -170,8 +176,9 @@ public class AcquisitionFileServiceTest extends AbstractDaoTest {
 
     public void createFiles() throws ModuleException {
 
-        AcquisitionProcessingChain processingChain = createProcessingChain();
-        Product product = new Product();
+        processingChain = createProcessingChain("Chaine1");
+        processingChain2 = createProcessingChain("Chaine2");
+        product = new Product();
         product.setIpId("IpId");
         product.setLastUpdate(OffsetDateTime.now());
         product.setProcessingChain(processingChain);
@@ -181,7 +188,8 @@ public class AcquisitionFileServiceTest extends AbstractDaoTest {
         product.setState(ProductState.COMPLETED);
         product = productService.save(product);
 
-        // Add acquisition files
+        // Add acquisition files for chain 1
+        int idx = 0;
         for (AcquisitionFileState fileState : AcquisitionFileState.values()) {
             AcquisitionFile file = new AcquisitionFile();
             file.setAcqDate(OffsetDateTime.now());
@@ -189,10 +197,26 @@ public class AcquisitionFileServiceTest extends AbstractDaoTest {
             file.setChecksumAlgorithm("MD5");
             file.setError("");
             file.setFileInfo(processingChain.getFileInfos().get(0));
-            file.setFilePath(Paths.get("/tmp/file"));
+            file.setFilePath(Paths.get("/chain2/file" + idx));
             file.setProduct(product);
             file.setState(fileState);
             fileService.save(file);
+            idx++;
+        }
+
+        // Add acquisition files for chain 2
+        for (AcquisitionFileState fileState : AcquisitionFileState.values()) {
+            AcquisitionFile file = new AcquisitionFile();
+            file.setAcqDate(OffsetDateTime.now());
+            file.setChecksum("123445");
+            file.setChecksumAlgorithm("MD5");
+            file.setError("");
+            file.setFileInfo(processingChain2.getFileInfos().get(0));
+            file.setFilePath(Paths.get("/chain2/file" + idx));
+            file.setProduct(product);
+            file.setState(fileState);
+            fileService.save(file);
+            idx++;
         }
     }
 
@@ -202,7 +226,29 @@ public class AcquisitionFileServiceTest extends AbstractDaoTest {
         for (AcquisitionFileState fileState : AcquisitionFileState.values()) {
             Assert.assertTrue(fileService.countByChainAndStateIn(processingChain, Arrays.asList(fileState)) == 1);
         }
+    }
 
+    @Test
+    public void testSearchFiles() {
+        Page<AcquisitionFile> results = fileService.search("file", null, null, null, null, new PageRequest(0, 100));
+        Assert.assertTrue(results.getNumberOfElements() == ((AcquisitionFileState.values().length) * 2));
+
+        results = fileService.search("/other", null, null, null, null, new PageRequest(0, 100));
+        Assert.assertTrue(results.getNumberOfElements() == 0);
+
+        results = fileService.search("file1", null, null, processingChain.getId(), null, new PageRequest(0, 100));
+        Assert.assertTrue(results.getNumberOfElements() == 1);
+
+        results = fileService.search(null, null, null, processingChain.getId(), null, new PageRequest(0, 100));
+        Assert.assertTrue(results.getNumberOfElements() == AcquisitionFileState.values().length);
+
+        results = fileService.search(null, null, null, processingChain2.getId(), null, new PageRequest(0, 100));
+        Assert.assertTrue(results.getNumberOfElements() == AcquisitionFileState.values().length);
+
+        results = fileService.search("file", Arrays.asList(AcquisitionFileState.ACQUIRED), product.getId(),
+                                     processingChain.getId(), OffsetDateTime.now().minusDays(1),
+                                     new PageRequest(0, 100));
+        Assert.assertTrue(results.getNumberOfElements() == 1);
     }
 
 }

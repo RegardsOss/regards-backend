@@ -64,11 +64,12 @@ public interface IAcquisitionFileService {
      * @param filePath {@link String}
      * @param state {@link AcquisitionFileState}
      * @param productId {@link Long} identifier of {@link Product}
+     * @param chainId {@link Long} identifier of {@link AcquisitionProcessingChain}
      * @param from {@link OffsetDateTime}
      * @param pageable
      * @return {@link AcquisitionFile}s
      */
-    public Page<AcquisitionFile> search(String filePath, AcquisitionFileState state, Long productId,
+    public Page<AcquisitionFile> search(String filePath, List<AcquisitionFileState> state, Long productId, Long chainId,
             OffsetDateTime from, Pageable pageable);
 
 }
