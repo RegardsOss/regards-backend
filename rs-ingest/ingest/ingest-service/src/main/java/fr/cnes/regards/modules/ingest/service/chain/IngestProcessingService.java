@@ -18,11 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
@@ -169,7 +171,8 @@ public class IngestProcessingService implements IIngestProcessingService {
         Set<JobParameter> jobParameters = Sets.newHashSet();
         jobParameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, sipIdToProcess));
         jobParameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, processingChain));
-        JobInfo jobInfo = new JobInfo(1, jobParameters, authResolver.getUser(), IngestProcessingJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false, 1, jobParameters, authResolver.getUser(),
+                IngestProcessingJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         sipRepository.updateSIPEntityState(SIPState.QUEUED, sipIdToProcess);
     }

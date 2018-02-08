@@ -56,7 +56,8 @@ import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 
 /**
- * Service to handle aip related issues in ingest, including sending bulk request of AIP to store to archival storage microservice.
+ * Service to handle aip related issues in ingest, including sending bulk request of AIP to store to archival storage
+ * microservice.
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
  */
@@ -103,7 +104,7 @@ public class AIPService implements IAIPService {
             aips.add(aip.getAip());
             aipsInRequest.add(aip.getIpId());
         }
-        // Update all aip in request to  AIPState to QUEUED.
+        // Update all aip in request to AIPState to QUEUED.
         aipsInRequest.forEach(aipId -> aipRepository.updateAIPEntityStateAndErrorMessage(AIPState.QUEUED, aipId, null));
         if (!aipsInRequest.isEmpty()) {
             FeignSecurityManager.asSystem(); // as we are using this method into a schedule, we clearly use the
@@ -114,17 +115,19 @@ public class AIPService implements IAIPService {
                 // Feign only throws exceptions in case the response status is neither 404 or one of the 2xx,
                 // so lets catch the exception and if it not one of our API normal status rethrow it
                 if (e.getStatusCode() != HttpStatus.UNPROCESSABLE_ENTITY) {
-                    // Response error. Microservice may be not available at the time. Update all AIPs to CREATE state to be handle next time
+                    // Response error. Microservice may be not available at the time. Update all AIPs to CREATE state to
+                    // be handle next time
                     aipsInRequest.forEach(aipId -> aipRepository.updateAIPEntityStateAndErrorMessage(AIPState.CREATED,
                                                                                                      aipId, null));
                     throw e;
                 }
                 // first lets get the string from the body then lets deserialize it using gson
+                @SuppressWarnings("serial")
                 TypeToken<List<RejectedAip>> bodyTypeToken = new TypeToken<List<RejectedAip>>() {
 
                 };
                 List<RejectedAip> rejectedAips = gson.fromJson(e.getResponseBodyAsString(), bodyTypeToken.getType());
-                //set all aips to store_rejected
+                // set all aips to store_rejected
                 rejectedAips.forEach(rejectedAip -> rejectAip(rejectedAip.getIpId(), rejectedAip.getRejectionCauses()));
             }
             FeignSecurityManager.reset();

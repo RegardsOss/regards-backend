@@ -38,6 +38,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -149,7 +150,8 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
 
         SIPBuilder builder = new SIPBuilder(SIP_DEFAULT_CHAIN_ID_TEST);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "sdsdfm1211vd");
-        builder.setSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
+        builder.setSyntax("FITS(FlexibleImageTransport)",
+                          "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
         builder.addContentInformation();
         collection.add(builder.build());
 
@@ -164,7 +166,8 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
 
         builder = new SIPBuilder(SIP_ID_TEST);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vd");
-        builder.setSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
+        builder.setSyntax("FITS(FlexibleImageTransport)",
+                          "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
         builder.addContentInformation();
         collection.add(builder.build());
 
@@ -243,7 +246,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         parameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, sipIdDefaultChainTest));
 
         // Simulate a full process without error
-        JobInfo toTest = new JobInfo(0, parameters, "owner", IngestProcessingJob.class.getName());
+        JobInfo toTest = new JobInfo(false, 0, parameters, "owner", IngestProcessingJob.class.getName());
         runJob(toTest);
         // Assert that SIP is in AIP_CREATED state
         SIPEntity resultSip = sipRepository.findOne(sipIdDefaultChainTest);
@@ -267,7 +270,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
 
         // Simulate an error during PreprocessingStep
         stepErrorSimulator.setSimulateErrorForStep(PreprocessingTestPlugin.class);
-        JobInfo toTest = new JobInfo(1, parameters, "owner", IngestProcessingJob.class.getName());
+        JobInfo toTest = new JobInfo(false, 1, parameters, "owner", IngestProcessingJob.class.getName());
         try {
             runJob(toTest);
             Assert.fail("A runtime exception should thrown here");
@@ -284,7 +287,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
 
         // Simulate an error during ValidationStep
         stepErrorSimulator.setSimulateErrorForStep(ValidationTestPlugin.class);
-        toTest = new JobInfo(1, parameters, "owner", IngestProcessingJob.class.getName());
+        toTest = new JobInfo(false, 1, parameters, "owner", IngestProcessingJob.class.getName());
         try {
             runJob(toTest);
             Assert.fail("A runtime exception should thrown here");
@@ -301,7 +304,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
 
         // Simulate an error during GenerationStep
         stepErrorSimulator.setSimulateErrorForStep(AIPGenerationTestPlugin.class);
-        toTest = new JobInfo(1, parameters, "owner", IngestProcessingJob.class.getName());
+        toTest = new JobInfo(false, 1, parameters, "owner", IngestProcessingJob.class.getName());
         try {
             runJob(toTest);
             Assert.fail("A runtime exception should thrown here");
@@ -318,7 +321,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
 
         // Simulate an error during TaggingStep
         stepErrorSimulator.setSimulateErrorForStep(AIPTaggingTestPlugin.class);
-        toTest = new JobInfo(1, parameters, "owner", IngestProcessingJob.class.getName());
+        toTest = new JobInfo(false, 1, parameters, "owner", IngestProcessingJob.class.getName());
         try {
             runJob(toTest);
             Assert.fail("A runtime exception should thrown here");
@@ -335,7 +338,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
 
         // Simulate a full process without error
         stepErrorSimulator.setSimulateErrorForStep(null);
-        toTest = new JobInfo(1, parameters, "owner", IngestProcessingJob.class.getName());
+        toTest = new JobInfo(false, 1, parameters, "owner", IngestProcessingJob.class.getName());
         runJob(toTest);
         // Assert that SIP is in AIP_CREATED state
         resultSip = sipRepository.findOne(sipIdTest);
@@ -359,7 +362,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         parameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, sipRefIdTest));
 
         // Simulate a full process without error
-        JobInfo toTest = new JobInfo(0, parameters, "owner", IngestProcessingJob.class.getName());
+        JobInfo toTest = new JobInfo(false, 0, parameters, "owner", IngestProcessingJob.class.getName());
         runJob(toTest);
         // Assert that SIP is in AIP_CREATED state
         SIPEntity resultSip = sipRepository.findOne(sipRefIdTest);

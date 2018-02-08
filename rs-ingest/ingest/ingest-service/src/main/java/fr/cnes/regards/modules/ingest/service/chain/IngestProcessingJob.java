@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -105,8 +103,8 @@ public class IngestProcessingJob extends AbstractJob<Void> {
     @Override
     public void run() {
 
-        super.logger
-                .debug("Launching processing chain \"{}\" for SIP \"{}\"", processingChain.getName(), entity.getIpId());
+        super.logger.debug("Launching processing chain \"{}\" for SIP \"{}\"", processingChain.getName(),
+                           entity.getIpId());
 
         try {
             // Step 1 : optional preprocessing

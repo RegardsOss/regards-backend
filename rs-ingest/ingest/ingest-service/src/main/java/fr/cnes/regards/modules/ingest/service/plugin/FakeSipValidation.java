@@ -90,10 +90,12 @@ public class FakeSipValidation implements ISipValidation {
 
         private String message;
 
+        @SuppressWarnings("unused")
         public String getMessage() {
             return message;
         }
 
+        @SuppressWarnings("unused")
         public void setMessage(String message) {
             this.message = message;
         }
@@ -104,10 +106,12 @@ public class FakeSipValidation implements ISipValidation {
         @PluginParameter(label = "List of constraints")
         private List<Constraint> constraints;
 
+        @SuppressWarnings("unused")
         public List<Constraint> getConstraints() {
             return constraints;
         }
 
+        @SuppressWarnings("unused")
         public void setConstraints(List<Constraint> constraints) {
             this.constraints = constraints;
         }
@@ -122,18 +126,22 @@ public class FakeSipValidation implements ISipValidation {
                 defaultValue = "true")
         private boolean enabled;
 
+        @SuppressWarnings("unused")
         public String getPattern() {
             return pattern;
         }
 
+        @SuppressWarnings("unused")
         public void setPattern(String pattern) {
             this.pattern = pattern;
         }
 
+        @SuppressWarnings("unused")
         public boolean isEnabled() {
             return enabled;
         }
 
+        @SuppressWarnings("unused")
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
         }
