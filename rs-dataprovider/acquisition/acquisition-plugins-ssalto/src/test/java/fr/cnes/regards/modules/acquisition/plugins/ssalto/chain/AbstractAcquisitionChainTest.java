@@ -60,16 +60,16 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 public abstract class AbstractAcquisitionChainTest extends AbstractDaoTest {
 
     @Autowired
-    private IAcquisitionProcessingService processingService;
+    protected IAcquisitionProcessingService processingService;
 
     @Autowired
-    private IDatasetClient datasetClient;
+    protected IDatasetClient datasetClient;
 
     @Autowired
-    private IAcquisitionFileRepository fileRepository;
+    protected IAcquisitionFileRepository fileRepository;
 
     @Autowired
-    private IProductRepository productRepository;
+    protected IProductRepository productRepository;
 
     @Configuration
     @ComponentScan(basePackages = { "fr.cnes.regards.modules" })

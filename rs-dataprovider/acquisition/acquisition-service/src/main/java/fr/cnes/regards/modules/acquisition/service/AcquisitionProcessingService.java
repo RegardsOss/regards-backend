@@ -54,6 +54,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.acquisition.dao.AcquisitionProcessingChainSpecifications;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
@@ -110,10 +111,13 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private IAuthenticationResolver authResolver;
 
     @Autowired
-    private IAcquisitionProcessingService self;
+    private AutowireCapableBeanFactory beanFactory;
 
     @Autowired
-    private AutowireCapableBeanFactory beanFactory;
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private IAcquisitionProcessingService self;
 
     @PostConstruct
     public void init() {
@@ -312,13 +316,13 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public void lockChain(AcquisitionProcessingChain processingChain) {
-        acqChainRepository.setLocked(Boolean.TRUE, processingChain.getId());
+    public void lockChain(Long id) {
+        acqChainRepository.setLocked(Boolean.TRUE, id);
     }
 
     @Override
-    public void unlockChain(AcquisitionProcessingChain processingChain) {
-        acqChainRepository.setLocked(Boolean.FALSE, processingChain.getId());
+    public void unlockChain(Long id) {
+        acqChainRepository.setLocked(Boolean.FALSE, id);
     }
 
     @Override
@@ -353,21 +357,23 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @Override
     public AcquisitionProcessingChain stopAndCleanChain(Long processingChainId) throws ModuleException {
 
-        AcquisitionProcessingChain processingChain = getChain(processingChainId);
+        AcquisitionProcessingChain processingChain = self.getChain(processingChainId);
 
         // Prevent chain from being run during stopping to avoid a real mess
         if (processingChain.isLocked()) {
             // FIXME lock is used for chain start and stop!
             LOGGER.warn("There can be an issue with processing chain locking because already locked!");
         } else {
-            lockChain(processingChain);
+            self.lockChain(processingChain.getId());
         }
 
-        // Stop chain jobs "synchronously"
-        self.stopChainJobs(processingChainId);
+        if (AcquisitionProcessingChainMode.AUTO.equals(processingChain.getMode())) {
+            processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
+            acqChainRepository.save(processingChain);
+        }
 
-        // Wait for jobs to stop and clean related products
-        Thread stopChainThread = new StopChainThread(processingChain);
+        // Stop jobs, wait for jobs to stop then clean related products
+        Thread stopChainThread = new StopChainThread(runtimeTenantResolver.getTenant(), processingChain.getId());
         beanFactory.autowireBean(stopChainThread);
         stopChainThread.start();
 
@@ -415,7 +421,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         if (processingChain.isLocked()) {
-            String message = String.format("Processing chain \"%s\" already running", processingChain.getLabel());
+            String message = String.format("Processing chain \"%s\" already locked", processingChain.getLabel());
             LOGGER.error(message);
             throw new EntityInvalidException(message);
         }
@@ -433,7 +439,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private void scheduleProductAcquisitionJob(AcquisitionProcessingChain processingChain) {
 
         // Mark processing chain as running
-        lockChain(processingChain);
+        lockChain(processingChain.getId());
         processingChain.setLastActivationDate(OffsetDateTime.now());
         acqChainRepository.save(processingChain);
 

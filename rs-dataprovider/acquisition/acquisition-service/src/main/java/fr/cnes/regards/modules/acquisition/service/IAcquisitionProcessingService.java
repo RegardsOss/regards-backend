@@ -69,17 +69,17 @@ public interface IAcquisitionProcessingService {
 
     /**
      * Lock processing chain
-     * @param processingChain processing chain to lock
+     * @param id {@link AcquisitionProcessingChain} identifier
      * @throws ModuleException if error occurs!
      */
-    void lockChain(AcquisitionProcessingChain processingChain);
+    void lockChain(Long id);
 
     /**
      * Unlock processing chain
-     * @param processingChain processing chain to unlock
+     * @param id {@link AcquisitionProcessingChain} identifier
      * @throws ModuleException if error occurs!
      */
-    void unlockChain(AcquisitionProcessingChain processingChain);
+    void unlockChain(Long id);
 
     /**
      * Start all automatic chains according to several conditions

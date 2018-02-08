@@ -85,12 +85,14 @@ public class AcquisitionFileServiceTest extends AbstractDaoTest {
     @Autowired
     private IPluginService pluginService;
 
+    @SuppressWarnings("unused")
     @Autowired
     private IAcquisitionFileRepository acqFileRepository;
 
     @Autowired
     private IProductService productService;
 
+    @SuppressWarnings("unused")
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 

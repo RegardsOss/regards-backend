@@ -103,7 +103,7 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
             throw new JobRuntimeException(e);
         } finally {
             // Job is terminated ... release processing chain
-            processingService.unlockChain(processingChain);
+            processingService.unlockChain(processingChain.getId());
         }
     }
 

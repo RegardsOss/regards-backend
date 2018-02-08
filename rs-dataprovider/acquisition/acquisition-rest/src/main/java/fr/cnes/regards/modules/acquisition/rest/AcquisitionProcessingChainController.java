@@ -85,6 +85,8 @@ public class AcquisitionProcessingChainController implements IResourceController
 
     public static final String START_MANUAL_CHAIN_PATH = CHAIN_PATH + "/start";
 
+    public static final String STOP_CHAIN_PATH = CHAIN_PATH + "/stop";
+
     @Autowired
     private IAcquisitionProcessingService processingService;
 
@@ -155,6 +157,13 @@ public class AcquisitionProcessingChainController implements IResourceController
         return ResponseEntity.ok(toResource(processingService.startManualChain(chainId)));
     }
 
+    @RequestMapping(method = RequestMethod.GET, value = STOP_CHAIN_PATH)
+    @ResourceAccess(description = "Stop a chain", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Resource<AcquisitionProcessingChain>> stopChain(@PathVariable Long chainId)
+            throws ModuleException {
+        return ResponseEntity.ok(toResource(processingService.stopAndCleanChain(chainId)));
+    }
+
     @Override
     public Resource<AcquisitionProcessingChain> toResource(AcquisitionProcessingChain element, Object... extras) {
         Resource<AcquisitionProcessingChain> resource = resourceService.toResource(element);
@@ -170,6 +179,8 @@ public class AcquisitionProcessingChainController implements IResourceController
             resourceService.addLink(resource, this.getClass(), "startManualChain", "start",
                                     MethodParamFactory.build(Long.class, element.getId()));
         }
+        resourceService.addLink(resource, this.getClass(), "stopChain", "stop",
+                                MethodParamFactory.build(Long.class, element.getId()));
         return resource;
     }
 }

@@ -18,15 +18,21 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.chain;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Ignore;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -50,7 +56,29 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=spot2doris1b",
         "jwt.secret=123456789", "regards.workspace=target/workspace" })
+// "regards.amqp.enabled=true"
+// @ActiveProfiles("testAmqp")
 public class Spot2Doris1bProcessingChainTest extends AbstractAcquisitionChainTest {
+
+    @Autowired
+    private IJobService jobService;
+
+    @Override
+    public void startChain() throws ModuleException, InterruptedException {
+        super.startChain();
+    }
+
+    @Ignore
+    @Test
+    public void stopChain() throws ModuleException {
+        // Enable listener
+        jobService.onApplicationEvent(null);
+
+        Long id = 1L;
+        processingService.startManualChain(id);
+        AcquisitionProcessingChain processingChain = processingService.stopAndCleanChain(id);
+        assertNotNull(processingChain);
+    }
 
     @Override
     protected AcquisitionProcessingChain createAcquisitionChain() throws ModuleException {

@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 
 /**
@@ -39,27 +39,35 @@ public class StopChainThread extends Thread {
     @Autowired
     private IAcquisitionProcessingService processingService;
 
-    private final AcquisitionProcessingChain processingChain;
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    private final Long processingChainId;
+
+    private final String tenant;
 
     private static final int TIMEOUT = 60000; // 60 seconds
 
     private static final int SLEEP_TIME = 1000; // 1 second
 
-    public StopChainThread(AcquisitionProcessingChain processingChain) {
-        super("Stopping chain " + processingChain.getLabel());
-        this.processingChain = processingChain;
+    public StopChainThread(String tenant, Long processingChainId) {
+        super("Stopping chain " + processingChainId);
+        this.processingChainId = processingChainId;
+        this.tenant = tenant;
     }
 
     @Override
     public void run() {
-
-        LOGGER.info("Waiting timeout set to {} seconds", TIMEOUT);
-
         int totalWaiting = 0;
 
         try {
-            while ((totalWaiting < TIMEOUT)
-                    && !processingService.isChainJobStoppedAndCleaned(processingChain.getId())) {
+            runtimeTenantResolver.forceTenant(tenant);
+
+            LOGGER.info("Asking for processing chain jobs to stop");
+            processingService.stopChainJobs(processingChainId);
+
+            LOGGER.info("Waiting timeout set to {} seconds", TIMEOUT);
+            while ((totalWaiting < TIMEOUT) && !processingService.isChainJobStoppedAndCleaned(processingChainId)) {
                 totalWaiting += SLEEP_TIME;
                 Thread.sleep(SLEEP_TIME);
                 LOGGER.info("Waiting for the chain to stop since {} seconds", totalWaiting);
@@ -67,7 +75,7 @@ public class StopChainThread extends Thread {
 
             if (totalWaiting < TIMEOUT) {
                 // Unlock chain
-                processingService.unlockChain(processingChain);
+                processingService.unlockChain(processingChainId);
             }
             // FIXME manage timeout or not!
             // FIXME add notification
