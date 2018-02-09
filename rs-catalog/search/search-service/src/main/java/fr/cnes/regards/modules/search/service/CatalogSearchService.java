@@ -188,6 +188,7 @@ public class CatalogSearchService implements ICatalogSearchService {
         try {
             userGroups = accessRightFilter.getUserAccessGroups();
         } catch (AccessRightFilterException e) {
+            LOGGER.error("Forbidden opearation", e);
             throw new EntityOperationForbiddenException(urn.toString(), entity.getClass(),
                     "You do not have access to this " + entity.getClass().getSimpleName());
         }
