@@ -46,6 +46,8 @@ public class AcquisitionProcessingChainMonitor {
 
     private long nbSIPSubmissionJobs = 0;
 
+    private boolean active = false;
+
     // Post processing jobs not managed here ... can be seen in product
 
     public AcquisitionProcessingChainMonitor(AcquisitionProcessingChain chain) {
@@ -132,5 +134,10 @@ public class AcquisitionProcessingChainMonitor {
 
     public void setNbSIPSubmissionJobs(long nbSIPSubmissionJobs) {
         this.nbSIPSubmissionJobs = nbSIPSubmissionJobs;
+    }
+
+    public boolean isActive() {
+        active = (nbProductAcquisitionJob > 0) || (nbSIPGenerationJobs > 0) || (nbSIPSubmissionJobs > 0);
+        return active;
     }
 }

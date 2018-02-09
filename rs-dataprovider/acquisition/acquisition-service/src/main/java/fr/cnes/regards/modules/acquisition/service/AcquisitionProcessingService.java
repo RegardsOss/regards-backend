@@ -643,6 +643,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 .countByProcessingChainAndSipStateIn(chain, Arrays.asList(ProductSIPState.SCHEDULED)));
         summary.setNbSIPSubmissionJobs(productService
                 .countByProcessingChainAndSipStateIn(chain, Arrays.asList(ProductSIPState.SUBMISSION_SCHEDULED)));
+        summary.isActive();
 
         return summary;
     }

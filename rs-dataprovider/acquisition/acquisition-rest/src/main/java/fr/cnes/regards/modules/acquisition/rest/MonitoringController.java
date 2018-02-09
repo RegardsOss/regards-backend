@@ -62,7 +62,8 @@ public class MonitoringController implements IResourceController<AcquisitionProc
     private IAcquisitionProcessingService service;
 
     /**
-     * Build all {@link AcquisitionProcessingChainMonitor} from {@link AcquisitionProcessingChain}s matching given criterion.
+     * Build all {@link AcquisitionProcessingChainMonitor} from {@link AcquisitionProcessingChain}s matching given
+     * criterion.
      * @param mode {@link AcquisitionProcessingChainMode} search criteria
      * @param running {@link Boolean} search criteria
      * @param label {@link String} search criteria
@@ -87,10 +88,15 @@ public class MonitoringController implements IResourceController<AcquisitionProc
     public Resource<AcquisitionProcessingChainMonitor> toResource(AcquisitionProcessingChainMonitor element,
             Object... pExtras) {
         Resource<AcquisitionProcessingChainMonitor> resource = resourceService.toResource(element);
-        if ((element != null) && (element.getChain() != null)
-                && AcquisitionProcessingChainMode.MANUAL.equals(element.getChain().getMode())) {
-            resourceService.addLink(resource, AcquisitionProcessingChainController.class, "startManualChain", "start",
-                                    MethodParamFactory.build(Long.class, element.getChain().getId()));
+        if ((element != null) && (element.getChain() != null)) {
+            if (AcquisitionProcessingChainMode.MANUAL.equals(element.getChain().getMode())) {
+                resourceService.addLink(resource, AcquisitionProcessingChainController.class, "startManualChain",
+                                        "start", MethodParamFactory.build(Long.class, element.getChain().getId()));
+            }
+            if (element.isActive()) {
+                resourceService.addLink(resource, AcquisitionProcessingChainController.class, "stopChain", "stop",
+                                        MethodParamFactory.build(Long.class, element.getChain().getId()));
+            }
         }
         return resource;
     }
