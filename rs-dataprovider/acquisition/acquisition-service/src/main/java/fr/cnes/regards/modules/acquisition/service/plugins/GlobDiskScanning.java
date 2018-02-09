@@ -58,7 +58,8 @@ public class GlobDiskScanning implements IScanPlugin {
     @PluginParameter(name = FIELD_DIRS, label = "List of directories to scan")
     private List<String> directories;
 
-    @PluginParameter(name = FIELD_GLOB, label = "Glob pattern", defaultValue = "*", optional = true)
+    @PluginParameter(name = FIELD_GLOB, label = "Glob pattern", description = "glob_pattern.md", defaultValue = "*",
+            optional = true)
     private String glob;
 
     @Override
