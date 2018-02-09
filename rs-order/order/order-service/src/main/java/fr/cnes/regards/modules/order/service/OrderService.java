@@ -41,6 +41,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -53,6 +54,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.io.ByteStreams;
+import feign.Response;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -157,8 +159,7 @@ public class OrderService implements IOrderService {
 
     @Value("${regards.order.files.bucket.size.Mb:100}")
     private int bucketSizeMb;
-//    private int bucketSizeMb = 1;
-
+    //    private int bucketSizeMb = 1;
 
     @Value("${regards.order.validation.period.days:3}")
     private int orderValidationPeriodDays;
@@ -180,8 +181,8 @@ public class OrderService implements IOrderService {
     /**
      * Set of DataTypes to retrieve on DataObjects
      */
-    private static final Set<DataType> DATA_TYPES = Stream.of(DataTypeSelection.ALL.getFileTypes()).map(DataType::valueOf)
-            .collect(Collectors.toSet());
+    private static final Set<DataType> DATA_TYPES = Stream.of(DataTypeSelection.ALL.getFileTypes())
+            .map(DataType::valueOf).collect(Collectors.toSet());
 
     @Override
     public Order createOrder(Basket basket, String url) {
@@ -304,8 +305,8 @@ public class OrderService implements IOrderService {
     /**
      * Create a sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to DatasetTask
      */
-    private void createSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles,
-            Order order, int priority) {
+    private void createSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order,
+            int priority) {
         OffsetDateTime expirationDate = order.getExpirationDate();
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(order.getId());
@@ -483,9 +484,10 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os) throws IOException {
+    public void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os)
+            throws IOException {
         List<OrderDataFile> availableFiles = new ArrayList<>(inDataFiles);
-        List<OrderDataFile> inErrorFiles = new ArrayList<>();
+        List<OrderDataFile> downloadErrorFiles = new ArrayList<>();
 
         try (ZipOutputStream zos = new ZipOutputStream(os)) {
             // A multiset to manage multi-occurrences of files
@@ -493,45 +495,46 @@ public class OrderService implements IOrderService {
             for (Iterator<OrderDataFile> i = availableFiles.iterator(); i.hasNext(); ) {
                 OrderDataFile dataFile = i.next();
                 String aip = dataFile.getIpId().toString();
-                try (InputStream is = aipClient.downloadFile(aip, dataFile.getChecksum()).body().asInputStream()) {
-                    // If storage cannot provide file
-                    if (is == null) {
-                        // By now, only state is used for everything
-//                        if (!dataFile.getOnline()) {
-                            inErrorFiles.add(dataFile);
-//                        }
-                        i.remove();
-                        LOGGER.warn(
-                                String.format("Cannot retrieve data file from storage (aip : %s, checksum : %s)", aip,
-                                              dataFile.getChecksum()));
-                        continue;
-                    }
-                    // Add filename to multiset
-                    String filename = dataFile.getName();
-                    dataFiles.add(filename);
-                    // If same file appears several times, add "(n)" juste before extension (n is occurrence of course
-                    // you dumb ass ! What do you thing it could be ?)
-                    int filenameCount = dataFiles.count(filename);
-                    if (filenameCount > 1) {
-                        String suffix = " (" + (filenameCount - 1) + ")";
-                        int lastDotIdx = filename.lastIndexOf('.');
-                        if (lastDotIdx != -1) {
-                            filename = filename.substring(0, lastDotIdx) + suffix + filename.substring(lastDotIdx);
-                        } else { // No extension
-                            filename += suffix;
+                Response response = aipClient.downloadFile(aip, dataFile.getChecksum());
+                // Unable to download file from storage
+                if (response.status() != HttpStatus.OK.value()) {
+                    downloadErrorFiles.add(dataFile);
+                    i.remove();
+                    LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})", aip,
+                                dataFile.getChecksum());
+                    continue;
+                } else { // Download ok
+                    try (InputStream is = response.body().asInputStream()) {
+                        // Add filename to multiset
+                        String filename = dataFile.getName();
+                        dataFiles.add(filename);
+                        // If same file appears several times, add "(n)" juste before extension (n is occurrence of course
+                        // you dumb ass ! What do you thing it could be ?)
+                        int filenameCount = dataFiles.count(filename);
+                        if (filenameCount > 1) {
+                            String suffix = " (" + (filenameCount - 1) + ")";
+                            int lastDotIdx = filename.lastIndexOf('.');
+                            if (lastDotIdx != -1) {
+                                filename = filename.substring(0, lastDotIdx) + suffix + filename.substring(lastDotIdx);
+                            } else { // No extension
+                                filename += suffix;
+                            }
                         }
+                        zos.putNextEntry(new ZipEntry(filename));
+                        ByteStreams.copy(is, zos);
+                        zos.closeEntry();
                     }
-                    zos.putNextEntry(new ZipEntry(filename));
-                    ByteStreams.copy(is, zos);
-                    zos.closeEntry();
                 }
             }
             zos.flush();
             zos.finish();
         }
+        // Set statuses of all downloaded files
         availableFiles.forEach(f -> f.setState(FileState.DOWNLOADED));
-        inErrorFiles.forEach(f -> f.setState(FileState.ERROR));
-        availableFiles.addAll(inErrorFiles);
+        // Set statuses of all not downloaded files
+        downloadErrorFiles.forEach(f -> f.setState(FileState.DOWNLOAD_ERROR));
+        // use one set to save everybody
+        availableFiles.addAll(downloadErrorFiles);
         dataFileService.save(availableFiles);
 
         // Don't forget to manage user order jobs (maybe order is in waitingForUser state)
@@ -712,8 +715,6 @@ public class OrderService implements IOrderService {
         });
         return optional;
     }
-
-
 
     @Override
     @Transactional(Transactional.TxType.NEVER)

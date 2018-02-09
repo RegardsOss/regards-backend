@@ -103,8 +103,10 @@ public class FilesTask extends LeafTask {
      * - if no file has been downloaded (=> no file with DOWNLOADED status)
      */
     public void computeWaitingForUser() {
-        Set<OrderDataFile> notInErrorFiles = files.stream().filter(f -> f.getState() != FileState.ERROR)
+        Set<OrderDataFile> notInErrorFiles = files.stream()
+                .filter(f -> (f.getState() != FileState.ERROR) && (f.getState() != FileState.DOWNLOAD_ERROR))
                 .collect(Collectors.toSet());
+        // Not in error nor download_error files are all available
         this.waitingForUser = !notInErrorFiles.isEmpty() && notInErrorFiles.stream()
                 .allMatch(f -> f.getState() == FileState.AVAILABLE);
     }
