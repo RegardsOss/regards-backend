@@ -116,6 +116,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
             LOGGER.error(e.getMessage(), e);
             // Update product
             product.setSipState(ProductSIPState.GENERATION_ERROR);
+            product.setError(e.getMessage());
             productService.save(product);
             throw new JobRuntimeException(e.getMessage());
         }

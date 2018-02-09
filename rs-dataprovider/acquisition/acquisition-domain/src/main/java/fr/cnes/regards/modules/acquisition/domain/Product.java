@@ -97,6 +97,12 @@ public class Product {
     @Convert(converter = SipStateConverter.class)
     private ISipState sipState;
 
+    /**
+     * This field is only used when sip state is set to an error state
+     */
+    @Type(type = "text")
+    private String error;
+
     @Column(name = "last_update", nullable = false)
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastUpdate;
@@ -301,5 +307,13 @@ public class Product {
 
     public void setLastSIPSubmissionJobInfo(JobInfo lastSIPSubmissionJobInfo) {
         this.lastSIPSubmissionJobInfo = lastSIPSubmissionJobInfo;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }

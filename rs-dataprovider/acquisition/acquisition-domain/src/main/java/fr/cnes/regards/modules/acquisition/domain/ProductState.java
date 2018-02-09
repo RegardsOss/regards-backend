@@ -35,11 +35,7 @@ public enum ProductState {
     /**
      * Mandatory and optional files is acquired
      */
-    FINISHED,
-    /**
-     * The {@link Product} is in error
-     */
-    ERROR;
+    FINISHED;
 
     @Override
     public String toString() {

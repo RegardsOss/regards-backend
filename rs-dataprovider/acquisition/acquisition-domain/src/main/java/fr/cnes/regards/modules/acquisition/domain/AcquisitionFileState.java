@@ -24,7 +24,7 @@ package fr.cnes.regards.modules.acquisition.domain;
  *
  * <pre>
  *             o
- *             |_______ ERROR
+ *             |_______ ERROR______SUPERSEDED_AFTER_ERROR
  *             |
  *          IN_PROGRESS
  *             |_______ INVALID
@@ -61,6 +61,10 @@ public enum AcquisitionFileState {
      * New files for a same product are acquired, old ones are superseded
      */
     SUPERSEDED,
+    /**
+     * New files for a same product are acquired, old ones in error are superseded
+     */
+    SUPERSEDED_AFTER_ERROR,
     /**
      * If error occurs during a file processing
      */

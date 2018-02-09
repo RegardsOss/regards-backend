@@ -38,6 +38,8 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Type;
+
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.converters.PathAttributeConverter;
@@ -74,7 +76,7 @@ public class AcquisitionFile {
     /**
      * This field is only used when acquisition file status is set to {@link AcquisitionFileState#ERROR}
      */
-    @Column(length = 256)
+    @Type(type = "text")
     private String error;
 
     /**

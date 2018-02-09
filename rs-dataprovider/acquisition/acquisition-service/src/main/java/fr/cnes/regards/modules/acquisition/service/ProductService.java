@@ -229,10 +229,15 @@ public class ProductService implements IProductService {
         } else {
             // Mark old file as superseded
             for (AcquisitionFile existing : currentProduct.getAcquisitionFiles()) {
-                if (existing.getFileInfo().equals(acqFile.getFileInfo())
-                        && AcquisitionFileState.ACQUIRED.equals(existing.getState())) {
-                    existing.setState(AcquisitionFileState.SUPERSEDED);
-                    acqFileRepository.save(existing);
+                if (existing.getFileInfo().equals(acqFile.getFileInfo())) {
+                    if (AcquisitionFileState.ACQUIRED.equals(existing.getState())) {
+                        existing.setState(AcquisitionFileState.SUPERSEDED);
+                        acqFileRepository.save(existing);
+                    }
+                    if (AcquisitionFileState.ERROR.equals(existing.getState())) {
+                        existing.setState(AcquisitionFileState.SUPERSEDED_AFTER_ERROR);
+                        acqFileRepository.save(existing);
+                    }
                 }
             }
         }

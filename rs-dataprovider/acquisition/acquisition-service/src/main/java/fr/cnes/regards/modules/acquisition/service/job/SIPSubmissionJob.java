@@ -56,6 +56,10 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
 
     public static final String SESSION_PARAMETER = "session";
 
+    public static final String DOT = ".";
+
+    public static final String SPACE = " ";
+
     private String ingestChain;
 
     private Optional<String> session;
@@ -130,6 +134,17 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                     Product product = productMap.get(dto.getId());
                     product.setSipState(dto.getState());
                     product.setIpId(dto.getIpId()); // May be null
+                    if ((dto.getRejectionCauses() != null) && !dto.getRejectionCauses().isEmpty()) {
+                        StringBuffer error = new StringBuffer();
+                        for (String cause : dto.getRejectionCauses()) {
+                            error.append(cause);
+                            if (!cause.endsWith(DOT)) {
+                                error.append(DOT);
+                            }
+                            error.append(SPACE);
+                        }
+                        product.setError(error.toString());
+                    }
                     productService.save(product);
                 }
                 break;
