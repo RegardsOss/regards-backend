@@ -69,7 +69,7 @@ public class AcquisitionFile {
     /**
      * The data file's status
      */
-    @Column(name = "state", length = 16)
+    @Column(name = "state", length = 32)
     @Enumerated(EnumType.STRING)
     private AcquisitionFileState state;
 

@@ -8,7 +8,6 @@
 	<artifactId>acquisition-service</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Acquisition Service</name>
 	<description>Service layer of the Acquisition module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
