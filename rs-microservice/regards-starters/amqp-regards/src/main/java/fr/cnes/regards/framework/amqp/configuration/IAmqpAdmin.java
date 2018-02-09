@@ -60,6 +60,10 @@ public interface IAmqpAdmin {
     public Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
             Optional<Class<? extends IHandler<?>>> handlerType);
 
+    String getUnicastQueueName(String tenant, Class<?> eventType, Target target);
+
+    String getSubscriptionQueueName(Class<? extends IHandler<?>> handlerType, Target target);
+
     /**
      * Declare binding to link {@link Queue} and {@link Exchange} with an optional routing key
      *
