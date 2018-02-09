@@ -251,23 +251,12 @@ public class NotificationService implements INotificationService, ApplicationLis
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onApplicationEvent(ApplicationReadyEvent event) {
         if (notificationMode == NotificationMode.MULTITENANT) {
-            subscriber.subscribeTo(ProjectUserEvent.class, new ProjectUserEventListener(this, runtimeTenantResolver));
-            subscriber.subscribeTo(RoleEvent.class, new RoleEventListener(this, runtimeTenantResolver));
+            subscriber.subscribeTo(ProjectUserEvent.class, new ProjectUserEventListener());
+            subscriber.subscribeTo(RoleEvent.class, new RoleEventListener());
         }
     }
 
     private class ProjectUserEventListener implements IHandler<ProjectUserEvent> {
-
-        private INotificationService notificationService;
-
-        private IRuntimeTenantResolver runtimeTenantResolver;
-
-        public ProjectUserEventListener(INotificationService notificationService,
-                IRuntimeTenantResolver runtimeTenantResolver) {
-            this.notificationService = notificationService;
-            this.runtimeTenantResolver = runtimeTenantResolver;
-        }
-
         @Override
         public void handle(TenantWrapper<ProjectUserEvent> wrapper) {
             ProjectUserEvent event = wrapper.getContent();
@@ -276,7 +265,7 @@ public class NotificationService implements INotificationService, ApplicationLis
                 FeignSecurityManager.asSystem();
                 runtimeTenantResolver.forceTenant(tenant);
                 if (event.getAction() == ProjectUserAction.DELETION) {
-                    notificationService.removeReceiver(event.getEmail());
+                    NotificationService.this.removeReceiver(event.getEmail());
                 }
             } finally {
                 runtimeTenantResolver.clearTenant();
@@ -286,17 +275,6 @@ public class NotificationService implements INotificationService, ApplicationLis
     }
 
     private class RoleEventListener implements IHandler<RoleEvent> {
-
-        private INotificationService notificationService;
-
-        private IRuntimeTenantResolver runtimeTenantResolver;
-
-        public RoleEventListener(NotificationService notificationService,
-                IRuntimeTenantResolver runtimeTenantResolver) {
-            this.notificationService = notificationService;
-            this.runtimeTenantResolver = runtimeTenantResolver;
-        }
-
         @Override
         public void handle(TenantWrapper<RoleEvent> wrapper) {
             String tenant = wrapper.getTenant();
@@ -307,7 +285,7 @@ public class NotificationService implements INotificationService, ApplicationLis
                 ResponseEntity<Resource<Role>> roleResponse = rolesClient.retrieveRole(event.getRole());
                 if (roleResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
                     // then the role was deleted
-                    notificationService.removeRoleReceiver(event.getRole());
+                    NotificationService.this.removeRoleReceiver(event.getRole());
                 }
             } finally {
                 runtimeTenantResolver.clearTenant();
