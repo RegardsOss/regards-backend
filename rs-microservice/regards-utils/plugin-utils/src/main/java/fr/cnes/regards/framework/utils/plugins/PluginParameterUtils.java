@@ -19,11 +19,17 @@
 
 package fr.cnes.regards.framework.utils.plugins;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,6 +37,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,10 +61,14 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType.Para
  */
 public final class PluginParameterUtils {
 
-    /**
-     * Logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginParameterUtils.class);
+
+    /**
+     * Markdown extension available for plugin parameter description
+     */
+    private static final String MARKDOWN_EXTENSION = ".md";
+
+    private static final String END_LINE = "\n";
 
     /**
      * Retrieve {@link List} of {@link PluginParameterType} by reflection on class fields
@@ -91,7 +102,7 @@ public final class PluginParameterUtils {
                 if (!isChildParameters) {
                     alreadyManagedTypeNames = new ArrayList<>();
                 }
-                parameters.add(buildPluginParameter(field, prefixes, alreadyManagedTypeNames));
+                parameters.add(buildPluginParameter(field, pluginClass, prefixes, alreadyManagedTypeNames));
             }
         }
         return parameters.isEmpty() ? null : parameters;
@@ -110,12 +121,13 @@ public final class PluginParameterUtils {
      * Create a new {@link PluginParameterType} from a class {@link Field}
      *
      * @param field {@link Field} to get type from
+     * @param pluginClass the plugin implementation
      * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param alreadyManagedTypeNames List of already managed type names to detect cyclic references during in depth
      *            parameters discovery.
      * @return {@link PluginParameterType}
      */
-    private static PluginParameterType buildPluginParameter(Field field, List<String> prefixes,
+    private static PluginParameterType buildPluginParameter(Field field, Class<?> pluginClass, List<String> prefixes,
             List<String> alreadyManagedTypeNames) {
         PluginParameterType result;
 
@@ -133,8 +145,12 @@ public final class PluginParameterUtils {
         } else {
             // Report values from annotation
             String name = getFieldName(field, pluginParameter);
-            result = PluginParameterType.create(name, pluginParameter.label(), pluginParameter.description(),
-                                                field.getType(), paramType, pluginParameter.optional());
+
+            // Manage description (text or markdown)
+            String description = getParameterDescription(pluginClass, pluginParameter.description());
+
+            result = PluginParameterType.create(name, pluginParameter.label(), description, field.getType(), paramType,
+                                                pluginParameter.optional());
             if ((pluginParameter.defaultValue() != null) && !pluginParameter.defaultValue().isEmpty()) {
                 result.setDefaultValue(pluginParameter.defaultValue());
             }
@@ -175,6 +191,28 @@ public final class PluginParameterUtils {
             tryPropagatingDiscovery(field.getType(), valueType, prefixes, alreadyManagedTypeNames, result);
         }
         return result;
+    }
+
+    private static String getParameterDescription(Class<?> pluginClass, String description) {
+        if ((description != null) && !description.isEmpty() && description.endsWith(MARKDOWN_EXTENSION)) {
+            // Try to load markdown description
+            try {
+                URL url = pluginClass.getResource(description);
+                if (url != null) {
+                    Path path = Paths.get(url.toURI());
+                    StringBuilder data = new StringBuilder();
+                    Stream<String> lines = Files.lines(path);
+                    lines.forEach(line -> data.append(line).append(END_LINE));
+                    lines.close();
+                    return data.toString().trim();
+                }
+            } catch (URISyntaxException | IOException e) {
+                LOGGER.warn("Markdown description cannot be loaded", e);
+                // Fall back to raw description
+                // Nothing to do
+            }
+        }
+        return description;
     }
 
     /**

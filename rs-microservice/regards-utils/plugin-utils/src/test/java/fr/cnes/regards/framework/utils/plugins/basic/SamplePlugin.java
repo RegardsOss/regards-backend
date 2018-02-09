@@ -48,7 +48,7 @@ public class SamplePlugin implements ISamplePlugin {
     /**
      * A {@link String} parameter
      */
-    @PluginParameter(description = "string parameter", label = "Suffix")
+    @PluginParameter(description = "suffix.md", label = "Suffix")
     private String suffix;
 
     /**
