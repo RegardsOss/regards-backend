@@ -43,6 +43,8 @@ import org.springframework.validation.Validator;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -963,26 +965,22 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     private Set<UUID> scheduleDeletion(Set<StorageDataFile> dataFilesToDelete) throws ModuleException {
-        IAllocationStrategy allocationStrategy = getAllocationStrategy();
-        // FIXME: should probably set the tenant into maintenance in case of module exception
-
-        Multimap<Long, StorageDataFile> deletionWorkingSetMap = allocationStrategy.dispatch(dataFilesToDelete);
-        LOG.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
-                  dataFilesToDelete.size(), deletionWorkingSetMap.keySet().size());
-        // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
-        checkDispatch(dataFilesToDelete, deletionWorkingSetMap);
+        //when we delete DataFiles, we have to get the DataStorages to use thanks to DB informations
+        Multimap<Long, StorageDataFile> deletionWorkingSetMap = HashMultimap.create();
+        dataFilesToDelete.forEach(dataFile->deletionWorkingSetMap.put(dataFile.getDataStorageUsed().getId(), dataFile));
         Set<JobInfo> jobsToSchedule = Sets.newHashSet();
-        for (Long dataStorageConf : deletionWorkingSetMap.keySet()) {
-            Set<IWorkingSubset> workingSubSets = getWorkingSubsets(deletionWorkingSetMap.get(dataStorageConf),
-                                                                   dataStorageConf);
-            LOG.trace("Preparing a job for each working subsets");
+        for (Long dataStorageConfId : deletionWorkingSetMap.keySet()) {
+            //FIXME: getWorkingSubsets -> IDataStorage#prepare(..., STORE_MODE) il manque ua moins un commentaire ou nouvelle valeur d'enum! (gitlab regards/regards#246)
+            Set<IWorkingSubset> workingSubSets = getWorkingSubsets(deletionWorkingSetMap.get(dataStorageConfId),
+                                                                   dataStorageConfId);
+            LOG.trace("Preparing a deletion job for each working subsets");
             // lets instantiate every job for every DataStorage to use
             for (IWorkingSubset workingSubset : workingSubSets) {
                 // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets storeAndCreate a
                 // job for
                 // each of them
                 Set<JobParameter> parameters = Sets.newHashSet();
-                parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConf));
+                parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConfId));
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
                 jobsToSchedule.add(new JobInfo(false, 0, parameters, authResolver.getUser(),
                                                DeleteDataFilesJob.class.getName()));
