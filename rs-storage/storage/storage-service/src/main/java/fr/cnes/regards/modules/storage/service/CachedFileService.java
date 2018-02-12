@@ -590,7 +590,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     private Path getTenantCachePath() {
         String currentTenant = runtimeTenantResolver.getTenant();
         if (currentTenant == null) {
-            LOG.error("Unable to define current tenant chache directory path, Tenant is not defined from the runtimeTenantResolver.");
+            LOG.error("Unable to define current tenant cache directory path, Tenant is not defined from the runtimeTenantResolver.");
             return null;
         }
         return Paths.get(globalCachePath, currentTenant);
