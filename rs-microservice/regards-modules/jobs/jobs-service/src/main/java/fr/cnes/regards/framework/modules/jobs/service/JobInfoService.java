@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.jobs.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -157,11 +158,14 @@ public class JobInfoService implements IJobInfoService {
 
     @Override
     public void cleanOutOfDateJobsOnTenant() {
-        // Delete expired jobs
-        jobInfoRepository.deleteExpiredJobs();
-        // Delete succeeded jobs since configured retention days
-        jobInfoRepository.deleteSucceededJobsSince(succeededJobsRetentionDays);
-        // Delete failed or aborted jobs since configured retention days
-        jobInfoRepository.deleteFailedOrAbortedJobsSince(failedJobsRetentionDays);
+        List<JobInfo> jobs = new ArrayList<>();
+        // Add expired jobs
+        jobs.addAll(jobInfoRepository.findExpiredJobs());
+        // Add succeeded jobs since configured retention days
+        jobs.addAll(jobInfoRepository.findSucceededJobsSince(succeededJobsRetentionDays));
+        // Add failed or aborted jobs since configured retention days
+        jobs.addAll(jobInfoRepository.findFailedOrAbortedJobsSince(failedJobsRetentionDays));
+        // Remove all these jobs
+        jobInfoRepository.delete(jobs);
     }
 }

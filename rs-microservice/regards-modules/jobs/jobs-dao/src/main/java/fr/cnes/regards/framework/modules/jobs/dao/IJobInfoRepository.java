@@ -66,42 +66,41 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     Long countByStatusStatusIn(JobStatus... statuses);
 
     /**
-     * Delete jobs expired at given date (only unlocked)
+     * Search jobs expired at given date (only unlocked)
      */
-    @Modifying
-    @Query("delete JobInfo j where j.expirationDate < ?1 and j.status.status not in ('QUEUED', 'TO_BE_RUN', 'RUNNING') "
-            + "and j.locked = FALSE")
-    void deleteAtDateExpiredJobs(OffsetDateTime date);
+    List<JobInfo> findByExpirationDateLessThanAndLockedAndStatusStatusNotIn(OffsetDateTime expireDate, Boolean locked,
+            JobStatus... statuses);
 
     /**
-     * Delete currently expired jobs
+     * Search currently expired jobs
      */
-    default void deleteExpiredJobs() {
-        deleteAtDateExpiredJobs(OffsetDateTime.now());
+    default List<JobInfo> findExpiredJobs() {
+        return findByExpirationDateLessThanAndLockedAndStatusStatusNotIn(OffsetDateTime.now(), false, JobStatus.QUEUED,
+                                                                         JobStatus.TO_BE_RUN, JobStatus.RUNNING);
     }
 
     /**
-     * Delete jobs with given status at given date (only unlocked)
+     * Search jobs with given status at given date (only unlocked)
      */
-    @Modifying
-    @Query("delete JobInfo j where j.status.stopDate < ?1 and j.status.status in ?2 and j.locked = FALSE")
-    void deleteWithStatusAtDateJobs(OffsetDateTime date, JobStatus... statuses);
+    @EntityGraph(attributePaths = { "parameters" })
+    List<JobInfo> findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime stopDate, Boolean locked,
+            JobStatus... statuses);
 
     /**
-     * Delete succeeded jobs since given number of days
+     * Search succeeded jobs since given number of days
      */
-    default void deleteSucceededJobsSince(int days) {
-        deleteWithStatusAtDateJobs(OffsetDateTime.now().minusDays((long)days), JobStatus.SUCCEEDED);
+    default List<JobInfo> findSucceededJobsSince(int days) {
+        return findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime.now().minusDays((long) days),
+                                                                      false, JobStatus.SUCCEEDED);
     }
 
     /**
-     * Delete failed and aborted jobs since given number of days
+     * Search failed and aborted jobs since given number of days
      */
-    default void deleteFailedOrAbortedJobsSince(int days) {
-        deleteWithStatusAtDateJobs(OffsetDateTime.now().minusDays((long)days), JobStatus.FAILED, JobStatus.ABORTED);
+    default List<JobInfo> findFailedOrAbortedJobsSince(int days) {
+        return findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime.now().minusDays((long) days), false,
+                                                                      JobStatus.FAILED, JobStatus.ABORTED);
     }
-
-
 
     /**
      * Count all jobs that will be launched in the future and jobs that are currently running
