@@ -184,7 +184,8 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
      * @param target {@link Target}
      * @return queue name
      */
-    private String getUnicastQueueName(String tenant, Class<?> eventType, Target target) {
+    @Override
+    public String getUnicastQueueName(String tenant, Class<?> eventType, Target target) {
         if (Target.ONE_PER_MICROSERVICE_TYPE.equals(target)) {
             throw new IllegalArgumentException(String.format("Target %s not supported", target.toString()));
         }
@@ -209,7 +210,8 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
      * @param handlerType event handler
      * @return queue name
      */
-    private String getSubscriptionQueueName(Class<? extends IHandler<?>> handlerType, Target target) {
+    @Override
+    public String getSubscriptionQueueName(Class<? extends IHandler<?>> handlerType, Target target) {
         StringBuilder builder = new StringBuilder();
         builder.append(BROADCAST_NAMESPACE);
         builder.append(DOT);

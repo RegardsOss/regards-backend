@@ -97,8 +97,8 @@ public class AmqpEventHandler {
         @Override
         public void handle(TenantWrapper<TenantDeletedEvent> pWrapper) {
             TenantDeletedEvent tde = pWrapper.getContent();
-            virtualHostAdmin.removeVhost(tde.getTenant());
             subscriber.removeTenant(tde.getTenant());
+            virtualHostAdmin.removeVhost(tde.getTenant());
         }
     }
 }

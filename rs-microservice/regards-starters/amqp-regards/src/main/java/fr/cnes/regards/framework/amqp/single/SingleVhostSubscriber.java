@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 
@@ -84,12 +83,12 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
                 if (WorkerMode.UNICAST.equals(workerMode)) {
                     Optional<Class<? extends IHandler<?>>> handlerType = handler == null ? Optional.empty()
                             : Optional.of(handler.getType());
-                    Queue queueToRemove = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, handlerType);
+                    String queueNameToRemove = amqpAdmin.getUnicastQueueName(tenant, eventType, target);
                     String virtualHost = resolveVirtualHost(tenant);
 
                     Map<String, SimpleMessageListenerContainer> vhostsContainers = entry.getValue();
                     SimpleMessageListenerContainer container = vhostsContainers.get(virtualHost);
-                    container.removeQueueNames(queueToRemove.getName());
+                    container.removeQueueNames(queueNameToRemove);
                 }
                 // Nothing to do for BROADCAST
             }

@@ -69,6 +69,11 @@ public @interface PluginParameter {
     String label();
 
     /**
+     * Description may contain a <b>text</b> or a <b>markdown file reference (ending with .md extension)</b>. If so,
+     * file must be
+     * available in the same package as
+     * the plugin.
+     *
      * @return an optional further human readable information if the label is not explicit enough!
      */
     String description() default "";
