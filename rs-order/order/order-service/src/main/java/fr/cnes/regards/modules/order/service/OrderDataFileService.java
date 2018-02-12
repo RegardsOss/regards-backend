@@ -220,32 +220,11 @@ public class OrderDataFileService implements IOrderDataFileService {
             // If no files in error = DONE
             if (errorCount == 0) {
                 order.setStatus(OrderStatus.DONE);
-                // Remove all filesTask and so all associated jobs
-                order.getDatasetTasks().forEach(dsTask -> dsTask.getReliantTasks().clear());
             } else if (errorCount == order.getDatasetTasks().stream().mapToInt(DatasetTask::getFilesCount).sum()) {
                 // If all files in error => FAILED
                 order.setStatus(OrderStatus.FAILED);
-                cleanSucceededFilesTasks(order);
-
             } else { // DONE_WITH_WARNING
                 order.setStatus(OrderStatus.DONE_WITH_WARNING);
-                // Remove all filesTask with no jobs in error (and so all associated jobs)
-                cleanSucceededFilesTasks(order);
-            }
-        }
-    }
-
-    /**
-     * Remove all FilesTasks without failed job
-     */
-    private void cleanSucceededFilesTasks(Order order) {
-        // Remove all filesTask with no jobs in error (and so all associated jobs)
-        for (DatasetTask dsTask : order.getDatasetTasks()) {
-            for (Iterator<FilesTask> i = dsTask.getReliantTasks().iterator(); i.hasNext(); ) {
-                JobInfo jobInfo = i.next().getJobInfo();
-                if (jobInfo.getStatus().getStatus() != JobStatus.FAILED) {
-                    i.remove();
-                }
             }
         }
     }
