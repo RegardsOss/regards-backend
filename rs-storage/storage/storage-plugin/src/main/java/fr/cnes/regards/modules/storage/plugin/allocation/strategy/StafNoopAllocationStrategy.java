@@ -115,13 +115,19 @@ public class StafNoopAllocationStrategy implements IAllocationStrategy {
                                 "Allocation strategy for data file %s failed, no corresponding staf data storage found.",
                                 dataFile.getUrl()));
                     } else {
+                        //This allocation strategy only allows files to be stored into 1 DataStorage
+                        dataFile.setNotYetStoredBy(1L);
                         dispatch.put(chosenOne, dataFile);
                     }
                     break;
                 default:
                     if (dataFile.isQuicklook()) {
+                        //This allocation strategy only allows files to be stored into 1 DataStorage
+                        dataFile.setNotYetStoredBy(1L);
                         dispatch.put(quicklookDataStorageConfigurationId, dataFile);
                     } else {
+                        //This allocation strategy only allows files to be stored into 1 DataStorage
+                        dataFile.setNotYetStoredBy(1L);
                         dispatch.put(dataStorageConfigurationId, dataFile);
                     }
                     break;

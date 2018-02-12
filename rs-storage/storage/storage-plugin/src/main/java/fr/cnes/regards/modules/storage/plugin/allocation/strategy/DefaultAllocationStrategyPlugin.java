@@ -59,6 +59,8 @@ public class DefaultAllocationStrategyPlugin implements IAllocationStrategy {
         HashMultimap<Long, StorageDataFile> result = HashMultimap.create(2, dataFilesToHandle.size());
 
         dataFilesToHandle.forEach(dataFile -> {
+            //This allocation strategy only allows files to be stored into 1 DataStorage
+            dataFile.setNotYetStoredBy(1L);
             if (dataFile.isQuicklook()) {
                 result.put(dataStorageConfForQuicklook.getId(), dataFile);
                 return;

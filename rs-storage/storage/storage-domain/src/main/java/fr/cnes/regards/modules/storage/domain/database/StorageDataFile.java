@@ -19,6 +19,7 @@ import javax.persistence.NamedSubgraph;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.Min;
 import java.net.URL;
 import java.util.Set;
 
@@ -136,6 +137,14 @@ public class StorageDataFile {
     @JoinColumn(name = "aip_ip_id", foreignKey = @ForeignKey(name = "fk_aip_data_file"))
     @GsonIgnore
     private AIPEntity aipEntity;
+
+    /**
+     * Indicates the number of archives that have to store this data file. Archives <=> IDataStorage configurations
+     */
+    @Column
+    @Min(0)
+    @GsonIgnore
+    private Long notYetStoredBy;
 
     /**
      * Default constructor
@@ -404,6 +413,14 @@ public class StorageDataFile {
     public boolean isQuicklook() {
         return dataType == DataType.QUICKLOOK_HD || dataType == DataType.QUICKLOOK_MD
                 || dataType == DataType.QUICKLOOK_SD;
+    }
+
+    public Long getNotYetStoredBy() {
+        return notYetStoredBy;
+    }
+
+    public void setNotYetStoredBy(Long notYetStoredBy) {
+        this.notYetStoredBy = notYetStoredBy;
     }
 
     @Override

@@ -106,6 +106,8 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
         for (StorageDataFile dataFile : dataFilesToHandle) {
             // now lets extract the property value from the AIP
             if(dataFile.isQuicklook()) {
+                //This allocation strategy only allows files to be stored into 1 DataStorage
+                dataFile.setNotYetStoredBy(1L);
                 dispatch.put(quicklookDataStorageConfigurationId, dataFile);
             } else {
                 try {
@@ -116,6 +118,8 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
                                 "File(url: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
                                 dataFile.getUrl()));
                     } else {
+                        //This allocation strategy only allows files to be stored into 1 DataStorage
+                        dataFile.setNotYetStoredBy(1L);
                         dispatch.put(chosenOne, dataFile);
                     }
                 } catch (PathNotFoundException e) {
