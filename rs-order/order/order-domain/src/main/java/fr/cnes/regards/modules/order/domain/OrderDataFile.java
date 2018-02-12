@@ -38,20 +38,23 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 @NamedNativeQueries({
         @NamedNativeQuery(query = "SELECT o.*, sum(df.size) as size FROM {h-schema}t_data_file df, {h-schema}t_order o "
                 + "WHERE df.order_id = o.id AND df.size is not NULL AND "
-                + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND status = 'RUNNING') "
+                + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND "
+                + "status in ('RUNNING', 'PAUSED')) "
                 + "GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "sumMapping",
                 name = "selectSumSizesByOrderId"),
         @NamedNativeQuery(
                 query = "SELECT o.*, sum(df.size) as size FROM {h-schema}t_data_file df, {h-schema}t_order o WHERE "
                 + "df.order_id = o.id AND df.size is not NULL AND "
-                + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND status = 'RUNNING') "
+                + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND "
+                + "status in ('RUNNING', 'PAUSED')) "
                 + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "sumMapping", name = "selectSumSizesByOrderIdAndStates"),
         @NamedNativeQuery(
                 query = "SELECT o.*, count(df.*) as count FROM {h-schema}t_data_file df, {h-schema}t_order o WHERE "
                 + "df.order_id = o.id AND df.size is not NULL AND "
-                + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND status = 'RUNNING') "
+                + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND "
+                + "status in ('RUNNING', 'PAUSED')) "
                 + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates"),
         @NamedNativeQuery(
