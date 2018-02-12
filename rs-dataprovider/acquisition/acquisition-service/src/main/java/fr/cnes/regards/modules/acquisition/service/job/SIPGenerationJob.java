@@ -82,14 +82,14 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         try {
             processingChain = processingService.getChain(acqProcessingChainId);
         } catch (ModuleException e) {
-            handleInvalidParameter(CHAIN_PARAMETER_ID, e.getMessage());
+            handleInvalidParameter(CHAIN_PARAMETER_ID, e);
         }
 
         Long productId = getValue(parameters, PRODUCT_ID);
         try {
             product = productService.loadProduct(productId);
         } catch (ModuleException e) {
-            handleInvalidParameter(PRODUCT_ID, e.getMessage());
+            handleInvalidParameter(PRODUCT_ID, e);
         }
     }
 

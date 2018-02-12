@@ -41,8 +41,6 @@ import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
  * <li>create acknowledgement for each product file</li>
  * <li>clean all original product files</li>
  * </ul>
- *
- *
  * @author Christophe Mertz
  * @author Marc Sordi
  */
@@ -67,7 +65,7 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin {
     public Boolean cleanFile;
 
     @PluginParameter(name = CREATE_ACK_PARAM,
-            label = "An acknowledgement of succesful completion of SIP saved by the ingest microservice",
+            label = "An acknowledgement of successful completion of SIP saved by the ingest microservice",
             defaultValue = "false", optional = true)
     public Boolean createAck;
 
@@ -95,8 +93,10 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin {
                     Files.delete(acqFile.getFilePath());
                 } catch (IOException e) {
                     // Skipping silently
-                    LOGGER.warn("Deletion failure for product \"{}\" and  file \"{}\"", product.getProductName(),
-                                acqFile.getFilePath().toString());
+                    String msg = String
+                            .format("Deletion failure for product \"%s\" and  file \"%s\"", product.getProductName(),
+                                    acqFile.getFilePath().toString());
+                    LOGGER.warn(msg, e);
                 }
             });
         }
@@ -120,7 +120,9 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin {
         } catch (IOException e) {
             // Skipping silently
             // FIXME notify error!
-            LOGGER.warn("Cannot create acknowledgement for  file \"{}\"", acqFile.getFilePath().toString());
+            String msg = String.format("Cannot create acknowledgement for  file \"%s\"",
+                                       acqFile.getFilePath().toString());
+            LOGGER.warn(msg, e);
         }
     }
 }

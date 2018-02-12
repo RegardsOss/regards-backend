@@ -95,7 +95,7 @@ public final class LoadTranslationProperties {
             // Try to read the InputStream
             stream.available();
         } catch (IOException e) {
-            LOGGER.warn("NOT FOUND " + translationFile.getPath());
+            LOGGER.warn("NOT FOUND " + translationFile.getPath(), e);
             isReadable = false;
         }
 

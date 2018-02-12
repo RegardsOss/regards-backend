@@ -77,7 +77,7 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
         try {
             processingChain = processingService.getChain(acqProcessingChainId);
         } catch (ModuleException e) {
-            handleInvalidParameter(CHAIN_PARAMETER_ID, e.getMessage());
+            handleInvalidParameter(CHAIN_PARAMETER_ID, e);
         }
     }
 
