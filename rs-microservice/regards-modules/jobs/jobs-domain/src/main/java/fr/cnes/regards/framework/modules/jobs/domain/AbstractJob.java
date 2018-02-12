@@ -105,6 +105,19 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
     }
 
     /**
+     * Reject a job because <b>a parameter is invalid</b>
+     * @param parameterName related parameter
+     * @param reason reason for invalidity
+     * @throws JobParameterInvalidException the related exception
+     */
+    protected void handleInvalidParameter(String parameterName, Exception reason) throws JobParameterInvalidException {
+        String errorMessage = String
+                .format("Invalid job parameter \"%s\" : \"%s\"", parameterName, reason.getMessage());
+        logger.error(errorMessage, reason);
+        throw new JobParameterInvalidException(errorMessage);
+    }
+
+    /**
      * Get a required non null parameter value
      * @param parameters map of parameters
      * @param parameterName parameter name to retrieve
