@@ -43,8 +43,6 @@ import org.springframework.validation.Validator;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
-import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -542,7 +540,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Set<JobInfo> jobsToSchedule = Sets.newHashSet();
         for (Long dataStorageConfId : storageWorkingSetMap.keySet()) {
             Set<IWorkingSubset> workingSubSets = getWorkingSubsets(storageWorkingSetMap.get(dataStorageConfId),
-                                                                   dataStorageConfId);
+                                                                   dataStorageConfId,
+                                                                   DataStorageAccessModeEnum.STORE_MODE);
             LOG.trace("Preparing a job for each working subsets");
             // lets instantiate every job for every DataStorage to use
             for (IWorkingSubset workingSubset : workingSubSets) {
@@ -570,18 +569,18 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     /**
-     * Call the {@link IDataStorage} plugins associated to the given {@link PluginConfiguration}s to storeAndCreate
-     * {@link IWorkingSubset}
-     * of {@link StorageDataFile}s.
+     * Call the {@link IDataStorage} plugins associated to the given {@link PluginConfiguration}s to create
+     * {@link IWorkingSubset} of {@link StorageDataFile}s.
      * @param dataFilesToSubSet List of {@link StorageDataFile} to prepare.
      * @param dataStorageConfId {@link PluginConfiguration}
+     * @param accessMode
      * @return {@link IWorkingSubset}s
      */
     protected Set<IWorkingSubset> getWorkingSubsets(Collection<StorageDataFile> dataFilesToSubSet,
-            Long dataStorageConfId) throws ModuleException {
+            Long dataStorageConfId, DataStorageAccessModeEnum accessMode) throws ModuleException {
         IDataStorage<IWorkingSubset> storage = pluginService.getPlugin(dataStorageConfId);
         LOG.trace("Getting working subsets for data storage of id {}", dataStorageConfId);
-        Set<IWorkingSubset> workingSubSets = storage.prepare(dataFilesToSubSet, DataStorageAccessModeEnum.STORE_MODE);
+        Set<IWorkingSubset> workingSubSets = storage.prepare(dataFilesToSubSet, accessMode);
         LOG.trace("{} data objects were dispatched into {} working subsets", dataFilesToSubSet.size(),
                   workingSubSets.size());
         // as we are trusty people, we check that the prepare gave us back all DataFiles into the WorkingSubSets
@@ -970,9 +969,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         dataFilesToDelete.forEach(dataFile->deletionWorkingSetMap.put(dataFile.getDataStorageUsed().getId(), dataFile));
         Set<JobInfo> jobsToSchedule = Sets.newHashSet();
         for (Long dataStorageConfId : deletionWorkingSetMap.keySet()) {
-            //FIXME: getWorkingSubsets -> IDataStorage#prepare(..., STORE_MODE) il manque ua moins un commentaire ou nouvelle valeur d'enum! (gitlab regards/regards#246)
             Set<IWorkingSubset> workingSubSets = getWorkingSubsets(deletionWorkingSetMap.get(dataStorageConfId),
-                                                                   dataStorageConfId);
+                                                                   dataStorageConfId, DataStorageAccessModeEnum.DELETION_MODE);
             LOG.trace("Preparing a deletion job for each working subsets");
             // lets instantiate every job for every DataStorage to use
             for (IWorkingSubset workingSubset : workingSubSets) {
@@ -1154,7 +1152,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         Set<JobInfo> jobsToSchedule = Sets.newHashSet();
         for (Long dataStorageConfId : toPrepareMap.keySet()) {
             Set<IWorkingSubset> workingSubsets = getWorkingSubsets(toPrepareMap.get(dataStorageConfId),
-                                                                   dataStorageConfId);
+                                                                   dataStorageConfId,
+                                                                   DataStorageAccessModeEnum.STORE_MODE);
             for (IWorkingSubset workingSubset : workingSubsets) {
                 // for each workingSubset lets get the corresponding old metadata to remove
                 Set<StorageDataFile> oldOneCorrespondingToWorkingSubset = metadataToUpdate.stream()
