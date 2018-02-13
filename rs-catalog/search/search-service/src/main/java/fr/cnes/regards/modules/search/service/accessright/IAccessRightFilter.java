@@ -14,7 +14,7 @@ public interface IAccessRightFilter {
     /**
      * Add the current user's groups to the criterion.
      *
-     * @param criterion
+     * @param criterion cannot be null !!!
      * @return the passed criterion agremented of the current user's groups
      * @throws AccessRightFilterException if access rights cannot be set
      */

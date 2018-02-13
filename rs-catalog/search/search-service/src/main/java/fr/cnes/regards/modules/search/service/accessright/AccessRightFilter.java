@@ -65,7 +65,7 @@ public class AccessRightFilter implements IAccessRightFilter {
     private final IAccessGroupCache cache;
 
     /**
-     * Get current tenant at runtime. Autworied by Spring.
+     * Get current tenant at runtime. Autowired by Spring.
      */
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -115,8 +115,8 @@ public class AccessRightFilter implements IAccessRightFilter {
                 accessGroups.forEach(accessGroup -> groupCriterions.add(GROUP_TO_CRITERION.apply(accessGroup)));
                 searchCriterion.add(ICriterion.or(groupCriterions));
 
-                // Add user criterion
-                if (userCriterion != null) {
+                // Add user criterion (theorically, userCriterion should not be null at this point but...)
+                if ((userCriterion != null) && !userCriterion.equals(ICriterion.all())) {
                     searchCriterion.add(userCriterion);
                 }
 

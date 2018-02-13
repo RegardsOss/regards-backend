@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.search.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -34,6 +35,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 
@@ -68,16 +70,7 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 @Service
 @MultitenantTransactional
 public class CatalogSearchService implements ICatalogSearchService {
-
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(CatalogSearchService.class);
-
-    /**
-     * Query parameter to limit join search
-     */
-    public static final String THRESHOLD_QUERY_PARAMETER = "threshold";
 
     /**
      * Service perfoming the ElasticSearch search from criterions. Autowired.
@@ -212,23 +205,18 @@ public class CatalogSearchService implements ICatalogSearchService {
         try {
             // Build criterion from query
             ICriterion criterion = openSearchService.parse(allParams);
-
             if (LOGGER.isDebugEnabled() && (allParams != null)) {
                 for (Entry<String, String> osEntry : allParams.entrySet()) {
                     LOGGER.debug("Query param \"{}\" mapped to value \"{}\"", osEntry.getKey(), osEntry.getValue());
                 }
             }
-
             // Apply security filter (ie user groups)
             criterion = accessRightFilter.addAccessRights(criterion);
-
             // Perform compute
             DocFilesSummary summary = searchService.computeDataFilesSummary(searchKey, criterion, "tags", fileTypes);
-
             // It is necessary to filter sub summaries first to keep only datasets and seconds to keep only datasets
             // on which user has right
             final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
-
             // If accessGroups is null, user is admin
             if (accessGroups != null) {
                 // Retrieve all datasets that permit data objects retrieval (ie groups with FULL_ACCESS privilege), set
@@ -249,10 +237,9 @@ public class CatalogSearchService implements ICatalogSearchService {
                 }
                 for (Iterator<Entry<String, DocFilesSubSummary>> i = summary.getSubSummariesMap().entrySet()
                         .iterator(); i.hasNext(); ) {
-                    Entry<String, DocFilesSubSummary> entry = i.next();
                     // Remove it if subSummary discriminant isn't a dataset or isn't a dataset on which data can be
                     // retrieved for current user
-                    if (!datasetIpids.contains(entry.getKey())) {
+                    if (!datasetIpids.contains(i.next().getKey())) {
                         i.remove();
                     }
                 }
@@ -269,6 +256,39 @@ public class CatalogSearchService implements ICatalogSearchService {
         } catch (AccessRightFilterException e) {
             LOGGER.debug("Falling back to empty summary", e);
             return new DocFilesSummary();
+        }
+    }
+
+    @Override
+    public List<String> retrieveEnumeratedPropertyValues(Map<String, String> allParams,
+            SimpleSearchKey<DataObject> searchKey, String propertyPath, int maxCount, String partialText)
+            throws SearchException {
+        try {
+            // Build criterion from query
+            ICriterion criterion = openSearchService.parse(allParams);
+            if (LOGGER.isDebugEnabled() && (allParams != null)) {
+                for (Entry<String, String> osEntry : allParams.entrySet()) {
+                    LOGGER.debug("Query param \"{}\" mapped to value \"{}\"", osEntry.getKey(), osEntry.getValue());
+                }
+            }
+            // Apply security filter (ie user groups)
+            criterion = accessRightFilter.addAccessRights(criterion);
+            // Add partialText contains criterion if not empty
+            if (!Strings.isNullOrEmpty(partialText)) {
+                criterion = ICriterion.and(criterion, ICriterion.contains(propertyPath, partialText));
+            }
+            return searchService.searchUniqueTopValues(searchKey, criterion, propertyPath, maxCount);
+        } catch (OpenSearchParseException e) {
+            String message = "No query parameter";
+            if (allParams != null) {
+                StringJoiner sj = new StringJoiner("&");
+                allParams.forEach((key, value) -> sj.add(key + "=" + value));
+                message = sj.toString();
+            }
+            throw new SearchException(message, e);
+        } catch (AccessRightFilterException e) {
+            LOGGER.debug("Falling back to empty list of values", e);
+            return Collections.emptyList();
         }
     }
 }

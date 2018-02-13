@@ -533,15 +533,22 @@ public class SearchController {
     }
 
     /**
-     * Retrieve given property enumerated values (limited by maxCount, partial text conytains and dataobjects
+     * Retrieve given STRING property enumerated values (limited by maxCount, partial text contains and dataobjects
      * openSearch request from allParams (as usual)).
+     * @param propertyPath concerned STRING property path
+     * @param allParams opensearch request
+     * @param partialText text that property should contains (can be null)
+     * @param maxCount maximum result count
      */
     @RequestMapping(path = DATAOBJECT_PROPERTIES_VALUES, method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve enumerated property values", role = DefaultRole.PUBLIC)
     public ResponseEntity<List<String>> retrieveEnumeratedPropertyValues(@PathVariable("name") String propertyPath,
             @RequestParam Map<String, String> allParams, @RequestParam(value = "maxCount") int maxCount,
-            @RequestParam(value = "partialText", required = false) String partialText) {
-        return null;
+            @RequestParam(value = "partialText", required = false) String partialText) throws SearchException {
+        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
+        return ResponseEntity.ok(searchService
+                                         .retrieveEnumeratedPropertyValues(allParams, searchKey, propertyPath, maxCount,
+                                                                           partialText));
     }
 
     /**
