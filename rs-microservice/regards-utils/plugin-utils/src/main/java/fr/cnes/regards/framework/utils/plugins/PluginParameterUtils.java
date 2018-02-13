@@ -19,17 +19,14 @@
 
 package fr.cnes.regards.framework.utils.plugins;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,7 +34,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,17 +192,35 @@ public final class PluginParameterUtils {
     private static String getParameterDescription(Class<?> pluginClass, String description) {
         if ((description != null) && !description.isEmpty() && description.endsWith(MARKDOWN_EXTENSION)) {
             // Try to load markdown description
+            // JDK 8 implementation does not work with ubber jar at the moment
+            // try {
+            // URL url = pluginClass.getResource(description);
+            // if (url != null) {
+            // URI uri = url.toURI();
+            // Path path = Paths.get(uri);
+            // StringBuilder data = new StringBuilder();
+            // Stream<String> lines = Files.lines(path);
+            // lines.forEach(line -> data.append(line).append(END_LINE));
+            // lines.close();
+            // return data.toString().trim();
+            // }
+            // } catch (URISyntaxException | IOException e) {
+            // LOGGER.warn("Markdown description cannot be loaded", e);
+            // // Fall back to raw description
+            // // Nothing to do
+            // }
+            // Alternative implementation
             try {
-                URL url = pluginClass.getResource(description);
-                if (url != null) {
-                    Path path = Paths.get(url.toURI());
-                    StringBuilder data = new StringBuilder();
-                    Stream<String> lines = Files.lines(path);
-                    lines.forEach(line -> data.append(line).append(END_LINE));
-                    lines.close();
-                    return data.toString().trim();
+                StringBuilder data = new StringBuilder();
+                try (BufferedReader br = new BufferedReader(
+                        new InputStreamReader(pluginClass.getResourceAsStream(description)))) {
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        data.append(line).append(END_LINE);
+                    }
                 }
-            } catch (URISyntaxException | IOException e) {
+                return data.toString().trim();
+            } catch (IOException e) {
                 LOGGER.warn("Markdown description cannot be loaded", e);
                 // Fall back to raw description
                 // Nothing to do
