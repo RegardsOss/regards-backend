@@ -90,7 +90,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final String DATA_STORAGE_CONF_LABEL = "AIPServiceIT_DATA_STORAGE";
 
-    private static final int MAX_WAIT_TEST = 10000;
+    private static final int MAX_WAIT_TEST = 12000;
 
     private final StoreJobEventHandler handler = new StoreJobEventHandler();
 
@@ -250,6 +250,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                 Thread.sleep(1000);
                 wait += 1000;
             }
+            Assert.assertTrue("Test in error because it took more than " + wait + " to store the metadata" , wait < MAX_WAIT_TEST);
             Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
             Set<StorageDataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
             Assert.assertEquals(1, dataFiles.size());
