@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigura
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
@@ -127,6 +128,8 @@ public class ProjectConnectionService implements IProjectConnectionService {
         final Project project = projectConnection.getProject();
         // Check referenced project exists
         if ((project.getId() != null) && projectRepository.isActiveProject(project.getId())) {
+            // Manage connection conflicts!
+            manageProjectConnectionConflicts(projectConnection);
             // Check project connection to create doesn't already exists
             if (projectConnectionRepository
                     .findOneByProjectNameAndMicroservice(project.getName(),
@@ -151,9 +154,35 @@ public class ProjectConnectionService implements IProjectConnectionService {
         return connection;
     }
 
+    /**
+     * Test potential conflict with an existing project connection.<br/>
+     * <ul>
+     * <li>A same connection can be used by a same project on another microservice</li>
+     * <li>A same connection cannot be used by 2 different projects</li>
+     * </ul>
+     * @param projectConnection project connection to control
+     * @throws EntityInvalidException if a conflict is detected
+     */
+    private void manageProjectConnectionConflicts(ProjectConnection projectConnection) throws EntityInvalidException {
+        List<ProjectConnection> connections = projectConnectionRepository
+                .findByUserNameAndPasswordAndUrl(projectConnection.getUserName(), projectConnection.getPassword(),
+                                                 projectConnection.getUrl());
+
+        String projectName = projectConnection.getProject().getName();
+        for (ProjectConnection connection : connections) {
+            if (!projectName.equals(connection.getProject().getName())) {
+                String message = String
+                        .format("A same connection can only be used by a same project on another microservice. Conflict detected between project %s and project %s.",
+                                projectName, connection.getProject().getName());
+                LOGGER.error(message);
+                throw new EntityInvalidException(message);
+            }
+        }
+
+    }
+
     @Override
-    public ProjectConnection createStaticProjectConnection(ProjectConnection projectConnection)
-            throws ModuleException {
+    public ProjectConnection createStaticProjectConnection(ProjectConnection projectConnection) throws ModuleException {
 
         // Only store connection if it's really does not exist
         if (existsProjectConnection(projectConnection.getProject().getName(), projectConnection.getMicroservice())) {
@@ -197,13 +226,15 @@ public class ProjectConnectionService implements IProjectConnectionService {
 
     @Override
     public ProjectConnection updateProjectConnection(final Long pProjectConnectionId,
-            final ProjectConnection projectConnection) throws EntityNotFoundException {
+            final ProjectConnection projectConnection) throws ModuleException {
         final ProjectConnection connection;
         // Check that entity to update exists
         if ((projectConnection.getId() != null) && projectConnectionRepository.exists(projectConnection.getId())) {
             final Project project = projectConnection.getProject();
             // Check that the referenced project exists
             if ((project.getId() != null) && projectRepository.isActiveProject(project.getId())) {
+                // Manage connection conflicts!
+                manageProjectConnectionConflicts(projectConnection);
                 // Disable connection : new configuration may be incorrect
                 // Multitenant starter is reponsible for enabling data source
                 projectConnection.setState(TenantConnectionState.DISABLED);

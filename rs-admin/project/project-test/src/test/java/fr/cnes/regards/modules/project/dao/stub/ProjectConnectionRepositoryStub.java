@@ -83,4 +83,11 @@ public class ProjectConnectionRepositoryStub extends JpaRepositoryStub<ProjectCo
         return list;
     }
 
+    @Override
+    public List<ProjectConnection> findByUserNameAndPasswordAndUrl(String username, String password, String url) {
+        List<ProjectConnection> list = entities.stream().filter(e -> (e.getUserName().equals(username)
+                && e.getPassword().equals(password) && e.getUrl().equals(url))).collect(Collectors.toList());
+        return list;
+    }
+
 }

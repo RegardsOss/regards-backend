@@ -122,12 +122,12 @@ public interface IProjectConnectionService {
      * @param pProjectConnection
      *            Project connection to update
      * @return ProjectConnection updated
-     * @throws EntityNotFoundException
+     * @throws ModuleException
      *             Project connection or referenced project doesn't exists
      * @since 1.0-SNAPSHOT
      */
     ProjectConnection updateProjectConnection(Long pProjectConnectionId, ProjectConnection pProjectConnection)
-            throws EntityNotFoundException;
+            throws ModuleException;
 
     /**
      *
