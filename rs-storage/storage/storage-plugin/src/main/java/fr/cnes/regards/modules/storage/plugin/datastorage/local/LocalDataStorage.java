@@ -159,7 +159,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                 progressManager.storageFailed(data, failureCause);
             } else {
                 File file = Paths.get(fullPathToFile).toFile();
-                if(file.canWrite()) {
+                if (file.canWrite()) {
                     file.setReadOnly();
                 }
                 Long fileSize = file.length();
@@ -190,23 +190,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
             Files.createDirectories(Paths.get(storageLocation));
         }
         // files are stored with the checksum as their name and their extension is based on the url, first '.' after the last '/' of the url
-        return storageLocation + "/" + checksum + getExtension(data.getUrl());
-    }
-
-    /**
-     * does not take into account hidden files
-     *
-     * @param originUrl
-     * @return the extension with '.' prefixing it or "" in case of hidden files and files without extension
-     */
-    private String getExtension(URL originUrl) {
-        String[] pathParts = originUrl.getPath().split("/");
-        String fileName = pathParts[pathParts.length - 1];
-        int i;
-        if ((i = fileName.indexOf('.')) > 0) {
-            return fileName.substring(i);
-        }
-        return "";
+        return storageLocation + "/" + checksum;
     }
 
     @Override
