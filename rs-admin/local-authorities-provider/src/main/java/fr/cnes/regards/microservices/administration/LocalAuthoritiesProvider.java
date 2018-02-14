@@ -29,9 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -86,8 +85,8 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     }
 
     @Override
-    public List<ResourceMapping> registerEndpoints(String microserviceName, String tenant,
-            final List<ResourceMapping> localEndpoints) throws SecurityException {
+    public void registerEndpoints(String microserviceName, String tenant, final List<ResourceMapping> localEndpoints)
+            throws SecurityException {
 
         // Specified the working tenant
         runtimeTenantResolver.forceTenant(tenant);
@@ -98,27 +97,14 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
         } catch (ModuleException e) {
             throw new SecurityException(e);
         }
-
-        // get a map that for each ResourcesAccess ra links the roles containing ra
-        final Set<Role> roles = roleService.retrieveRoles();
-        final SetMultimap<ResourcesAccess, Role> multimap = HashMultimap.create();
-
-        roles.forEach(role -> role.getPermissions().forEach(ra -> multimap.put(ra, role)));
-
-        // create ResourceMappings
-        return multimap.asMap().entrySet().stream().map(entry -> buildResourceMapping(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
-
     }
 
     private ResourceMapping buildResourceMapping(final ResourcesAccess pRa, final Collection<Role> pRoles) {
-        final ResourceMapping mapping = new ResourceMapping(ResourceAccessAdapter
-                                                                    .createResourceAccess(pRa.getDescription(), null),
-                                                            pRa.getResource(),
-                                                            pRa.getControllerSimpleName(),
-                                                            RequestMethod.valueOf(pRa.getVerb().toString()));
+        final ResourceMapping mapping = new ResourceMapping(
+                ResourceAccessAdapter.createResourceAccess(pRa.getDescription(), null), pRa.getResource(),
+                pRa.getControllerSimpleName(), RequestMethod.valueOf(pRa.getVerb().toString()));
         mapping.setAutorizedRoles(pRoles.stream().map(role -> new RoleAuthority(role.getName()))
-                                          .collect(Collectors.toList()));
+                .collect(Collectors.toList()));
         return mapping;
     }
 
@@ -153,7 +139,6 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
             LOGGER.trace("Role not found", e);
             return Sets.newHashSet();
         }
-
     }
 
 }

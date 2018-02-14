@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.service.role;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +26,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,7 @@ import org.springframework.util.Assert;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -329,8 +331,11 @@ public class RoleService implements IRoleService {
         if (!existRole(pRoleId)) {
             throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
-        final Role role = roleRepository.findOneById(pRoleId);
-        return role.getPermissions();
+        Role role = roleRepository.findOneById(pRoleId);
+        LOGGER.debug("Retrieving resource accesses for role \"{}\"", role.getName());
+        Set<ResourcesAccess> accesses = role.getPermissions();
+        LOGGER.debug("{} resource accesses found for role \"{}\"", accesses.size(), role.getName());
+        return accesses;
     }
 
     @Override
@@ -794,9 +799,9 @@ public class RoleService implements IRoleService {
         // throw exception
         // a role must have a parent and cannot have less accesses than public
         if (parentRole == null) {
-            final String message = String.format(
-                                                 "Role %s cannot have less accesses than public role. Accesses removal cancelled.",
-                                                 role.getName());
+            final String message = String
+                    .format("Role %s cannot have less accesses than public role. Accesses removal cancelled.",
+                            role.getName());
             LOGGER.error(message);
             throw new EntityOperationForbiddenException(message);
         }

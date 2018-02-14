@@ -34,9 +34,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -107,7 +106,7 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
     }
 
     @Override
-    public List<ResourceMapping> registerEndpoints(final String microserviceName, final String tenant,
+    public void registerEndpoints(final String microserviceName, final String tenant,
             final List<ResourceMapping> localEndpoints) {
 
         // Specified the working tenant
@@ -116,23 +115,9 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
 
         // Register endpoints to administration service and retrieve configured ones
         FeignSecurityManager.asSystem();
-        final ResponseEntity<Void> response = resourcesClient
-                .registerMicroserviceEndpoints(microserviceName, localEndpoints);
-        if (response.getStatusCode().equals(HttpStatus.OK)) {
-
-            // get a map that for each ResourcesAccess ra links the roles containing ra
-            final List<Role> roles = HateoasUtils.unwrapList(roleClient.getAllRoles().getBody());
-            final SetMultimap<ResourcesAccess, Role> multimap = HashMultimap.create();
-
-            // For each role retrieive permissions
-            for (final Role role : roles) {
-                retrieveRoleResources(role, microserviceName).forEach(ra -> multimap.put(ra, role));
-            }
-
-            // create ResourceMappings
-            return multimap.asMap().entrySet().stream()
-                    .map(entry -> buildResourceMapping(entry.getKey(), entry.getValue())).collect(Collectors.toList());
-        } else {
+        final ResponseEntity<Void> response = resourcesClient.registerMicroserviceEndpoints(microserviceName,
+                                                                                            localEndpoints);
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
             throw new ApplicationContextException("Error registering endpoints to administration service");
         }
     }
@@ -164,7 +149,7 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
     @Override
     public Set<ResourceMapping> getResourceMappings(String microserviceName, String tenant, String roleName) {
         runtimeTenantResolver.forceTenant(tenant);
-        //lets get the role from distant admin
+        // lets get the role from distant admin
         FeignSecurityManager.asSystem();
         ResponseEntity<List<Resource<ResourcesAccess>>> resourcesResponse = roleResourceClient
                 .getRoleResources(roleName);
@@ -198,34 +183,8 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
         final ResourceMapping mapping = new ResourceMapping(
                 ResourceAccessAdapter.createResourceAccess(pRa.getDescription(), null), pRa.getResource(),
                 pRa.getControllerSimpleName(), RequestMethod.valueOf(pRa.getVerb().toString()));
-        mapping.setAutorizedRoles(
-                pRoles.stream().map(role -> new RoleAuthority(role.getName())).collect(Collectors.toList()));
+        mapping.setAutorizedRoles(pRoles.stream().map(role -> new RoleAuthority(role.getName()))
+                .collect(Collectors.toList()));
         return mapping;
     }
-
-    /**
-     *
-     * Retrieve all {@link ResourcesAccess} for the given role and the given microservices
-     *
-     * @param pRole
-     *            {link Role}'s to retrieve {@link ResourcesAccess}
-     * @param pMicroserviceName
-     *            Microservice to retrieve {link Role}'s {@link ResourcesAccess}s
-     * @return {link Role}'s {@link ResourcesAccess}s
-     * @since 1.0-SNAPSHOT
-     */
-    private List<ResourcesAccess> retrieveRoleResources(final Role pRole, final String pMicroserviceName) {
-        final List<ResourcesAccess> roleRessources = new ArrayList<>();
-        final ResponseEntity<List<Resource<ResourcesAccess>>> roleResourcesResponse = roleResourceClient
-                .getRoleResources(pRole.getName());
-        if (roleResourcesResponse.getStatusCode().equals(HttpStatus.OK) && (roleResourcesResponse.getBody() != null)) {
-            for (final Resource<ResourcesAccess> roleResource : roleResourcesResponse.getBody()) {
-                if (roleResource.getContent().getMicroservice().equals(pMicroserviceName)) {
-                    roleRessources.add(roleResource.getContent());
-                }
-            }
-        }
-        return roleRessources;
-    }
-
 }
