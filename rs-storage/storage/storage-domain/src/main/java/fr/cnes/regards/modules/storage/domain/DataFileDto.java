@@ -3,12 +3,11 @@ package fr.cnes.regards.modules.storage.domain;
 import java.net.URL;
 import java.util.Objects;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 
 /**
@@ -63,6 +62,12 @@ public class DataFileDto {
     private Integer width;
 
     /**
+     * Default constructor
+     */
+    public DataFileDto() {
+    }
+
+    /**
      * Transform a {@link StorageDataFile} to a {@link DataFileDto}.
      * @param dataFile origin data file
      * @return dto
@@ -82,16 +87,13 @@ public class DataFileDto {
         dto.height = dataFile.getHeight();
         dto.width = dataFile.getWidth();
         // lets compute the online attribute
-        if (dataFile.getDataStorageUsed().getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
+        if (dataFile.getDataStorages().stream()
+                .filter(dataStorage -> dataStorage.getInterfaceNames().contains(IOnlineDataStorage.class.getName()))
+                .findFirst().isPresent()) {
             dto.setOnline(true);
         }
         return dto;
     }
-
-    /**
-     * Default constructor
-     */
-    public DataFileDto() {}
 
     /**
      * @return the url

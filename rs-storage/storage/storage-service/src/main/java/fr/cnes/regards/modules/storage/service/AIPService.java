@@ -363,8 +363,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // 2. Check for online files. Online files doesn't need to be stored in the cache
         // they can be accessed directly where they are stored.
         for (StorageDataFile df : dataFilesWithAccess) {
-            if (df.getDataStorageUsed() != null) {
-                if (df.getDataStorageUsed().getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
+            if (df.getDataStorages() != null) {
+                if (df.getDataStorages().getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
                     onlineFiles.add(df);
                 } else {
                     nearlineFiles.add(df);
@@ -1175,7 +1175,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // Lets construct the Multimap<PluginConf, StorageDataFile> allowing us to then storeAndCreate IWorkingSubSets
         Multimap<Long, StorageDataFile> toPrepareMap = HashMultimap.create();
         for (UpdatableMetadataFile oldNew : metadataToUpdate) {
-            toPrepareMap.put(oldNew.getOldOne().getDataStorageUsed().getId(), oldNew.getNewOne());
+            toPrepareMap.put(oldNew.getOldOne().getDataStorages().getId(), oldNew.getNewOne());
         }
         // now lets work with workingSubsets
         Set<JobInfo> jobsToSchedule = Sets.newHashSet();
@@ -1225,8 +1225,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     .findFirst();
             if (odf.isPresent()) {
                 StorageDataFile dataFile = odf.get();
-                if (dataFile.getDataStorageUsed() != null) {
-                    if (dataFile.getDataStorageUsed().getInterfaceNames()
+                if (dataFile.getDataStorages() != null) {
+                    if (dataFile.getDataStorages().getInterfaceNames()
                             .contains(IOnlineDataStorage.class.getName())) {
                         return Optional.of(dataFile);
                     } else {

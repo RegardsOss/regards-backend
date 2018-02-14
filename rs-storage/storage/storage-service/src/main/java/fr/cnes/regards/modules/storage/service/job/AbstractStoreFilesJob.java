@@ -164,7 +164,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        progressManager = new StorageJobProgressManager(publisher, this);
+        progressManager = new StorageJobProgressManager(publisher, this, (Long) parameters.get(PLUGIN_TO_USE_PARAMETER_NAME).getValue());
         try {
             doRun(parameters);
         } catch (RuntimeException e) {
@@ -240,12 +240,6 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         workingSubset.getDataFiles().removeAll(dataFilesNotToStore);
         try {
             @SuppressWarnings("rawtypes") IDataStorage storagePlugin = pluginService.getPlugin(confIdToUse);
-            // before storage on file system, lets update the DataFiles by setting which data storage is used to storeAndCreate
-            // them.
-            PluginConfiguration storagePluginConf = pluginService.getPluginConfiguration(confIdToUse);
-            for (StorageDataFile data : workingSubset.getDataFiles()) {
-                data.setDataStorageUsed(storagePluginConf);
-            }
             storagePlugin.store(workingSubset, replaceMode, progressManager);
         } catch (ModuleException e) {
             // throwing new runtime allows us to make the job fail.

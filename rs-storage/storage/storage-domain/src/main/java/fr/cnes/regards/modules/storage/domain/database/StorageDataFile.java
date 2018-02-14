@@ -16,11 +16,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedSubgraph;
-import javax.persistence.OneToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.util.MimeType;
@@ -45,10 +46,10 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 @Entity
 @Table(name = "t_data_file", indexes = { @Index(name = "idx_data_file_checksum", columnList = "checksum") })
 @NamedEntityGraph(name = "graph.datafile.full", attributeNodes = { @NamedAttributeNode("aipEntity"),
-        @NamedAttributeNode(value = "dataStorageUsed", subgraph = "graph.datafile.dataStorageUsed") }, subgraphs = {
-        @NamedSubgraph(name = "graph.datafile.dataStorageUsed", attributeNodes = {
-                @NamedAttributeNode(value = "parameters", subgraph = "graph.datafile.dataStorageUsed.parameters") }),
-        @NamedSubgraph(name = "graph.datafile.dataStorageUsed.parameters",
+        @NamedAttributeNode(value = "dataStorages", subgraph = "graph.datafile.dataStorages") }, subgraphs = {
+        @NamedSubgraph(name = "graph.datafile.dataStorages", attributeNodes = {
+                @NamedAttributeNode(value = "parameters", subgraph = "graph.datafile.dataStorages.parameters") }),
+        @NamedSubgraph(name = "graph.datafile.dataStorages.parameters",
                 attributeNodes = { @NamedAttributeNode("dynamicsValues") }) })
 public class StorageDataFile {
 
@@ -125,10 +126,10 @@ public class StorageDataFile {
     /**
      * Data storage plugin configuration used to store the file
      */
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "data_storage_plugin_configuration",
+    @OneToMany
+    @JoinColumn(name = "data_file_id",
             foreignKey = @ForeignKey(name = "fk_data_file_data_storage_plugin_configuration"))
-    private PluginConfiguration dataStorageUsed;
+    private Set<PluginConfiguration> dataStorages = new HashSet<>();
 
     /**
      * Reversed mapping compared to reality. This is because it is easier to work like this.
@@ -322,16 +323,16 @@ public class StorageDataFile {
     /**
      * @return the data storage plugin configuration
      */
-    public PluginConfiguration getDataStorageUsed() {
-        return dataStorageUsed;
+    public Set<PluginConfiguration> getDataStorages() {
+        return dataStorages;
     }
 
     /**
      * Set the data storage plugin configuration
      * @param dataStorageUsed
      */
-    public void setDataStorageUsed(PluginConfiguration dataStorageUsed) {
-        this.dataStorageUsed = dataStorageUsed;
+    public void addDataStorageUsed(PluginConfiguration dataStorageUsed) {
+        this.dataStorages.add(dataStorageUsed);
     }
 
     /**

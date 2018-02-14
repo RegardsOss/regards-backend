@@ -43,6 +43,11 @@ public class StorageJobProgressManager implements IProgressManager {
     private final IJob<?> job;
 
     /**
+     * Data storage configuration id which this progress manager is linked to
+     */
+    private final Long storageConfId;
+
+    /**
      * Does the process is in error ?
      */
     private boolean errorStatus = false;
@@ -57,9 +62,10 @@ public class StorageJobProgressManager implements IProgressManager {
      */
     private final Collection<StorageDataFile> handledDataFile = Sets.newConcurrentHashSet();
 
-    public StorageJobProgressManager(IPublisher publisher, IJob<?> job) {
+    public StorageJobProgressManager(IPublisher publisher, IJob<?> job, Long storageConfId) {
         this.publisher = publisher;
         this.job = job;
+        this.storageConfId = storageConfId;
     }
 
     @Override
@@ -67,7 +73,7 @@ public class StorageJobProgressManager implements IProgressManager {
         dataFile.setUrl(storedUrl);
         dataFile.setFileSize(storedFileSize);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
-                StorageEventType.SUCCESSFULL);
+                StorageEventType.SUCCESSFULL, storageConfId);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
         // hell yeah this is not the usual publish method, but i know what i'm doing so trust me!
@@ -80,7 +86,7 @@ public class StorageJobProgressManager implements IProgressManager {
         errorStatus = true;
         failedDataFile.add(dataFile);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
-                StorageEventType.FAILED);
+                StorageEventType.FAILED, storageConfId);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
         publisher.publish(dataStorageEvent);
@@ -93,7 +99,7 @@ public class StorageJobProgressManager implements IProgressManager {
     @Override
     public void deletionFailed(StorageDataFile dataFile, String failureCause) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.DELETION,
-                StorageEventType.FAILED);
+                StorageEventType.FAILED, storageConfId);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
         failureCauses.add(failureCause);
@@ -104,7 +110,7 @@ public class StorageJobProgressManager implements IProgressManager {
     @Override
     public void deletionSucceed(StorageDataFile dataFile) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.DELETION,
-                StorageEventType.SUCCESSFULL);
+                StorageEventType.SUCCESSFULL, storageConfId);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
         publisher.publish(dataStorageEvent);
@@ -113,7 +119,7 @@ public class StorageJobProgressManager implements IProgressManager {
     @Override
     public void restoreSucceed(StorageDataFile dataFile, Path restoredFilePath) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION,
-                StorageEventType.SUCCESSFULL);
+                StorageEventType.SUCCESSFULL, storageConfId);
         dataStorageEvent.setRestorationPath(restoredFilePath);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
@@ -123,7 +129,7 @@ public class StorageJobProgressManager implements IProgressManager {
     @Override
     public void restoreFailed(StorageDataFile dataFile, String failureCause) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION,
-                StorageEventType.FAILED);
+                StorageEventType.FAILED, storageConfId);
         failureCauses.add(failureCause);
         errorStatus = true;
         handledDataFile.add(dataFile);

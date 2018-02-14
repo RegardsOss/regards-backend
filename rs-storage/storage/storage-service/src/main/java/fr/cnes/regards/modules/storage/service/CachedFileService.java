@@ -259,7 +259,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         // Dispatch each Datafile by storage plugin.
         Multimap<Long, StorageDataFile> toRetrieveByStorage = HashMultimap.create();
         for (StorageDataFile df : toRetrieve) {
-            toRetrieveByStorage.put(df.getDataStorageUsed().getId(), df);
+            toRetrieveByStorage.put(df.getDataStorages().getId(), df);
         }
         Set<StorageDataFile> errors = Sets.newHashSet();
         for (Long storageConfId : toRetrieveByStorage.keySet()) {
