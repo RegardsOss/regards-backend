@@ -90,7 +90,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final String DATA_STORAGE_CONF_LABEL = "AIPServiceIT_DATA_STORAGE";
 
-    private static final int MAX_WAIT_TEST = 12000;
+    private static final int MAX_WAIT_TEST = 14000;
 
     private final StoreJobEventHandler handler = new StoreJobEventHandler();
 
