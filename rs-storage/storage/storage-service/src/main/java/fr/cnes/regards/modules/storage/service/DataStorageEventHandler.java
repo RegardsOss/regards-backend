@@ -31,8 +31,8 @@ import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
-import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEventState;
@@ -254,8 +254,14 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                 AIP associatedAIP = optionalAssociatedAip.get();
                 switch (type) {
                     case SUCCESSFULL:
-                        handleStoreSuccess(data, event.getChecksum(), event.getNewUrl(), event.getFileSize(),
-                                           event.getStorageConfId(), event.getWidth(), event.getHeight(), associatedAIP);
+                        handleStoreSuccess(data,
+                                           event.getChecksum(),
+                                           event.getNewUrl(),
+                                           event.getFileSize(),
+                                           event.getStorageConfId(),
+                                           event.getWidth(),
+                                           event.getHeight(),
+                                           associatedAIP);
                         break;
                     case FAILED:
                         handleStoreFailed(data, associatedAIP, event.getNewUrl());
@@ -279,7 +285,8 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
      * @param associatedAIP {@link AIP} associated to the given {@link StorageDataFile} successfully stored
      */
     private void handleStoreSuccess(StorageDataFile storedDataFile, String storedFileChecksum, URL storedFileNewURL,
-            Long storedFileSize, Long dataStoragePluginConfId, Integer dataWidth, Integer dataHeight, AIP associatedAIP) {
+            Long storedFileSize, Long dataStoragePluginConfId, Integer dataWidth, Integer dataHeight,
+            AIP associatedAIP) {
         // update data status
         PluginConfiguration dataStorageUsed = null;
         try {
@@ -293,48 +300,54 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
         storedDataFile.setChecksum(storedFileChecksum);
         storedDataFile.setFileSize(storedFileSize);
         storedDataFile.setDataStorageUsed(dataStorageUsed);
-        storedDataFile.setState(DataFileState.STORED);
+        storedDataFile.setNotYetStoredBy(storedDataFile.getNotYetStoredBy() - 1);
         storedDataFile.setUrl(storedFileNewURL);
         storedDataFile.setHeight(dataHeight);
         storedDataFile.setWidth(dataWidth);
+        // save in any case to update information
         dataFileDao.save(storedDataFile);
-        LOG.debug("[STORE FILE SUCCESS] DATA FILE {} is in STORED state", storedDataFile.getUrl());
-        if (storedDataFile.getDataType() == DataType.AIP) {
-            // can only be obtained after the aip state STORING_METADATA which can only changed to STORED
-            // if we just stored the AIP, there is nothing to do but changing AIP state, and clean the
-            // workspace!
-            // Lets clean the workspace
-            try {
-                workspaceService.removeFromWorkspace(storedDataFile.getChecksum() + AIPService.JSON_FILE_EXT);
-            } catch (IOException e) {
-                LOG.error("Error during workspace cleaning", e);
-            }
-            associatedAIP.setState(AIPState.STORED);
-            associatedAIP.addEvent(EventType.STORAGE.name(), METADATA_STORED_SUCCESSFULLY);
-            aipDao.save(associatedAIP);
-            LOG.debug("[STORE FILE SUCCESS] AIP {} is in STORED state", storedDataFile.getAip().getId().toString());
-            publisher.publish(new AIPEvent(associatedAIP));
-        } else {
-            // if it is not the AIP metadata then the AIP metadata are not even scheduled for storage,
-            // just let set the new information about this StorageDataFile
-            // @formatter:off
+        if (storedDataFile.getNotYetStoredBy() == 0) {
+            storedDataFile.setState(DataFileState.STORED);
+            //specific save once it is stored
+            dataFileDao.save(storedDataFile);
+            LOG.debug("[STORE FILE SUCCESS] DATA FILE {} is in STORED state", storedDataFile.getUrl());
+            if (storedDataFile.getDataType() == DataType.AIP) {
+                // can only be obtained after the aip state STORING_METADATA which can only changed to STORED
+                // if we just stored the AIP, there is nothing to do but changing AIP state, and clean the
+                // workspace!
+                // Lets clean the workspace
+                try {
+                    workspaceService.removeFromWorkspace(storedDataFile.getChecksum() + AIPService.JSON_FILE_EXT);
+                } catch (IOException e) {
+                    LOG.error("Error during workspace cleaning", e);
+                }
+                associatedAIP.setState(AIPState.STORED);
+                associatedAIP.addEvent(EventType.STORAGE.name(), METADATA_STORED_SUCCESSFULLY);
+                aipDao.save(associatedAIP);
+                LOG.debug("[STORE FILE SUCCESS] AIP {} is in STORED state", storedDataFile.getAip().getId().toString());
+                publisher.publish(new AIPEvent(associatedAIP));
+            } else {
+                // if it is not the AIP metadata then the AIP metadata are not even scheduled for storage,
+                // just let set the new information about this StorageDataFile
+                // @formatter:off
             Optional<ContentInformation> ci =
                     associatedAIP.getProperties().getContentInformations()
                         .stream()
                         .filter(contentInformation -> contentInformation.getDataObject().getChecksum().equals(storedDataFile.getChecksum()))
                         .findFirst();
             // @formatter:on
-            if (ci.isPresent()) {
-                associatedAIP.getProperties().getPdi().getProvenanceInformation().addEvent(EventType.STORAGE.name(),
-                                                                                           "File " + storedDataFile
-                                                                                                   .getName()
-                                                                                                   + " stored into REGARDS");
-                ci.get().getDataObject().setFileSize(storedDataFile.getFileSize());
-                ci.get().getDataObject().setUrl(storedDataFile.getUrl());
-                ci.get().getDataObject().setFilename(storedDataFile.getName());
-                associatedAIP.addEvent(EventType.STORAGE.name(),
-                                       String.format(DATAFILE_STORED_SUCCESSFULLY, storedDataFile.getName()));
-                aipDao.save(associatedAIP);
+                if (ci.isPresent()) {
+                    associatedAIP.getProperties().getPdi().getProvenanceInformation().addEvent(EventType.STORAGE.name(),
+                                                                                               "File " + storedDataFile
+                                                                                                       .getName()
+                                                                                                       + " stored into REGARDS");
+                    ci.get().getDataObject().setFileSize(storedDataFile.getFileSize());
+                    ci.get().getDataObject().setUrl(storedDataFile.getUrl());
+                    ci.get().getDataObject().setFilename(storedDataFile.getName());
+                    associatedAIP.addEvent(EventType.STORAGE.name(),
+                                           String.format(DATAFILE_STORED_SUCCESSFULLY, storedDataFile.getName()));
+                    aipDao.save(associatedAIP);
+                }
             }
         }
     }
