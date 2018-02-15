@@ -36,13 +36,13 @@ public interface IResourceService {
      *
      * @param <T>
      *            element to convert
-     * @param pObject
+     * @param object
      *            object
      * @return {@link Resource}
      */
-    default <T> Resource<T> toResource(T pObject) {
-        Assert.notNull(pObject);
-        return new Resource<>(pObject);
+    default <T> Resource<T> toResource(T object) {
+        Assert.notNull(object, "Object is required");
+        return new Resource<>(object);
     }
 
     /**
@@ -50,19 +50,19 @@ public interface IResourceService {
      *
      * @param <T>
      *            resource content type
-     * @param pResource
+     * @param resource
      *            resource to manage
-     * @param pController
+     * @param controller
      *            controller
-     * @param pMethodName
+     * @param methodName
      *            method name
-     * @param pRel
+     * @param rel
      *            rel name
-     * @param pMethodParams
+     * @param methodParams
      *            method parameters
      */
-    <T> void addLink(Resource<T> pResource, Class<?> pController, String pMethodName, String pRel,
-            MethodParam<?>... pMethodParams);
+    <T> void addLink(Resource<T> resource, Class<?> controller, String methodName, String rel,
+            MethodParam<?>... methodParams);
 
     /**
      * Custom way of adding link to a resource handling request params.
@@ -81,17 +81,17 @@ public interface IResourceService {
      *            resource content type
      * @param <C>
      *            controller type
-     * @param pResource
+     * @param resource
      *            resource to manage
-     * @param pController
+     * @param controller
      *            controller
-     * @param pMethodName
+     * @param methodName
      *            method name
-     * @param pRel
+     * @param rel
      *            rel name
-     * @param pMethodParams
+     * @param methodParams
      *            method parameters
      */
-    <T, C> void addLinkWithParams(Resource<T> pResource, Class<C> pController, String pMethodName, String pRel,
-            MethodParam<?>... pMethodParams);
+    <T, C> void addLinkWithParams(Resource<T> resource, Class<C> controller, String methodName, String rel,
+            MethodParam<?>... methodParams);
 }
