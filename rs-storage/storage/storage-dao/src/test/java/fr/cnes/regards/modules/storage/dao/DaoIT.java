@@ -32,6 +32,8 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPState;
@@ -431,6 +433,8 @@ public class DaoIT extends AbstractDaoTransactionalTest {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_STO_AIP_050")
+    @Purpose("System keeps track of all versions of aips")
     public void testFindAllByIpIdStartingWith() {
         String ipIdWithoutVersion = aip1.getId().toString();
         ipIdWithoutVersion = ipIdWithoutVersion.substring(0, ipIdWithoutVersion.indexOf(":V"));

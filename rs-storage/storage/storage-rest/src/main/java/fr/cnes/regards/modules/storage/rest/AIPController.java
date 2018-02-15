@@ -103,7 +103,7 @@ public class AIPController implements IResourceController<AIP> {
     /**
      * Controller path for bulk aip requests
      */
-    public static final String AIP_BULK = AIP_PATH + "/bulk";
+    public static final String AIP_BULK = "/bulk";
 
     /**
      * Controller path to ask for dataFiles
@@ -289,7 +289,7 @@ public class AIPController implements IResourceController<AIP> {
      */
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "validate and storeAndCreate the specified AIP")
+    @ResourceAccess(description = "validate and store the specified AIP")
     public ResponseEntity<List<RejectedAip>> store(@RequestBody AIPCollection aips) throws ModuleException {
         // lets validate the inputs and get those in error
         List<RejectedAip> rejectedAips = aipService.applyCreationChecks(aips);

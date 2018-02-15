@@ -16,11 +16,13 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.assertj.core.util.Sets;
+import org.hamcrest.core.IsCollectionContaining;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockito.internal.matchers.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +33,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
@@ -51,6 +54,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
@@ -61,6 +65,7 @@ import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
+import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
@@ -84,6 +89,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
     private static final String DATA_STORAGE_CONF_LABEL = "AIPControllerIT_DATA_STORAGE";
 
     private static final String CATALOG_SECURITY_DELEGATION_LABEL = "AIPControllerIT_SECU_DELEG";
+
+    private static final int MAX_WAIT = 12000;
 
     @Autowired
     private IPluginService pluginService;
@@ -157,6 +164,21 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
+    @Requirement("REGARDS_DSL_STO_AIP_080")
+    public void testStoreUnvalid() {
+        aip.getProperties().getContentInformations().forEach(ci -> ci.getDataObject().setChecksum(null));
+        // make requirements
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
+        // perform request
+        performDefaultPost(AIPController.AIP_PATH,
+                           new AIPCollection(aip),
+                           requestBuilderCustomizer,
+                           "AIP storage should have been schedule properly");
+    }
+
+    @Test
     public void testStore() {
         // make requirements
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
@@ -210,7 +232,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    @Requirement("REGARDS_DSL_STO_AIP_1400")
+    @Requirement("REGARDS_DSL_STO_AIP_140")
     public void testMakeAvailable() throws InterruptedException {
         // ask for an aip to be stored
         testStore();
@@ -245,7 +267,75 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performDefaultGet(AIPController.AIP_PATH + AIPController.ID_PATH,
                           requestBuilderCustomizer,
-                          "we should have the aip", aip.getId().toString());
+                          "we should have the aip",
+                          aip.getId().toString());
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_STOP_AIP_115")
+    public void testRetrieveDeletedAip() throws InterruptedException {
+        testDelete();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        // first we expect that the aip has a DELETION event in its history
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                "$.properties.pdi.provenanceInformation.history[*].type",
+                IsCollectionContaining.hasItem(EventType.DELETION.name())));
+        // now we expect that those events does have a date
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                "$.properties.pdi.provenanceInformation.history[?(@.type == \"" + EventType.DELETION.name()
+                        + "\")].date",
+                NotNull.NOT_NULL));
+        performDefaultGet(AIPController.AIP_PATH + AIPController.ID_PATH,
+                          requestBuilderCustomizer,
+                          "we should have the aip",
+                          aip.getId().toString());
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_STO_AIP_560")
+    @Purpose("System allow to retrieve aips thanks to a list of ip id")
+    public void testRetrieveAipBulk() {
+        testStore();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultPost(AIPController.AIP_PATH + AIPController.AIP_BULK,
+                           Sets.newHashSet(aip.getId().toString()),
+                           requestBuilderCustomizer,
+                           "we should have the aips");
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_STO_AIP_560")
+    @Purpose("System allow to retrieve aips thanks to a tag")
+    public void testRetrieveAipTag() {
+        testStore();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultGet(AIPController.AIP_PATH + AIPController.TAG,
+                          requestBuilderCustomizer,
+                          "we should have the aips",
+                          aip.getId().toString(),
+                          "tag");
+    }
+
+    @Test
+    public void testDelete() throws InterruptedException {
+        testStore();
+        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        int wait = 0;
+        // lets wait for this AIP to be stored (at most 12 sec)
+        while (aipDao.findOneByIpId(aip.getId().toString()).get().getState() != AIPState.STORED && wait < MAX_WAIT) {
+            Thread.sleep(1000);
+            wait += 1000;
+        }
+        Assert.assertTrue("AIP was not fully stored in time", wait < MAX_WAIT);
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
+        performDefaultDelete(AIPController.AIP_PATH + AIPController.ID_PATH,
+                             requestBuilderCustomizer,
+                             "deletion of this aip should be possible",
+                             aip.getId().toString());
     }
 
     @Test
@@ -256,7 +346,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performDefaultGet(AIPController.AIP_PATH + AIPController.OBJECT_LINK_PATH,
                           requestBuilderCustomizer,
-                          "we should have the metadata of the files of the aip", aip.getId().toString());
+                          "we should have the metadata of the files of the aip",
+                          aip.getId().toString());
     }
 
     @Test
@@ -267,7 +358,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performDefaultGet(AIPController.AIP_PATH + AIPController.VERSION_PATH,
                           requestBuilderCustomizer,
-                          "we should have the different versions of an aip", aip.getId().toString());
+                          "we should have the different versions of an aip",
+                          aip.getId().toString());
     }
 
     @Test
@@ -278,7 +370,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performDefaultGet(AIPController.AIP_PATH + AIPController.HISTORY_PATH,
                           requestBuilderCustomizer,
-                          "we should have the history of an aip", aip.getId().toString());
+                          "we should have the history of an aip",
+                          aip.getId().toString());
     }
 
     @Test
@@ -331,6 +424,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                 .setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5", "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", "text/plain");
         aipBuilder.addContentInformation();
+        aipBuilder.addTags("tag");
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
         aipBuilder.getPDIBuilder()
