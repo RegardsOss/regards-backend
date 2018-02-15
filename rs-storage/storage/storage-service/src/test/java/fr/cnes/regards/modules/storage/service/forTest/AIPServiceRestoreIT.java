@@ -711,7 +711,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         // First create StorageDataFile
         StorageDataFile df = new StorageDataFile(new URL("file://test/" + fileName), checksum, "MD5", DataType.RAWDATA, fileSize,
                                                  MimeType.valueOf("application/text"), aip, fileName);
-        df.setDataStorageUsed(nearLineConf);
+        df.addDataStorageUsed(nearLineConf);
         dataFileDao.save(df);
         // Then create cached file associated
         CachedFile f = new CachedFile(df, expiration, CachedFileState.AVAILABLE);
@@ -739,17 +739,17 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         URL url = new URL(Paths.get(baseStorageLocation.toString(), "file1.test").toString());
         StorageDataFile df = new StorageDataFile(url, "1", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"),
                                                  aip, "file1.test");
-        df.setDataStorageUsed(dataStorageConf);
+        df.addDataStorageUsed(dataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
         df = new StorageDataFile(url, "2", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip,
                                  "file2.test");
-        df.setDataStorageUsed(dataStorageConf);
+        df.addDataStorageUsed(dataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
         df = new StorageDataFile(url, "3", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip,
                                  "file3.test");
-        df.setDataStorageUsed(dataStorageConf);
+        df.addDataStorageUsed(dataStorageConf);
         datafiles.add(df);
         dataFileDao.save(datafiles);
     }
@@ -767,17 +767,17 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         URL url = new URL("file://PLOP/Node/file10.test");
         StorageDataFile df = new StorageDataFile(url, checksumPrefix + "10", "MD5", DataType.RAWDATA, fileSize,
                                                  MimeType.valueOf("application/text"), aip, "file10.test");
-        df.setDataStorageUsed(nearLineConf);
+        df.addDataStorageUsed(nearLineConf);
         datafiles.add(df);
         url = new URL("file://PLOP/Node/file20.test");
         df = new StorageDataFile(url, checksumPrefix + "20", "MD5", DataType.RAWDATA, fileSize,
                                  MimeType.valueOf("application/text"), aip, "file20.test");
-        df.setDataStorageUsed(nearLineConf);
+        df.addDataStorageUsed(nearLineConf);
         datafiles.add(df);
         url = new URL("file://PLOP/Node/file30.test");
         df = new StorageDataFile(url, checksumPrefix + "30", "MD5", DataType.RAWDATA, fileSize,
                                  MimeType.valueOf("application/text"), aip, "file30.test");
-        df.setDataStorageUsed(nearLineConf);
+        df.addDataStorageUsed(nearLineConf);
         datafiles.add(df);
         dataFileDao.save(datafiles);
         return aip;

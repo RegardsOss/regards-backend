@@ -180,7 +180,6 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
                                                  new MimeType("image", "png"),
                                                  aip,
                                                  "quicklook.png");
-        df.setDataStorageUsed(localStorageConf);
         IWorkingSubset workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
 
         Set<JobParameter> jobParameters = Sets.newHashSet();

@@ -339,48 +339,49 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     @Override
     public AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest) throws ModuleException {
-        Set<String> requestedChecksums = availabilityRequest.getChecksums();
-        Set<StorageDataFile> dataFiles = dataFileDao.findAllByChecksumIn(requestedChecksums);
-        Set<String> errors = Sets.newHashSet();
-
-        // 1. Check for invalid files.
-        if (dataFiles.size() != requestedChecksums.size()) {
-            Set<String> dataFilesChecksums = dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
-            Set<String> checksumNotFound = Sets.difference(requestedChecksums, dataFilesChecksums);
-            errors.addAll(checksumNotFound);
-            checksumNotFound.stream()
-                    .forEach(cs -> LOG.error("File to restore with checksum {} is not stored by REGARDS.", cs));
-        }
-
-        Set<StorageDataFile> dataFilesWithAccess = checkLoadFilesAccessRights(dataFiles);
-
-        errors.addAll(Sets.difference(dataFiles, dataFilesWithAccess).stream().map(df -> df.getChecksum())
-                              .collect(Collectors.toSet()));
-
-        Set<StorageDataFile> onlineFiles = Sets.newHashSet();
-        Set<StorageDataFile> nearlineFiles = Sets.newHashSet();
-
-        // 2. Check for online files. Online files doesn't need to be stored in the cache
-        // they can be accessed directly where they are stored.
-        for (StorageDataFile df : dataFilesWithAccess) {
-            if (df.getDataStorages() != null) {
-                if (df.getDataStorages().getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
-                    onlineFiles.add(df);
-                } else {
-                    nearlineFiles.add(df);
-                }
-            } else {
-                LOG.error("File to restore {} has no storage plugin information. Restoration failed.", df.getId());
-            }
-        }
-        // now lets ask the cache service to handle nearline restoration and give us the already available ones
-        CoupleAvailableError nearlineAvailableAndError = cachedFileService
-                .restore(nearlineFiles, availabilityRequest.getExpirationDate());
-        for (StorageDataFile inError : nearlineAvailableAndError.getErrors()) {
-            errors.add(inError.getChecksum());
-        }
-        // lets construct the result
-        return new AvailabilityResponse(errors, onlineFiles, nearlineAvailableAndError.getAvailables());
+//        Set<String> requestedChecksums = availabilityRequest.getChecksums();
+//        Set<StorageDataFile> dataFiles = dataFileDao.findAllByChecksumIn(requestedChecksums);
+//        Set<String> errors = Sets.newHashSet();
+//
+//        // 1. Check for invalid files.
+//        if (dataFiles.size() != requestedChecksums.size()) {
+//            Set<String> dataFilesChecksums = dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
+//            Set<String> checksumNotFound = Sets.difference(requestedChecksums, dataFilesChecksums);
+//            errors.addAll(checksumNotFound);
+//            checksumNotFound.stream()
+//                    .forEach(cs -> LOG.error("File to restore with checksum {} is not stored by REGARDS.", cs));
+//        }
+//
+//        Set<StorageDataFile> dataFilesWithAccess = checkLoadFilesAccessRights(dataFiles);
+//
+//        errors.addAll(Sets.difference(dataFiles, dataFilesWithAccess).stream().map(df -> df.getChecksum())
+//                              .collect(Collectors.toSet()));
+//
+//        Set<StorageDataFile> onlineFiles = Sets.newHashSet();
+//        Set<StorageDataFile> nearlineFiles = Sets.newHashSet();
+//
+//        // 2. Check for online files. Online files doesn't need to be stored in the cache
+//        // they can be accessed directly where they are stored.
+//        for (StorageDataFile df : dataFilesWithAccess) {
+//            if (df.getDataStorages() != null) {
+//                if (df.getDataStorages().getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
+//                    onlineFiles.add(df);
+//                } else {
+//                    nearlineFiles.add(df);
+//                }
+//            } else {
+//                LOG.error("File to restore {} has no storage plugin information. Restoration failed.", df.getId());
+//            }
+//        }
+//        // now lets ask the cache service to handle nearline restoration and give us the already available ones
+//        CoupleAvailableError nearlineAvailableAndError = cachedFileService
+//                .restore(nearlineFiles, availabilityRequest.getExpirationDate());
+//        for (StorageDataFile inError : nearlineAvailableAndError.getErrors()) {
+//            errors.add(inError.getChecksum());
+//        }
+//        // lets construct the result
+//        return new AvailabilityResponse(errors, onlineFiles, nearlineAvailableAndError.getAvailables());
+        return null; //FIXME: do modification
     }
 
     private Set<StorageDataFile> checkLoadFilesAccessRights(Set<StorageDataFile> dataFiles) throws ModuleException {
@@ -1170,12 +1171,14 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     private Set<UUID> doScheduleStorageMetadataUpdate(Set<UpdatableMetadataFile> metadataToUpdate)
             throws ModuleException {
         // This is an update so we don't use the allocation strategy and we directly use the PluginConf used to
-        // storeAndCreate
-        // the file.
-        // Lets construct the Multimap<PluginConf, StorageDataFile> allowing us to then storeAndCreate IWorkingSubSets
+        // storeAndCreate the file.
+        // Lets construct the Multimap<PluginConf, StorageDataFile> allowing us to then create the IWorkingSubSets
         Multimap<Long, StorageDataFile> toPrepareMap = HashMultimap.create();
         for (UpdatableMetadataFile oldNew : metadataToUpdate) {
-            toPrepareMap.put(oldNew.getOldOne().getDataStorages().getId(), oldNew.getNewOne());
+            Set<PluginConfiguration> oldDataStorages = oldNew.getOldOne().getDataStorages();
+            for(PluginConfiguration oldDataStorage : oldDataStorages) {
+                toPrepareMap.put(oldDataStorage.getId(), oldNew.getNewOne());
+            }
         }
         // now lets work with workingSubsets
         Set<JobInfo> jobsToSchedule = Sets.newHashSet();
@@ -1211,43 +1214,44 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     @Override
     public Optional<StorageDataFile> getAIPDataFile(String pAipId, String pChecksum) throws ModuleException {
-
-        // First find the AIP
-        Optional<AIP> oaip = aipDao.findOneByIpId(pAipId);
-        if (oaip.isPresent()) {
-            AIP aip = oaip.get();
-            if (!getSecurityDelegationPlugin().hasAccess(pAipId)) {
-                throw new EntityOperationForbiddenException(pAipId, AIP.class, AIP_ACCESS_FORBIDDEN);
-            }
-            // Now get requested StorageDataFile
-            Set<StorageDataFile> aipDataFiles = dataFileDao.findAllByAip(aip);
-            Optional<StorageDataFile> odf = aipDataFiles.stream().filter(df -> pChecksum.equals(df.getChecksum()))
-                    .findFirst();
-            if (odf.isPresent()) {
-                StorageDataFile dataFile = odf.get();
-                if (dataFile.getDataStorages() != null) {
-                    if (dataFile.getDataStorages().getInterfaceNames()
-                            .contains(IOnlineDataStorage.class.getName())) {
-                        return Optional.of(dataFile);
-                    } else {
-                        // Check if file is available from cache
-                        Optional<CachedFile> ocf = cachedFileService.getAvailableCachedFile(pChecksum);
-                        if (ocf.isPresent()) {
-                            dataFile.setUrl(ocf.get().getLocation());
-                            return Optional.of(dataFile);
-                        } else {
-                            return Optional.empty();
-                        }
-                    }
-                } else {
-                    throw new EntityNotFoundException("Storage plugin used to storeAndCreate datafile is unknown.");
-                }
-            } else {
-                throw new EntityNotFoundException(pChecksum, StorageDataFile.class);
-            }
-
-        } else {
-            throw new EntityNotFoundException(pAipId, AIP.class);
-        }
+//
+//        // First find the AIP
+//        Optional<AIP> oaip = aipDao.findOneByIpId(pAipId);
+//        if (oaip.isPresent()) {
+//            AIP aip = oaip.get();
+//            if (!getSecurityDelegationPlugin().hasAccess(pAipId)) {
+//                throw new EntityOperationForbiddenException(pAipId, AIP.class, AIP_ACCESS_FORBIDDEN);
+//            }
+//            // Now get requested StorageDataFile
+//            Set<StorageDataFile> aipDataFiles = dataFileDao.findAllByAip(aip);
+//            Optional<StorageDataFile> odf = aipDataFiles.stream().filter(df -> pChecksum.equals(df.getChecksum()))
+//                    .findFirst();
+//            if (odf.isPresent()) {
+//                StorageDataFile dataFile = odf.get();
+//                if (dataFile.getDataStorages() != null) {
+//                    if (dataFile.getDataStorages().getInterfaceNames()
+//                            .contains(IOnlineDataStorage.class.getName())) {
+//                        return Optional.of(dataFile);
+//                    } else {
+//                        // Check if file is available from cache
+//                        Optional<CachedFile> ocf = cachedFileService.getAvailableCachedFile(pChecksum);
+//                        if (ocf.isPresent()) {
+//                            dataFile.setUrl(ocf.get().getLocation());
+//                            return Optional.of(dataFile);
+//                        } else {
+//                            return Optional.empty();
+//                        }
+//                    }
+//                } else {
+//                    throw new EntityNotFoundException("Storage plugin used to storeAndCreate datafile is unknown.");
+//                }
+//            } else {
+//                throw new EntityNotFoundException(pChecksum, StorageDataFile.class);
+//            }
+//
+//        } else {
+//            throw new EntityNotFoundException(pAipId, AIP.class);
+//        }
+        return null; //FIXME: do modification
     }
 }

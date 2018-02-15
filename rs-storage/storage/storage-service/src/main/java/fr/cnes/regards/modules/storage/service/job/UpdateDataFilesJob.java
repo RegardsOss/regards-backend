@@ -54,11 +54,7 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
             IDataStorage storagePlugin = pluginService.getPlugin(confIdToUse);
             // now that we have the plugin instance, lets retrieve the aip from the job parameters
             IWorkingSubset workingSubset = parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
-            // to do updates, first we storeAndCreate the new one ...
-            PluginConfiguration storagePluginConf = pluginService.getPluginConfiguration(confIdToUse);
-            for (StorageDataFile df : workingSubset.getDataFiles()) {
-                df.setDataStorageUsed(storagePluginConf);
-            }
+            // to do updates, first we store the new one ...
             storagePlugin.store(workingSubset, true, progressManager);
             // manual call to after run here to globalize the code.
             afterRun();

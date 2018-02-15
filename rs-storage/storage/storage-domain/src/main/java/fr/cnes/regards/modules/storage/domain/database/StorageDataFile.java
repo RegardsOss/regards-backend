@@ -12,6 +12,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
@@ -126,9 +128,12 @@ public class StorageDataFile {
     /**
      * Data storage plugin configuration used to store the file
      */
-    @OneToMany
-    @JoinColumn(name = "data_file_id",
-            foreignKey = @ForeignKey(name = "fk_data_file_data_storage_plugin_configuration"))
+    @ManyToMany
+    @JoinTable(
+            name="ta_data_file_plugin_conf",
+            joinColumns = @JoinColumn( name="data_file_id", foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
+            inverseJoinColumns = @JoinColumn( name="data_storage_conf_id", foreignKey = @ForeignKey(name = "fk_plugin_conf_data_file_plugin_conf"))
+    )
     private Set<PluginConfiguration> dataStorages = new HashSet<>();
 
     /**
@@ -142,7 +147,7 @@ public class StorageDataFile {
     /**
      * Indicates the number of archives that have to store this data file. Archives <=> IDataStorage configurations
      */
-    @Column
+    @Column(name = "not_yet_stored_by")
     @Min(0)
     @GsonIgnore
     private Long notYetStoredBy;

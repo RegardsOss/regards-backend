@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -131,7 +132,8 @@ public class DataFileDao implements IDataFileDao {
 
     @Override
     public Collection<MonitoringAggregation> getMonitoringAggregation() {
-        return repository.getMonitoringAggregation();
+//        return repository.getMonitoringAggregation();
+        return new HashSet<>(); //FIXME
     }
 
     private Optional<AIPEntity> getAipDataBase(AIP aip) {

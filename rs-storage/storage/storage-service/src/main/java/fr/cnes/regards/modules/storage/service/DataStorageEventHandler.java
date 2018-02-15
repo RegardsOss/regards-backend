@@ -299,7 +299,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
         }
         storedDataFile.setChecksum(storedFileChecksum);
         storedDataFile.setFileSize(storedFileSize);
-        storedDataFile.setDataStorageUsed(dataStorageUsed);
+        storedDataFile.addDataStorageUsed(dataStorageUsed);
         storedDataFile.setNotYetStoredBy(storedDataFile.getNotYetStoredBy() - 1);
         storedDataFile.setUrl(storedFileNewURL);
         storedDataFile.setHeight(dataHeight);
