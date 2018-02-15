@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.domain;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -208,6 +209,15 @@ public class Product {
 
     public List<AcquisitionFile> getAcquisitionFiles() {
         return fileList;
+    }
+
+    /**
+     * Filter acquisition files to only retrieve active ones (useful for SIP generation)
+     * @return active {@link AcquisitionFile} (i.e. in {@link AcquisitionFileState#ACQUIRED} state)
+     */
+    public List<AcquisitionFile> getActiveAcquisitionFiles() {
+        return fileList.stream().filter(af -> AcquisitionFileState.ACQUIRED.equals(af.getState()))
+                .collect(Collectors.toList());
     }
 
     public void removeAcquisitionFile(AcquisitionFile acqFile) {

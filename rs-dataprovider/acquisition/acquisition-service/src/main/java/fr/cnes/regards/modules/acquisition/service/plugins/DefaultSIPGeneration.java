@@ -51,7 +51,7 @@ public class DefaultSIPGeneration implements ISipGenerationPlugin {
         SIPBuilder sipBuilder = new SIPBuilder(product.getProductName());
 
         // Fill SIP with product information
-        for (AcquisitionFile af : product.getAcquisitionFiles()) {
+        for (AcquisitionFile af : product.getActiveAcquisitionFiles()) {
             try {
                 sipBuilder.getContentInformationBuilder().setDataObject(af.getFileInfo().getDataType(),
                                                                         af.getFilePath().toAbsolutePath().toUri()
