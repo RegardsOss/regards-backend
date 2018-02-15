@@ -138,7 +138,7 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
         }
 
         String linkUrlTemplate;
-        if ((token != null) && token.getRequestLink().contains("?")) {
+        if (token.getRequestLink().contains("?")) {
             linkUrlTemplate = "%s&origin_url=%s&token=%s&account_email=%s";
         } else {
             linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
