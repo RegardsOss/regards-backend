@@ -38,28 +38,32 @@ import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
         url = "https://regardsoss.github.io/")
 public class FakeSipValidation implements ISipValidation {
 
-    @PluginParameter(label = "Simple string", description = "Simple string description")
+    @PluginParameter(label = "Simple string", description = "Simple string description", defaultValue = "Ah ! Mesdames, voilà du bon fromage,\n"
+            + "Celui qui l'a fait il est de son village\n" + "Voilà du bon fromage au lait\n"
+            + "Il est du pays de celui qui l'a fait !\n" + "\n" + "Celui qui l'a fait il est de son village\n"
+            + "Ah ! Mesdames, voilà du bon fromage\n" + "Voilà du bon fromage au lait,\n"
+            + "Il est du pays de celui qui l'a fait !")
     private String pString;
 
-    @PluginParameter(label = "Simple byte", description = "Simple byte description")
+    @PluginParameter(label = "Simple byte", description = "Simple byte description", defaultValue = "1")
     private Byte pByte;
 
-    @PluginParameter(label = "Simple short", description = "Simple short description")
+    @PluginParameter(label = "Simple short", description = "Simple short description", defaultValue = "6")
     private Short pShort;
 
-    @PluginParameter(label = "Simple integer", description = "Simple integer description")
+    @PluginParameter(label = "Simple integer", description = "Simple integer description", defaultValue = "69")
     private Integer pInteger;
 
-    @PluginParameter(label = "Simple long", description = "Simple long description")
+    @PluginParameter(label = "Simple long", description = "Simple long description", defaultValue = "666")
     private Long pLong;
 
-    @PluginParameter(label = "Simple float", description = "Simple float description")
+    @PluginParameter(label = "Simple float", description = "Simple float description", defaultValue = "666.69")
     private Float pFloat;
 
-    @PluginParameter(label = "Simple double", description = "Simple double description")
+    @PluginParameter(label = "Simple double", description = "Simple double description", defaultValue = "69.666")
     private Double pDouble;
 
-    @PluginParameter(label = "Simple boolean", description = "Simple boolean description")
+    @PluginParameter(label = "Simple boolean", description = "Simple boolean description", defaultValue = "true")
     private Boolean pBoolean;
 
     @PluginParameter(label = "List of string", description = "List of string description")
