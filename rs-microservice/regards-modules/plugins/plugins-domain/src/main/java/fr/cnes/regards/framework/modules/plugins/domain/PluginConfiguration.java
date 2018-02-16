@@ -131,7 +131,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Configuration parameters of the plugin
      */
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "parent_conf_id", foreignKey = @ForeignKey(name = "fk_plg_conf_param_id"))
     private List<PluginParameter> parameters;
 
