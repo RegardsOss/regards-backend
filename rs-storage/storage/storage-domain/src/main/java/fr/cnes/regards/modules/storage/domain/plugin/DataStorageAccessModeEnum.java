@@ -17,6 +17,11 @@ public enum DataStorageAccessModeEnum {
     /**
      * Data storage access to retrieve files.
      */
-    RETRIEVE_MODE;
+    RETRIEVE_MODE,
+
+    /**
+     * Data storage access to delete files
+     */
+    DELETION_MODE
 
 }

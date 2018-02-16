@@ -157,6 +157,8 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
                 return prepareRetrieveWorkingsubsets(dataFiles);
             case STORE_MODE:
                 return prepareStoreWorkingsubsets(dataFiles);
+            case DELETION_MODE:
+                return prepareStoreWorkingsubsets(dataFiles); //FIXME
             default:
                 LOG.error("[STAFDataStorage Plugin] Unknown preparation mode {}", pMode.toString());
                 return Sets.newHashSet();

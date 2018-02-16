@@ -90,7 +90,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final String DATA_STORAGE_CONF_LABEL = "AIPServiceIT_DATA_STORAGE";
 
-    private static final int MAX_WAIT_TEST = 10000;
+    private static final int MAX_WAIT_TEST = 14000;
 
     private final StoreJobEventHandler handler = new StoreJobEventHandler();
 
@@ -166,7 +166,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     }
 
     @Test
-    @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_010") })
+    @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_010"), @Requirement("REGARDS_DSL_STOP_AIP_070") })
     public void createSuccessTest() throws ModuleException, InterruptedException {
         Set<UUID> jobIds = aipService.storeAndCreate(Sets.newHashSet(aip));
         jobIds.forEach(job -> LOG.info("Waiting for job {} end", job.toString()));
@@ -192,6 +192,10 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         LOG.info("AIP {} stored", aip.getId().toString());
         Set<StorageDataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
         Assert.assertEquals(2, dataFiles.size());
+        Assert.assertNotNull("AIP metadata checksum should be stored into DB",
+                             dataFiles.stream()
+                                     .filter(storageDataFile -> storageDataFile.getDataType().equals(DataType.AIP))
+                                     .findFirst().get().getChecksum());
     }
 
     @Test
@@ -250,6 +254,8 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                 Thread.sleep(1000);
                 wait += 1000;
             }
+            Assert.assertTrue("Test in error because it took more than " + wait + " to store the metadata",
+                              wait < MAX_WAIT_TEST);
             Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
             Set<StorageDataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
             Assert.assertEquals(1, dataFiles.size());
