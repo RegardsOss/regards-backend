@@ -20,11 +20,13 @@ package fr.cnes.regards.modules.ingest.rest;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -32,13 +34,21 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
+import fr.cnes.regards.modules.ingest.domain.builder.SIPEntityBuilder;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.service.ISIPService;
+import fr.cnes.regards.modules.ingest.service.ISIPSessionService;
 
 /**
  *
@@ -52,6 +62,12 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPControllerIT.class);
+
+    @Autowired
+    private ISIPService sipService;
+
+    @Autowired
+    private ISIPSessionService sessionService;
 
     @Override
     protected Logger getLogger() {
@@ -70,7 +86,8 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         SIPBuilder sipBuilder = new SIPBuilder("SIP_001");
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"),
                                                                 "sdsdfm1211vd");
-        sipBuilder.setSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
+        sipBuilder.setSyntax("FITS(FlexibleImageTransport)",
+                             "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
         sipBuilder.addContentInformation();
         collectionBuilder.add(sipBuilder.build());
 
@@ -78,7 +95,8 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         sipBuilder = new SIPBuilder("SIP_002");
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data2.fits"),
                                                                 "sdsdfm1211vsdfdsfd");
-        sipBuilder.setSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
+        sipBuilder.setSyntax("FITS(FlexibleImageTransport)",
+                             "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
         sipBuilder.addContentInformation();
         collectionBuilder.add(sipBuilder.build());
 
@@ -116,7 +134,8 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         SIPBuilder sipBuilder = new SIPBuilder("SIP_001");
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "FAKE_ALGO",
                                                                 "sdsdfm1211vd");
-        sipBuilder.setSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
+        sipBuilder.setSyntax("FITS(FlexibleImageTransport)",
+                             "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
         sipBuilder.addContentInformation();
         collectionBuilder.add(sipBuilder.build());
 
@@ -124,7 +143,8 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         sipBuilder = new SIPBuilder("SIP_002");
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data2.fits"),
                                                                 "sdsdfm1211vsdfdsfd");
-        sipBuilder.setSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
+        sipBuilder.setSyntax("FITS(FlexibleImageTransport)",
+                             "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
         sipBuilder.addContentInformation();
         collectionBuilder.add(sipBuilder.build());
 
@@ -179,4 +199,33 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                                  requestBuilderCustomizer, "Should be able to import a partial valid SIP collection");
     }
 
+    @Test
+    @Requirement("REGARDS_DSL_ING_PRO_310")
+    @Purpose("Load SIP with validation errors")
+    public void searchSipWithErrors() {
+
+        // Create SIP
+        SIPBuilder sipBuilder = new SIPBuilder("SIP_001");
+        sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"),
+                                                                "sdsdfm1211vd");
+        sipBuilder.setSyntax("FITS(FlexibleImageTransport)",
+                             "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
+        sipBuilder.addContentInformation();
+        SIP sip = sipBuilder.build();
+
+        // Store SIP entity
+        SIPSession session = sessionService.getSession("session", true);
+
+        SIPEntity sipEntity = SIPEntityBuilder.build(DEFAULT_TENANT, session, sip,
+                                                     IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "me", 1,
+                                                     SIPState.INVALID, EntityType.DATA);
+        sipEntity.setChecksum("12332323f2ds3d6g6df");
+        sipEntity.setProcessingErrors(Arrays.asList("error1", "error2"));
+        sipService.saveSIPEntity(sipEntity);
+
+        // Get SIPS with search API
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultGet(SIPController.TYPE_MAPPING, requestBuilderCustomizer, "Should found valid SIP");
+    }
 }

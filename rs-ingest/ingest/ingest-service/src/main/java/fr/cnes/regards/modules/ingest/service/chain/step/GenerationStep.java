@@ -69,7 +69,7 @@ public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
         SIPEntity sipEntity = this.job.getEntity();
         sipEntity.setState(SIPState.AIP_GEN_ERROR);
         LOGGER.error("Error generating AIP(s) for SIP \"{}\"", sip.getId());
-        this.updateSIPEntityState(SIPState.AIP_GEN_ERROR);
+        updateSIPEntityState(SIPState.AIP_GEN_ERROR);
         this.job.getPublisher().publish(new SIPEvent(sipEntity));
     }
 }

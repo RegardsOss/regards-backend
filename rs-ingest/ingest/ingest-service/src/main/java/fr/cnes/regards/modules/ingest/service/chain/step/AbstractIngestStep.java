@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.step.AbstractProcessingStep;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
@@ -37,6 +40,8 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
 
     protected final IPluginService pluginService;
 
+    protected List<String> processingErrors;
+
     public AbstractIngestStep(IngestProcessingJob job) {
         super(job);
         this.processingChain = job.getProcessingChain();
@@ -44,7 +49,8 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
     }
 
     protected SIPEntity updateSIPEntityState(SIPState newEntitySIPState) {
-        return job.getIngestProcessingService().updateSIPEntityState(this.job.getEntity().getId(), newEntitySIPState);
+        return job.getIngestProcessingService().updateSIPEntityState(this.job.getEntity().getId(), newEntitySIPState,
+                                                                     processingErrors);
     }
 
     protected <T> T getStepPlugin(Long confId) throws ProcessingStepException {
@@ -53,5 +59,12 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
         } catch (ModuleException e) {
             throw new ProcessingStepException(e);
         }
+    }
+
+    public void addProcessingError(String error) {
+        if (processingErrors == null) {
+            processingErrors = new ArrayList<>();
+        }
+        processingErrors.add(error);
     }
 }

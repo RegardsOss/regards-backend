@@ -144,9 +144,10 @@ public class IngestProcessingService implements IIngestProcessingService {
     }
 
     @Override
-    public SIPEntity updateSIPEntityState(Long pId, SIPState pNewState) {
+    public SIPEntity updateSIPEntityState(Long pId, SIPState pNewState, List<String> processingErrors) {
         SIPEntity sip = sipRepository.findOne(pId);
         sip.setState(pNewState);
+        sip.setProcessingErrors(processingErrors);
         return sipService.saveSIPEntity(sip);
     }
 
