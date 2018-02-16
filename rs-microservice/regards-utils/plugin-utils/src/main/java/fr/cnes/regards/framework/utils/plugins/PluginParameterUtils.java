@@ -92,7 +92,7 @@ public final class PluginParameterUtils {
             boolean isChildParameters, List<String> alreadyManagedTypeNames) {
         List<PluginParameterType> parameters = new ArrayList<>();
 
-        for (final Field field : pluginClass.getDeclaredFields()) {
+        for (final Field field : ReflectionUtils.getAllDeclaredFields(pluginClass)) {
             if (field.isAnnotationPresent(PluginParameter.class) || (isChildParameters && isToBeConsidered(field))) {
                 // Initialize list of managed types for in depth scanning from root fields
                 if (!isChildParameters) {
@@ -399,7 +399,7 @@ public final class PluginParameterUtils {
         }
 
         // Look for annotated fields
-        for (final Field field : returnPlugin.getClass().getDeclaredFields()) {
+        for (final Field field : ReflectionUtils.getAllDeclaredFields(returnPlugin.getClass())) {
             if (field.isAnnotationPresent(PluginParameter.class)) {
                 PluginParameter plgParamAnnotation = field.getAnnotation(PluginParameter.class);
                 Gson gsonProcessor = gson.isPresent() ? gson.get() : PluginGsonUtils.getInstance();
