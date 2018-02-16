@@ -266,7 +266,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                                            associatedAIP);
                         break;
                     case FAILED:
-                        handleStoreFailed(data, associatedAIP, event.getNewUrl());
+                        handleStoreFailed(data, associatedAIP);
                         break;
                     default:
                         LOG.error("Unhandle DataStorage STORE event type {}", type);
@@ -302,15 +302,15 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
         storedDataFile.setChecksum(storedFileChecksum);
         storedDataFile.setFileSize(storedFileSize);
         storedDataFile.addDataStorageUsed(dataStorageUsed);
-        storedDataFile.setNotYetStoredBy(storedDataFile.getNotYetStoredBy() - 1);
-        storedDataFile.setUrl(storedFileNewURL);
+        storedDataFile.decreaseNotYetStoredBy();
+        storedDataFile.getUrls().add(storedFileNewURL);
         storedDataFile.setHeight(dataHeight);
         storedDataFile.setWidth(dataWidth);
         if (storedDataFile.getNotYetStoredBy() == 0) {
             storedDataFile.setState(DataFileState.STORED);
             //specific save once it is stored
             dataFileDao.save(storedDataFile);
-            LOG.debug("[STORE FILE SUCCESS] DATA FILE {} is in STORED state", storedDataFile.getUrl());
+            LOG.debug("[STORE FILE SUCCESS] DATA FILE {} is in STORED state", storedDataFile.getUrls());
             if (storedDataFile.getDataType() == DataType.AIP) {
                 // can only be obtained after the aip state STORING_METADATA which can only changed to STORED
                 // if we just stored the AIP, there is nothing to do but changing AIP state, and clean the
@@ -343,7 +343,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                                                                                                        .getName()
                                                                                                        + " stored into REGARDS");
                     ci.get().getDataObject().setFileSize(storedDataFile.getFileSize());
-                    ci.get().getDataObject().setUrl(storedDataFile.getUrl());
+                    ci.get().getDataObject().getUrls().addAll(storedDataFile.getUrls());
                     ci.get().getDataObject().setFilename(storedDataFile.getName());
                     associatedAIP.addEvent(EventType.STORAGE.name(),
                                            String.format(DATAFILE_STORED_SUCCESSFULLY, storedDataFile.getName()));
@@ -359,12 +359,10 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
      * Method called when a FAILURE {@link DataStorageEvent} {@link StorageAction#STORE} event is received.
      * @param storeFailFile {@link StorageDataFile} not deleted.
      * @param associatedAIP {@link AIP} Associated to the {@link StorageDataFile} in error.
-     * @param newUrl {@link URL} new URL of the {@link StorageDataFile}
      */
-    private void handleStoreFailed(StorageDataFile storeFailFile, AIP associatedAIP, URL newUrl) {
+    private void handleStoreFailed(StorageDataFile storeFailFile, AIP associatedAIP) {
         // update data status
         storeFailFile.setState(DataFileState.ERROR);
-        storeFailFile.setUrl(newUrl);
         dataFileDao.save(storeFailFile);
         // Update associated AIP in db
         associatedAIP.setState(AIPState.STORAGE_ERROR);

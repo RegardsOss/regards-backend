@@ -76,8 +76,8 @@ public class DataFileDto {
         if (dataFile.getState() != DataFileState.STORED) {
             throw new IllegalArgumentException("DataFileDto cannot be created unless the data file is already stored");
         }
+        // URL is to be set by the controller, because it is the public url of this file!
         DataFileDto dto = new DataFileDto();
-        dto.url = dataFile.getUrl();
         dto.name = dataFile.getName();
         dto.checksum = dataFile.getChecksum();
         dto.algorithm = dataFile.getAlgorithm();

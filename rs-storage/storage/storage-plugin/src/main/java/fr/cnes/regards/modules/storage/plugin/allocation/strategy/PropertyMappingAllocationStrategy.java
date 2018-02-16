@@ -15,7 +15,6 @@ import com.google.gson.Gson;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -107,7 +106,7 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
             // now lets extract the property value from the AIP
             if(dataFile.isQuicklook()) {
                 //This allocation strategy only allows files to be stored into 1 DataStorage
-                dataFile.setNotYetStoredBy(1L);
+                dataFile.increaseNotYetStoredBy();
                 dispatch.put(quicklookDataStorageConfigurationId, dataFile);
             } else {
                 try {
@@ -116,16 +115,16 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
                     if (chosenOne == null) {
                         LOG.error(String.format(
                                 "File(url: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
-                                dataFile.getUrl()));
+                                dataFile.getUrls()));
                     } else {
                         //This allocation strategy only allows files to be stored into 1 DataStorage
-                        dataFile.setNotYetStoredBy(1L);
+                        dataFile.increaseNotYetStoredBy();
                         dispatch.put(chosenOne, dataFile);
                     }
                 } catch (PathNotFoundException e) {
                     LOG.error(String.format(
                             "File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
-                            dataFile.getUrl(),
+                            dataFile.getUrls(),
                             dataFile.getAip().getId(),
                             propertyPath), e);
                 }

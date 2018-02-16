@@ -18,7 +18,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedSubgraph;
-import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
@@ -69,10 +68,10 @@ public class StorageDataFile {
     private Long id;
 
     /**
-     * File url
+     * File urls
      */
     @Column
-    private URL url;
+    private Set<URL> urls;
 
     /**
      * File name
@@ -149,7 +148,7 @@ public class StorageDataFile {
      */
     @Column(name = "not_yet_stored_by")
     @Min(value = 0, message = "Attribute notYetStoredBy cannot be negative. Actual value : ${validatedValue}")
-    private Long notYetStoredBy;
+    private Long notYetStoredBy = 0L;
 
     /**
      * Default constructor
@@ -165,7 +164,7 @@ public class StorageDataFile {
      * @param aip
      */
     public StorageDataFile(OAISDataObject file, MimeType mimeType, AIP aip) {
-        this(file.getUrl(),
+        this(file.getUrls(),
              file.getChecksum(),
              file.getAlgorithm(),
              file.getRegardsDataType(),
@@ -175,7 +174,7 @@ public class StorageDataFile {
              null);
         String name = file.getFilename();
         if (Strings.isNullOrEmpty(name)) {
-            String[] pathParts = file.getUrl().getPath().split("/");
+            String[] pathParts = file.getUrls().iterator().next().getPath().split("/");
             name = pathParts[pathParts.length - 1];
         }
         this.name = name;
@@ -183,7 +182,7 @@ public class StorageDataFile {
 
     /**
      * Constructor setting the parameters as attribute except for the aip which is transformed to a {@link AIPEntity}
-     * @param url
+     * @param urls
      * @param checksum
      * @param algorithm
      * @param type
@@ -192,9 +191,9 @@ public class StorageDataFile {
      * @param aip
      * @param name
      */
-    public StorageDataFile(URL url, String checksum, String algorithm, DataType type, Long fileSize, MimeType mimeType,
+    public StorageDataFile(Set<URL> urls, String checksum, String algorithm, DataType type, Long fileSize, MimeType mimeType,
             AIP aip, String name) {
-        this.url = url;
+        this.urls = urls;
         this.checksum = checksum;
         this.algorithm = algorithm;
         this.dataType = type;
@@ -250,18 +249,21 @@ public class StorageDataFile {
     }
 
     /**
-     * @return the url
+     * @return the urls
      */
-    public URL getUrl() {
-        return url;
+    public Set<URL> getUrls() {
+        if(urls == null) {
+            urls = new HashSet<>();
+        }
+        return urls;
     }
 
     /**
-     * Set the url
-     * @param url
+     * Set the urls
+     * @param urls
      */
-    public void setUrl(URL url) {
-        this.url = url;
+    public void setUrls(Set<URL> urls) {
+        this.urls = urls;
     }
 
     /**
@@ -458,5 +460,21 @@ public class StorageDataFile {
         result = 31 * result + (dataType != null ? dataType.hashCode() : 0);
         result = 31 * result + (aipEntity != null ? aipEntity.hashCode() : 0);
         return result;
+    }
+
+    public void increaseNotYetStoredBy() {
+        if(notYetStoredBy == null) {
+            notYetStoredBy = 1L;
+        } else {
+            notYetStoredBy++;
+        }
+    }
+
+    public void decreaseNotYetStoredBy() {
+        if(notYetStoredBy == null) {
+            notYetStoredBy = -1L;
+        } else {
+            notYetStoredBy--;
+        }
     }
 }

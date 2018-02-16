@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +20,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Multimap;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -91,10 +91,10 @@ public class StafNoopAllocationStrategyIT extends AbstractRegardsTransactionalIT
     private void initDataFiles() throws MalformedURLException {
         dataFiles = Sets.newHashSet();
         AIP aip = getAIP();
-        stafDataFile = new StorageDataFile(new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, "truc.json"),
+        stafDataFile = new StorageDataFile(Sets.newHashSet(new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, "truc.json")),
                 "checksum", "MD5", DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, "truc");
         dataFiles.add(stafDataFile);
-        otherDataFile = new StorageDataFile(new URL("file", "", "local.json"), "checksum2", "MD5", DataType.OTHER, 666L,
+        otherDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "local.json")), "checksum2", "MD5", DataType.OTHER, 666L,
                 MediaType.APPLICATION_JSON, aip, "local");
         dataFiles.add(otherDataFile);
     }

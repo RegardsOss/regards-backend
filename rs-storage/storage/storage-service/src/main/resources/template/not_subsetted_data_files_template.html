@@ -3,7 +3,7 @@
     <div>
         One or more files could not be handled by their data storage:
         <#list dataFiles as dataFile>
-            - File ${dataFile.url} associated to aip ${dataFile.aipDataBase.id} could not be handled by its data
+            - File ${dataFile.urls} associated to aip ${dataFile.aipDataBase.id} could not be handled by this data
             storage ${dataFile.dataStorageUsed.label}.<br/>
         </#list>
     </div>

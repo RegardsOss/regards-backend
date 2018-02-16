@@ -47,8 +47,6 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
@@ -58,8 +56,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -259,8 +255,6 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     @Autowired
     private IWorkspaceService workspaceService;
 
-//    private JobEventHandler jobEventHandler;
-
     /**
      * The spring application name ~= microservice type
      */
@@ -282,7 +276,6 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         pluginService.addPluginPackage(STAFDataStorage.class.getPackage().getName());
         pluginService.addPluginPackage(CatalogSecurityDelegation.class.getPackage().getName());
         pluginService.addPluginPackage(DefaultAllocationStrategyPlugin.class.getPackage().getName());
-//        subscriber.subscribeTo(JobEvent.class, new JobEventHandler());
     }
 
     @Override
@@ -481,7 +474,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             return dataFiles.stream().map(df -> {
                 OAISDataObject dataObject = new OAISDataObject();
                 dataObject.setRegardsDataType(df.getDataType());
-                dataObject.setUrl(df.getUrl());
+                dataObject.setUrls(df.getUrls());
                 dataObject.setFilename(df.getName());
                 dataObject.setFileSize(df.getFileSize());
                 dataObject.setChecksum(df.getChecksum());
@@ -596,6 +589,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         for (JobInfo job : jobsToSchedule) {
             jobIds.add(jobInfoService.createAsQueued(job).getId());
         }
+        dataFileDao.save(storageWorkingSetMap.values());
         return jobIds;
     }
 
@@ -998,12 +992,14 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     private Set<UUID> scheduleDeletion(Set<StorageDataFile> dataFilesToDelete) throws ModuleException {
         //when we delete DataFiles, we have to get the DataStorages to use thanks to DB informations
-        Multimap<Long, StorageDataFile> deletionWorkingSetMap = HashMultimap.create();
-        dataFilesToDelete
-                .forEach(dataFile -> deletionWorkingSetMap.put(dataFile.getDataStorageUsed().getId(), dataFile));
+        Multimap<Long, StorageDataFile> deletionWorkingSetMultimap = HashMultimap.create();
+        for (StorageDataFile toDelete : dataFilesToDelete) {
+            toDelete.getDataStorages()
+                    .forEach(dataStorage -> deletionWorkingSetMultimap.put(dataStorage.getId(), toDelete));
+        }
         Set<JobInfo> jobsToSchedule = Sets.newHashSet();
-        for (Long dataStorageConfId : deletionWorkingSetMap.keySet()) {
-            Set<IWorkingSubset> workingSubSets = getWorkingSubsets(deletionWorkingSetMap.get(dataStorageConfId),
+        for (Long dataStorageConfId : deletionWorkingSetMultimap.keySet()) {
+            Set<IWorkingSubset> workingSubSets = getWorkingSubsets(deletionWorkingSetMultimap.get(dataStorageConfId),
                                                                    dataStorageConfId,
                                                                    DataStorageAccessModeEnum.DELETION_MODE);
             LOG.trace("Preparing a deletion job for each working subsets");
@@ -1057,7 +1053,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 URL urlToMetadata = new URL("file",
                                             "localhost",
                                             workspaceService.getFilePath(metadataName).toAbsolutePath().toString());
-                metadataAipFile = new StorageDataFile(urlToMetadata,
+                metadataAipFile = new StorageDataFile(Sets.newHashSet(urlToMetadata),
                                                       checksum,
                                                       checksumAlgorithm,
                                                       DataType.AIP,
@@ -1272,28 +1268,4 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         //        }
         return null; //FIXME: do modification
     }
-
-//    private class JobEventHandler implements IHandler<JobEvent> {
-//
-//        private final Multimap<String, UUID> jobsToListenToPerTenantMap = HashMultimap.create();
-//
-//        public void addJobToListenTo(String tenant, UUID jobId) {
-//            jobsToListenToPerTenantMap.put(tenant, jobId);
-//        }
-//
-//        @Override
-//        public void handle(TenantWrapper<JobEvent> wrapper) {
-//            String tenant = wrapper.getTenant();
-//            JobEventType jobEventType = wrapper.getContent().getJobEventType();
-//            UUID jobId = wrapper.getContent().getJobId();
-//            //first lets see if it's a job we care about
-//            if (jobsToListenToPerTenantMap.get(tenant).contains(jobId)) {
-//                switch (jobEventType) {
-//                    case FAILED:
-//
-//                        break;
-//                }
-//            }
-//        }
-//    }
 }

@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
-import org.assertj.core.util.Sets;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,6 +38,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -711,8 +711,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
             OffsetDateTime lastRequestDate, String location) throws MalformedURLException {
         // Simulate cache files to force cache limit size reached before restoring new files.
         // First create StorageDataFile
-        StorageDataFile df = new StorageDataFile(new URL("file://test/" + fileName), checksum, "MD5", DataType.RAWDATA, fileSize,
-                                                 MimeType.valueOf("application/text"), aip, fileName);
+        StorageDataFile df = new StorageDataFile(Sets.newHashSet(new URL("file://test/" + fileName)), checksum, "MD5", DataType.RAWDATA, fileSize,
+                                                                 MimeType.valueOf("application/text"), aip, fileName);
         df.addDataStorageUsed(nearLineConf);
         dataFileDao.save(df);
         // Then create cached file associated
@@ -739,17 +739,17 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         aipDao.save(aip);
         Set<StorageDataFile> datafiles = Sets.newHashSet();
         URL url = new URL(Paths.get(baseStorageLocation.toString(), "file1.test").toString());
-        StorageDataFile df = new StorageDataFile(url, "1", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"),
+        StorageDataFile df = new StorageDataFile(Sets.newHashSet(url), "1", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"),
                                                  aip, "file1.test");
         df.addDataStorageUsed(dataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
-        df = new StorageDataFile(url, "2", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip,
+        df = new StorageDataFile(Sets.newHashSet(url), "2", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip,
                                  "file2.test");
         df.addDataStorageUsed(dataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
-        df = new StorageDataFile(url, "3", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip,
+        df = new StorageDataFile(Sets.newHashSet(url), "3", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip,
                                  "file3.test");
         df.addDataStorageUsed(dataStorageConf);
         datafiles.add(df);
@@ -767,17 +767,17 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         aipDao.save(aip);
         Set<StorageDataFile> datafiles = Sets.newHashSet();
         URL url = new URL("file://PLOP/Node/file10.test");
-        StorageDataFile df = new StorageDataFile(url, checksumPrefix + "10", "MD5", DataType.RAWDATA, fileSize,
+        StorageDataFile df = new StorageDataFile(Sets.newHashSet(url), checksumPrefix + "10", "MD5", DataType.RAWDATA, fileSize,
                                                  MimeType.valueOf("application/text"), aip, "file10.test");
         df.addDataStorageUsed(nearLineConf);
         datafiles.add(df);
         url = new URL("file://PLOP/Node/file20.test");
-        df = new StorageDataFile(url, checksumPrefix + "20", "MD5", DataType.RAWDATA, fileSize,
+        df = new StorageDataFile(Sets.newHashSet(url), checksumPrefix + "20", "MD5", DataType.RAWDATA, fileSize,
                                  MimeType.valueOf("application/text"), aip, "file20.test");
         df.addDataStorageUsed(nearLineConf);
         datafiles.add(df);
         url = new URL("file://PLOP/Node/file30.test");
-        df = new StorageDataFile(url, checksumPrefix + "30", "MD5", DataType.RAWDATA, fileSize,
+        df = new StorageDataFile(Sets.newHashSet(url), checksumPrefix + "30", "MD5", DataType.RAWDATA, fileSize,
                                  MimeType.valueOf("application/text"), aip, "file30.test");
         df.addDataStorageUsed(nearLineConf);
         datafiles.add(df);

@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,6 +21,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -89,7 +89,7 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
         AIP aipWithProperty = getAIP();
         AIPBuilder builder = new AIPBuilder(aipWithProperty);
         builder.getPDIBuilder().addAdditionalProvenanceInformation("property", PROPERTY_VALUE);
-        propertyDataFile = new StorageDataFile(new URL("file", "", "truc.json"),
+        propertyDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "truc.json")),
                                                "checksum",
                                                "MD5",
                                                DataType.OTHER,
@@ -99,7 +99,7 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
                                                "truc");
         dataFiles.add(propertyDataFile);
         AIP aipWithoutProperty = getAIP();
-        otherDataFile = new StorageDataFile(new URL("file", "", "local.json"),
+        otherDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "local.json")),
                                             "checksum2",
                                             "MD5",
                                             DataType.OTHER,
@@ -111,7 +111,7 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
         AIP aipWithPropertyWrongVal = getAIP();
         builder = new AIPBuilder(aipWithPropertyWrongVal);
         builder.getPDIBuilder().addAdditionalProvenanceInformation("property", PROPERTY_VALUE + 3);
-        propertyWrongValDataFile = new StorageDataFile(new URL("file", "", "truc.json"),
+        propertyWrongValDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "truc.json")),
                                                        "checksum3",
                                                        "MD5",
                                                        DataType.OTHER,

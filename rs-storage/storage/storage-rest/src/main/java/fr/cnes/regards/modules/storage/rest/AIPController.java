@@ -520,20 +520,21 @@ public class AIPController implements IResourceController<AIP> {
             @PathVariable("checksum") String checksum) throws ModuleException, IOException {
         // Retrieve file locale path, 404 if aip not found or bad checksum or no storage plugin
         // 403 if user has not right
-        Optional<StorageDataFile> dataFileOpt = aipService.getAIPDataFile(aipId, checksum);
-        if (dataFileOpt.isPresent()) {
-            StorageDataFile dataFile = dataFileOpt.get();
-            File file = new File(dataFile.getUrl().getPath());
-            InputStreamResource isr = new InputStreamResource(new FileInputStream(file));
-            Long fileSize = file.length();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentLength(fileSize);
-            headers.setContentType(asMediaType(dataFile.getMimeType()));
-            headers.setContentDispositionFormData("attachement;filename=", dataFile.getName());
-            return new ResponseEntity<>(isr, headers, HttpStatus.OK);
-        } else { // NEARLINE file not in cache
-            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
-        }
+//        Optional<StorageDataFile> dataFileOpt = aipService.getAIPDataFile(aipId, checksum);
+//        if (dataFileOpt.isPresent()) {
+//            StorageDataFile dataFile = dataFileOpt.get();
+//            File file = new File(dataFile.getUrls().getPath());
+//            InputStreamResource isr = new InputStreamResource(new FileInputStream(file));
+//            Long fileSize = file.length();
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentLength(fileSize);
+//            headers.setContentType(asMediaType(dataFile.getMimeType()));
+//            headers.setContentDispositionFormData("attachement;filename=", dataFile.getName());
+//            return new ResponseEntity<>(isr, headers, HttpStatus.OK);
+//        } else { // NEARLINE file not in cache
+//            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+//        }
+        return null; //FIXME
     }
 
     public static MediaType asMediaType(MimeType mimeType) {

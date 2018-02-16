@@ -129,11 +129,12 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
         try {
             fullPathToFile = getStorageLocation(data);
             //check if file is already at the right place or not. Unless we are instructed not to(for updates for example)
-            if (!replaceMode && Paths.get(fullPathToFile).equals(Paths.get(data.getUrl().getPath()))) {
+            if (!replaceMode && data.getUrls().stream().map(url -> Paths.get(url.getPath()))
+                    .filter(path -> Paths.get(fullPathToFile).equals(path)).count() != 0) {
                 Long fileSize = Paths.get(fullPathToFile).toFile().length();
                 data.setFileSize(fileSize);
                 //if it is, there is nothing to move/copy, we just need to say to the system that the file is stored successfully
-                progressManager.storageSucceed(data, data.getUrl(), fileSize);
+                progressManager.storageSucceed(data, new URL("file", "", fullPathToFile), fileSize);
                 return;
             }
         } catch (IOException ioe) {
@@ -146,7 +147,8 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
             return;
         }
         try {
-            boolean downloadOk = DownloadUtils.downloadAndCheckChecksum(data.getUrl(),
+            URL sourceUrl = data.getUrls().stream().filter(url -> url.getProtocol().equals("file")).findAny().get();
+            boolean downloadOk = DownloadUtils.downloadAndCheckChecksum(sourceUrl,
                                                                         Paths.get(fullPathToFile),
                                                                         data.getAlgorithm(),
                                                                         data.getChecksum());

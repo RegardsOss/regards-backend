@@ -5,18 +5,16 @@ package fr.cnes.regards.modules.storage.service.job;
 
 import java.awt.*;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
@@ -164,7 +162,9 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        progressManager = new StorageJobProgressManager(publisher, this, (Long) parameters.get(PLUGIN_TO_USE_PARAMETER_NAME).getValue());
+        progressManager = new StorageJobProgressManager(publisher,
+                                                        this,
+                                                        (Long) parameters.get(PLUGIN_TO_USE_PARAMETER_NAME).getValue());
         try {
             doRun(parameters);
         } catch (RuntimeException e) {
@@ -250,11 +250,12 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     private void setQuicklookProperties(StorageDataFile storageDataFile) throws IOException, NoSuchAlgorithmException {
         // first to get the quicklook properties(height and width), we need to download it.
         // unless it is already on filesystem
-        URL dataFileUrl = storageDataFile.getUrl();
-        if (!dataFileUrl.getProtocol().equals("file")) {
+        Optional<URL> dataFileUrlOpt = storageDataFile.getUrls().stream()
+                .filter(url -> url.getProtocol().equals("file")).findAny();
+        if (!dataFileUrlOpt.isPresent()) {
             Path destination = Paths.get(getWorkspace().toString(), storageDataFile.getName());
             URL newURL = new URL("file", "", destination.toString());
-            boolean downloadOk = DownloadUtils.downloadAndCheckChecksum(dataFileUrl,
+            boolean downloadOk = DownloadUtils.downloadAndCheckChecksum(storageDataFile.getUrls().iterator().next(),
                                                                         destination,
                                                                         storageDataFile.getAlgorithm(),
                                                                         storageDataFile.getChecksum());
@@ -263,18 +264,15 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
                 logger.error(errorMsg);
                 throw new IOException(errorMsg);
             }
-            storageDataFile.setUrl(newURL);
+            storageDataFile.setUrls(Sets.newHashSet(newURL));
         }
         // then we can get the dimensions
-        try {
-            Dimension dimension = CommonFileUtils
-                    .getImageDimension(Paths.get(storageDataFile.getUrl().toURI()).toFile());
-            storageDataFile.setHeight(((Number) dimension.getHeight()).intValue());
-            storageDataFile.setWidth(((Number) dimension.getWidth()).intValue());
-        } catch (URISyntaxException e) {
-            //this cannot happen as data files are validated before the job
-            logger.error(e.getMessage(), e);
-        }
+        Path filePath = Paths
+                .get(storageDataFile.getUrls().stream().filter(url -> url.getProtocol().equals("file")).findAny().get()
+                             .getPath());
+        Dimension dimension = CommonFileUtils.getImageDimension(filePath.toFile());
+        storageDataFile.setHeight(((Number) dimension.getHeight()).intValue());
+        storageDataFile.setWidth(((Number) dimension.getWidth()).intValue());
     }
 
     @Override

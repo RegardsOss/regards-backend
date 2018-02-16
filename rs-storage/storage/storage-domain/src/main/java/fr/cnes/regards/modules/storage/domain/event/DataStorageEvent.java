@@ -81,9 +81,9 @@ public class DataStorageEvent implements ISubscribable {
      * @param storageAction
      * @param type
      */
-    public DataStorageEvent(StorageDataFile dataFile, StorageAction storageAction, StorageEventType type, Long storageConfId) {
+    public DataStorageEvent(StorageDataFile dataFile, StorageAction storageAction, StorageEventType type, Long storageConfId, URL newUrl) {
         this.dataFileId = dataFile.getId();
-        this.newUrl = dataFile.getUrl();
+        this.newUrl = newUrl;
         this.storageAction = storageAction;
         this.type = type;
         this.storageConfId = storageConfId;
@@ -91,6 +91,11 @@ public class DataStorageEvent implements ISubscribable {
         this.checksum = dataFile.getChecksum();
         this.width = dataFile.getWidth();
         this.height = dataFile.getHeight();
+    }
+
+    public DataStorageEvent(StorageDataFile dataFile, StorageAction storageAction, StorageEventType type,
+            Long storageConfId) {
+        this(dataFile, storageAction, type, storageConfId, null);
     }
 
     /**

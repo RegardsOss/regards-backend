@@ -70,10 +70,9 @@ public class StorageJobProgressManager implements IProgressManager {
 
     @Override
     public void storageSucceed(StorageDataFile dataFile, URL storedUrl, Long storedFileSize) {
-        dataFile.setUrl(storedUrl);
         dataFile.setFileSize(storedFileSize);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
-                StorageEventType.SUCCESSFULL, storageConfId);
+                StorageEventType.SUCCESSFULL, storageConfId, storedUrl);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
         // hell yeah this is not the usual publish method, but i know what i'm doing so trust me!

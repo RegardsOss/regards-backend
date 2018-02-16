@@ -140,7 +140,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         URL source = new URL("file", "", Paths.get("src", "test", "resources", "data.txt").toAbsolutePath().toString());
         AIP aip = getAipFromFile(false);
         aip.addEvent(EventType.SUBMISSION.name(), "submission into our beautiful system");
-        df = new StorageDataFile(source,
+        df = new StorageDataFile(Sets.newHashSet(source),
                                  "de89a907d33a9716d11765582102b2e0",
                                  "MD5",
                                  DataType.OTHER,
@@ -172,7 +172,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
                              Paths.get("src", "test", "resources", "quicklook.png").toAbsolutePath().toString());
         AIP aip = getAipFromFile(true);
         aip.addEvent(EventType.SUBMISSION.name(), "submission into our beautiful system");
-        StorageDataFile df = new StorageDataFile(source,
+        StorageDataFile df = new StorageDataFile(Sets.newHashSet(source),
                                                  "540e72d5ac22f25c70d9c72b9b36fb96",
                                                  "MD5",
                                                  DataType.QUICKLOOK_SD,

@@ -60,7 +60,7 @@ public class DefaultAllocationStrategyPlugin implements IAllocationStrategy {
 
         dataFilesToHandle.forEach(dataFile -> {
             //This allocation strategy only allows files to be stored into 1 DataStorage
-            dataFile.setNotYetStoredBy(1L);
+            dataFile.increaseNotYetStoredBy();
             if (dataFile.isQuicklook()) {
                 result.put(dataStorageConfForQuicklook.getId(), dataFile);
                 return;

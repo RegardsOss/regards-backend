@@ -203,10 +203,10 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // first lets change the data location to be sure it fails
         aip.getProperties().getContentInformations()
                 .toArray(new ContentInformation[aip.getProperties().getContentInformations().size()])[0].getDataObject()
-                .setUrl(new URL("file",
+                .setUrls(Sets.newHashSet(new URL("file",
                                 "",
                                 Paths.get("src/test/resources/data_that_does_not_exists.txt").toFile()
-                                        .getAbsolutePath()));
+                                        .getAbsolutePath())));
         Set<UUID> jobIds = aipService.storeAndCreate(Sets.newHashSet(aip));
         int wait = 0;
         LOG.info("Waiting for jobs end ...");
@@ -276,7 +276,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         aipService.updateAip(aip.getId().toString(), aip);
         Optional<StorageDataFile> oldDataFile = dataFileDao.findByAipAndType(aip, DataType.AIP);
         Assert.assertTrue("The old data file should exists !",
-                          Files.exists(Paths.get(oldDataFile.get().getUrl().toURI())));
+                          Files.exists(Paths.get(oldDataFile.get().getUrls().iterator().next().toURI())));
         // now lets launch the method without scheduling
         aipService.updateAlreadyStoredMetadata();
 
@@ -285,13 +285,13 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         Assert.assertTrue("AIP should be in storing metadata state",
                           newAIP.getState().equals(AIPState.STORING_METADATA));
         int count = 0;
-        while (Files.exists(Paths.get(oldDataFile.get().getUrl().toURI())) && (count < 40)) {
+        while (Files.exists(Paths.get(oldDataFile.get().getUrls().iterator().next().toURI())) && (count < 40)) {
             Thread.sleep(1000);
             count++;
         }
         // After job is done, the old AIP metadata file should be deleted
         Assert.assertFalse("The old data file should not exists anymore!",
-                           Files.exists(Paths.get(oldDataFile.get().getUrl().toURI())));
+                           Files.exists(Paths.get(oldDataFile.get().getUrls().iterator().next().toURI())));
         newAIP = aipDao.findOneByIpId(aip.getId().toString()).get();
         count = 0;
         // After job is done, the AIP should be in STORED state.
@@ -302,7 +302,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         }
         // After job is done, the new AIP metadata file should be present in local datastorage
         StorageDataFile file = dataFileDao.findByAipAndType(newAIP, DataType.AIP).get();
-        Assert.assertTrue("The new data file should exist!", Files.exists(Paths.get(file.getUrl().toURI())));
+        Assert.assertTrue("The new data file should exist!", Files.exists(Paths.get(file.getUrls().iterator().next().toURI())));
     }
 
     @Test
@@ -332,10 +332,10 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         for (StorageDataFile df : aipFiles) {
             if (df.getDataType() == DataType.AIP) {
                 Assert.assertFalse("AIP metadata should not be on disk anymore",
-                                   Files.exists(Paths.get(df.getUrl().toURI())));
+                                   Files.exists(Paths.get(df.getUrls().iterator().next().toURI())));
             } else {
                 Assert.assertFalse("AIP data should not be on disk anymore",
-                                   Files.exists(Paths.get(df.getUrl().toURI())));
+                                   Files.exists(Paths.get(df.getUrls().iterator().next().toURI())));
             }
         }
     }

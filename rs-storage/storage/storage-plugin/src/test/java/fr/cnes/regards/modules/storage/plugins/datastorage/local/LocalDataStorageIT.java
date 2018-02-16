@@ -161,16 +161,16 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
         LocalDataStorage storagePlugin = pluginService.getPlugin(localStorageConf.getId());
         // valid file to get a call to progressManager.storageSucceed
         StorageDataFile validDF = new StorageDataFile(
-                new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt"),
+                Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt")),
                 "538b3f98063b77e50f78b51f1a6acd8c", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip,
                 "data.txt");
         // file that does not exist to get a call to progressManager.storageFailed
         StorageDataFile ghostDF = new StorageDataFile(
-                new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data_do_not_exist.txt"),
+                Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data_do_not_exist.txt")),
                 "unknown", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip, "data_do_not_exist.txt");
         // invalid checksum to check call to progressManager.storageFailed
         StorageDataFile invalidDF = new StorageDataFile(
-                new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt"),
+                Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt")),
                 "01234567890123456789012345678901", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip,
                 "data.txt");
         Set<StorageDataFile> dataFiles = Sets.newHashSet(validDF, ghostDF, invalidDF);

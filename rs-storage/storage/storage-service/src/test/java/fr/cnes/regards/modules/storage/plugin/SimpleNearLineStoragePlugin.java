@@ -62,7 +62,7 @@ public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWo
     public void retrieve(LocalWorkingSubset pWorkingSubset, Path pDestinationPath, IProgressManager pProgressManager) {
         for (StorageDataFile file : pWorkingSubset.getDataFiles()) {
             LOG.info("FILE REstored id : {} cs : {}", file.getId(), file.getChecksum());
-            pProgressManager.restoreSucceed(file, Paths.get("target/restored/", file.getUrl().getFile()));
+            pProgressManager.restoreSucceed(file, Paths.get("target/restored/", file.getUrls().iterator().next().getFile()));
         }
     }
 }

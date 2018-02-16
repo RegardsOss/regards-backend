@@ -191,7 +191,8 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     public Set<STAFWorkingSubset> prepareRetrieveWorkingsubsets(Collection<StorageDataFile> dataFiles) {
         LOG.info("[STAFDataStorage Plugin] {} - Prepare RETRIEVE action - Start", stafArchive.getArchiveName());
         Set<STAFWorkingSubset> workingSubsets = new HashSet<>();
-        Set<URL> urls = dataFiles.stream().map(df -> df.getUrl()).collect(Collectors.toSet());
+//        Set<URL> urls = dataFiles.stream().map(df -> df.getUrls()).collect(Collectors.toSet()); //FIXME
+        Set<URL> urls = Sets.newHashSet();
         Set<AbstractPhysicalFile> preparedFiles = stafController.prepareFilesToRestore(urls);
         workingSubsets
                 .add(new STAFRetrieveWorkingSubset(dataFiles.stream().collect(Collectors.toSet()), preparedFiles));
@@ -211,9 +212,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             Set<StorageDataFile> alreadyStoredFiles = Sets.newHashSet();
             Set<StorageDataFile> filesToStore = Sets.newHashSet();
             // Check if files are already stored
-            dispatchAlreadyStoredFiles(pSubset.getDataFiles(), alreadyStoredFiles, filesToStore);
-            // Files already stored in STAF. Only send stored event to listeners
-            alreadyStoredFiles.forEach(file -> progressManager.storageSucceed(file, file.getUrl(), file.getFileSize()));
+            dispatchAlreadyStoredFiles(pSubset.getDataFiles(), progressManager, filesToStore);
             // Files need to be stored
             doStore(filesToStore, ws.getStafNode(), replaceMode, progressManager);
             LOG.info("[STAFDataStorage Plugin] {} - Store action - End.", stafArchive.getArchiveName());
@@ -245,7 +244,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     public void delete(Set<StorageDataFile> pDataFiles, IProgressManager pProgressManager) {
         // 1. Prepare files
         Map<URL, StorageDataFile> urls = Maps.newHashMap();
-        pDataFiles.stream().forEach(f -> urls.put(f.getUrl(), f));
+//        pDataFiles.stream().forEach(f -> urls.put(f.getUrls(), f)); //FIXME
         Set<AbstractPhysicalFile> filesToDelete = stafController.prepareFilesToDelete(urls.keySet());
         // 2. Delete prepared files
         Set<URL> deletedSTAFFiles = stafController.deleteFiles(filesToDelete);
@@ -283,7 +282,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
                 filesToPrepare.put(pSTAFNode, filePaths);
             } catch (IOException e) {
                 LOG.error("[STAFDataStorage Plugin] Error preparing file {}",
-                          file.getUrl().toString(),
+                          file.getUrls().toString(),
                           e.getMessage(),
                           e);
             }
@@ -306,18 +305,19 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         pFilesToStore.stream().forEach(fileToStore -> {
             boolean fileArchived = false;
             for (Entry<Path, URL> rawFile : rawArchivedFiles.entrySet()) {
-                if ((rawFile.getKey() != null) && fileToStore.getUrl().getPath().equals(rawFile.getKey().toString())) {
-                    fileArchived = true;
-                    // Raw file successfully stored
-                    pProgressManager
-                            .storageSucceed(fileToStore, rawFile.getValue(), rawFile.getKey().toFile().length());
-                    break;
-                }
+                //FIXME
+//                if ((rawFile.getKey() != null) && fileToStore.getUrls().getPath().equals(rawFile.getKey().toString())) {
+//                    fileArchived = true;
+//                    // Raw file successfully stored
+//                    pProgressManager
+//                            .storageSucceed(fileToStore, rawFile.getValue(), rawFile.getKey().toFile().length());
+//                    break;
+//                }
             }
             if (!fileArchived) {
                 // Raw file not stored
                 LOG.error("[STAFDataStorage Plugin] File {} has not been stored into STAF System.",
-                          fileToStore.getUrl().toString());
+                          fileToStore.getUrls().toString());
                 pProgressManager.storageFailed(fileToStore, "Error during file archive");
             }
         });
@@ -328,14 +328,15 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
      * Dispatch the given files into two categories : Already stored files and files to store.
      * A {@link StorageDataFile} is identified as stored if his url use the staf protocol.
      * @param pDataFiles {@link Collection} of {@link StorageDataFile} to dispatch
-     * @param pAlreadyStoredFiles {@link Set} of already stored {@link StorageDataFile}
+     * @param progressManager {@link IProgressManager} to use to notify that a file is already stored to the staf
      * @param pFilesToStore {@link Set} of {@link StorageDataFile} to store
      */
-    private void dispatchAlreadyStoredFiles(Collection<StorageDataFile> pDataFiles, Set<StorageDataFile> pAlreadyStoredFiles,
+    private void dispatchAlreadyStoredFiles(Collection<StorageDataFile> pDataFiles, IProgressManager progressManager,
             Set<StorageDataFile> pFilesToStore) {
         pDataFiles.forEach(file -> {
-            if (STAFController.STAF_PROTOCOLE.equals(file.getUrl().getProtocol())) {
-                pAlreadyStoredFiles.add(file);
+            if (file.getUrls().stream().filter( url -> STAFController.STAF_PROTOCOLE.equals(url.getProtocol())).count()!=0) {
+                // Files already stored in STAF. Only send stored event to listeners
+                progressManager.storageSucceed(file, null, file.getFileSize()); //FIXME
             } else {
                 pFilesToStore.add(file);
             }
@@ -367,49 +368,51 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
      * @throws STAFException If the file is not accessible
      */
     private File getPhysicalFile(StorageDataFile file) throws IOException {
-        File physicalFile;
-        if (!FILE_PROTOCOLE.equals(file.getUrl().getProtocol())) {
-            // File to transfert locally is temporarelly named with the file checksum to ensure unicity
-            Path destinationFilePath = Paths
-                    .get(stafController.getWorkspaceTmpDirectory().toString(), file.getChecksum());
-            if (!destinationFilePath.toFile().exists()) {
-                try {
-                    LOG.info("[STAFDataStorage Plugin] {} - Store - Retrieving file from {} to {}",
-                             stafArchive.getArchiveName(),
-                             file.getUrl().toString(),
-                             destinationFilePath.toFile().getPath());
-                    DownloadUtils.downloadAndCheckChecksum(file.getUrl(),
-                                                           destinationFilePath,
-                                                           file.getAlgorithm(),
-                                                           file.getChecksum(),
-                                                           100);
-                    // File is now in our workspace, so change origine url
-                } catch (IOException | NoSuchAlgorithmException e) {
-                    String errorMsg = String.format("Error retrieving file from %s to %s",
-                                                    file.getUrl().getPath(),
-                                                    destinationFilePath.toString());
-                    LOG.error(errorMsg, e);
-                    throw new IOException(e);
-                }
-            }
-            physicalFile = destinationFilePath.toFile();
-            if (!physicalFile.exists()) {
-                String errorMsg = String.format("Error retrieving file from %s to %s",
-                                                file.getUrl().getPath(),
-                                                destinationFilePath.toString());
-                throw new IOException(errorMsg);
-            }
-            file.setUrl(new URL(FILE_PROTOCOLE, null, destinationFilePath.toString()));
-        } else {
-            try {
-                URI uri = file.getUrl().toURI();
-                physicalFile = new File(uri.getPath());
-            } catch (URISyntaxException e) {
-                LOG.debug(e.getMessage(), e);
-                physicalFile = new File(file.getUrl().getPath());
-            }
-        }
-        return physicalFile;
+        //FIXME
+//        File physicalFile;
+//        if (!FILE_PROTOCOLE.equals(file.getUrls().getProtocol())) {
+//            // File to transfert locally is temporarelly named with the file checksum to ensure unicity
+//            Path destinationFilePath = Paths
+//                    .get(stafController.getWorkspaceTmpDirectory().toString(), file.getChecksum());
+//            if (!destinationFilePath.toFile().exists()) {
+//                try {
+//                    LOG.info("[STAFDataStorage Plugin] {} - Store - Retrieving file from {} to {}",
+//                             stafArchive.getArchiveName(),
+//                             file.getUrls().toString(),
+//                             destinationFilePath.toFile().getPath());
+//                    DownloadUtils.downloadAndCheckChecksum(file.getUrls(),
+//                                                           destinationFilePath,
+//                                                           file.getAlgorithm(),
+//                                                           file.getChecksum(),
+//                                                           100);
+//                    // File is now in our workspace, so change origine url
+//                } catch (IOException | NoSuchAlgorithmException e) {
+//                    String errorMsg = String.format("Error retrieving file from %s to %s",
+//                                                    file.getUrls().getPath(),
+//                                                    destinationFilePath.toString());
+//                    LOG.error(errorMsg, e);
+//                    throw new IOException(e);
+//                }
+//            }
+//            physicalFile = destinationFilePath.toFile();
+//            if (!physicalFile.exists()) {
+//                String errorMsg = String.format("Error retrieving file from %s to %s",
+//                                                file.getUrls().getPath(),
+//                                                destinationFilePath.toString());
+//                throw new IOException(errorMsg);
+//            }
+//            file.setUrls(new URL(FILE_PROTOCOLE, null, destinationFilePath.toString()));
+//        } else {
+//            try {
+//                URI uri = file.getUrls().toURI();
+//                physicalFile = new File(uri.getPath());
+//            } catch (URISyntaxException e) {
+//                LOG.debug(e.getMessage(), e);
+//                physicalFile = new File(file.getUrls().getPath());
+//            }
+//        }
+//        return physicalFile;
+        return null;
     }
 
 }

@@ -190,11 +190,11 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         int listSize = random.nextInt(listMaxSize) + 1;
         for (int i = 0; i < listSize; i++) {
             ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER,
-                                                                    new URL("ftp://bla"),
                                                                     null,
                                                                     "SHA1",
                                                                     sha1("blahblah"),
-                                                                    new Long((new Random()).nextInt(10000000)));
+                                                                    new Long((new Random()).nextInt(10000000)),
+                                                                    new URL("ftp://bla"));
             ippBuilder.getContentInformationBuilder()
                     .setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION", "application/name", "DESCRIPTION");
             ippBuilder.addContentInformation();

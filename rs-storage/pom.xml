@@ -10,18 +10,18 @@
     <packaging>pom</packaging>
     
 	<description>Microservice providing long-term, perennial storage of the data through the CNES' storage system</description>
-	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+	<url>https://github.com/RegardsOss/RegardsOss.github.io</urls>
 	<inceptionYear>2016</inceptionYear>
 	<licenses>
 		<license>
 			<name>GNU General Public License (GNU GPL)</name>
-			<url>http://www.gnu.org/licenses/gpl.html</url>
+			<url>http://www.gnu.org/licenses/gpl.html</urls>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
 	<organization>
 		<name>CNES</name>
-		<url>https://cnes.fr/fr</url>
+		<url>https://cnes.fr/fr</urls>
 	</organization>
 	<developers>
 		<developer>
