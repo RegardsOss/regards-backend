@@ -46,53 +46,53 @@ public class PluginDaoUtility extends AbstractDaoTest {
     /**
      * Project used for test
      */
-    static final String PROJECT = "test1";
+    protected static final  String PROJECT = "test1";
 
     /**
      * Version
      */
-    static final String VERSION = "12345-6789-11";
+    protected static final  String VERSION = "12345-6789-11";
 
     /**
      * Role used for test
      */
-    static final String USERROLE = "USERROLE";
+    protected static final String USERROLE = "USERROLE";
 
     /**
      * RED constant {@link String}
      */
-    static final String RED = "red";
+    protected static final String RED = "red";
 
     /**
      * GREEN constant {@link String}
      */
-    static final String GREEN = "green";
+    protected static final String GREEN = "green";
 
     /**
      * BLUE constant {@link String}
      */
-    static final String BLUE = "blue";
+    protected static final String BLUE = "blue";
 
     /**
      * BLUE constant {@link String}
      */
-    static final String INVALID_JWT = "Invalid JWT";
+    protected static final String INVALID_JWT = "Invalid JWT";
 
     /**
      * A {@link PluginParameter}
      */
-    static final PluginParameter ONE_PARAMETER = PluginParametersFactory.build().addParameter("param11", "value11")
+    protected static final PluginParameter ONE_PARAMETER = PluginParametersFactory.build().addParameter("param11", "value11")
             .getParameters().get(0);
 
     /**
      * A {@link List} of values
      */
-    static final List<String> DYNAMICVALUES = Arrays.asList(RED, BLUE, GREEN);
+    protected static final List<String> DYNAMICVALUES = Arrays.asList(RED, BLUE, GREEN);
 
     /**
      * A {@link List} of {@link PluginParameter}
      */
-    static final List<PluginParameter> LIST_PARAMETERS = PluginParametersFactory.build()
+    protected static final List<PluginParameter> LIST_PARAMETERS = PluginParametersFactory.build()
             .addDynamicParameter("param-dyn21", RED, DYNAMICVALUES)
             .addDynamicParameter("param-dyn31", GREEN, DYNAMICVALUES).addParameter("param31", "value31")
             .addParameter("param51", "value51").addParameter("param61", "value61").getParameters();
@@ -100,21 +100,9 @@ public class PluginDaoUtility extends AbstractDaoTest {
     /**
      * A list of {@link PluginParameter}
      */
-    static final List<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
+    protected static final List<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
             .addParameter("param41", "value41").addParameter("param42", "value42").addParameter("param43", "value43")
             .addParameter("param44", "value44").addParameter("param45", "value45").getParameters();
-
-    /**
-     * A {@link PluginConfiguration}
-     */
-    private static PluginConfiguration pluginConfiguration1 = new PluginConfiguration(getPluginMetaData(),
-            "a configuration from PluginDaoUtility", INTERFACEPARAMETERS, 0);
-
-    /**
-     * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}
-     */
-    private static PluginConfiguration pluginConfiguration2 = new PluginConfiguration(getPluginMetaData(),
-            "second configuration from PluginDaoUtility", LIST_PARAMETERS, 0);
 
     /**
      * IPluginConfigurationRepository
@@ -138,12 +126,22 @@ public class PluginDaoUtility extends AbstractDaoTest {
         return pluginMetaData;
     }
 
+    /**
+     * Don't re-use same entity reference when a collection with delete-orphan is specified (parameters for example)
+     * So create a new object each time we need one
+     */
     public static PluginConfiguration getPlgConfWithParameters() {
-        return pluginConfiguration1;
+        return new PluginConfiguration(getPluginMetaData(),
+                                       "a configuration from PluginDaoUtility", INTERFACEPARAMETERS, 0);
     }
 
+    /**
+     * Don't re-use same entity reference when a collection with delete-orphan is specified (parameters for example)
+     * So create a new object each time we need one
+     */
     public static PluginConfiguration getPlgConfWithDynamicParameter() {
-        return pluginConfiguration2;
+        return new PluginConfiguration(getPluginMetaData(),
+                                       "second configuration from PluginDaoUtility", LIST_PARAMETERS, 0);
     }
 
     protected void cleanDb() {
