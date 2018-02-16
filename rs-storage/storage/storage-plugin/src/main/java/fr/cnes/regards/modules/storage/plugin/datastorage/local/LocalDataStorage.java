@@ -140,7 +140,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
             String failureCause = String.format(
                     "Storage of StorageDataFile(%s) failed due to the following IOException: %s",
                     data.getChecksum(),
-                    ioe.getMessage());
+                    ioe.toString());
             LOG.error(failureCause, ioe);
             progressManager.storageFailed(data, failureCause);
             return;
@@ -176,7 +176,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
             String failureCause = String.format(
                     "Storage of StorageDataFile(%s) failed due to the following IOException: %s",
                     data.getChecksum(),
-                    ioe.getMessage());
+                    ioe.toString());
             LOG.error(failureCause, ioe);
             Paths.get(fullPathToFile).toFile().delete();
             progressManager.storageFailed(data, failureCause);

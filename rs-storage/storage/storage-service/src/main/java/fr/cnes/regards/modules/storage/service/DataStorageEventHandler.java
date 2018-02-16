@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
@@ -51,6 +52,7 @@ import fr.cnes.regards.modules.storage.service.job.StorageJobProgressManager;
  * @author Sébastien Binda
  */
 @Component
+@RegardsTransactional
 public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
 
     /**
@@ -304,8 +306,6 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
         storedDataFile.setUrl(storedFileNewURL);
         storedDataFile.setHeight(dataHeight);
         storedDataFile.setWidth(dataWidth);
-        // save in any case to update information
-        dataFileDao.save(storedDataFile);
         if (storedDataFile.getNotYetStoredBy() == 0) {
             storedDataFile.setState(DataFileState.STORED);
             //specific save once it is stored
@@ -330,10 +330,11 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                 // if it is not the AIP metadata then the AIP metadata are not even scheduled for storage,
                 // just let set the new information about this StorageDataFile
                 // @formatter:off
+                final StorageDataFile storedDataFileFinal = storedDataFile;
             Optional<ContentInformation> ci =
                     associatedAIP.getProperties().getContentInformations()
                         .stream()
-                        .filter(contentInformation -> contentInformation.getDataObject().getChecksum().equals(storedDataFile.getChecksum()))
+                        .filter(contentInformation -> contentInformation.getDataObject().getChecksum().equals(storedDataFileFinal.getChecksum()))
                         .findFirst();
             // @formatter:on
                 if (ci.isPresent()) {
@@ -349,6 +350,8 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                     aipDao.save(associatedAIP);
                 }
             }
+        } else {
+            dataFileDao.save(storedDataFile);
         }
     }
 

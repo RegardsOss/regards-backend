@@ -148,8 +148,7 @@ public class StorageDataFile {
      * Indicates the number of archives that have to store this data file. Archives <=> IDataStorage configurations
      */
     @Column(name = "not_yet_stored_by")
-    @Min(0)
-    @GsonIgnore
+    @Min(value = 0, message = "Attribute notYetStoredBy cannot be negative. Actual value : ${validatedValue}")
     private Long notYetStoredBy;
 
     /**

@@ -48,7 +48,7 @@ public class DefaultAllocationStrategyPlugin implements IAllocationStrategy {
                         "There is no active plugin configuration of type IDataStorage"));
         PluginConfiguration dataStorageConfForQuicklook;
         // quicklooks are to be stored online, so lets check if the conf to use is an online data storage, otherwise lets get the first online one
-        if (dataStorageConfToUse.getInterfaceNames().contains(IOnlineDataStorage.class)) {
+        if (dataStorageConfToUse.getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
             dataStorageConfForQuicklook = dataStorageConfToUse;
         } else {
             dataStorageConfForQuicklook = pluginService.getPluginConfigurationsByType(IOnlineDataStorage.class).stream()

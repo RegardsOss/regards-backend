@@ -14,6 +14,7 @@ import java.util.UUID;
 import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
@@ -127,9 +128,9 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         dataFileDao.save(dataFiles);
     }
 
-    //FIXME
-//    @Test
-//    public void testMonitoringAggregation() {
+    @Test //FIXME
+    @Ignore
+    public void testMonitoringAggregation() {
 //        Collection<MonitoringAggregation> monitoringAggregations = dataFileRepository.getMonitoringAggregation();
 //        for(MonitoringAggregation agg: monitoringAggregations) {
 //            if(agg.getDataStorageUsedId().equals(dataStorage1Id)) {
@@ -142,7 +143,7 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 //                Assert.assertTrue(agg.getUsedSize().equals(dataStorage3UsedSize));
 //            }
 //        }
-//    }
+    }
 
     public AIP generateRandomAIP() throws NoSuchAlgorithmException, MalformedURLException {
 

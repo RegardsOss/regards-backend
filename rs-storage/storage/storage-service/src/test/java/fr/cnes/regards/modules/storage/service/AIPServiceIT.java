@@ -240,8 +240,8 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                 Thread.sleep(1000);
                 wait += 1000;
             }
-            Files.setPosixFilePermissions(workspacePath, Sets.newHashSet());
             Assert.assertFalse("The job failed while it should not have", handler.isFailed());
+            Files.setPosixFilePermissions(workspacePath, Sets.newHashSet());
             LOG.info("Waiting for AIP {} error ...", aip.getId().toString());
             Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
             wait = 0;

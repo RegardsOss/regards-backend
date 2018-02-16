@@ -81,12 +81,12 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
-    public StorageDataFile save(StorageDataFile prepareFailed) {
-        Optional<AIPEntity> aipDatabase = getAipDataBase(prepareFailed);
+    public StorageDataFile save(StorageDataFile dataFile) {
+        Optional<AIPEntity> aipDatabase = getAipDataBase(dataFile);
         if (aipDatabase.isPresent()) {
-            prepareFailed.setAipEntity(aipDatabase.get());
+            dataFile.setAipEntity(aipDatabase.get());
         }
-        return repository.save(prepareFailed);
+        return repository.save(dataFile);
     }
 
     @Override
