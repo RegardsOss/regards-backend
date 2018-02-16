@@ -314,15 +314,15 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
     /**
      * Set the data object to the underlying content information builder thanks to the given parameters.
      * @param dataType
-     * @param url
      * @param filename
      * @param algorithm
      * @param checksum
      * @param fileSize
+     * @param urls
      */
-    public void setDataObject(DataType dataType, URL url, String filename, String algorithm, String checksum,
-            Long fileSize) {
-        ipPropertiesBuilder.setDataObject(dataType, url, filename, algorithm, checksum, fileSize);
+    public void setDataObject(DataType dataType, String filename, String algorithm, String checksum,
+            Long fileSize, URL... urls) {
+        ipPropertiesBuilder.setDataObject(dataType, filename, algorithm, checksum, fileSize, urls);
     }
 
     /**

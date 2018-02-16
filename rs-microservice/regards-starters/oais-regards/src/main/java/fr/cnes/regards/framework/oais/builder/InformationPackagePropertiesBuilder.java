@@ -273,15 +273,15 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
     /**
      * Set the data object to the information package thanks to the underlying content information builder using the given parameters
      * @param dataType
-     * @param url
      * @param filename
      * @param algorithm
      * @param checksum
      * @param fileSize
+     * @param urls
      */
-    public void setDataObject(DataType dataType, URL url, String filename, String algorithm, String checksum,
-            Long fileSize) {
-        contentInformationBuilder.setDataObject(dataType, url, filename, algorithm, checksum, fileSize);
+    public void setDataObject(DataType dataType, String filename, String algorithm, String checksum,
+            Long fileSize, URL... urls) {
+        contentInformationBuilder.setDataObject(dataType, filename, algorithm, checksum, fileSize, urls);
     }
 
     /**
