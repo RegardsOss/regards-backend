@@ -31,7 +31,9 @@ import org.springframework.test.context.ContextConfiguration;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.Cryosat2Doris10ProductMetadataPlugin;
 
 /**
  * Test des plugins CRYOSAT2 de niveau produit
@@ -57,7 +59,11 @@ public class Cryosat2PluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
-        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Cryosat2ProductMetadataPlugin");
+        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Cryosat2ProductMetadataPlugin",
+                                                                              PluginParametersFactory.build()
+                                                                                      .addParameter(Cryosat2Doris10ProductMetadataPlugin.ORF_FILE_PATH_PARAM,
+                                                                                                    "src/test/resources/income/data/cryosat2/orf/CS__ORF_AXXCNE*")
+                                                                                      .getParameters());
 
         return pluginService.getPlugin(pluginConfiguration.getId());
     }

@@ -49,6 +49,7 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -186,6 +187,36 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      */
     protected PluginConfigurationProperties pluginConfProperties;
 
+    public static final String CYCLES_FILE_PATH_PARAM = "cyclesPath";
+
+    public static final String ARC_FILE_PATH_PARAM = "arcPath";
+
+    public static final String ORF_FILE_PATH_PARAM = "orfFilePathPattern";
+
+    @PluginParameter(name = CYCLES_FILE_PATH_PARAM, keylabel = "Jason3 cycles file path",
+            label = "Jason3 cycles file path", optional = false)
+    protected String cyclePath;
+
+    @PluginParameter(name = ORF_FILE_PATH_PARAM, keylabel = "Jason3 ORF file path patterns",
+            label = "Jason3 ORF file path patterns", optional = false)
+    protected String orfFilePathPattern;
+
+    @PluginParameter(name = ARC_FILE_PATH_PARAM, keylabel = "Jason3 Arc file path", label = "Jason3 Arc file path",
+            optional = false)
+    protected String arcPath;
+
+    protected String getCycleFilePath() {
+        return cyclePath;
+    }
+
+    protected String getArcFilePath() {
+        return arcPath;
+    }
+
+    protected String getOrfFilePathPatterns() {
+        return orfFilePathPattern;
+    }
+
     /**
      * Get the project name
      * @return the project name
@@ -275,7 +306,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             Digester digester = DigesterLoader.createDigester(ruleUrl);
             // Process the input file
             pluginConfProperties = (PluginConfigurationProperties) digester.parse(in);
-            pluginConfProperties.setProject(getProjectName());
         } catch (IOException | SAXException e) {
             String msg = "unable to parse file " + pluginConfFile.getPath() + " using rule file " + RULE_FILE;
             LOGGER.error(msg, e);
@@ -292,6 +322,10 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             LOGGER.error(e.getMessage(), e);
             throw new ModuleException(message);
         }
+
+        pluginConfProperties.setArcFilePath(getArcFilePath());
+        pluginConfProperties.setCycleFilePath(getCycleFilePath());
+        pluginConfProperties.setOrfFilePathPattern(getOrfFilePathPatterns());
     }
 
     /**

@@ -18,21 +18,12 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.properties;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.AbstractAttributeFinder;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.LoadTranslationProperties;
 
 /**
  * Class to load the <b>pluginConfiguration.properties</b> file
@@ -43,49 +34,15 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.LoadTranslationPr
 public class PluginConfigurationProperties {
 
     /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(PluginConfigurationProperties.class);
-
-    /**
-     * The {@link Properties} read in the ORL file properties
-     */
-    protected Properties pluginProperties;
-
-    /**
-     * The ORF_FILEPATH_PATTERN key used in the ORL file properties
-     */
-    protected static final String ORF_FILE_PATH_KEY = "ORF_FILEPATH_PATTERN";
-
-    /**
-     * The CYCLE_FILEPATH key used in the ORL file properties
-     */
-    protected static final String CYCLE_FILE_PATH_KEY = "CYCLE_FILEPATH";
-
-    /**
-     * The ARCS_FILEPATH key used in the ORL file properties
-     */
-    protected static final String ARCS_FILEPATH_KEY = "ARCS_FILEPATH";
-
-    /**
      * The separator's value used in the ORL file properties
      */
     private static final String SEPARATOR = ";";
 
-    /**
-     * The ORL file properties name
-     */
-    private static final String CYCLES_ORL_PROPERTIES = "pluginConfiguration.properties";
+    protected String cycleFilePath;
 
-    /**
-     * Log message
-     */
-    private static final String LOG_PROPERTY_NOT_FOUND = "Property not found %s in file '%s'";
+    protected String arcFilePath;
 
-    /**
-     * Log message
-     */
-    private static final String LOG_PROJECT_NOT_SET = "The required project is not set : JASON, JASON2 ...";
+    protected String orfFilePathPattern;
 
     /**
      * filePattern du nom du fichier
@@ -98,100 +55,42 @@ public class PluginConfigurationProperties {
     private SortedMap<Integer, AbstractAttributeFinder> finderList;
 
     /**
-     * nom du projet utilisant le fichier properties : JASON, JASON2, ...</br>
-     * Les proprietes du fichier properties seront prefixees par le nom du projet.
-     */
-    private String project;
-
-    /**
      * Default constructor
      */
     public PluginConfigurationProperties() {
         super();
-        loadProperties();
-    }
-
-    public void setProject(String projectName) {
-        project = projectName.toUpperCase();
-    }
-
-    public String getCycleFileFilepath() {
-        return getPropertyValue(CYCLE_FILE_PATH_KEY);
-    }
-
-    public String getArcPath() {
-        return getPropertyValue(ARCS_FILEPATH_KEY);
-    }
-
-    /**
-     * Load the {@link Properties} in pluginConfiguration.properties file
-     */
-    private void loadProperties() {
-        String confPath = "";
-        try {
-            Properties confProperties = LoadTranslationProperties.getInstance().loadPluginsRepository();
-            confPath = (String) confProperties.get("regards.acquisition.ssalto.cycle-orf-conf-path");
-        } catch (PluginAcquisitionException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-
-        pluginProperties = new Properties();
-        File cycleOrfFile = new File(confPath, CYCLES_ORL_PROPERTIES);
-
-        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(cycleOrfFile.getPath())) {
-            pluginProperties.load(stream);
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Get the property value for the current project for a key 
-     * @param key the key to search in the file properties for the current project 
-     * @return the property value for the current project for a key
-     */
-    private String getPropertyValue(String key) {
-        if (project == null) {
-            LOGGER.error(LOG_PROJECT_NOT_SET);
-        }
-
-        String propertyName = project + "_" + key;
-        String propertyValue = pluginProperties.getProperty(propertyName);
-
-        if (propertyValue == null) {
-            LOGGER.error(String.format(LOG_PROPERTY_NOT_FOUND, propertyName, CYCLES_ORL_PROPERTIES));
-        }
-
-        return propertyValue;
-    }
-
-    /**
-     * Get the value's properties ORF_FILEPATH_PATTERN for the current project
-     * @return
-     */
-    public String[] getOrfFilepath() {
-        String[] orfFilePath = new String[0];
-
-        if (project == null) {
-            LOGGER.error(LOG_PROJECT_NOT_SET);
-            return orfFilePath;
-        }
-
-        String propertyName = project + "_" + ORF_FILE_PATH_KEY;
-        String propertyValue = pluginProperties.getProperty(propertyName);
-
-        if (propertyValue == null) {
-            LOGGER.error(String.format(LOG_PROPERTY_NOT_FOUND, propertyName, CYCLES_ORL_PROPERTIES));
-            return orfFilePath;
-        }
-
-        orfFilePath = propertyValue.split(SEPARATOR);
-
-        return orfFilePath;
     }
 
     public String getFileNamePattern() {
         return fileNamePattern;
+    }
+
+    public String getCycleFilePath() {
+        return cycleFilePath;
+    }
+
+    public void setCycleFilePath(String cycleFilePath) {
+        this.cycleFilePath = cycleFilePath;
+    }
+
+    public String getArcFilePath() {
+        return arcFilePath;
+    }
+
+    public void setArcFilePath(String arcFilePath) {
+        this.arcFilePath = arcFilePath;
+    }
+
+    public String[] getOrfFilePathPattern() {
+        String[] orfFilePath = new String[0];
+
+        orfFilePath = orfFilePathPattern.split(SEPARATOR);
+
+        return orfFilePath;
+    }
+
+    public void setOrfFilePathPattern(String orfFilePathPattern) {
+        this.orfFilePathPattern = orfFilePathPattern;
     }
 
     public void setFileNamePattern(String filePattern) {

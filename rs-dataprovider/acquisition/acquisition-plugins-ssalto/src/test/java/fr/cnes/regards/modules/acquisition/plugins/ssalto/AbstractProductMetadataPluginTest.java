@@ -51,6 +51,7 @@ import org.springframework.test.context.ActiveProfiles;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -563,7 +564,8 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      *
      * @throws ModuleException if an error occurs
      */
-    protected PluginConfiguration getPluginConfiguration(String pluginId) throws ModuleException {
+    protected PluginConfiguration getPluginConfiguration(String pluginId, List<PluginParameter> parameters)
+            throws ModuleException {
 
         // Test if a configuration exists for this pluginId
         List<PluginConfiguration> pluginConfigurations = pluginService
@@ -582,8 +584,9 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         PluginConfiguration pluginConfiguration = new PluginConfiguration(metaDatas.get(0),
                 "Automatic plugin configuration for plugin id : " + pluginId);
         pluginConfiguration.setPluginId(pluginId);
-        return pluginService.savePluginConfiguration(pluginConfiguration);
+        pluginConfiguration.setParameters(parameters);
 
+        return pluginService.savePluginConfiguration(pluginConfiguration);
     }
 
     /**

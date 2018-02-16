@@ -71,7 +71,7 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
     /**
      * The OGDR tranlation properties file : OGDRTranslationFile.properties
      */
-    private static final String TRANSACTION_FILE = "OGDRTranslationFile.properties";
+    private static final String TRANSACTION_FILE = "/OGDRTranslationFile.properties";
 
     /**
      * Plugin Ssalto repository configuration

@@ -51,7 +51,7 @@ public class SetCryosat2Doris1bPoeCddisCycle implements ICalculationClass {
             finder.setAttributProperties(properties);
 
             try {
-                String cycleFilePath = properties.getCycleFileFilepath();
+                String cycleFilePath = properties.getCycleFilePath();
 
                 File cycleFile = new File(cycleFilePath);
                 Integer intCycle = null;
