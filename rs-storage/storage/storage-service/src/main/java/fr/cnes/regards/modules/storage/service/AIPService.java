@@ -1068,13 +1068,13 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             } else {
                 workspaceService.removeFromWorkspace(metadataName);
                 LOG.error(String.format(
-                        "Storage of AIP metadata(%s) to the workspace(%s) failed. Its checksum once stored do not match with expected",
-                        aip.getId().toString(),
-                        workspaceService.getMicroserviceWorkspace()));
+                        "Storage of AIP metadata(%s) into workspace(%s) failed. Computed checksum once stored does not "
+                                + "match expected one",
+                        aip.getId().toString(), workspaceService.getMicroserviceWorkspace()));
                 throw new FileCorruptedException(String.format(
-                        "File got corrupted while storing it into the workspace. Checksum before(%s) and after (%s) are different",
-                        checksum,
-                        fileChecksum));
+                        "File has been corrupted during storage into workspace. Checksums before(%s) and after (%s) are"
+                                + " different",
+                        checksum, fileChecksum));
             }
         } catch (NoSuchAlgorithmException e) {
             // Delete written file

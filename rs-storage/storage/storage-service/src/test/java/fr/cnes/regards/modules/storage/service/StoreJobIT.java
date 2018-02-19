@@ -42,6 +42,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobWorkspaceException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -221,15 +222,18 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
             beanFactory.autowireBean(job);
             job.setParameters(jobInfo.getParametersAsMap());
             if (job.needWorkspace()) {
-                job.setWorkspace(workspaceService.getPrivateDirectory());
+                job.setWorkspace(workspaceService::getPrivateDirectory);
             }
             jobInfo.setJob(job);
             jobInfo.getStatus().setStartDate(OffsetDateTime.now());
             job.run();
             return job;
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             getLogger().error("Unable to instantiate job", e);
             Assert.fail("Unable to instantiate job");
+        } catch (JobWorkspaceException e) {
+            getLogger().error("Unable to set workspace", e);
+            Assert.fail("Unable to set workspace");
         } catch (JobParameterMissingException e) {
             getLogger().error("Missing parameter", e);
             Assert.fail("Missing parameter");
