@@ -47,6 +47,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobWorkspaceException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -384,15 +385,18 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
             beanFactory.autowireBean(job);
             job.setParameters(jobInfo.getParametersAsMap());
             if (job.needWorkspace()) {
-                job.setWorkspace(Files.createTempDirectory(jobInfo.getId().toString()));
+                job.setWorkspace(() -> Files.createTempDirectory(jobInfo.getId().toString()));
             }
             jobInfo.setJob(job);
             jobInfo.getStatus().setStartDate(OffsetDateTime.now());
             job.run();
             return job;
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             LOG.error("Unable to instantiate job", e);
             Assert.fail("Unable to instantiate job");
+        } catch (JobWorkspaceException e) {
+            LOG.error("Cannot set workspace", e);
+            Assert.fail("Cannot set workspace");
         } catch (JobParameterMissingException e) {
             LOG.error("Missing parameter", e);
             Assert.fail("Missing parameter");
