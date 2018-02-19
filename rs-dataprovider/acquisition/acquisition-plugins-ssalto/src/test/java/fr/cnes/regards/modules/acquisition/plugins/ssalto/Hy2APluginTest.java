@@ -23,6 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Optional;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -51,11 +53,12 @@ public class Hy2APluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
-        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Hy2AProductMetadataPlugin",
-                                                                              PluginParametersFactory.build()
-                                                                              .addParameter(Hy2ADoris10ProductMetadataPlugin.ORF_FILE_PATH_PARAM,
-                                                                                            "src/test/resources/income/data/HY2A/ORF_HISTORIQUE/H2A_ORF_AXXCNE*")
-                                                                              .getParameters());
+        PluginConfiguration pluginConfiguration = this
+                .getPluginConfiguration("Hy2AProductMetadataPlugin",
+                                        Optional.of(PluginParametersFactory.build()
+                                                .addParameter(Hy2ADoris10ProductMetadataPlugin.ORF_FILE_PATH_PARAM,
+                                                              "src/test/resources/income/data/HY2A/ORF_HISTORIQUE/H2A_ORF_AXXCNE*")
+                                                .getParameters()));
 
         return pluginService.getPlugin(pluginConfiguration.getId());
     }

@@ -48,6 +48,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.google.common.base.Optional;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -564,7 +566,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      *
      * @throws ModuleException if an error occurs
      */
-    protected PluginConfiguration getPluginConfiguration(String pluginId, List<PluginParameter> parameters)
+    protected PluginConfiguration getPluginConfiguration(String pluginId, Optional<List<PluginParameter>> parameters)
             throws ModuleException {
 
         // Test if a configuration exists for this pluginId
@@ -584,7 +586,9 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         PluginConfiguration pluginConfiguration = new PluginConfiguration(metaDatas.get(0),
                 "Automatic plugin configuration for plugin id : " + pluginId);
         pluginConfiguration.setPluginId(pluginId);
-        pluginConfiguration.setParameters(parameters);
+        if (parameters.isPresent()) {
+            pluginConfiguration.setParameters(parameters.get());
+        }
 
         return pluginService.savePluginConfiguration(pluginConfiguration);
     }

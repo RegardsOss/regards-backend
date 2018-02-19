@@ -28,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.google.common.base.Optional;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -59,11 +61,12 @@ public class Cryosat2PluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
-        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Cryosat2ProductMetadataPlugin",
-                                                                              PluginParametersFactory.build()
-                                                                                      .addParameter(Cryosat2Doris10ProductMetadataPlugin.ORF_FILE_PATH_PARAM,
-                                                                                                    "src/test/resources/income/data/cryosat2/orf/CS__ORF_AXXCNE*")
-                                                                                      .getParameters());
+        PluginConfiguration pluginConfiguration = this
+                .getPluginConfiguration("Cryosat2ProductMetadataPlugin",
+                                        Optional.of(PluginParametersFactory.build()
+                                                .addParameter(Cryosat2Doris10ProductMetadataPlugin.ORF_FILE_PATH_PARAM,
+                                                              "src/test/resources/income/data/cryosat2/orf/CS__ORF_AXXCNE*")
+                                                .getParameters()));
 
         return pluginService.getPlugin(pluginConfiguration.getId());
     }

@@ -23,6 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Optional;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -51,7 +53,8 @@ public class Pk4Test extends AbstractProductMetadataPluginTest {
 
     @Override
     public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
-        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Pk4OnBoardProductMetaDataPlugin");
+        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Pk4OnBoardProductMetaDataPlugin",
+                                                                              Optional.fromNullable(null));
 
         return pluginService.getPlugin(pluginConfiguration.getId());
     }

@@ -23,6 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Optional;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -61,10 +63,10 @@ public class Cryosat2Doris10PluginTest extends AbstractProductMetadataPluginTest
     @Override
     public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
         PluginConfiguration pluginConfiguration = getPluginConfiguration("Cryosat2Doris10ProductMetadataPlugin",
-                                                                         PluginParametersFactory.build()
+                                                                         Optional.of(PluginParametersFactory.build()
                                                                                  .addParameter(Cryosat2Doris10ProductMetadataPlugin.ORF_FILE_PATH_PARAM,
                                                                                                "src/test/resources/income/data/cryosat2/orf/CS__ORF_AXXCNE*")
-                                                                                 .getParameters());
+                                                                                 .getParameters()));
 
         return pluginService.getPlugin(pluginConfiguration.getId());
     }

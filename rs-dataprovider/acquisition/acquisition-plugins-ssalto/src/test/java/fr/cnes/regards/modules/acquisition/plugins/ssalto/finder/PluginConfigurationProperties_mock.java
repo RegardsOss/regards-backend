@@ -22,11 +22,4 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfiguratio
 
 public class PluginConfigurationProperties_mock extends PluginConfigurationProperties {
 
-    public void setOrfFilepath(String orfFilepath) {
-        this.setOrfFilepath(orfFilepath);
-    }
-
-    public void setCycleFileFilepath(String cycleFileFilepath) {
-        this.setCycleFileFilepath(cycleFileFilepath);
-    }
 }
