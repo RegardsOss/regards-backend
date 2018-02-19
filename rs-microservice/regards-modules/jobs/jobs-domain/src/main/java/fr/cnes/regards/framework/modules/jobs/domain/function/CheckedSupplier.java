@@ -16,27 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.modules.jobs.domain.exception;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+package fr.cnes.regards.framework.modules.jobs.domain.function;
 
 /**
- * Exception to be thrown when a parameter required for a job execution is not valid
- *
- * @author Sylvain Vissiere-Guerinet
- *
+ * Checked supplier functional interface.
+ * Same as Supplier functional interface but with an Exception
+ * @param <R> supplied value type
+ * @param <E> thrown checked exception type
+ * @author oroussel
  */
-@SuppressWarnings("serial")
-public class JobParameterInvalidException extends ModuleException {
-
-    /**
-     * @param msg
-     */
-    public JobParameterInvalidException(String msg) {
-        super(msg);
-    }
-
-    public JobParameterInvalidException(String msg, Throwable cause) {
-        super(msg, cause);
-    }
+@FunctionalInterface
+public interface CheckedSupplier<R, E extends Exception> {
+    R get() throws E;
 }
