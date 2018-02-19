@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
+import fr.cnes.regards.modules.storage.domain.StorageDataFileUtils;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
@@ -147,7 +149,18 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
             return;
         }
         try {
-            URL sourceUrl = data.getUrls().stream().filter(url -> url.getProtocol().equals("file")).findAny().get();
+            URL sourceUrl = StorageDataFileUtils.getAccessibleUrl(data);
+            if(sourceUrl == null) {
+                StringJoiner stringifierUrls = new StringJoiner(",");
+                data.getUrls().forEach(url -> stringifierUrls.add(url.toExternalForm()));
+                String errorMsg = String.format(
+                        "Error trying to retrieve file(checksum: %s). We could not find any accessible url(Actual urls: %s)",
+                        data.getChecksum(),
+                        stringifierUrls.toString());
+                LOG.error(errorMsg);
+                progressManager.storageFailed(data, errorMsg);
+                return;
+            }
             boolean downloadOk = DownloadUtils.downloadAndCheckChecksum(sourceUrl,
                                                                         Paths.get(fullPathToFile),
                                                                         data.getAlgorithm(),

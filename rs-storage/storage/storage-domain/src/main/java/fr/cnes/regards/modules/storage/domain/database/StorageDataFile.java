@@ -31,6 +31,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
+import fr.cnes.regards.framework.jpa.converter.SetURLCsvConverter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
@@ -70,7 +71,8 @@ public class StorageDataFile {
     /**
      * File urls
      */
-    @Column
+    @Column(columnDefinition = "text")
+    @Convert(converter = SetURLCsvConverter.class)
     private Set<URL> urls;
 
     /**

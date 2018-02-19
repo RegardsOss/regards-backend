@@ -118,9 +118,9 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         filesToArchiveWithoutInvalides.add(new StorageDataFile(
                 Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/file_test_5.txt")), "61142380c96f899eaea71b229dcc4247",
                 "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_5.txt"));
-        filesToArchiveWithoutInvalides.add(new StorageDataFile(
-                Sets.newHashSet(new URL("http", "172.26.47.52", 80, "/conf/staticConfiguration.js")), "eadcc622739d58e8a78170b67c6ff9f3",
-                "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "staticConfiguration.js"));
+//        filesToArchiveWithoutInvalides.add(new StorageDataFile(
+//                Sets.newHashSet(new URL("http", "172.26.47.52", 80, "/conf/staticConfiguration.js")), "eadcc622739d58e8a78170b67c6ff9f3",
+//                "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "staticConfiguration.js"));
 
         filesToArchive.addAll(filesToArchiveWithoutInvalides);
         filesToArchive.add(new StorageDataFile(Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/invalid_test_file.txt")),
