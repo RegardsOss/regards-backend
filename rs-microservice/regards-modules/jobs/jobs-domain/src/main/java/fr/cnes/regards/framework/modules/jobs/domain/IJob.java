@@ -18,16 +18,20 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobWorkspaceException;
+import fr.cnes.regards.framework.modules.jobs.domain.function.CheckedSupplier;
 
 /**
  * Interface for all regards jobs
  * @param <R> result type
  * @author Léo Mieulet
+ * @author oroussel
  */
 public interface IJob<R> extends Runnable {
 
@@ -51,9 +55,10 @@ public interface IJob<R> extends Runnable {
 
     /**
      * If the job needs a workspace, JobService create one for it before executing job and clean it after execution
-     * @param workspace set workspace path
+     * @param workspaceSupplier workspace supplier that is also called by the method to set workspace path
+     * @throws IOException when workspaceSupplier is called
      */
-    void setWorkspace(Path workspace);
+    void setWorkspace(CheckedSupplier<Path, IOException> workspaceSupplier) throws JobWorkspaceException;
 
     Path getWorkspace();
 

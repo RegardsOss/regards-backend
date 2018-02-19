@@ -34,7 +34,7 @@ public class DefaultWorkspaceNotifier implements IWorkspaceNotifier {
 
     @Override
     public void sendErrorNotification(String sender, String message, String title, DefaultRole role) {
-        // does nothing
+        throw new UnsupportedOperationException("This bean has to overriden for real notification");
     }
 
 }

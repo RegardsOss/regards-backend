@@ -41,7 +41,8 @@ public interface IWorkspaceService {
     void setIntoWorkspace(InputStream is, String fileName) throws IOException;
 
     /**
-     * Retrieves the file which name is fileName from the workspace. Take care that the returned InputStream is to be closed by the caller.
+     * Retrieves the file which name is fileName from the workspace. Take care that the returned InputStream is to be
+     * closed by the caller.
      * @param fileName
      * @return new input stream from the file into the workspace.
      * @throws IOException
@@ -56,7 +57,8 @@ public interface IWorkspaceService {
     void removeFromWorkspace(String fileName) throws IOException;
 
     /**
-     * @return a newly created directory inside the workspace that you have to fully handle. Adding files into it should be done manually.
+     * @return a newly created directory inside the workspace that you have to fully handle. Adding files into it should
+     *         be done manually.
      * @throws IOException
      */
     Path getPrivateDirectory() throws IOException;
@@ -75,7 +77,7 @@ public interface IWorkspaceService {
     /**
      * Allows to get the path of the given file in the workspace of the current tenant.
      * @param fileName
-     * @return
+     * @return the path of the given file in the workspace of the current tenant
      */
     Path getFilePath(String fileName);
 }

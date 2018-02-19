@@ -96,7 +96,8 @@ public class PluginConfigurationIT extends PluginDaoUtility {
     @Test
     public void createAndFindPluginConfigurationWithParameters() {
         // save a plugin configuration
-        final PluginConfiguration aPluginConf = plgRepository.save(getPlgConfWithParameters());
+        PluginConfiguration plgConf = getPlgConfWithParameters();
+        final PluginConfiguration aPluginConf = plgRepository.save(plgConf);
         Assert.assertEquals(getPlgConfWithParameters().getParameters().size(), paramRepository.count());
         Assert.assertEquals(1, plgRepository.count());
 

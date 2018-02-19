@@ -1,7 +1,6 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.OffsetDateTime;
@@ -43,6 +42,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobWorkspaceException;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -206,13 +206,16 @@ public class JobService implements IJobService {
             beanFactory.autowireBean(job);
             job.setParameters(jobInfo.getParametersAsMap());
             if (job.needWorkspace()) {
-                job.setWorkspace(workspaceService.getPrivateDirectory());
+                job.setWorkspace(workspaceService::getPrivateDirectory);
             }
             jobInfo.setJob(job);
             // Run job (before executing Job, JobThreadPoolExecutor save JobInfo, have a look if you don't believe me)
             jobsMap.put(jobInfo, (RunnableFuture<Void>) threadPool.submit(job));
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             LOGGER.error("Unable to instantiate job", e);
+            manageJobInstantiationError(jobInfo, e);
+        } catch (JobWorkspaceException e) {
+            LOGGER.error("Unable to set workspace", e);
             manageJobInstantiationError(jobInfo, e);
         } catch (JobParameterMissingException e) {
             LOGGER.error("Missing parameter", e);

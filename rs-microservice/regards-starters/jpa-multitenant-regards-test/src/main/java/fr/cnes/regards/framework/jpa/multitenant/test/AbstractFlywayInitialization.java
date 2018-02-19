@@ -16,27 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.modules.jobs.domain.exception;
+package fr.cnes.regards.framework.jpa.multitenant.test;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import org.junit.Test;
+import org.springframework.test.context.TestPropertySource;
 
 /**
- * Exception to be thrown when a parameter required for a job execution is not valid
+ * Initialize database with Flyway scripts on public schema.
  *
- * @author Sylvain Vissiere-Guerinet
+ * @author Marc Sordi
  *
  */
-@SuppressWarnings("serial")
-public class JobParameterInvalidException extends ModuleException {
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=public" })
+public abstract class AbstractFlywayInitialization extends AbstractDaoTest {
 
-    /**
-     * @param msg
-     */
-    public JobParameterInvalidException(String msg) {
-        super(msg);
-    }
-
-    public JobParameterInvalidException(String msg, Throwable cause) {
-        super(msg, cause);
+    @Test
+    public void initFlywayDependencies() {
+        // Nothing to do
     }
 }

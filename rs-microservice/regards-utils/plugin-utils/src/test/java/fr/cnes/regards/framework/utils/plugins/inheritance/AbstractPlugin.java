@@ -16,27 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.modules.jobs.domain.exception;
+package fr.cnes.regards.framework.utils.plugins.inheritance;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
- * Exception to be thrown when a parameter required for a job execution is not valid
- *
- * @author Sylvain Vissiere-Guerinet
+ * @author Marc Sordi
  *
  */
-@SuppressWarnings("serial")
-public class JobParameterInvalidException extends ModuleException {
+public abstract class AbstractPlugin implements IBasicPlugin {
 
-    /**
-     * @param msg
-     */
-    public JobParameterInvalidException(String msg) {
-        super(msg);
-    }
+    public static final String INHERITED_FIELD_NAME_STRING = "inheritedField";
 
-    public JobParameterInvalidException(String msg, Throwable cause) {
-        super(msg, cause);
-    }
+    @PluginParameter(name = INHERITED_FIELD_NAME_STRING, label = "Inherited string")
+    protected String inheritedField;
 }
