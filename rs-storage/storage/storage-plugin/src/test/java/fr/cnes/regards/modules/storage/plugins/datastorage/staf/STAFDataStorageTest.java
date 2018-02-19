@@ -54,7 +54,6 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFWorkingSubset
 
 @ContextConfiguration(classes = { STAFDataStorageConfiguration.class, MockingResourceServiceConfiguration.class })
 @TestPropertySource(locations = { "classpath:test.properties" })
-@Ignore //FIXME
 public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
     private static final String STAF_ARCHIVE_NAME = "ARCHIVE_TEST_IT";

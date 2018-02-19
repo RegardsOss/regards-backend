@@ -14,6 +14,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -589,7 +590,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         for (JobInfo job : jobsToSchedule) {
             jobIds.add(jobInfoService.createAsQueued(job).getId());
         }
-        dataFileDao.save(storageWorkingSetMap.values());
+        //now that files are given to the jobs, lets remove the source url so once stored we only have the good urls
+        Collection<StorageDataFile> storageDataFiles = storageWorkingSetMap.values();
+        storageDataFiles.forEach(file-> file.setUrls(new HashSet<>()));
+        dataFileDao.save(storageDataFiles);
         return jobIds;
     }
 
@@ -749,7 +753,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 StorageDataFile meta;
                 try {
                     meta = writeMetaToWorkspace(aip);
-                    // now if we have a meta to storeAndCreate, lets add it
+                    // now if we have a meta to store, lets add it
                     meta.setState(DataFileState.PENDING);
                     dataFileDao.save(meta);
                     metadataToStore.add(meta);
@@ -1104,8 +1108,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     /**
-     * Prepare all AIP in UPDATED state in order to storeAndCreate and storeAndCreate the new AIP metadata file
-     * (descriptor file)
+     * Prepare all AIP in UPDATED state in order to create and store the new AIP metadata file (descriptor file)
      * asscoiated.<br/>
      * After an AIP is updated in database, this method write the new {@link StorageDataFile} of the AIP metadata on disk
      * and return the list of created {@link StorageDataFile} mapped to the old {@link StorageDataFile} of the updated AIPs.
@@ -1124,7 +1127,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 StorageDataFile existingAIPMetadataFile = optionalExistingAIPMetadataFile.get();
                 StorageDataFile newAIPMetadataFile;
                 try {
-                    // To ensure that at any time there is only one StorageDataFile of AIP type, we do not storeAndCreate
+                    // To ensure that at any time there is only one StorageDataFile of AIP type, we do not create
                     // a new StorageDataFile for the newAIPMetadataFile.
                     // The newAIPMetadataFile get the id of the old one and so only replace it when it is stored.
                     newAIPMetadataFile = writeMetaToWorkspace(updatedAip);
@@ -1182,7 +1185,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     private Set<UUID> doScheduleStorageMetadataUpdate(Set<UpdatableMetadataFile> metadataToUpdate)
             throws ModuleException {
         // This is an update so we don't use the allocation strategy and we directly use the PluginConf used to
-        // storeAndCreate the file.
+        // store the file.
         // Lets construct the Multimap<PluginConf, StorageDataFile> allowing us to then create the IWorkingSubSets
         Multimap<Long, StorageDataFile> toPrepareMap = HashMultimap.create();
         for (UpdatableMetadataFile oldNew : metadataToUpdate) {
@@ -1223,6 +1226,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         for (JobInfo job : jobsToSchedule) {
             jobIds.add(jobInfoService.createAsQueued(job).getId());
         }
+        //now that files are given to the jobs, lets remove the source url so once stored we only have the good urls
+        Collection<StorageDataFile> storageDataFiles = toPrepareMap.values();
+        storageDataFiles.forEach(file-> file.setUrls(new HashSet<>()));
+        dataFileDao.save(storageDataFiles);
         return jobIds;
     }
 
