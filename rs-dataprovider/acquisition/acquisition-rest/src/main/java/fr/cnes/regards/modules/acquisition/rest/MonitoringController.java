@@ -76,11 +76,11 @@ public class MonitoringController implements IResourceController<AcquisitionProc
     @ResourceAccess(description = "Search for acquisition processing chain summaries", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedResources<Resource<AcquisitionProcessingChainMonitor>>> search(
             @RequestParam(name = "mode", required = false) AcquisitionProcessingChainMode mode,
-            @RequestParam(name = "running", required = false) Boolean running,
+            @RequestParam(name = "locked", required = false) Boolean locked,
             @RequestParam(name = "label", required = false) String label, Pageable pageable,
             PagedResourcesAssembler<AcquisitionProcessingChainMonitor> assembler) throws ModuleException {
         Page<AcquisitionProcessingChainMonitor> results = service
-                .buildAcquisitionProcessingChainSummaries(label, running, mode, pageable);
+                .buildAcquisitionProcessingChainSummaries(label, locked, mode, pageable);
         return new ResponseEntity<>(toPagedResources(results, assembler), HttpStatus.OK);
     }
 
@@ -89,7 +89,8 @@ public class MonitoringController implements IResourceController<AcquisitionProc
             Object... pExtras) {
         Resource<AcquisitionProcessingChainMonitor> resource = resourceService.toResource(element);
         if ((element != null) && (element.getChain() != null)) {
-            if (AcquisitionProcessingChainMode.MANUAL.equals(element.getChain().getMode())) {
+            if (AcquisitionProcessingChainMode.MANUAL.equals(element.getChain().getMode())
+                    && !element.getChain().isLocked() && element.getChain().isActive()) {
                 resourceService.addLink(resource, AcquisitionProcessingChainController.class, "startManualChain",
                                         "start", MethodParamFactory.build(Long.class, element.getChain().getId()));
             }

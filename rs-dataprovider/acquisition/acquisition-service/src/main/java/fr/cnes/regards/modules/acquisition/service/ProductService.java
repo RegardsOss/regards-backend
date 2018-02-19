@@ -395,26 +395,30 @@ public class ProductService implements IProductService {
      */
     @Override
     public void handleProductSIPSubmissionFailure(JobEvent jobEvent) {
-        if (JobEventType.FAILED.equals(jobEvent.getJobEventType())
-                && SIPSubmissionJob.class.isAssignableFrom(jobEvent.getClass())) {
+        if (JobEventType.FAILED.equals(jobEvent.getJobEventType())) {
             // Load job info
             JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
-            Map<String, JobParameter> params = jobInfo.getParametersAsMap();
-            String ingestChain = params.get(SIPSubmissionJob.INGEST_CHAIN_PARAMETER).getValue();
-            String session = params.get(SIPSubmissionJob.SESSION_PARAMETER).getValue();
-            // Update product status
-            Set<Product> products;
-            if (session == null) {
-                products = productRepository
-                        .findByProcessingChainIngestChainAndSipState(ingestChain, ProductSIPState.SUBMISSION_SCHEDULED);
-            } else {
-                products = productRepository
-                        .findByProcessingChainIngestChainAndSessionAndSipState(ingestChain, session,
-                                                                               ProductSIPState.SUBMISSION_SCHEDULED);
-            }
-            for (Product product : products) {
-                product.setSipState(ProductSIPState.SUBMISSION_ERROR);
-                save(product);
+
+            // Manage SIP submission job error!
+            if (SIPSubmissionJob.class.isAssignableFrom(jobInfo.getJob().getClass())) {
+                Map<String, JobParameter> params = jobInfo.getParametersAsMap();
+                String ingestChain = params.get(SIPSubmissionJob.INGEST_CHAIN_PARAMETER).getValue();
+                String session = params.get(SIPSubmissionJob.SESSION_PARAMETER).getValue();
+                // Update product status
+                Set<Product> products;
+                if (session == null) {
+                    products = productRepository
+                            .findByProcessingChainIngestChainAndSipState(ingestChain,
+                                                                         ProductSIPState.SUBMISSION_SCHEDULED);
+                } else {
+                    products = productRepository
+                            .findByProcessingChainIngestChainAndSessionAndSipState(ingestChain, session,
+                                                                                   ProductSIPState.SUBMISSION_SCHEDULED);
+                }
+                for (Product product : products) {
+                    product.setSipState(ProductSIPState.SUBMISSION_ERROR);
+                    save(product);
+                }
             }
         }
     }
