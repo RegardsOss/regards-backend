@@ -19,14 +19,17 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Converter
-public class URLSetCsvConverter implements AttributeConverter<Set<URL>, String> {
+public class SetURLCsvConverter implements AttributeConverter<Set<URL>, String> {
 
     private static final SetStringCsvConverter stringConverter = new SetStringCsvConverter();
 
-    private static final Logger LOG = LoggerFactory.getLogger(URLSetCsvConverter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SetURLCsvConverter.class);
 
     @Override
     public String convertToDatabaseColumn(Set<URL> urls) {
+        if (urls.isEmpty()) {
+            return null;
+        }
         return stringConverter
                 .convertToDatabaseColumn(urls.stream().map(url -> url.toExternalForm()).collect(Collectors.toSet()));
     }
