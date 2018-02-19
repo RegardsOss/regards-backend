@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.configuration.domain;
 
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -92,12 +93,8 @@ public class Module {
     @Column(nullable = false)
     private boolean active;
 
-    /**
-     * Does the module is to display by default if no module specified ?
-     */
-    @NotNull
-    @Column(nullable = false)
-    private boolean defaultDynamicModule;
+    @Embedded
+    private UIPage page;
 
     public Long getId() {
         return id;
@@ -155,12 +152,12 @@ public class Module {
         active = pActive;
     }
 
-    public boolean isDefaultDynamicModule() {
-        return defaultDynamicModule;
+    public UIPage getPage() {
+        return page;
     }
 
-    public void setDefaultDynamicModule(final boolean pDefaultDynamicModule) {
-        defaultDynamicModule = pDefaultDynamicModule;
+    public void setPage(UIPage page) {
+        this.page = page;
     }
 
     @Override
@@ -187,18 +184,16 @@ public class Module {
             if (other.id != null) {
                 return false;
             }
-        } else
-            if (!id.equals(other.id)) {
-                return false;
-            }
+        } else if (!id.equals(other.id)) {
+            return false;
+        }
         return true;
     }
 
     @Override
     public String toString() {
         return "Module [id=" + id + ", type=" + type + ", description=" + description + ", applicationId="
-                + applicationId + ", container=" + container + ", conf=" + conf + ", active=" + active
-                + ", defaultDynamicModule=" + defaultDynamicModule + "]";
+                + applicationId + ", container=" + container + ", conf=" + conf + ", active=" + active + "]";
     }
 
 }

@@ -64,7 +64,7 @@ public interface IModuleRepository extends JpaRepository<Module, Long> {
      * @return
      * @since 1.0-SNAPSHOT
      */
-    List<Module> findByApplicationIdAndDefaultDynamicModuleTrue(String pApplicationId);
+    List<Module> findByApplicationIdAndPageHomeTrue(String pApplicationId);
 
     /**
      *
