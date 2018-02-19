@@ -56,7 +56,7 @@ public class AcquisitionProcessingChainSpecifications {
                 predicates.add(cb.like(root.get("label"), LIKE_CHAR + label + LIKE_CHAR));
             }
             if (running != null) {
-                predicates.add(cb.equal(root.get("running"), running));
+                predicates.add(cb.equal(root.get("locked"), running));
             }
             if (mode != null) {
                 predicates.add(cb.equal(root.get("mode"), mode));
