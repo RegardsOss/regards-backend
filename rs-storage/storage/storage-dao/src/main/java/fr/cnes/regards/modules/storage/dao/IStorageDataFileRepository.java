@@ -72,11 +72,11 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
     @EntityGraph(value = "graph.datafile.full")
     Set<StorageDataFile> findAllByStateAndAipEntityIn(DataFileState dataFileState, Collection<AIPEntity> aipEntities);
 
-    //FIXME: fix monitoring
-//    /**
-//     * Calculate the monitoring information on all data files of the database
-//     * @return the monitoring aggregation
-//     */
-//    @Query("SELECT df.dataStorages.id as dataStorageUsedId, sum(df.fileSize) as usedSize FROM StorageDataFile df WHERE df.state LIKE 'STORED' GROUP BY df.dataStorageUsed.id")
-//    Collection<MonitoringAggregation> getMonitoringAggregation();
+    /**
+     * Calculate the monitoring information on all data files of the database
+     * @return the monitoring aggregation
+     */
+    @Query("select ds.id as dataStorageUsedId, sum(df.fileSize) as usedSize from StorageDataFile df join df.dataStorages ds"
+            + " where df.state = 'STORED' group by ds.id")
+    Collection<MonitoringAggregation> getMonitoringAggregation();
 }

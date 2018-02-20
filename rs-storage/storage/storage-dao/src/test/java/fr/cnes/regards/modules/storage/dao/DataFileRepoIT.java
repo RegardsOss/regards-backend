@@ -126,23 +126,34 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         }
         dataFiles.addAll(dataFilesAip);
         dataFileDao.save(dataFiles);
+        //lets test with a file stored into two archives ( 1 and 2 )
+        AIP aip12 = generateRandomAIP();
+        aip12 = aipDao.save(aip12);
+        dataFilesAip = StorageDataFile.extractDataFiles(aip12);
+        for (StorageDataFile df : dataFilesAip) {
+            df.addDataStorageUsed(dataStorage1);
+            dataStorage1UsedSize += df.getFileSize();
+            df.addDataStorageUsed(dataStorage2);
+            dataStorage2UsedSize += df.getFileSize();
+        }
+        dataFiles.addAll(dataFilesAip);
+        dataFileDao.save(dataFiles);
     }
 
-    @Test //FIXME
-    @Ignore
+    @Test
     public void testMonitoringAggregation() {
-//        Collection<MonitoringAggregation> monitoringAggregations = dataFileRepository.getMonitoringAggregation();
-//        for(MonitoringAggregation agg: monitoringAggregations) {
-//            if(agg.getDataStorageUsedId().equals(dataStorage1Id)) {
-//                Assert.assertTrue(agg.getUsedSize().equals(dataStorage1UsedSize));
-//            }
-//            if(agg.getDataStorageUsedId().equals(dataStorage2Id)) {
-//                Assert.assertTrue(agg.getUsedSize().equals(dataStorage2UsedSize));
-//            }
-//            if(agg.getDataStorageUsedId().equals(dataStorage3Id)) {
-//                Assert.assertTrue(agg.getUsedSize().equals(dataStorage3UsedSize));
-//            }
-//        }
+        Collection<MonitoringAggregation> monitoringAggregations = dataFileRepository.getMonitoringAggregation();
+        for(MonitoringAggregation agg: monitoringAggregations) {
+            if(agg.getDataStorageUsedId().equals(dataStorage1Id)) {
+                Assert.assertTrue(agg.getUsedSize().equals(dataStorage1UsedSize));
+            }
+            if(agg.getDataStorageUsedId().equals(dataStorage2Id)) {
+                Assert.assertTrue(agg.getUsedSize().equals(dataStorage2UsedSize));
+            }
+            if(agg.getDataStorageUsedId().equals(dataStorage3Id)) {
+                Assert.assertTrue(agg.getUsedSize().equals(dataStorage3UsedSize));
+            }
+        }
     }
 
     public AIP generateRandomAIP() throws NoSuchAlgorithmException, MalformedURLException {
