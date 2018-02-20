@@ -18,6 +18,7 @@ public enum NotificationType {
     /**
      * Associated notification reflects a fatal error
      */
-    FATAL
+    FATAL,
+    WARNING
 
 }

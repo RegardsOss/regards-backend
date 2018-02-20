@@ -42,6 +42,6 @@ public enum NotificationFrequency {
     /**
      * Custom frequency
      */
-    CUSTOM;
+    CUSTOM
 
 }
