@@ -22,11 +22,10 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
 
 /**
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -37,10 +36,4 @@ public class MockedFeignSsaltoClientConf {
     public IIngestClient ingestClient() {
         return Mockito.mock(IIngestClient.class);
     }
-    
-    @Bean
-    public IDatasetClient datasetClient() {
-        return Mockito.mock(IDatasetClient.class);
-    }
-
 }

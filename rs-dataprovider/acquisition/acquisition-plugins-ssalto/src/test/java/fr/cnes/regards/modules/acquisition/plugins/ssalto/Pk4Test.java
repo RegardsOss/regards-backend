@@ -29,7 +29,9 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.AbstractProductMetadataPlugin;
 
 /**
  * Classe de test du plugin Pk4OnBoardProductMetaDataPlugin
@@ -52,9 +54,12 @@ public class Pk4Test extends AbstractProductMetadataPluginTest {
     }
 
     @Override
-    public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
-        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Pk4OnBoardProductMetaDataPlugin",
-                                                                              Optional.fromNullable(null));
+    public ISIPGenerationPluginWithMetadataToolbox buildPlugin(String datasetName) throws ModuleException {
+        PluginConfiguration pluginConfiguration = this
+                .getPluginConfiguration("Pk4OnBoardProductMetaDataPlugin",
+                                        Optional.fromNullable(PluginParametersFactory.build()
+                                                .addParameter(AbstractProductMetadataPlugin.DATASET_SIP_ID, datasetName)
+                                                .getParameters()));
 
         return pluginService.getPlugin(pluginConfiguration.getId());
     }

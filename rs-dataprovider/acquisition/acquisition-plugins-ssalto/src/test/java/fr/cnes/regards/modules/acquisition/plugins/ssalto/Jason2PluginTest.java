@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.AbstractProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.Jason2ProductMetadataPlugin;
 
 /**
@@ -166,9 +167,10 @@ public class Jason2PluginTest extends AbstractProductMetadataPluginTest {
     }
 
     @Override
-    public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
+    public ISIPGenerationPluginWithMetadataToolbox buildPlugin(String datasetName) throws ModuleException {
         PluginConfiguration pluginConfiguration = this
                 .getPluginConfiguration("Jason2ProductMetadataPlugin", Optional.of(PluginParametersFactory.build()
+                        .addParameter(AbstractProductMetadataPlugin.DATASET_SIP_ID, datasetName)
                         .addParameter(Jason2ProductMetadataPlugin.ORF_FILE_PATH_PARAM,
                                       "src/test/resources/income/data/JASON2/ORF_HISTORIQUE/JA2_ORF_AXXCNE*")
                         .addParameter(Jason2ProductMetadataPlugin.CYCLES_FILE_PATH_PARAM,

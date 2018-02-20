@@ -36,11 +36,11 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.AbstractProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.Jason2ProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.RegexDiskScanning;
-import fr.cnes.regards.modules.entities.domain.Dataset;
 
 /**
  * Test JASON2 IGDR processing chain
@@ -61,9 +61,6 @@ public class Jason2CorpfaltiPoeProcessingChainTest extends AbstractAcquisitionCh
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
-
-        Dataset dataSet = getDataset("DA_TC_JASON2_CORPFALTI_POE");
-        processingChain.setDatasetIpId(dataSet.getIpId().toString());
 
         // Create an acquisition file info
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
@@ -109,15 +106,13 @@ public class Jason2CorpfaltiPoeProcessingChainTest extends AbstractAcquisitionCh
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(
-                                                                              PluginParametersFactory.build()
-                                                                                      .addParameter(Jason2ProductMetadataPlugin.ORF_FILE_PATH_PARAM,
-                                                                                                    "src/test/resources/income/data/JASON2/ORF_HISTORIQUE/JA2_ORF_AXXCNE*")
-                                                                                      .addParameter(Jason2ProductMetadataPlugin.CYCLES_FILE_PATH_PARAM,
-                                                                                                    "src/test/resources/income/data/JASON2/CYCLES/JASON2_CYCLES")
-                                                                                      .getParameters(),
-                                                                              Jason2ProductMetadataPlugin.class,
-                                                                              Lists.newArrayList());
+        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(PluginParametersFactory.build()
+                .addParameter(AbstractProductMetadataPlugin.DATASET_SIP_ID, "DA_TC_JASON2_CORPFALTI_POE")
+                .addParameter(Jason2ProductMetadataPlugin.ORF_FILE_PATH_PARAM,
+                              "src/test/resources/income/data/JASON2/ORF_HISTORIQUE/JA2_ORF_AXXCNE*")
+                .addParameter(Jason2ProductMetadataPlugin.CYCLES_FILE_PATH_PARAM,
+                              "src/test/resources/income/data/JASON2/CYCLES/JASON2_CYCLES")
+                .getParameters(), Jason2ProductMetadataPlugin.class, Lists.newArrayList());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin");
         processingChain.setGenerateSipPluginConf(sipGenPlugin);

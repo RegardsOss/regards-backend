@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.AbstractProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.SaralProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.Sent3aProductMetadataPlugin;
 
@@ -56,13 +57,13 @@ public class Sentinel3APluginTest extends AbstractProductMetadataPluginTest {
     }
 
     @Override
-    public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
+    public ISIPGenerationPluginWithMetadataToolbox buildPlugin(String datasetName) throws ModuleException {
         PluginConfiguration pluginConfiguration = this
-                .getPluginConfiguration("Sent3aProductMetadataPlugin",
-                                        Optional.of(PluginParametersFactory.build()
-                                                .addParameter(Sent3aProductMetadataPlugin.ORF_FILE_PATH_PARAM,
-                                                              "src/test/resources/income/data/sent3A/orf_historique/S3A_ORF_AXXCN*")
-                                                .getParameters()));
+                .getPluginConfiguration("Sent3aProductMetadataPlugin", Optional.of(PluginParametersFactory.build()
+                        .addParameter(AbstractProductMetadataPlugin.DATASET_SIP_ID, datasetName)
+                        .addParameter(Sent3aProductMetadataPlugin.ORF_FILE_PATH_PARAM,
+                                      "src/test/resources/income/data/sent3A/orf_historique/S3A_ORF_AXXCN*")
+                        .getParameters()));
 
         return pluginService.getPlugin(pluginConfiguration.getId());
     }

@@ -40,10 +40,8 @@ public interface ISIPGenerationPluginWithMetadataToolbox extends ISipGenerationP
     /**
      * Create metadata for acquisition file
      * @param acqFiles list of acquisition filoes
-     * @param datasetName related dataset name
      * @return an ordered map of attribute
      * @throws ModuleException
      */
-    SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName)
-            throws ModuleException;
+    SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException;
 }

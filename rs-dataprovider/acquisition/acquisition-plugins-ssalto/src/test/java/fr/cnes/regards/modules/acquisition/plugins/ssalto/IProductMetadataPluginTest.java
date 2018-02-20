@@ -41,7 +41,6 @@ public interface IProductMetadataPluginTest {
     /**
      * Permet d'initialiser le plugin a tester.
      *
-     * @return
      */
-    public ISipGenerationPlugin buildPlugin() throws ModuleException;
+    public ISipGenerationPlugin buildPlugin(String datasetName) throws ModuleException;
 }

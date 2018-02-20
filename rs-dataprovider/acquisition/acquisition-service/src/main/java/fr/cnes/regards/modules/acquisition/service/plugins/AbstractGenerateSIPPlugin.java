@@ -19,12 +19,10 @@
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.SortedMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.Gson;
 
@@ -34,7 +32,6 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
-import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 
@@ -48,9 +45,6 @@ public abstract class AbstractGenerateSIPPlugin implements ISIPGenerationPluginW
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGenerateSIPPlugin.class);
 
-    @Autowired
-    private IDatasetClient datasetClient;
-
     @Override
     public SIP generate(Product product) throws ModuleException {
 
@@ -62,20 +56,13 @@ public abstract class AbstractGenerateSIPPlugin implements ISIPGenerationPluginW
         // Add all AcquisistionFile to the content information
         addDataObjectsToSip(sipBuilder, product.getActiveAcquisitionFiles());
 
-        // Get the dataset name
-        String datasetName = datasetClient.retrieveDataset(product.getProcessingChain().getDatasetIpId()).getBody()
-                .getContent().getSipId();
-
         // Extracts the meta-attributes
-        SortedMap<Integer, Attribute> mm = createMetadataPlugin(product.getAcquisitionFiles(), datasetName);
+        SortedMap<Integer, Attribute> mm = createMetadataPlugin(product.getAcquisitionFiles());
 
         addAttributesTopSip(sipBuilder, mm);
 
         // Add the SIP to the SIPCollection
         SIP aSip = sipBuilder.build();
-
-        // If a dataSet is defined, add a tag to the PreservationDescriptionInformation
-        addDatasetTag(aSip, Optional.of(product.getProcessingChain().getDatasetIpId()));
 
         if (LOGGER.isDebugEnabled()) {
             Gson gson = new Gson();
@@ -87,13 +74,11 @@ public abstract class AbstractGenerateSIPPlugin implements ISIPGenerationPluginW
         return aSip;
     }
 
-    protected void addDatasetTag(SIP aSip, Optional<String> datasetIpId) {
+    protected void addDatasetTag(SIP aSip, String datasetSipId) {
         // If a dataSet is defined, add a tag to the PreservationDescriptionInformation
-        if (datasetIpId.isPresent()) {
-            PDIBuilder pdiBuilder = new PDIBuilder(aSip.getProperties().getPdi());
-            pdiBuilder.addTags(datasetIpId.get());
-            aSip.getProperties().setPdi(pdiBuilder.build());
-        }
+        PDIBuilder pdiBuilder = new PDIBuilder(aSip.getProperties().getPdi());
+        pdiBuilder.addTags(datasetSipId);
+        aSip.getProperties().setPdi(pdiBuilder.build());
     }
 
     protected abstract void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)

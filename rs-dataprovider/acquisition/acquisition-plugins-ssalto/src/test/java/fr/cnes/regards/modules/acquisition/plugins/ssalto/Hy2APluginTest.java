@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.AbstractProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.Hy2ADoris10ProductMetadataPlugin;
 
 /**
@@ -52,13 +53,13 @@ public class Hy2APluginTest extends AbstractProductMetadataPluginTest {
     }
 
     @Override
-    public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
+    public ISIPGenerationPluginWithMetadataToolbox buildPlugin(String datasetName) throws ModuleException {
         PluginConfiguration pluginConfiguration = this
-                .getPluginConfiguration("Hy2AProductMetadataPlugin",
-                                        Optional.of(PluginParametersFactory.build()
-                                                .addParameter(Hy2ADoris10ProductMetadataPlugin.ORF_FILE_PATH_PARAM,
-                                                              "src/test/resources/income/data/HY2A/ORF_HISTORIQUE/H2A_ORF_AXXCNE*")
-                                                .getParameters()));
+                .getPluginConfiguration("Hy2AProductMetadataPlugin", Optional.of(PluginParametersFactory.build()
+                        .addParameter(AbstractProductMetadataPlugin.DATASET_SIP_ID, datasetName)
+                        .addParameter(Hy2ADoris10ProductMetadataPlugin.ORF_FILE_PATH_PARAM,
+                                      "src/test/resources/income/data/HY2A/ORF_HISTORIQUE/H2A_ORF_AXXCNE*")
+                        .getParameters()));
 
         return pluginService.getPlugin(pluginConfiguration.getId());
     }

@@ -18,39 +18,26 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.chain;
 
-import java.util.Set;
-import java.util.UUID;
-
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
-import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
-import fr.cnes.regards.modules.entities.client.IDatasetClient;
-import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
@@ -63,13 +50,11 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 @ContextConfiguration(classes = { AbstractAcquisitionChainTest.AcquisitionConfiguration.class })
 public abstract class AbstractAcquisitionChainTest extends AbstractDaoTest {
 
+    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAcquisitionChainTest.class);
 
     @Autowired
     protected IAcquisitionProcessingService processingService;
-
-    @Autowired
-    protected IDatasetClient datasetClient;
 
     @Autowired
     protected IAcquisitionFileRepository fileRepository;
@@ -84,11 +69,6 @@ public abstract class AbstractAcquisitionChainTest extends AbstractDaoTest {
         @Bean
         public IIngestClient ingestClient() {
             return new IngestClientMock();
-        }
-
-        @Bean
-        public IDatasetClient datasetClient() {
-            return Mockito.mock(IDatasetClient.class);
         }
     }
 
@@ -160,16 +140,5 @@ public abstract class AbstractAcquisitionChainTest extends AbstractDaoTest {
         if (productSubmitted != expectedProducts) {
             Assert.fail();
         }
-    }
-
-    protected Dataset getDataset(String datasetSipId) {
-        Dataset dataSet = new Dataset();
-        final UniformResourceName aipUrn = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, "SSALTO",
-                UUID.randomUUID(), 1);
-        dataSet.setIpId(aipUrn);
-        dataSet.setSipId(datasetSipId);
-        Mockito.when(datasetClient.retrieveDataset(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(new Resource<Dataset>(dataSet), HttpStatus.OK));
-        return dataSet;
     }
 }

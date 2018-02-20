@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.AbstractProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.EnvisatProductMetadataPlugin;
 
 @ContextConfiguration(classes = { PluginsSsaltoTestsConfiguration.class })
@@ -60,9 +61,10 @@ public class EnvisatPluginTest extends AbstractProductMetadataPluginTest {
     }
 
     @Override
-    public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
+    public ISIPGenerationPluginWithMetadataToolbox buildPlugin(String datasetName) throws ModuleException {
         PluginConfiguration pluginConfiguration = this
                 .getPluginConfiguration("EnvisatProductMetadataPlugin", Optional.of(PluginParametersFactory.build()
+                        .addParameter(AbstractProductMetadataPlugin.DATASET_SIP_ID, datasetName)
                         .addParameter(EnvisatProductMetadataPlugin.CYCLES_FILE_PATH_PARAM,
                                       "src/test/resources/income/data/ENVISAT/cycles/ENVISAT_CYCLES")
                         .addParameter(EnvisatProductMetadataPlugin.ORF_FILE_PATH_PARAM,

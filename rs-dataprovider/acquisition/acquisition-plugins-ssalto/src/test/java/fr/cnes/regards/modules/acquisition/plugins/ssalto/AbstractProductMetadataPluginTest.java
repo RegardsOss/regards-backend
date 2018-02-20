@@ -134,7 +134,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     }
 
     @Override
-    public abstract ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException;
+    public abstract ISIPGenerationPluginWithMetadataToolbox buildPlugin(String datasetName) throws ModuleException;
 
     /**
      * Initialisation des proprietes et création du répertoire de travail
@@ -275,7 +275,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
 
         LOGGER.debug("Testing METADATA GENERATION FOR DATASET " + pluginTestDef.getDataSetName());
 
-        ISIPGenerationPluginWithMetadataToolbox plugin = buildPlugin();
+        ISIPGenerationPluginWithMetadataToolbox plugin = buildPlugin(pluginTestDef.getDataSetName());
 
         if (pluginTestDef.isMultipleFileTest()) {
             for (String fileName : pluginTestDef.getFileNameList()) {
@@ -436,8 +436,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     protected String createMetaData(List<AcquisitionFile> acqFiles, PluginTestDef pluginTestDef,
             ISIPGenerationPluginWithMetadataToolbox pluginGenerateSIP) throws ModuleException {
 
-        SortedMap<Integer, Attribute> attrMaps = pluginGenerateSIP.createMetadataPlugin(acqFiles,
-                                                                                        pluginTestDef.getDataSetName());
+        SortedMap<Integer, Attribute> attrMaps = pluginGenerateSIP.createMetadataPlugin(acqFiles);
 
         String xml;
         try {

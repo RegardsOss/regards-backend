@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.AbstractProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.Spot2ProductMetadataPlugin;
 
 /**
@@ -57,10 +58,11 @@ public class Spot2PluginTest extends AbstractProductMetadataPluginTest {
     }
 
     @Override
-    public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
+    public ISIPGenerationPluginWithMetadataToolbox buildPlugin(String datasetName) throws ModuleException {
         PluginConfiguration pluginConfiguration = this
                 .getPluginConfiguration("Spot2ProductMetadataPlugin",
                                         Optional.of(PluginParametersFactory.build()
+                                                .addParameter(AbstractProductMetadataPlugin.DATASET_SIP_ID, datasetName)
                                                 .addParameter(Spot2ProductMetadataPlugin.ARC_FILE_PATH_PARAM,
                                                               "src/test/resources/income/data/spot2/arcs/SPOT2_ARCS")
                                                 .getParameters()));

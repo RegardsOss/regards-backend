@@ -116,7 +116,6 @@ public class ProductAcquisitionServiceTest extends AbstractDaoTest {
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
-        processingChain.setDatasetIpId("DATASET_IP_ID");
 
         // Create an acquisition file info
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();

@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.AbstractProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.SaralProductMetadataPlugin;
 
 /**
@@ -56,9 +57,10 @@ public class SaralPluginTest extends AbstractProductMetadataPluginTest {
     }
 
     @Override
-    public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
+    public ISIPGenerationPluginWithMetadataToolbox buildPlugin(String datasetName) throws ModuleException {
         PluginConfiguration pluginConfiguration = this
                 .getPluginConfiguration("SaralProductMetadataPlugin", Optional.of(PluginParametersFactory.build()
+                        .addParameter(AbstractProductMetadataPlugin.DATASET_SIP_ID, datasetName)
                         .addParameter(SaralProductMetadataPlugin.ORF_FILE_PATH_PARAM,
                                       "src/test/resources/income/data/SARAL/ORF_HISTORIQUE/SRL_ORF_AXXCNE*")
                         .addParameter(SaralProductMetadataPlugin.CYCLES_FILE_PATH_PARAM,

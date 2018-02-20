@@ -38,11 +38,11 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.AbstractProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.Jason2ProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.RegexDiskScanning;
-import fr.cnes.regards.modules.entities.domain.Dataset;
 
 /**
  * Test JASON2 IGDR processing chain
@@ -63,9 +63,6 @@ public class Jason2IgdrProcessingChainTest extends AbstractAcquisitionChainTest 
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
-
-        Dataset dataSet = getDataset("DA_TC_JASON2_IGDR");
-        processingChain.setDatasetIpId(dataSet.getIpId().toString());
 
         // Create an acquisition file info
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
@@ -111,8 +108,10 @@ public class Jason2IgdrProcessingChainTest extends AbstractAcquisitionChainTest 
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), Jason2ProductMetadataPlugin.class, Lists.newArrayList());
+        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(PluginParametersFactory.build()
+                .addParameter(AbstractProductMetadataPlugin.DATASET_SIP_ID, "DA_TC_JASON2_IGDR").getParameters(),
+                                                                              Jason2ProductMetadataPlugin.class,
+                                                                              Lists.newArrayList());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin");
         processingChain.setGenerateSipPluginConf(sipGenPlugin);

@@ -35,7 +35,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.xmlrules.DigesterLoader;
-import org.bouncycastle.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -60,7 +59,6 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.AbstractAttributeFinder;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
 import fr.cnes.regards.modules.acquisition.service.plugins.AbstractGenerateSIPPlugin;
-import fr.cnes.regards.modules.entities.domain.geometry.Geometry;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 
 /**
@@ -194,16 +192,20 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
 
     public static final String ORF_FILE_PATH_PARAM = "orfFilePathPattern";
 
-    @PluginParameter(name = CYCLES_FILE_PATH_PARAM, keylabel = "Cycles file path", label = "Cycles file path",
-            optional = false)
+    public static final String DATASET_SIP_ID = "datasetSipId";
+
+    @PluginParameter(name = CYCLES_FILE_PATH_PARAM, label = "Cycles file path", optional = false)
     protected String cyclePath;
 
-    @PluginParameter(name = ORF_FILE_PATH_PARAM, keylabel = "ORF file path patterns", label = "ORF file path patterns",
-            optional = false)
+    @PluginParameter(name = ORF_FILE_PATH_PARAM, label = "ORF file path patterns", optional = false)
     protected String orfFilePathPattern;
 
-    @PluginParameter(name = ARC_FILE_PATH_PARAM, keylabel = "Arc file path", label = "Arc file path", optional = false)
+    @PluginParameter(name = ARC_FILE_PATH_PARAM, label = "Arc file path", optional = false)
     protected String arcPath;
+
+    @PluginParameter(name = DATASET_SIP_ID, label = "Dataset provider identifier (i.e. SIP ID)",
+            description = "Also used for plugin configuration retrieval")
+    protected String datasetName;
 
     protected String getCycleFilePath() {
         return cyclePath;
@@ -224,8 +226,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     protected abstract String getProjectName();
 
     @Override
-    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName)
-            throws ModuleException {
+    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
 
         // DATASET name is required to retrieve configuration file
         if ((datasetName == null) || datasetName.isEmpty()) {
@@ -435,10 +436,9 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             LOGGER.debug("build SIP : add attribute [{}]", attr.getMetaAttribute().getName());
         }
         if (attr.getValueList().size() == 1) {
-            sipBuilder.addDescriptiveInformation(Strings.toLowerCase(attr.getAttributeKey()),
-                                                 attr.getValueList().get(0));
+            sipBuilder.addDescriptiveInformation(attr.getAttributeKey().toLowerCase(), attr.getValueList().get(0));
         } else {
-            sipBuilder.addDescriptiveInformation(Strings.toLowerCase(attr.getAttributeKey()), attr.getValueList());
+            sipBuilder.addDescriptiveInformation(attr.getAttributeKey().toLowerCase(), attr.getValueList());
         }
     }
 
@@ -458,9 +458,9 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
                 LOGGER.debug(MSG_ATTRIBUTE_BUILD, attr.getMetaAttribute().getName());
             }
             Object objValue = attr.getValueList().get(0);
-            jsonRange.addProperty(Strings.toLowerCase(attr.getMetaAttribute().getName()), objValue.toString());
+            jsonRange.addProperty(attr.getMetaAttribute().getName().toLowerCase(), objValue.toString());
         }
-        sipBuilder.addDescriptiveInformation(Strings.toLowerCase(compAttr.getName()), jsonRange);
+        sipBuilder.addDescriptiveInformation(compAttr.getName().toLowerCase(), jsonRange);
     }
 
     /**
@@ -479,10 +479,10 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
                 LOGGER.debug(MSG_ATTRIBUTE_BUILD, attr.getMetaAttribute().getName());
             }
             OffsetDateTime ofDate = (OffsetDateTime) attr.getValueList().get(0);
-            jsonStartStop.addProperty(Strings.toLowerCase(attr.getMetaAttribute().getName()), ofDate.toString());
+            jsonStartStop.addProperty(attr.getMetaAttribute().getName().toLowerCase(), ofDate.toString());
         }
 
-        sipBuilder.addDescriptiveInformation(Strings.toLowerCase(compAttr.getName()), jsonStartStop);
+        sipBuilder.addDescriptiveInformation(compAttr.getName().toLowerCase(), jsonStartStop);
     }
 
     /**

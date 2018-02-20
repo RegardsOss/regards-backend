@@ -128,13 +128,6 @@ public class AcquisitionProcessingChain {
     private String ingestChain;
 
     /**
-     * The ipId of the dataset for which the acquired files are set
-     */
-    @NotBlank(message = "Dataset IP ID is required")
-    @Column(length = 256)
-    private String datasetIpId;
-
-    /**
      * The {@link List} of files to build a product
      */
     @NotNull(message = "A processing chain must have at least one acquisition file information")
@@ -208,14 +201,6 @@ public class AcquisitionProcessingChain {
 
     public void setIngestChain(String ingestChain) {
         this.ingestChain = ingestChain;
-    }
-
-    public String getDatasetIpId() {
-        return datasetIpId;
-    }
-
-    public void setDatasetIpId(String datasetIpId) {
-        this.datasetIpId = datasetIpId;
     }
 
     public List<AcquisitionFileInfo> getFileInfos() {

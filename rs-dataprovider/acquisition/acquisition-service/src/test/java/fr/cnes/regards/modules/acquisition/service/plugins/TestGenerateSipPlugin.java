@@ -116,8 +116,7 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     }
 
     @Override
-    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName)
-            throws ModuleException {
+    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
         int n = 0;
         String productName = acqFiles.get(0).getProduct().getProductName();
 
