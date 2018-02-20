@@ -255,7 +255,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                 wait += 1000;
             }
             Assert.assertFalse("Test failed because storage didn't failed! It succeeded!", AIPState.STORED.equals(aipFromDB.get().getState()));
-            Assert.assertTrue("Test in error because it took more than " + wait + " to store the metadata",
+            Assert.assertTrue("Test in error because it took more than " + wait + " to fail the storage of the metadata",
                               wait < MAX_WAIT_TEST);
             Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
             Set<StorageDataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);

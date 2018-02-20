@@ -308,13 +308,17 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         pFilesToStore.stream().forEach(fileToStore -> {
             boolean fileArchived = false;
             for (Entry<Path, URL> rawFile : rawArchivedFiles.entrySet()) {
-                URL thisStafUrl = extractThisStafUrl(fileToStore).get();
-                if ((rawFile.getKey() != null) && thisStafUrl.getPath().equals(rawFile.getKey().toString())) {
-                    fileArchived = true;
-                    // Raw file successfully stored
-                    pProgressManager
-                            .storageSucceed(fileToStore, rawFile.getValue(), rawFile.getKey().toFile().length());
-                    break;
+                // to know if a file has been stored, we need to check if one of its url path match with the path of the rawFile
+                Path filePath = rawFile.getKey();
+                if (filePath != null) {
+                    Optional<URL> formerUrlOpt = fileToStore.getUrls().stream().filter(url -> url.getPath().equals(rawFile.getKey().toString())).findFirst();
+                    if (formerUrlOpt.isPresent()) {
+                        // we found a file that has been stored
+                        fileArchived = true;
+                        // Raw file successfully stored
+                        pProgressManager.storageSucceed(fileToStore, rawFile.getValue(), rawFile.getKey().toFile().length());
+                        break;
+                    }
                 }
             }
             if (!fileArchived) {
@@ -380,12 +384,12 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         // lets select one of the file implementation:
         URL accessibleUrl = StorageDataFileUtils.getAccessibleUrl(file);
         if (accessibleUrl == null) {
-            StringJoiner stringifierUrls = new StringJoiner(",");
-            file.getUrls().forEach(url -> stringifierUrls.add(url.toExternalForm()));
+            StringJoiner stringifiedUrls = new StringJoiner(",");
+            file.getUrls().forEach(url -> stringifiedUrls.add(url.toExternalForm()));
             String errorMsg = String.format(
                     "Error trying to retrieve file(checksum: %s). We could not find any accessible url(Actual urls: %s)",
                     file.getChecksum(),
-                    stringifierUrls.toString());
+                    stringifiedUrls.toString());
             IOException ioe = new IOException(errorMsg);
             LOG.error(ioe.getMessage(), ioe);
             throw ioe;

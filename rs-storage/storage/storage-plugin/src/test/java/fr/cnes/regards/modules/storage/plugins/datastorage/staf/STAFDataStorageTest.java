@@ -102,10 +102,10 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
                                                               OffsetDateTime.now());
         AIP aip = builder.build();
 
+        // lets first make some file that should be stored in TAR mode
         filesToArchiveWithoutInvalides.add(new StorageDataFile(
                 Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/file_test_1.txt")), "eadcc622739d58e8a78170b67c6ff9f5",
                 "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_1.txt"));
-
         filesToArchiveWithoutInvalides.add(new StorageDataFile(
                 Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/file_test_2.txt")), "8e3d5e32119c70881316a1a2b17a64d1",
                 "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_2.txt"));
@@ -118,11 +118,13 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         filesToArchiveWithoutInvalides.add(new StorageDataFile(
                 Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/file_test_5.txt")), "61142380c96f899eaea71b229dcc4247",
                 "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_5.txt"));
-//        filesToArchiveWithoutInvalides.add(new StorageDataFile(
-//                Sets.newHashSet(new URL("http", "172.26.47.52", 80, "/conf/staticConfiguration.js")), "eadcc622739d58e8a78170b67c6ff9f3",
-//                "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "staticConfiguration.js"));
 
         filesToArchive.addAll(filesToArchiveWithoutInvalides);
+
+        //lets add some files that won't be stored because they are considered as not existing
+        filesToArchive.add(new StorageDataFile(
+                Sets.newHashSet(new URL("http", "172.26.47.52", 80, "/conf/staticConfiguration.js")), "eadcc622739d58e8a78170b67c6ff9f3",
+                "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "staticConfiguration.js"));
         filesToArchive.add(new StorageDataFile(Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/invalid_test_file.txt")),
                 "eadcc622739d58e8a78170b67c6ff9f2", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
                 "invalid_test_file.txt"));
@@ -132,6 +134,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
         filesToArchiveMultiplesMode.addAll(filesToArchive);
 
+        // lets add some big files that will be stored in CUT mode
         filesToArchiveMultiplesMode.add(new StorageDataFile(
                 Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/big_file_test_1.txt")), "eadcc622739d58e8a78170b67c6ff9f0",
                 "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip, "big_file_test_1.txt"));
@@ -142,6 +145,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
                 Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/big_file_test_3.txt")), "eadcc622739d58e8a78170b67c6ff9f8",
                 "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip, "big_file_test_3.txt"));
 
+        //lets add some file that will be stored in NORMAL mode
         filesToArchiveMultiplesMode
                 .add(new StorageDataFile(Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/normal_file_test_1.txt")),
                         "eadcc622739d58e8a78170b67c6ff9f9", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN,
@@ -199,10 +203,10 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
             plugin.store(subset, false, pm);
             // 3 files should have been stored in CUT MODE
             // 2 files should have been stored in NORMAL MODE
-            // 6 files should have been stored in TAR MODE.
-            // 2 files should not been stored. files does not exists
-            Mockito.verify(pm, Mockito.times(2)).storageFailed(Mockito.any(), Mockito.any());
-            Mockito.verify(pm, Mockito.times(11)).storageSucceed(Mockito.any(), Mockito.any(), Mockito.any());
+            // 5 files should have been stored in TAR MODE.
+            // 3 files should not been stored. files does not exists
+            Mockito.verify(pm, Mockito.times(3)).storageFailed(Mockito.any(), Mockito.any());
+            Mockito.verify(pm, Mockito.times(10)).storageSucceed(Mockito.any(), Mockito.any(), Mockito.any());
         });
 
     }

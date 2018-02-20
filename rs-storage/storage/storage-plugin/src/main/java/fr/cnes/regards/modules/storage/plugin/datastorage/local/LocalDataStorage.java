@@ -151,12 +151,12 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
         try {
             URL sourceUrl = StorageDataFileUtils.getAccessibleUrl(data);
             if(sourceUrl == null) {
-                StringJoiner stringifierUrls = new StringJoiner(",");
-                data.getUrls().forEach(url -> stringifierUrls.add(url.toExternalForm()));
+                StringJoiner stringedUrls = new StringJoiner(",");
+                data.getUrls().forEach(url -> stringedUrls.add(url.toExternalForm()));
                 String errorMsg = String.format(
                         "Error trying to retrieve file(checksum: %s). We could not find any accessible url(Actual urls: %s)",
                         data.getChecksum(),
-                        stringifierUrls.toString());
+                        stringedUrls.toString());
                 LOG.error(errorMsg);
                 progressManager.storageFailed(data, errorMsg);
                 return;
