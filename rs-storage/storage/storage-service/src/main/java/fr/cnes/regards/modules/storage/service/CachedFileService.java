@@ -487,7 +487,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         // Initialize all files in cache
         for (StorageDataFile dataFileToRestore : dataFilesToRestore) {
             Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum(dataFileToRestore.getChecksum());
-            // If cached file already exists do not storeAndCreate a new one.
+            // If cached file already exists do not store a new one.
             if (!ocf.isPresent()) {
                 CachedFileState fileState = CachedFileState.QUEUED;
                 if (restorableFiles.contains(dataFileToRestore)) {

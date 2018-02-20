@@ -11,7 +11,7 @@ public enum CachedFileState {
     QUEUED,
 
     /**
-     * File is restoring
+     * File is being restored
      */
     RESTORING,
 
