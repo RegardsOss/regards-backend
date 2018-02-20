@@ -82,7 +82,13 @@ public class Cryosat2Doris10PluginTest extends AbstractProductMetadataPluginTest
     }
 
     @Override
+    public void createMetadataPlugin_solo() {
+        super.createMetadataPlugin_solo();
+    }
+
+    @Override
     public void initTestSoloList() {
+        addPluginTestDef("DA_TC_CRYOSAT2_DORIS10_FLAG", "cryosat2/dor10_invalides");
     }
 
     @Override
