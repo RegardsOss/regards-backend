@@ -18,13 +18,9 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.autoconfigure;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-
-import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
  *
@@ -33,15 +29,7 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryP
  */
 @Configuration
 @ConditionalOnProperty(prefix = "regards.acquisition.ssalto", name = "enabled", matchIfMissing = true)
-@EnableConfigurationProperties({ PluginsRepositoryProperties.class })
 @EnableTransactionManagement
 public class AcquisitionPluginSsaltoAutoConfigure {
-
-    /**
-     * Plugin Ssalto repository configuration
-     */
-    @SuppressWarnings("unused")
-    @Autowired
-    private PluginsRepositoryProperties pluginsRepositoryProperties;
 
 }

@@ -26,7 +26,8 @@ import java.util.TreeMap;
 import fr.cnes.regards.modules.acquisition.finder.AbstractAttributeFinder;
 
 /**
- * Class to load the <b>pluginConfiguration.properties</b> file
+ * This class is used to load the DataSet plugin configuration and <br>
+ * to pass the parameters of the ProductMetaPlugin.<br>
  * 
  * @author Christophe Mertz
  *

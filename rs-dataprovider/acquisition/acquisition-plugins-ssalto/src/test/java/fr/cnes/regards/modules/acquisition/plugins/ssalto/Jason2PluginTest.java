@@ -156,6 +156,8 @@ public class Jason2PluginTest extends AbstractProductMetadataPluginTest {
     @Override
     public void initTestSoloList() {
         addPluginTestDef("DA_TC_JASON2_IGDR", "JASON2/IGDR", "JA2_IPN_2PcP016_166_20081214_053324_20081214_062937");
+        addPluginTestDef("DA_TC_JASON2_CORPFALTI_POE", "JASON2/CORPFALTI_POE",
+                         "JA2_VPF_AXVCNE20081205_095500_20080711_215527_20080713_002327");
     }
 
     @Override

@@ -18,10 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
  * Metadata caculation's plugin for Jason2 products.
@@ -37,17 +34,6 @@ public class Jason2ProductMetadataPlugin extends AbstractProductMetadataPlugin {
      * JASON2 project name
      */
     private static final String PROJECT_NAME = "JASON2";
-
-    /**
-     * Plugin Ssalto repository configuration
-     */
-    @Autowired
-    private PluginsRepositoryProperties pluginsRepositoryProperties;
-
-    @Override
-    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
-        return pluginsRepositoryProperties;
-    }
 
     @Override
     protected String getProjectName() {

@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -38,7 +37,6 @@ import fr.cnes.regards.modules.acquisition.domain.model.AttributeFactory;
 import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
-import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.LoadTranslationProperties;
 import fr.cnes.regards.modules.acquisition.tools.NetCdfFileHelper;
 
@@ -69,20 +67,9 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
     private static final String PRODUCT_OPTION = "PRODUCT_OPTION";
 
     /**
-     * The OGDR tranlation properties file : OGDRTranslationFile.properties
+     * The OGDR translation properties file : OGDRTranslationFile.properties
      */
     private static final String TRANSACTION_FILE = "/OGDRTranslationFile.properties";
-
-    /**
-     * Plugin Ssalto repository configuration
-     */
-    @Autowired
-    private PluginsRepositoryProperties pluginsRepositoryProperties;
-
-    @Override
-    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
-        return pluginsRepositoryProperties;
-    }
 
     @Override
     protected void doCreateDependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)

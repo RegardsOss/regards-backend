@@ -18,10 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
  * Metadata caculation's plugin for SPOT5 products.
@@ -38,17 +35,6 @@ public class Spot5ProductMetadataPlugin extends AbstractProductMetadataPlugin {
      * SPOT5 project name
      */
     private static final String PROJECT_NAME = "SPOT5";
-
-    /**
-     * Plugin Ssalto repository configuration
-     */
-    @Autowired
-    private PluginsRepositoryProperties pluginsRepositoryProperties;
-
-    @Override
-    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
-        return pluginsRepositoryProperties;
-    }
 
     protected String getProjectName() {
         return PROJECT_NAME;

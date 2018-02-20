@@ -64,7 +64,6 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
-import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
@@ -86,12 +85,6 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         implements IProductMetadataPluginTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProductMetadataPluginTest.class);
-
-    /**
-     * Plugin Ssalto repository configuration
-     */
-    @Autowired
-    private PluginsRepositoryProperties pluginsRepositoryProperties;
 
     @Autowired
     IPluginService pluginService;
@@ -232,7 +225,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     }
 
     /**
-     * Teste l'existence des donnees a tester
+     * Controle l'existence des donnees a tester
      */
     protected void existResources() {
         boolean isFail = false;
@@ -251,8 +244,8 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
             }
 
             // Test if the dataset plugin configuration file exists
-            String pluginsConfDir = pluginsRepositoryProperties.getPluginConfFilesPath();
-            File pluginConfFile = new File(pluginsConfDir, pluginTestDef.getDataSetName() + CONFIG_FILE_SUFFIX);
+            File pluginConfFile = new File("plugins/configurations",
+                    pluginTestDef.getDataSetName() + CONFIG_FILE_SUFFIX);
 
             try (InputStream stream = getClass().getClassLoader().getResourceAsStream(pluginConfFile.getPath())) {
                 // Try to read the InputStream

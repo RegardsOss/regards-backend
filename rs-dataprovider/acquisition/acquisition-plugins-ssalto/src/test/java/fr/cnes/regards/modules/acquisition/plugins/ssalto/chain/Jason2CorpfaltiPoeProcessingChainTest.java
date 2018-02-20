@@ -18,21 +18,15 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.chain;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -42,7 +36,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.Spot2ProductMetadataPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.Jason2ProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.RegexDiskScanning;
@@ -54,40 +48,21 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
  * @author Marc Sordi
  *
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=spot2doris1b",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=jason2corpfaltipoe",
         "jwt.secret=123456789", "regards.workspace=target/workspace" })
-public class Spot2Doris1bProcessingChainTest extends AbstractAcquisitionChainTest {
-
-    @Autowired
-    private IJobService jobService;
-
-    @Override
-    public void startChain() throws ModuleException, InterruptedException {
-        super.startChain();
-    }
-
-    @Ignore
-    @Test
-    public void stopChain() throws ModuleException {
-        // Enable listener
-        jobService.onApplicationEvent(null);
-
-        Long id = 1L;
-        processingService.startManualChain(id);
-        AcquisitionProcessingChain processingChain = processingService.stopAndCleanChain(id);
-        assertNotNull(processingChain);
-    }
+public class Jason2CorpfaltiPoeProcessingChainTest extends AbstractAcquisitionChainTest {
 
     @Override
     protected AcquisitionProcessingChain createAcquisitionChain() throws ModuleException {
+
         // Create a processing chain
         AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
-        processingChain.setLabel("SPOT2_DORIS1B");
+        processingChain.setLabel("JASON2_CORPFALTI_POE");
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
 
-        Dataset dataSet = getDataset("DA_TC_SPOT2_DORIS1B_MOE_CDDIS");
+        Dataset dataSet = getDataset("DA_TC_JASON2_CORPFALTI_POE");
         processingChain.setDatasetIpId(dataSet.getIpId().toString());
 
         // Create an acquisition file info
@@ -101,8 +76,10 @@ public class Spot2Doris1bProcessingChainTest extends AbstractAcquisitionChainTes
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(RegexDiskScanning.FIELD_DIRS,
-                              Arrays.asList("src/test/resources/income/data" + "/spot2/doris1b_moe_cddis"))
-                .addParameter(RegexDiskScanning.FIELD_REGEX, "DORDATA_[0-9]{6}.SP2").getParameters();
+                              Arrays.asList("src/test/resources/income/data" + "/JASON2/CORPFALTI_POE"))
+                .addParameter(RegexDiskScanning.FIELD_REGEX,
+                              "(JA2_VPF_AXVCNE)([0-9]{8}_[0-9]{6})(_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6}))")
+                .getParameters();
 
         // Plugin and plugin interface packages
         List<String> prefixes = Arrays.asList(IScanPlugin.class.getPackage().getName(),
@@ -124,7 +101,7 @@ public class Spot2Doris1bProcessingChainTest extends AbstractAcquisitionChainTes
 
         // Product
         List<PluginParameter> productParameters = PluginParametersFactory.build()
-                .addParameter(DefaultProductPlugin.FIELD_PREFIX, "MOE_CDDIS_").getParameters();
+                .addParameter(DefaultProductPlugin.FIELD_REMOVE_EXT, Boolean.TRUE).getParameters();
         PluginConfiguration productPlugin = PluginUtils
                 .getPluginConfiguration(productParameters, DefaultProductPlugin.class, Lists.newArrayList());
         productPlugin.setIsActive(true);
@@ -132,8 +109,15 @@ public class Spot2Doris1bProcessingChainTest extends AbstractAcquisitionChainTes
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), Spot2ProductMetadataPlugin.class, Lists.newArrayList());
+        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(
+                                                                              PluginParametersFactory.build()
+                                                                                      .addParameter(Jason2ProductMetadataPlugin.ORF_FILE_PATH_PARAM,
+                                                                                                    "src/test/resources/income/data/JASON2/ORF_HISTORIQUE/JA2_ORF_AXXCNE*")
+                                                                                      .addParameter(Jason2ProductMetadataPlugin.CYCLES_FILE_PATH_PARAM,
+                                                                                                    "src/test/resources/income/data/JASON2/CYCLES/JASON2_CYCLES")
+                                                                                      .getParameters(),
+                                                                              Jason2ProductMetadataPlugin.class,
+                                                                              Lists.newArrayList());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin");
         processingChain.setGenerateSipPluginConf(sipGenPlugin);
@@ -153,4 +137,5 @@ public class Spot2Doris1bProcessingChainTest extends AbstractAcquisitionChainTes
     protected int getExpectedProducts() {
         return 1;
     }
+
 }

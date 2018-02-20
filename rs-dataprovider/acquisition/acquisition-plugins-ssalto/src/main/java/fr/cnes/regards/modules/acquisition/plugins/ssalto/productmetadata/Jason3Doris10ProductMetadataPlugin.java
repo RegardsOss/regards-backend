@@ -18,10 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
  * Metadata caculation's plugin for Jason3 using Doris1B instrument.
@@ -38,17 +35,6 @@ public class Jason3Doris10ProductMetadataPlugin extends AbstractJasonDoris10Prod
      * JASON3 project name
      */
     private static final String PROJECT_NAME = "JASON3";
-
-    /**
-     * Plugin Ssalto repository configuration
-     */
-    @Autowired
-    private PluginsRepositoryProperties pluginsRepositoryProperties;
-
-    @Override
-    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
-        return pluginsRepositoryProperties;
-    }
 
     @Override
     protected String getProjectName() {

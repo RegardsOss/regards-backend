@@ -18,11 +18,14 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.chain;
 
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -42,6 +45,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
@@ -58,6 +62,8 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  */
 @ContextConfiguration(classes = { AbstractAcquisitionChainTest.AcquisitionConfiguration.class })
 public abstract class AbstractAcquisitionChainTest extends AbstractDaoTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAcquisitionChainTest.class);
 
     @Autowired
     protected IAcquisitionProcessingService processingService;
