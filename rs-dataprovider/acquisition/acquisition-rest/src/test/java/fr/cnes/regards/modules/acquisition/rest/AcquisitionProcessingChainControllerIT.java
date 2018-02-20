@@ -156,6 +156,28 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         loadedChain = processingService.getChain(chainId.longValue());
         Assert.assertEquals(label, loadedChain.getFileInfos().get(0).getScanPlugin().getLabel());
+
+        // Delete active chain
+        customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isForbidden());
+        performDefaultDelete(AcquisitionProcessingChainController.TYPE_PATH
+                + AcquisitionProcessingChainController.CHAIN_PATH, customizer, "Chain should be removed",
+                             chainId.longValue());
+
+        // Change to inactive
+        customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        loadedChain.setActive(Boolean.FALSE);
+        performDefaultPut(AcquisitionProcessingChainController.TYPE_PATH
+                + AcquisitionProcessingChainController.CHAIN_PATH, loadedChain, customizer, "Chain should be updated",
+                          loadedChain.getId());
+
+        // Delete inactive chain
+        customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
+        performDefaultDelete(AcquisitionProcessingChainController.TYPE_PATH
+                + AcquisitionProcessingChainController.CHAIN_PATH, customizer, "Chain should be removed",
+                             chainId.longValue());
     }
 
     @Test

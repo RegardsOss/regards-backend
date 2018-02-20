@@ -61,6 +61,8 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     Set<Product> findByProcessingChainAndSipStateAndStateIn(AcquisitionProcessingChain processingChain,
             ProductSIPState sipState, List<ProductState> productStates);
 
+    Set<Product> findByProcessingChain(AcquisitionProcessingChain processingChain);
+
     /**
      * Find {@link ProductState#COMPLETED} or{@link ProductState#FINISHED} products not already scheduled for SIP
      * generation and for the specified acquisition chain.

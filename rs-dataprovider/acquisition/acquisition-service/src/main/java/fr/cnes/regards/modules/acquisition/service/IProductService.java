@@ -84,6 +84,12 @@ public interface IProductService {
     Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain chain);
 
     /**
+     * @return list of all products related to specified
+     *         acquisition chain.
+     */
+    Set<Product> findChainProducts(AcquisitionProcessingChain chain);
+
+    /**
      * Schedule {@link Product} SIP generation
      * @param product product for which SIP generation has to be scheduled
      * @param chain related chain reference

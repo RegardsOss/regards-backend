@@ -143,6 +143,11 @@ public class ProductService implements IProductService {
         return productRepository.findChainProductsToSchedule(chain);
     }
 
+    @Override
+    public Set<Product> findChainProducts(AcquisitionProcessingChain chain) {
+        return productRepository.findByProcessingChain(chain);
+    }
+
     /**
      * Schedule a {@link SIPGenerationJob} and update product SIP state in same transaction.
      */

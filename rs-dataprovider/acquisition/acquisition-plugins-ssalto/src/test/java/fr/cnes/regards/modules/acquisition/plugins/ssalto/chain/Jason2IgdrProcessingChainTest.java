@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.chain;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Ignore;
+import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
@@ -119,6 +121,15 @@ public class Jason2IgdrProcessingChainTest extends AbstractAcquisitionChainTest 
         // Not required
 
         return processingChain;
+    }
+
+    @Ignore
+    @Test
+    public void removeProcessingChain() throws ModuleException {
+        AcquisitionProcessingChain processingChain = processingService.getChain(1L);
+        processingChain.setActive(Boolean.FALSE);
+        processingService.updateChain(processingChain);
+        processingService.deleteChain(processingChain.getId());
     }
 
     @Override

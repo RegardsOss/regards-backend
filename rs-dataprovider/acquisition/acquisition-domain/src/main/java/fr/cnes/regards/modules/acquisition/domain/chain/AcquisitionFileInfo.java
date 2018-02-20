@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.domain.chain;
 
 import java.time.OffsetDateTime;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -65,7 +66,7 @@ public class AcquisitionFileInfo {
     private Boolean mandatory = Boolean.FALSE;
 
     @NotNull(message = "Scan plugin is required")
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "scan_conf_id", nullable = false, foreignKey = @ForeignKey(name = "fk_scan_conf_id"))
     private PluginConfiguration scanPlugin;
 

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -130,7 +131,7 @@ public class Product {
     /**
      * {@link List} of file include in the {@link Product}
      */
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
     private final List<AcquisitionFile> fileList = new ArrayList<>();
 

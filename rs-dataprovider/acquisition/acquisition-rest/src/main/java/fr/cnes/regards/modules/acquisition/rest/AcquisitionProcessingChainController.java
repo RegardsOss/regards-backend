@@ -150,6 +150,13 @@ public class AcquisitionProcessingChainController implements IResourceController
         return ResponseEntity.ok(toResource(processingService.updateChain(processingChain)));
     }
 
+    @RequestMapping(method = RequestMethod.DELETE, value = CHAIN_PATH)
+    @ResourceAccess(description = "Delete a chain", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Void> delete(@PathVariable Long chainId) throws ModuleException {
+        processingService.deleteChain(chainId);
+        return ResponseEntity.noContent().build();
+    }
+
     @RequestMapping(method = RequestMethod.GET, value = START_MANUAL_CHAIN_PATH)
     @ResourceAccess(description = "Start a manual chain", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<AcquisitionProcessingChain>> startManualChain(@PathVariable Long chainId)
@@ -175,8 +182,13 @@ public class AcquisitionProcessingChainController implements IResourceController
         resourceService.addLink(resource, this.getClass(), "update", LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, element.getId()),
                                 MethodParamFactory.build(AcquisitionProcessingChain.class));
-        if (AcquisitionProcessingChainMode.MANUAL.equals(element.getMode()) && !element.isLocked()) {
+        if (AcquisitionProcessingChainMode.MANUAL.equals(element.getMode()) && !element.isLocked()
+                && element.isActive()) {
             resourceService.addLink(resource, this.getClass(), "startManualChain", "start",
+                                    MethodParamFactory.build(Long.class, element.getId()));
+        }
+        if (!element.isActive()) {
+            resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
                                     MethodParamFactory.build(Long.class, element.getId()));
         }
         resourceService.addLink(resource, this.getClass(), "stopChain", "stop",

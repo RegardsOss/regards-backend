@@ -68,6 +68,13 @@ public interface IAcquisitionProcessingService {
     AcquisitionProcessingChain updateChain(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
+     * Delete an inactive processing chain according to its identifier
+     * @param id {@link AcquisitionProcessingChain} identifier
+     * @throws ModuleException if error occurs.
+     */
+    void deleteChain(Long id) throws ModuleException;
+
+    /**
      * Lock processing chain
      * @param id {@link AcquisitionProcessingChain} identifier
      * @throws ModuleException if error occurs!

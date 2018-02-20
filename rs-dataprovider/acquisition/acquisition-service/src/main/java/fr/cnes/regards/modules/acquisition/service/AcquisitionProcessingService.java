@@ -48,6 +48,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -62,6 +63,7 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
@@ -317,6 +319,44 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
+    public void deleteChain(Long id) throws ModuleException {
+        AcquisitionProcessingChain processingChain = getChain(id);
+
+        if (processingChain.isActive()) {
+            throw new EntityOperationForbiddenException(
+                    String.format("Acquisition processing chain \"%s\" must be disabled to be deleted",
+                                  processingChain.getLabel()));
+        }
+
+        // Delete products cascading to related acquisition files
+        for (Product product : productService.findChainProducts(processingChain)) {
+            // Unlock jobs
+            if (product.getLastPostProductionJobInfo() != null) {
+                jobInfoService.unlock(product.getLastPostProductionJobInfo());
+            }
+            if (product.getLastSIPGenerationJobInfo() != null) {
+                jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
+            }
+            if (product.getLastSIPSubmissionJobInfo() != null) {
+                jobInfoService.unlock(product.getLastSIPSubmissionJobInfo());
+            }
+
+            productService.delete(product);
+        }
+
+        // Delete acquisition file infos and its plugin configurations
+        for (AcquisitionFileInfo afi : processingChain.getFileInfos()) {
+            fileInfoRepository.delete(afi);
+        }
+
+        // Delete acquisition processing chain and its plugin configurations
+        if (processingChain.getLastProductAcquisitionJobInfo() != null) {
+            jobInfoService.unlock(processingChain.getLastProductAcquisitionJobInfo());
+        }
+        acqChainRepository.delete(processingChain);
+    }
+
+    @Override
     public void lockChain(Long id) {
         acqChainRepository.setLocked(Boolean.TRUE, id);
     }
@@ -564,7 +604,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 if (validationPlugin.validate(inProgressFile.getFilePath())) {
                     inProgressFile.setState(AcquisitionFileState.VALID);
                 } else {
-                    // FIXME move invalid files?
+                    // FIXME move invalid files? Might be delegated to validation plugin!
                     inProgressFile.setState(AcquisitionFileState.INVALID);
                 }
                 acqFileRepository.save(inProgressFile);

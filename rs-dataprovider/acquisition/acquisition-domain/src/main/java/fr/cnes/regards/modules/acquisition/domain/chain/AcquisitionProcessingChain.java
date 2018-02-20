@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -146,7 +147,7 @@ public class AcquisitionProcessingChain {
      * An optional {@link PluginConfiguration} of a {@link IValidationPlugin}
      */
     @NotNull(message = "Validation plugin configuration is required")
-    @ManyToOne
+    @ManyToOne(optional = false, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "validation_conf_id", foreignKey = @ForeignKey(name = "fk_validation_conf_id"))
     private PluginConfiguration validationPluginConf;
 
@@ -154,7 +155,7 @@ public class AcquisitionProcessingChain {
      * A {@link PluginConfiguration} of a {@link IProductPlugin}
      */
     @NotNull(message = "Product plugin configuration is required")
-    @ManyToOne
+    @ManyToOne(optional = false, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "product_conf_id", foreignKey = @ForeignKey(name = "fk_product_conf_id"))
     private PluginConfiguration productPluginConf;
 
@@ -162,14 +163,14 @@ public class AcquisitionProcessingChain {
      * A {@link PluginConfiguration} of a {@link ISipGenerationPlugin}
      */
     @NotNull(message = "SIP generation plugin configuration is required")
-    @ManyToOne
+    @ManyToOne(optional = false, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "generatesip_conf_id", foreignKey = @ForeignKey(name = "fk_generatesip_conf_id"))
     private PluginConfiguration generateSipPluginConf;
 
     /**
      * A {@link PluginConfiguration} of a {@link ISipPostProcessingPlugin}
      */
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "postprocesssip_conf_id", foreignKey = @ForeignKey(name = "fk_postprocesssip_conf_id"))
     private PluginConfiguration postProcessSipPluginConf;
 
