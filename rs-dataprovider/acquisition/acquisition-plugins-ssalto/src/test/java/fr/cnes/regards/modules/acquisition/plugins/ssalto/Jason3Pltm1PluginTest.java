@@ -23,11 +23,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.google.common.base.Optional;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.Jason3Pltm1ProductMetadataPlugin;
 
 /**
  *
@@ -53,7 +57,13 @@ public class Jason3Pltm1PluginTest extends Jason3PluginTest {
 
     @Override
     public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
-        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Jason3Pltm1ProductMetadataPlugin");
+        PluginConfiguration pluginConfiguration = this
+                .getPluginConfiguration("Jason3Pltm1ProductMetadataPlugin", Optional.of(PluginParametersFactory.build()
+                        .addParameter(Jason3Pltm1ProductMetadataPlugin.ORF_FILE_PATH_PARAM,
+                                      "src/test/resources/income/data/JASON3/ORF_HISTORIQUE/JA3_ORF_AXXCNE*")
+                        .addParameter(Jason3Pltm1ProductMetadataPlugin.CYCLES_FILE_PATH_PARAM,
+                                      "src/test/resources/income/data/JASON3/CYCLES/JASON3_CYCLES")
+                        .getParameters()));
 
         return pluginService.getPlugin(pluginConfiguration.getId());
     }

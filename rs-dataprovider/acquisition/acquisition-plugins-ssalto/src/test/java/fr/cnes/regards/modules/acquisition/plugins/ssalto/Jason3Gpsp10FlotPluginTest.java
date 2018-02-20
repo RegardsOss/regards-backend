@@ -23,11 +23,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Optional;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.Jason3Gpsp10FlotProductMetadataPlugin;
 
 /**
  *
@@ -52,7 +56,14 @@ public class Jason3Gpsp10FlotPluginTest extends AbstractProductMetadataPluginTes
 
     @Override
     public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
-        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Jason3Gpsp10FlotProductMetadataPlugin");
+        PluginConfiguration pluginConfiguration = this
+                .getPluginConfiguration("Jason3Gpsp10FlotProductMetadataPlugin",
+                                        Optional.of(PluginParametersFactory.build()
+                                                .addParameter(Jason3Gpsp10FlotProductMetadataPlugin.CYCLES_FILE_PATH_PARAM,
+                                                              "src/test/resources/income/data/JASON3/CYCLES/JASON3_CYCLES")
+                                                .addParameter(Jason3Gpsp10FlotProductMetadataPlugin.ORF_FILE_PATH_PARAM,
+                                                              "src/test/resources/income/data/JASON3/ORF_HISTORIQUE/JA3_ORF_AXXCNE*")
+                                                .getParameters()));
 
         return pluginService.getPlugin(pluginConfiguration.getId());
     }

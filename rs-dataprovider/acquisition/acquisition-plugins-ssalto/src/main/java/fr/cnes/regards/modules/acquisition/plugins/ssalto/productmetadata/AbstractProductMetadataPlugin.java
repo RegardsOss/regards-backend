@@ -49,6 +49,7 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -58,7 +59,6 @@ import fr.cnes.regards.modules.acquisition.domain.model.CompositeAttribute;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.AbstractAttributeFinder;
 import fr.cnes.regards.modules.acquisition.plugins.properties.PluginConfigurationProperties;
-import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.acquisition.service.plugins.AbstractGenerateSIPPlugin;
 import fr.cnes.regards.modules.entities.domain.geometry.Geometry;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
@@ -88,7 +88,9 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     /**
      * Path the
      */
-    private static final String DEFAULT_CONF_PATH = "ssalto/domain/plugins/impl/tools";
+    private static final String BASE_PLUGINS_PATH = "plugins";
+
+    private static final String CONF_PLUGINS_PATH = BASE_PLUGINS_PATH + "/configurations";
 
     /**
      * Attribute GEO_COORDINATES
@@ -186,17 +188,40 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      */
     protected PluginConfigurationProperties pluginConfProperties;
 
+    public static final String CYCLES_FILE_PATH_PARAM = "cyclesPath";
+
+    public static final String ARC_FILE_PATH_PARAM = "arcPath";
+
+    public static final String ORF_FILE_PATH_PARAM = "orfFilePathPattern";
+
+    @PluginParameter(name = CYCLES_FILE_PATH_PARAM, keylabel = "Cycles file path", label = "Cycles file path",
+            optional = false)
+    protected String cyclePath;
+
+    @PluginParameter(name = ORF_FILE_PATH_PARAM, keylabel = "ORF file path patterns", label = "ORF file path patterns",
+            optional = false)
+    protected String orfFilePathPattern;
+
+    @PluginParameter(name = ARC_FILE_PATH_PARAM, keylabel = "Arc file path", label = "Arc file path", optional = false)
+    protected String arcPath;
+
+    protected String getCycleFilePath() {
+        return cyclePath;
+    }
+
+    protected String getArcFilePath() {
+        return arcPath;
+    }
+
+    protected String getOrfFilePathPatterns() {
+        return orfFilePathPattern;
+    }
+
     /**
      * Get the project name
      * @return the project name
      */
     protected abstract String getProjectName();
-
-    /**
-     * Get the plugin Ssalto repository configuration
-     * @return the plugin Ssalto repository {@link PluginsRepositoryProperties}
-     */
-    protected abstract PluginsRepositoryProperties getPluginsRepositoryProperties();
 
     @Override
     public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles, String datasetName)
@@ -253,7 +278,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      */
     protected void loadDataSetConfiguration(String dataSetName) throws ModuleException {
         // file access to pluginFinderDigesterRules.xml
-        File digesterRuleFile = new File(DEFAULT_CONF_PATH, RULE_FILE);
+        File digesterRuleFile = new File(BASE_PLUGINS_PATH, RULE_FILE);
 
         // Get the path to the digester rules file
         URL ruleUrl = getClass().getClassLoader().getResource(digesterRuleFile.getPath());
@@ -263,11 +288,8 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             throw new ModuleException(msg);
         }
 
-        // Getting conf file from project configured directory
-        String pluginsConfDir = getPluginsRepositoryProperties().getPluginConfFilesPath();
-
         // File access to plugin conf of this dataset
-        File pluginConfFile = new File(pluginsConfDir, dataSetName + CONFIG_FILE_SUFFIX);
+        File pluginConfFile = new File(CONF_PLUGINS_PATH, dataSetName + CONFIG_FILE_SUFFIX);
 
         // The first action is to test if the property file exists
         try (InputStream in = getClass().getClassLoader().getResourceAsStream(pluginConfFile.getPath())) {
@@ -275,7 +297,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             Digester digester = DigesterLoader.createDigester(ruleUrl);
             // Process the input file
             pluginConfProperties = (PluginConfigurationProperties) digester.parse(in);
-            pluginConfProperties.setProject(getProjectName());
         } catch (IOException | SAXException e) {
             String msg = "unable to parse file " + pluginConfFile.getPath() + " using rule file " + RULE_FILE;
             LOGGER.error(msg, e);
@@ -283,7 +304,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
         }
 
         // file access to attributeOrder.properties
-        File attributeOrderFile = new File(DEFAULT_CONF_PATH, ATTRIBUTE_ORDER_PROP_FILE);
+        File attributeOrderFile = new File(BASE_PLUGINS_PATH, ATTRIBUTE_ORDER_PROP_FILE);
         attributeOrderProperties = new Properties();
         try (InputStream stream = getClass().getClassLoader().getResourceAsStream(attributeOrderFile.getPath())) {
             attributeOrderProperties.load(stream);
@@ -292,6 +313,10 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             LOGGER.error(e.getMessage(), e);
             throw new ModuleException(message);
         }
+
+        pluginConfProperties.setArcFilePath(getArcFilePath());
+        pluginConfProperties.setCycleFilePath(getCycleFilePath());
+        pluginConfProperties.setOrfFilePathPattern(getOrfFilePathPatterns());
     }
 
     /**
@@ -311,6 +336,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      */
     protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
+        LOGGER.debug("");
     }
 
     /**
@@ -320,6 +346,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      */
     protected void doCreateDependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
             throws ModuleException {
+        LOGGER.debug("");
     }
 
     protected Properties getAttributeOrderProperties() {

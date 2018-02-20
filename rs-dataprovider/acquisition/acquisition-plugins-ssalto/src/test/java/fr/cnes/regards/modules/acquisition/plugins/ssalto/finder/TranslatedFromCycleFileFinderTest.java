@@ -58,6 +58,8 @@ public class TranslatedFromCycleFileFinderTest {
 
     private static final String JA2_CYCLE_FILEPATH = "src/test/resources/income/data/JASON2/CYCLES/JASON2_CYCLES";
 
+    private static final String JA1_ORF_FILEPATH = "src/test/resources/income/data/JASON/ORF_HISTORIQUE/JA1_ORF_AXXCNE*";
+    
     private static final String JA2_ORF_FILEPATH = "src/test/resources/income/data/JASON2/ORF_HISTORIQUE/JA2_ORF_AXXCN*";
 
     @Test
@@ -1400,16 +1402,15 @@ public class TranslatedFromCycleFileFinderTest {
 
     private PluginConfigurationProperties jason2InitConfProperties() {
         PluginConfigurationProperties_mock mockProperties = new PluginConfigurationProperties_mock();
-        mockProperties.setOrfFilepath(JA2_ORF_FILEPATH);
-        mockProperties.setCycleFileFilepath(JA2_CYCLE_FILEPATH);
-        mockProperties.setProject("JASON2");
+        mockProperties.setOrfFilePathPattern(JA2_ORF_FILEPATH);
+        mockProperties.setCycleFilePath(JA2_CYCLE_FILEPATH);
         return mockProperties;
     }
 
     // DM60 Prise en compte de plusieurs fichiers ORF
     private PluginConfigurationProperties jasonInitConfProperties() {
         PluginConfigurationProperties_mock mockProperties = new PluginConfigurationProperties_mock();
-        mockProperties.setProject("JASON");
+        mockProperties.setOrfFilePathPattern(JA1_ORF_FILEPATH);
         return mockProperties;
     }
 

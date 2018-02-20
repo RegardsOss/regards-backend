@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -41,7 +40,6 @@ import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
 import fr.cnes.regards.modules.acquisition.domain.model.CompositeAttribute;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
-import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 /**
@@ -50,9 +48,9 @@ import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
  * @author Christophe Mertz
  *
  */
-@Plugin(description = "Metadata caculation's plugin for Cryosat2 products using Doris1B instrument", id = "Cryosat2Doris10ProductMetadataPlugin",
-        version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+@Plugin(description = "Metadata caculation's plugin for Cryosat2 products using Doris1B instrument",
+        id = "Cryosat2Doris10ProductMetadataPlugin", version = "1.0.0", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadataPlugin {
 
     /**
@@ -69,21 +67,6 @@ public class Cryosat2Doris10ProductMetadataPlugin extends Cryosat2ProductMetadat
      * A {@link Pattern} for ".*[A-Z]([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})_([0-9]{8}_[0-9]{6})$"
      */
     protected Pattern patternp;
-
-    /**
-     * Plugin Ssalto repository configuration
-     */
-    @Autowired
-    private PluginsRepositoryProperties pluginsRepositoryProperties;
-
-    public Cryosat2Doris10ProductMetadataPlugin() {
-        super();
-    }
-
-    @Override
-    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
-        return pluginsRepositoryProperties;
-    }
 
     /**
      * ajoute l'initialisation du filePattern des fichiers en fonction du filePattern generique

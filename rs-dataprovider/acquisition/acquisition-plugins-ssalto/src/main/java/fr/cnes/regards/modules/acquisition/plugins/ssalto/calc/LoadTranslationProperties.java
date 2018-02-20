@@ -47,17 +47,9 @@ public final class LoadTranslationProperties {
     /**
      * Default path for the translation files
      */
-    private static final String DEFAULT_PATH_PROPERTIES = "income/plugins/translations";
+    private static final String DEFAULT_PATH_TRANSLATIONS = "plugins/translations";
 
-    /**
-     * File repository properties
-     */
-    private static final String FILE_REPO_PROPERTIES = "pluginsRepository.properties";
-
-    /**
-     * Key for the property translation file path 
-     */
-    private static final String KEY_TRANSLATION_DIR = "regards.acquisition.ssalto.plugin-translation-files-path";
+    private static final String DEFAULT_PATH_PLUGIN_CONF_PROPERTIES = "plugins";
 
     /**
      * An instance of {@link LoadTranslationProperties}
@@ -85,25 +77,7 @@ public final class LoadTranslationProperties {
      * @throws PluginAcquisitionException if an error occurs
      */
     public Properties load(String translationPropertiesFilePath) throws PluginAcquisitionException {
-        Properties pluginsRepo = loadPluginsRepository();
-
-        String translationDirectory = (String) pluginsRepo.get(KEY_TRANSLATION_DIR);
-        File translationFile = new File(translationDirectory, translationPropertiesFilePath);
-
-        boolean isReadable = true;
-        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(translationFile.getPath())) {
-            // Try to read the InputStream
-            stream.available();
-        } catch (IOException e) {
-            LOGGER.warn("NOT FOUND " + translationFile.getPath(), e);
-            isReadable = false;
-        }
-
-        if (!isReadable) {
-            // the translation file is not find or not readable
-            LOGGER.warn("Unable to find translaction file {}. Checking in classpath ...", translationFile.getPath());
-            translationFile = new File(DEFAULT_PATH_PROPERTIES + translationPropertiesFilePath);
-        }
+        File translationFile = new File(DEFAULT_PATH_TRANSLATIONS + translationPropertiesFilePath);
 
         Properties translationProperties = new Properties();
         // Load the translation file
@@ -116,22 +90,7 @@ public final class LoadTranslationProperties {
         return translationProperties;
     }
 
-    /**
-     * Load the pluginsRepository.properties file
-     * @return the {@link Properties} loaded
-     * @throws PluginAcquisitionException an error occurs
-     */
-    public Properties loadPluginsRepository() throws PluginAcquisitionException {
-        Properties pluginsRepo = new Properties();
-
-        // Load plugins repository properties
-        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(FILE_REPO_PROPERTIES)) {
-            pluginsRepo.load(stream);
-        } catch (IOException e) {
-            LOGGER.error("unable to read " + FILE_REPO_PROPERTIES, e);
-            throw new PluginAcquisitionException(e.getMessage());
-        }
-
-        return pluginsRepo;
+    public String getCyclesOrfConfPath() {
+        return DEFAULT_PATH_PLUGIN_CONF_PROPERTIES;
     }
 }

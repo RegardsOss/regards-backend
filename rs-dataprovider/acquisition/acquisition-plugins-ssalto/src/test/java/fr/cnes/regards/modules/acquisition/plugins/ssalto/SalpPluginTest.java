@@ -25,11 +25,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.google.common.base.Optional;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.SaralDoris10ProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.SaralProductMetadataPlugin;
 
 @ContextConfiguration(classes = { PluginsSsaltoTestsConfiguration.class })
@@ -54,7 +58,13 @@ public class SalpPluginTest extends AbstractProductMetadataPluginTest {
 
     @Override
     public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
-        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("SaralDoris10ProductMetadataPlugin");
+        PluginConfiguration pluginConfiguration = this
+                .getPluginConfiguration("SaralDoris10ProductMetadataPlugin", Optional.of(PluginParametersFactory.build()
+                        .addParameter(SaralDoris10ProductMetadataPlugin.ORF_FILE_PATH_PARAM,
+                                      "src/test/resources/income/data/SARAL/ORF_HISTORIQUE/SRL_ORF_AXXCNE*")
+                        .addParameter(SaralDoris10ProductMetadataPlugin.CYCLES_FILE_PATH_PARAM,
+                                      "src/test/resources/income/data/SARAL/CYCLES/SARAL_CYCLES")
+                        .getParameters()));
 
         return pluginService.getPlugin(pluginConfiguration.getId());
     }

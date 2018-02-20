@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 
 /**
  * Metadata caculation's plugin for Jason3 Gpsp10_FLOT products.
@@ -39,19 +37,15 @@ public class Jason3Gpsp10FlotProductMetadataPlugin extends AbstractJasonGpsp10Fl
      */
     private static final String PROJECT_NAME = "JASON3";
 
-    /**
-     * Plugin Ssalto repository configuration
-     */
-    @Autowired
-    private PluginsRepositoryProperties pluginsRepositoryProperties;
-
-    @Override
-    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
-        return pluginsRepositoryProperties;
-    }
-
     @Override
     protected String getProjectName() {
         return PROJECT_NAME;
     }
+
+    @PluginInit
+    private void init() {
+        System.out.println("coucou init du plugin");
+        // TODO CMZ tester que cyclePath existe et est accessible 
+    }
+
 }

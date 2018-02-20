@@ -48,9 +48,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.google.common.base.Optional;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -61,7 +64,6 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
-import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DataObjectDescriptionElement;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorException;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.descriptor.DescriptorFile;
@@ -83,12 +85,6 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         implements IProductMetadataPluginTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProductMetadataPluginTest.class);
-
-    /**
-     * Plugin Ssalto repository configuration
-     */
-    @Autowired
-    private PluginsRepositoryProperties pluginsRepositoryProperties;
 
     @Autowired
     IPluginService pluginService;
@@ -229,7 +225,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     }
 
     /**
-     * Teste l'existence des donnees a tester
+     * Controle l'existence des donnees a tester
      */
     protected void existResources() {
         boolean isFail = false;
@@ -248,8 +244,8 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
             }
 
             // Test if the dataset plugin configuration file exists
-            String pluginsConfDir = pluginsRepositoryProperties.getPluginConfFilesPath();
-            File pluginConfFile = new File(pluginsConfDir, pluginTestDef.getDataSetName() + CONFIG_FILE_SUFFIX);
+            File pluginConfFile = new File("plugins/configurations",
+                    pluginTestDef.getDataSetName() + CONFIG_FILE_SUFFIX);
 
             try (InputStream stream = getClass().getClassLoader().getResourceAsStream(pluginConfFile.getPath())) {
                 // Try to read the InputStream
@@ -563,7 +559,8 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      *
      * @throws ModuleException if an error occurs
      */
-    protected PluginConfiguration getPluginConfiguration(String pluginId) throws ModuleException {
+    protected PluginConfiguration getPluginConfiguration(String pluginId, Optional<List<PluginParameter>> parameters)
+            throws ModuleException {
 
         // Test if a configuration exists for this pluginId
         List<PluginConfiguration> pluginConfigurations = pluginService
@@ -582,8 +579,11 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
         PluginConfiguration pluginConfiguration = new PluginConfiguration(metaDatas.get(0),
                 "Automatic plugin configuration for plugin id : " + pluginId);
         pluginConfiguration.setPluginId(pluginId);
-        return pluginService.savePluginConfiguration(pluginConfiguration);
+        if (parameters.isPresent()) {
+            pluginConfiguration.setParameters(parameters.get());
+        }
 
+        return pluginService.savePluginConfiguration(pluginConfiguration);
     }
 
     /**

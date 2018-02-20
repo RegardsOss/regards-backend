@@ -106,7 +106,7 @@ public class TranslatedAttributeFromArcFile extends FileNameFinder {
         Pattern arcPattern = Pattern.compile(pattern);
 
         // Search for line in ARC reference file
-        String arcFilePath = confProperties.getArcPath();
+        String arcFilePath = confProperties.getArcFilePath();
         String julianDay = null;
         String secondInDay = null;
         CharSequence charSeq;

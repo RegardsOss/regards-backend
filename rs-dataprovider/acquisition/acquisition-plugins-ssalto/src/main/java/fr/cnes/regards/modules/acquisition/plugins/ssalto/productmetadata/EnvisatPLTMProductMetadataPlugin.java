@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
@@ -37,7 +36,6 @@ import fr.cnes.regards.modules.acquisition.domain.model.CompositeAttribute;
 import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 import fr.cnes.regards.modules.acquisition.finder.AsciiFileFinder;
-import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryProperties;
 
 /**
  * Metadata caculation's plugin for Envisat PLTM products.
@@ -48,12 +46,6 @@ import fr.cnes.regards.modules.acquisition.plugins.properties.PluginsRepositoryP
         version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlugin {
-
-    /**
-     * Plugin Ssalto repository configuration
-     */
-    @Autowired
-    private PluginsRepositoryProperties pluginsRepositoryProperties;
 
     /*
      * Double value of 10exp-6 
@@ -84,11 +76,6 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
      * {@link List} of maximum latitude value
      */
     private List<Double> latitudeMax = null;
-
-    @Override
-    protected PluginsRepositoryProperties getPluginsRepositoryProperties() {
-        return pluginsRepositoryProperties;
-    }
 
     /**
      * LONGITUDE_MIN, LONGITUDE_MAX, LATITUDE_MIN, LATITUDE_MAX {@link Attribute}s creation

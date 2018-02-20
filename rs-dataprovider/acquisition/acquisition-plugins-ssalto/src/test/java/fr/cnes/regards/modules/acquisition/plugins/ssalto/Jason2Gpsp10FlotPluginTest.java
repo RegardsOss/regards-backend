@@ -25,11 +25,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.google.common.base.Optional;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
+import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.Jason2Gpsp10FlotProductMetadataPlugin;
 
 /**
  * @author Christophe Mertz
@@ -53,7 +57,14 @@ public class Jason2Gpsp10FlotPluginTest extends AbstractProductMetadataPluginTes
 
     @Override
     public ISIPGenerationPluginWithMetadataToolbox buildPlugin() throws ModuleException {
-        PluginConfiguration pluginConfiguration = this.getPluginConfiguration("Jason2Gpsp10FlotProductMetadataPlugin");
+        PluginConfiguration pluginConfiguration = this
+                .getPluginConfiguration("Jason2Gpsp10FlotProductMetadataPlugin",
+                                        Optional.of(PluginParametersFactory.build()
+                                                .addParameter(Jason2Gpsp10FlotProductMetadataPlugin.ORF_FILE_PATH_PARAM,
+                                                              "src/test/resources/income/data/JASON2/ORF_HISTORIQUE/JA2_ORF_AXXCNE*")
+                                                .addParameter(Jason2Gpsp10FlotProductMetadataPlugin.CYCLES_FILE_PATH_PARAM,
+                                                              "src/test/resources/income/data/JASON2/CYCLES/JASON2_CYCLES")
+                                                .getParameters()));
 
         return pluginService.getPlugin(pluginConfiguration.getId());
     }

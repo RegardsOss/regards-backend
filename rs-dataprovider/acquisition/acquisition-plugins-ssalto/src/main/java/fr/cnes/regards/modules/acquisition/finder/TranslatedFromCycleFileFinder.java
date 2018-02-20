@@ -195,7 +195,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         // le cycle correspondant au start_date et vice versa
         if (valueType.equals(AttributeTypeEnum.TYPE_INTEGER)) {
             // Check if cycle file exists
-            final String cycleFilePath = confProperties.getCycleFileFilepath();
+            final String cycleFilePath = confProperties.getCycleFilePath();
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("cycle file path = {}", cycleFilePath);
@@ -252,7 +252,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         cycleAsString = numberFormat.format(cycleOccurence.intValue());
 
         // recupere le ou les fichiers depuis le disk
-        final String[] getOrfFilePath = confProperties.getOrfFilepath();
+        final String[] getOrfFilePath = confProperties.getOrfFilePathPattern();
         while ((cycleStartDate == null) && (increment <= (getOrfFilePath.length - 1))) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(MSG_ORF_FILE_PATH, getOrfFilePath[increment]);
@@ -305,7 +305,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
 
         // recupere le ou les fichiers depuis le disk
         // DM SIPNG-DM-0060-CN : Prise en compte de x fichiers ORF
-        final String[] getOrfFilePath = confProperties.getOrfFilepath();
+        final String[] getOrfFilePath = confProperties.getOrfFilePathPattern();
         while ((cycleStopDate == null) && (increment <= (getOrfFilePath.length - 1))) {
 
             if (LOGGER.isDebugEnabled()) {
@@ -398,9 +398,9 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
         // recupere le fichier depuis le disk
         CharBuffer fileBuffer = null;
         try {
-            fileBuffer = readFile(confProperties.getCycleFileFilepath());
+            fileBuffer = readFile(confProperties.getCycleFilePath());
         } catch (final IOException e) {
-            throw new PluginAcquisitionException(new File(confProperties.getCycleFileFilepath()).getAbsolutePath(), e);
+            throw new PluginAcquisitionException(new File(confProperties.getCycleFilePath()).getAbsolutePath(), e);
         }
 
         // convertit la date pour la comparaison
@@ -481,7 +481,7 @@ public class TranslatedFromCycleFileFinder extends OtherAttributeValueFinder {
 
         // recupere le fichier depuis le disk
         // DM-0060 : Prise en compte de plusieurs fichiers ORF
-        final String[] getOrfFilePath = confProperties.getOrfFilepath();
+        final String[] getOrfFilePath = confProperties.getOrfFilePathPattern();
 
         while ((!cycleFound) && (increment <= (getOrfFilePath.length - 1))) {
 

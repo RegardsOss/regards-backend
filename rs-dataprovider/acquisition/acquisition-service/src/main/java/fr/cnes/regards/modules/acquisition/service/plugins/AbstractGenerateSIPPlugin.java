@@ -60,7 +60,7 @@ public abstract class AbstractGenerateSIPPlugin implements ISIPGenerationPluginW
         SIPBuilder sipBuilder = new SIPBuilder(product.getProductName());
 
         // Add all AcquisistionFile to the content information
-        addDataObjectsToSip(sipBuilder, product.getAcquisitionFiles());
+        addDataObjectsToSip(sipBuilder, product.getActiveAcquisitionFiles());
 
         // Get the dataset name
         String datasetName = datasetClient.retrieveDataset(product.getProcessingChain().getDatasetIpId()).getBody()
