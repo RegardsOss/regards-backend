@@ -200,20 +200,22 @@ public class ProjectController implements IResourceController<Project> {
     }
 
     @Override
-    public Resource<Project> toResource(final Project pElement, final Object... pExtras) {
+    public Resource<Project> toResource(Project project, Object... extras) {
 
         Resource<Project> resource = null;
-        if ((pElement != null) && (pElement.getName() != null)) {
-            resource = resourceService.toResource(pElement);
+        if ((project != null) && (project.getName() != null)) {
+            resource = resourceService.toResource(project);
             resourceService.addLink(resource, this.getClass(), "retrieveProject", LinkRels.SELF,
-                                    MethodParamFactory.build(String.class, pElement.getName()));
-            resourceService.addLink(resource, this.getClass(), "deleteProject", LinkRels.DELETE,
-                                    MethodParamFactory.build(String.class, pElement.getName()));
-            resourceService.addLink(resource, this.getClass(), "updateProject", LinkRels.UPDATE,
-                                    MethodParamFactory.build(String.class, pElement.getName()),
-                                    MethodParamFactory.build(Project.class, pElement));
+                                    MethodParamFactory.build(String.class, project.getName()));
+            if (!project.isDeleted()) {
+                resourceService.addLink(resource, this.getClass(), "deleteProject", LinkRels.DELETE,
+                                        MethodParamFactory.build(String.class, project.getName()));
+                resourceService.addLink(resource, this.getClass(), "updateProject", LinkRels.UPDATE,
+                                        MethodParamFactory.build(String.class, project.getName()),
+                                        MethodParamFactory.build(Project.class, project));
+            }
             resourceService.addLink(resource, this.getClass(), "createProject", LinkRels.CREATE,
-                                    MethodParamFactory.build(Project.class, pElement));
+                                    MethodParamFactory.build(Project.class, project));
         } else {
             LOG.warn(String.format("Invalid %s entity. Cannot create hateoas resources", this.getClass().getName()));
         }
