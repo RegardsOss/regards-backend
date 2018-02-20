@@ -15,7 +15,7 @@ import fr.cnes.regards.framework.staf.TARController;
 import fr.cnes.regards.framework.staf.exception.STAFException;
 
 /**
- * Abstract class to define standard parameters of a STAF File.
+ * Abstract class to define standard parameters of a STAF File (TAR, CUT, ...).
  *
  * @author Sébastien Binda
  */
