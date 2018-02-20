@@ -42,21 +42,22 @@ public class AcquisitionProcessingChainSpecifications {
     }
 
     /**
-     * Filter on the given attributes (sessionId, owner, ingestDate and state) and return result ordered by descending ingestDate
+     * Filter on the given attributes (sessionId, owner, ingestDate and state) and return result ordered by descending
+     * ingestDate
      * @param label {@link String}
-     * @param running {@link Boolean}
+     * @param locked {@link Boolean}
      * @param mode {@link AcquisitionProcessingChainMode}
      * @return
      */
-    public static Specification<AcquisitionProcessingChain> search(String label, Boolean running,
+    public static Specification<AcquisitionProcessingChain> search(String label, Boolean locked,
             AcquisitionProcessingChainMode mode) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (label != null) {
                 predicates.add(cb.like(root.get("label"), LIKE_CHAR + label + LIKE_CHAR));
             }
-            if (running != null) {
-                predicates.add(cb.equal(root.get("running"), running));
+            if (locked != null) {
+                predicates.add(cb.equal(root.get("locked"), locked));
             }
             if (mode != null) {
                 predicates.add(cb.equal(root.get("mode"), mode));
