@@ -105,8 +105,6 @@ public class SIPGenerationJob extends AbstractJob<Void> {
             // Launch generation plugin
             SIP sip = generateSipPlugin.generate(product);
 
-            // FIXME add dataset tag if exists
-
             // Update product
             product.setSip(sip);
             product.setSipState(ProductSIPState.GENERATED);
