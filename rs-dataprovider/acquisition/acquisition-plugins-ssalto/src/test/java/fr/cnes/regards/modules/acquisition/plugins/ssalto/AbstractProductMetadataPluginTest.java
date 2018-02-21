@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.xerces.dom.DocumentImpl;
@@ -561,51 +562,18 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
     protected PluginConfiguration getPluginConfiguration(String pluginId, Optional<List<PluginParameter>> parameters)
             throws ModuleException {
 
-        // Test if a configuration exists for this pluginId
-        List<PluginConfiguration> pluginConfigurations = pluginService
-                .getPluginConfigurationsByType(ISIPGenerationPluginWithMetadataToolbox.class);
-
-        if (!pluginConfigurations.isEmpty()) {
-            PluginConfiguration plgConf = loadPluginConfiguration(pluginId, pluginConfigurations);
-            if (plgConf != null) {
-                return plgConf;
-            }
-        }
-
         // Get the PluginMetadata
         List<PluginMetaData> metaDatas = pluginService.getPluginsByType(ISIPGenerationPluginWithMetadataToolbox.class);
 
         PluginConfiguration pluginConfiguration = new PluginConfiguration(metaDatas.get(0),
-                "Automatic plugin configuration for plugin id : " + pluginId);
+                "Automatic plugin configuration for plugin id : " + pluginId + " (" + UUID.randomUUID().toString()
+                        + ")");
         pluginConfiguration.setPluginId(pluginId);
         if (parameters.isPresent()) {
             pluginConfiguration.setParameters(parameters.get());
         }
 
         return pluginService.savePluginConfiguration(pluginConfiguration);
-    }
-
-    /**
-     * Return a {@link PluginConfiguration} for a pluginId
-     *
-     * @param pluginId the pluginid to search
-     *
-     * @return the found {@link PluginConfiguration}
-     */
-    private PluginConfiguration loadPluginConfiguration(String pluginId, List<PluginConfiguration> pluginConfs) {
-        PluginConfiguration foundPlgConf = null;
-        boolean exist = false;
-
-        for (PluginConfiguration aPluginConf : pluginConfs) {
-            if (!exist) {
-                exist = aPluginConf.getPluginId().equals(pluginId);
-                if (exist) {
-                    foundPlgConf = aPluginConf;
-                }
-            }
-        }
-
-        return foundPlgConf;
     }
 
     private Map<File, ?> buildMapFile(List<AcquisitionFile> acqFiles) {
@@ -704,7 +672,6 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      *
      * @throws IOException
      */
-    @SuppressWarnings("deprecation")
     private String writeXmlToString(DescriptorFile descFile) throws IOException {
 
         String xmlString = null;
