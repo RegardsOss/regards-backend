@@ -36,6 +36,9 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 /**
  * Base class to realize integration tests using JWT and MockMvc. Should hold all the configurations to be considred by
  * any of its children.
+ * Don't forget to force default tenant with <pre>tenantResolver.forceTenant(DEFAULT_TENANT);</pre> in
+ * <pre>@Before</pre> annotated method for example or into tests methods.
+ * <i>public</i> schema is used.
  *
  * @author svissier
  */
