@@ -192,8 +192,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
 
     public static final String ORF_FILE_PATH_PARAM = "orfFilePathPattern";
 
-    public static final String DATASET_SIP_ID = "datasetSipId";
-
     @PluginParameter(name = CYCLES_FILE_PATH_PARAM, label = "Cycles file path", optional = false)
     protected String cyclePath;
 
@@ -202,10 +200,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
 
     @PluginParameter(name = ARC_FILE_PATH_PARAM, label = "Arc file path", optional = false)
     protected String arcPath;
-
-    @PluginParameter(name = DATASET_SIP_ID, label = "Dataset provider identifier (i.e. SIP ID)",
-            description = "Also used for plugin configuration retrieval")
-    protected String datasetName;
 
     protected String getCycleFilePath() {
         return cyclePath;
