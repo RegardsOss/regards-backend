@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.storage.plugin.datastorage;
+package fr.cnes.regards.modules.storage.domain.database;
 
 /**
  * Type of data storage, nearline or online
