@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.framework.staf;
 
 import java.io.IOException;
@@ -16,6 +19,10 @@ import fr.cnes.regards.framework.staf.exception.STAFException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
+/**
+ * Test class for STAF service.
+ * @author Sébastien Binda
+ */
 public class STAFServiceTest {
 
     private STAFConfiguration configuration;
