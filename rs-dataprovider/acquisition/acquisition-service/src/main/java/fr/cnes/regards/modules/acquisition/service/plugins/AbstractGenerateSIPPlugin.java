@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.oais.builder.PDIBuilder;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -44,6 +45,12 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 public abstract class AbstractGenerateSIPPlugin implements ISIPGenerationPluginWithMetadataToolbox {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGenerateSIPPlugin.class);
+
+    public static final String DATASET_SIP_ID = "datasetSipId";
+
+    @PluginParameter(name = DATASET_SIP_ID, label = "Dataset provider identifier (i.e. SIP ID)",
+            description = "Also used for plugin configuration retrieval")
+    protected String datasetName;
 
     @Override
     public SIP generate(Product product) throws ModuleException {
@@ -63,6 +70,8 @@ public abstract class AbstractGenerateSIPPlugin implements ISIPGenerationPluginW
 
         // Add the SIP to the SIPCollection
         SIP aSip = sipBuilder.build();
+
+        addDatasetTag(aSip, datasetName);
 
         if (LOGGER.isDebugEnabled()) {
             Gson gson = new Gson();
