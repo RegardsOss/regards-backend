@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.junit.After;
@@ -44,6 +45,8 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
+import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
@@ -110,6 +113,9 @@ public class OrderServiceIT {
     @Autowired
     private TemplateService templateService;
 
+    @Autowired
+    private INotificationClient notificationClient;
+
     private static TemplateService staticTemplateService;
 
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
@@ -172,7 +178,7 @@ public class OrderServiceIT {
         dsSelection.setObjectsCount(1);
 
         BasketDatedItemsSelection itemsSelection = new BasketDatedItemsSelection();
-        itemsSelection.setFilesSize(1_000_000l);
+        itemsSelection.setFilesSize(1_000_001l);
         itemsSelection.setFilesCount(1);
         itemsSelection.setObjectsCount(1);
         itemsSelection.setOpenSearchRequest("someone:something");
@@ -254,8 +260,15 @@ public class OrderServiceIT {
     @Test
     @Requirement("REGARDS_DSL_STO_CMD_050")
     @Requirement("REGARDS_DSL_STO_CMD_050")
-    @Ignore
+    @Requirement("REGARDS_DSL_STO_ARC_470")
+    @Requirement("REGARDS_DSL_STO_ARC_490")
     public void testBucketsJobs() throws IOException, InterruptedException {
+        AtomicInteger notifCount = new AtomicInteger(0);
+        Mockito.when(notificationClient.createNotification(Mockito.any(NotificationDTO.class))).then(invocation -> {
+            notifCount.addAndGet(1);
+            return null;
+        });
+
         String user = "tulavu@qui.fr";
         Basket basket = new Basket(user);
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
@@ -289,6 +302,8 @@ public class OrderServiceIT {
         Assert.assertEquals(12 - files.size() - firstAvailables, order.getFilesInErrorCount());
         // But order should be at 100 % ever
         Assert.assertEquals(100, order.getPercentCompleted());
+
+        Assert.assertEquals(1, notifCount.get());
     }
 
     @Test
@@ -321,7 +336,7 @@ public class OrderServiceIT {
     @Test
     @Ignore
     public void testPauseResume()
-            throws IOException, InterruptedException, CannotResumeOrderException, CannotPauseOrderException {
+            throws InterruptedException, CannotResumeOrderException, CannotPauseOrderException {
 
         Basket basket = new Basket("tulavu@qui.fr");
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();

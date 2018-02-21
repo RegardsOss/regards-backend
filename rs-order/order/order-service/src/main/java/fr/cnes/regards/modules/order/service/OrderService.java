@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.order.service;
 
+import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -67,11 +68,15 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.FileState;
@@ -157,6 +162,9 @@ public class OrderService implements IOrderService {
     @Autowired
     private ISubscriber subscriber;
 
+    @Autowired
+    private INotificationClient notificationClient;
+
     @Value("${regards.order.files.bucket.size.Mb:100}")
     private int bucketSizeMb;
 
@@ -175,13 +183,14 @@ public class OrderService implements IOrderService {
     @Autowired
     private IEmailClient emailClient;
 
-    private final long bucketSize = bucketSizeMb * 1024l * 1024l;
+    private Long bucketSize = null;
 
     /**
      * Set of DataTypes to retrieve on DataObjects
      */
     private static final Set<DataType> DATA_TYPES = Stream.of(DataTypeSelection.ALL.getFileTypes())
             .map(DataType::valueOf).collect(Collectors.toSet());
+
 
     @Override
     public Order createOrder(Basket basket, String url) {
@@ -195,6 +204,10 @@ public class OrderService implements IOrderService {
         order = repos.save(order);
         int priority = orderJobService.computePriority(order.getOwner(), authResolver.getRole());
 
+        // Be careful ! bucketSize must be computed AFTER bucketSizeMb is filled by Spring
+        if (bucketSize == null) {
+            bucketSize = bucketSizeMb * 1024l * 1024l;
+        }
         // Dataset selections
         for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
             DatasetTask dsTask = createDatasetTask(dsSel);
@@ -217,6 +230,17 @@ public class OrderService implements IOrderService {
                                 OrderDataFile orderDataFile = new OrderDataFile(file, object.getIpId(), order.getId());
                                 dataFileService.save(orderDataFile);
                                 bucketFiles.add(orderDataFile);
+                                // Send a very useful notification if file is bigger than bucket size
+                                if (orderDataFile.getSize() > bucketSize) {
+                                    FeignSecurityManager.asSystem();
+                                    NotificationDTO notif = new NotificationDTO("File is bigger than sub-order size",
+                                                                                Collections.emptySet(),
+                                                                                Collections.singleton(DefaultRole.PROJECT_ADMIN.name()),
+                                                                                microserviceName, "Order creation",
+                                                                                NotificationType.WARNING);
+                                    notificationClient.createNotification(notif);
+                                    FeignSecurityManager.reset();
+                                }
                             }
                         }
                     }
