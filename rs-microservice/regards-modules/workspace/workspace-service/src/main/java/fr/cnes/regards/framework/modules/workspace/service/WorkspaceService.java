@@ -39,6 +39,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.google.common.io.ByteStreams;
+
 import fr.cnes.regards.framework.modules.workspace.domain.WorkspaceMonitoringInformation;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -71,9 +72,9 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     private IWorkspaceNotifier notifier;
 
     /**
-     * The workspace configured path
+     * The workspace configured path. Default value is only useful for testing purpose.
      */
-    @Value("${regards.workspace}")
+    @Value("${regards.workspace:target/workspace}")
     private String workspacePath;
 
     /**
@@ -149,11 +150,8 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
         long totalSpace = fileStore.getTotalSpace();
         long usableSpace = fileStore.getUsableSpace();
         long usedSpace = totalSpace - usableSpace;
-        return new WorkspaceMonitoringInformation(fileStore.name(),
-                                                  totalSpace,
-                                                  usedSpace,
-                                                  usableSpace,
-                                                  microserviceWorkspace.toString());
+        return new WorkspaceMonitoringInformation(fileStore.name(), totalSpace, usedSpace, usableSpace,
+                microserviceWorkspace.toString());
     }
 
     @Override
@@ -176,18 +174,14 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
                                                workspaceMonitoringInfo.getOccupationRatio().toString(),
                                                workspaceOccupationThreshold.toString());
                 LOG.warn(message);
-                //TODO: set maintenance
-                notifier.sendErrorNotification(springApplicationName,
-                                               message,
-                                               "Workspace too busy",
+                // TODO: set maintenance
+                notifier.sendErrorNotification(springApplicationName, message, "Workspace too busy",
                                                DefaultRole.INSTANCE_ADMIN);
             }
         } catch (IOException e) {
             String message = String.format("Error occured during workspace monitoring: %s", e.getMessage());
             LOG.error(message, e);
-            notifier.sendErrorNotification(springApplicationName,
-                                           message,
-                                           "Error during workspace monitoring",
+            notifier.sendErrorNotification(springApplicationName, message, "Error during workspace monitoring",
                                            DefaultRole.INSTANCE_ADMIN);
         }
     }

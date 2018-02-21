@@ -53,7 +53,7 @@ public abstract class AbstractDaoTest {
     protected EntityManager entityManager;
 
     @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    protected IRuntimeTenantResolver runtimeTenantResolver;
 
     protected void injectDefaultToken() {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
