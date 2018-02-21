@@ -103,22 +103,22 @@ public interface IAIPDao {
             OffsetDateTime lastEventBefore, Pageable pageable);
 
     /**
-     * Retrieve a page of aip which state is the one provided and contains the provided tags and which last event occurred after the given date
+     * Retrieve a page of aip which state is the one provided and contains at least one of the provided tags and which last event occurred after the given date
      * @param state
      * @param tags
      * @param fromLastUpdateDate
      * @param pageable
-     * @return a page of aip which state is the one provided and contains the provided tags and which last event occurred after the given date
+     * @return a page of aip which state is the one provided and contains at least one of the provided tags and which last event occurred after the given date
      */
     Page<AIP> findAllByStateAndTagsInAndLastEventDateAfter(AIPState state, Set<String> tags,
             OffsetDateTime fromLastUpdateDate, Pageable pageable);
 
     /**
-     * Retrieve a page of aip which state is the one provided and contains the provided tags
+     * Retrieve a page of aip which state is the one provided and contains at least one of the provided tags
      * @param state
      * @param tags
      * @param pageable
-     * @return a page of aip which state is the one provided and contains the provided tags
+     * @return a page of aip which state is the one provided and contains at least one of the provided tags
      */
     Page<AIP> findAllByStateAndTagsIn(AIPState state, Set<String> tags, Pageable pageable);
 

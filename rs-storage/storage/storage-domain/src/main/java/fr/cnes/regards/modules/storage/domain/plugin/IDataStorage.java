@@ -11,6 +11,8 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * Plugin interface for all storage systems.
+ * <b>DO NOT IMPLEMENT DIRECTLY BY CLASSES</b><br/>
+ * <b>Use one of its children for implementations so priority can be handled properly when restoring files.</b>
  *
  * @author Sylvain Vissiere-Guerinet
  * @authot Sébastien Binda
@@ -27,7 +29,8 @@ public interface IDataStorage<T extends IWorkingSubset> {
     Set<T> prepare(Collection<StorageDataFile> dataFiles, DataStorageAccessModeEnum mode);
 
     /**
-     * Do the delete action for the given {@link T} working subset. It is called "safe" because it checks if deletion is permitted by the configuration.
+     * Do the delete action for the given {@link T} working subset. It is called "safe" because it checks
+     * if deletion is permitted by the configuration.
      * @throws IllegalStateException if this operation is forbidden due to the plugin configuration
      */
     default void safeDelete(Set<StorageDataFile> dataFiles, IProgressManager progressManager) {

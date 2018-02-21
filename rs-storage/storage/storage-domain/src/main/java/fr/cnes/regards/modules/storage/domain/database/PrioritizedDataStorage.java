@@ -5,15 +5,17 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.Min;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 
 /**
  * Wrapper used to prioritize {@link fr.cnes.regards.modules.storage.domain.plugin.IDataStorage} configurations.
@@ -28,9 +30,16 @@ import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
                         PrioritizedDataStorage.PRIORITY_COLUMN_NAME }) })
 public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage> {
 
-    private static final String DATA_STORAGE_TYPE_COLUMN_NAME = "data_storage_type";
+    public static final String DATA_STORAGE_TYPE_COLUMN_NAME = "data_storage_type";
 
-    private static final String PRIORITY_COLUMN_NAME = "priority";
+    public static final String PRIORITY_COLUMN_NAME = "priority";
+
+    public static final Long HIGHEST_PRIORITY = 0L;
+
+    @Id
+    @SequenceGenerator(name = "PrioritizedDSSequence", initialValue = 1, sequenceName = "seq_prioritized_data_storage")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PrioritizedDSSequence")
+    private Long id;
 
     @OneToOne
     @JoinColumn(name = "data_storage_conf_id",
@@ -42,9 +51,9 @@ public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage
     private DataStorageType dataStorageType;
 
     /**
-     * Priority of this data storage. 0 represents the highest priority.
+     * Priority of this data storage.
      */
-    @Min(0)
+    @Min(HIGHEST_PRIORITY)
     @Column(name = PRIORITY_COLUMN_NAME)
     private Long priority;
 
@@ -54,20 +63,11 @@ public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage
     private PrioritizedDataStorage() {
     }
 
-    public PrioritizedDataStorage(PluginConfiguration dataStorageConfiguration, Long priority) {
+    public PrioritizedDataStorage(PluginConfiguration dataStorageConfiguration, Long priority,
+            DataStorageType dataStorageType) {
         this.dataStorageConfiguration = dataStorageConfiguration;
         this.priority = priority;
-        if (dataStorageConfiguration.getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
-            this.dataStorageType = DataStorageType.ONLINE;
-        } else if (dataStorageConfiguration.getInterfaceNames().contains(INearlineDataStorage.class.getName())) {
-            this.dataStorageType = DataStorageType.NEARLINE;
-        } else {
-            throw new IllegalArgumentException(String.format(
-                    "Given plugin configuration(label: %s) is not a configuration for an online or nearline data storage (respectfully %s or %s)!",
-                    dataStorageConfiguration.getLabel(),
-                    IOnlineDataStorage.class.getName(),
-                    INearlineDataStorage.class.getName()));
-        }
+        this.dataStorageType = dataStorageType;
     }
 
     public PluginConfiguration getDataStorageConfiguration() {
@@ -84,6 +84,22 @@ public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage
 
     public void setPriority(Long priority) {
         this.priority = priority;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public DataStorageType getDataStorageType() {
+        return dataStorageType;
+    }
+
+    public void setDataStorageType(DataStorageType dataStorageType) {
+        this.dataStorageType = dataStorageType;
     }
 
     @Override
