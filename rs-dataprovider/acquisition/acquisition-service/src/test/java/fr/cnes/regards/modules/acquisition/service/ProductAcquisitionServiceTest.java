@@ -28,23 +28,18 @@ import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.Lists;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -75,12 +70,9 @@ import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
  * @author Marc Sordi
  *
  */
-@RunWith(SpringRunner.class)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_product", "jwt.secret=123456789",
-        "regards.workspace=target/workspace" })
-@ContextConfiguration(classes = { ProductAcquisitionServiceTest.AcquisitionConfiguration.class })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_product" })
 @MultitenantTransactional
-public class ProductAcquisitionServiceTest extends AbstractDaoTest {
+public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTest {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductAcquisitionServiceTest.class);
@@ -102,11 +94,6 @@ public class ProductAcquisitionServiceTest extends AbstractDaoTest {
 
     @Autowired
     private IAcquisitionFileService fileService;
-
-    @Configuration
-    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
-    static class AcquisitionConfiguration {
-    }
 
     public AcquisitionProcessingChain createProcessingChain() throws ModuleException {
 

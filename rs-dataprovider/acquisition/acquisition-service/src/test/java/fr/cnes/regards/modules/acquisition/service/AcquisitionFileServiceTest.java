@@ -27,7 +27,6 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,13 +34,11 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.Lists;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -69,14 +66,12 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * Test {@link AcquisitionFileService}
  *
  * @author Sébastien Binda
+ * @author Marc Sordi
  *
  */
-@RunWith(SpringRunner.class)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_product", "jwt.secret=123456789",
-        "regards.workspace=target/workspace" })
-@ContextConfiguration(classes = { ProductAcquisitionServiceTest.AcquisitionConfiguration.class })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_product" })
 @MultitenantTransactional
-public class AcquisitionFileServiceTest extends AbstractDaoTest {
+public class AcquisitionFileServiceTest extends AbstractMultitenantServiceTest {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductAcquisitionServiceTest.class);

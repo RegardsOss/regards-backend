@@ -23,23 +23,18 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.Lists;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -62,12 +57,9 @@ import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
  * @author Marc Sordi
  *
  */
-@RunWith(SpringRunner.class)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acquisition", "jwt.secret=123456789",
-        "regards.workspace=target/workspace" })
-@ContextConfiguration(classes = { AcquisitionProcessingServiceTest.AcquisitionConfiguration.class })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acquisition" })
 @MultitenantTransactional
-public class AcquisitionProcessingServiceTest extends AbstractDaoTest {
+public class AcquisitionProcessingServiceTest extends AbstractMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingServiceTest.class);
 
@@ -79,11 +71,6 @@ public class AcquisitionProcessingServiceTest extends AbstractDaoTest {
 
     @Autowired
     private Validator validator;
-
-    @Configuration
-    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
-    static class AcquisitionConfiguration {
-    }
 
     @Test
     @Requirement("REGARDS_DSL_ING_PRO_020")
