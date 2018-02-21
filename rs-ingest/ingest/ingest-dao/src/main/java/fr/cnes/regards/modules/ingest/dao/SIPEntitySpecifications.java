@@ -18,13 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import javax.persistence.criteria.Predicate;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Set;
+
+import javax.persistence.criteria.Predicate;
 
 import org.springframework.data.jpa.domain.Specification;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
@@ -46,7 +49,7 @@ public final class SIPEntitySpecifications {
      * @return
      */
     public static Specification<SIPEntity> search(String sipId, String sesssionId, String owner, OffsetDateTime from,
-            SIPState state, String processing) {
+            List<SIPState> states, String processing) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (sesssionId != null) {
@@ -58,8 +61,12 @@ public final class SIPEntitySpecifications {
             if (from != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("ingestDate"), from));
             }
-            if (state != null) {
-                predicates.add(cb.equal(root.get("state"), state));
+            if ((states != null) && !states.isEmpty()) {
+                Set<Predicate> statePredicates = Sets.newHashSet();
+                for (SIPState state : states) {
+                    statePredicates.add(cb.equal(root.get("state"), state));
+                }
+                predicates.add(cb.or(statePredicates.toArray(new Predicate[statePredicates.size()])));
             }
             if (sipId != null) {
                 predicates.add(cb.equal(root.get("sipId"), sipId));

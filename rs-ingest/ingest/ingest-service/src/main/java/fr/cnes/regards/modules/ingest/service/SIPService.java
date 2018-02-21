@@ -35,6 +35,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -77,8 +78,8 @@ public class SIPService implements ISIPService {
     private IAipClient aipClient;
 
     @Override
-    public Page<SIPEntity> search(String sipId, String sessionId, String owner, OffsetDateTime from, SIPState state,
-            String processing, Pageable page) {
+    public Page<SIPEntity> search(String sipId, String sessionId, String owner, OffsetDateTime from,
+            List<SIPState> state, String processing, Pageable page) {
         return sipRepository.findAll(SIPEntitySpecifications.search(sipId, sessionId, owner, from, state, processing),
                                      page);
     }

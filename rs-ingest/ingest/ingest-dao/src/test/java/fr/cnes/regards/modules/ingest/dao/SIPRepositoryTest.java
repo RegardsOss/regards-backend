@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.dao;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -38,12 +39,12 @@ public class SIPRepositoryTest extends AbstractSIPRepositoryTest {
 
         List<SIPEntity> res = sipRepository
                 .findAll(SIPEntitySpecifications.search(null, "sessionId", "admin", OffsetDateTime.now().minusHours(12),
-                                                        SIPState.CREATED, PROCESSING_CHAIN));
+                                                        Lists.newArrayList(SIPState.CREATED), PROCESSING_CHAIN));
         Assert.assertTrue(res.size() == 2);
 
         res = sipRepository
                 .findAll(SIPEntitySpecifications.search(null, "sessionId", "admin", OffsetDateTime.now().minusHours(1),
-                                                        SIPState.CREATED, PROCESSING_CHAIN));
+                                                        Lists.newArrayList(SIPState.CREATED), PROCESSING_CHAIN));
         Assert.assertTrue(res.size() == 1);
 
         res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId", null, null, null, null));
@@ -52,26 +53,30 @@ public class SIPRepositoryTest extends AbstractSIPRepositoryTest {
         res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, "admin", null, null, null));
         Assert.assertTrue(res.size() == 2);
 
-        res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, null, null, SIPState.CREATED, null));
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, null, null,
+                                                                   Lists.newArrayList(SIPState.CREATED), null));
         Assert.assertTrue(res.size() == 2);
 
         res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, null, null, null, PROCESSING_CHAIN));
         Assert.assertTrue(res.size() == 3);
 
-        res = sipRepository.findAll(SIPEntitySpecifications
-                .search(null, "invalid", "admin", OffsetDateTime.now().minusHours(12), SIPState.CREATED, null));
+        res = sipRepository
+                .findAll(SIPEntitySpecifications.search(null, "invalid", "admin", OffsetDateTime.now().minusHours(12),
+                                                        Lists.newArrayList(SIPState.CREATED), null));
         Assert.assertTrue(res.size() == 0);
 
-        res = sipRepository.findAll(SIPEntitySpecifications
-                .search(null, "sessionId", "unvalid", OffsetDateTime.now().minusHours(12), SIPState.CREATED, null));
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId", "unvalid",
+                                                                   OffsetDateTime.now().minusHours(12),
+                                                                   Lists.newArrayList(SIPState.CREATED), null));
         Assert.assertTrue(res.size() == 0);
 
         res = sipRepository.findAll(SIPEntitySpecifications.search(null, "sessionId", "admin", OffsetDateTime.now(),
-                                                                   SIPState.CREATED, null));
+                                                                   Lists.newArrayList(SIPState.CREATED), null));
         Assert.assertTrue(res.size() == 0);
 
-        res = sipRepository.findAll(SIPEntitySpecifications
-                .search(null, "sessionId", "admin", OffsetDateTime.now().minusHours(12), SIPState.AIP_CREATED, null));
+        res = sipRepository
+                .findAll(SIPEntitySpecifications.search(null, "sessionId", "admin", OffsetDateTime.now().minusHours(12),
+                                                        Lists.newArrayList(SIPState.AIP_CREATED), null));
         Assert.assertTrue(res.size() == 0);
 
         res = sipRepository.findAll(SIPEntitySpecifications.search(null, null, null, null, null, null));

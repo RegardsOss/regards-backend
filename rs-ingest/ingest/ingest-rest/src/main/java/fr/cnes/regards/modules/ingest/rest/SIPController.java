@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.rest;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,7 +140,7 @@ public class SIPController implements IResourceController<SIPEntity> {
             @RequestParam(name = "owner", required = false) String owner,
             @RequestParam(name = "from",
                     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            @RequestParam(name = "state", required = false) SIPState state,
+            @RequestParam(name = "state", required = false) List<SIPState> state,
             @RequestParam(name = "processing", required = false) String processing,
             @RequestParam(name = "sessionId", required = false) String sessionId, Pageable pageable,
             PagedResourcesAssembler<SIPEntity> pAssembler) {
