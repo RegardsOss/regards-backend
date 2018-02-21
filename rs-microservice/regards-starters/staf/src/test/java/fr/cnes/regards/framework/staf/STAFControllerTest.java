@@ -42,7 +42,13 @@ import fr.cnes.regards.framework.staf.exception.STAFException;
 import fr.cnes.regards.framework.staf.mock.STAFMock;
 import fr.cnes.regards.framework.staf.protocol.STAFURLFactory;
 import fr.cnes.regards.framework.staf.protocol.STAFURLParameter;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
+/**
+ * Test class for STAF Controlller
+ * @author Sébastien Binda
+ */
 public class STAFControllerTest {
 
     private final Set<Path> filesToArchive = Sets.newHashSet();
@@ -149,7 +155,11 @@ public class STAFControllerTest {
                 .thenAnswer(pInvocation -> {
                     @SuppressWarnings("unchecked")
                     Map<String, String> files = pInvocation.getArgumentAt(0, Map.class);
-                    return Lists.newArrayList(files.keySet());
+                    if (files != null) {
+                        return Lists.newArrayList(files.keySet());
+                    } else {
+                        return Lists.newArrayList();
+                    }
                 });
         List<Integer> sessions = Lists.newArrayList();
         sessions.add(0);
@@ -175,6 +185,11 @@ public class STAFControllerTest {
      * @throws STAFException
      * @throws URISyntaxException
      */
+    @Purpose("Test STAF standard API to store files in NORMAL mode")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_020")
+    @Requirement("REGARDS_DSL_STAF_ARC_030")
+    @Requirement("REGARDS_DSL_STO_PLG_240")
     @Test
     public void testStoreInNormalMode() throws IOException, STAFException, URISyntaxException {
 
@@ -253,6 +268,11 @@ public class STAFControllerTest {
      * @throws STAFException
      * @throws URISyntaxException
      */
+    @Purpose("Test STAF standard API to store files in TAR mode")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_020")
+    @Requirement("REGARDS_DSL_STAF_ARC_030")
+    @Requirement("REGARDS_DSL_STO_PLG_240")
     @Test
     public void testStoreInTARMode() throws IOException, STAFException {
 
@@ -326,6 +346,11 @@ public class STAFControllerTest {
      * @throws STAFException
      * @throws URISyntaxException
      */
+    @Purpose("Test STAF standard API to store files in TAR mode")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_020")
+    @Requirement("REGARDS_DSL_STAF_ARC_030")
+    @Requirement("REGARDS_DSL_STO_PLG_240")
     @Test
     public void testStoreInTARModeWithExistingCurrentTAR() throws IOException, STAFException {
 
@@ -404,6 +429,11 @@ public class STAFControllerTest {
      * @throws STAFException
      * @throws URISyntaxException
      */
+    @Purpose("Test STAF standard API to store files in NORMAL mode")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_020")
+    @Requirement("REGARDS_DSL_STAF_ARC_030")
+    @Requirement("REGARDS_DSL_STO_PLG_240")
     @Test
     public void testStoreInTARModeWithExistingOldCurrentTAR() throws IOException, STAFException {
 
@@ -489,6 +519,10 @@ public class STAFControllerTest {
      * @throws STAFException
      * @throws URISyntaxException
      */
+    @Purpose("Test STAF standard API to store files in NORMAL mode")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_020")
+    @Requirement("REGARDS_DSL_STAF_ARC_030")
     @Test
     public void testStoreInTARModeNotOldEnought() throws IOException, STAFException {
 
@@ -567,6 +601,10 @@ public class STAFControllerTest {
      * @throws STAFException
      * @throws URISyntaxException
      */
+    @Purpose("Test STAF standard API to store files in CUT mode")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_020")
+    @Requirement("REGARDS_DSL_STO_PLG_240")
     @Test
     public void testStoreInCutMode() throws IOException, STAFException {
 
@@ -612,6 +650,60 @@ public class STAFControllerTest {
 
     }
 
+    @Test
+    public void testStoreError() throws STAFException {
+
+        // Simulate error during staf archive so no files are well archived
+        Mockito.when(stafSessionMock.staffilArchive(Mockito.any(), Mockito.any(), Mockito.anyBoolean()))
+                .thenAnswer(pInvocation -> Lists.newArrayList());
+
+        // Force use of store in normal mode by setting file max size limit low.
+        configuration.setMinFileSize(1000L);
+        configuration.setMaxFileSize(10000L);
+
+        Map<Path, Set<Path>> filesToArchivePerNode = Maps.newHashMap();
+        filesToArchivePerNode.put(Paths.get(STAF_TEST_NODE), filesToArchive);
+
+        Set<AbstractPhysicalFile> preparedFiles = controller.prepareFilesToArchive(filesToArchivePerNode);
+        Assert.assertEquals(5, preparedFiles.size());
+
+        // All files are ready for transfer
+        Set<AbstractPhysicalFile> tarToSendToStaf = preparedFiles.stream()
+                .filter(pf -> PhysicalFileStatusEnum.TO_STORE.equals(pf.getStatus())).collect(Collectors.toSet());
+        Assert.assertEquals(5, tarToSendToStaf.size());
+
+        // Construct map of files to archive to test staffFileArchive method call
+        Map<String, String> localFileToArchiveMap = Maps.newHashMap();
+        localFileToArchiveMap.put("src/test/resources/staf/income/file_test_3.txt",
+                                  "/test/node/1f4add9aecfc4c623cdda55771f4b984");
+        localFileToArchiveMap.put("src/test/resources/staf/income/file_test_4.txt",
+                                  "/test/node/955fd5652aadd97329a50e029163f3a9");
+        localFileToArchiveMap.put("src/test/resources/staf/income/file_test_5.txt",
+                                  "/test/node/61142380c96f899eaea71b229dcc4247");
+        localFileToArchiveMap.put("src/test/resources/staf/income/file_test_2.txt",
+                                  "/test/node/8e3d5e32119c70881316a1a2b17a64d1");
+        localFileToArchiveMap.put("src/test/resources/staf/income/file_test_1.txt",
+                                  "/test/node/eadcc622739d58e8a78170b67c6ff9f5");
+
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconOpen(Mockito.any(), Mockito.any());
+        Mockito.verify(stafSessionMock, Mockito.times(0)).staffilArchive(Mockito.anyMapOf(String.class, String.class),
+                                                                         Mockito.anyString(), Mockito.anyBoolean());
+        Mockito.verify(stafSessionMock, Mockito.times(1)).stafconClose();
+
+        Set<AbstractPhysicalFile> archivedFiles = controller.archiveFiles(preparedFiles, false);
+        Mockito.verify(stafSessionMock, Mockito.times(2)).stafconOpen(STAF_ARCHIVE_NAME, STAF_ARCHIVE_PASSWORD);
+        Mockito.verify(stafSessionMock, Mockito.times(1)).staffilArchive(localFileToArchiveMap, "CS1", false);
+        Mockito.verify(stafSessionMock, Mockito.times(2)).stafconClose();
+
+        Assert.assertEquals("No files should have been archived as the staf session is mocked to fail storage", 0,
+                            archivedFiles.size());
+
+        // Check that STAF Controller return no raw files has archived.
+        Map<Path, URL> rawArchivedFiles = controller.getRawFilesArchived(preparedFiles);
+        rawArchivedFiles.forEach((p, u) -> System.out.println(String.format("%s --> %s", p.toString(), u.toString())));
+        Assert.assertEquals(0, rawArchivedFiles.size());
+    }
+
     /**
      * Testing restoration file with STAF Controller.
      * <ul>
@@ -624,6 +716,10 @@ public class STAFControllerTest {
      * @throws MalformedURLException
      * @throws STAFException
      */
+    @Purpose("Test STAF standard API to restore files")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_060")
+    @Requirement("REGARDS_DSL_STO_PLG_260")
     @Test
     public void testRestoreFiles() throws MalformedURLException, STAFException {
 
@@ -676,6 +772,10 @@ public class STAFControllerTest {
      * @throws MalformedURLException
      * @throws STAFException
      */
+    @Purpose("Test STAF standard API to restore files in CUT mode")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_060")
+    @Requirement("REGARDS_DSL_STO_PLG_260")
     @Test
     public void testRestoreCutedFiles() throws MalformedURLException, STAFException {
 
@@ -740,6 +840,11 @@ public class STAFControllerTest {
      * @throws MalformedURLException
      * @throws STAFException
      */
+    @Purpose("Test STAF standard API to restore files in TAR mode")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_060")
+    @Requirement("REGARDS_DSL_STO_PLG_250")
+    @Requirement("REGARDS_DSL_STO_PLG_260")
     @Test
     public void testRestoreTARFiles() throws MalformedURLException, STAFException {
 
@@ -825,6 +930,11 @@ public class STAFControllerTest {
      * @throws STAFException
      * @throws IOException
      */
+    @Purpose("Test STAF standard API to restore files")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_060")
+    @Requirement("REGARDS_DSL_STO_PLG_250")
+    @Requirement("REGARDS_DSL_STO_PLG_260")
     @Test
     public void testRestoreTARFilesLocallyStored() throws STAFException, IOException {
 
@@ -941,6 +1051,11 @@ public class STAFControllerTest {
      * @throws STAFException
      * @throws IOException
      */
+    @Purpose("Test STAF standard API to restore files")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_060")
+    @Requirement("REGARDS_DSL_STO_PLG_250")
+    @Requirement("REGARDS_DSL_STO_PLG_260")
     @Test
     public void testRestoreTARFilesRemoteAndLocallyStored() throws STAFException, IOException {
 
@@ -1060,6 +1175,9 @@ public class STAFControllerTest {
      * @throws MalformedURLException
      * @throws STAFException
      */
+    @Purpose("Test STAF standard API to notify error during restore")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_730")
     @Test
     public void testRestoreWithFileNotFound() throws MalformedURLException, STAFException {
 
@@ -1126,6 +1244,10 @@ public class STAFControllerTest {
      * @throws MalformedURLException
      * @throws STAFException
      */
+    @Purpose("Test STAF standard API to restore files")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_060")
+    @Requirement("REGARDS_DSL_STO_PLG_250")
     @Test
     public void testRestoreMultiTypes() throws MalformedURLException, STAFException {
 
@@ -1222,6 +1344,9 @@ public class STAFControllerTest {
      * @throws IOException
      * @throws STAFException
      */
+    @Purpose("Test STAF standard API to notify error during restore")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_730")
     @Test
     public void testRestoreWithAccessDeniedToRestoreDirectory() throws IOException, STAFException {
 
@@ -1386,6 +1511,9 @@ public class STAFControllerTest {
                             rawArchivedFiles.values().stream().distinct().collect(Collectors.toSet()).size());
     }
 
+    @Purpose("Test STAF standard API to delete files in TAR")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_070")
     @Test
     public void testDeleteWithTARFullDeletion() throws MalformedURLException, STAFException {
 
@@ -1429,6 +1557,9 @@ public class STAFControllerTest {
 
     }
 
+    @Purpose("Test STAF standard API to delete files in TAR")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_070")
     @Test
     public void testDeleteWithTARReplacement() throws MalformedURLException, STAFException {
 
@@ -1469,6 +1600,9 @@ public class STAFControllerTest {
 
     }
 
+    @Purpose("Test STAF standard API to delete files in local TAR")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_070")
     @Test
     public void testDeleteFromLocallyStoredTAR() throws IOException, STAFException {
         String localTarName = "20170505122201012.tar";
@@ -1557,6 +1691,9 @@ public class STAFControllerTest {
                           Paths.get(tarCurrentPath.toString(), fileName5).toFile().exists());
     }
 
+    @Purpose("Test STAF standard API to delete files in local TAR")
+    @Requirement("REGARDS_DSL_STAF_ARC_010")
+    @Requirement("REGARDS_DSL_STAF_ARC_070")
     @Test
     public void testDeleteFromLocallyStoredTAR2() throws IOException, STAFException {
         String localTarName = "20170505122201012.tar";
