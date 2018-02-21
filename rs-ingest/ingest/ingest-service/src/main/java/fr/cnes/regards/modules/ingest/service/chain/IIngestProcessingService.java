@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -46,9 +48,10 @@ public interface IIngestProcessingService {
      * Update state of given SIPEntity
      * @param id of {@link SIPEntity} to update
      * @param newState new {@link SIPState}
+     * @param processingErrors processing errors (may be null)
      * @return updated {@link SIPEntity}
      */
-    SIPEntity updateSIPEntityState(Long id, SIPState newState);
+    SIPEntity updateSIPEntityState(Long id, SIPState newState, List<String> processingErrors);
 
     /**
      * Return {@link SIPEntity} for the given id

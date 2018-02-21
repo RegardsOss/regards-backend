@@ -18,9 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.domain.event;
 
+import java.time.ZoneOffset;
+import java.util.List;
+
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
@@ -35,13 +39,34 @@ public class SIPEvent implements ISubscribable {
 
     private String ipId;
 
-    @SuppressWarnings("unused") // Used for (de)serialization
+    private String sipId;
+
+    private String owner;
+
+    private String ingestDate;
+
+    private List<String> processingErrors;
+
+    @SuppressWarnings("unused")
     private SIPEvent() {
+        // Used for (de)serialization
     }
 
     public SIPEvent(SIPEntity sip) {
-        this.state = sip.getState();
-        this.ipId = sip.getIpId();
+        // Data provider
+        owner = sip.getOwner();
+        // Ingest date
+        ingestDate = sip.getIngestDate().atZoneSameInstant(ZoneOffset.UTC)
+                .format(OffsetDateTimeAdapter.ISO_DATE_TIME_UTC);
+        // SIP provider ID
+        sipId = sip.getSipId();
+        // SIP system ID (with version)
+        ipId = sip.getIpId();
+        // SIP state
+        state = sip.getState();
+        // SIP errors
+//        FIXME processingErrors = sip.getProcessingErrors();
+        processingErrors = null;
     }
 
     public SIPState getState() {
@@ -50,6 +75,38 @@ public class SIPEvent implements ISubscribable {
 
     public String getIpId() {
         return ipId;
+    }
+
+    public String getSipId() {
+        return sipId;
+    }
+
+    public void setSipId(String sipId) {
+        this.sipId = sipId;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public String getIngestDate() {
+        return ingestDate;
+    }
+
+    public void setIngestDate(String ingestDate) {
+        this.ingestDate = ingestDate;
+    }
+
+    public List<String> getProcessingErrors() {
+        return processingErrors;
+    }
+
+    public void setProcessingErrors(List<String> processingErrors) {
+        this.processingErrors = processingErrors;
     }
 
 }

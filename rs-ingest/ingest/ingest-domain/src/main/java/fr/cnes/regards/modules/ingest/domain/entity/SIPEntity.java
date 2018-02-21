@@ -18,7 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.domain.entity;
 
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -28,7 +33,11 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.NamedEntityGraphs;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -36,9 +45,6 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -62,6 +68,8 @@ import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
         uniqueConstraints = { @UniqueConstraint(name = "uk_sip_ipId", columnNames = "ipId"),
                 @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.sip.entity.complete",
+        attributeNodes = { @NamedAttributeNode(value = "processingErrors") }) })
 public class SIPEntity {
 
     /**
@@ -80,7 +88,7 @@ public class SIPEntity {
     /**
      * The SIP identifier = the feature ID
      */
-    @NotBlank
+    @NotBlank(message = "SIP ID is required")
     @Column(length = 100)
     private String sipId;
 
@@ -89,23 +97,23 @@ public class SIPEntity {
      * them as 2 different
      * versions
      */
-    @NotBlank
+    @NotBlank(message = "IP ID is required")
     @Column(name = "ipId", length = MAX_URN_SIZE)
     private String ipId;
 
-    @NotBlank
+    @NotBlank(message = "Owner is required")
     @Column(name = "owner", length = 128)
     private String owner;
 
     /**
      * SIP version : this value is also reported in {@link #ipId} and must be the same
      */
-    @NotNull
+    @NotNull(message = "Version is required")
     @Min(1)
     @Max(999)
     private Integer version;
 
-    @NotNull
+    @NotNull(message = "SIP state is required")
     @Enumerated(EnumType.STRING)
     private SIPState state;
 
@@ -115,19 +123,25 @@ public class SIPEntity {
     @Transient
     private List<String> rejectionCauses;
 
+    @ElementCollection
+    @JoinTable(name = "ta_sip_errors", joinColumns = @JoinColumn(name = "sip_entity_id",
+            foreignKey = @ForeignKey(name = "fk_errors_sip_entity_id")))
+    @Column(name = "error")
+    private List<String> processingErrors;
+
     /**
      * Real SIP content checksum
      */
-    @NotBlank
+    @NotBlank(message = "Checksum is required")
     @Column(length = CHECKSUM_MAX_LENGTH)
     private String checksum;
 
-    @NotNull
+    @NotNull(message = "SIP as JSON is required")
     @Column(columnDefinition = "jsonb", name = "rawsip")
     @Type(type = "jsonb")
     private SIP sip;
 
-    @NotNull
+    @NotNull(message = "Ingestion date is required")
     private OffsetDateTime ingestDate;
 
     private OffsetDateTime lastUpdateDate;
@@ -135,14 +149,14 @@ public class SIPEntity {
     /**
      * Processing chain name from {@link IngestMetadata}
      */
-    @NotBlank
+    @NotBlank(message = "Processing chain name is required")
     @Column(length = 100)
     private String processing;
 
     /**
      * Session identifier from {@link IngestMetadata}
      */
-    @NotNull
+    @NotNull(message = "Session is required")
     @ManyToOne
     @JoinColumn(name = "session", foreignKey = @ForeignKey(name = "fk_sip_session"))
     private SIPSession session;
@@ -260,4 +274,11 @@ public class SIPEntity {
         return dto;
     }
 
+    public List<String> getProcessingErrors() {
+        return processingErrors;
+    }
+
+    public void setProcessingErrors(List<String> errors) {
+        this.processingErrors = errors;
+    }
 }
