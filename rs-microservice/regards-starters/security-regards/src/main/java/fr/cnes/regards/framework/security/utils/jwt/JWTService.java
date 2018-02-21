@@ -80,7 +80,7 @@ public class JWTService {
     /**
      * JWT Secret
      */
-    @Value("${jwt.secret}")
+    @Value("${jwt.secret:123456789}")
     private String secret;
 
     /**

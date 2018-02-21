@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.framework.utils.plugins.generics;
 
-import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 
@@ -38,7 +38,7 @@ public class PluginWithPojoCollection implements IPluginWithGenerics {
     public static final String FIELD_NAME = "infos";
 
     @PluginParameter(label = "Informations", description = "List of infos as POJO")
-    private List<Info> infos;
+    private Set<Info> infos;
 
     @Override
     public void doIt() {
