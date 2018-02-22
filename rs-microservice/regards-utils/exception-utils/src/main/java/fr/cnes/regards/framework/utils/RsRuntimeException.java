@@ -27,4 +27,8 @@ public class RsRuntimeException extends RuntimeException {
     public RsRuntimeException(Throwable cause) {
         super(cause);
     }
+
+    public RsRuntimeException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
