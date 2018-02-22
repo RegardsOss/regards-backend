@@ -30,6 +30,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -38,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -61,6 +63,8 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 public class ProductController implements IResourceController<Product> {
 
     public static final String TYPE_PATH = "/products";
+
+    public static final String PRODUCT_PATH = "/{productId}";
 
     @Autowired
     private IProductService productService;
@@ -91,12 +95,25 @@ public class ProductController implements IResourceController<Product> {
             @RequestParam(name = "productName", required = false) String productName,
             @RequestParam(name = "session", required = false) String session,
             @RequestParam(name = "chainId", required = false) Long processingChainId,
+            @RequestParam(name = "nosession", required = false) Boolean noSession,
             @RequestParam(name = "from",
                     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
             Pageable pageable, PagedResourcesAssembler<Product> assembler) {
         Page<Product> products = productService.search(state, sipState, productName, session, processingChainId, from,
-                                                       pageable);
+                                                       noSession, pageable);
         return new ResponseEntity<>(toPagedResources(products, assembler), HttpStatus.OK);
+    }
+
+    /**
+     * Retreive a {@link Product} by id
+     * @param productId
+     * @return
+     * @throws ModuleException
+     */
+    @RequestMapping(method = RequestMethod.GET, value = PRODUCT_PATH)
+    @ResourceAccess(description = "Get a product", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Resource<Product>> get(@PathVariable Long productId) throws ModuleException {
+        return ResponseEntity.ok(toResource(productService.loadProduct(productId)));
     }
 
     @Override

@@ -481,10 +481,10 @@ public class ProductService implements IProductService {
 
     @Override
     public Page<Product> search(List<ProductState> state, List<SIPState> sipState, String productName, String session,
-            Long processingChainId, OffsetDateTime from, Pageable pageable) {
-        return productRepository
-                .findAll(ProductSpecifications.search(state, sipState, productName, session, processingChainId, from),
-                         pageable);
+            Long processingChainId, OffsetDateTime from, Boolean noSession, Pageable pageable) {
+        return productRepository.findAll(ProductSpecifications.search(state, sipState, productName, session,
+                                                                      processingChainId, from, noSession),
+                                         pageable);
     }
 
     @Override
