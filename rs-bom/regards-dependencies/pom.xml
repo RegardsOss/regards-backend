@@ -546,6 +546,11 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.datasources</groupId>
+                <artifactId>datasources-service-contract</artifactId>
+                <version>${fr.cnes.regards.modules.datasources.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.datasources</groupId>
                 <artifactId>datasources-plugin</artifactId>
                 <version>${fr.cnes.regards.modules.datasources.version}</version>
             </dependency>
@@ -766,6 +771,11 @@
                 <groupId>fr.cnes.regards.modules.entities</groupId>
                 <artifactId>entities-service</artifactId>
                 <version>${fr.cnes.regards.modules.entities.version}</version>
+            </dependency>
+            <dependency>
+            	<groupId>fr.cnes.regards.modules.entities</groupId>
+            	<artifactId>entities-service-contract</artifactId>
+            	<version>${fr.cnes.regards.modules.entities.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.entities</groupId>
