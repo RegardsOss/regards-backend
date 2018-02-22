@@ -177,7 +177,7 @@ public interface IProductService {
      * @return {@link Product}s
      */
     Page<Product> search(List<ProductState> state, List<SIPState> sipState, String productName, String session,
-            Long processingChainId, OffsetDateTime from, Pageable pageable);
+            Long processingChainId, OffsetDateTime from, Boolean noSession, Pageable pageable);
 
     /**
      * Search for a {@link Product} by his name

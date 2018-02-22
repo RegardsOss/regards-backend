@@ -55,7 +55,7 @@ public class ProductSpecifications {
      * @return {@link Specification}<{@link Product}>
      */
     public static Specification<Product> search(List<ProductState> states, List<SIPState> sipStates, String productName,
-            String session, Long processingChainId, OffsetDateTime from) {
+            String session, Long processingChainId, OffsetDateTime from, Boolean noSession) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (productName != null) {
@@ -71,7 +71,9 @@ public class ProductSpecifications {
                 }
                 predicates.add(cb.or(statePredicates.toArray(new Predicate[statePredicates.size()])));
             }
-            if (processingChainId != null) {
+            if ((noSession != null) && Boolean.TRUE.equals(noSession)) {
+                predicates.add(cb.isNull(root.get("processingChain")));
+            } else if (processingChainId != null) {
                 AcquisitionProcessingChain chain = new AcquisitionProcessingChain();
                 chain.setId(processingChainId);
                 predicates.add(cb.equal(root.get("processingChain"), chain));

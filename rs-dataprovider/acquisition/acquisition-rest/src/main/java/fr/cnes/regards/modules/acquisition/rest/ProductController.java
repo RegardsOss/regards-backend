@@ -95,11 +95,12 @@ public class ProductController implements IResourceController<Product> {
             @RequestParam(name = "productName", required = false) String productName,
             @RequestParam(name = "session", required = false) String session,
             @RequestParam(name = "chainId", required = false) Long processingChainId,
+            @RequestParam(name = "nosession", required = false) Boolean noSession,
             @RequestParam(name = "from",
                     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
             Pageable pageable, PagedResourcesAssembler<Product> assembler) {
         Page<Product> products = productService.search(state, sipState, productName, session, processingChainId, from,
-                                                       pageable);
+                                                       noSession, pageable);
         return new ResponseEntity<>(toPagedResources(products, assembler), HttpStatus.OK);
     }
 
