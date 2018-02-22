@@ -78,9 +78,9 @@ public class JWTService {
     private static final Logger LOG = LoggerFactory.getLogger(JWTService.class);
 
     /**
-     * JWT Secret
+     * JWT Secret. Default value is only useful for testing purpose.
      */
-    @Value("${jwt.secret}")
+    @Value("${jwt.secret:123456789}")
     private String secret;
 
     /**
