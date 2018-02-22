@@ -64,7 +64,7 @@ public class ProductController implements IResourceController<Product> {
 
     public static final String TYPE_PATH = "/products";
 
-    public static final String PRODUCT_PATH = "/{chainId}";
+    public static final String PRODUCT_PATH = "/{productId}";
 
     @Autowired
     private IProductService productService;
