@@ -452,7 +452,17 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
                 LOGGER.debug(MSG_ATTRIBUTE_BUILD, attr.getMetaAttribute().getName());
             }
             Object objValue = attr.getValueList().get(0);
-            jsonRange.addProperty(attr.getMetaAttribute().getName().toLowerCase(), objValue.toString());
+            switch (attr.getType()) {
+                case TYPE_INTEGER:
+                case TYPE_REAL:
+                    jsonRange.addProperty(attr.getMetaAttribute().getName().toLowerCase(), (Number) objValue);
+                    break;
+                default:
+                    // Use String type as default type
+                    jsonRange.addProperty(attr.getMetaAttribute().getName().toLowerCase(), objValue.toString());
+                    break;
+            }
+
         }
         sipBuilder.addDescriptiveInformation(compAttr.getName().toLowerCase(), jsonRange);
     }
