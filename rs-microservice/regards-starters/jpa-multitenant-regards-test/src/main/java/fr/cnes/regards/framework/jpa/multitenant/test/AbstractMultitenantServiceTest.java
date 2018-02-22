@@ -20,6 +20,9 @@ package fr.cnes.regards.framework.jpa.multitenant.test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.transaction.BeforeTransaction;
 
@@ -57,7 +60,13 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  *
  * @author Marc Sordi
  */
+@ContextConfiguration(classes = { AbstractMultitenantServiceTest.ScanningConfiguration.class })
 public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
+
+    @Configuration
+    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
+    static class ScanningConfiguration {
+    }
 
     /**
      * If inheriting class is annotated with transactional, the default tenant will be automatically injected<br/>
