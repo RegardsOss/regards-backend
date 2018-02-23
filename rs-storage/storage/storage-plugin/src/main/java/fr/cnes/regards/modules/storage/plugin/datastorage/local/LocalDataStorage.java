@@ -209,16 +209,15 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     }
 
     @Override
-    public void delete(Set<StorageDataFile> dataFiles, IProgressManager progressManager) {
-        for (StorageDataFile data : dataFiles) {
+    public void delete(LocalWorkingSubset workingSubset, IProgressManager progressManager) {
+        for (StorageDataFile data : workingSubset.getDataFiles()) {
             try {
                 Files.deleteIfExists(Paths.get(getStorageLocation(data)));
                 progressManager.deletionSucceed(data);
             } catch (IOException ioe) {
                 String failureCause = String.format(
-                        "Deletion of StorageDataFile(%s) failed due to the following IOException: %s",
-                        data.getChecksum(),
-                        ioe.getMessage());
+                                                    "Deletion of StorageDataFile(%s) failed due to the following IOException: %s",
+                                                    data.getChecksum(), ioe.getMessage());
                 LOG.error(failureCause, ioe);
                 progressManager.deletionFailed(data, failureCause);
             }
