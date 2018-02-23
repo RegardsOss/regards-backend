@@ -65,8 +65,7 @@ public class SIPEvent implements ISubscribable {
         // SIP state
         state = sip.getState();
         // SIP errors
-//        FIXME processingErrors = sip.getProcessingErrors();
-        processingErrors = null;
+        processingErrors = sip.getProcessingErrors();
     }
 
     public SIPState getState() {

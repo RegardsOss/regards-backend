@@ -60,7 +60,8 @@ public class DefaultAIPTagging implements IAipTagging {
 
     public static final String FIELD_NAME_LINKS = "links"; // Useful for testing
 
-    @PluginParameter(label = "Tags", description = "List of tags", optional = true)
+    @PluginParameter(label = "Tags",
+            description = "List of tags useful to classify AIP for business purpose and harvesting", optional = true)
     private List<String> tags;
 
     @PluginParameter(keylabel = "Link tag", label = "Link", description = "List of links", optional = true)

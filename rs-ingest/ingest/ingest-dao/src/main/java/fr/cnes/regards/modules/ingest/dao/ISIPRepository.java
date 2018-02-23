@@ -39,6 +39,10 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  */
 public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpecificationExecutor<SIPEntity> {
 
+    @Override
+    @EntityGraph("graph.sip.entity.complete")
+    SIPEntity findOne(Long id);
+
     /**
      * Find last ingest SIP with specified SIP ID according to ingest date
      * @param sipId external SIP identifier
