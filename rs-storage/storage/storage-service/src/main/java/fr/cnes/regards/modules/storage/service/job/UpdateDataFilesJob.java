@@ -13,7 +13,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storage.domain.StorageException;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
@@ -65,6 +64,7 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
             // then lets remove the ones that failed
             oldDataFiles.removeAll(progressManager.getFailedDataFile());
             // now we hvae the old data files that have been replaced
+            // FIXME : Prepare files for update
             storagePlugin.delete(oldDataFiles, progressManager);
             if (progressManager.isProcessError()) {
                 throw new StorageException("Update process failed");

@@ -31,11 +31,13 @@ public interface IDataStorage<T extends IWorkingSubset> {
     /**
      * Do the delete action for the given {@link T} working subset. It is called "safe" because it checks
      * if deletion is permitted by the configuration.
+     * @param workingSubset Subset of files to delete.
+     * @param progressManager {@link IProgressManager} object to inform global store process after each deletion succeed or fail.
      * @throws IllegalStateException if this operation is forbidden due to the plugin configuration
      */
-    default void safeDelete(Set<StorageDataFile> dataFiles, IProgressManager progressManager) {
+    default void safeDelete(T workingSubset, IProgressManager progressManager) {
         if (canDelete()) {
-            delete(dataFiles, progressManager);
+            delete(workingSubset, progressManager);
         } else {
             throw new IllegalStateException("Deletion is currently forbidden for this plugin!");
         }
@@ -48,10 +50,10 @@ public interface IDataStorage<T extends IWorkingSubset> {
 
     /**
      * Do the delete action for the given {@link T} working subset without checking if deletion is permitted by the configuration.
-     * @param dataFiles Set of files to store.
+     * @param workingSubset Subset of files to delete.
      * @param progressManager {@link IProgressManager} object to inform global store process after each deletion succeed or fail.
      */
-    void delete(Set<StorageDataFile> dataFiles, IProgressManager progressManager);
+    void delete(T workingSubset, IProgressManager progressManager);
 
     /**
      * Do the store action for the given {@link T} working subset.

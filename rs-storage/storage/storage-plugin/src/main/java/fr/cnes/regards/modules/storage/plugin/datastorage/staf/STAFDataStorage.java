@@ -158,11 +158,10 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     public Set<STAFWorkingSubset> prepare(Collection<StorageDataFile> dataFiles, DataStorageAccessModeEnum pMode) {
         switch (pMode) {
             case RETRIEVE_MODE:
+            case DELETION_MODE:
                 return prepareRetrieveWorkingsubsets(dataFiles);
             case STORE_MODE:
                 return prepareStoreWorkingsubsets(dataFiles);
-            case DELETION_MODE:
-                return prepareStoreWorkingsubsets(dataFiles); //FIXME: do we need to use something else?
             default:
                 LOG.error("[STAFDataStorage Plugin] Unknown preparation mode {}", pMode.toString());
                 return Sets.newHashSet();
@@ -210,9 +209,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         STAFStoreWorkingSubset ws = (STAFStoreWorkingSubset) pSubset;
         if (ws != null) {
             LOG.info("[STAFDataStorage Plugin] {} - Store action - Start with Working subset for STAF Node : {}",
-                     stafArchive.getArchiveName(),
-                     ws.getStafNode());
-            Set<StorageDataFile> alreadyStoredFiles = Sets.newHashSet();
+                     stafArchive.getArchiveName(), ws.getStafNode());
             Set<StorageDataFile> filesToStore = Sets.newHashSet();
             // Check if files are already stored
             dispatchAlreadyStoredFiles(pSubset.getDataFiles(), progressManager, filesToStore);
@@ -244,10 +241,10 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     }
 
     @Override
-    public void delete(Set<StorageDataFile> pDataFiles, IProgressManager pProgressManager) {
+    public void delete(STAFWorkingSubset pWorkingSubset, IProgressManager pProgressManager) {
         // 1. Prepare files
         Map<URL, StorageDataFile> urls = Maps.newHashMap();
-        pDataFiles.stream().forEach(f -> urls.put(extractThisStafUrl(f).get(), f));
+        pWorkingSubset.getDataFiles().stream().forEach(f -> urls.put(extractThisStafUrl(f).get(), f));
         Set<AbstractPhysicalFile> filesToDelete = stafController.prepareFilesToDelete(urls.keySet());
         // 2. Delete prepared files
         Set<URL> deletedSTAFFiles = stafController.deleteFiles(filesToDelete);
