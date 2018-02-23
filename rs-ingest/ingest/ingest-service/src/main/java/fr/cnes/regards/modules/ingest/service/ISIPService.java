@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,7 +53,7 @@ public interface ISIPService {
      * @param page
      * @return
      */
-    Page<SIPEntity> search(String sipId, String sessionId, String owner, OffsetDateTime from, SIPState state,
+    Page<SIPEntity> search(String sipId, String sessionId, String owner, OffsetDateTime from, List<SIPState> state,
             String processing, Pageable page);
 
     /**

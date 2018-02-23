@@ -43,6 +43,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -278,8 +279,8 @@ public class SIPServiceTest extends AbstractSIPTest {
     @Test
     public void searchSip() {
         // Check search by state
-        Page<SIPEntity> results = sipService.search(null, null, null, null, SIPState.AIP_GEN_ERROR, null,
-                                                    new PageRequest(0, 100));
+        Page<SIPEntity> results = sipService.search(null, null, null, null, Lists.newArrayList(SIPState.AIP_GEN_ERROR),
+                                                    null, new PageRequest(0, 100));
         Assert.assertTrue("There should be only two AIPs with AIP_GEN_ERROR state", results.getTotalElements() == 2);
     }
 
@@ -340,7 +341,8 @@ public class SIPServiceTest extends AbstractSIPTest {
         Assert.assertEquals(18, argument.getValue().size());
         // Check that not stored SIP are already is DELETED state
         // Not stored state are CREATED, AIP_CREATED, INVALID, AIP_GEN_ERROR, REJECTED, DELETED
-        Page<SIPEntity> results = sipService.search(null, COMPLEX_SESSION_ID, null, null, SIPState.DELETED, null,
+        Page<SIPEntity> results = sipService.search(null, COMPLEX_SESSION_ID, null, null,
+                                                    Lists.newArrayList(SIPState.DELETED), null,
                                                     new PageRequest(0, 100));
         Assert.assertEquals(12, results.getTotalElements());
 
