@@ -37,6 +37,8 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  */
 public final class SIPEntitySpecifications {
 
+    private static final String LIKE_CHAR = "%";
+
     private SIPEntitySpecifications() {
     }
 
@@ -69,7 +71,11 @@ public final class SIPEntitySpecifications {
                 predicates.add(cb.or(statePredicates.toArray(new Predicate[statePredicates.size()])));
             }
             if (sipId != null) {
-                predicates.add(cb.equal(root.get("sipId"), sipId));
+                if (sipId.startsWith(LIKE_CHAR) || sipId.endsWith(LIKE_CHAR)) {
+                    predicates.add(cb.like(root.get("sipId"), sipId));
+                } else {
+                    predicates.add(cb.equal(root.get("sipId"), sipId));
+                }
             }
             if (processing != null) {
                 predicates.add(cb.equal(root.get("processing"), processing));
