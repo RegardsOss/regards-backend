@@ -24,7 +24,7 @@ public interface IPrioritizedDataStorageRepository extends JpaRepository<Priorit
 
     Optional<PrioritizedDataStorage> findOneByDataStorageConfigurationId(Long pluginConfId);
 
-    Set<PrioritizedDataStorage> findAllByDataStorageTypeAndGreaterPriorityThan(DataStorageType dataStorageType,
+    Set<PrioritizedDataStorage> findAllByDataStorageTypeAndGreaterPriorityThanOrderByPriorityAsc(DataStorageType dataStorageType,
             Long priority);
 
     List<PrioritizedDataStorage> findAllByDataStorageTypeOrderByPriorityAsc(DataStorageType dataStorageType);
@@ -37,4 +37,6 @@ public interface IPrioritizedDataStorageRepository extends JpaRepository<Priorit
      */
     PrioritizedDataStorage findFirstByDataStorageTypeByDataStorageConfigurationActiveOrderByPriorityAsc(DataStorageType dataStorageType,
             boolean pluginConfActivity);
+
+    PrioritizedDataStorage findOneByDataStorageTypeByPriority(DataStorageType dataStorageType, long priority);
 }

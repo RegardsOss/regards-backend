@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -73,11 +74,12 @@ public class PrioritizedDataStorageService
                     IOnlineDataStorage.class.getName(),
                     INearlineDataStorage.class.getName()));
         }
-        Long lowestPriority = getLowestPriority(dataStorageType);
+        Long actualLowestPriority = getLowestPriority(dataStorageType);
         return prioritizedDataStorageRepository
-                .save(new PrioritizedDataStorage(dataStorageConf, lowestPriority, dataStorageType));
+                .save(new PrioritizedDataStorage(dataStorageConf, actualLowestPriority + 1, dataStorageType));
     }
 
+    @Override
     public Multimap<DataStorageType, PrioritizedDataStorage> findAllByTypes() {
         Multimap<DataStorageType, PrioritizedDataStorage> result = ArrayListMultimap.create();
         for (DataStorageType dataStorageType : DataStorageType.values()) {
@@ -87,6 +89,7 @@ public class PrioritizedDataStorageService
         return result;
     }
 
+    @Override
     public Long getLowestPriority(DataStorageType dataStorageType) {
         PrioritizedDataStorage lowestPrioritizedDataStorage = prioritizedDataStorageRepository
                 .findFirstByDataStorageTypeOrderByPriorityDesc(dataStorageType);
@@ -97,6 +100,7 @@ public class PrioritizedDataStorageService
         return lowestPrioritizedDataStorage.getPriority();
     }
 
+    @Override
     @Nullable
     public PrioritizedDataStorage getFirstActiveByType(DataStorageType dataStorageType) {
         PrioritizedDataStorage prioritizedDataStorage = prioritizedDataStorageRepository
@@ -104,6 +108,7 @@ public class PrioritizedDataStorageService
         return prioritizedDataStorage;
     }
 
+    @Override
     public void delete(Long pluginConfId) {
         Optional<PrioritizedDataStorage> toDeleteOpt = prioritizedDataStorageRepository
                 .findOneByDataStorageConfigurationId(pluginConfId);
@@ -111,14 +116,34 @@ public class PrioritizedDataStorageService
             //first we need to increase all the priorities of those which are less prioritized than the one to delete
             PrioritizedDataStorage toDelete = toDeleteOpt.get();
             Set<PrioritizedDataStorage> lessPrioritizeds = prioritizedDataStorageRepository
-                    .findAllByDataStorageTypeAndGreaterPriorityThan(toDelete.getDataStorageType(),
-                                                                    toDelete.getPriority());
+                    .findAllByDataStorageTypeAndGreaterPriorityThanOrderByPriorityAsc(toDelete.getDataStorageType(),
+                                                                                      toDelete.getPriority());
             prioritizedDataStorageRepository.delete(toDelete);
             for (PrioritizedDataStorage lessPrioritized : lessPrioritizeds) {
                 lessPrioritized.setPriority(lessPrioritized.getPriority() - 1);
             }
             prioritizedDataStorageRepository.save(lessPrioritizeds);
         }
+    }
+
+    @Override
+    public void increasePriority(Long prioritizedDataStorageId) {
+        PrioritizedDataStorage actual = prioritizedDataStorageRepository.findOne(prioritizedDataStorageId);
+        PrioritizedDataStorage other = prioritizedDataStorageRepository
+                .findOneByDataStorageTypeByPriority(actual.getDataStorageType(), actual.getPriority() - 1);
+        other.setPriority(actual.getPriority());
+        actual.setPriority(actual.getPriority() - 1);
+        prioritizedDataStorageRepository.save(Sets.newHashSet(other, actual));
+    }
+
+    @Override
+    public void decreasePriority(Long prioritizedDataStorageId) {
+        PrioritizedDataStorage actual = prioritizedDataStorageRepository.findOne(prioritizedDataStorageId);
+        PrioritizedDataStorage other = prioritizedDataStorageRepository
+                .findOneByDataStorageTypeByPriority(actual.getDataStorageType(), actual.getPriority() + 1);
+        other.setPriority(actual.getPriority());
+        actual.setPriority(actual.getPriority() + 1);
+        prioritizedDataStorageRepository.save(Sets.newHashSet(other, actual));
     }
 
     private class PluginConfEventHandler implements IHandler<PluginConfEvent> {
