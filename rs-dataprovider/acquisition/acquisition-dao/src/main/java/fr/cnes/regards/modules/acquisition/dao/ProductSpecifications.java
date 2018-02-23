@@ -61,7 +61,9 @@ public class ProductSpecifications {
             if (productName != null) {
                 predicates.add(cb.like(root.get("productName"), LIKE_CHAR + productName + LIKE_CHAR));
             }
-            if (session != null) {
+            if ((noSession != null) && Boolean.TRUE.equals(noSession)) {
+                predicates.add(cb.isNull(root.get("session")));
+            } else if (session != null) {
                 predicates.add(cb.like(root.get("session"), LIKE_CHAR + session + LIKE_CHAR));
             }
             if ((states != null) && !states.isEmpty()) {
@@ -71,9 +73,7 @@ public class ProductSpecifications {
                 }
                 predicates.add(cb.or(statePredicates.toArray(new Predicate[statePredicates.size()])));
             }
-            if ((noSession != null) && Boolean.TRUE.equals(noSession)) {
-                predicates.add(cb.isNull(root.get("processingChain")));
-            } else if (processingChainId != null) {
+            if (processingChainId != null) {
                 AcquisitionProcessingChain chain = new AcquisitionProcessingChain();
                 chain.setId(processingChainId);
                 predicates.add(cb.equal(root.get("processingChain"), chain));
