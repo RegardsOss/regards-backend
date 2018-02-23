@@ -63,7 +63,7 @@ public class AcquisitionJobEventHandler implements ApplicationListener<Applicati
                          wrapper.getContent().getJobEventType(), wrapper.getTenant(), wrapper.getContent().getJobId());
             try {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                productService.handleProductSIPSubmissionFailure(wrapper.getContent());
+                productService.handleProductJobEvent(wrapper.getContent());
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

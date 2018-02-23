@@ -145,7 +145,7 @@ public interface IProductService {
     /**
      * Handle product SIP submission failure
      */
-    void handleProductSIPSubmissionFailure(JobEvent jobEvent);
+    void handleProductJobEvent(JobEvent jobEvent);
 
     /**
      * Retry product SIP submission for resetting product SIP state to {@link ProductSIPState#GENERATED}

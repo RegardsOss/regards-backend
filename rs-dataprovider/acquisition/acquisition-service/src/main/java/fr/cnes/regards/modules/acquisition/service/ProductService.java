@@ -399,31 +399,50 @@ public class ProductService implements IProductService {
      * {@link ProductSIPState#SUBMISSION_ERROR}.<br>
      */
     @Override
-    public void handleProductSIPSubmissionFailure(JobEvent jobEvent) {
+    public void handleProductJobEvent(JobEvent jobEvent) {
         if (JobEventType.FAILED.equals(jobEvent.getJobEventType())) {
             // Load job info
             JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
+            handleSIPSubmissiontError(jobInfo);
+            try {
+                handleSIPGenerationError(jobInfo);
+            } catch (ModuleException e) {
+                LOGGER.error("Error handling SIP generation error", e);
+            }
+        }
+    }
 
-            // Manage SIP submission job error!
-            if (SIPSubmissionJob.class.isAssignableFrom(jobInfo.getJob().getClass())) {
-                Map<String, JobParameter> params = jobInfo.getParametersAsMap();
-                String ingestChain = params.get(SIPSubmissionJob.INGEST_CHAIN_PARAMETER).getValue();
-                String session = params.get(SIPSubmissionJob.SESSION_PARAMETER).getValue();
-                // Update product status
-                Set<Product> products;
-                if (session == null) {
-                    products = productRepository
-                            .findByProcessingChainIngestChainAndSipState(ingestChain,
-                                                                         ProductSIPState.SUBMISSION_SCHEDULED);
-                } else {
-                    products = productRepository
-                            .findByProcessingChainIngestChainAndSessionAndSipState(ingestChain, session,
-                                                                                   ProductSIPState.SUBMISSION_SCHEDULED);
-                }
-                for (Product product : products) {
-                    product.setSipState(ProductSIPState.SUBMISSION_ERROR);
-                    save(product);
-                }
+    private void handleSIPSubmissiontError(JobInfo jobInfo) {
+        if (SIPSubmissionJob.class.isAssignableFrom(jobInfo.getJob().getClass())) {
+            Map<String, JobParameter> params = jobInfo.getParametersAsMap();
+            String ingestChain = params.get(SIPSubmissionJob.INGEST_CHAIN_PARAMETER).getValue();
+            String session = params.get(SIPSubmissionJob.SESSION_PARAMETER).getValue();
+            // Update product status
+            Set<Product> products;
+            if (session == null) {
+                products = productRepository
+                        .findByProcessingChainIngestChainAndSipState(ingestChain, ProductSIPState.SUBMISSION_SCHEDULED);
+            } else {
+                products = productRepository
+                        .findByProcessingChainIngestChainAndSessionAndSipState(ingestChain, session,
+                                                                               ProductSIPState.SUBMISSION_SCHEDULED);
+            }
+            for (Product product : products) {
+                product.setSipState(ProductSIPState.SUBMISSION_ERROR);
+                save(product);
+            }
+        }
+    }
+
+    private void handleSIPGenerationError(JobInfo jobInfo) throws ModuleException {
+        if (SIPGenerationJob.class.isAssignableFrom(jobInfo.getJob().getClass())) {
+            JobParameter productIdParam = jobInfo.getParametersAsMap().get(SIPGenerationJob.PRODUCT_ID);
+            if (productIdParam != null) {
+                Long productId = productIdParam.getValue();
+                Product product = loadProduct(productId);
+                product.setSipState(ProductSIPState.GENERATION_ERROR);
+                product.setError(jobInfo.getStatus().getStackTrace());
+                save(product);
             }
         }
     }
