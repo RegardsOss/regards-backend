@@ -1,6 +1,8 @@
 package fr.cnes.regards.modules.notification.client;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -9,10 +11,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
 
@@ -102,5 +107,23 @@ public interface INotificationClient {
     @RequestMapping(value = NOTIFICATION_SETTINGS, method = RequestMethod.PUT)
     public ResponseEntity<NotificationSettings> updateNotificationSettings(
             @RequestBody NotificationSettingsDTO pNotificationSettings);
+
+    /**
+     * Shortcut to create notification for specific roles
+     * @param message
+     * @param title
+     * @param sender
+     * @param notificationType
+     * @param roles
+     */
+    default void notifyRoles(String message, String title, String sender, NotificationType notificationType,
+            DefaultRole... roles) {
+        createNotification(new NotificationDTO(message,
+                                               Sets.newHashSet(),
+                                               Arrays.stream(roles).map(r -> r.name()).collect(Collectors.toSet()),
+                                               sender,
+                                               title,
+                                               notificationType));
+    }
 
 }
