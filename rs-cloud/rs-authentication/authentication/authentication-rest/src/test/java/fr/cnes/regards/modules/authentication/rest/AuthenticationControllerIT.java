@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.authentication.rest;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jetty.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -160,7 +159,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void retrieveInexistantIdentityProvider() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().is(HttpStatus.NOT_FOUND_404));
+        expectations.add(MockMvcResultMatchers.status().isNotFound());
         performDefaultGet(IDP_URL, expectations, "retrieveInexistantIdentityProvider : Error getting identity provider",
                           123);
     }
@@ -232,7 +231,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
         final PluginConfiguration unSavedPluginConf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
         unSavedPluginConf.setId(12345L);
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().is(HttpStatus.NOT_FOUND_404));
+        expectations.add(MockMvcResultMatchers.status().isNotFound());
         performDefaultPut(IDP_URL, unSavedPluginConf, expectations,
                           "updateInexistantIdentityProvider : Error getting identity provider",
                           unSavedPluginConf.getId());
@@ -255,7 +254,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
         final PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
         conf.setId(123L);
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().is(HttpStatus.BAD_REQUEST_400));
+        expectations.add(MockMvcResultMatchers.status().isBadRequest());
         performDefaultPut(IDP_URL, conf, expectations,
                           "updateInvalidIdentityProvider : Error getting identity provider", 12);
     }
@@ -294,7 +293,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void deleteInexistantIndentityProvider() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().is(HttpStatus.NOT_FOUND_404));
+        expectations.add(MockMvcResultMatchers.status().isNotFound());
         performDefaultDelete(IDP_URL, expectations, "Error getting identity provider", 1000);
 
     }

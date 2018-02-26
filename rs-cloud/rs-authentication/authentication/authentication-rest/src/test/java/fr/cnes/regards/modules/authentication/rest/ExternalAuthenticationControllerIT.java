@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.authentication.rest;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jetty.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -169,7 +168,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     @Test
     public void retrieveInexistantServiceProvider() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().is(HttpStatus.NOT_FOUND_404));
+        expectations.add(MockMvcResultMatchers.status().isNotFound());
         performDefaultGet(SP_URL, expectations, "retrieveInexistantServiceProvider : Error getting Service provider",
                           123);
     }
@@ -241,7 +240,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
         final PluginConfiguration unSavedPluginConf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
         unSavedPluginConf.setId(12345L);
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().is(HttpStatus.NOT_FOUND_404));
+        expectations.add(MockMvcResultMatchers.status().isNotFound());
         performDefaultPut(SP_URL, unSavedPluginConf, expectations,
                           "updateInexistantServiceProvider : Error getting Service provider",
                           unSavedPluginConf.getId());
@@ -264,7 +263,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
         final PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
         conf.setId(123L);
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().is(HttpStatus.BAD_REQUEST_400));
+        expectations.add(MockMvcResultMatchers.status().isBadRequest());
         performDefaultPut(SP_URL, conf, expectations, "updateInvalidServiceProvider : Error getting Service provider",
                           12);
     }
@@ -303,7 +302,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     @Test
     public void deleteInexistantIndentityProvider() {
         final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().is(HttpStatus.NOT_FOUND_404));
+        expectations.add(MockMvcResultMatchers.status().isNotFound());
         performDefaultDelete(SP_URL, expectations, "Error getting Service provider", 1000);
 
     }
