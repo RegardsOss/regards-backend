@@ -18,7 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -31,8 +39,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import com.google.gson.JsonIOException;
+import com.google.gson.stream.JsonWriter;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -98,6 +112,12 @@ public class IngestProcessingService implements IIngestProcessingService {
 
     @Autowired
     private IPluginService pluginService;
+
+    @Autowired
+    private Gson gson;
+
+    @Autowired
+    private Validator validator;
 
     @PostConstruct
     public void initDefaultPluginPackages() {
@@ -209,6 +229,38 @@ public class IngestProcessingService implements IIngestProcessingService {
 
         // Save new chain
         return ingestChainRepository.save(newChain);
+    }
+
+    @Override
+    public IngestProcessingChain createNewChain(InputStream input) throws ModuleException {
+        Reader json = new InputStreamReader(input, Charset.forName("UTF-8"));
+        try {
+            IngestProcessingChain ipc = gson.fromJson(json, IngestProcessingChain.class);
+            // Validate entry because not already done
+            Errors errors = new MapBindingResult(new HashMap<>(), "ingestProcessingChain");
+            validator.validate(ipc, errors);
+            if (errors.hasErrors()) {
+                List<String> messages = new ArrayList<>();
+                errors.getAllErrors().forEach(error -> {
+                    messages.add(error.toString());
+                    LOGGER.error("IngestProcessingChain import error : {}", error.toString());
+                });
+                throw new EntityInvalidException(messages);
+            }
+            return createNewChain(ipc);
+        } catch (JsonIOException e) {
+            LOGGER.error("Cannot read JSON file containing ingestion processing chain", e);
+            throw new EntityInvalidException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void exportProcessingChain(String name, OutputStream os) throws ModuleException, IOException {
+        IngestProcessingChain ipc = getChain(name);
+        try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(os, "UTF-8"))) {
+            writer.setIndent("  ");
+            gson.toJson(ipc, IngestProcessingChain.class, writer);
+        }
     }
 
     private PluginConfiguration createPluginConfiguration(PluginConfiguration pluginConfiguration)

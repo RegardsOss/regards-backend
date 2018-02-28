@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -75,6 +78,20 @@ public interface IIngestProcessingService {
      * @return created {@link IngestProcessingChain}
      */
     IngestProcessingChain createNewChain(IngestProcessingChain newChain) throws ModuleException;
+
+    /**
+     * Create a new {@link IngestProcessingChain}
+     * @param input JSON file containing an {@link IngestProcessingChain}
+     * @return the newly created {@link IngestProcessingChain}
+     */
+    IngestProcessingChain createNewChain(InputStream input) throws ModuleException;
+
+    /**
+     * Export specified processing chain as JSON file
+     * @param name processing chain name
+     * @param os output stream
+     */
+    void exportProcessingChain(String name, OutputStream os) throws ModuleException, IOException;
 
     /**
      * Update a {@link IngestProcessingChain}
