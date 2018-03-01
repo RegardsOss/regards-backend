@@ -192,13 +192,13 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
 
     public static final String ORF_FILE_PATH_PARAM = "orfFilePathPattern";
 
-    @PluginParameter(name = CYCLES_FILE_PATH_PARAM, label = "Cycles file path", optional = false)
+    @PluginParameter(name = CYCLES_FILE_PATH_PARAM, label = "Cycles file path", optional = true)
     protected String cyclePath;
 
-    @PluginParameter(name = ORF_FILE_PATH_PARAM, label = "ORF file path patterns", optional = false)
+    @PluginParameter(name = ORF_FILE_PATH_PARAM, label = "ORF file path patterns", optional = true)
     protected String orfFilePathPattern;
 
-    @PluginParameter(name = ARC_FILE_PATH_PARAM, label = "Arc file path", optional = false)
+    @PluginParameter(name = ARC_FILE_PATH_PARAM, label = "Arc file path", optional = true)
     protected String arcPath;
 
     protected String getCycleFilePath() {
