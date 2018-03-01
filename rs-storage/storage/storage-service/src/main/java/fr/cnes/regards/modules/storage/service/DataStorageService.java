@@ -111,20 +111,22 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
         for (PluginConfiguration activeDataStorageConf : activeDataStorageConfs) {
             //lets initialize the monitoring information for this data storage configuration by getting plugin informations
             Long activeDataStorageConfId = activeDataStorageConf.getId();
-            PluginMetaData activeDataStorageMeta = pluginService
-                    .getPluginMetaDataById(activeDataStorageConf.getPluginId());
-            PluginStorageInfo monitoringInfo = new PluginStorageInfo(activeDataStorageConfId,
-                    activeDataStorageMeta.getDescription(), activeDataStorageConf.getLabel());
-            //now lets get the data storage monitoring information from the plugin
-            Long dataStorageTotalSpace = ((IDataStorage) pluginService.getPlugin(activeDataStorageConfId))
-                    .getTotalSpace();
-            DataStorageInfo dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(),
-                    dataStorageTotalSpace, monitoringAggregationMap.get(activeDataStorageConfId));
-            monitoringInfo.setTotalSize(dataStorageInfo.getTotalSize());
-            monitoringInfo.setUsedSize(dataStorageInfo.getUsedSize());
-            monitoringInfo.setRatio(dataStorageInfo.getRatio());
+            if (monitoringAggregationMap.containsKey(activeDataStorageConfId)) {
+                PluginMetaData activeDataStorageMeta = pluginService
+                        .getPluginMetaDataById(activeDataStorageConf.getPluginId());
+                PluginStorageInfo monitoringInfo = new PluginStorageInfo(activeDataStorageConfId,
+                        activeDataStorageMeta.getDescription(), activeDataStorageConf.getLabel());
+                //now lets get the data storage monitoring information from the plugin
+                Long dataStorageTotalSpace = ((IDataStorage) pluginService.getPlugin(activeDataStorageConfId))
+                        .getTotalSpace();
+                DataStorageInfo dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(),
+                        dataStorageTotalSpace, monitoringAggregationMap.get(activeDataStorageConfId));
+                monitoringInfo.setTotalSize(dataStorageInfo.getTotalSize());
+                monitoringInfo.setUsedSize(dataStorageInfo.getUsedSize());
+                monitoringInfo.setRatio(dataStorageInfo.getRatio());
 
-            monitoringInfos.add(monitoringInfo);
+                monitoringInfos.add(monitoringInfo);
+            }
         }
         return monitoringInfos;
     }
