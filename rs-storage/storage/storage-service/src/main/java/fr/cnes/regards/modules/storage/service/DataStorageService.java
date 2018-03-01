@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
@@ -119,8 +120,14 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
                 //now lets get the data storage monitoring information from the plugin
                 Long dataStorageTotalSpace = ((IDataStorage) pluginService.getPlugin(activeDataStorageConfId))
                         .getTotalSpace();
-                DataStorageInfo dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(),
-                        dataStorageTotalSpace, monitoringAggregationMap.get(activeDataStorageConfId));
+                DataStorageInfo dataStorageInfo;
+                if (monitoringAggregationMap.containsKey(activeDataStorageConfId)) {
+                    dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(), dataStorageTotalSpace,
+                            monitoringAggregationMap.get(activeDataStorageConfId));
+                } else {
+                    dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(), dataStorageTotalSpace, 0);
+
+                }
                 monitoringInfo.setTotalSize(dataStorageInfo.getTotalSize());
                 monitoringInfo.setUsedSize(dataStorageInfo.getUsedSize());
                 monitoringInfo.setRatio(dataStorageInfo.getRatio());
