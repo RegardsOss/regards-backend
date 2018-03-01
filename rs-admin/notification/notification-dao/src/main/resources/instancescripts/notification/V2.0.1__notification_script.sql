@@ -1,1 +1,0 @@
-ALTER TABLE t_notification ALTER COLUMN message TYPE text;
