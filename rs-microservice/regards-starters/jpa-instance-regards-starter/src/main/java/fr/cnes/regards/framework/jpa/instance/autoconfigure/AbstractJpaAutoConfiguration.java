@@ -159,7 +159,6 @@ public abstract class AbstractJpaAutoConfiguration {
         } else {
             FlywayDatasourceSchemaHelper helper = new FlywayDatasourceSchemaHelper(hibernateProperties);
             helper.setDataSource(instanceDataSource);
-            helper.setScriptLocationPath("instancescripts");
             return helper;
         }
     }

@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.jpa.multitenant.test;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
@@ -32,7 +31,6 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration
 @EnableAutoConfiguration(exclude = JacksonAutoConfiguration.class)
 @PropertySource("classpath:dao.properties")
-@ComponentScan(basePackages = { "fr.cnes.regards.modules" })
 public class DefaultDaoTestConfiguration {
 
 }
