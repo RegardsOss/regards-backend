@@ -1,7 +1,3 @@
-drop table ta_notification_projectuser;
-drop table ta_notification_role;
-drop table t_notification;
-drop table t_notification_settings;
 create table t_notification (id int8 not null, date timestamp, message varchar(255), sender varchar(255), status varchar(255), title varchar(255), type varchar(255), primary key (id));
 create table t_notification_settings (id int8 not null, days int4, frequency varchar(255), hours int4, user_email varchar(255), primary key (id));
 create table ta_notification_projectuser_email (notification_id int8 not null, projectuser_email varchar(200));
