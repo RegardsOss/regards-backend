@@ -37,6 +37,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -53,6 +54,7 @@ import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
 import fr.cnes.regards.modules.storage.domain.StorageException;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
+import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEventState;
@@ -171,6 +173,9 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     @Autowired
     private IPublisher publisher;
 
+    @Autowired
+    private IPrioritizedDataStorageService prioritizedDataStorageService;
+
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -223,50 +228,63 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
 
     @Override
     public CoupleAvailableError restore(Set<StorageDataFile> dataFilesToRestore, OffsetDateTime cacheExpirationDate) {
-//        LOG.debug("CachedFileService : run restoration process for {} files.", dataFilesToRestore.size());
-//        // Get files already in cache
-//        Set<String> dataFilesToRestoreChecksums = dataFilesToRestore.stream().map(df -> df.getChecksum())
-//                .collect(Collectors.toSet());
-//        Set<CachedFile> cachedFiles = cachedFileRepository.findAllByChecksumIn(dataFilesToRestoreChecksums);
-//        Set<StorageDataFile> alreadyCachedData = dataFileDao
-//                .findAllByChecksumIn(cachedFiles.stream().map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
-//        // Update expiration to the new cacheExpirationDate if above the last one.
-//        for (CachedFile cachedFile : cachedFiles) {
-//            if (cachedFile.getExpiration().compareTo(cacheExpirationDate) > 0) {
-//                cachedFile.setExpiration(cacheExpirationDate);
-//                cachedFileRepository.save(cachedFile);
-//            }
-//        }
-//
-//        // Get cached files available
-//        Set<CachedFile> availableCachedFiles = cachedFiles.stream()
-//                .filter(cf -> CachedFileState.AVAILABLE.equals(cf.getState())).collect(Collectors.toSet());
-//        Set<StorageDataFile> alreadyAvailableData = dataFileDao.findAllByChecksumIn(availableCachedFiles.stream()
-//                .map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
-//        // Get cached files queued
-//        Set<CachedFile> queuedCachedFiles = cachedFiles.stream()
-//                .filter(cf -> CachedFileState.QUEUED.equals(cf.getState())).collect(Collectors.toSet());
-//        Set<StorageDataFile> queuedData = dataFileDao.findAllByChecksumIn(queuedCachedFiles.stream()
-//                .map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
-//
-//        // Create the list of data files not handle by cache and needed to be restored
-//        Set<StorageDataFile> toRetrieve = Sets.newHashSet(dataFilesToRestore);
-//        // Remove all files already availables in cache.
-//        toRetrieve.removeAll(alreadyCachedData);
-//        // Try to retrieve queued files if possible
-//        toRetrieve.addAll(queuedData);
-//
-//        // Dispatch each Datafile by storage plugin.
-//        Multimap<Long, StorageDataFile> toRetrieveByStorage = HashMultimap.create();
-//        for (StorageDataFile df : toRetrieve) {
-//            toRetrieveByStorage.put(df.getDataStorages().getId(), df);
-//        }
-//        Set<StorageDataFile> errors = Sets.newHashSet();
-//        for (Long storageConfId : toRetrieveByStorage.keySet()) {
-//            scheduleDataFileRestoration(storageConfId, toRetrieveByStorage.get(storageConfId), cacheExpirationDate);
-//        }
-//        return new CoupleAvailableError(alreadyAvailableData, errors);
-        return null; //FIXME: do modification
+        LOG.debug("CachedFileService : run restoration process for {} files.", dataFilesToRestore.size());
+        // Get files already in cache
+        Set<String> dataFilesToRestoreChecksums = dataFilesToRestore.stream().map(df -> df.getChecksum())
+                .collect(Collectors.toSet());
+        Set<CachedFile> cachedFiles = cachedFileRepository.findAllByChecksumIn(dataFilesToRestoreChecksums);
+        Set<StorageDataFile> alreadyCachedData = dataFileDao
+                .findAllByChecksumIn(cachedFiles.stream().map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
+        // Update expiration to the new cacheExpirationDate if above the last one.
+        for (CachedFile cachedFile : cachedFiles) {
+            if (cachedFile.getExpiration().compareTo(cacheExpirationDate) > 0) {
+                cachedFile.setExpiration(cacheExpirationDate);
+                cachedFileRepository.save(cachedFile);
+            }
+        }
+
+        // Get cached files available
+        Set<CachedFile> availableCachedFiles = cachedFiles.stream()
+                .filter(cf -> CachedFileState.AVAILABLE.equals(cf.getState())).collect(Collectors.toSet());
+        Set<StorageDataFile> alreadyAvailableData = dataFileDao.findAllByChecksumIn(availableCachedFiles.stream()
+                .map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
+        // Get cached files queued
+        Set<CachedFile> queuedCachedFiles = cachedFiles.stream()
+                .filter(cf -> CachedFileState.QUEUED.equals(cf.getState())).collect(Collectors.toSet());
+        Set<StorageDataFile> queuedData = dataFileDao.findAllByChecksumIn(queuedCachedFiles.stream()
+                .map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
+
+        // Create the list of data files not handle by cache and needed to be restored
+        Set<StorageDataFile> toRetrieve = Sets.newHashSet(dataFilesToRestore);
+        // Remove all files already availables in cache.
+        toRetrieve.removeAll(alreadyCachedData);
+        // Try to retrieve queued files if possible
+        toRetrieve.addAll(queuedData);
+
+        // Dispatch each Datafile by storage plugin.
+        Multimap<Long, StorageDataFile> toRetrieveByStorage = HashMultimap.create();
+        for (StorageDataFile df : toRetrieve) {
+            toRetrieveByStorage.put(computeDataStorageToUseToRetrieve(df.getDataStorages()), df);
+        }
+        Set<StorageDataFile> errors = Sets.newHashSet();
+        for (Long storageConfId : toRetrieveByStorage.keySet()) {
+            scheduleDataFileRestoration(storageConfId, toRetrieveByStorage.get(storageConfId), cacheExpirationDate);
+        }
+        return new CoupleAvailableError(alreadyAvailableData, errors);
+    }
+
+    private Long computeDataStorageToUseToRetrieve(Set<PluginConfiguration> dataStorages) {
+        PrioritizedDataStorage dataStorageToUse = dataStorages.stream().map(pc -> {
+            try {
+                return prioritizedDataStorageService.retrieve(pc.getId());
+            } catch (EntityNotFoundException e) {
+                LOG.error(String.format(
+                        "We could not retrieve a prioritized data storage for the following plugin configuration: %s",
+                        pc.getLabel()), e);
+                return null;
+            }
+        }).sorted().findFirst().get();
+        return dataStorageToUse.getId();
     }
 
     /**

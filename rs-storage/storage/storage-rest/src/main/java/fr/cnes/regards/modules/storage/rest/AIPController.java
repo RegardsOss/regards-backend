@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.util.Pair;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -520,21 +522,19 @@ public class AIPController implements IResourceController<AIP> {
             @PathVariable("checksum") String checksum) throws ModuleException, IOException {
         // Retrieve file locale path, 404 if aip not found or bad checksum or no storage plugin
         // 403 if user has not right
-//        Optional<StorageDataFile> dataFileOpt = aipService.getAIPDataFile(aipId, checksum);
-//        if (dataFileOpt.isPresent()) {
-//            StorageDataFile dataFile = dataFileOpt.get();
-//            File file = new File(dataFile.getUrls().getPath());
-//            InputStreamResource isr = new InputStreamResource(new FileInputStream(file));
-//            Long fileSize = file.length();
-//            HttpHeaders headers = new HttpHeaders();
-//            headers.setContentLength(fileSize);
-//            headers.setContentType(asMediaType(dataFile.getMimeType()));
-//            headers.setContentDispositionFormData("attachement;filename=", dataFile.getName());
-//            return new ResponseEntity<>(isr, headers, HttpStatus.OK);
-//        } else { // NEARLINE file not in cache
-//            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
-//        }
-        return null; //FIXME
+        Pair<StorageDataFile, InputStream> dataFileISPair = aipService.getAIPDataFile(aipId, checksum);
+        if (dataFileISPair != null) {
+            StorageDataFile dataFile = dataFileISPair.getFirst();
+            InputStreamResource isr = new InputStreamResource(dataFileISPair.getSecond());
+            Long fileSize = dataFile.getFileSize();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentLength(fileSize);
+            headers.setContentType(asMediaType(dataFile.getMimeType()));
+            headers.setContentDispositionFormData("attachement;filename=", dataFile.getName());
+            return new ResponseEntity<>(isr, headers, HttpStatus.OK);
+        } else { // NEARLINE file not in cache
+            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+        }
     }
 
     public static MediaType asMediaType(MimeType mimeType) {

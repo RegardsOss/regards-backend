@@ -5,14 +5,10 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
@@ -22,6 +18,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
 /**
  * Wrapper used to prioritize {@link fr.cnes.regards.modules.storage.domain.plugin.IDataStorage} configurations.
+ * As a wrapper, its database identifier is the same than the wrapped {@link PluginConfiguration}.
  * This wrapper is strictly ordered on priority.
  *
  * @author Sylvain VISSIERE-GUERINET

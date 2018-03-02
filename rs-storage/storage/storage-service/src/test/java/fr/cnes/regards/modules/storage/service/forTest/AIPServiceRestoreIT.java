@@ -85,6 +85,7 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage
 import fr.cnes.regards.modules.storage.plugin.security.CatalogSecurityDelegation;
 import fr.cnes.regards.modules.storage.service.DataStorageEventHandler;
 import fr.cnes.regards.modules.storage.service.IAIPService;
+import fr.cnes.regards.modules.storage.service.IPrioritizedDataStorageService;
 import fr.cnes.regards.modules.storage.service.RestoreJobEventHandler;
 import fr.cnes.regards.modules.storage.service.TestConfig;
 import fr.cnes.regards.modules.storage.service.TestDataStorageEventHandler;
@@ -97,7 +98,6 @@ import fr.cnes.regards.modules.storage.service.TestDataStorageEventHandler;
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles("testAmqp")
 @DirtiesContext
-@Ignore //FIXME
 public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(AIPServiceRestoreIT.class);
@@ -164,6 +164,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     @Autowired
     private ISearchClient searchClient;
 
+    @Autowired
+    private IPrioritizedDataStorageService prioritizedDataStorageService;
+
     private PluginConfiguration catalogSecuDelegConf;
 
     public void initCacheDir() throws IOException {
@@ -214,7 +217,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                 .getParameters();
         dataStorageConf = new PluginConfiguration(dataStoMeta, "dsConfLabel", parameters, 0);
         dataStorageConf.setIsActive(true);
-        pluginService.savePluginConfiguration(dataStorageConf);
+        prioritizedDataStorageService.create(dataStorageConf);
 
         PluginMetaData nearlineMeta = PluginUtils
                 .createPluginMetaData(SimpleNearLineStoragePlugin.class, IDataStorage.class.getPackage().getName(),
@@ -223,7 +226,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         nearLineConf = new PluginConfiguration(nearlineMeta, "nearlineConfLabel", parameters, 0);
         nearLineConf.setIsActive(true);
 
-        pluginService.savePluginConfiguration(nearLineConf);
+        prioritizedDataStorageService.create(nearLineConf);
     }
 
     /**
