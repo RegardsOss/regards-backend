@@ -51,8 +51,11 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
                     INearlineDataStorage.class.getName()));
         }
         Long actualLowestPriority = getLowestPriority(dataStorageType);
-        return prioritizedDataStorageRepository
-                .save(new PrioritizedDataStorage(dataStorageConf, actualLowestPriority + 1, dataStorageType));
+        return prioritizedDataStorageRepository.save(new PrioritizedDataStorage(dataStorageConf,
+                                                                                actualLowestPriority == null ?
+                                                                                        0 :
+                                                                                        actualLowestPriority + 1,
+                                                                                dataStorageType));
     }
 
     @Override
@@ -66,7 +69,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
                 .findFirstByDataStorageTypeOrderByPriorityDesc(dataStorageType);
         if (lowestPrioritizedDataStorage == null) {
             //in case there is no one yet, lets give it the highest priority
-            return PrioritizedDataStorage.HIGHEST_PRIORITY;
+            return null;
         }
         return lowestPrioritizedDataStorage.getPriority();
     }
@@ -81,8 +84,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
 
     @Override
     public void delete(Long pluginConfId) {
-        Optional<PrioritizedDataStorage> toDeleteOpt = prioritizedDataStorageRepository
-                .findOneById(pluginConfId);
+        Optional<PrioritizedDataStorage> toDeleteOpt = prioritizedDataStorageRepository.findOneById(pluginConfId);
         if (toDeleteOpt.isPresent()) {
             //first we need to increase all the priorities of those which are less prioritized than the one to delete
             PrioritizedDataStorage toDelete = toDeleteOpt.get();
@@ -103,7 +105,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
         PrioritizedDataStorage other = prioritizedDataStorageRepository
                 .findOneByDataStorageTypeAndPriority(actual.getDataStorageType(), actual.getPriority() - 1);
         // is there someone which has a greater priority?
-        if(other != null) {
+        if (other != null) {
             other.setPriority(actual.getPriority());
             actual.setPriority(actual.getPriority() - 1);
             prioritizedDataStorageRepository.save(Sets.newHashSet(other, actual));
@@ -116,7 +118,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
         PrioritizedDataStorage other = prioritizedDataStorageRepository
                 .findOneByDataStorageTypeAndPriority(actual.getDataStorageType(), actual.getPriority() + 1);
         // is there someone which has a lower priority?
-        if(other != null) {
+        if (other != null) {
             other.setPriority(actual.getPriority());
             actual.setPriority(actual.getPriority() + 1);
             prioritizedDataStorageRepository.save(Sets.newHashSet(other, actual));
@@ -126,7 +128,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
     @Override
     public PrioritizedDataStorage retrieve(Long id) throws EntityNotFoundException {
         PrioritizedDataStorage actual = prioritizedDataStorageRepository.findOne(id);
-        if(actual == null) {
+        if (actual == null) {
             throw new EntityNotFoundException(id, PrioritizedDataStorage.class);
         }
         return actual;
@@ -135,7 +137,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
     @Override
     public PrioritizedDataStorage update(Long id, PrioritizedDataStorage updated) throws ModuleException {
         PrioritizedDataStorage oldOne = retrieve(id);
-        if(!id.equals(updated.getId())) {
+        if (!id.equals(updated.getId())) {
             throw new EntityInconsistentIdentifierException(id, updated.getId(), PrioritizedDataStorage.class);
         }
         PluginConfiguration updatedConf = pluginService

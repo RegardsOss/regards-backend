@@ -35,7 +35,7 @@ public interface IPrioritizedDataStorageService {
     /**
      * retrieve the lowest priority for a given type
      * @param dataStorageType {@link DataStorageType}
-     * @return the lowest priority for the given type
+     * @return the lowest priority for the given type, null if no data storage of this type has been created
      */
     Long getLowestPriority(DataStorageType dataStorageType);
 
