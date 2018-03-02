@@ -86,6 +86,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
+import fr.cnes.regards.modules.storage.service.IPrioritizedDataStorageService;
 
 /**
  * Run client IT scenario tests for storeAndCreate and restore files from rs-storage microservice.
@@ -144,6 +145,9 @@ public class AipClientIT extends AbstractRegardsWebIT {
 
     @Autowired
     private ObjectFactory<HttpMessageConverters> messageConverters;
+
+    @Autowired
+    private IPrioritizedDataStorageService prioritizedDataStorageService;
 
     @BeforeClass
     public static void initAll() throws IOException {
@@ -208,7 +212,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 90000000000000L).getParameters();
         PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, "dsLabel", parameters, 0);
         dataStorageConf.setIsActive(true);
-        pluginService.savePluginConfiguration(dataStorageConf);
+        prioritizedDataStorageService.create(dataStorageConf);
     }
 
     public Path initTestFile() throws IOException {
