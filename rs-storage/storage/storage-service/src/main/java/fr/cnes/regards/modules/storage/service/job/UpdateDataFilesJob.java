@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -15,6 +14,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.modules.storage.domain.StorageException;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
+import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 
@@ -34,11 +34,13 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
         super.checkParameters(parameters);
         // lets see if old data files has been given or not
         JobParameter oldDataFiles;
-        if (((oldDataFiles = parameters.get(OLD_DATA_FILES_PARAMETER_NAME)) == null)
-                || !(oldDataFiles.getValue() instanceof StorageDataFile[])) {
-            JobParameterMissingException e = new JobParameterMissingException(
-                    String.format(PARAMETER_MISSING, this.getClass().getName(), StorageDataFile[].class.getName(),
-                                  OLD_DATA_FILES_PARAMETER_NAME));
+        if (((oldDataFiles = parameters.get(OLD_DATA_FILES_PARAMETER_NAME)) == null) || !(oldDataFiles
+                .getValue() instanceof StorageDataFile[])) {
+            JobParameterMissingException e = new JobParameterMissingException(String.format(PARAMETER_MISSING,
+                                                                                            this.getClass().getName(),
+                                                                                            StorageDataFile[].class
+                                                                                                    .getName(),
+                                                                                            OLD_DATA_FILES_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
@@ -63,9 +65,12 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
                     .newHashSet((StorageDataFile[]) parameterMap.get(OLD_DATA_FILES_PARAMETER_NAME).getValue());
             // then lets remove the ones that failed
             oldDataFiles.removeAll(progressManager.getFailedDataFile());
-            // now we hvae the old data files that have been replaced
-            // FIXME : Prepare files for update
-            storagePlugin.delete(oldDataFiles, progressManager);
+            // now we have the old data files that have been replaced
+            Set<IWorkingSubset> subSetsToDelete = storagePlugin
+                    .prepare(oldDataFiles, DataStorageAccessModeEnum.DELETION_MODE);
+            for (IWorkingSubset toDelete : subSetsToDelete) {
+                storagePlugin.delete(toDelete, progressManager);
+            }
             if (progressManager.isProcessError()) {
                 throw new StorageException("Update process failed");
             }
