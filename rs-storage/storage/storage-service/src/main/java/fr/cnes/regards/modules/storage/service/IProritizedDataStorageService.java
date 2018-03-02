@@ -3,6 +3,8 @@ package fr.cnes.regards.modules.storage.service;
 import javax.annotation.Nullable;
 
 import com.google.common.collect.Multimap;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 
@@ -10,6 +12,8 @@ import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
  * @author Sylvain VISSIERE-GUERINET
  */
 public interface IProritizedDataStorageService {
+
+    PrioritizedDataStorage create(PluginConfiguration toBeCreated) throws ModuleException;
 
     /**
      * Retrieve all prioritized data storages split per type ordered by priority

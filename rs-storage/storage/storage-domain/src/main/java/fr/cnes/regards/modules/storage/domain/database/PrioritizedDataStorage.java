@@ -9,7 +9,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -34,14 +36,13 @@ public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage
 
     public static final String PRIORITY_COLUMN_NAME = "priority";
 
-    public static final Long HIGHEST_PRIORITY = 0L;
+    private static final Long HIGHEST_PRIORITY = 0L;
 
     @Id
-    @SequenceGenerator(name = "PrioritizedDSSequence", initialValue = 1, sequenceName = "seq_prioritized_data_storage")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PrioritizedDSSequence")
     private Long id;
 
     @OneToOne
+    @MapsId
     @JoinColumn(name = "data_storage_conf_id",
             foreignKey = @ForeignKey(name = "fk_prioritized_data_storage_plugin_conf"))
     private PluginConfiguration dataStorageConfiguration;
@@ -53,7 +54,7 @@ public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage
     /**
      * Priority of this data storage.
      */
-    @Min(HIGHEST_PRIORITY)
+    @Min(0L)
     @Column(name = PRIORITY_COLUMN_NAME)
     private Long priority;
 

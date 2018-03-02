@@ -132,8 +132,7 @@ public class DataFileDao implements IDataFileDao {
 
     @Override
     public Collection<MonitoringAggregation> getMonitoringAggregation() {
-//        return repository.getMonitoringAggregation();
-        return new HashSet<>(); //FIXME
+        return repository.getMonitoringAggregation();
     }
 
     private Optional<AIPEntity> getAipDataBase(AIP aip) {

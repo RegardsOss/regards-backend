@@ -559,7 +559,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
 
         // Delete files
-        plugin.delete(dataFilesToDelete, pm);
+        plugin.delete(new STAFWorkingSubset(dataFilesToDelete), pm);
 
         // No restoration error
         Mockito.verify(pm, Mockito.times(0)).deletionFailed(Mockito.any(), Mockito.any());

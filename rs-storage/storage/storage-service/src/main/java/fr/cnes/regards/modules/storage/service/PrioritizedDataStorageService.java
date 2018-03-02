@@ -5,27 +5,19 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;
 import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 
@@ -34,14 +26,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
  */
 @Service
 @RegardsTransactional
-public class PrioritizedDataStorageService
-        implements IProritizedDataStorageService, ApplicationListener<ApplicationReadyEvent> {
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
-    private ISubscriber subscriber;
+public class PrioritizedDataStorageService implements IProritizedDataStorageService {
 
     @Autowired
     private IPluginService pluginService;
@@ -50,26 +35,16 @@ public class PrioritizedDataStorageService
     private IPrioritizedDataStorageRepository prioritizedDataStorageRepository;
 
     @Override
-    public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(PluginConfEvent.class, new PluginConfEventHandler());
-    }
-
-    private PrioritizedDataStorage create(Long pluginConfId) {
-        PluginConfiguration dataStorageConf;
-        try {
-            dataStorageConf = pluginService.getPluginConfiguration(pluginConfId);
-        } catch (EntityNotFoundException e) {
-            throw new RsRuntimeException(e);
-        }
+    public PrioritizedDataStorage create(PluginConfiguration toBeCreated) throws ModuleException {
+        PluginConfiguration dataStorageConf = pluginService.savePluginConfiguration(toBeCreated);
         DataStorageType dataStorageType;
         if (dataStorageConf.getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
             dataStorageType = DataStorageType.ONLINE;
         } else if (dataStorageConf.getInterfaceNames().contains(INearlineDataStorage.class.getName())) {
             dataStorageType = DataStorageType.NEARLINE;
         } else {
-            throw new IllegalArgumentException(String.format(
-                    "Given plugin configuration(id: %s, label: %s) is not a configuration for an online or nearline data storage (respectfully %s or %s)!",
-                    dataStorageConf.getId().toString(),
+            throw new EntityInvalidException(String.format(
+                    "Given plugin configuration(label: %s) is not a configuration for an online or nearline data storage (respectfully %s or %s)!",
                     dataStorageConf.getLabel(),
                     IOnlineDataStorage.class.getName(),
                     INearlineDataStorage.class.getName()));
@@ -104,7 +79,7 @@ public class PrioritizedDataStorageService
     @Nullable
     public PrioritizedDataStorage getFirstActiveByType(DataStorageType dataStorageType) {
         PrioritizedDataStorage prioritizedDataStorage = prioritizedDataStorageRepository
-                .findFirstByDataStorageTypeByDataStorageConfigurationActiveOrderByPriorityAsc(dataStorageType, true);
+                .findFirstByDataStorageTypeAndDataStorageConfigurationActiveOrderByPriorityAsc(dataStorageType, true);
         return prioritizedDataStorage;
     }
 
@@ -116,7 +91,7 @@ public class PrioritizedDataStorageService
             //first we need to increase all the priorities of those which are less prioritized than the one to delete
             PrioritizedDataStorage toDelete = toDeleteOpt.get();
             Set<PrioritizedDataStorage> lessPrioritizeds = prioritizedDataStorageRepository
-                    .findAllByDataStorageTypeAndGreaterPriorityThanOrderByPriorityAsc(toDelete.getDataStorageType(),
+                    .findAllByDataStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(toDelete.getDataStorageType(),
                                                                                       toDelete.getPriority());
             prioritizedDataStorageRepository.delete(toDelete);
             for (PrioritizedDataStorage lessPrioritized : lessPrioritizeds) {
@@ -130,7 +105,7 @@ public class PrioritizedDataStorageService
     public void increasePriority(Long prioritizedDataStorageId) {
         PrioritizedDataStorage actual = prioritizedDataStorageRepository.findOne(prioritizedDataStorageId);
         PrioritizedDataStorage other = prioritizedDataStorageRepository
-                .findOneByDataStorageTypeByPriority(actual.getDataStorageType(), actual.getPriority() - 1);
+                .findOneByDataStorageTypeAndPriority(actual.getDataStorageType(), actual.getPriority() - 1);
         other.setPriority(actual.getPriority());
         actual.setPriority(actual.getPriority() - 1);
         prioritizedDataStorageRepository.save(Sets.newHashSet(other, actual));
@@ -140,32 +115,9 @@ public class PrioritizedDataStorageService
     public void decreasePriority(Long prioritizedDataStorageId) {
         PrioritizedDataStorage actual = prioritizedDataStorageRepository.findOne(prioritizedDataStorageId);
         PrioritizedDataStorage other = prioritizedDataStorageRepository
-                .findOneByDataStorageTypeByPriority(actual.getDataStorageType(), actual.getPriority() + 1);
+                .findOneByDataStorageTypeAndPriority(actual.getDataStorageType(), actual.getPriority() + 1);
         other.setPriority(actual.getPriority());
         actual.setPriority(actual.getPriority() + 1);
         prioritizedDataStorageRepository.save(Sets.newHashSet(other, actual));
-    }
-
-    private class PluginConfEventHandler implements IHandler<PluginConfEvent> {
-
-        @Override
-        public void handle(TenantWrapper<PluginConfEvent> wrapper) {
-            runtimeTenantResolver.forceTenant(wrapper.getTenant());
-            PluginConfEvent event = wrapper.getContent();
-            //here we only care for IDataStorage configurations
-            if (event.getPluginTypes().contains(IDataStorage.class.getName())) {
-                switch (event.getAction()) {
-                    case CREATE:
-                        create(event.getPluginConfId());
-                        break;
-                    case DELETE:
-                        delete(event.getPluginConfId());
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
     }
 }
