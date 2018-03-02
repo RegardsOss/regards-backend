@@ -24,10 +24,12 @@ public interface IPrioritizedDataStorageRepository extends JpaRepository<Priorit
 
     Optional<PrioritizedDataStorage> findOneByDataStorageConfigurationId(Long pluginConfId);
 
+    Optional<PrioritizedDataStorage> findOneById(Long pluginConfId);
+
     Set<PrioritizedDataStorage> findAllByDataStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(DataStorageType dataStorageType,
             Long priority);
-
     List<PrioritizedDataStorage> findAllByDataStorageTypeOrderByPriorityAsc(DataStorageType dataStorageType);
+
     /**
      * We want the active {@link PrioritizedDataStorage} with the highest priority, which means the lowest value of the attribute priority.
      * To do so, we order by ascending priority and take the first one

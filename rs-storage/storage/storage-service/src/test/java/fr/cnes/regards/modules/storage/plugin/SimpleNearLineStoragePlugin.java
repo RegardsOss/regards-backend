@@ -44,7 +44,7 @@ public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWo
     }
 
     @Override
-    public void delete(Set<StorageDataFile> pDataFiles, IProgressManager pProgressManager) {
+    public void delete(LocalWorkingSubset workingSubset, IProgressManager progressManager) {
 
     }
 

@@ -1,17 +1,18 @@
 package fr.cnes.regards.modules.storage.service;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -26,7 +27,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
  */
 @Service
 @RegardsTransactional
-public class PrioritizedDataStorageService implements IProritizedDataStorageService {
+public class PrioritizedDataStorageService implements IPrioritizedDataStorageService {
 
     @Autowired
     private IPluginService pluginService;
@@ -55,13 +56,8 @@ public class PrioritizedDataStorageService implements IProritizedDataStorageServ
     }
 
     @Override
-    public Multimap<DataStorageType, PrioritizedDataStorage> findAllByTypes() {
-        Multimap<DataStorageType, PrioritizedDataStorage> result = ArrayListMultimap.create();
-        for (DataStorageType dataStorageType : DataStorageType.values()) {
-            result.putAll(dataStorageType,
-                          prioritizedDataStorageRepository.findAllByDataStorageTypeOrderByPriorityAsc(dataStorageType));
-        }
-        return result;
+    public List<PrioritizedDataStorage> findAllByType(DataStorageType type) {
+        return prioritizedDataStorageRepository.findAllByDataStorageTypeOrderByPriorityAsc(type);
     }
 
     @Override
@@ -86,7 +82,7 @@ public class PrioritizedDataStorageService implements IProritizedDataStorageServ
     @Override
     public void delete(Long pluginConfId) {
         Optional<PrioritizedDataStorage> toDeleteOpt = prioritizedDataStorageRepository
-                .findOneByDataStorageConfigurationId(pluginConfId);
+                .findOneById(pluginConfId);
         if (toDeleteOpt.isPresent()) {
             //first we need to increase all the priorities of those which are less prioritized than the one to delete
             PrioritizedDataStorage toDelete = toDeleteOpt.get();
@@ -102,22 +98,49 @@ public class PrioritizedDataStorageService implements IProritizedDataStorageServ
     }
 
     @Override
-    public void increasePriority(Long prioritizedDataStorageId) {
-        PrioritizedDataStorage actual = prioritizedDataStorageRepository.findOne(prioritizedDataStorageId);
+    public void increasePriority(Long prioritizedDataStorageId) throws EntityNotFoundException {
+        PrioritizedDataStorage actual = retrieve(prioritizedDataStorageId);
         PrioritizedDataStorage other = prioritizedDataStorageRepository
                 .findOneByDataStorageTypeAndPriority(actual.getDataStorageType(), actual.getPriority() - 1);
-        other.setPriority(actual.getPriority());
-        actual.setPriority(actual.getPriority() - 1);
-        prioritizedDataStorageRepository.save(Sets.newHashSet(other, actual));
+        // is there someone which has a greater priority?
+        if(other != null) {
+            other.setPriority(actual.getPriority());
+            actual.setPriority(actual.getPriority() - 1);
+            prioritizedDataStorageRepository.save(Sets.newHashSet(other, actual));
+        }
     }
 
     @Override
-    public void decreasePriority(Long prioritizedDataStorageId) {
-        PrioritizedDataStorage actual = prioritizedDataStorageRepository.findOne(prioritizedDataStorageId);
+    public void decreasePriority(Long prioritizedDataStorageId) throws EntityNotFoundException {
+        PrioritizedDataStorage actual = retrieve(prioritizedDataStorageId);
         PrioritizedDataStorage other = prioritizedDataStorageRepository
                 .findOneByDataStorageTypeAndPriority(actual.getDataStorageType(), actual.getPriority() + 1);
-        other.setPriority(actual.getPriority());
-        actual.setPriority(actual.getPriority() + 1);
-        prioritizedDataStorageRepository.save(Sets.newHashSet(other, actual));
+        // is there someone which has a lower priority?
+        if(other != null) {
+            other.setPriority(actual.getPriority());
+            actual.setPriority(actual.getPriority() + 1);
+            prioritizedDataStorageRepository.save(Sets.newHashSet(other, actual));
+        }
+    }
+
+    @Override
+    public PrioritizedDataStorage retrieve(Long id) throws EntityNotFoundException {
+        PrioritizedDataStorage actual = prioritizedDataStorageRepository.findOne(id);
+        if(actual == null) {
+            throw new EntityNotFoundException(id, PrioritizedDataStorage.class);
+        }
+        return actual;
+    }
+
+    @Override
+    public PrioritizedDataStorage update(Long id, PrioritizedDataStorage updated) throws ModuleException {
+        PrioritizedDataStorage oldOne = retrieve(id);
+        if(!id.equals(updated.getId())) {
+            throw new EntityInconsistentIdentifierException(id, updated.getId(), PrioritizedDataStorage.class);
+        }
+        PluginConfiguration updatedConf = pluginService
+                .updatePluginConfiguration(updated.getDataStorageConfiguration());
+        oldOne.setDataStorageConfiguration(updatedConf);
+        return prioritizedDataStorageRepository.save(oldOne);
     }
 }

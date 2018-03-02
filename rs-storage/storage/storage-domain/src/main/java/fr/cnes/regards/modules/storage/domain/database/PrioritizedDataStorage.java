@@ -15,6 +15,7 @@ import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -36,11 +37,12 @@ public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage
 
     public static final String PRIORITY_COLUMN_NAME = "priority";
 
-    private static final Long HIGHEST_PRIORITY = 0L;
+    public static final long HIGHEST_PRIORITY = 0L;
 
     @Id
     private Long id;
 
+    @Valid
     @OneToOne
     @MapsId
     @JoinColumn(name = "data_storage_conf_id",
@@ -54,7 +56,7 @@ public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage
     /**
      * Priority of this data storage.
      */
-    @Min(0L)
+    @Min(HIGHEST_PRIORITY)
     @Column(name = PRIORITY_COLUMN_NAME)
     private Long priority;
 
