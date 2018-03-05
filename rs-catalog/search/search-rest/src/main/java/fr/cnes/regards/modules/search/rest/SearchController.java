@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
+import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.StringJoiner;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
@@ -178,7 +181,8 @@ public class SearchController {
             @RequestParam Map<String, String> allParams, Pageable pageable,
             FacettedPagedResourcesAssembler<AbstractEntity> assembler) throws SearchException {
         SimpleSearchKey<AbstractEntity> searchKey = Searches.onAllEntities(tenantResolver.getTenant());
-        FacetPage<AbstractEntity> result = searchService.search(allParams, searchKey, null, pageable);
+        Map<String, String> decodedParams = getDecodedParams(allParams);
+        FacetPage<AbstractEntity> result = searchService.search(decodedParams, searchKey, null, pageable);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
     }
 
@@ -207,7 +211,8 @@ public class SearchController {
             @RequestParam(value = "facets", required = false) String[] pFacets, Pageable pageable,
             FacettedPagedResourcesAssembler<AbstractEntity> pAssembler) throws SearchException {
         SimpleSearchKey<AbstractEntity> searchKey = Searches.onAllEntities(tenantResolver.getTenant());
-        FacetPage<AbstractEntity> result = searchService.search(allParams, searchKey, pFacets, pageable);
+        Map<String, String> decodedParams = getDecodedParams(allParams);
+        FacetPage<AbstractEntity> result = searchService.search(decodedParams, searchKey, pFacets, pageable);
         return new ResponseEntity<>(pAssembler.toResource(result), HttpStatus.OK);
     }
 
@@ -242,7 +247,8 @@ public class SearchController {
             PagedResourcesAssembler<Collection> assembler) throws SearchException {
         SimpleSearchKey<Collection> searchKey = Searches
                 .onSingleEntity(tenantResolver.getTenant(), EntityType.COLLECTION);
-        FacetPage<Collection> result = searchService.search(allParams, searchKey, null, pageable);
+        Map<String, String> decodedParams = getDecodedParams(allParams);
+        FacetPage<Collection> result = searchService.search(decodedParams, searchKey, null, pageable);
         return new ResponseEntity<>(toPagedResources(result, assembler), HttpStatus.OK);
     }
 
@@ -311,7 +317,8 @@ public class SearchController {
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDatasets(@RequestParam Map<String, String> allParams,
             Pageable pageable, PagedDatasetResourcesAssembler assembler) throws SearchException {
         SimpleSearchKey<Dataset> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATASET);
-        FacetPage<Dataset> result = searchService.search(allParams, searchKey, null, pageable);
+        Map<String, String> decodedParams = getDecodedParams(allParams);
+        FacetPage<Dataset> result = searchService.search(decodedParams, searchKey, null, pageable);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
     }
 
@@ -356,7 +363,8 @@ public class SearchController {
             @RequestParam(value = "facets", required = false) String[] facets, Pageable pageable,
             FacettedPagedResourcesAssembler<DataObject> assembler) throws SearchException {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
-        FacetPage<DataObject> result = searchService.search(allParams, searchKey, facets, pageable);
+        Map<String, String> decodedParams = getDecodedParams(allParams);
+        FacetPage<DataObject> result = searchService.search(decodedParams, searchKey, facets, pageable);
         result.getContent().forEach(DataObject::containsPhysicalData);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
     }
@@ -375,7 +383,8 @@ public class SearchController {
             @RequestParam Map<String, String> allParams, Pageable pageable,
             FacettedPagedResourcesAssembler<DataObject> assembler) throws SearchException {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
-        Page<DataObject> result = searchService.search(allParams, searchKey, null, pageable);
+        Map<String, String> decodedParams = getDecodedParams(allParams);
+        Page<DataObject> result = searchService.search(decodedParams, searchKey, null, pageable);
         result.getContent().forEach(DataObject::containsPhysicalData);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
     }
@@ -409,7 +418,8 @@ public class SearchController {
             PagedResourcesAssembler<Dataset> assembler) throws SearchException {
         JoinEntitySearchKey<DataObject, Dataset> searchKey = Searches
                 .onSingleEntityReturningJoinEntity(tenantResolver.getTenant(), EntityType.DATA, EntityType.DATASET);
-        FacetPage<Dataset> result = searchService.search(allParams, searchKey, facets, pageable);
+        Map<String, String> decodedParams = getDecodedParams(allParams);
+        FacetPage<Dataset> result = searchService.search(decodedParams, searchKey, facets, pageable);
         return new ResponseEntity<>(toPagedResources(result, assembler), HttpStatus.OK);
     }
 
@@ -479,7 +489,8 @@ public class SearchController {
             @RequestParam Map<String, String> allParams, Pageable pageable,
             PagedResourcesAssembler<Document> pAssembler) throws SearchException {
         SimpleSearchKey<Document> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DOCUMENT);
-        FacetPage<Document> result = searchService.search(allParams, searchKey, null, pageable);
+        Map<String, String> decodedParams = getDecodedParams(allParams);
+        FacetPage<Document> result = searchService.search(decodedParams, searchKey, null, pageable);
         return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
 
@@ -500,7 +511,8 @@ public class SearchController {
             FacettedPagedResourcesAssembler<Document> assembler) throws SearchException {
         final SimpleSearchKey<Document> searchKey = Searches
                 .onSingleEntity(tenantResolver.getTenant(), EntityType.DOCUMENT);
-        final FacetPage<Document> result = searchService.search(allParams, searchKey, facets, pageable);
+        Map<String, String> decodedParams = getDecodedParams(allParams);
+        final FacetPage<Document> result = searchService.search(decodedParams, searchKey, facets, pageable);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
     }
 
@@ -549,6 +561,33 @@ public class SearchController {
         return ResponseEntity.ok(searchService
                                          .retrieveEnumeratedPropertyValues(allParams, searchKey, propertyPath, maxCount,
                                                                            partialText));
+    }
+
+
+    /**
+     * Decode params
+     * @param allParams params received by the endpoint
+     * @return params decoded
+     * @throws SearchException
+     */
+    private Map<String, String> getDecodedParams(Map<String, String> allParams) throws SearchException {
+        try {
+            // Store decoded params
+            Map<String, String> allParamsDecoded = new HashMap();
+            // Parse params to build the params map decoded
+            for (Map.Entry<String, String> entry : allParams.entrySet()) {
+                allParamsDecoded.put(entry.getKey(), URLDecoder.decode(entry.getValue(), "UTF-8"));
+            }
+            return allParamsDecoded;
+        } catch (UnsupportedEncodingException e) {
+            String message = "Unsupported query parameters";
+            if (allParams != null) {
+                StringJoiner sj = new StringJoiner("&");
+                allParams.forEach((key, value) -> sj.add(key + "=" + value));
+                message += sj.toString();
+            }
+            throw new SearchException(message, e);
+        }
     }
 
     /**
