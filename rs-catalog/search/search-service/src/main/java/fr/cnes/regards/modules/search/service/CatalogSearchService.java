@@ -18,11 +18,8 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -114,22 +111,15 @@ public class CatalogSearchService implements ICatalogSearchService {
     @SuppressWarnings("unchecked")
     @Override
     public <S, R extends IIndexable> FacetPage<R> search(Map<String, String> allParams, SearchKey<S, R> pSearchKey,
-                                                         String[] facets, Pageable pPageable) throws SearchException {
-        // Store decoded params
-        Map<String, String> allParamsDecoded = new HashMap();
+            String[] facets, Pageable pPageable) throws SearchException {
         try {
             SearchKey<?, ?> searchKey = pSearchKey;
-            // Parse params to build the params map decoded
-            for (Entry<String, String> entry : allParams.entrySet()) {
-                allParamsDecoded.put(entry.getKey(), URLDecoder.decode(entry.getValue(), "UTF-8"));
-            }
-
             // Build criterion from query
-            ICriterion criterion = openSearchService.parse(allParamsDecoded);
+            ICriterion criterion = openSearchService.parse(allParams);
 
-            if (LOGGER.isDebugEnabled() && (allParamsDecoded != null)) {
-                for (Entry<String, String> osEntry : allParamsDecoded.entrySet()) {
-                    LOGGER.debug("Query param \"{}\" mapped to value \"{}\"", osEntry.getKey(), URLDecoder.decode(osEntry.getValue(), "UTF-8"));
+            if (LOGGER.isDebugEnabled() && (allParams != null)) {
+                for (Entry<String, String> osEntry : allParams.entrySet()) {
+                    LOGGER.debug("Query param \"{}\" mapped to value \"{}\"", osEntry.getKey(), osEntry.getValue());
                 }
             }
 
@@ -145,7 +135,7 @@ public class CatalogSearchService implements ICatalogSearchService {
             if ((criterion == null) && (searchKey instanceof JoinEntitySearchKey)
                     && (TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)) {
                 searchKey = Searches.onSingleEntity(searchKey.getSearchIndex(),
-                        Searches.fromClass(searchKey.getResultClass()));
+                                                    Searches.fromClass(searchKey.getResultClass()));
             }
 
             // Perform search
@@ -160,7 +150,7 @@ public class CatalogSearchService implements ICatalogSearchService {
                     Predicate<Dataset> datasetGroupAccessFilter = ds -> !Sets.intersection(ds.getGroups(), accessGroups)
                             .isEmpty();
                     return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion,
-                            (Predicate<R>) datasetGroupAccessFilter);
+                                                (Predicate<R>) datasetGroupAccessFilter);
                 } else {
                     return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion);
                 }
@@ -168,23 +158,15 @@ public class CatalogSearchService implements ICatalogSearchService {
 
         } catch (OpenSearchParseException e) {
             String message = "No query parameter";
-            if (allParamsDecoded != null) {
+            if (allParams != null) {
                 StringJoiner sj = new StringJoiner("&");
-                allParamsDecoded.forEach((key, value) -> sj.add(key + "=" + value));
+                allParams.forEach((key, value) -> sj.add(key + "=" + value));
                 message = sj.toString();
             }
             throw new SearchException(message, e);
         } catch (AccessRightFilterException e) {
             LOGGER.debug("Falling back to empty page", e);
             return new FacetPage<>(new ArrayList<>(), null);
-        } catch (UnsupportedEncodingException e) {
-            String message = "Unsupported query parameter";
-            if (allParams != null) {
-                StringJoiner sj = new StringJoiner("&");
-                allParams.forEach((key, value) -> sj.add(key + "=" + value));
-                message += sj.toString();
-            }
-            throw new SearchException(message, e);
         }
     }
 
