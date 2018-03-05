@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.configuration.domain;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
+import org.hibernate.annotations.Type;
+
 /**
  * UI Page entity.
  * @author Sébastien Binda
@@ -40,7 +42,7 @@ public class UIPage {
     @Column(length = 512)
     private String customIconURL;
 
-    @Column(length = 256)
+    @Type(type = "text")
     private String title;
 
     public UIPage() {
