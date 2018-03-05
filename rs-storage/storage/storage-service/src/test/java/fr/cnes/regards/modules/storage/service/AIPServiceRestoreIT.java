@@ -130,9 +130,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     @Autowired
     private IJobInfoRepository jobInfoRepo;
 
-    private PluginConfiguration dataStorageConf;
+    private PluginConfiguration onlineDataStorageConf;
 
-    private PluginConfiguration nearLineConf;
+    private PluginConfiguration nearlineDataStorageConf;
 
     private URL baseStorageLocation;
 
@@ -214,19 +214,19 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                               gson.toJson(baseStorageLocation)).getParameters();
-        dataStorageConf = new PluginConfiguration(dataStoMeta, "dsConfLabel", parameters, 0);
-        dataStorageConf.setIsActive(true);
-        prioritizedDataStorageService.create(dataStorageConf);
+        onlineDataStorageConf = new PluginConfiguration(dataStoMeta, "dsConfLabel", parameters, 0);
+        onlineDataStorageConf.setIsActive(true);
+        prioritizedDataStorageService.create(onlineDataStorageConf);
 
         PluginMetaData nearlineMeta = PluginUtils.createPluginMetaData(SimpleNearLineStoragePlugin.class,
                                                                        IDataStorage.class.getPackage().getName(),
                                                                        INearlineDataStorage.class.getPackage()
                                                                                .getName());
         parameters = PluginParametersFactory.build().getParameters();
-        nearLineConf = new PluginConfiguration(nearlineMeta, "nearlineConfLabel", parameters, 0);
-        nearLineConf.setIsActive(true);
+        nearlineDataStorageConf = new PluginConfiguration(nearlineMeta, "nearlineConfLabel", parameters, 0);
+        nearlineDataStorageConf.setIsActive(true);
 
-        prioritizedDataStorageService.create(nearLineConf);
+        prioritizedDataStorageService.create(nearlineDataStorageConf);
     }
 
     /**
@@ -239,10 +239,10 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
         AvailabilityResponse response = aipService.loadFiles(request);
         Assert.assertTrue(
-                "No file should be directly available after AIPService::locafiles. Cause : files to load does not exists !",
+                "No file should be directly available after AIPService::loadFiles. Cause : files to load does not exists !",
                 response.getAlreadyAvailable().isEmpty());
         Assert.assertTrue(
-                "All files should be in error after AIPService::locafiles. Cause : files to load does not exists !",
+                "All files should be in error after AIPService::loadFiles. Cause : files to load does not exists !",
                 response.getErrors().size() == 3);
         LOG.info("End test loadUnavailableFilesTest ...");
     }
@@ -259,11 +259,30 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
         AvailabilityResponse response = aipService.loadFiles(request);
         Assert.assertTrue(
-                "All files should be directly available after AIPService::locafiles. Cause : files to load are online.",
+                "All files should be directly available after AIPService::loadFiles. Cause : files to load are online.",
                 response.getAlreadyAvailable().size() == 3);
-        Assert.assertTrue("No file should be in error after AIPService::locafiles. Cause : All files exists !.",
+        Assert.assertTrue("No file should be in error after AIPService::loadFiles. Cause : All files exists !.",
                           response.getErrors().isEmpty());
         LOG.info("End test loadOnlineFilesTest ...");
+    }
+
+    /**
+     * Verify that files stored online and nearline are directly available from an avaibility request thanks to the online storage.<br/>
+     * Expected result : The {@link AvailabilityResponse} contains all files available from online storage.
+     * @throws MalformedURLException
+     */
+    @Test
+    public void loadOnlineNNearlineFilesTest() throws MalformedURLException, ModuleException {
+        LOG.info("Start test loadOnlineNNearlineFilesTest ...");
+        fillOnlineNNearlineDataFileDb(50L);
+        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
+        AvailabilityResponse response = aipService.loadFiles(request);
+        Assert.assertTrue(
+                "All files should be directly available after AIPService::loadFiles. Cause : files to load are online.",
+                response.getAlreadyAvailable().size() == 3);
+        Assert.assertTrue("No file should be in error after AIPService::loadFiles. Cause : All files exists !.",
+                          response.getErrors().isEmpty());
+        LOG.info("End test loadOnlineNNearlineFilesTest ...");
     }
 
     /**
@@ -332,7 +351,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
     /**
      * Verify that nearline files are not directly available from an avaibility request.
-     * But, asynchonous jobs are scheduled for restoration.<br/>
+     * But, asynchronous jobs are scheduled for restoration.<br/>
      * Verify also that if there isnt enought space in cache to restore all files then restoration jobs are
      * scheduled to retrieve as much as possible of files and remaining files to restore are set
      * in QUEUED status and are waiting for space free.<br/>
@@ -793,7 +812,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                                                  MimeType.valueOf("application/text"),
                                                  aip,
                                                  fileName);
-        df.addDataStorageUsed(nearLineConf);
+        df.addDataStorageUsed(nearlineDataStorageConf);
         dataFileDao.save(df);
         // Then create cached file associated
         CachedFile f = new CachedFile(df, expiration, CachedFileState.AVAILABLE);
@@ -827,7 +846,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                                                  MimeType.valueOf("application/text"),
                                                  aip,
                                                  "file1.test");
-        df.addDataStorageUsed(dataStorageConf);
+        df.addDataStorageUsed(onlineDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
         df = new StorageDataFile(Sets.newHashSet(url),
@@ -838,7 +857,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                                  MimeType.valueOf("application/text"),
                                  aip,
                                  "file2.test");
-        df.addDataStorageUsed(dataStorageConf);
+        df.addDataStorageUsed(onlineDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
         df = new StorageDataFile(Sets.newHashSet(url),
@@ -849,7 +868,59 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                                  MimeType.valueOf("application/text"),
                                  aip,
                                  "file3.test");
-        df.addDataStorageUsed(dataStorageConf);
+        df.addDataStorageUsed(onlineDataStorageConf);
+        datafiles.add(df);
+        dataFileDao.save(datafiles);
+    }
+
+    /**
+     * Test method to simulate ceration of 3 new {@link StorageDataFile} in Db as there where stored with a online storage
+     * plugin.
+     * @param fileSize
+     * @throws MalformedURLException
+     */
+    private void fillOnlineNNearlineDataFileDb(Long fileSize) throws MalformedURLException {
+        AIP aip = getAIP();
+        aipDao.save(aip);
+        Set<StorageDataFile> datafiles = Sets.newHashSet();
+        URL url = new URL(Paths.get(baseStorageLocation.toString(), "file1.test").toString());
+        URL urlNearline = new URL("file://PLOP/Node/file1.test");
+        StorageDataFile df = new StorageDataFile(Sets.newHashSet(url, urlNearline),
+                                                 "1",
+                                                 "MD5",
+                                                 DataType.RAWDATA,
+                                                 fileSize,
+                                                 MimeType.valueOf("application/text"),
+                                                 aip,
+                                                 "file1.test");
+        df.addDataStorageUsed(onlineDataStorageConf);
+        df.addDataStorageUsed(nearlineDataStorageConf);
+        datafiles.add(df);
+        url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
+        urlNearline = new URL("file://PLOP/Node/file2.test");
+        df = new StorageDataFile(Sets.newHashSet(url, urlNearline),
+                                 "2",
+                                 "MD5",
+                                 DataType.RAWDATA,
+                                 fileSize,
+                                 MimeType.valueOf("application/text"),
+                                 aip,
+                                 "file2.test");
+        df.addDataStorageUsed(onlineDataStorageConf);
+        df.addDataStorageUsed(nearlineDataStorageConf);
+        datafiles.add(df);
+        url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
+        urlNearline = new URL("file://PLOP/Node/file3.test");
+        df = new StorageDataFile(Sets.newHashSet(url, urlNearline),
+                                 "3",
+                                 "MD5",
+                                 DataType.RAWDATA,
+                                 fileSize,
+                                 MimeType.valueOf("application/text"),
+                                 aip,
+                                 "file3.test");
+        df.addDataStorageUsed(onlineDataStorageConf);
+        df.addDataStorageUsed(nearlineDataStorageConf);
         datafiles.add(df);
         dataFileDao.save(datafiles);
     }
@@ -873,7 +944,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                                                  MimeType.valueOf("application/text"),
                                                  aip,
                                                  "file10.test");
-        df.addDataStorageUsed(nearLineConf);
+        df.addDataStorageUsed(nearlineDataStorageConf);
         datafiles.add(df);
         url = new URL("file://PLOP/Node/file20.test");
         df = new StorageDataFile(Sets.newHashSet(url),
@@ -884,7 +955,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                                  MimeType.valueOf("application/text"),
                                  aip,
                                  "file20.test");
-        df.addDataStorageUsed(nearLineConf);
+        df.addDataStorageUsed(nearlineDataStorageConf);
         datafiles.add(df);
         url = new URL("file://PLOP/Node/file30.test");
         df = new StorageDataFile(Sets.newHashSet(url),
@@ -895,7 +966,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                                  MimeType.valueOf("application/text"),
                                  aip,
                                  "file30.test");
-        df.addDataStorageUsed(nearLineConf);
+        df.addDataStorageUsed(nearlineDataStorageConf);
         datafiles.add(df);
         dataFileDao.save(datafiles);
         return aip;
