@@ -15,7 +15,7 @@
                     {
                         "dataObject": {
                             "regardsDataType": "RAWDATA",
-                            "url": "file:/home/test.xml",
+                            "urls": ["file:/home/test.xml"],
                             "checksum": "sdfsd455sdfdsgdfg4dgdfg",
                             "algorithm": "MD5"
                         },
