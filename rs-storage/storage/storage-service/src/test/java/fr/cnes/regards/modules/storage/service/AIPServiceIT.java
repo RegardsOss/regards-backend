@@ -78,7 +78,7 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@ContextConfiguration(classes = { TestConfig.class })
+@ContextConfiguration(classes = { TestConfig.class, AIPServiceIT.Config.class })
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles("testAmqp")
 @DirtiesContext

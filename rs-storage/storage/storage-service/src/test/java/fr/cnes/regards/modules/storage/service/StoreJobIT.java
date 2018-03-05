@@ -72,7 +72,7 @@ import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@ContextConfiguration(classes = { TestConfig.class })
+@ContextConfiguration(classes = { TestConfig.class, StoreJobIT.Config.class })
 @TestPropertySource(locations = "classpath:test.properties")
 @DirtiesContext
 public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
