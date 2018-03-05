@@ -566,7 +566,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
      */
     public Set<UUID> scheduleStorage(Multimap<Long, StorageDataFile> storageWorkingSetMap, boolean storingData)
             throws ModuleException {
-        Set<JobInfo> jobsToSchedule = Sets.newHashSet();
+        Set<UUID> jobIds = Sets.newHashSet();
         for (Long dataStorageConfId : storageWorkingSetMap.keySet()) {
             Set<IWorkingSubset> workingSubSets = getWorkingSubsets(storageWorkingSetMap.get(dataStorageConfId),
                                                                    dataStorageConfId,
@@ -581,24 +581,21 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConfId));
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
                 if (storingData) {
-                    jobsToSchedule.add(new JobInfo(false,
-                                                   0,
-                                                   parameters,
-                                                   authResolver.getUser(),
-                                                   StoreDataFilesJob.class.getName()));
+                    jobIds.add(jobInfoService.createAsQueued(new JobInfo(false,
+                                                                         0,
+                                                                         parameters,
+                                                                         authResolver.getUser(),
+                                                                         StoreDataFilesJob.class.getName())).getId());
                 } else {
-                    jobsToSchedule.add(new JobInfo(false,
-                                                   0,
-                                                   parameters,
-                                                   authResolver.getUser(),
-                                                   StoreMetadataFilesJob.class.getName()));
+                    jobIds.add(jobInfoService.createAsQueued(new JobInfo(false,
+                                                                         0,
+                                                                         parameters,
+                                                                         authResolver.getUser(),
+                                                                         StoreMetadataFilesJob.class.getName()))
+                                       .getId());
                 }
 
             }
-        }
-        Set<UUID> jobIds = Sets.newHashSet();
-        for (JobInfo job : jobsToSchedule) {
-            jobIds.add(jobInfoService.createAsQueued(job).getId());
         }
         //now that files are given to the jobs, lets remove the source url so once stored we only have the good urls
         Collection<StorageDataFile> storageDataFiles = storageWorkingSetMap.values();
@@ -701,7 +698,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             LOG.error(e.getMessage(), e);
             throw e;
         }
-        return pluginService.getPlugin(activeSecurityDelegations.get(0));
+        return pluginService.getPlugin(activeSecurityDelegations.get(0).getId());
     }
 
     @Override
@@ -1011,7 +1008,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             toDelete.getDataStorages()
                     .forEach(dataStorage -> deletionWorkingSetMultimap.put(dataStorage.getId(), toDelete));
         }
-        Set<JobInfo> jobsToSchedule = Sets.newHashSet();
+        Set<UUID> jobIds = Sets.newHashSet();
         for (Long dataStorageConfId : deletionWorkingSetMultimap.keySet()) {
             Set<IWorkingSubset> workingSubSets = getWorkingSubsets(deletionWorkingSetMultimap.get(dataStorageConfId),
                                                                    dataStorageConfId,
@@ -1025,17 +1022,13 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 Set<JobParameter> parameters = Sets.newHashSet();
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConfId));
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
-                jobsToSchedule.add(new JobInfo(false,
+                jobIds.add(jobInfoService.createAsQueued(new JobInfo(false,
                                                0,
                                                parameters,
                                                authResolver.getUser(),
-                                               DeleteDataFilesJob.class.getName()));
+                                               DeleteDataFilesJob.class.getName())).getId());
 
             }
-        }
-        Set<UUID> jobIds = Sets.newHashSet();
-        for (JobInfo job : jobsToSchedule) {
-            jobIds.add(jobInfoService.createAsQueued(job).getId());
         }
         return jobIds;
     }

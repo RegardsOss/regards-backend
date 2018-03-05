@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -64,15 +65,18 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
+import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
+import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
+import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
+import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultMultipleAllocationStrategy;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 
 /**
@@ -88,7 +92,9 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final String ALLOCATION_CONF_LABEL = "AIPServiceIT_ALLOCATION";
 
-    private static final String DATA_STORAGE_CONF_LABEL = "AIPServiceIT_DATA_STORAGE";
+    private static final String DATA_STORAGE_1_CONF_LABEL = "AIPServiceIT_DATA_STORAGE_LOCAL1";
+
+    private static final String DATA_STORAGE_2_CONF_LABEL = "AIPServiceIT_DATA_STORAGE_LOCAL2";
 
     private static final int MAX_WAIT_TEST = 14000;
 
@@ -118,9 +124,8 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     @Autowired
     private ISubscriber subscriber;
 
-    private AIP aip;
-
-    private URL baseStorageLocation;
+    @Autowired
+    private IPrioritizedDataStorageService prioritizedDataStorageService;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -128,10 +133,19 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     @Autowired
     private IWorkspaceService workspaceService;
 
+    @Autowired
+    private IPrioritizedDataStorageRepository prioritizedDataStorageRepository;
+
+    private AIP aip;
+
+    private URL baseStorage1Location;
+
+    private URL baseStorage2Location;
+
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
         tenantResolver.forceTenant(DEFAULT_TENANT);
-        // this.cleanUp(); //comment if you are not interrupting tests during their execution
+//         this.cleanUp(); //comment if you are not interrupting tests during their execution
         subscriber.subscribeTo(JobEvent.class, handler);
         initDb();
     }
@@ -140,29 +154,49 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
         // first of all, lets get an AIP with accessible dataObjects and real checksums
         aip = getAIP();
-        // second, lets storeAndCreate a plugin configuration for IAllocationStrategy
-        PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class,
-                                                                         DefaultAllocationStrategyPlugin.class
-                                                                                 .getPackage().getName());
-        PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, ALLOCATION_CONF_LABEL);
-        allocationConfiguration.setIsActive(true);
-        pluginService.savePluginConfiguration(allocationConfiguration);
-        // third, lets storeAndCreate a plugin configuration of IDataStorage with the highest priority
+        // second, lets storeAndCreate a plugin configuration of IDataStorage with the highest priority
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
                                                                       IDataStorage.class.getPackage().getName(),
                                                                       IOnlineDataStorage.class.getPackage().getName());
-        baseStorageLocation = new URL("file", "", Paths.get("target/AIPServiceIT").toFile().getAbsolutePath());
-        Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
+        baseStorage1Location = new URL("file", "", Paths.get("target/AIPServiceIT/Local1").toFile().getAbsolutePath());
+        Files.createDirectories(Paths.get(baseStorage1Location.toURI()));
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L)
-                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
+                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorage1Location.toString())
                 .getParameters();
         PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta,
-                                                                      DATA_STORAGE_CONF_LABEL,
+                                                                      DATA_STORAGE_1_CONF_LABEL,
                                                                       parameters,
                                                                       0);
         dataStorageConf.setIsActive(true);
-        pluginService.savePluginConfiguration(dataStorageConf);
+        PrioritizedDataStorage pds = prioritizedDataStorageService.create(dataStorageConf);
+        Set<Long> dataStorageIds = Sets.newHashSet(pds.getId());
+        // third, lets create a second local storage
+        baseStorage2Location = new URL("file", "", Paths.get("target/AIPServiceIT/Local2").toFile().getAbsolutePath());
+        Files.createDirectories(Paths.get(baseStorage2Location.toURI()));
+        parameters = PluginParametersFactory.build()
+                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L)
+                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorage2Location.toString())
+                .getParameters();
+        dataStorageConf = new PluginConfiguration(dataStoMeta, DATA_STORAGE_2_CONF_LABEL, parameters, 0);
+        dataStorageConf.setIsActive(true);
+        pds = prioritizedDataStorageService.create(dataStorageConf);
+        dataStorageIds.add(pds.getId());
+        // forth, lets create a plugin configuration for IAllocationStrategy
+        PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultMultipleAllocationStrategy.class,
+                                                                         DefaultMultipleAllocationStrategy.class
+                                                                                 .getPackage().getName(),
+                                                                         IAllocationStrategy.class.getPackage()
+                                                                                 .getName());
+        List<PluginParameter> allocationParameter = PluginParametersFactory.build()
+                .addParameter(DefaultMultipleAllocationStrategy.DATA_STORAGE_IDS_PARAMETER_NAME, dataStorageIds)
+                .getParameters();
+        PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta,
+                                                                              ALLOCATION_CONF_LABEL,
+                                                                              allocationParameter,
+                                                                              0);
+        allocationConfiguration.setIsActive(true);
+        pluginService.savePluginConfiguration(allocationConfiguration);
     }
 
     @Test
@@ -171,7 +205,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         Set<UUID> jobIds = aipService.storeAndCreate(Sets.newHashSet(aip));
         jobIds.forEach(job -> LOG.info("Waiting for job {} end", job.toString()));
         int wait = 0;
-        while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < 10000)) {
+        while (!handler.getJobSucceeds().containsAll(jobIds) && !handler.isFailed() && (wait < MAX_WAIT_TEST)) {
             // lets wait for 1 sec before checking again if all our jobs has been done or not
             Thread.sleep(1000);
             wait = wait + 1000;
@@ -182,7 +216,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // Wait for AIP set STORED status
         LOG.info("Waiting for AIP {} stored", aip.getId().toString());
         wait = 0;
-        while (!AIPState.STORED.equals(aipFromDB.get().getState()) && (wait < 10000)) {
+        while (!AIPState.STORED.equals(aipFromDB.get().getState()) && (wait < MAX_WAIT_TEST)) {
             aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
             Thread.sleep(1000);
             wait = wait + 1000;
@@ -196,6 +230,25 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                              dataFiles.stream()
                                      .filter(storageDataFile -> storageDataFile.getDataType().equals(DataType.AIP))
                                      .findFirst().get().getChecksum());
+        //lets check that the data has been successfully stored into the two storages and nothing else
+        StorageDataFile dataFile = dataFiles.stream().filter(df -> df.getDataType().equals(DataType.RAWDATA))
+                .findFirst().get();
+        Assert.assertTrue("stored raw data should have only 2 urls", dataFile.getUrls().size() == 2);
+        String storedLocation1 = Paths
+                .get(baseStorage1Location.getPath(), dataFile.getChecksum().substring(0, 3), dataFile.getChecksum()).toString();
+        String storedLocation2 = Paths
+                .get(baseStorage2Location.getPath(), dataFile.getChecksum().substring(0, 3), dataFile.getChecksum()).toString();
+        Assert.assertTrue(dataFile.getUrls().stream().map(url -> url.getPath()).collect(Collectors.toSet())
+                                  .containsAll(Sets.newHashSet(storedLocation1, storedLocation2)));
+        //same for the aips
+        StorageDataFile aip = dataFiles.stream().filter(df -> df.getDataType().equals(DataType.AIP)).findFirst().get();
+        Assert.assertTrue("stored metadata should have only 2 urls", dataFile.getUrls().size() == 2);
+        storedLocation1 = Paths
+                .get(baseStorage1Location.getPath(), aip.getChecksum().substring(0, 3), aip.getChecksum()).toString();
+        storedLocation2 = Paths
+                .get(baseStorage2Location.getPath(), aip.getChecksum().substring(0, 3), aip.getChecksum()).toString();
+        Assert.assertTrue(aip.getUrls().stream().map(url -> url.getPath()).collect(Collectors.toSet())
+                                  .containsAll(Sets.newHashSet(storedLocation1, storedLocation2)));
     }
 
     @Test
@@ -204,9 +257,9 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         aip.getProperties().getContentInformations()
                 .toArray(new ContentInformation[aip.getProperties().getContentInformations().size()])[0].getDataObject()
                 .setUrls(Sets.newHashSet(new URL("file",
-                                "",
-                                Paths.get("src/test/resources/data_that_does_not_exists.txt").toFile()
-                                        .getAbsolutePath())));
+                                                 "",
+                                                 Paths.get("src/test/resources/data_that_does_not_exists.txt").toFile()
+                                                         .getAbsolutePath())));
         Set<UUID> jobIds = aipService.storeAndCreate(Sets.newHashSet(aip));
         int wait = 0;
         LOG.info("Waiting for jobs end ...");
@@ -254,9 +307,11 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                 Thread.sleep(1000);
                 wait += 1000;
             }
-            Assert.assertFalse("Test failed because storage didn't failed! It succeeded!", AIPState.STORED.equals(aipFromDB.get().getState()));
-            Assert.assertTrue("Test in error because it took more than " + wait + " to fail the storage of the metadata",
-                              wait < MAX_WAIT_TEST);
+            Assert.assertFalse("Test failed because storage didn't failed! It succeeded!",
+                               AIPState.STORED.equals(aipFromDB.get().getState()));
+            Assert.assertTrue(
+                    "Test in error because it took more than " + wait + " to fail the storage of the metadata",
+                    wait < MAX_WAIT_TEST);
             Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
             Set<StorageDataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
             Assert.assertEquals(1, dataFiles.size());
@@ -303,7 +358,8 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         }
         // After job is done, the new AIP metadata file should be present in local datastorage
         StorageDataFile file = dataFileDao.findByAipAndType(newAIP, DataType.AIP).get();
-        Assert.assertTrue("The new data file should exist!", Files.exists(Paths.get(file.getUrls().iterator().next().toURI())));
+        Assert.assertTrue("The new data file should exist!",
+                          Files.exists(Paths.get(file.getUrls().iterator().next().toURI())));
     }
 
     @Test
@@ -400,10 +456,14 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         jobInfoRepo.deleteAll();
         dataFileDao.deleteAll();
         aipDao.deleteAll();
+        prioritizedDataStorageRepository.deleteAll();
         pluginRepo.deleteAll();
-        if (baseStorageLocation != null) {
-            Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
+        if (baseStorage1Location != null) {
+            Files.walk(Paths.get(baseStorage1Location.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
                     .forEach(File::delete);
+        }
+        if (baseStorage2Location != null) {
+            Files.walk(Paths.get(baseStorage2Location.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
         }
     }
 

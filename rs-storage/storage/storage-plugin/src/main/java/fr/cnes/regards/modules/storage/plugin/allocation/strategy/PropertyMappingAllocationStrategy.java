@@ -114,7 +114,7 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
                     Long chosenOne = valueConfIdMap.get(propertyValue);
                     if (chosenOne == null) {
                         LOG.error(String.format(
-                                "File(url: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
+                                "File(urls: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
                                 dataFile.getUrls()));
                     } else {
                         //This allocation strategy only allows files to be stored into 1 DataStorage
