@@ -364,7 +364,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                           response.getErrors().isEmpty());
         // Wait for jobs ends or fails
         int count = 0;
-        while (!handler.isFailed() && handler.getJobSucceeds().isEmpty() && (count < 6)) {
+        while (!handler.isFailed() && handler.getJobSucceeds().isEmpty() && (count < 8)) {
             count++;
             Thread.sleep(1000);
         }

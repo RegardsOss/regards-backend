@@ -41,6 +41,8 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.staf.domain.STAFArchive;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -166,6 +168,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
      * <li>2 files unavaiable for storage</li>
      * </ul>
      */
+    @Purpose("Test STAF Nearline DataStorage Plugin to store files into STAF system")
+    @Requirement("REGARDS_DSL_STO_PLG_220")
     @Test
     public void storeMultipleModesTest() {
 
@@ -264,6 +268,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
      * Restore files stored in STAF in the 3 Archiving mode TAR, CUT and NORMAL.
      * @throws MalformedURLException
      */
+    @Purpose("Test STAF Nearline DataStorage Plugin to restore files from STAF system")
+    @Requirement("REGARDS_DSL_STO_PLG_220")
     @Test
     public void restore() throws MalformedURLException {
 

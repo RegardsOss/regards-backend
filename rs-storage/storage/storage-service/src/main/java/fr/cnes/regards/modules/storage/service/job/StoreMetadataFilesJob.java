@@ -39,4 +39,12 @@ public class StoreMetadataFilesJob extends AbstractStoreFilesJob {
     protected void handleNotHandledDataFile(StorageDataFile notHandled) {
         progressManager.storageFailed(notHandled, NOT_HANDLED_MSG);
     }
+
+    @Override
+    protected void handleWorkspaceException(IOException e) throws JobWorkspaceException {
+        StorageJobProgressManager progressManager = new StorageJobProgressManager(publisher, this);
+        IWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
+        workingSubset.getDataFiles().forEach(file -> progressManager.storageFailed(file, e.toString()));
+        super.handleWorkspaceException(e);
+    }
 }
