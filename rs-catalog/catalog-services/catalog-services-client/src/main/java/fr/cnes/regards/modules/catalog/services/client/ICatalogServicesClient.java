@@ -17,8 +17,7 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 
 /**
- * Feign client for calling rs-catalog's {@link CatalogServicesController}
- *
+ * Feign client for calling rs-catalog's CatalogServicesController
  * @author Xavier-Alexandre Brochard
  */
 @RestClient(name = "rs-catalog")
@@ -27,17 +26,14 @@ import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDt
 public interface ICatalogServicesClient {
 
     /**
-     * Call rs-catalog's {@link CatalogServicesController#retrieveServices}
-     *
-     * @param pDatasetId
-     *            the id of the {@link Dataset}. Can be <code>null</code>.
-     * @param pServiceScope
-     *            the applicable mode. Can be <code>null</code>.
+     * Call rs-catalog's CatalogServicesController#retrieveServices
+     * @param datasetId the id of the Dataset. Can be <code>null</code>.
+     * @param serviceScope the applicable mode. Can be <code>null</code>.
      * @return the list of services
      */
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<Resource<PluginConfigurationDto>>> retrieveServices(
-            @RequestParam(value = "dataset_id", required = false) final String pDatasetId,
-            @RequestParam(value = "service_scope", required = false) final ServiceScope pServiceScope);
+    ResponseEntity<List<Resource<PluginConfigurationDto>>> retrieveServices(
+            @RequestParam(value = "dataset_id", required = false) final String datasetId,
+            @RequestParam(value = "service_scope", required = false) final ServiceScope serviceScope);
 
 }
