@@ -384,8 +384,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // they can be accessed directly where they are stored.
         for (StorageDataFile df : dataFilesWithAccess) {
             if (df.getPrioritizedDataStorages() != null) {
-                Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = df.getPrioritizedDataStorages().stream()
-                        .filter(pds->pds.getDataStorageType().equals(DataStorageType.ONLINE)).findFirst();
+                Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = df.getPrioritizedDataStorages()
+                        .stream().filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE)).findFirst();
                 if (onlinePrioritizedDataStorageOpt.isPresent()) {
                     onlineFiles.add(df);
                 } else {
@@ -1023,10 +1023,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConfId));
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
                 jobIds.add(jobInfoService.createAsQueued(new JobInfo(false,
-                                               0,
-                                               parameters,
-                                               authResolver.getUser(),
-                                               DeleteDataFilesJob.class.getName())).getId());
+                                                                     0,
+                                                                     parameters,
+                                                                     authResolver.getUser(),
+                                                                     DeleteDataFilesJob.class.getName())).getId());
 
             }
         }
@@ -1256,7 +1256,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 StorageDataFile dataFile = odf.get();
                 if (dataFile.getPrioritizedDataStorages() != null) {
                     //first let see if this file is stored on an online data storage and lets get the most prioritized
-                    Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = dataFile.getPrioritizedDataStorages().stream().filter(pds->pds.getDataStorageType().equals(DataStorageType.ONLINE)).sorted().findFirst();
+                    Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = dataFile
+                            .getPrioritizedDataStorages().stream()
+                            .filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE)).sorted()
+                            .findFirst();
                     if (onlinePrioritizedDataStorageOpt.isPresent()) {
                         InputStream dataFileIS = ((IOnlineDataStorage) pluginService
                                 .getPlugin(onlinePrioritizedDataStorageOpt.get().getId())).retrieve(dataFile);

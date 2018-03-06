@@ -173,6 +173,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
     private PrioritizedDataStorage nearlineNoRetrieveDataStorageConf;
 
+    private PrioritizedDataStorage onlineNoRetrieveDataStorageConf;
+
     public void initCacheDir() throws IOException {
         if (cacheDir.toFile().exists()) {
             FileUtils.deleteDirectory(cacheDir.toFile());
@@ -225,6 +227,14 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         PluginConfiguration onlineDSConf = new PluginConfiguration(dataStoMeta, "dsConfLabel", parameters, 0);
         onlineDSConf.setIsActive(true);
         onlineDataStorageConf = prioritizedDataStorageService.create(onlineDSConf);
+
+        PluginMetaData onlineNoRetrieveDataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
+                                                                      IDataStorage.class.getPackage().getName(),
+                                                                      IOnlineDataStorage.class.getPackage().getName());
+        PluginConfiguration onlineNoRetrieveDSConf = new PluginConfiguration(onlineNoRetrieveDataStoMeta, "onlineNoRetrieveDsConfLabel");
+        onlineNoRetrieveDSConf.setIsActive(true);
+        onlineNoRetrieveDataStorageConf = prioritizedDataStorageService.create(onlineNoRetrieveDSConf);
+
         PluginMetaData nearlineMeta = PluginUtils.createPluginMetaData(SimpleNearLineStoragePlugin.class,
                                                                        IDataStorage.class.getPackage().getName(),
                                                                        INearlineDataStorage.class.getPackage()
@@ -864,6 +874,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                                                  aip,
                                                  "file1.test");
         df.addDataStorageUsed(onlineDataStorageConf);
+        df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
         df = new StorageDataFile(Sets.newHashSet(url),
@@ -875,6 +886,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                                  aip,
                                  "file2.test");
         df.addDataStorageUsed(onlineDataStorageConf);
+        df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
         df = new StorageDataFile(Sets.newHashSet(url),
@@ -886,6 +898,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                                  aip,
                                  "file3.test");
         df.addDataStorageUsed(onlineDataStorageConf);
+        df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         dataFileDao.save(datafiles);
     }

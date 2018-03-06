@@ -17,7 +17,7 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubs
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@Plugin(author = "REGARDS Team", description = "Fake plugin to test retrieve", id = "NearlineNoRetrieveDataStorage",
+@Plugin(author = "REGARDS Team", description = "Fake plugin to test retrieval priority", id = "NearlineNoRetrieveDataStorage",
         version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class NearlineNoRetrieveDataStorage implements INearlineDataStorage<LocalWorkingSubset> {
