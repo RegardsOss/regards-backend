@@ -383,10 +383,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // 2. Check for online files. Online files doesn't need to be stored in the cache
         // they can be accessed directly where they are stored.
         for (StorageDataFile df : dataFilesWithAccess) {
-            if (df.getDataStorages() != null) {
-                Set<String> dataFileStoragesInterfaces = df.getDataStorages().stream()
-                        .flatMap(pc -> pc.getInterfaceNames().stream()).collect(Collectors.toSet());
-                if (dataFileStoragesInterfaces.contains(IOnlineDataStorage.class.getName())) {
+            if (df.getPrioritizedDataStorages() != null) {
+                Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = df.getPrioritizedDataStorages().stream()
+                        .filter(pds->pds.getDataStorageType().equals(DataStorageType.ONLINE)).findFirst();
+                if (onlinePrioritizedDataStorageOpt.isPresent()) {
                     onlineFiles.add(df);
                 } else {
                     nearlineFiles.add(df);
@@ -1005,7 +1005,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         //when we delete DataFiles, we have to get the DataStorages to use thanks to DB informations
         Multimap<Long, StorageDataFile> deletionWorkingSetMultimap = HashMultimap.create();
         for (StorageDataFile toDelete : dataFilesToDelete) {
-            toDelete.getDataStorages()
+            toDelete.getPrioritizedDataStorages()
                     .forEach(dataStorage -> deletionWorkingSetMultimap.put(dataStorage.getId(), toDelete));
         }
         Set<UUID> jobIds = Sets.newHashSet();
@@ -1194,10 +1194,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // Lets construct the Multimap<PluginConf, StorageDataFile> allowing us to then create the IWorkingSubSets
         Multimap<Long, StorageDataFile> toPrepareMap = HashMultimap.create();
         for (UpdatableMetadataFile oldNew : metadataToUpdate) {
-            Set<PluginConfiguration> oldDataStorages = oldNew.getOldOne().getDataStorages();
+            Set<PrioritizedDataStorage> oldDataStorages = oldNew.getOldOne().getPrioritizedDataStorages();
             oldNew.getNewOne().setNotYetStoredBy(((Number) oldDataStorages.size()).longValue());
             dataFileDao.save(oldNew.getNewOne());
-            for (PluginConfiguration oldDataStorage : oldDataStorages) {
+            for (PrioritizedDataStorage oldDataStorage : oldDataStorages) {
                 toPrepareMap.put(oldDataStorage.getId(), oldNew.getNewOne());
             }
         }
@@ -1254,24 +1254,12 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     .findFirst();
             if (odf.isPresent()) {
                 StorageDataFile dataFile = odf.get();
-                if (dataFile.getDataStorages() != null) {
-                    Set<String> dataFileStoragesInterfaces = dataFile.getDataStorages().stream()
-                            .flatMap(pc -> pc.getInterfaceNames().stream()).collect(Collectors.toSet());
-                    if (dataFileStoragesInterfaces.contains(IOnlineDataStorage.class.getName())) {
-                        // lets get the most prioritized online data storage between those which has stored the data file
-                        PrioritizedDataStorage dataStorageToUse = dataFile.getDataStorages().stream().map(pc -> {
-                            try {
-                                return prioritizedDataStorageService.retrieve(pc.getId());
-                            } catch (EntityNotFoundException e) {
-                                LOG.error(String.format(
-                                        "We could not retrieve a prioritized data storage for the following plugin configuration: %s",
-                                        pc.getLabel()), e);
-                                return null;
-                            }
-                        }).filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE)).sorted().findFirst()
-                                .get();
+                if (dataFile.getPrioritizedDataStorages() != null) {
+                    //first let see if this file is stored on an online data storage and lets get the most prioritized
+                    Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = dataFile.getPrioritizedDataStorages().stream().filter(pds->pds.getDataStorageType().equals(DataStorageType.ONLINE)).sorted().findFirst();
+                    if (onlinePrioritizedDataStorageOpt.isPresent()) {
                         InputStream dataFileIS = ((IOnlineDataStorage) pluginService
-                                .getPlugin(dataStorageToUse.getId())).retrieve(dataFile);
+                                .getPlugin(onlinePrioritizedDataStorageOpt.get().getId())).retrieve(dataFile);
                         return Pair.of(dataFile, dataFileIS);
                     } else {
                         // Check if file is available from cache

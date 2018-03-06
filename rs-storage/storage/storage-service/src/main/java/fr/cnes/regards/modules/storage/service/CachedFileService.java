@@ -37,7 +37,6 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -264,7 +263,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         // Dispatch each Datafile by storage plugin.
         Multimap<Long, StorageDataFile> toRetrieveByStorage = HashMultimap.create();
         for (StorageDataFile df : toRetrieve) {
-            toRetrieveByStorage.put(computeDataStorageToUseToRetrieve(df.getDataStorages()), df);
+            toRetrieveByStorage.put(computeDataStorageToUseToRetrieve(df.getPrioritizedDataStorages()), df);
         }
         Set<StorageDataFile> errors = Sets.newHashSet();
         for (Long storageConfId : toRetrieveByStorage.keySet()) {
@@ -273,17 +272,8 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         return new CoupleAvailableError(alreadyAvailableData, errors);
     }
 
-    private Long computeDataStorageToUseToRetrieve(Set<PluginConfiguration> dataStorages) {
-        PrioritizedDataStorage dataStorageToUse = dataStorages.stream().map(pc -> {
-            try {
-                return prioritizedDataStorageService.retrieve(pc.getId());
-            } catch (EntityNotFoundException e) {
-                LOG.error(String.format(
-                        "We could not retrieve a prioritized data storage for the following plugin configuration: %s",
-                        pc.getLabel()), e);
-                return null;
-            }
-        }).sorted().findFirst().get();
+    private Long computeDataStorageToUseToRetrieve(Set<PrioritizedDataStorage> dataStorages) {
+        PrioritizedDataStorage dataStorageToUse = dataStorages.stream().sorted().findFirst().get();
         return dataStorageToUse.getId();
     }
 

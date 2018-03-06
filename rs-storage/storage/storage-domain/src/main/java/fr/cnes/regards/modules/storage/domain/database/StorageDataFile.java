@@ -32,7 +32,6 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converter.SetURLCsvConverter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -47,12 +46,19 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  */
 @Entity
 @Table(name = "t_data_file", indexes = { @Index(name = "idx_data_file_checksum", columnList = "checksum") })
+// @formatter:off
 @NamedEntityGraph(name = "graph.datafile.full", attributeNodes = { @NamedAttributeNode("aipEntity"),
-        @NamedAttributeNode(value = "dataStorages", subgraph = "graph.datafile.dataStorages") }, subgraphs = {
-        @NamedSubgraph(name = "graph.datafile.dataStorages", attributeNodes = {
-                @NamedAttributeNode(value = "parameters", subgraph = "graph.datafile.dataStorages.parameters") }),
-        @NamedSubgraph(name = "graph.datafile.dataStorages.parameters",
-                attributeNodes = { @NamedAttributeNode("dynamicsValues") }) })
+        @NamedAttributeNode(value = "prioritizedDataStorages", subgraph = "graph.datafile.prioritizedDataStorages") },
+        subgraphs = {
+                @NamedSubgraph(name = "graph.datafile.prioritizedDataStorages",
+                        attributeNodes = { @NamedAttributeNode(value = "dataStorageConfiguration",
+                                subgraph = "graph.datafile.prioritizedDataStorages.dataStorageConfiguration") }),
+                @NamedSubgraph(name = "graph.datafile.prioritizedDataStorages.dataStorageConfiguration",
+                        attributeNodes = { @NamedAttributeNode(value = "parameters",
+                                subgraph = "graph.datafile.prioritizedDataStorages.dataStorageConfiguration.parameters") }),
+                @NamedSubgraph(name = "graph.datafile.prioritizedDataStorages.dataStorageConfiguration.parameters",
+                        attributeNodes = { @NamedAttributeNode("dynamicsValues") }) })
+// @formatter:on
 public class StorageDataFile {
 
     /**
@@ -130,12 +136,11 @@ public class StorageDataFile {
      * Data storage plugin configuration used to store the file
      */
     @ManyToMany
-    @JoinTable(
-            name="ta_data_file_plugin_conf",
-            joinColumns = @JoinColumn( name="data_file_id", foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
-            inverseJoinColumns = @JoinColumn( name="data_storage_conf_id", foreignKey = @ForeignKey(name = "fk_plugin_conf_data_file_plugin_conf"))
-    )
-    private Set<PluginConfiguration> dataStorages = new HashSet<>();
+    @JoinTable(name = "ta_data_file_plugin_conf", joinColumns = @JoinColumn(name = "data_file_id",
+            foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
+            inverseJoinColumns = @JoinColumn(name = "data_storage_conf_id",
+                    foreignKey = @ForeignKey(name = "fk_plugin_conf_data_file_plugin_conf")))
+    private Set<PrioritizedDataStorage> prioritizedDataStorages = new HashSet<>();
 
     /**
      * Reversed mapping compared to reality. This is because it is easier to work like this.
@@ -193,8 +198,8 @@ public class StorageDataFile {
      * @param aip
      * @param name
      */
-    public StorageDataFile(Set<URL> urls, String checksum, String algorithm, DataType type, Long fileSize, MimeType mimeType,
-            AIP aip, String name) {
+    public StorageDataFile(Set<URL> urls, String checksum, String algorithm, DataType type, Long fileSize,
+            MimeType mimeType, AIP aip, String name) {
         this.urls = urls;
         this.checksum = checksum;
         this.algorithm = algorithm;
@@ -254,7 +259,7 @@ public class StorageDataFile {
      * @return the urls
      */
     public Set<URL> getUrls() {
-        if(urls == null) {
+        if (urls == null) {
             urls = new HashSet<>();
         }
         return urls;
@@ -331,16 +336,16 @@ public class StorageDataFile {
     /**
      * @return the data storage plugin configuration
      */
-    public Set<PluginConfiguration> getDataStorages() {
-        return dataStorages;
+    public Set<PrioritizedDataStorage> getPrioritizedDataStorages() {
+        return prioritizedDataStorages;
     }
 
     /**
      * Set the data storage plugin configuration
      * @param dataStorageUsed
      */
-    public void addDataStorageUsed(PluginConfiguration dataStorageUsed) {
-        this.dataStorages.add(dataStorageUsed);
+    public void addDataStorageUsed(PrioritizedDataStorage dataStorageUsed) {
+        this.prioritizedDataStorages.add(dataStorageUsed);
     }
 
     /**
@@ -465,7 +470,7 @@ public class StorageDataFile {
     }
 
     public void increaseNotYetStoredBy() {
-        if(notYetStoredBy == null) {
+        if (notYetStoredBy == null) {
             notYetStoredBy = 1L;
         } else {
             notYetStoredBy++;
@@ -473,7 +478,7 @@ public class StorageDataFile {
     }
 
     public void decreaseNotYetStoredBy() {
-        if(notYetStoredBy == null) {
+        if (notYetStoredBy == null) {
             notYetStoredBy = -1L;
         } else {
             notYetStoredBy--;
