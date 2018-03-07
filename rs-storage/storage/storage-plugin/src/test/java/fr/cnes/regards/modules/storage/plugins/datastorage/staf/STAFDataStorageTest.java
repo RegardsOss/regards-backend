@@ -49,6 +49,7 @@ import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
+import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFStoreWorkingSubset;
 import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFWorkingSubset;
@@ -202,8 +203,9 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
 
         // prepare files
-        Set<STAFWorkingSubset> subsets = plugin.prepare(filesToArchiveMultiplesMode,
-                                                        DataStorageAccessModeEnum.STORE_MODE);
+        WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin.prepare(filesToArchiveMultiplesMode, DataStorageAccessModeEnum.STORE_MODE);
+
+        Set<STAFWorkingSubset> subsets = subsetsWrapper.getWorkingSubSets();
 
         Assert.assertEquals("There should be 1 subset created", 1, subsets.size());
 
@@ -260,7 +262,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
 
         // prepare files
-        Set<STAFWorkingSubset> subsets = plugin.prepare(filesToArchive, DataStorageAccessModeEnum.STORE_MODE);
+        WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin.prepare(filesToArchive, DataStorageAccessModeEnum.STORE_MODE);
+        Set<STAFWorkingSubset> subsets = subsetsWrapper.getWorkingSubSets();
 
         Assert.assertEquals("There should be 1 subset created", 1, subsets.size());
 
@@ -335,7 +338,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
 
         // prepare files
-        Set<STAFWorkingSubset> subsets = plugin.prepare(dataFilesToRestore, DataStorageAccessModeEnum.RETRIEVE_MODE);
+        WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin.prepare(dataFilesToRestore, DataStorageAccessModeEnum.RETRIEVE_MODE);
+        Set<STAFWorkingSubset> subsets = subsetsWrapper.getWorkingSubSets();
 
         Assert.assertEquals("There should be 1 subset created", 1, subsets.size());
 
@@ -419,7 +423,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
 
         // prepare files
-        Set<STAFWorkingSubset> subsets = plugin.prepare(dataFilesToRestore, DataStorageAccessModeEnum.RETRIEVE_MODE);
+        WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin.prepare(dataFilesToRestore, DataStorageAccessModeEnum.RETRIEVE_MODE);
+        Set<STAFWorkingSubset> subsets = subsetsWrapper.getWorkingSubSets();
 
         Assert.assertEquals("There should be 1 subset created", 1, subsets.size());
 
@@ -503,7 +508,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
 
         // prepare files
-        Set<STAFWorkingSubset> subsets = plugin.prepare(dataFilesToRestore, DataStorageAccessModeEnum.RETRIEVE_MODE);
+        WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin.prepare(dataFilesToRestore, DataStorageAccessModeEnum.RETRIEVE_MODE);
+        Set<STAFWorkingSubset> subsets = subsetsWrapper.getWorkingSubSets();
 
         Assert.assertEquals("There should be 1 subset created", 1, subsets.size());
 

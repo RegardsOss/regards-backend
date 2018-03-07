@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
+import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
@@ -112,6 +113,9 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
 
     @Autowired
     private IWorkspaceService workspaceService;
+
+    @Autowired
+    private IPrioritizedDataStorageService prioritizedDataStorageService;
 
     /**
      * Dispatch actions to handle by {@link StorageAction}
@@ -290,9 +294,9 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
             Long storedFileSize, Long dataStoragePluginConfId, Integer dataWidth, Integer dataHeight,
             AIP associatedAIP) {
         // update data status
-        PluginConfiguration dataStorageUsed = null;
+        PrioritizedDataStorage prioritizedDataStorageUsed = null;
         try {
-            dataStorageUsed = pluginService.getPluginConfiguration(dataStoragePluginConfId);
+            prioritizedDataStorageUsed = prioritizedDataStorageService.retrieve(dataStoragePluginConfId);
         } catch (ModuleException e) {
             LOG.error(
                     "You should not have this issue here! That means that the plugin used to storeAndCreate the dataFile just has been removed from the application",
@@ -301,7 +305,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
         }
         storedDataFile.setChecksum(storedFileChecksum);
         storedDataFile.setFileSize(storedFileSize);
-        storedDataFile.addDataStorageUsed(dataStorageUsed);
+        storedDataFile.addDataStorageUsed(prioritizedDataStorageUsed);
         storedDataFile.decreaseNotYetStoredBy();
         storedDataFile.getUrls().add(storedFileNewURL);
         storedDataFile.setHeight(dataHeight);

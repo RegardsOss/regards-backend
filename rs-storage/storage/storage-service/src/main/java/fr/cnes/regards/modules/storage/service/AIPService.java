@@ -105,6 +105,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
+import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFDataStorage;
@@ -382,10 +383,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // 2. Check for online files. Online files doesn't need to be stored in the cache
         // they can be accessed directly where they are stored.
         for (StorageDataFile df : dataFilesWithAccess) {
-            if (df.getDataStorages() != null) {
-                Set<String> dataFileStoragesInterfaces = df.getDataStorages().stream()
-                        .flatMap(pc -> pc.getInterfaceNames().stream()).collect(Collectors.toSet());
-                if (dataFileStoragesInterfaces.contains(IOnlineDataStorage.class.getName())) {
+            if (df.getPrioritizedDataStorages() != null) {
+                Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = df.getPrioritizedDataStorages()
+                        .stream().filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE)).findFirst();
+                if (onlinePrioritizedDataStorageOpt.isPresent()) {
                     onlineFiles.add(df);
                 } else {
                     nearlineFiles.add(df);
@@ -602,8 +603,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             Long dataStorageConfId, DataStorageAccessModeEnum accessMode) throws ModuleException {
         IDataStorage<IWorkingSubset> storage = pluginService.getPlugin(dataStorageConfId);
         LOG.trace("Getting working subsets for data storage of id {}", dataStorageConfId);
-        Set<IWorkingSubset> workingSubSets = storage.prepare(dataFilesToSubSet, accessMode);
-        LOG.trace("{} data objects were dispatched into {} working subsets", dataFilesToSubSet.size(),
+        WorkingSubsetWrapper workingSubsetWrapper = storage.prepare(dataFilesToSubSet, accessMode);
+        Set<IWorkingSubset> workingSubSets = workingSubsetWrapper.getWorkingSubSets();
+        LOG.trace("{} data objects were dispatched into {} working subsets",
+                  dataFilesToSubSet.size(),
                   workingSubSets.size());
         // as we are trusty people, we check that the prepare gave us back all DataFiles into the WorkingSubSets
         Set<StorageDataFile> subSetDataFiles = workingSubSets.stream().flatMap(wss -> wss.getDataFiles().stream())
@@ -611,17 +614,25 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         if (subSetDataFiles.size() != dataFilesToSubSet.size()) {
             Set<StorageDataFile> notSubSetDataFiles = Sets.newHashSet(dataFilesToSubSet);
             notSubSetDataFiles.removeAll(subSetDataFiles);
-            for (StorageDataFile prepareFailed : notSubSetDataFiles) {
-                prepareFailed.setState(DataFileState.ERROR);
-                AIP aip = prepareFailed.getAip();
+            //lets check that the plugin did not forget to reject some files
+            for (StorageDataFile notSubSetDataFile : notSubSetDataFiles) {
+                if (!workingSubsetWrapper.getRejectedDataFiles().containsKey(notSubSetDataFile)) {
+                    workingSubsetWrapper.addRejectedDataFile(notSubSetDataFile, null);
+                }
+            }
+            Set<Map.Entry<StorageDataFile, String>> rejectedSet = workingSubsetWrapper.getRejectedDataFiles()
+                    .entrySet();
+            for (Map.Entry<StorageDataFile, String> rejected : rejectedSet) {
+                rejected.getKey().setState(DataFileState.ERROR);
+                AIP aip = rejected.getKey().getAip();
                 aip.setState(AIPState.STORAGE_ERROR);
-                dataFileDao.save(prepareFailed);
+                dataFileDao.save(rejected.getKey());
                 aipDao.save(aip);
                 publisher.publish(new AIPEvent(aip));
             }
             //lets prepare the notification message
             Map<String, Object> dataMap = new HashMap<>();
-            dataMap.put("dataFiles", notSubSetDataFiles);
+            dataMap.put("dataFilesMap", workingSubsetWrapper.getRejectedDataFiles());
             // lets use the template service to get our message
             SimpleMailMessage email;
             try {
@@ -989,7 +1000,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         //when we delete DataFiles, we have to get the DataStorages to use thanks to DB informations
         Multimap<Long, StorageDataFile> deletionWorkingSetMultimap = HashMultimap.create();
         for (StorageDataFile toDelete : dataFilesToDelete) {
-            toDelete.getDataStorages()
+            toDelete.getPrioritizedDataStorages()
                     .forEach(dataStorage -> deletionWorkingSetMultimap.put(dataStorage.getId(), toDelete));
         }
         Set<UUID> jobIds = Sets.newHashSet();
@@ -1006,8 +1017,11 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 Set<JobParameter> parameters = Sets.newHashSet();
                 parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConfId));
                 parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
-                jobIds.add(jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
-                        DeleteDataFilesJob.class.getName())).getId());
+                jobIds.add(jobInfoService.createAsQueued(new JobInfo(false,
+                                                                     0,
+                                                                     parameters,
+                                                                     authResolver.getUser(),
+                                                                     DeleteDataFilesJob.class.getName())).getId());
 
             }
         }
@@ -1166,10 +1180,10 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // Lets construct the Multimap<PluginConf, StorageDataFile> allowing us to then create the IWorkingSubSets
         Multimap<Long, StorageDataFile> toPrepareMap = HashMultimap.create();
         for (UpdatableMetadataFile oldNew : metadataToUpdate) {
-            Set<PluginConfiguration> oldDataStorages = oldNew.getOldOne().getDataStorages();
+            Set<PrioritizedDataStorage> oldDataStorages = oldNew.getOldOne().getPrioritizedDataStorages();
             oldNew.getNewOne().setNotYetStoredBy(((Number) oldDataStorages.size()).longValue());
             dataFileDao.save(oldNew.getNewOne());
-            for (PluginConfiguration oldDataStorage : oldDataStorages) {
+            for (PrioritizedDataStorage oldDataStorage : oldDataStorages) {
                 toPrepareMap.put(oldDataStorage.getId(), oldNew.getNewOne());
             }
         }
@@ -1222,25 +1236,15 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     .findFirst();
             if (odf.isPresent()) {
                 StorageDataFile dataFile = odf.get();
-                if (dataFile.getDataStorages() != null) {
-                    Set<String> dataFileStoragesInterfaces = dataFile.getDataStorages().stream()
-                            .flatMap(pc -> pc.getInterfaceNames().stream()).collect(Collectors.toSet());
-                    if (dataFileStoragesInterfaces.contains(IOnlineDataStorage.class.getName())) {
-                        // lets get the most prioritized online data storage between those which has stored the data file
-                        PrioritizedDataStorage dataStorageToUse = dataFile.getDataStorages().stream().map(pc -> {
-                            try {
-                                return prioritizedDataStorageService.retrieve(pc.getId());
-                            } catch (EntityNotFoundException e) {
-                                LOG.error(String.format(
-                                                        "We could not retrieve a prioritized data storage for the following plugin configuration: %s",
-                                                        pc.getLabel()),
-                                          e);
-                                return null;
-                            }
-                        }).filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE)).sorted().findFirst()
-                                .get();
+                if (dataFile.getPrioritizedDataStorages() != null) {
+                    //first let see if this file is stored on an online data storage and lets get the most prioritized
+                    Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = dataFile
+                            .getPrioritizedDataStorages().stream()
+                            .filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE)).sorted()
+                            .findFirst();
+                    if (onlinePrioritizedDataStorageOpt.isPresent()) {
                         InputStream dataFileIS = ((IOnlineDataStorage) pluginService
-                                .getPlugin(dataStorageToUse.getId())).retrieve(dataFile);
+                                .getPlugin(onlinePrioritizedDataStorageOpt.get().getId())).retrieve(dataFile);
                         return Pair.of(dataFile, dataFileIS);
                     } else {
                         // Check if file is available from cache

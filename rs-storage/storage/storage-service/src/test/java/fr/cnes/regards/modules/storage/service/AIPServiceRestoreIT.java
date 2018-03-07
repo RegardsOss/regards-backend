@@ -70,12 +70,14 @@ import fr.cnes.regards.modules.search.client.ISearchClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
+import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
+import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
@@ -83,6 +85,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
+import fr.cnes.regards.modules.storage.plugin.NearlineNoRetrieveDataStorage;
 import fr.cnes.regards.modules.storage.plugin.SimpleNearLineStoragePlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.security.CatalogSecurityDelegation;
@@ -131,29 +134,14 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     @Autowired
     private IJobInfoRepository jobInfoRepo;
 
-    private PluginConfiguration onlineDataStorageConf;
-
-    private PluginConfiguration nearlineDataStorageConf;
-
-    private URL baseStorageLocation;
-
     @Autowired
     private ISubscriber subscriber;
-
-    @Value("${regards.storage.cache.size.limit.ko.per.tenant}")
-    private Long cacheSizeLimitKo;
 
     @Autowired
     private IRabbitVirtualHostAdmin vHost;
 
     @Autowired
     private RegardsAmqpAdmin amqpAdmin;
-
-    @Value("${regards.cache.restore.queued.rate.ms}")
-    private Long restoreQueuedRate;
-
-    @Value("${regards.cache.cleanup.rate.ms}")
-    private Long cleanCacheRate;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -164,7 +152,29 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     @Autowired
     private IPrioritizedDataStorageService prioritizedDataStorageService;
 
+    @Autowired
+    private IPrioritizedDataStorageRepository prioritizedDataStorageRepository;
+
+    @Value("${regards.storage.cache.size.limit.ko.per.tenant}")
+    private Long cacheSizeLimitKo;
+
+    @Value("${regards.cache.restore.queued.rate.ms}")
+    private Long restoreQueuedRate;
+
+    @Value("${regards.cache.cleanup.rate.ms}")
+    private Long cleanCacheRate;
+
     private PluginConfiguration catalogSecuDelegConf;
+
+    private PrioritizedDataStorage onlineDataStorageConf;
+
+    private PrioritizedDataStorage nearlineDataStorageConf;
+
+    private URL baseStorageLocation;
+
+    private PrioritizedDataStorage nearlineNoRetrieveDataStorageConf;
+
+    private PrioritizedDataStorage onlineNoRetrieveDataStorageConf;
 
     public void initCacheDir() throws IOException {
         if (cacheDir.toFile().exists()) {
@@ -197,7 +207,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      * @throws Exception
      */
     private void initDb() throws Exception {
-        baseStorageLocation = new URL("file", "", Paths.get("target/AIPServiceIT").toFile().getAbsolutePath());
+        baseStorageLocation = new URL("file", "", Paths.get("target/AIPServiceIT/normal").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
 
         // second, lets storeAndCreate a plugin configuration for IAllocationStrategy
@@ -214,20 +224,37 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                                                                       IOnlineDataStorage.class.getPackage().getName());
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              gson.toJson(baseStorageLocation))
-                .getParameters();
-        onlineDataStorageConf = new PluginConfiguration(dataStoMeta, "dsConfLabel", parameters, 0);
-        onlineDataStorageConf.setIsActive(true);
-        prioritizedDataStorageService.create(onlineDataStorageConf);
+                              gson.toJson(baseStorageLocation)).getParameters();
+        PluginConfiguration onlineDSConf = new PluginConfiguration(dataStoMeta, "dsConfLabel", parameters, 0);
+        onlineDSConf.setIsActive(true);
+        onlineDataStorageConf = prioritizedDataStorageService.create(onlineDSConf);
 
-        PluginMetaData nearlineMeta = PluginUtils
-                .createPluginMetaData(SimpleNearLineStoragePlugin.class, IDataStorage.class.getPackage().getName(),
-                                      INearlineDataStorage.class.getPackage().getName());
+        PluginMetaData onlineNoRetrieveDataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
+                                                                      IDataStorage.class.getPackage().getName(),
+                                                                      IOnlineDataStorage.class.getPackage().getName());
+        PluginConfiguration onlineNoRetrieveDSConf = new PluginConfiguration(onlineNoRetrieveDataStoMeta, "onlineNoRetrieveDsConfLabel");
+        onlineNoRetrieveDSConf.setIsActive(true);
+        onlineNoRetrieveDataStorageConf = prioritizedDataStorageService.create(onlineNoRetrieveDSConf);
+
+        PluginMetaData nearlineMeta = PluginUtils.createPluginMetaData(SimpleNearLineStoragePlugin.class,
+                                                                       IDataStorage.class.getPackage().getName(),
+                                                                       INearlineDataStorage.class.getPackage()
+                                                                               .getName());
         parameters = PluginParametersFactory.build().getParameters();
-        nearlineDataStorageConf = new PluginConfiguration(nearlineMeta, "nearlineConfLabel", parameters, 0);
-        nearlineDataStorageConf.setIsActive(true);
+        PluginConfiguration nearlineDSConf = new PluginConfiguration(nearlineMeta, "nearlineConfLabel", parameters, 0);
+        nearlineDSConf.setIsActive(true);
 
-        prioritizedDataStorageService.create(nearlineDataStorageConf);
+        nearlineDataStorageConf = prioritizedDataStorageService.create(nearlineDSConf);
+
+        PluginMetaData dataStoNoRetrieveMeta = PluginUtils.createPluginMetaData(NearlineNoRetrieveDataStorage.class,
+                                                                                IDataStorage.class.getPackage()
+                                                                                        .getName(),
+                                                                                INearlineDataStorage.class.getPackage()
+                                                                                        .getName());
+        PluginConfiguration nearlineNoRetrieveDSConf = new PluginConfiguration(dataStoNoRetrieveMeta,
+                                                                               "dsNoRetrieveConfLabel");
+        nearlineNoRetrieveDSConf.setIsActive(true);
+        nearlineNoRetrieveDataStorageConf = prioritizedDataStorageService.create(nearlineNoRetrieveDSConf);
     }
 
     /**
@@ -765,16 +792,19 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         StorageDataFile df = new StorageDataFile(Sets.newHashSet(url), "1", "MD5", DataType.RAWDATA, fileSize,
                 MimeType.valueOf("application/text"), aip, "file1.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
+        df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
         df = new StorageDataFile(Sets.newHashSet(url), "2", "MD5", DataType.RAWDATA, fileSize,
                 MimeType.valueOf("application/text"), aip, "file2.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
+        df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
         df = new StorageDataFile(Sets.newHashSet(url), "3", "MD5", DataType.RAWDATA, fileSize,
                 MimeType.valueOf("application/text"), aip, "file3.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
+        df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         dataFileDao.save(datafiles);
     }
@@ -827,16 +857,19 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         StorageDataFile df = new StorageDataFile(Sets.newHashSet(url), checksumPrefix + "10", "MD5", DataType.RAWDATA,
                 fileSize, MimeType.valueOf("application/text"), aip, "file10.test", null);
         df.addDataStorageUsed(nearlineDataStorageConf);
+        df.addDataStorageUsed(nearlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         url = new URL("file://PLOP/Node/file20.test");
         df = new StorageDataFile(Sets.newHashSet(url), checksumPrefix + "20", "MD5", DataType.RAWDATA, fileSize,
                 MimeType.valueOf("application/text"), aip, "file20.test", null);
         df.addDataStorageUsed(nearlineDataStorageConf);
+        df.addDataStorageUsed(nearlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         url = new URL("file://PLOP/Node/file30.test");
         df = new StorageDataFile(Sets.newHashSet(url), checksumPrefix + "30", "MD5", DataType.RAWDATA, fileSize,
                 MimeType.valueOf("application/text"), aip, "file30.test", null);
         df.addDataStorageUsed(nearlineDataStorageConf);
+        df.addDataStorageUsed(nearlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         dataFileDao.save(datafiles);
         return aip;
@@ -887,6 +920,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         jobInfoRepo.deleteAll();
         dataFileDao.deleteAll();
         aipDao.deleteAll();
+        prioritizedDataStorageRepository.deleteAll();
         pluginRepo.deleteAll();
         cachedFileRepository.deleteAll();
         if (baseStorageLocation != null) {

@@ -34,7 +34,6 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converter.SetURLCsvConverter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -49,15 +48,19 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  */
 @Entity
 @Table(name = "t_data_file", indexes = { @Index(name = "idx_data_file_checksum", columnList = "checksum") })
-@NamedEntityGraph(name = "graph.datafile.full",
-        attributeNodes = { @NamedAttributeNode("aipEntity"),
-                @NamedAttributeNode(value = "dataStorages", subgraph = "graph.datafile.dataStorages") },
+// @formatter:off
+@NamedEntityGraph(name = "graph.datafile.full", attributeNodes = { @NamedAttributeNode("aipEntity"),
+        @NamedAttributeNode(value = "prioritizedDataStorages", subgraph = "graph.datafile.prioritizedDataStorages") },
         subgraphs = {
-                @NamedSubgraph(name = "graph.datafile.dataStorages",
+                @NamedSubgraph(name = "graph.datafile.prioritizedDataStorages",
+                        attributeNodes = { @NamedAttributeNode(value = "dataStorageConfiguration",
+                                subgraph = "graph.datafile.prioritizedDataStorages.dataStorageConfiguration") }),
+                @NamedSubgraph(name = "graph.datafile.prioritizedDataStorages.dataStorageConfiguration",
                         attributeNodes = { @NamedAttributeNode(value = "parameters",
-                                subgraph = "graph.datafile.dataStorages.parameters") }),
-                @NamedSubgraph(name = "graph.datafile.dataStorages.parameters",
+                                subgraph = "graph.datafile.prioritizedDataStorages.dataStorageConfiguration.parameters") }),
+                @NamedSubgraph(name = "graph.datafile.prioritizedDataStorages.dataStorageConfiguration.parameters",
                         attributeNodes = { @NamedAttributeNode("dynamicsValues") }) })
+// @formatter:on
 public class StorageDataFile {
 
     /**
@@ -142,12 +145,11 @@ public class StorageDataFile {
      * Data storage plugin configuration used to store the file
      */
     @ManyToMany
-    @JoinTable(name = "ta_data_file_plugin_conf",
-            joinColumns = @JoinColumn(name = "data_file_id",
-                    foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
+    @JoinTable(name = "ta_data_file_plugin_conf", joinColumns = @JoinColumn(name = "data_file_id",
+            foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
             inverseJoinColumns = @JoinColumn(name = "data_storage_conf_id",
                     foreignKey = @ForeignKey(name = "fk_plugin_conf_data_file_plugin_conf")))
-    private final Set<PluginConfiguration> dataStorages = new HashSet<>();
+    private Set<PrioritizedDataStorage> prioritizedDataStorages = new HashSet<>();
 
     /**
      * Reversed mapping compared to reality. This is because it is easier to work like this.
@@ -338,16 +340,16 @@ public class StorageDataFile {
     /**
      * @return the data storage plugin configuration
      */
-    public Set<PluginConfiguration> getDataStorages() {
-        return dataStorages;
+    public Set<PrioritizedDataStorage> getPrioritizedDataStorages() {
+        return prioritizedDataStorages;
     }
 
     /**
      * Set the data storage plugin configuration
      * @param dataStorageUsed
      */
-    public void addDataStorageUsed(PluginConfiguration dataStorageUsed) {
-        this.dataStorages.add(dataStorageUsed);
+    public void addDataStorageUsed(PrioritizedDataStorage dataStorageUsed) {
+        this.prioritizedDataStorages.add(dataStorageUsed);
     }
 
     /**

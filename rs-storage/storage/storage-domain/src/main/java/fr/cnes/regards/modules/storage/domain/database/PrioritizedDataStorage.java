@@ -130,7 +130,7 @@ public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage
         if (this.equals(o)) {
             return 0;
         }
-        if (this.priority < o.priority) {
+        if (this.priority > o.priority) {
             return 1;
         } else {
             return -1;

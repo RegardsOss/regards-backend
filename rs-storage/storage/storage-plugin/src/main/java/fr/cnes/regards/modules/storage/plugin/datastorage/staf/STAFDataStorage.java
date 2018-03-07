@@ -44,6 +44,8 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
+import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
+import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 
 /**
  * Storage plugin to store plugin in CNES STAF System.<br/>
@@ -150,7 +152,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
      * @param dataFiles {@link Collection} of {@link StorageDataFile} to dispatch
      */
     @Override
-    public Set<STAFWorkingSubset> prepare(Collection<StorageDataFile> dataFiles, DataStorageAccessModeEnum pMode) {
+    public WorkingSubsetWrapper<STAFWorkingSubset> prepare(Collection<StorageDataFile> dataFiles, DataStorageAccessModeEnum pMode) {
         switch (pMode) {
             case RETRIEVE_MODE:
             case DELETION_MODE:
@@ -159,7 +161,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
                 return prepareStoreWorkingsubsets(dataFiles);
             default:
                 LOG.error("[STAFDataStorage Plugin] Unknown preparation mode {}", pMode.toString());
-                return Sets.newHashSet();
+                return new WorkingSubsetWrapper<>();
         }
     }
 
@@ -168,7 +170,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         return canDelete;
     }
 
-    public Set<STAFWorkingSubset> prepareStoreWorkingsubsets(Collection<StorageDataFile> dataFiles) {
+    public WorkingSubsetWrapper<STAFWorkingSubset> prepareStoreWorkingsubsets(Collection<StorageDataFile> dataFiles) {
         LOG.info("[STAFDataStorage Plugin] {} - Prepare STORE action - Start", stafArchive.getArchiveName());
         Set<STAFWorkingSubset> workingSubsets = new HashSet<>();
         // Create workingSubset for file to stored dispatching by archive mode
@@ -178,11 +180,14 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             workingSubsets.add(new STAFStoreWorkingSubset(files, path));
         });
         LOG.info("[STAFDataStorage Plugin] {} - Prepare STORE action - End, {} working sets to store",
-                 stafArchive.getArchiveName(), workingSubsets.size());
-        return workingSubsets;
+                 stafArchive.getArchiveName(),
+                 workingSubsets.size());
+        WorkingSubsetWrapper<STAFWorkingSubset> wrapper = new WorkingSubsetWrapper<>();
+        wrapper.getWorkingSubSets().addAll(workingSubsets);
+        return wrapper;
     }
 
-    public Set<STAFWorkingSubset> prepareRetrieveWorkingsubsets(Collection<StorageDataFile> dataFiles) {
+    public WorkingSubsetWrapper<STAFWorkingSubset> prepareRetrieveWorkingsubsets(Collection<StorageDataFile> dataFiles) {
         LOG.info("[STAFDataStorage Plugin] {} - Prepare RETRIEVE action - Start", stafArchive.getArchiveName());
         Set<STAFWorkingSubset> workingSubsets = new HashSet<>();
         Set<URL> urls = dataFiles.stream().map(df -> extractThisStafUrl(df).get()).collect(Collectors.toSet());
@@ -190,8 +195,11 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         workingSubsets
                 .add(new STAFRetrieveWorkingSubset(dataFiles.stream().collect(Collectors.toSet()), preparedFiles));
         LOG.info("[STAFDataStorage Plugin] {} - Prepare RETRIEVE action - End, {} working sets to retrieve",
-                 stafArchive.getArchiveName(), workingSubsets.size());
-        return workingSubsets;
+                 stafArchive.getArchiveName(),
+                 workingSubsets.size());
+        WorkingSubsetWrapper<STAFWorkingSubset> wrapper = new WorkingSubsetWrapper<>();
+        wrapper.getWorkingSubSets().addAll(workingSubsets);
+        return wrapper;
     }
 
     @Override

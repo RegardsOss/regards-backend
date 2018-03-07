@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
+import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -102,9 +103,11 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     }
 
     @Override
-    public Set<LocalWorkingSubset> prepare(Collection<StorageDataFile> dataFiles, DataStorageAccessModeEnum mode) {
+    public WorkingSubsetWrapper<LocalWorkingSubset> prepare(Collection<StorageDataFile> dataFiles, DataStorageAccessModeEnum mode) {
         // We choose to use a simple parallel stream to store file on file system, so for now we treat everything at once
-        return Sets.newHashSet(new LocalWorkingSubset(Sets.newHashSet(dataFiles)));
+        WorkingSubsetWrapper<LocalWorkingSubset> wrapper = new WorkingSubsetWrapper<>();
+        wrapper.getWorkingSubSets().add(new LocalWorkingSubset(Sets.newHashSet(dataFiles)));
+        return wrapper;
     }
 
     @Override

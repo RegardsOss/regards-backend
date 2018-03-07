@@ -26,7 +26,7 @@ public interface IDataStorage<T extends IWorkingSubset> {
      * @param {@link DataStorageAccessModeEnum} STORE or RESTORE
      * @return {@link Set} of Workingset containing plugin information needed for each file to transfert
      */
-    Set<T> prepare(Collection<StorageDataFile> dataFiles, DataStorageAccessModeEnum mode);
+    WorkingSubsetWrapper<T> prepare(Collection<StorageDataFile> dataFiles, DataStorageAccessModeEnum mode);
 
     /**
      * Do the delete action for the given {@link T} working subset. It is called "safe" because it checks

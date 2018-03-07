@@ -7,8 +7,8 @@ import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
+import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 
 /**
  * DTO used to extract public useful information about files of an aip. To get instances of this class use {@link DataFileDto#fromDataFile(StorageDataFile)}.
@@ -87,8 +87,8 @@ public class DataFileDto {
         dto.height = dataFile.getHeight();
         dto.width = dataFile.getWidth();
         // lets compute the online attribute
-        if (dataFile.getDataStorages().stream()
-                .filter(dataStorage -> dataStorage.getInterfaceNames().contains(IOnlineDataStorage.class.getName()))
+        if (dataFile.getPrioritizedDataStorages().stream()
+                .filter(dataStorage -> dataStorage.getDataStorageType().equals(DataStorageType.ONLINE))
                 .findFirst().isPresent()) {
             dto.setOnline(true);
         }

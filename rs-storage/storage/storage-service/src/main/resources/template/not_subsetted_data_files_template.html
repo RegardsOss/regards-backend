@@ -2,8 +2,8 @@
     <h1>REGARDS - Some file were not handled by a data storage</h1>
     <div>
         One or more files could not be handled by their data storage:
-        <#list dataFiles as dataFile>
+        <#list dataFilesMap as dataFile, reason>
             - File ${dataFile.urls} associated to aip ${dataFile.aipDataBase.id} could not be handled by this data
-            storage ${dataFile.dataStorageUsed.label}.<br/>
+            storage ${dataFile.dataStorageUsed.label}<#if object.attribute??>, for the following reason: ${reason}</#if>.<br/>
         </#list>
     </div>
