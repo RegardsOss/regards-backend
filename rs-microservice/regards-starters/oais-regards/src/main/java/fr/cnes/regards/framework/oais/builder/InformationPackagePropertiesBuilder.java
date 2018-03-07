@@ -64,6 +64,11 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
     private final Map<String, Object> descriptiveInformation;
 
     /**
+     * Descriptive information
+     */
+    private final Map<String, Object> miscInformation;
+
+    /**
      * Content information builder
      */
     private ContentInformationBuilder contentInformationBuilder;
@@ -77,6 +82,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
         this.contentInformationBuilder = new ContentInformationBuilder();
         this.pdiBuilder = new PDIBuilder();
         this.descriptiveInformation = Maps.newHashMap();
+        this.miscInformation = Maps.newHashMap();
     }
 
     /**
@@ -88,6 +94,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
         this.cis = properties.getContentInformations();
         this.pdiBuilder = new PDIBuilder(properties.getPdi());
         this.descriptiveInformation = properties.getDescriptiveInformation();
+        this.miscInformation = properties.getMiscInformation();
     }
 
     @Override
@@ -95,6 +102,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
         ip.getContentInformations().addAll(cis);
         ip.setPdi(pdiBuilder.build());
         ip.getDescriptiveInformation().putAll(descriptiveInformation);
+        ip.getMiscInformation().putAll(miscInformation);
         return ip;
     }
 
@@ -105,6 +113,17 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
     public void addContentInformation() {
         cis.add(contentInformationBuilder.build());
         contentInformationBuilder = new ContentInformationBuilder();
+    }
+
+    /**
+     * Add misc information to the information package thanks to the given parameters
+     * @param key
+     * @param value
+     */
+    public void addMiscInformation(String key, Object value) {
+        Assert.hasLength(key, "Misc information key is required");
+        Assert.notNull(value, "Misc information value is required");
+        miscInformation.put(key, value);
     }
 
     /**
