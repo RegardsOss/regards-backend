@@ -366,19 +366,27 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             Map<StorageDataFile, String> rejectedFiles) {
         Map<Path, Set<StorageDataFile>> dispatchedFiles = Maps.newHashMap();
         for (StorageDataFile file : pFiles) {
-            if (file.getStorageDirectory() != null) {
+            String stafNode = file.getStorageDirectory();
+            if ((stafNode != null) && !stafNode.isEmpty() && STAFController.isValidSTAFNode(stafNode)) {
                 Path path = Paths.get(file.getStorageDirectory());
-                LOG.info("PATH TO ADD {} for file {}", path.toString(), file.getName());
                 if (dispatchedFiles.containsKey(path)) {
                     dispatchedFiles.get(path).add(file);
                 } else {
                     dispatchedFiles.put(path, new HashSet<>(Arrays.asList(file)));
                 }
             } else {
-                String rejectedCause = String.format(
-                                                     "[STAFDataStorage Plugin] File \"%s\" ignored because it is not associated"
-                                                             + " to any archive directory. See your allocation strategy configuration.",
-                                                     file.getName());
+                String rejectedCause;
+                if ((stafNode == null) || stafNode.isEmpty()) {
+                    rejectedCause = String.format(
+                                                  "[STAFDataStorage Plugin] File \"%s\" ignored because it is not associated"
+                                                          + " to any archive directory. See your allocation strategy configuration.",
+                                                  file.getName());
+                } else {
+                    rejectedCause = String.format(
+                                                  "[STAFDataStorage Plugin] File \"%s\" ignored because the given STAF Node \"{}\"is not valid"
+                                                          + " to any archive directory. See your allocation strategy configuration.",
+                                                  file.getName(), stafNode);
+                }
                 LOG.error(rejectedCause);
                 rejectedFiles.put(file, rejectedCause);
             }
