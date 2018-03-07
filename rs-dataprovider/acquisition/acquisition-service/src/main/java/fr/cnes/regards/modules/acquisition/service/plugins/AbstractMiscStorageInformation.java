@@ -43,10 +43,11 @@ public abstract class AbstractMiscStorageInformation {
     public static final String SIP_MISC_STORAGE_KEY = "storage";
 
     @PluginParameter(name = PLUGINID_STORAGEDIR_MAP, label = "Define storage directory in archives per storage plugin",
-            keylabel = "Identifier of the DataStoragePlugin (exemple : \"Local\")",
+            keylabel = "Identifier of DataStoragePlugin",
             description = "This parameter allows to fix for one or many storage plugin(s) the internal archive directory where files will be stored."
                     + " The pluginId is the identifier of the DataStoragePlugin type like \"Local\". The available DataStoragePlugin list is"
-                    + " displayed when you create a new storage configuration.")
+                    + " displayed when you create a new storage configuration.",
+            optional = true)
     protected Map<String, String> pluginIdStorageDirectoryMap = Maps.newHashMap();
 
     /**
