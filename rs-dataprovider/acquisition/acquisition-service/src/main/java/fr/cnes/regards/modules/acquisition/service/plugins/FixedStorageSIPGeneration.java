@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  *
  * @author Marc Sordi
  */
-@Plugin(id = "FixedStorageSIPGeneration", version = "1.0.0-SNAPSHOT",
+@Plugin(id = "FixedStorageSIPGeneration", version = "1.0.0",
         description = "Generate SIP by adding storage information configured in the miscInformation.storage section",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
