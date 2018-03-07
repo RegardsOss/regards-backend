@@ -18,17 +18,19 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import javax.annotation.Nullable;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
@@ -64,6 +66,11 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
     private final Map<String, Object> descriptiveInformation;
 
     /**
+     * Descriptive information
+     */
+    private final Map<String, Object> miscInformation;
+
+    /**
      * Content information builder
      */
     private ContentInformationBuilder contentInformationBuilder;
@@ -77,6 +84,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
         this.contentInformationBuilder = new ContentInformationBuilder();
         this.pdiBuilder = new PDIBuilder();
         this.descriptiveInformation = Maps.newHashMap();
+        this.miscInformation = Maps.newHashMap();
     }
 
     /**
@@ -88,6 +96,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
         this.cis = properties.getContentInformations();
         this.pdiBuilder = new PDIBuilder(properties.getPdi());
         this.descriptiveInformation = properties.getDescriptiveInformation();
+        this.miscInformation = properties.getMiscInformation();
     }
 
     @Override
@@ -95,6 +104,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
         ip.getContentInformations().addAll(cis);
         ip.setPdi(pdiBuilder.build());
         ip.getDescriptiveInformation().putAll(descriptiveInformation);
+        ip.getMiscInformation().putAll(miscInformation);
         return ip;
     }
 
@@ -105,6 +115,17 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
     public void addContentInformation() {
         cis.add(contentInformationBuilder.build());
         contentInformationBuilder = new ContentInformationBuilder();
+    }
+
+    /**
+     * Add misc information to the information package thanks to the given parameters
+     * @param key
+     * @param value
+     */
+    public void addMiscInformation(String key, Object value) {
+        Assert.hasLength(key, "Misc information key is required");
+        Assert.notNull(value, "Misc information value is required");
+        miscInformation.put(key, value);
     }
 
     /**
@@ -279,8 +300,8 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
      * @param fileSize
      * @param urls
      */
-    public void setDataObject(DataType dataType, String filename, String algorithm, String checksum,
-            Long fileSize, URL... urls) {
+    public void setDataObject(DataType dataType, String filename, String algorithm, String checksum, Long fileSize,
+            URL... urls) {
         contentInformationBuilder.setDataObject(dataType, filename, algorithm, checksum, fileSize, urls);
     }
 
@@ -390,7 +411,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
     public void addSoftwareEnvironmentProperty(String key, Object value) {
         contentInformationBuilder.addSoftwareEnvironmentProperty(key, value);
     }
-
 
     /**
      * Add hardware environment property to the information package thanks to the given parameters

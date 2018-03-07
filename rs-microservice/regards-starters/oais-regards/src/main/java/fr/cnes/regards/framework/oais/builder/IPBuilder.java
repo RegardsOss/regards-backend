@@ -18,11 +18,12 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import javax.annotation.Nullable;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+
+import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -155,6 +156,15 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
      */
     public void addContentInformation() {
         ipPropertiesBuilder.addContentInformation();
+    }
+
+    /**
+     * Add a new entry in misc informations
+     * @param key
+     * @param value
+     */
+    public void addMiscInformation(String key, Object value) {
+        ipPropertiesBuilder.addMiscInformation(key, value);
     }
 
     /**
@@ -320,8 +330,8 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
      * @param fileSize
      * @param urls
      */
-    public void setDataObject(DataType dataType, String filename, String algorithm, String checksum,
-            Long fileSize, URL... urls) {
+    public void setDataObject(DataType dataType, String filename, String algorithm, String checksum, Long fileSize,
+            URL... urls) {
         ipPropertiesBuilder.setDataObject(dataType, filename, algorithm, checksum, fileSize, urls);
     }
 
