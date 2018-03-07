@@ -30,8 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Maps;
-import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -39,7 +39,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
@@ -47,15 +46,12 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 
-@TestPropertySource(locations = { "classpath:test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_service" })
 @RegardsTransactional
-public class FixedStorageSIPGenerationIT extends AbstractRegardsTransactionalIT {
+public class FixedStorageSIPGenerationIT extends AbstractMultitenantServiceTest {
 
     @Autowired
     private IPluginService pluginService;
-
-    @Autowired
-    private Gson gson;
 
     @Before
     public void init() throws ModuleException, MalformedURLException {
