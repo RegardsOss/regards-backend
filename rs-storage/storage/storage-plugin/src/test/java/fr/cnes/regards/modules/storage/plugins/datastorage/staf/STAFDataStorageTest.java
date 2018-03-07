@@ -79,6 +79,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
     private static String STAF_NODE = "/STAF/NODE/TEST";
 
+    private static AIP aip;
+
     @Before
     public void init() throws IOException {
 
@@ -104,7 +106,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
                 EntityType.DATA);
         builder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "testEvent",
                                                               OffsetDateTime.now());
-        AIP aip = builder.build();
+        aip = builder.build();
 
         // lets first make some file that should be stored in TAR mode
         filesToArchiveWithoutInvalides
@@ -171,6 +173,59 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     }
 
     /**
+     * Test the store preparation. Working subset should be created for each STAF NODE.
+     * @throws MalformedURLException
+     */
+    @Test
+    public void prepareWorkingSubsetTest() throws MalformedURLException {
+
+        // Add plugin package
+        List<String> packages = Lists.newArrayList();
+        packages.add(STAFDataStorage.class.getPackage().getName());
+
+        // Init STAF archive parameters for plugin
+        STAFArchive archive = new STAFArchive();
+        archive.setArchiveName(STAF_ARCHIVE_NAME);
+        archive.setPassword(STAF_ARCHIVE_PASSWORD);
+
+        // Init plugin parameters
+        List<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter("workspaceDirectory", WORKSPACE.toString()).addParameter("archiveParameters", archive)
+                .addParameter(STAFDataStorage.STAF_STORAGE_TOTAL_SPACE, 9000000000000L).getParameters();
+
+        // Get plugin
+        STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
+
+        // Init raw files to prepapare for storage
+        Set<StorageDataFile> filesToPrepare = Sets.newHashSet();
+        // Add a valid files (staf node is defined). 3 Files for 2 STAF Node => 2 working subsets should be created
+        filesToPrepare.add(new StorageDataFile(Sets.newHashSet(new URL("file", "", "/path/file.txt")),
+                "eadcc622739d58e8a78170b67c6ff9f1", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "file.txt", "/NODE/1"));
+        filesToPrepare.add(new StorageDataFile(Sets.newHashSet(new URL("file", "", "/path/file2.txt")),
+                "eadcc622739d58e8a78170b67c6ff9f2", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "file2.txt", "/NODE/1"));
+        filesToPrepare.add(new StorageDataFile(Sets.newHashSet(new URL("file", "", "/path/file3.txt")),
+                "eadcc622739d58e8a78170b67c6ff9f3", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "file3.txt", "/NODE/2"));
+        // Add an invalid file (staf node is not defined)
+        StorageDataFile invalidFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "/path/file4.txt")),
+                "eadcc622739d58e8a78170b67c6ff9f4", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "file4.txt", null);
+        filesToPrepare.add(invalidFile);
+
+        // prepare files
+        WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin.prepare(filesToPrepare,
+                                                                                DataStorageAccessModeEnum.STORE_MODE);
+
+        Set<STAFWorkingSubset> subsets = subsetsWrapper.getWorkingSubSets();
+        Assert.assertEquals("There should be 2 subsets created", 2, subsets.size());
+        Assert.assertEquals("There should be 1 file rejected", 1, subsetsWrapper.getRejectedDataFiles().size());
+        Assert.assertTrue("The rejected file should be in the rejected list",
+                          subsetsWrapper.getRejectedDataFiles().containsKey(invalidFile));
+    }
+
+    /**
      * Store files in the 3 existing modes TAR, CUT and NORMAL.
      * <ul>
      * <li>11 files available for storage</li>
@@ -203,7 +258,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
 
         // prepare files
-        WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin.prepare(filesToArchiveMultiplesMode, DataStorageAccessModeEnum.STORE_MODE);
+        WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin.prepare(filesToArchiveMultiplesMode,
+                                                                                DataStorageAccessModeEnum.STORE_MODE);
 
         Set<STAFWorkingSubset> subsets = subsetsWrapper.getWorkingSubSets();
 
@@ -262,7 +318,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
 
         // prepare files
-        WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin.prepare(filesToArchive, DataStorageAccessModeEnum.STORE_MODE);
+        WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin.prepare(filesToArchive,
+                                                                                DataStorageAccessModeEnum.STORE_MODE);
         Set<STAFWorkingSubset> subsets = subsetsWrapper.getWorkingSubSets();
 
         Assert.assertEquals("There should be 1 subset created", 1, subsets.size());
@@ -338,7 +395,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
 
         // prepare files
-        WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin.prepare(dataFilesToRestore, DataStorageAccessModeEnum.RETRIEVE_MODE);
+        WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin
+                .prepare(dataFilesToRestore, DataStorageAccessModeEnum.RETRIEVE_MODE);
         Set<STAFWorkingSubset> subsets = subsetsWrapper.getWorkingSubSets();
 
         Assert.assertEquals("There should be 1 subset created", 1, subsets.size());
@@ -423,7 +481,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
 
         // prepare files
-        WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin.prepare(dataFilesToRestore, DataStorageAccessModeEnum.RETRIEVE_MODE);
+        WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin
+                .prepare(dataFilesToRestore, DataStorageAccessModeEnum.RETRIEVE_MODE);
         Set<STAFWorkingSubset> subsets = subsetsWrapper.getWorkingSubSets();
 
         Assert.assertEquals("There should be 1 subset created", 1, subsets.size());
@@ -508,7 +567,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
 
         // prepare files
-        WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin.prepare(dataFilesToRestore, DataStorageAccessModeEnum.RETRIEVE_MODE);
+        WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin
+                .prepare(dataFilesToRestore, DataStorageAccessModeEnum.RETRIEVE_MODE);
         Set<STAFWorkingSubset> subsets = subsetsWrapper.getWorkingSubSets();
 
         Assert.assertEquals("There should be 1 subset created", 1, subsets.size());
