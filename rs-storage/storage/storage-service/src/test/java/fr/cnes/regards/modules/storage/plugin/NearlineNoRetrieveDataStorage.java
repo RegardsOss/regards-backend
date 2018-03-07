@@ -12,6 +12,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
+import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubset;
 
 /**
@@ -30,7 +31,7 @@ public class NearlineNoRetrieveDataStorage implements INearlineDataStorage<Local
     }
 
     @Override
-    public Set<LocalWorkingSubset> prepare(Collection<StorageDataFile> pDataFiles, DataStorageAccessModeEnum pMode) {
+    public WorkingSubsetWrapper<LocalWorkingSubset> prepare(Collection<StorageDataFile> pDataFiles, DataStorageAccessModeEnum pMode) {
         throw new IllegalStateException("This plugin should be less prioritized than the \"real\" nearline data storage.");
     }
 

@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,7 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
@@ -60,6 +60,7 @@ import fr.cnes.regards.modules.storage.domain.event.DataFileEventState;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
+import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 import fr.cnes.regards.modules.storage.service.job.AbstractStoreFilesJob;
 import fr.cnes.regards.modules.storage.service.job.RestorationJob;
 
@@ -206,11 +207,11 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                 throw new StorageException(e.getMessage(), e);
             }
         }
-        if (!cachedPathFile.exists() || !cachedPathFile.isDirectory() || !cachedPathFile.canRead()
-                || !cachedPathFile.canWrite()) {
-            throw new StorageException(
-                    String.format("Error initializing storage cache directory. %s is not a valid directory",
-                                  tenantCachePath));
+        if (!cachedPathFile.exists() || !cachedPathFile.isDirectory() || !cachedPathFile.canRead() || !cachedPathFile
+                .canWrite()) {
+            throw new StorageException(String.format(
+                    "Error initializing storage cache directory. %s is not a valid directory",
+                    tenantCachePath));
         }
         runtimeTenantResolver.clearTenant();
     }
@@ -245,13 +246,15 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         // Get cached files available
         Set<CachedFile> availableCachedFiles = cachedFiles.stream()
                 .filter(cf -> CachedFileState.AVAILABLE.equals(cf.getState())).collect(Collectors.toSet());
-        Set<StorageDataFile> alreadyAvailableData = dataFileDao.findAllByChecksumIn(availableCachedFiles.stream()
-                .map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
+        Set<StorageDataFile> alreadyAvailableData = dataFileDao
+                .findAllByChecksumIn(availableCachedFiles.stream().map(cf -> cf.getChecksum())
+                                             .collect(Collectors.toSet()));
         // Get cached files queued
         Set<CachedFile> queuedCachedFiles = cachedFiles.stream()
                 .filter(cf -> CachedFileState.QUEUED.equals(cf.getState())).collect(Collectors.toSet());
-        Set<StorageDataFile> queuedData = dataFileDao.findAllByChecksumIn(queuedCachedFiles.stream()
-                .map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
+        Set<StorageDataFile> queuedData = dataFileDao
+                .findAllByChecksumIn(queuedCachedFiles.stream().map(cf -> cf.getChecksum())
+                                             .collect(Collectors.toSet()));
 
         // Create the list of data files not handle by cache and needed to be restored
         Set<StorageDataFile> toRetrieve = Sets.newHashSet(dataFilesToRestore);
@@ -303,8 +306,9 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     public void hanleQueuedFiles() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            LOG.debug(" -----------------> Handle queued cache restoration files for tenant {} START <-----------------------",
-                      tenant);
+            LOG.debug(
+                    " -----------------> Handle queued cache restoration files for tenant {} START <-----------------------",
+                    tenant);
             Set<CachedFile> queuedFilesToCache = cachedFileRepository.findByState(CachedFileState.QUEUED);
             LOG.debug("{} queued files to restore in cache for tenant {}", queuedFilesToCache.size(), tenant);
             Set<String> checksums = queuedFilesToCache.stream().map(CachedFile::getChecksum)
@@ -312,8 +316,9 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             Set<StorageDataFile> dataFiles = dataFileDao.findAllByChecksumIn(checksums);
             // Set an expiration date minimum of 24hours
             restore(dataFiles, OffsetDateTime.now().plusDays(1));
-            LOG.debug(" -----------------> Handle queued cache restoration files for tenant {} END <-----------------------",
-                      tenant);
+            LOG.debug(
+                    " -----------------> Handle queued cache restoration files for tenant {} END <-----------------------",
+                    tenant);
             runtimeTenantResolver.clearTenant();
         }
     }
@@ -328,12 +333,14 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                 cf.setLocation(restorationPath.toUri().toURL());
                 cf.setState(CachedFileState.AVAILABLE);
                 cf = cachedFileRepository.save(cf);
-                LOG.debug("File {} is now available in cache until {}", cf.getChecksum(),
+                LOG.debug("File {} is now available in cache until {}",
+                          cf.getChecksum(),
                           cf.getExpiration().toString());
                 publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, data.getChecksum()));
             } else {
-                LOG.error("Restauration succeed but the file with checksum {} is not associated to any cached file is database.",
-                          data.getChecksum());
+                LOG.error(
+                        "Restauration succeed but the file with checksum {} is not associated to any cached file is database.",
+                        data.getChecksum());
             }
         } catch (MalformedURLException e) {
             // this should not happens
@@ -352,8 +359,9 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             LOG.error("Error during cache file restoration {}", cf.getChecksum());
             publisher.publish(new DataFileEvent(DataFileEventState.ERROR, data.getChecksum()));
         } else {
-            LOG.error("Restauration fails but the file with checksum {} is not associated to any cached file is database.",
-                      data.getChecksum());
+            LOG.error(
+                    "Restauration fails but the file with checksum {} is not associated to any cached file is database.",
+                    data.getChecksum());
         }
     }
 
@@ -391,8 +399,8 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         Long cacheSizePurgeUpperThresholdInOctets = cacheSizePurgeUpperThreshold * 1024;
         Long cacheSizePurgeLowerThresholdInOctets = cacheSizePurgeLowerThreshold * 1024;
         // If cache is over upper threshold size then delete older files to reached the lower threshold.
-        if ((cacheCurrentSize > cacheSizePurgeUpperThresholdInOctets)
-                && (cacheSizePurgeUpperThreshold > cacheSizePurgeLowerThreshold)) {
+        if ((cacheCurrentSize > cacheSizePurgeUpperThresholdInOctets) && (cacheSizePurgeUpperThreshold
+                > cacheSizePurgeLowerThreshold)) {
             LOG.debug("Cache is overloaded.({}Mo) Deleting older files from cache", cacheCurrentSize / (1024 * 1024));
             Long filesTotalSizeToDelete = cacheCurrentSize - cacheSizePurgeLowerThresholdInOctets;
             Set<CachedFile> allOlderDeletableCachedFiles = cachedFileRepository
@@ -427,18 +435,24 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                 Path fileLocation = Paths.get(cachedFile.getLocation().getPath());
                 if (fileLocation.toFile().exists()) {
                     try {
-                        LOG.debug("Deletion of cached file {} (exp date={}). {}", cachedFile.getChecksum(),
-                                  cachedFile.getExpiration().toString(), fileLocation);
+                        LOG.debug("Deletion of cached file {} (exp date={}). {}",
+                                  cachedFile.getChecksum(),
+                                  cachedFile.getExpiration().toString(),
+                                  fileLocation);
                         Files.delete(fileLocation);
                         cachedFileRepository.delete(cachedFile);
-                        LOG.debug("Cached file {} deleted (exp date={}). {}", cachedFile.getChecksum(),
-                                  cachedFile.getExpiration().toString(), fileLocation);
+                        LOG.debug("Cached file {} deleted (exp date={}). {}",
+                                  cachedFile.getChecksum(),
+                                  cachedFile.getExpiration().toString(),
+                                  fileLocation);
                     } catch (NoSuchFileException e) {
                         // File does not exists, just log a warning and do delet file in db.
                         LOG.warn(e.getMessage(), e);
                         cachedFileRepository.delete(cachedFile);
-                        LOG.debug("Cached file {} deleted (exp date={}).", cachedFile.getChecksum(),
-                                  cachedFile.getExpiration().toString(), fileLocation);
+                        LOG.debug("Cached file {} deleted (exp date={}).",
+                                  cachedFile.getChecksum(),
+                                  cachedFile.getExpiration().toString(),
+                                  fileLocation);
                     } catch (IOException e) {
                         // File exists but is not deletable.
                         LOG.error(e.getMessage(), e);
@@ -446,12 +460,15 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                 } else {
                     LOG.error("File to delete {} does not exists", fileLocation);
                     cachedFileRepository.delete(cachedFile);
-                    LOG.debug("Cached file {} deleted (exp date={}). {}", cachedFile.getChecksum(),
-                              cachedFile.getExpiration().toString(), fileLocation);
+                    LOG.debug("Cached file {} deleted (exp date={}). {}",
+                              cachedFile.getChecksum(),
+                              cachedFile.getExpiration().toString(),
+                              fileLocation);
                 }
             } else {
                 cachedFileRepository.delete(cachedFile);
-                LOG.debug("Cached file {} deleted (exp date={}).", cachedFile.getChecksum(),
+                LOG.debug("Cached file {} deleted (exp date={}).",
+                          cachedFile.getChecksum(),
                           cachedFile.getExpiration().toString());
             }
         }
@@ -517,8 +534,8 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
      * @param expirationDate {@link OffsetDateTime} Expiration date of the {@link CachedFile} to restore in cache.
      * @return {@link StorageDataFile}s that can not be restored.
      */
-    private Set<StorageDataFile> scheduleDataFileRestoration(Long pluginConfId, Collection<StorageDataFile> dataFilesToRestore,
-            OffsetDateTime expirationDate) {
+    private Set<StorageDataFile> scheduleDataFileRestoration(Long pluginConfId,
+            Collection<StorageDataFile> dataFilesToRestore, OffsetDateTime expirationDate) {
         LOG.debug("CachedFileService : Init restoration job for {} files.", dataFilesToRestore.size());
         Set<StorageDataFile> restorabledataFiles = getRestorableDataFiles(dataFilesToRestore, expirationDate);
         LOG.debug("CachedFileService : Schedule restoration job for {} files.", restorabledataFiles.size());
@@ -528,12 +545,12 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                 INearlineDataStorage<IWorkingSubset> storageToUse = pluginService.getPlugin(pluginConfId);
 
                 // Prepare files to restore
-                Set<IWorkingSubset> workingSubsets = storageToUse.prepare(restorabledataFiles,
-                                                                          DataStorageAccessModeEnum.RETRIEVE_MODE);
+                WorkingSubsetWrapper<IWorkingSubset> workingSubsets = storageToUse
+                        .prepare(restorabledataFiles, DataStorageAccessModeEnum.RETRIEVE_MODE);
                 // Check if the prepare step misses some files
                 nonRestoredFiles = checkPrepareResult(restorabledataFiles, workingSubsets);
                 // Scheduled restoration job
-                scheduleRestorationJob(workingSubsets, pluginConfId);
+                scheduleRestorationJob(workingSubsets.getWorkingSubSets(), pluginConfId);
             } catch (ModuleException e) {
                 LOG.error(e.getMessage(), e);
                 nonRestoredFiles.addAll(restorabledataFiles);
@@ -573,21 +590,30 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
 
     /**
      * @param dataFilesToSubSet
-     * @param workingSubSets
+     * @param workingSubSetWrapper
      * @return files contained into dataFilesToSubSet and not into workingSubSets
      */
     private Set<StorageDataFile> checkPrepareResult(Collection<StorageDataFile> dataFilesToSubSet,
-            Set<IWorkingSubset> workingSubSets) {
+            WorkingSubsetWrapper<IWorkingSubset> workingSubSetWrapper) {
         Set<StorageDataFile> result = Sets.newHashSet();
-        Set<StorageDataFile> subSetDataFiles = workingSubSets.stream().flatMap(wss -> wss.getDataFiles().stream())
-                .collect(Collectors.toSet());
+        Set<StorageDataFile> subSetDataFiles = workingSubSetWrapper.getWorkingSubSets().stream()
+                .flatMap(wss -> wss.getDataFiles().stream()).collect(Collectors.toSet());
         if (subSetDataFiles.size() != dataFilesToSubSet.size()) {
             Set<StorageDataFile> notSubSetDataFiles = Sets.newHashSet(dataFilesToSubSet);
             notSubSetDataFiles.removeAll(subSetDataFiles);
-            notSubSetDataFiles.stream().peek(df -> LOG.error(String
-                    .format("StorageDataFile %s with checksum %s could not be restored because it was not assign to a working subset by its DataStorage used to storeAndCreate it!",
-                            df.getId(), df.getChecksum())))
-                    .forEach(result::add);
+            //lets check that the plugin did not forget to reject some files
+            for (StorageDataFile notSubSetDataFile : notSubSetDataFiles) {
+                if (!workingSubSetWrapper.getRejectedDataFiles().containsKey(notSubSetDataFile)) {
+                    workingSubSetWrapper.addRejectedDataFile(notSubSetDataFile, null);
+                }
+            }
+            Set<Map.Entry<StorageDataFile, String>> rejectedSet = workingSubSetWrapper.getRejectedDataFiles()
+                    .entrySet();
+            rejectedSet.stream().peek(entry -> LOG.error(String.format(
+                    "StorageDataFile %s with checksum %s could not be restored because it was not assign to a working subset by its DataStorage used to store it! Reason: %s",
+                    entry.getKey().getId(),
+                    entry.getKey().getChecksum(),
+                    entry.getValue()))).forEach(entry -> result.add(entry.getKey()));
         }
         return result;
     }
@@ -599,7 +625,8 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     private Path getTenantCachePath() {
         String currentTenant = runtimeTenantResolver.getTenant();
         if (currentTenant == null) {
-            LOG.error("Unable to define current tenant cache directory path, Tenant is not defined from the runtimeTenantResolver.");
+            LOG.error(
+                    "Unable to define current tenant cache directory path, Tenant is not defined from the runtimeTenantResolver.");
             return null;
         }
         return Paths.get(globalCachePath, currentTenant);

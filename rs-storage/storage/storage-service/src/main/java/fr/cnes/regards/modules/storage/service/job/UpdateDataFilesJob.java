@@ -17,6 +17,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
+import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -66,9 +67,12 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
             // then lets remove the ones that failed
             oldDataFiles.removeAll(progressManager.getFailedDataFile());
             // now we have the old data files that have been replaced
-            Set<IWorkingSubset> subSetsToDelete = storagePlugin
+            WorkingSubsetWrapper<IWorkingSubset> subSetsToDelete = storagePlugin
                     .prepare(oldDataFiles, DataStorageAccessModeEnum.DELETION_MODE);
-            for (IWorkingSubset toDelete : subSetsToDelete) {
+            for(Map.Entry<StorageDataFile, String> entry : subSetsToDelete.getRejectedDataFiles().entrySet()) {
+                progressManager.deletionFailed(entry.getKey(), entry.getValue());
+            }
+            for (IWorkingSubset toDelete : subSetsToDelete.getWorkingSubSets()) {
                 storagePlugin.delete(toDelete, progressManager);
             }
             if (progressManager.isProcessError()) {

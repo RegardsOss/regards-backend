@@ -18,6 +18,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
+import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubset;
 
 @Plugin(author = "REGARDS Team", description = "SImple test plugin.", id = "SimpleTestNearLineStoragePlugin",
@@ -28,14 +29,16 @@ public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWo
     private static final Logger LOG = LoggerFactory.getLogger(SimpleNearLineStoragePlugin.class);
 
     @Override
-    public Set<LocalWorkingSubset> prepare(Collection<StorageDataFile> pDataFiles, DataStorageAccessModeEnum pMode) {
+    public WorkingSubsetWrapper<LocalWorkingSubset> prepare(Collection<StorageDataFile> pDataFiles, DataStorageAccessModeEnum pMode) {
         // Return only one workingSubset
         LOG.info("SimpleNearLineStoragePlugin preparing files for restoration");
         LocalWorkingSubset ws = new LocalWorkingSubset();
         Set<StorageDataFile> dataFiles = Sets.newHashSet();
         dataFiles.addAll(pDataFiles);
         ws.setDataFiles(dataFiles);
-        return Sets.newHashSet(ws);
+        WorkingSubsetWrapper<LocalWorkingSubset> wrapper = new WorkingSubsetWrapper<>();
+        wrapper.getWorkingSubSets().add(ws);
+        return wrapper;
     }
 
     @Override

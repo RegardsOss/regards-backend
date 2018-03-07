@@ -104,6 +104,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
+import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFDataStorage;
@@ -616,7 +617,8 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             Long dataStorageConfId, DataStorageAccessModeEnum accessMode) throws ModuleException {
         IDataStorage<IWorkingSubset> storage = pluginService.getPlugin(dataStorageConfId);
         LOG.trace("Getting working subsets for data storage of id {}", dataStorageConfId);
-        Set<IWorkingSubset> workingSubSets = storage.prepare(dataFilesToSubSet, accessMode);
+        WorkingSubsetWrapper workingSubsetWrapper = storage.prepare(dataFilesToSubSet, accessMode);
+        Set<IWorkingSubset> workingSubSets = workingSubsetWrapper.getWorkingSubSets();
         LOG.trace("{} data objects were dispatched into {} working subsets",
                   dataFilesToSubSet.size(),
                   workingSubSets.size());
@@ -626,17 +628,25 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         if (subSetDataFiles.size() != dataFilesToSubSet.size()) {
             Set<StorageDataFile> notSubSetDataFiles = Sets.newHashSet(dataFilesToSubSet);
             notSubSetDataFiles.removeAll(subSetDataFiles);
-            for (StorageDataFile prepareFailed : notSubSetDataFiles) {
-                prepareFailed.setState(DataFileState.ERROR);
-                AIP aip = prepareFailed.getAip();
+            //lets check that the plugin did not forget to reject some files
+            for (StorageDataFile notSubSetDataFile : notSubSetDataFiles) {
+                if (!workingSubsetWrapper.getRejectedDataFiles().containsKey(notSubSetDataFile)) {
+                    workingSubsetWrapper.addRejectedDataFile(notSubSetDataFile, null);
+                }
+            }
+            Set<Map.Entry<StorageDataFile, String>> rejectedSet = workingSubsetWrapper.getRejectedDataFiles()
+                    .entrySet();
+            for (Map.Entry<StorageDataFile, String> rejected : rejectedSet) {
+                rejected.getKey().setState(DataFileState.ERROR);
+                AIP aip = rejected.getKey().getAip();
                 aip.setState(AIPState.STORAGE_ERROR);
-                dataFileDao.save(prepareFailed);
+                dataFileDao.save(rejected.getKey());
                 aipDao.save(aip);
                 publisher.publish(new AIPEvent(aip));
             }
             //lets prepare the notification message
             Map<String, Object> dataMap = new HashMap<>();
-            dataMap.put("dataFiles", notSubSetDataFiles);
+            dataMap.put("dataFilesMap", workingSubsetWrapper.getRejectedDataFiles());
             // lets use the template service to get our message
             SimpleMailMessage email;
             try {
