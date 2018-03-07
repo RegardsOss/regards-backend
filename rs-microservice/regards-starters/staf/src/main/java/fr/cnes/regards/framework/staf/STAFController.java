@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -88,6 +89,8 @@ public class STAFController {
      */
     private static final String TMP_DIRECTORY = "tmp";
 
+    private static final Pattern VALID_NODE_PATTERN = Pattern.compile("[^a-z0-9_/]", Pattern.CASE_INSENSITIVE);
+
     /**
      * STAF global configuration
      */
@@ -123,6 +126,10 @@ public class STAFController {
         stafService = pSTAFService;
         // Initialize TAR Controller
         tarController = new TARController(stafConfiguration, localWorkspace);
+    }
+
+    public static Boolean isValidSTAFNode(String node) {
+        return VALID_NODE_PATTERN.matcher(node).find();
     }
 
     /**
