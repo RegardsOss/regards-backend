@@ -19,6 +19,8 @@
 package fr.cnes.regards.framework.microservice.configurer;
 
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
@@ -31,11 +33,14 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class JettyConfiguration {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JettyConfiguration.class);
+
     @Value("${jetty.threadPool.idleTimeout:3600000}")
     private int threadPoolIdleTimeout;
 
     @Bean
     public EmbeddedServletContainerCustomizer customizer() {
+        LOGGER.info("Customizing Jetty server...");
         return new EmbeddedServletContainerCustomizer() {
 
             @Override
@@ -47,6 +52,7 @@ public class JettyConfiguration {
 
             private void customizeJetty(JettyEmbeddedServletContainerFactory jetty) {
                 QueuedThreadPool threadPool = new QueuedThreadPool();
+                LOGGER.info("Setting Jetty server thread pool idle timeout to {} ms", threadPoolIdleTimeout);
                 threadPool.setIdleTimeout(threadPoolIdleTimeout);
                 jetty.setThreadPool(threadPool);
             }
