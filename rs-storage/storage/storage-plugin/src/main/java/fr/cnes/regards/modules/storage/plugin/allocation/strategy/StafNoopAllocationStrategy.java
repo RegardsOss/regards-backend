@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.plugin.allocation.strategy;
 
 import java.net.URL;
@@ -13,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -115,20 +119,20 @@ public class StafNoopAllocationStrategy implements IAllocationStrategy {
                         Long chosenOne = stafArchiveConfMap.get(archiveName);
                         if (chosenOne == null) {
                             LOG.debug(String.format(
-                                    "Allocation strategy for data file %s failed, no corresponding staf data storage found.",
-                                    dataFile.getUrls()));
+                                                    "Allocation strategy for data file %s failed, no corresponding staf data storage found.",
+                                                    dataFile.getUrls()));
                         } else {
                             //This allocation strategy only allows files to be stored into 1 DataStorage
                             dataFile.increaseNotYetStoredBy();
                             dispatch.put(chosenOne, dataFile);
                         }
-                        if (dataFile.isQuicklook()) {
+                        if (dataFile.isOnlineMandatory()) {
                             dataFile.increaseNotYetStoredBy();
                             dispatch.put(quicklookDataStorageConfigurationId, dataFile);
                         }
                         break;
                     default:
-                        if (dataFile.isQuicklook()) {
+                        if (dataFile.isOnlineMandatory()) {
                             //This allocation strategy only allows files to be stored into 1 DataStorage
                             dataFile.setNotYetStoredBy(1L);
                             dispatch.put(quicklookDataStorageConfigurationId, dataFile);

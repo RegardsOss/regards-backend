@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -35,8 +36,8 @@ import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system",
-        id = "LocalDataStorage", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+@Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system", id = "Local",
+        version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> {
 
@@ -131,8 +132,8 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
         try {
             fullPathToFile = getStorageLocation(data);
             //check if file is already at the right place or not. Unless we are instructed not to(for updates for example)
-            if (!replaceMode && data.getUrls().stream().map(url -> Paths.get(url.getPath()))
-                    .filter(path -> Paths.get(fullPathToFile).equals(path)).count() != 0) {
+            if (!replaceMode && (data.getUrls().stream().map(url -> Paths.get(url.getPath()))
+                    .filter(path -> Paths.get(fullPathToFile).equals(path)).count() != 0)) {
                 Long fileSize = Paths.get(fullPathToFile).toFile().length();
                 data.setFileSize(fileSize);
                 //if it is, there is nothing to move/copy, we just need to say to the system that the file is stored successfully
@@ -141,35 +142,30 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
             }
         } catch (IOException ioe) {
             String failureCause = String.format(
-                    "Storage of StorageDataFile(%s) failed due to the following IOException: %s",
-                    data.getChecksum(),
-                    ioe.toString());
+                                                "Storage of StorageDataFile(%s) failed due to the following IOException: %s",
+                                                data.getChecksum(), ioe.toString());
             LOG.error(failureCause, ioe);
             progressManager.storageFailed(data, failureCause);
             return;
         }
         try {
             URL sourceUrl = StorageDataFileUtils.getAccessibleUrl(data);
-            if(sourceUrl == null) {
+            if (sourceUrl == null) {
                 StringJoiner stringedUrls = new StringJoiner(",");
                 data.getUrls().forEach(url -> stringedUrls.add(url.toExternalForm()));
                 String errorMsg = String.format(
-                        "Error trying to retrieve file(checksum: %s). We could not find any accessible url(Actual urls: %s)",
-                        data.getChecksum(),
-                        stringedUrls.toString());
+                                                "Error trying to retrieve file(checksum: %s). We could not find any accessible url(Actual urls: %s)",
+                                                data.getChecksum(), stringedUrls.toString());
                 LOG.error(errorMsg);
                 progressManager.storageFailed(data, errorMsg);
                 return;
             }
-            boolean downloadOk = DownloadUtils.downloadAndCheckChecksum(sourceUrl,
-                                                                        Paths.get(fullPathToFile),
-                                                                        data.getAlgorithm(),
-                                                                        data.getChecksum());
+            boolean downloadOk = DownloadUtils.downloadAndCheckChecksum(sourceUrl, Paths.get(fullPathToFile),
+                                                                        data.getAlgorithm(), data.getChecksum());
             if (!downloadOk) {
                 String failureCause = String.format(
-                        "Storage of StorageDataFile(%s) failed at the following location: %s. Its checksum once stored do not match with expected",
-                        data.getChecksum(),
-                        fullPathToFile);
+                                                    "Storage of StorageDataFile(%s) failed at the following location: %s. Its checksum once stored do not match with expected",
+                                                    data.getChecksum(), fullPathToFile);
                 Files.deleteIfExists(Paths.get(fullPathToFile));
                 progressManager.storageFailed(data, failureCause);
             } else {
@@ -183,15 +179,13 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
             }
         } catch (NoSuchAlgorithmException e) {
             RuntimeException re = new RuntimeException(e);
-            LOG.error(
-                    "This is a development exception, if you see it in production, go get your dev(s) and spank them!!!!",
-                    re);
+            LOG.error("This is a development exception, if you see it in production, go get your dev(s) and spank them!!!!",
+                      re);
             throw re;
         } catch (IOException ioe) {
             String failureCause = String.format(
-                    "Storage of StorageDataFile(%s) failed due to the following IOException: %s",
-                    data.getChecksum(),
-                    ioe.toString());
+                                                "Storage of StorageDataFile(%s) failed due to the following IOException: %s",
+                                                data.getChecksum(), ioe.toString());
             LOG.error(failureCause, ioe);
             Paths.get(fullPathToFile).toFile().delete();
             progressManager.storageFailed(data, failureCause);
@@ -200,7 +194,12 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
 
     private String getStorageLocation(StorageDataFile data) throws IOException {
         String checksum = data.getChecksum();
-        String storageLocation = baseStorageLocation.getPath() + "/" + checksum.substring(0, 3);
+        String storageLocation;
+        if (data.getStorageDirectory() != null) {
+            storageLocation = data.getStorageDirectory();
+        } else {
+            storageLocation = baseStorageLocation.getPath() + "/" + checksum.substring(0, 3);
+        }
         if (!Paths.get(storageLocation).toFile().exists()) {
             Files.createDirectories(Paths.get(storageLocation));
         }

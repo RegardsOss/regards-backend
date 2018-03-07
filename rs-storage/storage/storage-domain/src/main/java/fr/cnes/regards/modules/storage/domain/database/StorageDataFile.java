@@ -1,5 +1,9 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -21,14 +25,12 @@ import javax.persistence.NamedSubgraph;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
-import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.springframework.util.MimeType;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converter.SetURLCsvConverter;
@@ -47,12 +49,15 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  */
 @Entity
 @Table(name = "t_data_file", indexes = { @Index(name = "idx_data_file_checksum", columnList = "checksum") })
-@NamedEntityGraph(name = "graph.datafile.full", attributeNodes = { @NamedAttributeNode("aipEntity"),
-        @NamedAttributeNode(value = "dataStorages", subgraph = "graph.datafile.dataStorages") }, subgraphs = {
-        @NamedSubgraph(name = "graph.datafile.dataStorages", attributeNodes = {
-                @NamedAttributeNode(value = "parameters", subgraph = "graph.datafile.dataStorages.parameters") }),
-        @NamedSubgraph(name = "graph.datafile.dataStorages.parameters",
-                attributeNodes = { @NamedAttributeNode("dynamicsValues") }) })
+@NamedEntityGraph(name = "graph.datafile.full",
+        attributeNodes = { @NamedAttributeNode("aipEntity"),
+                @NamedAttributeNode(value = "dataStorages", subgraph = "graph.datafile.dataStorages") },
+        subgraphs = {
+                @NamedSubgraph(name = "graph.datafile.dataStorages",
+                        attributeNodes = { @NamedAttributeNode(value = "parameters",
+                                subgraph = "graph.datafile.dataStorages.parameters") }),
+                @NamedSubgraph(name = "graph.datafile.dataStorages.parameters",
+                        attributeNodes = { @NamedAttributeNode("dynamicsValues") }) })
 public class StorageDataFile {
 
     /**
@@ -127,15 +132,22 @@ public class StorageDataFile {
     private Integer width;
 
     /**
+     * Directory to use for storage. Can be null.
+     * This parameter should be set by the IAllocationStrategy plugin during storage dispatch.
+     */
+    @Column
+    private String storageDirectory;
+
+    /**
      * Data storage plugin configuration used to store the file
      */
     @ManyToMany
-    @JoinTable(
-            name="ta_data_file_plugin_conf",
-            joinColumns = @JoinColumn( name="data_file_id", foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
-            inverseJoinColumns = @JoinColumn( name="data_storage_conf_id", foreignKey = @ForeignKey(name = "fk_plugin_conf_data_file_plugin_conf"))
-    )
-    private Set<PluginConfiguration> dataStorages = new HashSet<>();
+    @JoinTable(name = "ta_data_file_plugin_conf",
+            joinColumns = @JoinColumn(name = "data_file_id",
+                    foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
+            inverseJoinColumns = @JoinColumn(name = "data_storage_conf_id",
+                    foreignKey = @ForeignKey(name = "fk_plugin_conf_data_file_plugin_conf")))
+    private final Set<PluginConfiguration> dataStorages = new HashSet<>();
 
     /**
      * Reversed mapping compared to reality. This is because it is easier to work like this.
@@ -166,14 +178,8 @@ public class StorageDataFile {
      * @param aip
      */
     public StorageDataFile(OAISDataObject file, MimeType mimeType, AIP aip) {
-        this(file.getUrls(),
-             file.getChecksum(),
-             file.getAlgorithm(),
-             file.getRegardsDataType(),
-             file.getFileSize(),
-             mimeType,
-             aip,
-             null);
+        this(file.getUrls(), file.getChecksum(), file.getAlgorithm(), file.getRegardsDataType(), file.getFileSize(),
+             mimeType, aip, null, null);
         String name = file.getFilename();
         if (Strings.isNullOrEmpty(name)) {
             String[] pathParts = file.getUrls().iterator().next().getPath().split("/");
@@ -193,8 +199,8 @@ public class StorageDataFile {
      * @param aip
      * @param name
      */
-    public StorageDataFile(Set<URL> urls, String checksum, String algorithm, DataType type, Long fileSize, MimeType mimeType,
-            AIP aip, String name) {
+    public StorageDataFile(Set<URL> urls, String checksum, String algorithm, DataType type, Long fileSize,
+            MimeType mimeType, AIP aip, String name, String storageDirectory) {
         this.urls = urls;
         this.checksum = checksum;
         this.algorithm = algorithm;
@@ -203,6 +209,7 @@ public class StorageDataFile {
         this.mimeType = mimeType;
         this.aipEntity = new AIPEntity(aip);
         this.name = name;
+        this.storageDirectory = storageDirectory;
     }
 
     /**
@@ -254,7 +261,7 @@ public class StorageDataFile {
      * @return the urls
      */
     public Set<URL> getUrls() {
-        if(urls == null) {
+        if (urls == null) {
             urls = new HashSet<>();
         }
         return urls;
@@ -419,9 +426,32 @@ public class StorageDataFile {
         this.width = width;
     }
 
+    /**
+     * Does the file need to be store in an online archive ?
+     * @return [true|false]
+     */
+    public boolean isOnlineMandatory() {
+        switch (dataType) {
+            case THUMBNAIL:
+            case DOCUMENT:
+            case QUICKLOOK_HD:
+            case QUICKLOOK_MD:
+            case QUICKLOOK_SD:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     public boolean isQuicklook() {
-        return dataType == DataType.QUICKLOOK_HD || dataType == DataType.QUICKLOOK_MD
-                || dataType == DataType.QUICKLOOK_SD;
+        switch (dataType) {
+            case QUICKLOOK_HD:
+            case QUICKLOOK_MD:
+            case QUICKLOOK_SD:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public Long getNotYetStoredBy() {
@@ -432,12 +462,20 @@ public class StorageDataFile {
         this.notYetStoredBy = notYetStoredBy;
     }
 
+    public String getStorageDirectory() {
+        return storageDirectory;
+    }
+
+    public void setStorageDirectory(String directory) {
+        this.storageDirectory = directory;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 
@@ -458,14 +496,14 @@ public class StorageDataFile {
     @Override
     public int hashCode() {
         int result = checksum != null ? checksum.hashCode() : 0;
-        result = 31 * result + (algorithm != null ? algorithm.hashCode() : 0);
-        result = 31 * result + (dataType != null ? dataType.hashCode() : 0);
-        result = 31 * result + (aipEntity != null ? aipEntity.hashCode() : 0);
+        result = (31 * result) + (algorithm != null ? algorithm.hashCode() : 0);
+        result = (31 * result) + (dataType != null ? dataType.hashCode() : 0);
+        result = (31 * result) + (aipEntity != null ? aipEntity.hashCode() : 0);
         return result;
     }
 
     public void increaseNotYetStoredBy() {
-        if(notYetStoredBy == null) {
+        if (notYetStoredBy == null) {
             notYetStoredBy = 1L;
         } else {
             notYetStoredBy++;
@@ -473,7 +511,7 @@ public class StorageDataFile {
     }
 
     public void decreaseNotYetStoredBy() {
-        if(notYetStoredBy == null) {
+        if (notYetStoredBy == null) {
             notYetStoredBy = -1L;
         } else {
             notYetStoredBy--;

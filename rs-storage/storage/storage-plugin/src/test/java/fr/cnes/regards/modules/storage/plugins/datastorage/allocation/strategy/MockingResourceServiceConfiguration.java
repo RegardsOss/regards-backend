@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.plugins.datastorage.allocation.strategy;
 
 import org.mockito.Mockito;

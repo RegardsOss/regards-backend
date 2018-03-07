@@ -21,7 +21,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -77,6 +76,8 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
     private static String incomTestSourcesDir = new File("src/test/resources/staf/income/file_test_1.txt")
             .getAbsoluteFile().getParent();
 
+    private static String STAF_NODE = "/STAF/NODE/TEST";
+
     @Before
     public void init() throws IOException {
 
@@ -105,57 +106,67 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         AIP aip = builder.build();
 
         // lets first make some file that should be stored in TAR mode
-        filesToArchiveWithoutInvalides.add(new StorageDataFile(
-                Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/file_test_1.txt")), "eadcc622739d58e8a78170b67c6ff9f5",
-                "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_1.txt"));
-        filesToArchiveWithoutInvalides.add(new StorageDataFile(
-                Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/file_test_2.txt")), "8e3d5e32119c70881316a1a2b17a64d1",
-                "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_2.txt"));
-        filesToArchiveWithoutInvalides.add(new StorageDataFile(
-                Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/file_test_3.txt")), "1f4add9aecfc4c623cdda55771f4b984",
-                "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_3.txt"));
-        filesToArchiveWithoutInvalides.add(new StorageDataFile(
-                Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/file_test_4.txt")), "955fd5652aadd97329a50e029163f3a9",
-                "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_4.txt"));
-        filesToArchiveWithoutInvalides.add(new StorageDataFile(
-                Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/file_test_5.txt")), "61142380c96f899eaea71b229dcc4247",
-                "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "file_test_5.txt"));
+        filesToArchiveWithoutInvalides
+                .add(new StorageDataFile(Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/file_test_1.txt")),
+                        "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN,
+                        aip, "file_test_1.txt", STAF_NODE));
+        filesToArchiveWithoutInvalides
+                .add(new StorageDataFile(Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/file_test_2.txt")),
+                        "8e3d5e32119c70881316a1a2b17a64d1", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN,
+                        aip, "file_test_2.txt", STAF_NODE));
+        filesToArchiveWithoutInvalides
+                .add(new StorageDataFile(Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/file_test_3.txt")),
+                        "1f4add9aecfc4c623cdda55771f4b984", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN,
+                        aip, "file_test_3.txt", STAF_NODE));
+        filesToArchiveWithoutInvalides
+                .add(new StorageDataFile(Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/file_test_4.txt")),
+                        "955fd5652aadd97329a50e029163f3a9", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN,
+                        aip, "file_test_4.txt", STAF_NODE));
+        filesToArchiveWithoutInvalides
+                .add(new StorageDataFile(Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/file_test_5.txt")),
+                        "61142380c96f899eaea71b229dcc4247", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN,
+                        aip, "file_test_5.txt", STAF_NODE));
 
         filesToArchive.addAll(filesToArchiveWithoutInvalides);
 
         //lets add some files that won't be stored because they are considered as not existing
         filesToArchive.add(new StorageDataFile(
-                Sets.newHashSet(new URL("http", "172.26.47.52", 80, "/conf/staticConfiguration.js")), "eadcc622739d58e8a78170b67c6ff9f3",
-                "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip, "staticConfiguration.js"));
-        filesToArchive.add(new StorageDataFile(Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/invalid_test_file.txt")),
+                Sets.newHashSet(new URL("http", "172.26.47.52", 80, "/conf/staticConfiguration.js")),
+                "eadcc622739d58e8a78170b67c6ff9f3", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "staticConfiguration.js", STAF_NODE));
+        filesToArchive.add(new StorageDataFile(
+                Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/invalid_test_file.txt")),
                 "eadcc622739d58e8a78170b67c6ff9f2", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                "invalid_test_file.txt"));
+                "invalid_test_file.txt", STAF_NODE));
         filesToArchive.add(new StorageDataFile(Sets.newHashSet(new URL("ftp", "177.7.7.7", "/path/file.txt")),
                 "eadcc622739d58e8a78170b67c6ff9f1", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                "file.txt"));
+                "file.txt", STAF_NODE));
 
         filesToArchiveMultiplesMode.addAll(filesToArchive);
 
         // lets add some big files that will be stored in CUT mode
         filesToArchiveMultiplesMode.add(new StorageDataFile(
-                Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/big_file_test_1.txt")), "eadcc622739d58e8a78170b67c6ff9f0",
-                "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip, "big_file_test_1.txt"));
+                Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/big_file_test_1.txt")),
+                "eadcc622739d58e8a78170b67c6ff9f0", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "big_file_test_1.txt", STAF_NODE));
         filesToArchiveMultiplesMode.add(new StorageDataFile(
-                Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/big_file_test_2.txt")), "eadcc622739d58e8a78170b67c6ff9f7",
-                "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip, "big_file_test_2.txt"));
+                Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/big_file_test_2.txt")),
+                "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "big_file_test_2.txt", STAF_NODE));
         filesToArchiveMultiplesMode.add(new StorageDataFile(
-                Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/big_file_test_3.txt")), "eadcc622739d58e8a78170b67c6ff9f8",
-                "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip, "big_file_test_3.txt"));
+                Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/big_file_test_3.txt")),
+                "eadcc622739d58e8a78170b67c6ff9f8", "md5", DataType.RAWDATA, 29969L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "big_file_test_3.txt", STAF_NODE));
 
         //lets add some file that will be stored in NORMAL mode
-        filesToArchiveMultiplesMode
-                .add(new StorageDataFile(Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/normal_file_test_1.txt")),
-                        "eadcc622739d58e8a78170b67c6ff9f9", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN,
-                        aip, "normal_file_test_1.txt"));
-        filesToArchiveMultiplesMode
-                .add(new StorageDataFile(Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/normal_file_test_2.txt")),
-                        "eadcc622739d58e8a78170b67c6ff9g4", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN,
-                        aip, "normal_file_test_2.txt"));
+        filesToArchiveMultiplesMode.add(new StorageDataFile(
+                Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/normal_file_test_1.txt")),
+                "eadcc622739d58e8a78170b67c6ff9f9", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "normal_file_test_1.txt", STAF_NODE));
+        filesToArchiveMultiplesMode.add(new StorageDataFile(
+                Sets.newHashSet(new URL("file", "", incomTestSourcesDir + "/normal_file_test_2.txt")),
+                "eadcc622739d58e8a78170b67c6ff9g4", "md5", DataType.RAWDATA, 9989L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "normal_file_test_2.txt", STAF_NODE));
     }
 
     /**
@@ -199,7 +210,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         // Store each subset prepared
         subsets.forEach(subset -> {
             STAFStoreWorkingSubset ws = (STAFStoreWorkingSubset) subset;
-            Assert.assertEquals(ws.getStafNode(), STAFDataStorage.getStafNode(null));
+            Assert.assertEquals(ws.getStafNode().toString(), STAF_NODE);
             // Mock the progress manager to verify the number of call for succeed and failted files.
             IProgressManager pm = Mockito.mock(IProgressManager.class);
             Mockito.verify(pm, Mockito.times(0)).storageFailed(Mockito.any(), Mockito.any());
@@ -305,18 +316,20 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
                                                               OffsetDateTime.now());
         AIP aip = builder.build();
 
-        dataFilesToRestore
-                .add(new StorageDataFile(Sets.newHashSet(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName)),
-                        "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN,
-                        aip, fileName));
         dataFilesToRestore.add(new StorageDataFile(
-                Sets.newHashSet(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName)),
+                Sets.newHashSet(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName)),
+                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                fileName, STAF_NODE));
+        dataFilesToRestore.add(new StorageDataFile(
+                Sets.newHashSet(new URL(
+                        "staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName)),
                 "eadcc622739d58e8a78170b67c6ff9f6", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                tarFileName));
+                tarFileName, STAF_NODE));
         dataFilesToRestore.add(new StorageDataFile(
-                Sets.newHashSet(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + cutFileName + "?parts=12")),
+                Sets.newHashSet(new URL(
+                        "staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + cutFileName + "?parts=12")),
                 "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                cutFileName));
+                cutFileName, STAF_NODE));
 
         // Get plugin
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
@@ -387,18 +400,20 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
                                                               OffsetDateTime.now());
         AIP aip = builder.build();
 
-        dataFilesToRestore
-                .add(new StorageDataFile(Sets.newHashSet(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName)),
-                        "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN,
-                        aip, fileName));
         dataFilesToRestore.add(new StorageDataFile(
-                Sets.newHashSet(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName)),
+                Sets.newHashSet(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName)),
+                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                fileName, STAF_NODE));
+        dataFilesToRestore.add(new StorageDataFile(
+                Sets.newHashSet(new URL(
+                        "staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName)),
                 "eadcc622739d58e8a78170b67c6ff9f6", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                tarFileName));
+                tarFileName, STAF_NODE));
         dataFilesToRestore.add(new StorageDataFile(
-                Sets.newHashSet(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + cutFileName + "?parts=12")),
+                Sets.newHashSet(new URL(
+                        "staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + cutFileName + "?parts=12")),
                 "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                cutFileName));
+                cutFileName, STAF_NODE));
 
         // Get plugin
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
@@ -469,18 +484,20 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
                                                               OffsetDateTime.now());
         AIP aip = builder.build();
 
-        dataFilesToRestore
-                .add(new StorageDataFile(Sets.newHashSet(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName)),
-                        "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN,
-                        aip, fileName));
         dataFilesToRestore.add(new StorageDataFile(
-                Sets.newHashSet(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName)),
+                Sets.newHashSet(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName)),
+                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                fileName, STAF_NODE));
+        dataFilesToRestore.add(new StorageDataFile(
+                Sets.newHashSet(new URL(
+                        "staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName)),
                 "eadcc622739d58e8a78170b67c6ff9f6", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                tarFileName));
+                tarFileName, STAF_NODE));
         dataFilesToRestore.add(new StorageDataFile(
-                Sets.newHashSet(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + cutFileName + "?parts=12")),
+                Sets.newHashSet(new URL(
+                        "staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + cutFileName + "?parts=12")),
                 "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                cutFileName));
+                cutFileName, STAF_NODE));
 
         // Get plugin
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
@@ -548,18 +565,20 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
                                                               OffsetDateTime.now());
         AIP aip = builder.build();
 
-        dataFilesToDelete
-                .add(new StorageDataFile(Sets.newHashSet(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName)),
-                        "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN,
-                        aip, fileName));
         dataFilesToDelete.add(new StorageDataFile(
-                Sets.newHashSet(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName)),
+                Sets.newHashSet(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + fileName)),
+                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                fileName, STAF_NODE));
+        dataFilesToDelete.add(new StorageDataFile(
+                Sets.newHashSet(new URL(
+                        "staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/file.tar?filename=" + tarFileName)),
                 "eadcc622739d58e8a78170b67c6ff9f6", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                tarFileName));
+                tarFileName, STAF_NODE));
         dataFilesToDelete.add(new StorageDataFile(
-                Sets.newHashSet(new URL("staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + cutFileName + "?parts=12")),
+                Sets.newHashSet(new URL(
+                        "staf://" + STAF_ARCHIVE_NAME + "/test/restore/node/" + cutFileName + "?parts=12")),
                 "eadcc622739d58e8a78170b67c6ff9f7", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
-                cutFileName));
+                cutFileName, STAF_NODE));
 
         // Get plugin
         STAFDataStorage plugin = PluginUtils.getPlugin(parameters, STAFDataStorage.class, packages, Maps.newHashMap());
