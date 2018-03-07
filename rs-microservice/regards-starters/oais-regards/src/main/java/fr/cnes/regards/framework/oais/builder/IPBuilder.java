@@ -158,6 +158,15 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
     }
 
     /**
+     * Add a new entry in misc informations
+     * @param key
+     * @param value
+     */
+    public void addMiscInformation(String key, Object value) {
+        ipPropertiesBuilder.addMiscInformation(key, value);
+    }
+
+    /**
      * @return builder for <b>required</b> {@link PreservationDescriptionInformation}
      */
     public PDIBuilder getPDIBuilder() {
