@@ -23,8 +23,6 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubs
         url = "https://regardsoss.github.io/")
 public class NearlineNoRetrieveDataStorage implements INearlineDataStorage<LocalWorkingSubset> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SimpleNearLineStoragePlugin.class);
-
     @Override
     public void retrieve(LocalWorkingSubset workingSubset, Path destinationPath, IProgressManager progressManager) {
         throw new IllegalStateException("This plugin should be less prioritized than the \"real\" nearline data storage.");
