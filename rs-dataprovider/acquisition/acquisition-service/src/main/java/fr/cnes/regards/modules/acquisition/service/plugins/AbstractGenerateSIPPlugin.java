@@ -42,10 +42,11 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  * @author Christophe Mertz
  *
  */
-public abstract class AbstractGenerateSIPPlugin implements ISIPGenerationPluginWithMetadataToolbox {
+public abstract class AbstractGenerateSIPPlugin extends AbstractMiscStorageInformation
+        implements ISIPGenerationPluginWithMetadataToolbox {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGenerateSIPPlugin.class);
-    
+
     private static final String PRODUCT_NAME = "product_name";
 
     public static final String DATASET_SIP_ID = "datasetSipId";
@@ -61,7 +62,7 @@ public abstract class AbstractGenerateSIPPlugin implements ISIPGenerationPluginW
 
         // Init the builder
         SIPBuilder sipBuilder = new SIPBuilder(product.getProductName());
-        
+
         sipBuilder.addDescriptiveInformation(PRODUCT_NAME, product.getProductName());
 
         // Add all AcquisistionFile to the content information
@@ -71,6 +72,9 @@ public abstract class AbstractGenerateSIPPlugin implements ISIPGenerationPluginW
         SortedMap<Integer, Attribute> mm = createMetadataPlugin(product.getAcquisitionFiles());
 
         addAttributesTopSip(sipBuilder, mm);
+
+        // Add misc information
+        addMiscStorageInfomation(sipBuilder);
 
         // Add the SIP to the SIPCollection
         SIP aSip = sipBuilder.build();
