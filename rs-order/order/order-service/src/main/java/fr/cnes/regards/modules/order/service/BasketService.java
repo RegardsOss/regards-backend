@@ -1,9 +1,6 @@
 package fr.cnes.regards.modules.order.service;
 
 import javax.persistence.EntityNotFoundException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.Map;
@@ -15,11 +12,11 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
@@ -45,6 +42,9 @@ public class BasketService implements IBasketService {
 
     @Autowired
     private ISearchClient searchClient;
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     @Override
     public Basket findOrCreate(String user) {
@@ -86,19 +86,13 @@ public class BasketService implements IBasketService {
         String nowStr = OffsetDateTimeAdapter.format(now);
         String openSearchRequest = Strings.nullToEmpty(inOpenSearchRequest);
         if (!openSearchRequest.isEmpty()) {
-            try {
-                openSearchRequest = URLDecoder.decode(openSearchRequest, Charset.defaultCharset().toString());
-            } catch (UnsupportedEncodingException e) {
-                throw new RsRuntimeException(e);
-            }
             openSearchRequest = "(" + openSearchRequest + ") AND ";
         }
         openSearchRequest += "creationDate:[* TO " + nowStr + "]";
         // Compute summary for this selection
         Map<String, String> queryMap = new ImmutableMap.Builder<String, String>().put("q", openSearchRequest).build();
         try {
-            // computeDatasetsSummary() is set with INSTANCE_ADMIN role because it doesn't need to be called externally
-            FeignSecurityManager.asSystem();
+            FeignSecurityManager.asUser(authResolver.getUser(), authResolver.getRole());
             DocFilesSummary summary = searchClient
                     .computeDatasetsSummary(queryMap, datasetIpId, DataTypeSelection.ALL.getFileTypes()).getBody();
             // If global summary contains no files => EmptySelection
