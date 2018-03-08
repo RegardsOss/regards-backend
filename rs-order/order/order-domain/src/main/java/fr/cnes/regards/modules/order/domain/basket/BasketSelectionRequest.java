@@ -36,14 +36,6 @@ public class BasketSelectionRequest {
 
     public void setSelectAllOpenSearchRequest(String openSearchRequest) {
         this.selectAllOpenSearchRequest = openSearchRequest;
-        if (!Strings.isNullOrEmpty(this.selectAllOpenSearchRequest)) {
-            try {
-                this.selectAllOpenSearchRequest = URLDecoder
-                        .decode(this.selectAllOpenSearchRequest, Charset.defaultCharset().toString());
-            } catch (UnsupportedEncodingException e) {
-                throw new RsRuntimeException(e);
-            }
-        }
     }
 
     public Set<String> getIpIds() {
@@ -51,20 +43,34 @@ public class BasketSelectionRequest {
     }
 
     public void setIpIds(Set<String> ipIds) {
-        String charset = Charset.defaultCharset().toString();
-        this.ipIds = ipIds.stream().map(ipId -> {
-            try {
-                return URLDecoder.decode(ipId, charset);
-            } catch (UnsupportedEncodingException e) {
-                throw new RsRuntimeException(e);
-            }
-        }).collect(Collectors.toSet());
+        this.ipIds = ipIds;
     }
 
     /**
      * Compute openSearch request taking into account all parameters (selectAllOpenSearchRequest, ipIds, ...)
      */
     public String computeOpenSearchRequest() throws BadBasketSelectionRequestException {
+        // Need to do this here because of injection by introspection
+        if (!Strings.isNullOrEmpty(selectAllOpenSearchRequest)) {
+            try {
+                selectAllOpenSearchRequest = URLDecoder
+                        .decode(this.selectAllOpenSearchRequest, Charset.defaultCharset().toString());
+            } catch (UnsupportedEncodingException e) {
+                throw new RsRuntimeException(e);
+            }
+        }
+        // Idem
+        String charset = Charset.defaultCharset().toString();
+        if (ipIds != null) {
+            ipIds = ipIds.stream().map(ipId -> {
+                try {
+                    return URLDecoder.decode(ipId, charset);
+                } catch (UnsupportedEncodingException e) {
+                    throw new RsRuntimeException(e);
+                }
+            }).collect(Collectors.toSet());
+        }
+
         String ipIdsOpenSearch = null;
         // ipIds specified
         if ((ipIds != null) && !ipIds.isEmpty()) {
