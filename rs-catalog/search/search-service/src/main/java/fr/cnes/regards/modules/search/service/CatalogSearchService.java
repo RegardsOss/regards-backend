@@ -214,6 +214,22 @@ public class CatalogSearchService implements ICatalogSearchService {
             criterion = accessRightFilter.addAccessRights(criterion);
             // Perform compute
             DocFilesSummary summary = searchService.computeDataFilesSummary(searchKey, criterion, "tags", fileTypes);
+            // Be careful ! "tags" is used to discriminate docFiles summaries because dataset URN is set into it BUT
+            // all tags are used.
+            // So we must remove all summaries that are not from dataset
+            for (Iterator<String> i = summary.getSubSummariesMap().keySet().iterator(); i.hasNext(); ) {
+                String tag = i.next();
+                if (!UniformResourceName.isValidUrn(tag)) {
+                    i.remove();
+                    continue;
+                }
+                UniformResourceName urn = UniformResourceName.fromString(tag);
+                if (urn.getEntityType() != EntityType.DATASET) {
+                    i.remove();
+                    continue;
+                }
+            }
+
             // It is necessary to filter sub summaries first to keep only datasets and seconds to keep only datasets
             // on which user has right
             final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
