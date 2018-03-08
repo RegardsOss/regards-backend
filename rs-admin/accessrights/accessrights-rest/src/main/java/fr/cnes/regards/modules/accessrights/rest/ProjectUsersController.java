@@ -202,7 +202,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
 
     @ResponseBody
     @RequestMapping(value = "/email/{user_email}/admin", method = RequestMethod.GET)
-    @ResourceAccess(description = "tell if user has role admin", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "tell if user has role admin", role = DefaultRole.PUBLIC)
     public ResponseEntity<Boolean> isAdmin(@PathVariable("user_email") final String userEmail)
             throws EntityNotFoundException {
         final ProjectUser user = projectUserService.retrieveOneByEmail(userEmail);
