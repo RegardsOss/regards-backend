@@ -1,8 +1,13 @@
 package fr.cnes.regards.modules.order.domain.basket;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Strings;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequestException;
 
 /**
@@ -31,6 +36,14 @@ public class BasketSelectionRequest {
 
     public void setSelectAllOpenSearchRequest(String openSearchRequest) {
         this.selectAllOpenSearchRequest = openSearchRequest;
+        if (!Strings.isNullOrEmpty(this.selectAllOpenSearchRequest)) {
+            try {
+                this.selectAllOpenSearchRequest = URLDecoder
+                        .decode(this.selectAllOpenSearchRequest, Charset.defaultCharset().toString());
+            } catch (UnsupportedEncodingException e) {
+                throw new RsRuntimeException(e);
+            }
+        }
     }
 
     public Set<String> getIpIds() {
@@ -38,7 +51,14 @@ public class BasketSelectionRequest {
     }
 
     public void setIpIds(Set<String> ipIds) {
-        this.ipIds = ipIds;
+        String charset = Charset.defaultCharset().toString();
+        this.ipIds = ipIds.stream().map(ipId -> {
+            try {
+                return URLDecoder.decode(ipId, charset);
+            } catch (UnsupportedEncodingException e) {
+                throw new RsRuntimeException(e);
+            }
+        }).collect(Collectors.toSet());
     }
 
     /**
@@ -50,7 +70,8 @@ public class BasketSelectionRequest {
         if ((ipIds != null) && !ipIds.isEmpty()) {
             ipIdsOpenSearch = ipIds.stream().map(ipId -> "ipId:\"" + ipId + "\"").collect(Collectors.joining(" OR "));
         } else if (selectAllOpenSearchRequest == null) {
-            throw new BadBasketSelectionRequestException("If opensearch request is null, at least on IP_ID must be provided");
+            throw new BadBasketSelectionRequestException(
+                    "If opensearch request is null, at least on IP_ID must be provided");
         } else { // no IpIds specified => selectAll
             return selectAllOpenSearchRequest;
         }

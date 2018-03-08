@@ -1,6 +1,9 @@
 package fr.cnes.regards.modules.order.service;
 
 import javax.persistence.EntityNotFoundException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.Map;
@@ -16,6 +19,7 @@ import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
@@ -82,6 +86,11 @@ public class BasketService implements IBasketService {
         String nowStr = OffsetDateTimeAdapter.format(now);
         String openSearchRequest = Strings.nullToEmpty(inOpenSearchRequest);
         if (!openSearchRequest.isEmpty()) {
+            try {
+                openSearchRequest = URLDecoder.decode(openSearchRequest, Charset.defaultCharset().toString());
+            } catch (UnsupportedEncodingException e) {
+                throw new RsRuntimeException(e);
+            }
             openSearchRequest = "(" + openSearchRequest + ") AND ";
         }
         openSearchRequest += "creationDate:[* TO " + nowStr + "]";
