@@ -90,7 +90,7 @@ public class AccessRightFilter implements IAccessRightFilter {
         Assert.notNull(userEmail, "No user found!");
 
         try {
-            FeignSecurityManager.asSystem();
+            FeignSecurityManager.asUser(userEmail, authResolver.getRole());
             if (!projectUserClient.isAdmin(userEmail).getBody()) {
 
                 // Retrieve public groups
