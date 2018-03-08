@@ -147,7 +147,7 @@ public class AIPController implements IResourceController<AIP> {
     /**
      * Controller path using an aip ip id and a file checksum as path variable
      */
-    public static final String DOWLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
+    public static final String DOWNLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
 
     /**
      * Class logger.
@@ -471,8 +471,7 @@ public class AIPController implements IResourceController<AIP> {
         return new ResponseEntity<>(versions, HttpStatus.OK);
     }
 
-    @RequestMapping(path = DOWLOAD_AIP_FILE, method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @RequestMapping(path = DOWNLOAD_AIP_FILE, method = RequestMethod.GET)
     @ResourceAccess(description = "download one file from a given AIP by checksum.", role = DefaultRole.PUBLIC)
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("ip_id") String aipId,
             @PathVariable("checksum") String checksum) throws ModuleException, IOException {
@@ -536,7 +535,7 @@ public class AIPController implements IResourceController<AIP> {
         sb.append("/");
         sb.append(microserviceName);
         sb.append(AIP_PATH);
-        sb.append(DOWLOAD_AIP_FILE.replaceAll("\\{ip_id\\}", owningAip.getId().toString())
+        sb.append(DOWNLOAD_AIP_FILE.replaceAll("\\{ip_id\\}", owningAip.getId().toString())
                           .replaceAll("\\{checksum\\}", dataFile.getChecksum()));
         //don't forget to add the project into parameter scope
         sb.append("?scope=");
