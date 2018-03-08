@@ -180,6 +180,9 @@ public class OrderService implements IOrderService {
     @Value("${regards.order.secret}")
     private String secret;
 
+    @Value("${zuul.prefix}")
+    private String urlPrefix;
+
     @Autowired
     private IEmailClient emailClient;
 
@@ -289,8 +292,7 @@ public class OrderService implements IOrderService {
         String host = project.getHost();
         FeignSecurityManager.reset();
 
-        // FIXME => Sylvain Vessière Guerinet (cf. OpenSearchDescriptionBuilder)
-        String urlStart = host + "/api/v1/" + encode4Uri(microserviceName);
+        String urlStart = host + urlPrefix + "/" + encode4Uri(microserviceName);
 
         // Metalink file public url
         Map<String, String> dataMap = new HashMap<>();
@@ -544,8 +546,15 @@ public class OrderService implements IOrderService {
                             }
                         }
                         zos.putNextEntry(new ZipEntry(filename));
-                        ByteStreams.copy(is, zos);
+                        long copiedBytes = ByteStreams.copy(is, zos);
                         zos.closeEntry();
+                        // Check that file has been completely been copied
+                        if (copiedBytes != dataFile.getSize()) {
+                            downloadErrorFiles.add(dataFile);
+                            i.remove();
+                            LOGGER.warn("Cannot completely retrieve data file from storage (aip : {}, checksum : {})", aip,
+                                        dataFile.getChecksum());
+                        }
                     }
                 }
             }
@@ -595,8 +604,7 @@ public class OrderService implements IOrderService {
             // Build URL to publicdownloadFile
             StringBuilder buff = new StringBuilder();
             buff.append(host);
-            // FIXME => Sylvain Vessière Guerinet (cf. OpenSearchDescriptionBuilder)
-            buff.append("/api/v1/").append(encode4Uri(microserviceName));
+            buff.append(urlPrefix).append("/").append(encode4Uri(microserviceName));
             buff.append("/orders/aips/").append(encode4Uri(file.getIpId().toString())).append("/files/");
             buff.append(file.getChecksum()).append("?").append(tokenRequestParam);
             buff.append("&").append(scopeRequestParam);
