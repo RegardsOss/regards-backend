@@ -463,7 +463,7 @@ public class AIPController implements IResourceController<AIP> {
 
     @RequestMapping(value = VERSION_PATH, method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "send the list of versions of an aip threw there ip ids")
+    @ResourceAccess(description = "send the list of versions of an aip through their ip ids")
     public ResponseEntity<List<String>> retrieveAIPVersionHistory(
             @PathVariable("ip_id") @Valid UniformResourceName pIpId, final Pageable pPageable,
             final PagedResourcesAssembler<AIP> pAssembler) throws EntityNotFoundException {
@@ -471,7 +471,7 @@ public class AIPController implements IResourceController<AIP> {
         return new ResponseEntity<>(versions, HttpStatus.OK);
     }
 
-    @RequestMapping(path = DOWNLOAD_AIP_FILE, method = RequestMethod.GET)
+    @RequestMapping(path = DOWNLOAD_AIP_FILE, method = RequestMethod.GET, produces = MediaType.ALL_VALUE)
     @ResourceAccess(description = "download one file from a given AIP by checksum.", role = DefaultRole.PUBLIC)
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("ip_id") String aipId,
             @PathVariable("checksum") String checksum) throws ModuleException, IOException {
