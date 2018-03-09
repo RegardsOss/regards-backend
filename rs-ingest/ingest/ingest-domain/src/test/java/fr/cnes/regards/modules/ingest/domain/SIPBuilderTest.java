@@ -102,7 +102,9 @@ public class SIPBuilderTest {
 
         OAISDataObject dataObject = ciOne.getDataObject();
         Assert.assertEquals(dataType, dataObject.getRegardsDataType());
-        Assert.assertEquals(Paths.get(fileName).toAbsolutePath().toString(), dataObject.getUrl().getPath());
+        Assert.assertTrue(dataObject.getUrls().stream().map(url -> url.getPath())
+                                  .filter(path -> path.equals(Paths.get(fileName).toAbsolutePath().toString()))
+                                  .findFirst().isPresent());
         Assert.assertEquals(algorithm, dataObject.getAlgorithm());
         Assert.assertEquals(checksum, dataObject.getChecksum());
     }
