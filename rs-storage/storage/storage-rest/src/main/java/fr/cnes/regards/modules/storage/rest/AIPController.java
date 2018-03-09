@@ -537,9 +537,6 @@ public class AIPController implements IResourceController<AIP> {
         sb.append(AIP_PATH);
         sb.append(DOWNLOAD_AIP_FILE.replaceAll("\\{ip_id\\}", owningAip.getId().toString())
                           .replaceAll("\\{checksum\\}", dataFile.getChecksum()));
-        //don't forget to add the project into parameter scope
-        sb.append("?scope=");
-        sb.append(runtimeTenantResolver.getTenant());
         URL downloadUrl = new URL(sb.toString());
         dataFile.setUrl(downloadUrl);
     }
