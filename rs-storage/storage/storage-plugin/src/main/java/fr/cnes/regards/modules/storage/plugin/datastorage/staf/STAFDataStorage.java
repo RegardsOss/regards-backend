@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -43,7 +44,6 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
-import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 
 /**
@@ -68,8 +68,8 @@ import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
  *
  */
 @Plugin(author = "REGARDS Team",
-        description = "Plugin to handle files storage for a specific archive of the CNES STAF System.",
-        id = "STAFDataStorage", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        description = "Plugin to handle files storage for a specific archive of the CNES STAF System.", id = "STAF",
+        version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> {
 
@@ -133,19 +133,13 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     @PluginParameter(name = STAF_WORKSPACE_PATH, label = "Workspace directory")
     private String workspaceDirectory;
 
-    public static Path getStafNode(StorageDataFile pFile) {
-        // TODO : How to calculate staf node from StorageDataFile or AIP ?
-        return Paths.get("common/default");
-    }
-
     @PluginInit
     public void init() {
         // Initialize STAF Service
         STAFService stafService = stafManager.getNewArchiveAccessService(stafArchive);
         try {
-            stafController = new STAFController(stafManager.getConfiguration(),
-                                                Paths.get(workspaceDirectory),
-                                                stafService);
+            stafController = new STAFController(stafManager.getConfiguration(), Paths.get(workspaceDirectory),
+                    stafService);
             stafController.initializeWorkspaceDirectories();
         } catch (IOException e) {
             LOG.error("[STAFDataStorage Plugin] Error during plugin initialization", e);
@@ -157,17 +151,22 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
      * @param dataFiles {@link Collection} of {@link StorageDataFile} to dispatch
      */
     @Override
-    public WorkingSubsetWrapper<STAFWorkingSubset> prepare(Collection<StorageDataFile> dataFiles, DataStorageAccessModeEnum pMode) {
+    public WorkingSubsetWrapper<STAFWorkingSubset> prepare(Collection<StorageDataFile> dataFiles,
+            DataStorageAccessModeEnum pMode) {
+        WorkingSubsetWrapper<STAFWorkingSubset> wrapper = new WorkingSubsetWrapper<>();
         switch (pMode) {
             case RETRIEVE_MODE:
             case DELETION_MODE:
-                return prepareRetrieveWorkingsubsets(dataFiles);
+                prepareRetrieveWorkingsubsets(dataFiles, wrapper.getWorkingSubSets(), wrapper.getRejectedDataFiles());
+                break;
             case STORE_MODE:
-                return prepareStoreWorkingsubsets(dataFiles);
+                prepareStoreWorkingsubsets(dataFiles, wrapper.getWorkingSubSets(), wrapper.getRejectedDataFiles());
+                break;
             default:
                 LOG.error("[STAFDataStorage Plugin] Unknown preparation mode {}", pMode.toString());
-                return new WorkingSubsetWrapper<>();
+                break;
         }
+        return wrapper;
     }
 
     @Override
@@ -175,39 +174,28 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         return canDelete;
     }
 
-    public WorkingSubsetWrapper<STAFWorkingSubset> prepareStoreWorkingsubsets(Collection<StorageDataFile> dataFiles) {
+    public void prepareStoreWorkingsubsets(Collection<StorageDataFile> dataFiles, Set<STAFWorkingSubset> workingSubsets,
+            Map<StorageDataFile, String> rejectedFiles) {
         LOG.info("[STAFDataStorage Plugin] {} - Prepare STORE action - Start", stafArchive.getArchiveName());
-        Set<STAFWorkingSubset> workingSubsets = new HashSet<>();
         // Create workingSubset for file to stored dispatching by archive mode
-        dispatchFilesToArchiveBySTAFNode(dataFiles).forEach((path, files) -> {
-            LOG.info(
-                    "[STAFDataStorage Plugin] {} - Prepare STORE action - Working subset created for archiving STAF node {} with {} files to store.",
-                    stafArchive.getArchiveName(),
-                    path.toString(),
-                    files.size());
+        dispatchFilesToArchiveBySTAFNode(dataFiles, rejectedFiles).forEach((path, files) -> {
+            LOG.info("[STAFDataStorage Plugin] {} - Prepare STORE action - Working subset created for archiving STAF node {} with {} files to store.",
+                     stafArchive.getArchiveName(), path.toString(), files.size());
             workingSubsets.add(new STAFStoreWorkingSubset(files, path));
         });
         LOG.info("[STAFDataStorage Plugin] {} - Prepare STORE action - End, {} working sets to store",
-                 stafArchive.getArchiveName(),
-                 workingSubsets.size());
-        WorkingSubsetWrapper<STAFWorkingSubset> wrapper = new WorkingSubsetWrapper<>();
-        wrapper.getWorkingSubSets().addAll(workingSubsets);
-        return wrapper;
+                 stafArchive.getArchiveName(), workingSubsets.size());
     }
 
-    public WorkingSubsetWrapper<STAFWorkingSubset> prepareRetrieveWorkingsubsets(Collection<StorageDataFile> dataFiles) {
+    public void prepareRetrieveWorkingsubsets(Collection<StorageDataFile> dataFiles,
+            Set<STAFWorkingSubset> workingSubsets, Map<StorageDataFile, String> rejectedFiles) {
         LOG.info("[STAFDataStorage Plugin] {} - Prepare RETRIEVE action - Start", stafArchive.getArchiveName());
-        Set<STAFWorkingSubset> workingSubsets = new HashSet<>();
         Set<URL> urls = dataFiles.stream().map(df -> extractThisStafUrl(df).get()).collect(Collectors.toSet());
         Set<AbstractPhysicalFile> preparedFiles = stafController.prepareFilesToRestore(urls);
         workingSubsets
                 .add(new STAFRetrieveWorkingSubset(dataFiles.stream().collect(Collectors.toSet()), preparedFiles));
         LOG.info("[STAFDataStorage Plugin] {} - Prepare RETRIEVE action - End, {} working sets to retrieve",
-                 stafArchive.getArchiveName(),
-                 workingSubsets.size());
-        WorkingSubsetWrapper<STAFWorkingSubset> wrapper = new WorkingSubsetWrapper<>();
-        wrapper.getWorkingSubSets().addAll(workingSubsets);
-        return wrapper;
+                 stafArchive.getArchiveName(), workingSubsets.size());
     }
 
     @Override
@@ -237,8 +225,7 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     public void retrieve(STAFWorkingSubset pWorkingSubset, Path pDestinationPath, IProgressManager pProgressManager) {
         STAFRetrieveWorkingSubset ws = (STAFRetrieveWorkingSubset) pWorkingSubset;
         if (ws != null) {
-            stafController.restoreFiles(ws.getFilesToRestore(),
-                                        pDestinationPath,
+            stafController.restoreFiles(ws.getFilesToRestore(), pDestinationPath,
                                         new STAFRetrieveListener(pProgressManager, ws));
         } else {
             LOG.error("[STAFDataStorage Plugin] {} - Invalid workingsubset of Store type used for retrieve action.",
@@ -265,31 +252,30 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
 
     /**
      * Do the store action for the given {@link StorageDataFile}s
-     * @param pFilesToStore Set of {@link StorageDataFile} of file to store.
-     * @param pReplaceMode {@link Path} of the STAF Node where to store files.
-     * @param pProgressManager{@link Boolean} replace if files exists into STAF ?
+     * @param filesToStore Set of {@link StorageDataFile} of file to store.
+     * @param sTAFNode STAF Node where to store file
+     * @param replaceMode {@link Path} of the STAF Node where to store files.
+     * @param progressManager{@link Boolean} replace if files exists into STAF ?
      */
-    private void doStore(Set<StorageDataFile> pFilesToStore, Path pSTAFNode, Boolean pReplaceMode,
-            IProgressManager pProgressManager) {
+    private void doStore(Set<StorageDataFile> filesToStore, Path sTAFNode, Boolean replaceMode,
+            IProgressManager progressManager) {
 
         // 1. Dispatch files to store by stafNode
         Map<Path, Set<Path>> filesToPrepare = Maps.newHashMap();
-        for (StorageDataFile file : pFilesToStore) {
+        for (StorageDataFile file : filesToStore) {
             Path filePath;
             try {
                 filePath = Paths.get(getPhysicalFile(file).getPath());
                 Set<Path> filePaths;
-                if (filesToPrepare.get(pSTAFNode) != null) {
-                    filePaths = filesToPrepare.get(pSTAFNode);
+                if (filesToPrepare.get(sTAFNode) != null) {
+                    filePaths = filesToPrepare.get(sTAFNode);
                 } else {
                     filePaths = Sets.newHashSet();
                 }
                 filePaths.add(filePath);
-                filesToPrepare.put(pSTAFNode, filePaths);
+                filesToPrepare.put(sTAFNode, filePaths);
             } catch (IOException e) {
-                LOG.error("[STAFDataStorage Plugin] Error preparing file {}",
-                          file.getUrls().toString(),
-                          e.getMessage(),
+                LOG.error("[STAFDataStorage Plugin] Error preparing file {}", file.getUrls().toString(), e.getMessage(),
                           e);
             }
         }
@@ -298,40 +284,51 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
         Set<AbstractPhysicalFile> preparedFiles = stafController.prepareFilesToArchive(filesToPrepare);
 
         // 3. Do store all prepared files
-        stafController.archiveFiles(preparedFiles, pReplaceMode);
+        stafController.archiveFiles(preparedFiles, replaceMode);
 
-        Map<Path, URL> rawArchivedFiles = stafController.getRawFilesArchived(preparedFiles);
+        Map<Path, URL> rawFilesArchivedMap = stafController.getRawFilesArchived(preparedFiles);
 
         // 4. Log files stored.
-        rawArchivedFiles.forEach((rawPath, storedUrl) -> LOG.info(
-                "[STAFDataStorage Plugin] File {} stored into STAF at {}",
-                rawPath.toString(),
-                storedUrl.toString()));
+        rawFilesArchivedMap
+                .forEach((rawPath, storedUrl) -> LOG.info("[STAFDataStorage Plugin] File {} stored into STAF at {}",
+                                                          rawPath.toString(), storedUrl.toString()));
         // 5. Inform progress manager for each file stored and each file not stored
-        pFilesToStore.stream().forEach(fileToStore -> {
-            boolean fileArchived = false;
-            for (Entry<Path, URL> rawFile : rawArchivedFiles.entrySet()) {
-                // to know if a file has been stored, we need to check if one of its url path match with the path of the rawFile
-                Path filePath = rawFile.getKey();
-                if (filePath != null) {
-                    Optional<URL> formerUrlOpt = fileToStore.getUrls().stream().filter(url -> url.getPath().equals(rawFile.getKey().toString())).findFirst();
-                    if (formerUrlOpt.isPresent()) {
-                        // we found a file that has been stored
-                        fileArchived = true;
-                        // Raw file successfully stored
-                        pProgressManager.storageSucceed(fileToStore, rawFile.getValue(), rawFile.getKey().toFile().length());
-                        break;
-                    }
-                }
-            }
-            if (!fileArchived) {
-                // Raw file not stored
-                LOG.error("[STAFDataStorage Plugin] File {} has not been stored into STAF System.",
-                          fileToStore.getUrls().toString());
-                pProgressManager.storageFailed(fileToStore, "Error during file archive");
-            }
-        });
+        filesToStore.stream()
+                .forEach(fileToStore -> notifyProgressManager(fileToStore, rawFilesArchivedMap, progressManager));
+    }
 
+    /**
+     * Inform progress manager for file storage success or failure.
+     * @param file {@link StorageDataFile} file to be stored
+     * @param rawFilesArchivedMap map between files to store and really stored files.
+     * @param progressManager {@link IProgressManager}
+     */
+    private void notifyProgressManager(StorageDataFile file, Map<Path, URL> rawFilesArchivedMap,
+            IProgressManager progressManager) {
+        boolean fileArchived = false;
+        // For each archived file check if the originale file url match the file to check.
+        for (Entry<Path, URL> rawFile : rawFilesArchivedMap.entrySet()) {
+
+            // Compare original file urls with archived ones. If no one is found then the file has not been stored
+            String archivedFileOrigineUrl = rawFile.getKey().toString();
+            Set<URL> fileToStoreOrigineUrls = file.getUrls();
+
+            Optional<URL> formerUrlOpt = fileToStoreOrigineUrls.stream()
+                    .filter(url -> url.getPath().equals(archivedFileOrigineUrl)).findFirst();
+            if (formerUrlOpt.isPresent()) {
+                // we found a file that has been stored
+                fileArchived = true;
+                // Raw file successfully stored
+                progressManager.storageSucceed(file, rawFile.getValue(), rawFile.getKey().toFile().length());
+                break;
+            }
+        }
+        if (!fileArchived) {
+            // Raw file not stored
+            LOG.error("[STAFDataStorage Plugin] File {} has not been stored into STAF System.",
+                      file.getUrls().toString());
+            progressManager.storageFailed(file, "Error during file archive");
+        }
     }
 
     /**
@@ -359,21 +356,41 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
     }
 
     /**
-     * Dispatch the given {@link Set} of {@link StorageDataFile} into STAF archive mode {@link STAFArchiveModeEnum}
+     * Dispatch the given {@link StorageDataFile}s by archive directory
      * @param pFiles {@link Collection}<{@link StorageDataFile}>
+     * @param rejectedFiles List of rejected {@link StorageDataFile} associated to a {@link String} rejection cause
      * @return {@link Map}<{@link STAFArchiveModeEnum}, {@link Set}<{@link StorageDataFile}>
      */
-    private Map<Path, Set<StorageDataFile>> dispatchFilesToArchiveBySTAFNode(Collection<StorageDataFile> pFiles) {
-        Map<Path, Set<StorageDataFile>> dispatchedFiles = Maps.newHashMap();
-        pFiles.forEach(file -> {
-            Path stafNode;
-            stafNode = getStafNode(file);
-            dispatchedFiles.merge(stafNode, new HashSet<>(Arrays.asList(file)), (olds, news) -> {
-                olds.addAll(news);
-                return olds;
-            });
 
-        });
+    private Map<Path, Set<StorageDataFile>> dispatchFilesToArchiveBySTAFNode(Collection<StorageDataFile> pFiles,
+            Map<StorageDataFile, String> rejectedFiles) {
+        Map<Path, Set<StorageDataFile>> dispatchedFiles = Maps.newHashMap();
+        for (StorageDataFile file : pFiles) {
+            String stafNode = file.getStorageDirectory();
+            if ((stafNode != null) && !stafNode.isEmpty() && STAFController.isValidSTAFNode(stafNode)) {
+                Path path = Paths.get(file.getStorageDirectory());
+                if (dispatchedFiles.containsKey(path)) {
+                    dispatchedFiles.get(path).add(file);
+                } else {
+                    dispatchedFiles.put(path, new HashSet<>(Arrays.asList(file)));
+                }
+            } else {
+                String rejectedCause;
+                if ((stafNode == null) || stafNode.isEmpty()) {
+                    rejectedCause = String.format(
+                                                  "[STAFDataStorage Plugin] File \"%s\" ignored because it is not associated"
+                                                          + " to any archive directory. See your allocation strategy configuration.",
+                                                  file.getName());
+                } else {
+                    rejectedCause = String.format(
+                                                  "[STAFDataStorage Plugin] File \"%s\" ignored because the given STAF Node \"{}\"is not valid"
+                                                          + " to any archive directory. See your allocation strategy configuration.",
+                                                  file.getName(), stafNode);
+                }
+                LOG.error(rejectedCause);
+                rejectedFiles.put(file, rejectedCause);
+            }
+        }
         return dispatchedFiles;
     }
 
@@ -390,41 +407,34 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
             StringJoiner stringifiedUrls = new StringJoiner(",");
             file.getUrls().forEach(url -> stringifiedUrls.add(url.toExternalForm()));
             String errorMsg = String.format(
-                    "Error trying to retrieve file(checksum: %s). We could not find any accessible url(Actual urls: %s)",
-                    file.getChecksum(),
-                    stringifiedUrls.toString());
+                                            "Error trying to retrieve file(checksum: %s). We could not find any accessible url(Actual urls: %s)",
+                                            file.getChecksum(), stringifiedUrls.toString());
             IOException ioe = new IOException(errorMsg);
             LOG.error(ioe.getMessage(), ioe);
             throw ioe;
         }
         if (!FILE_PROTOCOLE.equals(accessibleUrl.getProtocol())) {
             // File to transfert locally is temporarelly named with the file checksum to ensure unicity
-            Path destinationFilePath = Paths
-                    .get(stafController.getWorkspaceTmpDirectory().toString(), file.getChecksum());
+            Path destinationFilePath = Paths.get(stafController.getWorkspaceTmpDirectory().toString(),
+                                                 file.getChecksum());
             if (!destinationFilePath.toFile().exists()) {
                 try {
                     LOG.info("[STAFDataStorage Plugin] {} - Store - Retrieving file from {} to {}",
-                             stafArchive.getArchiveName(),
-                             file.getUrls().toString(),
+                             stafArchive.getArchiveName(), file.getUrls().toString(),
                              destinationFilePath.toFile().getPath());
-                    DownloadUtils.downloadAndCheckChecksum(accessibleUrl,
-                                                           destinationFilePath,
-                                                           file.getAlgorithm(),
-                                                           file.getChecksum(),
-                                                           100);
+                    DownloadUtils.downloadAndCheckChecksum(accessibleUrl, destinationFilePath, file.getAlgorithm(),
+                                                           file.getChecksum(), 100);
                     // File is now in our workspace, so change origine url
                 } catch (IOException | NoSuchAlgorithmException e) {
                     String errorMsg = String.format("Error retrieving file from %s to %s",
-                                                    accessibleUrl.toExternalForm(),
-                                                    destinationFilePath.toString());
+                                                    accessibleUrl.toExternalForm(), destinationFilePath.toString());
                     LOG.error(errorMsg, e);
                     throw new IOException(e);
                 }
             }
             physicalFile = destinationFilePath.toFile();
             if (!physicalFile.exists()) {
-                String errorMsg = String.format("Error retrieving file from %s to %s",
-                                                accessibleUrl.toExternalForm(),
+                String errorMsg = String.format("Error retrieving file from %s to %s", accessibleUrl.toExternalForm(),
                                                 destinationFilePath.toString());
                 throw new IOException(errorMsg);
             }

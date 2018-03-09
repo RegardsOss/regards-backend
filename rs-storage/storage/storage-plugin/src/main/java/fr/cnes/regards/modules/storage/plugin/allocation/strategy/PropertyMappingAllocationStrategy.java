@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.plugin.allocation.strategy;
 
 import java.util.Collection;
@@ -65,14 +68,16 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
      * Json path to the property from the AIP which value should discriminate data storages to use
      */
     @PluginParameter(name = PROPERTY_PATH,
-            description = "Json path to the property from the AIP which value should discriminate data storages to use", label = "Property path")
+            description = "Json path to the property from the AIP which value should discriminate data storages to use",
+            label = "Property path")
     private String propertyPath;
 
     /**
      * Collection representing the mapping between a value and the data storage to use
      */
     @PluginParameter(name = PROPERTY_VALUE_DATA_STORAGE_MAPPING,
-            description = "Collection representing the mapping between a value and the data storage to use", label = "Property value - Data storage mappings")
+            description = "Collection representing the mapping between a value and the data storage to use",
+            label = "Property value - Data storage mappings")
     private List<PropertyDataStorageMapping> propertyDataStorageMappings;
 
     @PluginParameter(name = QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID,
@@ -90,9 +95,10 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
             propertyPath = "$." + propertyPath;
         }
         //lets verify that quicklook data storage is an online data storage
-        if(!pluginService.getPluginConfiguration(quicklookDataStorageConfigurationId).getInterfaceNames().contains(
-                IOnlineDataStorage.class.getName())) {
-            throw new EntityInvalidException("Current active allocation strategy does specify a quicklook data storage which is not ONLINE");
+        if (!pluginService.getPluginConfiguration(quicklookDataStorageConfigurationId).getInterfaceNames()
+                .contains(IOnlineDataStorage.class.getName())) {
+            throw new EntityInvalidException(
+                    "Current active allocation strategy does specify a quicklook data storage which is not ONLINE");
         }
     }
 
@@ -104,7 +110,7 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
                 .toMap(PropertyDataStorageMapping::getPropertyValue, PropertyDataStorageMapping::getDataStorageConfId));
         for (StorageDataFile dataFile : dataFilesToHandle) {
             // now lets extract the property value from the AIP
-            if(dataFile.isQuicklook()) {
+            if (dataFile.isOnlineMandatory()) {
                 //This allocation strategy only allows files to be stored into 1 DataStorage
                 dataFile.increaseNotYetStoredBy();
                 dispatch.put(quicklookDataStorageConfigurationId, dataFile);
@@ -114,8 +120,8 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
                     Long chosenOne = valueConfIdMap.get(propertyValue);
                     if (chosenOne == null) {
                         LOG.error(String.format(
-                                "File(urls: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
-                                dataFile.getUrls()));
+                                                "File(urls: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
+                                                dataFile.getUrls()));
                     } else {
                         //This allocation strategy only allows files to be stored into 1 DataStorage
                         dataFile.increaseNotYetStoredBy();
@@ -123,10 +129,9 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
                     }
                 } catch (PathNotFoundException e) {
                     LOG.error(String.format(
-                            "File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
-                            dataFile.getUrls(),
-                            dataFile.getAip().getId(),
-                            propertyPath), e);
+                                            "File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
+                                            dataFile.getUrls(), dataFile.getAip().getId(), propertyPath),
+                              e);
                 }
             }
         }
