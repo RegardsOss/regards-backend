@@ -106,9 +106,15 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
                 .findOneByDataStorageTypeAndPriority(actual.getDataStorageType(), actual.getPriority() - 1);
         // is there someone which has a greater priority?
         if (other != null) {
-            other.setPriority(actual.getPriority());
-            actual.setPriority(actual.getPriority() - 1);
-            prioritizedDataStorageRepository.save(Sets.newHashSet(other, actual));
+            Long actualPriority = actual.getPriority();
+            actual.setPriority(null);
+            other.setPriority(null);
+            prioritizedDataStorageRepository.saveAndFlush(actual);
+            prioritizedDataStorageRepository.saveAndFlush(other);
+            other.setPriority(actualPriority);
+            actual.setPriority(actualPriority - 1);
+            prioritizedDataStorageRepository.saveAndFlush(other);
+            prioritizedDataStorageRepository.saveAndFlush(actual);
         }
     }
 
@@ -119,9 +125,15 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
                 .findOneByDataStorageTypeAndPriority(actual.getDataStorageType(), actual.getPriority() + 1);
         // is there someone which has a lower priority?
         if (other != null) {
-            other.setPriority(actual.getPriority());
-            actual.setPriority(actual.getPriority() + 1);
-            prioritizedDataStorageRepository.save(Sets.newHashSet(other, actual));
+            Long actualPriority = actual.getPriority();
+            actual.setPriority(null);
+            other.setPriority(null);
+            prioritizedDataStorageRepository.saveAndFlush(actual);
+            prioritizedDataStorageRepository.saveAndFlush(other);
+            other.setPriority(actualPriority);
+            actual.setPriority(actualPriority + 1);
+            prioritizedDataStorageRepository.saveAndFlush(other);
+            prioritizedDataStorageRepository.saveAndFlush(actual);
         }
     }
 
