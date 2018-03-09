@@ -13,8 +13,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -26,6 +28,10 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -111,6 +117,15 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
     @Autowired
     private IWorkspaceService workspaceService;
 
+    @Autowired
+    private INotificationClient notificationClient;
+
+    /**
+     * The spring application name ~= microservice type
+     */
+    @Value("${spring.application.name}")
+    private String applicationName;
+
     /**
      * Dispatch actions to handle by {@link StorageAction}
      */
@@ -180,7 +195,9 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                 default:
                     // IDataStorage plugin used to delete the file is not able to delete the file right now.
                     // Maybe the file can be deleted later. So do nothing and just notify administrator.
-                    LOG.error("Error deleting file {}", event.getDataFileId());
+                    String message = String.format("Error deleting file %s.", event.getDataFileId());
+                    LOG.error(message);
+                    notifyAdmins("File deletion error", message, NotificationType.INFO);
                     break;
             }
         } else {
@@ -189,6 +206,20 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                     event.getDataFileId());
         }
     }
+
+    /**
+     * Use the notification module in admin to create a notification for admins
+     */
+    private void notifyAdmins(String title, String message, NotificationType type) {
+        NotificationDTO notif = new NotificationDTO(message,
+                                                    Sets.newHashSet(),
+                                                    Sets.newHashSet(DefaultRole.ADMIN.name()),
+                                                    applicationName,
+                                                    title,
+                                                    type);
+        notificationClient.createNotification(notif);
+    }
+
 
     /**
      * Method called when a SUCCESSFULL {@link DataStorageEvent} {@link StorageAction#DELETION} event is received.
