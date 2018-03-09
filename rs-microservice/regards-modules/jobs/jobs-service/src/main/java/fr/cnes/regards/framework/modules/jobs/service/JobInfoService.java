@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.hibernate.Hibernate;
@@ -31,7 +32,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.ImmutableList;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -158,7 +158,7 @@ public class JobInfoService implements IJobInfoService {
 
     @Override
     public void cleanOutOfDateJobsOnTenant() {
-        List<JobInfo> jobs = new ArrayList<>();
+        Set<JobInfo> jobs = new HashSet<>();
         // Add expired jobs
         jobs.addAll(jobInfoRepository.findExpiredJobs());
         // Add succeeded jobs since configured retention days
