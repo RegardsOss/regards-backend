@@ -200,6 +200,13 @@ public interface IPluginService {
     List<PluginConfiguration> getPluginConfigurations(String pluginId);
 
     /**
+     * Get all active plugin's configurations for a specific plugin Id.
+     * @param pluginId a specific plugin Id
+     * @return all the active {@link PluginConfiguration} for a specific plugin Id
+     */
+    List<PluginConfiguration> getActivePluginConfigurations(final String pPluginId);
+
+    /**
      * Add a package to scan to find the plugins.
      *
      * @param pluginPackage A package name to scan to find the plugins.

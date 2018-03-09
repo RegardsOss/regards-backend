@@ -1,19 +1,22 @@
 package fr.cnes.regards.framework.oais;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.Set;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
 
 /**
  * Information package main structure
  *
  * @author Sylvain VISSIERE-GUERINET
+ * @author Sébastien Binda
  */
 public class InformationPackageProperties {
 
@@ -37,6 +40,11 @@ public class InformationPackageProperties {
     private InformationPackageMap descriptiveInformation;
 
     /**
+     * The misc information
+     */
+    private InformationPackageMap miscInformation;
+
+    /**
      * @return the content information
      */
     public Set<ContentInformation> getContentInformations() {
@@ -51,6 +59,17 @@ public class InformationPackageProperties {
      */
     public PreservationDescriptionInformation getPdi() {
         return pdi;
+    }
+
+    public InformationPackageMap getMiscInformation() {
+        if (miscInformation == null) {
+            miscInformation = new InformationPackageMap();
+        }
+        return miscInformation;
+    }
+
+    public void setMiscInformation(InformationPackageMap miscInformation) {
+        this.miscInformation = miscInformation;
     }
 
     /**
@@ -76,6 +95,7 @@ public class InformationPackageProperties {
         final int prime = 31;
         int result = 1;
         result = (prime * result) + ((contentInformations == null) ? 0 : contentInformations.hashCode());
+        result = (prime * result) + ((miscInformation == null) ? 0 : miscInformation.hashCode());
         result = (prime * result) + ((descriptiveInformation == null) ? 0 : descriptiveInformation.hashCode());
         result = (prime * result) + ((pdi == null) ? 0 : pdi.hashCode());
         return result;
@@ -105,6 +125,13 @@ public class InformationPackageProperties {
                 return false;
             }
         } else if (!descriptiveInformation.equals(other.descriptiveInformation)) {
+            return false;
+        }
+        if (miscInformation == null) {
+            if (other.miscInformation != null) {
+                return false;
+            }
+        } else if (!miscInformation.equals(other.miscInformation)) {
             return false;
         }
         if (pdi == null) {
