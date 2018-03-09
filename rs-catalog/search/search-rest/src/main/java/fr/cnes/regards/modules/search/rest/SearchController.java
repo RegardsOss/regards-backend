@@ -535,7 +535,7 @@ public class SearchController {
      * @throws SearchException is opensearch request is mouldy
      */
     @RequestMapping(path = DATAOBJECTS_COMPUTE_FILES_SUMMARY, method = RequestMethod.GET)
-    @ResourceAccess(description = "compute dataset(s) summary", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "compute dataset(s) summary", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestParam Map<String, String> allParams,
             @RequestParam(value = "datasetIpId", required = false) String datasetIpId,
             @RequestParam(value = "fileTypes") String[] fileTypes) throws SearchException {
