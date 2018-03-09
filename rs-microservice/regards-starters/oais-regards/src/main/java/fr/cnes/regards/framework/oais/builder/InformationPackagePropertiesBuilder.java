@@ -18,17 +18,19 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import javax.annotation.Nullable;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
@@ -292,15 +294,15 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
     /**
      * Set the data object to the information package thanks to the underlying content information builder using the given parameters
      * @param dataType
-     * @param url
      * @param filename
      * @param algorithm
      * @param checksum
      * @param fileSize
+     * @param urls
      */
-    public void setDataObject(DataType dataType, URL url, String filename, String algorithm, String checksum,
-            Long fileSize) {
-        contentInformationBuilder.setDataObject(dataType, url, filename, algorithm, checksum, fileSize);
+    public void setDataObject(DataType dataType, String filename, String algorithm, String checksum, Long fileSize,
+            URL... urls) {
+        contentInformationBuilder.setDataObject(dataType, filename, algorithm, checksum, fileSize, urls);
     }
 
     /**
@@ -409,7 +411,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
     public void addSoftwareEnvironmentProperty(String key, Object value) {
         contentInformationBuilder.addSoftwareEnvironmentProperty(key, value);
     }
-
 
     /**
      * Add hardware environment property to the information package thanks to the given parameters

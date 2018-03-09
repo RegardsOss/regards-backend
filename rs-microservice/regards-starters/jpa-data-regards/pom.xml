@@ -44,6 +44,10 @@
 	</developers>
 
 	<dependencies>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.utils</groupId>
+			<artifactId>exception-utils</artifactId>
+		</dependency>
 		<!-- Hibernante JPA api -->
 		<dependency>
 			<groupId>org.hibernate.javax.persistence</groupId>
@@ -103,7 +107,7 @@
 			<artifactId>javax.el</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<!-- No test using regards-test permitted here due to cyclic reference 
-			to regards-test -->
+        <!-- No test using regards-test permitted here due to cyclic reference
+            to regards-test -->
 	</dependencies>
 </project>
