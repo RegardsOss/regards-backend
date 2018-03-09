@@ -1,0 +1,1 @@
+UPDATE t_resources_access SET defaultrole = 'PUBLIC' WHERE controller_name = 'ProjectUsersController' AND resource = '/users/email/{user_email}/admin' AND microservice = 'rs-admin'
