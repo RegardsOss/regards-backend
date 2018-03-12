@@ -57,7 +57,7 @@ public class CatalogSecurityDelegation implements ISecurityDelegation {
     @Override
     public boolean hasAccess(String ipId) throws EntityNotFoundException {
         try {
-            FeignSecurityManager.asSystem();
+            FeignSecurityManager.asUser(authenticationResolver.getUser(), authenticationResolver.getRole());
             ResponseEntity<Resource<AbstractEntity>> catalogResponse = searchClient
                     .getEntity(UniformResourceName.fromString(ipId));
             if (!HttpUtils.isSuccess(catalogResponse.getStatusCode()) && !catalogResponse.getStatusCode()

@@ -69,7 +69,7 @@ public interface IAIPService {
      *     <li>Aip is valid</li>
      * </ul>
      * @param aips
-     * @return Rejected aips, threw their ip id, with the rejection cause.
+     * @return Rejected aips, through their ip id, with the rejection cause.
      */
     List<RejectedAip> applyCreationChecks(AIPCollection aips);
 
@@ -193,17 +193,18 @@ public interface IAIPService {
 
     /**
      * Remove an aip from the system. Its file are deleted if and only if no other aip point to them.
+     * @return not suppressible files because they are in state {@link fr.cnes.regards.modules.storage.domain.database.DataFileState#PENDING}
      */
-    Set<UUID> deleteAip(String ipId) throws ModuleException;
+    Set<StorageDataFile> deleteAip(String ipId);
 
     /**
-     * Remove {@link AIP}s associated the given sip, threw its ip id
+     * Remove {@link AIP}s associated the given sip, through its ip id
      * @param sipIpId
      */
-    void deleteAipFromSip(String sipIpId) throws ModuleException;
+    Set<StorageDataFile> deleteAipFromSip(String sipIpId);
 
     /**
-     * Add tags to the specified aip, threw its ip id
+     * Add tags to the specified aip, through its ip id
      * @param ipId
      * @param tagsToAdd
      */
@@ -211,7 +212,7 @@ public interface IAIPService {
             throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
 
     /**
-     * Removes tads from a specified aip, threw its ip id
+     * Removes tags from a specified aip, through its ip id
      * @param ipId
      * @param tagsToRemove
      */

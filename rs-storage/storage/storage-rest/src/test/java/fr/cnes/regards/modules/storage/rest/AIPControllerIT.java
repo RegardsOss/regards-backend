@@ -390,7 +390,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(AIPController.AIP_PATH + AIPController.DOWLOAD_AIP_FILE,
+        performDefaultGet(AIPController.AIP_PATH + AIPController.DOWNLOAD_AIP_FILE,
                           requestBuilderCustomizer,
                           "We should be downloading the data file",
                           aip.getId().toString(),

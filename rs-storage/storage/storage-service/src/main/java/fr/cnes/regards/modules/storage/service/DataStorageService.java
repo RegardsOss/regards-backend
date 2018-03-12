@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
@@ -106,24 +107,26 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
         // lets ask the data base to calculate the used space per data storage
         Collection<MonitoringAggregation> monitoringAggregations = dataFileDao.getMonitoringAggregation();
         // now lets transform it into Map<Long, Long>, it is easier to use
-        Map<Long, Long> monitoringAggregationMap = monitoringAggregations.stream().collect(Collectors.toMap(
-                MonitoringAggregation::getDataStorageUsedId,
-                MonitoringAggregation::getUsedSize));
+        Map<Long, Long> monitoringAggregationMap = monitoringAggregations.stream().collect(Collectors
+                .toMap(MonitoringAggregation::getDataStorageUsedId, MonitoringAggregation::getUsedSize));
         for (PluginConfiguration activeDataStorageConf : activeDataStorageConfs) {
             //lets initialize the monitoring information for this data storage configuration by getting plugin informations
             Long activeDataStorageConfId = activeDataStorageConf.getId();
             PluginMetaData activeDataStorageMeta = pluginService
                     .getPluginMetaDataById(activeDataStorageConf.getPluginId());
             PluginStorageInfo monitoringInfo = new PluginStorageInfo(activeDataStorageConfId,
-                                                                     activeDataStorageMeta.getDescription(),
-                                                                     activeDataStorageConf.getLabel());
+                    activeDataStorageMeta.getDescription(), activeDataStorageConf.getLabel());
             //now lets get the data storage monitoring information from the plugin
             Long dataStorageTotalSpace = ((IDataStorage) pluginService.getPlugin(activeDataStorageConfId))
                     .getTotalSpace();
-            DataStorageInfo dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(),
-                                                                  dataStorageTotalSpace,
-                                                                  monitoringAggregationMap
-                                                                          .get(activeDataStorageConfId));
+            DataStorageInfo dataStorageInfo;
+            if (monitoringAggregationMap.containsKey(activeDataStorageConfId)) {
+                dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(), dataStorageTotalSpace,
+                        monitoringAggregationMap.get(activeDataStorageConfId));
+            } else {
+                dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(), dataStorageTotalSpace, 0);
+
+            }
             monitoringInfo.setTotalSize(dataStorageInfo.getTotalSize());
             monitoringInfo.setUsedSize(dataStorageInfo.getUsedSize());
             monitoringInfo.setRatio(dataStorageInfo.getRatio());
@@ -149,9 +152,8 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
             Collection<MonitoringAggregation> monitoringAggregations = dataFileDao.getMonitoringAggregation();
             if (!monitoringAggregations.isEmpty()) {
                 // now lets transform it into Map<Long, Long>, it is easier to use
-                Map<Long, Long> monitoringAggregationMap = monitoringAggregations.stream().collect(Collectors.toMap(
-                        MonitoringAggregation::getDataStorageUsedId,
-                        MonitoringAggregation::getUsedSize));
+                Map<Long, Long> monitoringAggregationMap = monitoringAggregations.stream().collect(Collectors
+                        .toMap(MonitoringAggregation::getDataStorageUsedId, MonitoringAggregation::getUsedSize));
                 // lets instantiate those data storage and get their total space
                 for (PluginConfiguration activeDataStorageConf : activeDataStorageConfs) {
                     //lets initialize the monitoring information for this data storage configuration by getting plugin informations
@@ -160,23 +162,21 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
 
                         Long activeDataStorageConfId = activeDataStorageConf.getId();
                         Long dataStorageTotalSpace = activeDataStorage.getTotalSpace();
-                        DataStorageInfo dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(),
-                                                                              dataStorageTotalSpace,
-                                                                              monitoringAggregationMap
-                                                                                      .get(activeDataStorageConfId));
-                        Double ratio = dataStorageInfo.getRatio();
-                        if (ratio >= threshold) {
-                            String message = String.format(
-                                    "Data storage(configuration id: %s, configuration label: %s) has reach its disk usage threshold. Actual occupation: %s, threshold: %s",
-                                    activeDataStorageConf.getId().toString(),
-                                    activeDataStorageConf.getLabel(),
-                                    ratio,
-                                    threshold);
-                            LOG.error(message);
-                            notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
-                                         message,
-                                         NotificationType.ERROR);
-                            MaintenanceManager.setMaintenance(tenant);
+                        if (monitoringAggregationMap.containsKey(activeDataStorageConfId)) {
+                            DataStorageInfo dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(),
+                                    dataStorageTotalSpace, monitoringAggregationMap.get(activeDataStorageConfId));
+                            Double ratio = dataStorageInfo.getRatio();
+                            if (ratio >= threshold) {
+                                String message = String.format(
+                                                               "Data storage(configuration id: %s, configuration label: %s) has reach its disk usage threshold. Actual occupation: %s, threshold: %s",
+                                                               activeDataStorageConf.getId().toString(),
+                                                               activeDataStorageConf.getLabel(), ratio, threshold);
+                                LOG.error(message);
+                                notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
+                                             message, NotificationType.ERROR);
+                                MaintenanceManager.setMaintenance(tenant);
+                            }
+
                         }
 
                     } catch (ModuleException e) {
@@ -199,12 +199,8 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
      * Use the notification module in admin to create a notification for admins
      */
     private void notifyAdmins(String title, String message, NotificationType type) {
-        NotificationDTO notif = new NotificationDTO(message,
-                                                    Sets.newHashSet(),
-                                                    Sets.newHashSet(DefaultRole.ADMIN.name()),
-                                                    applicationName,
-                                                    title,
-                                                    type);
+        NotificationDTO notif = new NotificationDTO(message, Sets.newHashSet(),
+                Sets.newHashSet(DefaultRole.ADMIN.name()), applicationName, title, type);
         FeignSecurityManager.asSystem();
         notificationClient.createNotification(notif);
         FeignSecurityManager.reset();

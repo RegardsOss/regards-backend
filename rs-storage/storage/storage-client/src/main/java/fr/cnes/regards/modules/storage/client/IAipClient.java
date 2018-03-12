@@ -38,7 +38,6 @@ import fr.cnes.regards.modules.storage.domain.RejectedSip;
 
 /**
  * Feign client to interact with {@link AIP}s
- *
  * @author Sylvain VISSIERE-GUERINET
  * @author Sébastien Binda
  */
@@ -87,7 +86,6 @@ public interface IAipClient {
      */
     String HISTORY_PATH = ID_PATH + "/history";
 
-
     /**
      * Client path using aip ip id and file checksum as path variable
      */
@@ -111,31 +109,25 @@ public interface IAipClient {
 
     /**
      * Retrieve a page of aip with indexing information on associated files according to the given parameters
-     * @param state
-     * @param tags
-     * @param fromLastUpdateDate
-     * @param page
-     * @param size
      * @return page of aip with indexing information on associated files respecting the constraints
      */
     @RequestMapping(method = RequestMethod.GET, path = INDEXING_PATH)
     ResponseEntity<PagedResources<AipDataFiles>> retrieveAipDataFiles(@RequestParam(name = "state") AIPState state,
-            @RequestParam("tags") Set<String> tags,
-            @RequestParam(name = "last_update", required = false) OffsetDateTime fromLastUpdateDate, @RequestParam("page") int page, @RequestParam("size") int size);
+            @RequestParam(value = "tags", required = false) Set<String> tags,
+            @RequestParam(name = "last_update", required = false) OffsetDateTime fromLastUpdateDate,
+            @RequestParam("page") int page, @RequestParam("size") int size);
 
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     ResponseEntity<List<RejectedAip>> store(@RequestBody @Valid AIPCollection aips);
 
     /**
      * Same than {@link IAipClient#storeRetryUnit(String)} but for a bunch of aips
-     * @param aipIpIds
      */
     @RequestMapping(method = RequestMethod.POST, value = RETRY_STORE_PATH)
     ResponseEntity<List<RejectedAip>> storeRetry(@RequestBody @Valid Set<String> aipIpIds);
 
     /**
      * Allows to ask for the storage of an aip which has failed
-     * @param ipId
      * @return whether the aip could be scheduled for storage
      */
     @RequestMapping(method = RequestMethod.POST, value = IP_ID_RETRY_STORE_PATH)
@@ -143,7 +135,6 @@ public interface IAipClient {
 
     /**
      * Delete aips that are associated to the given SIP, represented by their ip id
-     * @param sipIpIds
      * @return list of sip for which we could not delete the linked aips
      */
     @RequestMapping(method = RequestMethod.DELETE)
@@ -151,7 +142,6 @@ public interface IAipClient {
 
     /**
      * Retrieve the meta data of files associated to an aip, represented by its ip id
-     * @param pIpId
      * @return list of files meta data associated to an aip
      */
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
@@ -159,24 +149,20 @@ public interface IAipClient {
 
     /**
      * Retrieve a page of the different versions of an aip, represented by its ip id
-     * @param pIpId
      * @param pPage page number
      * @param pSize page size
      * @return list of ip ids of the different versions of an aip
      */
     @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
-    ResponseEntity<List<String>> retrieveAIPVersionHistory(
-            @PathVariable("ip_id") @Valid UniformResourceName pIpId, @RequestParam("page") int pPage,
-            @RequestParam("size") int pSize);
+    ResponseEntity<List<String>> retrieveAIPVersionHistory(@PathVariable("ip_id") @Valid UniformResourceName pIpId,
+            @RequestParam("page") int pPage, @RequestParam("size") int pSize);
 
     /**
      * Request that files are made available for downloading
-     * @param availabilityRequest
      * @return the list of file already available via their checksums
      */
     @RequestMapping(path = PREPARE_DATA_FILES, method = RequestMethod.POST)
-    ResponseEntity<AvailabilityResponse> makeFilesAvailable(
-            @RequestBody AvailabilityRequest availabilityRequest);
+    ResponseEntity<AvailabilityResponse> makeFilesAvailable(@RequestBody AvailabilityRequest availabilityRequest);
 
     @RequestMapping(path = DOWLOAD_AIP_FILE, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
