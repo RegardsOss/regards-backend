@@ -194,7 +194,6 @@ public class OrderService implements IOrderService {
     private static final Set<DataType> DATA_TYPES = Stream.of(DataTypeSelection.ALL.getFileTypes())
             .map(DataType::valueOf).collect(Collectors.toSet());
 
-
     @Override
     public Order createOrder(Basket basket, String url) {
         Order order = new Order();
@@ -236,11 +235,11 @@ public class OrderService implements IOrderService {
                                 // Send a very useful notification if file is bigger than bucket size
                                 if (orderDataFile.getSize() > bucketSize) {
                                     FeignSecurityManager.asSystem();
-                                    NotificationDTO notif = new NotificationDTO("File is bigger than sub-order size",
-                                                                                Collections.emptySet(),
-                                                                                Collections.singleton(DefaultRole.PROJECT_ADMIN.name()),
-                                                                                microserviceName, "Order creation",
-                                                                                NotificationType.WARNING);
+                                    NotificationDTO notif = new NotificationDTO(
+                                            String.format("File \"%s\" is bigger than sub-order size",
+                                                          orderDataFile.getName()), Collections.emptySet(),
+                                            Collections.singleton(DefaultRole.PROJECT_ADMIN.name()), microserviceName,
+                                            "Order creation", NotificationType.WARNING);
                                     notificationClient.createNotification(notif);
                                     FeignSecurityManager.reset();
                                 }
@@ -552,8 +551,8 @@ public class OrderService implements IOrderService {
                         if (copiedBytes != dataFile.getSize()) {
                             downloadErrorFiles.add(dataFile);
                             i.remove();
-                            LOGGER.warn("Cannot completely retrieve data file from storage (aip : {}, checksum : {})", aip,
-                                        dataFile.getChecksum());
+                            LOGGER.warn("Cannot completely retrieve data file from storage (aip : {}, checksum : {})",
+                                        aip, dataFile.getChecksum());
                         }
                     }
                 }
