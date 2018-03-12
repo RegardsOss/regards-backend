@@ -45,8 +45,9 @@ import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
  *
  */
 @Plugin(id = "GlobDiskScanning", version = "1.0.0-SNAPSHOT",
-        description = "Scan directories to detect files filtering with a glob pattern", author = "REGARDS Team",
-        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
+        description = "Scan directories to detect files filtering with a glob pattern",
+        markdown = "GlobDiskScanning.md", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0",
+        owner = "CSSI", url = "https://github.com/RegardsOss")
 public class GlobDiskScanning implements IScanPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobDiskScanning.class);
@@ -58,7 +59,7 @@ public class GlobDiskScanning implements IScanPlugin {
     @PluginParameter(name = FIELD_DIRS, label = "List of directories to scan")
     private List<String> directories;
 
-    @PluginParameter(name = FIELD_GLOB, label = "Glob pattern", description = "glob_pattern.md", defaultValue = "*",
+    @PluginParameter(name = FIELD_GLOB, label = "Glob pattern", markdown = "glob_pattern.md", defaultValue = "*",
             optional = true)
     private String glob;
 

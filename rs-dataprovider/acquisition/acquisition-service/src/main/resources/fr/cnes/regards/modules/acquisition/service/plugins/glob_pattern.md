@@ -1,11 +1,13 @@
 Glob pattern used a limited pattern language that resembles regular expressions but with a simpler syntax. For example:
 
+```txt
 *.java  Matches a path that represents a file name ending in .java
 *.* Matches file names containing a dot
 *.{java,class}  Matches file names ending with .java or .class
 foo.?   Matches file names starting with foo. and a single character extension
 /home/*/*   Matches /home/gus/data on UNIX platforms
 /home/**    Matches /home/gus and /home/gus/data on UNIX platforms
+```
 
 The following rules are used to interpret glob patterns:
 - The * character matches zero or more characters of a name component without crossing directory boundaries.
