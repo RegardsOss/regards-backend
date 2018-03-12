@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import org.assertj.core.util.Lists;
@@ -181,6 +182,13 @@ public class AIPController implements IResourceController<AIP> {
     @Value("${spring.application.name}")
     private String microserviceName;
 
+    public static MediaType asMediaType(MimeType mimeType) {
+        if (mimeType instanceof MediaType) {
+            return (MediaType) mimeType;
+        }
+        return new MediaType(mimeType.getType(), mimeType.getSubtype(), mimeType.getParameters());
+    }
+
     /**
      * Retrieve a page of aip metadata according to the given parameters
      * @param pState state the aips should be in
@@ -310,11 +318,14 @@ public class AIPController implements IResourceController<AIP> {
             throws ModuleException {
         List<RejectedSip> notHandledSips = Lists.newArrayList();
         for (String sipIpId : sipIpIds) {
-            try {
-                aipService.deleteAipFromSip(sipIpId);
-            } catch (ModuleException e) {
-                LOG.error(e.getMessage(), e);
-                notHandledSips.add(new RejectedSip(sipIpId, e));
+            Set<StorageDataFile> notSuppressible = aipService.deleteAipFromSip(sipIpId);
+            if (!notSuppressible.isEmpty()) {
+                StringJoiner sj = new StringJoiner(", ",
+                                                   "This sip could not be deleted because at least one of its aip file has not be handle by the storage process: ",
+                                                   ".");
+                notSuppressible.stream().map(sdf -> sdf.getAipEntity())
+                        .forEach(aipEntity -> sj.add(aipEntity.getIpId()));
+                notHandledSips.add(new RejectedSip(sipIpId, sj.toString()));
             }
         }
         if (notHandledSips.isEmpty()) {
@@ -430,9 +441,17 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = ID_PATH, method = RequestMethod.DELETE)
     @ResourceAccess(description = "allow to update a given aip metadata", role = DefaultRole.ADMIN)
     @ResponseBody
-    public ResponseEntity<Void> deleteAip(@PathVariable(name = "ip_id") String ipId) throws ModuleException {
-        aipService.deleteAip(ipId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<String> deleteAip(@PathVariable(name = "ip_id") String ipId) throws ModuleException {
+        Set<StorageDataFile> notSuppressible = aipService.deleteAip(ipId);
+        if (notSuppressible.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            StringJoiner sj = new StringJoiner(", ",
+                                               "This aip could not be deleted because at least one of his files has not be handle by the storage process: ",
+                                               ".");
+            notSuppressible.stream().map(sdf -> sdf.getAipEntity()).forEach(aipEntity -> sj.add(aipEntity.getIpId()));
+            return new ResponseEntity<>(sj.toString(), HttpStatus.CONFLICT);
+        }
     }
 
     /**
@@ -493,25 +512,27 @@ public class AIPController implements IResourceController<AIP> {
         }
     }
 
-    public static MediaType asMediaType(MimeType mimeType) {
-        if (mimeType instanceof MediaType) {
-            return (MediaType) mimeType;
-        }
-        return new MediaType(mimeType.getType(), mimeType.getSubtype(), mimeType.getParameters());
-    }
-
     @Override
     public Resource<AIP> toResource(AIP pElement, Object... pExtras) {
         Resource<AIP> resource = resourceService.toResource(pElement);
-        resourceService.addLink(resource, this.getClass(), "retrieveAIPs", LinkRels.LIST,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveAIPs",
+                                LinkRels.LIST,
                                 MethodParamFactory.build(AIPState.class),
                                 MethodParamFactory.build(OffsetDateTime.class),
                                 MethodParamFactory.build(OffsetDateTime.class),
                                 MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
-        resourceService.addLink(resource, this.getClass(), "retrieveAip", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveAip",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
-        resourceService.addLink(resource, this.getClass(), "storeRetryUnit", "retry",
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "storeRetryUnit",
+                                "retry",
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
         return resource;
     }

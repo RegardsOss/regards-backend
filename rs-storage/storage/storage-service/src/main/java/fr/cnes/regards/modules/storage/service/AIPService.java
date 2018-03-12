@@ -14,6 +14,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,6 +23,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.assertj.core.util.Lists;
+import org.hsqldb.lib.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -919,25 +921,29 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     @Override
-    public Set<UUID> deleteAip(String ipId) throws ModuleException {
+    public Set<StorageDataFile> deleteAip(String ipId) {
         Optional<AIP> toBeDeletedOpt = aipDao.findOneByIpId(ipId);
+        Set<StorageDataFile> notSuppressible = Sets.newHashSet();
         if (toBeDeletedOpt.isPresent()) {
             AIP toBeDeleted = toBeDeletedOpt.get();
             Set<StorageDataFile> dataFilesToDelete = Sets.newHashSet();
             // check if data file are use by any other aip
             Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(toBeDeleted);
             for (StorageDataFile dataFile : dataFiles) {
-                // we order deletion of a file if and only if no other aip references the same file
-                Set<StorageDataFile> dataFilesWithSameFile = dataFileDao
-                        .findAllByChecksumIn(Sets.newHashSet(dataFile.getChecksum()));
-                // well lets remove ourselves of course!
-                dataFilesWithSameFile.remove(dataFile);
-                if (dataFilesWithSameFile.isEmpty()) {
-                    // add to datafiles that should be removed
-                    dataFilesToDelete.add(dataFile);
+                if(dataFile.getState().equals(DataFileState.PENDING)) {
+                    notSuppressible.add(dataFile);
                 } else {
-                    // if other datafiles are referencing a file, we just remove the data file from the database.
-                    dataFileDao.remove(dataFile);
+                    // we order deletion of a file if and only if no other aip references the same file
+                    Set<StorageDataFile> dataFilesWithSameFile = dataFileDao.findAllByChecksumIn(Sets.newHashSet(dataFile.getChecksum()));
+                    // well lets remove ourselves of course!
+                    dataFilesWithSameFile.remove(dataFile);
+                    if (dataFilesWithSameFile.isEmpty()) {
+                        // add to datafiles that should be removed
+                        dataFilesToDelete.add(dataFile);
+                    } else {
+                        // if other datafiles are referencing a file, we just remove the data file from the database.
+                        dataFileDao.remove(dataFile);
+                    }
                 }
             }
             // schedule removal of data and metadata
@@ -948,16 +954,18 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             toBeDeleted = toBeDeletedBuilder.build();
             toBeDeleted.setState(AIPState.DELETED);
             aipDao.save(toBeDeleted);
-            return scheduleDeletion(dataFilesToDelete);
+            return notSuppressible;
         }
-        return Sets.newHashSet();
+        return notSuppressible;
     }
 
     @Override
-    public void deleteAipFromSip(String sipIpId) throws ModuleException {
+    public Set<StorageDataFile> deleteAipFromSip(String sipIpId) {
+        Set<StorageDataFile> notSuppressible = new HashSet<>();
         for (AIP aip : aipDao.findAllBySipId(sipIpId)) {
-            deleteAip(aip.getId().toString());
+            notSuppressible.addAll(deleteAip(aip.getId().toString()));
         }
+        return notSuppressible;
     }
 
     @Override

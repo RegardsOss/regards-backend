@@ -16,16 +16,16 @@ public class RejectedSip {
     /**
      * Exception causing the rejection
      */
-    private ModuleException exception;
+    private String reason;
 
     /**
      * Constructor setting the parameters as attributes
      * @param sipIpId
-     * @param exception
+     * @param reason
      */
-    public RejectedSip(String sipIpId, ModuleException exception) {
+    public RejectedSip(String sipIpId, String reason) {
         this.sipId = sipIpId;
-        this.exception = exception;
+        this.reason = reason;
     }
 
     /**
@@ -44,17 +44,17 @@ public class RejectedSip {
     }
 
     /**
-     * @return the exception
+     * @return the reason
      */
-    public ModuleException getException() {
-        return exception;
+    public String getReason() {
+        return reason;
     }
 
     /**
-     * Set the exception
-     * @param exception
+     * Set the reason
+     * @param reason
      */
-    public void setException(ModuleException exception) {
-        this.exception = exception;
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 }
