@@ -89,7 +89,7 @@ public class STAFController {
      */
     private static final String TMP_DIRECTORY = "tmp";
 
-    private static final Pattern VALID_NODE_PATTERN = Pattern.compile("[^a-z0-9_/]", Pattern.CASE_INSENSITIVE);
+    private static final Pattern VALID_NODE_PATTERN = Pattern.compile("^[a-z0-9_/]*$", Pattern.CASE_INSENSITIVE);
 
     /**
      * STAF global configuration
