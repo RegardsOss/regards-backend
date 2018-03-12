@@ -74,6 +74,8 @@ public interface IWorkspaceService {
      */
     Path getMicroserviceWorkspace();
 
+    Path getTenantWorkspace();
+
     /**
      * Allows to get the path of the given file in the workspace of the current tenant.
      * @param fileName

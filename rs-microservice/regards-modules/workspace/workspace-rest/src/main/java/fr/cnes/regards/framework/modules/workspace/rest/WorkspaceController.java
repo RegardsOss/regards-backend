@@ -73,7 +73,7 @@ public class WorkspaceController implements IResourceController<WorkspaceMonitor
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
-    @ResourceAccess(description = "send monitoring informations about the workspace", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "send monitoring informations about the workspace", role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<Resource<WorkspaceMonitoringInformation>> getMonitoringInformation() throws IOException {
         return new ResponseEntity<>(toResource(workspaceService.getMonitoringInformation()), HttpStatus.OK);
     }

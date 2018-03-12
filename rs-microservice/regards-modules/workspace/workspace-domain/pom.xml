@@ -35,4 +35,11 @@
 		</developer>
 	</developers>
 
+	<dependencies>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>amqp-regards</artifactId>
+		</dependency>
+	</dependencies>
+
 </project>
