@@ -44,6 +44,6 @@ public class AcquisitionPluginTest {
     public void buildMetadata() {
         PluginMetaData mtd = PluginUtils.createPluginMetaData(GlobDiskScanning.class, MODULE_PACKAGE);
         Assert.assertNotNull(mtd);
-        // LOGGER.debug(gson.toJson(mtd));
+        // LOGGER.info(gson.toJson(mtd));
     }
 }
