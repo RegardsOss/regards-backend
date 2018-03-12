@@ -39,6 +39,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dataaccess.client.IAccessGroupClient;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
@@ -158,6 +159,7 @@ public class AccessRightFilterTest {
             throws OpenSearchParseException, UnsupportedEncodingException, AccessRightFilterException {
         // Mock authentication
         Mockito.when(authResolver.getUser()).thenReturn(SampleDataUtils.EMAIL);
+        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
 
         // Init the criterion we add groups to
         String q = "q=" + URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8");
