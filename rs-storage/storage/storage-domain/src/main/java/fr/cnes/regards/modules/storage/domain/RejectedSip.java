@@ -57,4 +57,23 @@ public class RejectedSip {
     public void setReason(String reason) {
         this.reason = reason;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        RejectedSip that = (RejectedSip) o;
+
+        return sipId != null ? sipId.equals(that.sipId) : that.sipId == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return sipId != null ? sipId.hashCode() : 0;
+    }
 }
