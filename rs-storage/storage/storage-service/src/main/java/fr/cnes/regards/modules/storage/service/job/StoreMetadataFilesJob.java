@@ -22,6 +22,15 @@ import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 public class StoreMetadataFilesJob extends AbstractStoreFilesJob {
 
     @Override
+    protected void handleWorkspaceException(IOException e) throws JobWorkspaceException {
+        Long storageConfId = parameters.get(PLUGIN_TO_USE_PARAMETER_NAME).getValue();
+        StorageJobProgressManager progressManager = new StorageJobProgressManager(publisher, this, storageConfId);
+        IWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
+        workingSubset.getDataFiles().forEach(file -> progressManager.storageFailed(file, e.toString()));
+        super.handleWorkspaceException(e);
+    }
+
+    @Override
     protected void doRun(Map<String, JobParameter> parameterMap) {
         storeFile(parameterMap, true);
     }
@@ -31,11 +40,4 @@ public class StoreMetadataFilesJob extends AbstractStoreFilesJob {
         progressManager.storageFailed(notHandled, NOT_HANDLED_MSG);
     }
 
-    @Override
-    protected void handleWorkspaceException(IOException e) throws JobWorkspaceException {
-        StorageJobProgressManager progressManager = new StorageJobProgressManager(publisher, this);
-        IWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
-        workingSubset.getDataFiles().forEach(file -> progressManager.storageFailed(file, e.toString()));
-        super.handleWorkspaceException(e);
-    }
 }

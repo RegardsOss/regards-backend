@@ -1,5 +1,9 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.plugin.allocation.strategy;
 
+import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -83,9 +88,10 @@ public class StafNoopAllocationStrategy implements IAllocationStrategy {
     @PluginInit
     public void init() throws EntityNotFoundException, EntityInvalidException {
         //lets verify that quicklook data storage is an online data storage
-        if(!pluginService.getPluginConfiguration(quicklookDataStorageConfigurationId).getInterfaceNames().contains(
-                IOnlineDataStorage.class.getName())) {
-            throw new EntityInvalidException("Current active allocation strategy does specify a quicklook data storage which is not ONLINE");
+        if (!pluginService.getPluginConfiguration(quicklookDataStorageConfigurationId).getInterfaceNames()
+                .contains(IOnlineDataStorage.class.getName())) {
+            throw new EntityInvalidException(
+                    "Current active allocation strategy does specify a quicklook data storage which is not ONLINE");
         }
     }
 
@@ -105,26 +111,38 @@ public class StafNoopAllocationStrategy implements IAllocationStrategy {
                                           stafConf -> stafConf.getId()));
         // @formatter:on
         for (StorageDataFile dataFile : dataFilesToHandle) {
-            String urlProtocol = dataFile.getUrl().getProtocol();
-            switch (urlProtocol) {
-                case STAFURLFactory.STAF_URL_PROTOCOLE:
-                    String archiveName = dataFile.getUrl().getHost();
-                    Long chosenOne = stafArchiveConfMap.get(archiveName);
-                    if (chosenOne == null) {
-                        LOG.debug(String.format(
-                                "Allocation strategy for data file %s failed, no corresponding staf data storage found.",
-                                dataFile.getUrl()));
-                    } else {
-                        dispatch.put(chosenOne, dataFile);
-                    }
-                    break;
-                default:
-                    if (dataFile.isQuicklook()) {
-                        dispatch.put(quicklookDataStorageConfigurationId, dataFile);
-                    } else {
-                        dispatch.put(dataStorageConfigurationId, dataFile);
-                    }
-                    break;
+            for (URL dataFileUrl : dataFile.getUrls()) {
+                String urlProtocol = dataFileUrl.getProtocol();
+                switch (urlProtocol) {
+                    case STAFURLFactory.STAF_URL_PROTOCOLE:
+                        String archiveName = dataFileUrl.getHost();
+                        Long chosenOne = stafArchiveConfMap.get(archiveName);
+                        if (chosenOne == null) {
+                            LOG.debug(String.format(
+                                                    "Allocation strategy for data file %s failed, no corresponding staf data storage found.",
+                                                    dataFile.getUrls()));
+                        } else {
+                            //This allocation strategy only allows files to be stored into 1 DataStorage
+                            dataFile.increaseNotYetStoredBy();
+                            dispatch.put(chosenOne, dataFile);
+                        }
+                        if (dataFile.isOnlineMandatory()) {
+                            dataFile.increaseNotYetStoredBy();
+                            dispatch.put(quicklookDataStorageConfigurationId, dataFile);
+                        }
+                        break;
+                    default:
+                        if (dataFile.isOnlineMandatory()) {
+                            //This allocation strategy only allows files to be stored into 1 DataStorage
+                            dataFile.setNotYetStoredBy(1L);
+                            dispatch.put(quicklookDataStorageConfigurationId, dataFile);
+                        } else {
+                            //This allocation strategy only allows files to be stored into 1 DataStorage
+                            dataFile.setNotYetStoredBy(1L);
+                            dispatch.put(dataStorageConfigurationId, dataFile);
+                        }
+                        break;
+                }
             }
         }
         return dispatch;

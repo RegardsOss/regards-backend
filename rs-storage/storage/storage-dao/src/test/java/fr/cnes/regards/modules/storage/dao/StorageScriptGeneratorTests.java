@@ -8,6 +8,6 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTes
  * @author Sylvain VISSIERE-GUERINET
  */
 @Ignore
-public class StorageScirptGeneratorTests extends AbstractScriptGeneratorTest{
+public class StorageScriptGeneratorTests extends AbstractScriptGeneratorTest {
 
 }

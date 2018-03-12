@@ -76,6 +76,7 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
      * Calculate the monitoring information on all data files of the database
      * @return the monitoring aggregation
      */
-    @Query("SELECT df.dataStorageUsed.id as dataStorageUsedId, sum(df.fileSize) as usedSize FROM StorageDataFile df WHERE df.state LIKE 'STORED' GROUP BY df.dataStorageUsed.id")
+    @Query("select pds.id as dataStorageUsedId, sum(df.fileSize) as usedSize from StorageDataFile df join df.prioritizedDataStorages pds"
+            + " where df.state = 'STORED' group by pds.id")
     Collection<MonitoringAggregation> getMonitoringAggregation();
 }

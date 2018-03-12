@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.storage.domain.plugin;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
@@ -13,7 +15,6 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
  * AIP service uses those subsets to run an asynchronous storage job for each one.
  * @author Sébastien Binda
  */
-@FunctionalInterface
 public interface IWorkingSubset {
 
     /**

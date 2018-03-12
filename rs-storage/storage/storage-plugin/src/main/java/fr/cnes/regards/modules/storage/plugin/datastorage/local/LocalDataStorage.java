@@ -13,28 +13,32 @@ import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
+import fr.cnes.regards.modules.storage.domain.StorageDataFileUtils;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
+import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system",
-        id = "LocalDataStorage", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+@Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system", id = "Local",
+        version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> {
 
@@ -99,9 +103,11 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     }
 
     @Override
-    public Set<LocalWorkingSubset> prepare(Collection<StorageDataFile> dataFiles, DataStorageAccessModeEnum mode) {
+    public WorkingSubsetWrapper<LocalWorkingSubset> prepare(Collection<StorageDataFile> dataFiles, DataStorageAccessModeEnum mode) {
         // We choose to use a simple parallel stream to store file on file system, so for now we treat everything at once
-        return Sets.newHashSet(new LocalWorkingSubset(Sets.newHashSet(dataFiles)));
+        WorkingSubsetWrapper<LocalWorkingSubset> wrapper = new WorkingSubsetWrapper<>();
+        wrapper.getWorkingSubSets().add(new LocalWorkingSubset(Sets.newHashSet(dataFiles)));
+        return wrapper;
     }
 
     @Override
@@ -129,32 +135,40 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
         try {
             fullPathToFile = getStorageLocation(data);
             //check if file is already at the right place or not. Unless we are instructed not to(for updates for example)
-            if (!replaceMode && Paths.get(fullPathToFile).equals(Paths.get(data.getUrl().getPath()))) {
+            if (!replaceMode && (data.getUrls().stream().map(url -> Paths.get(url.getPath()))
+                    .filter(path -> Paths.get(fullPathToFile).equals(path)).count() != 0)) {
                 Long fileSize = Paths.get(fullPathToFile).toFile().length();
                 data.setFileSize(fileSize);
                 //if it is, there is nothing to move/copy, we just need to say to the system that the file is stored successfully
-                progressManager.storageSucceed(data, data.getUrl(), fileSize);
+                progressManager.storageSucceed(data, new URL("file", "", fullPathToFile), fileSize);
                 return;
             }
         } catch (IOException ioe) {
             String failureCause = String.format(
-                    "Storage of StorageDataFile(%s) failed due to the following IOException: %s",
-                    data.getChecksum(),
-                    ioe.getMessage());
+                                                "Storage of StorageDataFile(%s) failed due to the following IOException: %s",
+                                                data.getChecksum(), ioe.toString());
             LOG.error(failureCause, ioe);
             progressManager.storageFailed(data, failureCause);
             return;
         }
         try {
-            boolean downloadOk = DownloadUtils.downloadAndCheckChecksum(data.getUrl(),
-                                                                        Paths.get(fullPathToFile),
-                                                                        data.getAlgorithm(),
-                                                                        data.getChecksum());
+            URL sourceUrl = StorageDataFileUtils.getAccessibleUrl(data);
+            if (sourceUrl == null) {
+                StringJoiner stringedUrls = new StringJoiner(",");
+                data.getUrls().forEach(url -> stringedUrls.add(url.toExternalForm()));
+                String errorMsg = String.format(
+                                                "Error trying to retrieve file(checksum: %s). We could not find any accessible url(Actual urls: %s)",
+                                                data.getChecksum(), stringedUrls.toString());
+                LOG.error(errorMsg);
+                progressManager.storageFailed(data, errorMsg);
+                return;
+            }
+            boolean downloadOk = DownloadUtils.downloadAndCheckChecksum(sourceUrl, Paths.get(fullPathToFile),
+                                                                        data.getAlgorithm(), data.getChecksum());
             if (!downloadOk) {
                 String failureCause = String.format(
-                        "Storage of StorageDataFile(%s) failed at the following location: %s. Its checksum once stored do not match with expected",
-                        data.getChecksum(),
-                        fullPathToFile);
+                                                    "Storage of StorageDataFile(%s) failed at the following location: %s. Its checksum once stored do not match with expected",
+                                                    data.getChecksum(), fullPathToFile);
                 Files.deleteIfExists(Paths.get(fullPathToFile));
                 progressManager.storageFailed(data, failureCause);
             } else {
@@ -168,15 +182,13 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
             }
         } catch (NoSuchAlgorithmException e) {
             RuntimeException re = new RuntimeException(e);
-            LOG.error(
-                    "This is a development exception, if you see it in production, go get your dev(s) and spank them!!!!",
-                    re);
+            LOG.error("This is a development exception, if you see it in production, go get your dev(s) and spank them!!!!",
+                      re);
             throw re;
         } catch (IOException ioe) {
             String failureCause = String.format(
-                    "Storage of StorageDataFile(%s) failed due to the following IOException: %s",
-                    data.getChecksum(),
-                    ioe.getMessage());
+                                                "Storage of StorageDataFile(%s) failed due to the following IOException: %s",
+                                                data.getChecksum(), ioe.toString());
             LOG.error(failureCause, ioe);
             Paths.get(fullPathToFile).toFile().delete();
             progressManager.storageFailed(data, failureCause);
@@ -185,7 +197,12 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
 
     private String getStorageLocation(StorageDataFile data) throws IOException {
         String checksum = data.getChecksum();
-        String storageLocation = baseStorageLocation.getPath() + "/" + checksum.substring(0, 3);
+        String storageLocation;
+        if (data.getStorageDirectory() != null) {
+            storageLocation = data.getStorageDirectory();
+        } else {
+            storageLocation = baseStorageLocation.getPath() + "/" + checksum.substring(0, 3);
+        }
         if (!Paths.get(storageLocation).toFile().exists()) {
             Files.createDirectories(Paths.get(storageLocation));
         }
@@ -194,16 +211,15 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     }
 
     @Override
-    public void delete(Set<StorageDataFile> dataFiles, IProgressManager progressManager) {
-        for (StorageDataFile data : dataFiles) {
+    public void delete(LocalWorkingSubset workingSubset, IProgressManager progressManager) {
+        for (StorageDataFile data : workingSubset.getDataFiles()) {
             try {
                 Files.deleteIfExists(Paths.get(getStorageLocation(data)));
                 progressManager.deletionSucceed(data);
             } catch (IOException ioe) {
                 String failureCause = String.format(
-                        "Deletion of StorageDataFile(%s) failed due to the following IOException: %s",
-                        data.getChecksum(),
-                        ioe.getMessage());
+                                                    "Deletion of StorageDataFile(%s) failed due to the following IOException: %s",
+                                                    data.getChecksum(), ioe.getMessage());
                 LOG.error(failureCause, ioe);
                 progressManager.deletionFailed(data, failureCause);
             }

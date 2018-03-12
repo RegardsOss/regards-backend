@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.plugins.datastorage.allocation.strategy;
 
 import java.io.IOException;
@@ -12,7 +15,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,6 +24,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -89,56 +93,36 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
         AIP aipWithProperty = getAIP();
         AIPBuilder builder = new AIPBuilder(aipWithProperty);
         builder.getPDIBuilder().addAdditionalProvenanceInformation("property", PROPERTY_VALUE);
-        propertyDataFile = new StorageDataFile(new URL("file", "", "truc.json"),
-                                               "checksum",
-                                               "MD5",
-                                               DataType.OTHER,
-                                               666L,
-                                               MediaType.APPLICATION_JSON,
-                                               aipWithProperty,
-                                               "truc");
+        propertyDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "truc.json")), "checksum", "MD5",
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aipWithProperty, "truc", null);
         dataFiles.add(propertyDataFile);
         AIP aipWithoutProperty = getAIP();
-        otherDataFile = new StorageDataFile(new URL("file", "", "local.json"),
-                                            "checksum2",
-                                            "MD5",
-                                            DataType.OTHER,
-                                            666L,
-                                            MediaType.APPLICATION_JSON,
-                                            aipWithoutProperty,
-                                            "local");
+        otherDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "local.json")), "checksum2", "MD5",
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aipWithoutProperty, "local", null);
         dataFiles.add(otherDataFile);
         AIP aipWithPropertyWrongVal = getAIP();
         builder = new AIPBuilder(aipWithPropertyWrongVal);
         builder.getPDIBuilder().addAdditionalProvenanceInformation("property", PROPERTY_VALUE + 3);
-        propertyWrongValDataFile = new StorageDataFile(new URL("file", "", "truc.json"),
-                                                       "checksum3",
-                                                       "MD5",
-                                                       DataType.OTHER,
-                                                       666L,
-                                                       MediaType.APPLICATION_JSON,
-                                                       aipWithPropertyWrongVal,
-                                                       "truc");
+        propertyWrongValDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "truc.json")), "checksum3",
+                "MD5", DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aipWithPropertyWrongVal, "truc", null);
         dataFiles.add(propertyWrongValDataFile);
     }
 
     private AIP getAIP() throws MalformedURLException {
 
-        AIPBuilder aipBuilder = new AIPBuilder(new UniformResourceName(OAISIdentifier.AIP,
-                                                                       EntityType.DATA,
-                                                                       DEFAULT_TENANT,
-                                                                       UUID.randomUUID(),
-                                                                       1), null, EntityType.DATA);
+        AIPBuilder aipBuilder = new AIPBuilder(
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
+                null, EntityType.DATA);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder()
-                .setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5", "de89a907d33a9716d11765582102b2e0");
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
+                                                                "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", "text/plain");
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
-        aipBuilder.getPDIBuilder()
-                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event", OffsetDateTime.now());
+        aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
+                                                                 OffsetDateTime.now());
 
         return aipBuilder.build();
     }
@@ -155,22 +139,20 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000L).getParameters();
-        PluginMetaData localDataStorageMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
-                                                                               IDataStorage.class.getPackage()
-                                                                                       .getName(),
-                                                                               IOnlineDataStorage.class.getPackage()
-                                                                                       .getName(),
-                                                                               LocalDataStorage.class.getPackage()
-                                                                                       .getName());
-        PluginConfiguration localStorageConf = new PluginConfiguration(localDataStorageMeta, LOCAL_STORAGE_LABEL, parameters);
+        PluginMetaData localDataStorageMeta = PluginUtils
+                .createPluginMetaData(LocalDataStorage.class, IDataStorage.class.getPackage().getName(),
+                                      IOnlineDataStorage.class.getPackage().getName(),
+                                      LocalDataStorage.class.getPackage().getName());
+        PluginConfiguration localStorageConf = new PluginConfiguration(localDataStorageMeta, LOCAL_STORAGE_LABEL,
+                parameters);
         localStorageConf = pluginService.savePluginConfiguration(localStorageConf);
 
         mappedDataStorageConfId = localStorageConf.getId();
 
-        PluginMetaData propertyMappingAllocStratMeta = PluginUtils.createPluginMetaData(
-                PropertyMappingAllocationStrategy.class,
-                PropertyMappingAllocationStrategy.class.getPackage().getName(),
-                IAllocationStrategy.class.getPackage().getName());
+        PluginMetaData propertyMappingAllocStratMeta = PluginUtils
+                .createPluginMetaData(PropertyMappingAllocationStrategy.class,
+                                      PropertyMappingAllocationStrategy.class.getPackage().getName(),
+                                      IAllocationStrategy.class.getPackage().getName());
         // before getting the alloc strat plg params, lets make some mapping
         Set<PropertyDataStorageMapping> mappings = Sets.newHashSet();
         mappings.add(new PropertyDataStorageMapping(PROPERTY_VALUE, mappedDataStorageConfId));
@@ -178,10 +160,10 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
                 .addParameter(PropertyMappingAllocationStrategy.PROPERTY_PATH, JSON_PATH)
                 .addParameter(PropertyMappingAllocationStrategy.PROPERTY_VALUE_DATA_STORAGE_MAPPING, mappings)
                 .addParameter(PropertyMappingAllocationStrategy.QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID,
-                              mappedDataStorageConfId).getParameters();
+                              mappedDataStorageConfId)
+                .getParameters();
         propertyMappingAllocStratConf = new PluginConfiguration(propertyMappingAllocStratMeta,
-                                                                PROPERTY_MAPPING_ALLOC_STRAT_LABEL,
-                                                                propertyMappingAllocStratParam);
+                PROPERTY_MAPPING_ALLOC_STRAT_LABEL, propertyMappingAllocStratParam);
         propertyMappingAllocStratConf = pluginService.savePluginConfiguration(propertyMappingAllocStratConf);
     }
 

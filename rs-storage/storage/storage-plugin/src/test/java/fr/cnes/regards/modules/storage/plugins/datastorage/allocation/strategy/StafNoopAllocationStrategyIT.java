@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.plugins.datastorage.allocation.strategy;
 
 import java.io.File;
@@ -10,7 +13,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,6 +22,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -67,6 +70,8 @@ public class StafNoopAllocationStrategyIT extends AbstractRegardsTransactionalIT
 
     private static final String STAF_NOOP_ALLOCATION_LABEL = "STAF_NOOP_ALLOCATION_LABEL";
 
+    private static String STAF_NODE = "/STAF/NODE/TEST";
+
     @Autowired
     private IPluginService pluginService;
 
@@ -91,11 +96,12 @@ public class StafNoopAllocationStrategyIT extends AbstractRegardsTransactionalIT
     private void initDataFiles() throws MalformedURLException {
         dataFiles = Sets.newHashSet();
         AIP aip = getAIP();
-        stafDataFile = new StorageDataFile(new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, "truc.json"),
-                "checksum", "MD5", DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, "truc");
+        stafDataFile = new StorageDataFile(
+                Sets.newHashSet(new URL(STAFURLFactory.STAF_URL_PROTOCOLE, STAF_ARCHIVE_NAME, "truc.json")), "checksum",
+                "MD5", DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, "truc", STAF_NODE);
         dataFiles.add(stafDataFile);
-        otherDataFile = new StorageDataFile(new URL("file", "", "local.json"), "checksum2", "MD5", DataType.OTHER, 666L,
-                MediaType.APPLICATION_JSON, aip, "local");
+        otherDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "local.json")), "checksum2", "MD5",
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, "local", STAF_NODE);
         dataFiles.add(otherDataFile);
     }
 
@@ -114,7 +120,6 @@ public class StafNoopAllocationStrategyIT extends AbstractRegardsTransactionalIT
         aipBuilder.getPDIBuilder().setFacility("CS");
         aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
                                                                  OffsetDateTime.now());
-
         return aipBuilder.build();
     }
 
@@ -161,7 +166,8 @@ public class StafNoopAllocationStrategyIT extends AbstractRegardsTransactionalIT
         List<PluginParameter> stafNoopAllocationParam = PluginParametersFactory.build()
                 .addParameter(StafNoopAllocationStrategy.DEFAULT_DATA_STORAGE_CONFIGURATION_ID,
                               defaultDataStorage.getId())
-                .addParameter(StafNoopAllocationStrategy.QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID, defaultDataStorage.getId())
+                .addParameter(StafNoopAllocationStrategy.QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID,
+                              defaultDataStorage.getId())
                 .getParameters();
         stafNoopAllocationConf = new PluginConfiguration(stafNoopAllocationMeta, STAF_NOOP_ALLOCATION_LABEL,
                 stafNoopAllocationParam);

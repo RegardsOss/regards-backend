@@ -35,6 +35,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
@@ -72,7 +73,7 @@ import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@ContextConfiguration(classes = { TestConfig.class })
+@ContextConfiguration(classes = { TestConfig.class, StoreJobIT.Config.class })
 @TestPropertySource(locations = "classpath:test.properties")
 @DirtiesContext
 public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
@@ -131,24 +132,17 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L).getParameters();
         // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
-        PluginMetaData localStorageMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
-                                                                           LocalDataStorage.class.getPackage()
-                                                                                   .getName(),
-                                                                           IDataStorage.class.getPackage().getName());
+        PluginMetaData localStorageMeta = PluginUtils
+                .createPluginMetaData(LocalDataStorage.class, LocalDataStorage.class.getPackage().getName(),
+                                      IDataStorage.class.getPackage().getName());
         localStorageConf = new PluginConfiguration(localStorageMeta, LOCAL_STORAGE_LABEL, pluginParameters);
         localStorageConf = pluginService.savePluginConfiguration(localStorageConf);
         // ... a working subset
         URL source = new URL("file", "", Paths.get("src", "test", "resources", "data.txt").toAbsolutePath().toString());
         AIP aip = getAipFromFile(false);
         aip.addEvent(EventType.SUBMISSION.name(), "submission into our beautiful system");
-        df = new StorageDataFile(source,
-                                 "de89a907d33a9716d11765582102b2e0",
-                                 "MD5",
-                                 DataType.OTHER,
-                                 0L,
-                                 new MimeType("text", "plain"),
-                                 aip,
-                                 "data.txt");
+        df = new StorageDataFile(Sets.newHashSet(source), "de89a907d33a9716d11765582102b2e0", "MD5", DataType.OTHER, 0L,
+                new MimeType("text", "plain"), aip, "data.txt", null);
         workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
         // now that we have some parameters, lets storeAndCreate the job
         parameters = Sets.newHashSet();
@@ -168,20 +162,12 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
 
     @Test
     public void storeQuicklookJobTest() throws IOException {
-        URL source = new URL("file",
-                             "",
-                             Paths.get("src", "test", "resources", "quicklook.png").toAbsolutePath().toString());
+        URL source = new URL("file", "",
+                Paths.get("src", "test", "resources", "quicklook.png").toAbsolutePath().toString());
         AIP aip = getAipFromFile(true);
         aip.addEvent(EventType.SUBMISSION.name(), "submission into our beautiful system");
-        StorageDataFile df = new StorageDataFile(source,
-                                                 "540e72d5ac22f25c70d9c72b9b36fb96",
-                                                 "MD5",
-                                                 DataType.QUICKLOOK_SD,
-                                                 0L,
-                                                 new MimeType("image", "png"),
-                                                 aip,
-                                                 "quicklook.png");
-        df.setDataStorageUsed(localStorageConf);
+        StorageDataFile df = new StorageDataFile(Sets.newHashSet(source), "540e72d5ac22f25c70d9c72b9b36fb96", "MD5",
+                DataType.QUICKLOOK_SD, 0L, new MimeType("image", "png"), aip, "quicklook.png", null);
         IWorkingSubset workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
 
         Set<JobParameter> jobParameters = Sets.newHashSet();
@@ -195,11 +181,9 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         StorageJobProgressManager progressManager = job.getProgressManager();
         Assert.assertFalse("there was a problem during the job", progressManager.isProcessError());
         Assert.assertTrue(progressManager.getHandledDataFile().size() == 1);
-        Assert.assertEquals("PNG should have a width of 1123 pixel",
-                            Integer.valueOf(1123),
+        Assert.assertEquals("PNG should have a width of 1123 pixel", Integer.valueOf(1123),
                             progressManager.getHandledDataFile().toArray(new StorageDataFile[0])[0].getWidth());
-        Assert.assertEquals("PNG should have a height of 764 pixel",
-                            Integer.valueOf(794),
+        Assert.assertEquals("PNG should have a height of 764 pixel", Integer.valueOf(794),
                             progressManager.getHandledDataFile().toArray(new StorageDataFile[0])[0].getHeight());
     }
 

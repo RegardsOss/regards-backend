@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.storage.service.forTest;
+package fr.cnes.regards.modules.storage.service;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
-import org.assertj.core.util.Sets;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -60,18 +62,22 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.models.domain.Model;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.search.client.ISearchClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
+import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
+import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
@@ -79,20 +85,16 @@ import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
+import fr.cnes.regards.modules.storage.plugin.NearlineNoRetrieveDataStorage;
 import fr.cnes.regards.modules.storage.plugin.SimpleNearLineStoragePlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.security.CatalogSecurityDelegation;
-import fr.cnes.regards.modules.storage.service.DataStorageEventHandler;
-import fr.cnes.regards.modules.storage.service.IAIPService;
-import fr.cnes.regards.modules.storage.service.RestoreJobEventHandler;
-import fr.cnes.regards.modules.storage.service.TestConfig;
-import fr.cnes.regards.modules.storage.service.TestDataStorageEventHandler;
 
 /**
  * Class to test all AIP service restore functions.
  * @author Sébastien Binda
  */
-@ContextConfiguration(classes = { TestConfig.class, MockedFeignClientConf.class })
+@ContextConfiguration(classes = { TestConfig.class, AIPServiceRestoreIT.Config.class })
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles("testAmqp")
 @DirtiesContext
@@ -101,6 +103,12 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     private static final Logger LOG = LoggerFactory.getLogger(AIPServiceRestoreIT.class);
 
     private static final String CATALOG_SECURITY_DELEGATION_LABEL = "AIPServiceRestoreIT";
+
+    private static RestoreJobEventHandler handler = new RestoreJobEventHandler();
+
+    private static TestDataStorageEventHandler dataHandler = new TestDataStorageEventHandler();
+
+    private static Path cacheDir = Paths.get("target/cache");
 
     @Autowired
     private IAIPService aipService;
@@ -126,21 +134,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     @Autowired
     private IJobInfoRepository jobInfoRepo;
 
-    private PluginConfiguration dataStorageConf;
-
-    private PluginConfiguration nearLineConf;
-
-    private URL baseStorageLocation;
-
     @Autowired
     private ISubscriber subscriber;
-
-    @Value("${regards.storage.cache.size.limit.ko.per.tenant}")
-    private Long cacheSizeLimitKo;
-
-    private static RestoreJobEventHandler handler = new RestoreJobEventHandler();
-
-    private static TestDataStorageEventHandler dataHandler = new TestDataStorageEventHandler();
 
     @Autowired
     private IRabbitVirtualHostAdmin vHost;
@@ -148,21 +143,38 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     @Autowired
     private RegardsAmqpAdmin amqpAdmin;
 
-    @Value("${regards.cache.restore.queued.rate.ms}")
-    private Long restoreQueuedRate;
-
-    @Value("${regards.cache.cleanup.rate.ms}")
-    private Long cleanCacheRate;
-
-    private static Path cacheDir = Paths.get("target/cache");
-
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
     private ISearchClient searchClient;
 
+    @Autowired
+    private IPrioritizedDataStorageService prioritizedDataStorageService;
+
+    @Autowired
+    private IPrioritizedDataStorageRepository prioritizedDataStorageRepository;
+
+    @Value("${regards.storage.cache.size.limit.ko.per.tenant}")
+    private Long cacheSizeLimitKo;
+
+    @Value("${regards.cache.restore.queued.rate.ms}")
+    private Long restoreQueuedRate;
+
+    @Value("${regards.cache.cleanup.rate.ms}")
+    private Long cleanCacheRate;
+
     private PluginConfiguration catalogSecuDelegConf;
+
+    private PrioritizedDataStorage onlineDataStorageConf;
+
+    private PrioritizedDataStorage nearlineDataStorageConf;
+
+    private URL baseStorageLocation;
+
+    private PrioritizedDataStorage nearlineNoRetrieveDataStorageConf;
+
+    private PrioritizedDataStorage onlineNoRetrieveDataStorageConf;
 
     public void initCacheDir() throws IOException {
         if (cacheDir.toFile().exists()) {
@@ -177,9 +189,13 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         initCacheDir();
         // this.cleanUp(); //comment if you are not interrupting tests during their execution
         // as we are checking rights, lets mock the response from catalog: always ok for anything
-        Mockito.when(searchClient.getEntity(Mockito.any())).thenReturn(new ResponseEntity<>(new Resource<>(
-                new Collection(Model.build("name", "desc", EntityType.COLLECTION), DEFAULT_TENANT, "CatalogOK")),
-                HttpStatus.OK));
+        Mockito.when(searchClient.getEntity(Mockito.any())).thenReturn(
+                                                                       new ResponseEntity<>(
+                                                                               new Resource<>(new Collection(
+                                                                                       Model.build("name", "desc",
+                                                                                                   EntityType.COLLECTION),
+                                                                                       DEFAULT_TENANT, "CatalogOK")),
+                                                                               HttpStatus.OK));
 
         subscriber.subscribeTo(JobEvent.class, handler);
         subscriber.subscribeTo(DataFileEvent.class, dataHandler);
@@ -191,7 +207,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      * @throws Exception
      */
     private void initDb() throws Exception {
-        baseStorageLocation = new URL("file", "", Paths.get("target/AIPServiceIT").toFile().getAbsolutePath());
+        baseStorageLocation = new URL("file", "", Paths.get("target/AIPServiceIT/normal").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
 
         // second, lets storeAndCreate a plugin configuration for IAllocationStrategy
@@ -208,20 +224,37 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                                                                       IOnlineDataStorage.class.getPackage().getName());
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              gson.toJson(baseStorageLocation))
-                .getParameters();
-        dataStorageConf = new PluginConfiguration(dataStoMeta, "dsConfLabel", parameters, 0);
-        dataStorageConf.setIsActive(true);
-        pluginService.savePluginConfiguration(dataStorageConf);
+                              gson.toJson(baseStorageLocation)).getParameters();
+        PluginConfiguration onlineDSConf = new PluginConfiguration(dataStoMeta, "dsConfLabel", parameters, 0);
+        onlineDSConf.setIsActive(true);
+        onlineDataStorageConf = prioritizedDataStorageService.create(onlineDSConf);
 
-        PluginMetaData nearlineMeta = PluginUtils
-                .createPluginMetaData(SimpleNearLineStoragePlugin.class, IDataStorage.class.getPackage().getName(),
-                                      INearlineDataStorage.class.getPackage().getName());
+        PluginMetaData onlineNoRetrieveDataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
+                                                                      IDataStorage.class.getPackage().getName(),
+                                                                      IOnlineDataStorage.class.getPackage().getName());
+        PluginConfiguration onlineNoRetrieveDSConf = new PluginConfiguration(onlineNoRetrieveDataStoMeta, "onlineNoRetrieveDsConfLabel");
+        onlineNoRetrieveDSConf.setIsActive(true);
+        onlineNoRetrieveDataStorageConf = prioritizedDataStorageService.create(onlineNoRetrieveDSConf);
+
+        PluginMetaData nearlineMeta = PluginUtils.createPluginMetaData(SimpleNearLineStoragePlugin.class,
+                                                                       IDataStorage.class.getPackage().getName(),
+                                                                       INearlineDataStorage.class.getPackage()
+                                                                               .getName());
         parameters = PluginParametersFactory.build().getParameters();
-        nearLineConf = new PluginConfiguration(nearlineMeta, "nearlineConfLabel", parameters, 0);
-        nearLineConf.setIsActive(true);
+        PluginConfiguration nearlineDSConf = new PluginConfiguration(nearlineMeta, "nearlineConfLabel", parameters, 0);
+        nearlineDSConf.setIsActive(true);
 
-        pluginService.savePluginConfiguration(nearLineConf);
+        nearlineDataStorageConf = prioritizedDataStorageService.create(nearlineDSConf);
+
+        PluginMetaData dataStoNoRetrieveMeta = PluginUtils.createPluginMetaData(NearlineNoRetrieveDataStorage.class,
+                                                                                IDataStorage.class.getPackage()
+                                                                                        .getName(),
+                                                                                INearlineDataStorage.class.getPackage()
+                                                                                        .getName());
+        PluginConfiguration nearlineNoRetrieveDSConf = new PluginConfiguration(dataStoNoRetrieveMeta,
+                                                                               "dsNoRetrieveConfLabel");
+        nearlineNoRetrieveDSConf.setIsActive(true);
+        nearlineNoRetrieveDataStorageConf = prioritizedDataStorageService.create(nearlineNoRetrieveDSConf);
     }
 
     /**
@@ -233,9 +266,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         LOG.info("Start test loadUnavailableFilesTest ...");
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
         AvailabilityResponse response = aipService.loadFiles(request);
-        Assert.assertTrue("No file should be directly available after AIPService::locafiles. Cause : files to load does not exists !",
+        Assert.assertTrue("No file should be directly available after AIPService::loadFiles. Cause : files to load does not exists !",
                           response.getAlreadyAvailable().isEmpty());
-        Assert.assertTrue("All files should be in error after AIPService::locafiles. Cause : files to load does not exists !",
+        Assert.assertTrue("All files should be in error after AIPService::loadFiles. Cause : files to load does not exists !",
                           response.getErrors().size() == 3);
         LOG.info("End test loadUnavailableFilesTest ...");
     }
@@ -251,11 +284,29 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         fillOnlineDataFileDb(50L);
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
         AvailabilityResponse response = aipService.loadFiles(request);
-        Assert.assertTrue("All files should be directly available after AIPService::locafiles. Cause : files to load are online.",
+        Assert.assertTrue("All files should be directly available after AIPService::loadFiles. Cause : files to load are online.",
                           response.getAlreadyAvailable().size() == 3);
-        Assert.assertTrue("No file should be in error after AIPService::locafiles. Cause : All files exists !.",
+        Assert.assertTrue("No file should be in error after AIPService::loadFiles. Cause : All files exists !.",
                           response.getErrors().isEmpty());
         LOG.info("End test loadOnlineFilesTest ...");
+    }
+
+    /**
+     * Verify that files stored online and nearline are directly available from an avaibility request thanks to the online storage.<br/>
+     * Expected result : The {@link AvailabilityResponse} contains all files available from online storage.
+     * @throws MalformedURLException
+     */
+    @Test
+    public void loadOnlineNNearlineFilesTest() throws MalformedURLException, ModuleException {
+        LOG.info("Start test loadOnlineNNearlineFilesTest ...");
+        fillOnlineNNearlineDataFileDb(50L);
+        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
+        AvailabilityResponse response = aipService.loadFiles(request);
+        Assert.assertTrue("All files should be directly available after AIPService::loadFiles. Cause : files to load are online.",
+                          response.getAlreadyAvailable().size() == 3);
+        Assert.assertTrue("No file should be in error after AIPService::loadFiles. Cause : All files exists !.",
+                          response.getErrors().isEmpty());
+        LOG.info("End test loadOnlineNNearlineFilesTest ...");
     }
 
     /**
@@ -327,7 +378,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
     /**
      * Verify that nearline files are not directly available from an avaibility request.
-     * But, asynchonous jobs are scheduled for restoration.<br/>
+     * But, asynchronous jobs are scheduled for restoration.<br/>
      * Verify also that if there isnt enought space in cache to restore all files then restoration jobs are
      * scheduled to retrieve as much as possible of files and remaining files to restore are set
      * in QUEUED status and are waiting for space free.<br/>
@@ -555,9 +606,10 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         Thread.sleep(cleanCacheRate);
         Thread.sleep(2000);
         int size = cachedFileRepository.findByState(CachedFileState.AVAILABLE).size();
-        Assert.assertTrue(String
-                .format("After the cache clean process ran, there should be only one AVAILABLE file remaining not %s.",
-                        size), size == 1);
+        Assert.assertTrue(String.format(
+                                        "After the cache clean process ran, there should be only one AVAILABLE file remaining not %s.",
+                                        size),
+                          size == 1);
 
         Assert.assertFalse("File should be deleted", file1.toFile().exists());
         Assert.assertFalse("File should be deleted", file2.toFile().exists());
@@ -709,9 +761,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
             OffsetDateTime lastRequestDate, String location) throws MalformedURLException {
         // Simulate cache files to force cache limit size reached before restoring new files.
         // First create StorageDataFile
-        StorageDataFile df = new StorageDataFile(new URL("file://test/" + fileName), checksum, "MD5", DataType.RAWDATA, fileSize,
-                                                 MimeType.valueOf("application/text"), aip, fileName);
-        df.setDataStorageUsed(nearLineConf);
+        StorageDataFile df = new StorageDataFile(Sets.newHashSet(new URL("file://test/" + fileName)), checksum, "MD5",
+                DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip, fileName, null);
+        df.addDataStorageUsed(nearlineDataStorageConf);
         dataFileDao.save(df);
         // Then create cached file associated
         CachedFile f = new CachedFile(df, expiration, CachedFileState.AVAILABLE);
@@ -737,19 +789,56 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         aipDao.save(aip);
         Set<StorageDataFile> datafiles = Sets.newHashSet();
         URL url = new URL(Paths.get(baseStorageLocation.toString(), "file1.test").toString());
-        StorageDataFile df = new StorageDataFile(url, "1", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"),
-                                                 aip, "file1.test");
-        df.setDataStorageUsed(dataStorageConf);
+        StorageDataFile df = new StorageDataFile(Sets.newHashSet(url), "1", "MD5", DataType.RAWDATA, fileSize,
+                MimeType.valueOf("application/text"), aip, "file1.test", null);
+        df.addDataStorageUsed(onlineDataStorageConf);
+        df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
-        df = new StorageDataFile(url, "2", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip,
-                                 "file2.test");
-        df.setDataStorageUsed(dataStorageConf);
+        df = new StorageDataFile(Sets.newHashSet(url), "2", "MD5", DataType.RAWDATA, fileSize,
+                MimeType.valueOf("application/text"), aip, "file2.test", null);
+        df.addDataStorageUsed(onlineDataStorageConf);
+        df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
-        df = new StorageDataFile(url, "3", "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip,
-                                 "file3.test");
-        df.setDataStorageUsed(dataStorageConf);
+        df = new StorageDataFile(Sets.newHashSet(url), "3", "MD5", DataType.RAWDATA, fileSize,
+                MimeType.valueOf("application/text"), aip, "file3.test", null);
+        df.addDataStorageUsed(onlineDataStorageConf);
+        df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
+        datafiles.add(df);
+        dataFileDao.save(datafiles);
+    }
+
+    /**
+     * Test method to simulate ceration of 3 new {@link StorageDataFile} in Db as there where stored with a online storage
+     * plugin.
+     * @param fileSize
+     * @throws MalformedURLException
+     */
+    private void fillOnlineNNearlineDataFileDb(Long fileSize) throws MalformedURLException {
+        AIP aip = getAIP();
+        aipDao.save(aip);
+        Set<StorageDataFile> datafiles = Sets.newHashSet();
+        URL url = new URL(Paths.get(baseStorageLocation.toString(), "file1.test").toString());
+        URL urlNearline = new URL("file://PLOP/Node/file1.test");
+        StorageDataFile df = new StorageDataFile(Sets.newHashSet(url, urlNearline), "1", "MD5", DataType.RAWDATA,
+                fileSize, MimeType.valueOf("application/text"), aip, "file1.test", null);
+        df.addDataStorageUsed(onlineDataStorageConf);
+        df.addDataStorageUsed(nearlineDataStorageConf);
+        datafiles.add(df);
+        url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
+        urlNearline = new URL("file://PLOP/Node/file2.test");
+        df = new StorageDataFile(Sets.newHashSet(url, urlNearline), "2", "MD5", DataType.RAWDATA, fileSize,
+                MimeType.valueOf("application/text"), aip, "file2.test", null);
+        df.addDataStorageUsed(onlineDataStorageConf);
+        df.addDataStorageUsed(nearlineDataStorageConf);
+        datafiles.add(df);
+        url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
+        urlNearline = new URL("file://PLOP/Node/file3.test");
+        df = new StorageDataFile(Sets.newHashSet(url, urlNearline), "3", "MD5", DataType.RAWDATA, fileSize,
+                MimeType.valueOf("application/text"), aip, "file3.test", null);
+        df.addDataStorageUsed(onlineDataStorageConf);
+        df.addDataStorageUsed(nearlineDataStorageConf);
         datafiles.add(df);
         dataFileDao.save(datafiles);
     }
@@ -765,19 +854,22 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         aipDao.save(aip);
         Set<StorageDataFile> datafiles = Sets.newHashSet();
         URL url = new URL("file://PLOP/Node/file10.test");
-        StorageDataFile df = new StorageDataFile(url, checksumPrefix + "10", "MD5", DataType.RAWDATA, fileSize,
-                                                 MimeType.valueOf("application/text"), aip, "file10.test");
-        df.setDataStorageUsed(nearLineConf);
+        StorageDataFile df = new StorageDataFile(Sets.newHashSet(url), checksumPrefix + "10", "MD5", DataType.RAWDATA,
+                fileSize, MimeType.valueOf("application/text"), aip, "file10.test", null);
+        df.addDataStorageUsed(nearlineDataStorageConf);
+        df.addDataStorageUsed(nearlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         url = new URL("file://PLOP/Node/file20.test");
-        df = new StorageDataFile(url, checksumPrefix + "20", "MD5", DataType.RAWDATA, fileSize,
-                                 MimeType.valueOf("application/text"), aip, "file20.test");
-        df.setDataStorageUsed(nearLineConf);
+        df = new StorageDataFile(Sets.newHashSet(url), checksumPrefix + "20", "MD5", DataType.RAWDATA, fileSize,
+                MimeType.valueOf("application/text"), aip, "file20.test", null);
+        df.addDataStorageUsed(nearlineDataStorageConf);
+        df.addDataStorageUsed(nearlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         url = new URL("file://PLOP/Node/file30.test");
-        df = new StorageDataFile(url, checksumPrefix + "30", "MD5", DataType.RAWDATA, fileSize,
-                                 MimeType.valueOf("application/text"), aip, "file30.test");
-        df.setDataStorageUsed(nearLineConf);
+        df = new StorageDataFile(Sets.newHashSet(url), checksumPrefix + "30", "MD5", DataType.RAWDATA, fileSize,
+                MimeType.valueOf("application/text"), aip, "file30.test", null);
+        df.addDataStorageUsed(nearlineDataStorageConf);
+        df.addDataStorageUsed(nearlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         dataFileDao.save(datafiles);
         return aip;
@@ -828,12 +920,33 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         jobInfoRepo.deleteAll();
         dataFileDao.deleteAll();
         aipDao.deleteAll();
+        prioritizedDataStorageRepository.deleteAll();
         pluginRepo.deleteAll();
         cachedFileRepository.deleteAll();
         if (baseStorageLocation != null) {
             Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
                     .forEach(File::delete);
         }
+    }
+
+    @Configuration
+    static class Config {
+
+        @Bean
+        public INotificationClient notificationClient() {
+            return Mockito.mock(INotificationClient.class);
+        }
+
+        @Bean
+        public ISearchClient searchClient() {
+            return Mockito.mock(ISearchClient.class);
+        }
+
+        @Bean
+        public IProjectUsersClient projectUsersClient() {
+            return Mockito.mock(IProjectUsersClient.class);
+        }
+
     }
 
 }

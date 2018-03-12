@@ -19,7 +19,6 @@ public interface IOnlineDataStorage<T extends IWorkingSubset> extends IDataStora
      * Do the retreive action for the given {@link StorageDataFile}
      * @param data StorageDataFile to retrieve
      */
-    //    OutputStream retrieve(T workingSubset, ProgressManager progressManager);
     InputStream retrieve(StorageDataFile data) throws IOException;
 
 }

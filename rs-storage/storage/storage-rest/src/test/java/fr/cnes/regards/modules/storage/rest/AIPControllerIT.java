@@ -76,6 +76,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.service.DataStorageEventHandler;
+import fr.cnes.regards.modules.storage.service.IPrioritizedDataStorageService;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -119,6 +120,9 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IAIPDao aipDao;
 
+    @Autowired
+    private IPrioritizedDataStorageService prioritizedDataStorageService;
+
     private URL baseStorageLocation;
 
     private AIP aip;
@@ -150,7 +154,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                       parameters,
                                                                       0);
         dataStorageConf.setIsActive(true);
-        pluginService.savePluginConfiguration(dataStorageConf);
+        prioritizedDataStorageService.create(dataStorageConf);
         // forth, lets configure a plugin for security checks
         pluginService.addPluginPackage(FakeSecurityDelegation.class.getPackage().getName());
         PluginMetaData catalogSecuDelegMeta = PluginUtils.createPluginMetaData(FakeSecurityDelegation.class,

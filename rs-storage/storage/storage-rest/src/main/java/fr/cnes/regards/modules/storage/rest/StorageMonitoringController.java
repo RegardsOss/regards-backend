@@ -31,7 +31,7 @@ public class StorageMonitoringController implements IResourceController<PluginSt
     /**
      * Controller base path
      */
-    public static final String PATH = "/storages/monitoring";
+    public static final String PATH = PrioritizedDataStorageController.BASE_PATH + "/monitoring";
 
     /**
      * {@link IDataStorageService} instance

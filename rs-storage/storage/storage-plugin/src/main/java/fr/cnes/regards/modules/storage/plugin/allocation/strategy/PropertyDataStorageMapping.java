@@ -1,3 +1,6 @@
+/*
+ * LICENSE_PLACEHOLDER
+ */
 package fr.cnes.regards.modules.storage.plugin.allocation.strategy;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -23,14 +26,16 @@ public class PropertyDataStorageMapping {
     /**
      * Value of the property into the aip
      */
-    @PluginParameter(name = PROPERTY_VALUE, description = "value of the property into the aip", label = "Property value")
+    @PluginParameter(name = PROPERTY_VALUE, description = "value of the property into the aip",
+            label = "Property value")
     private String propertyValue;
 
     /**
      * Plugin configuration id of the data storage to use if the property value in the aip correspond to the one provided
      */
     @PluginParameter(name = DATA_STORAGE_CONF_ID_PARAMETER_NAME,
-            description = "Configuration id of the data storage to use if the property value in the aip correspond to the one provided", label = "Data storage configuration id")
+            description = "Configuration id of the data storage to use if the property value in the aip correspond to the one provided",
+            label = "Data storage configuration id")
     private Long dataStorageConfId;
 
     /**
@@ -84,7 +89,7 @@ public class PropertyDataStorageMapping {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 

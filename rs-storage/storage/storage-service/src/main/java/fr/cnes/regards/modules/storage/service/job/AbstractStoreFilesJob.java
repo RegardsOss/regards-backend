@@ -3,23 +3,22 @@
  */
 package fr.cnes.regards.modules.storage.service.job;
 
-import java.awt.*;
+import java.awt.Dimension;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -108,12 +107,11 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
 
         // lets see if the plugin to use has been given through a plugin configuration.
         JobParameter pluginToUseId;
-        if (((pluginToUseId = parameters.get(PLUGIN_TO_USE_PARAMETER_NAME)) == null) || !(pluginToUseId
-                .getValue() instanceof Long)) {
-            JobParameterMissingException e = new JobParameterMissingException(String.format(PARAMETER_MISSING,
-                                                                                            this.getClass().getName(),
-                                                                                            Long.class.getName(),
-                                                                                            PLUGIN_TO_USE_PARAMETER_NAME));
+        if (((pluginToUseId = parameters.get(PLUGIN_TO_USE_PARAMETER_NAME)) == null)
+                || !(pluginToUseId.getValue() instanceof Long)) {
+            JobParameterMissingException e = new JobParameterMissingException(
+                    String.format(PARAMETER_MISSING, this.getClass().getName(), Long.class.getName(),
+                                  PLUGIN_TO_USE_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
@@ -124,32 +122,26 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         try {
             confToUse = pluginService.getPluginConfiguration(confId);
         } catch (ModuleException e) {
-            JobParameterInvalidException invalid = new JobParameterInvalidException(String.format(
-                    "Job %s: There is no plugin configuration with id: %s",
-                    this.getClass(),
-                    confId), e);
+            JobParameterInvalidException invalid = new JobParameterInvalidException(
+                    String.format("Job %s: There is no plugin configuration with id: %s", this.getClass(), confId), e);
             logger.error(invalid.getMessage(), invalid);
             throw invalid;
         }
         // now that we are sure there is a plugin configuration as parameter, lets check if its a plugin configuration
         // of IDataStorage.
         if (!confToUse.getInterfaceNames().contains(IDataStorage.class.getName())) {
-            JobParameterInvalidException e = new JobParameterInvalidException(String.format(PARAMETER_INVALID,
-                                                                                            this.getClass().getName(),
-                                                                                            IDataStorage.class.getName()
-                                                                                                    + " configuration",
-                                                                                            confId));
+            JobParameterInvalidException e = new JobParameterInvalidException(
+                    String.format(PARAMETER_INVALID, this.getClass().getName(),
+                                  IDataStorage.class.getName() + " configuration", confId));
             logger.error(e.getMessage(), e);
             throw e;
         }
         JobParameter workingSubSet;
-        if (((workingSubSet = parameters.get(WORKING_SUB_SET_PARAMETER_NAME)) == null) || !(workingSubSet
-                .getValue() instanceof IWorkingSubset)) {
-            JobParameterMissingException e = new JobParameterMissingException(String.format(PARAMETER_MISSING,
-                                                                                            this.getClass().getName(),
-                                                                                            IWorkingSubset.class
-                                                                                                    .getName(),
-                                                                                            WORKING_SUB_SET_PARAMETER_NAME));
+        if (((workingSubSet = parameters.get(WORKING_SUB_SET_PARAMETER_NAME)) == null)
+                || !(workingSubSet.getValue() instanceof IWorkingSubset)) {
+            JobParameterMissingException e = new JobParameterMissingException(
+                    String.format(PARAMETER_MISSING, this.getClass().getName(), IWorkingSubset.class.getName(),
+                                  WORKING_SUB_SET_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
@@ -164,7 +156,8 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        progressManager = new StorageJobProgressManager(publisher, this);
+        progressManager = new StorageJobProgressManager(publisher, this,
+                (Long) parameters.get(PLUGIN_TO_USE_PARAMETER_NAME).getValue());
         try {
             doRun(parameters);
         } catch (RuntimeException e) {
@@ -193,17 +186,17 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         IWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
         if (!handled.containsAll(workingSubset.getDataFiles())) {
             // not all data files have been handled, lets get the difference and make the not handled fail
-            Sets.SetView<StorageDataFile> notHandledFiles = Sets
-                    .difference(workingSubset.getDataFiles(), Sets.newHashSet(handled));
+            Sets.SetView<StorageDataFile> notHandledFiles = Sets.difference(workingSubset.getDataFiles(),
+                                                                            Sets.newHashSet(handled));
             for (StorageDataFile notHandled : notHandledFiles) {
                 handleNotHandledDataFile(notHandled);
             }
         }
         if (progressManager.isProcessError()) {
             // RuntimeException allows us to make the job fail and respect Runnable interface
-            throw new StorageException(String.format(FAILURE_CAUSES,
-                                                     progressManager.getFailureCauses().stream()
-                                                             .collect(Collectors.joining(", ", "[", " ]"))));
+            throw new StorageException(String
+                    .format(FAILURE_CAUSES,
+                            progressManager.getFailureCauses().stream().collect(Collectors.joining(", ", "[", " ]"))));
         }
     }
 
@@ -239,13 +232,8 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         }
         workingSubset.getDataFiles().removeAll(dataFilesNotToStore);
         try {
-            @SuppressWarnings("rawtypes") IDataStorage storagePlugin = pluginService.getPlugin(confIdToUse);
-            // before storage on file system, lets update the DataFiles by setting which data storage is used to storeAndCreate
-            // them.
-            PluginConfiguration storagePluginConf = pluginService.getPluginConfiguration(confIdToUse);
-            for (StorageDataFile data : workingSubset.getDataFiles()) {
-                data.setDataStorageUsed(storagePluginConf);
-            }
+            @SuppressWarnings("rawtypes")
+            IDataStorage storagePlugin = pluginService.getPlugin(confIdToUse);
             storagePlugin.store(workingSubset, replaceMode, progressManager);
         } catch (ModuleException e) {
             // throwing new runtime allows us to make the job fail.
@@ -256,31 +244,27 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     private void setQuicklookProperties(StorageDataFile storageDataFile) throws IOException, NoSuchAlgorithmException {
         // first to get the quicklook properties(height and width), we need to download it.
         // unless it is already on filesystem
-        URL dataFileUrl = storageDataFile.getUrl();
-        if (!dataFileUrl.getProtocol().equals("file")) {
+        Optional<URL> dataFileUrlOpt = storageDataFile.getUrls().stream()
+                .filter(url -> url.getProtocol().equals("file")).findAny();
+        if (!dataFileUrlOpt.isPresent()) {
             Path destination = Paths.get(getWorkspace().toString(), storageDataFile.getName());
             URL newURL = new URL("file", "", destination.toString());
-            boolean downloadOk = DownloadUtils.downloadAndCheckChecksum(dataFileUrl,
-                                                                        destination,
-                                                                        storageDataFile.getAlgorithm(),
+            boolean downloadOk = DownloadUtils.downloadAndCheckChecksum(storageDataFile.getUrls().iterator().next(),
+                                                                        destination, storageDataFile.getAlgorithm(),
                                                                         storageDataFile.getChecksum());
             if (!downloadOk) {
                 String errorMsg = "Download of distant quicklook failed, dimensions cannot be set.";
                 logger.error(errorMsg);
                 throw new IOException(errorMsg);
             }
-            storageDataFile.setUrl(newURL);
+            storageDataFile.setUrls(Sets.newHashSet(newURL));
         }
         // then we can get the dimensions
-        try {
-            Dimension dimension = CommonFileUtils
-                    .getImageDimension(Paths.get(storageDataFile.getUrl().toURI()).toFile());
-            storageDataFile.setHeight(((Number) dimension.getHeight()).intValue());
-            storageDataFile.setWidth(((Number) dimension.getWidth()).intValue());
-        } catch (URISyntaxException e) {
-            //this cannot happen as data files are validated before the job
-            logger.error(e.getMessage(), e);
-        }
+        Path filePath = Paths.get(storageDataFile.getUrls().stream().filter(url -> url.getProtocol().equals("file"))
+                .findAny().get().getPath());
+        Dimension dimension = CommonFileUtils.getImageDimension(filePath.toFile());
+        storageDataFile.setHeight(((Number) dimension.getHeight()).intValue());
+        storageDataFile.setWidth(((Number) dimension.getWidth()).intValue());
     }
 
     @Override

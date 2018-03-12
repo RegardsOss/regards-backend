@@ -3,13 +3,12 @@ package fr.cnes.regards.modules.storage.domain;
 import java.net.URL;
 import java.util.Objects;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * DTO used to extract public useful information about files of an aip. To get instances of this class use {@link DataFileDto#fromDataFile(StorageDataFile)}.
@@ -63,6 +62,12 @@ public class DataFileDto {
     private Integer width;
 
     /**
+     * Default constructor
+     */
+    public DataFileDto() {
+    }
+
+    /**
      * Transform a {@link StorageDataFile} to a {@link DataFileDto}.
      * @param dataFile origin data file
      * @return dto
@@ -71,8 +76,8 @@ public class DataFileDto {
         if (dataFile.getState() != DataFileState.STORED) {
             throw new IllegalArgumentException("DataFileDto cannot be created unless the data file is already stored");
         }
+        // URL is to be set by the controller, because it is the public url of this file!
         DataFileDto dto = new DataFileDto();
-        dto.url = dataFile.getUrl();
         dto.name = dataFile.getName();
         dto.checksum = dataFile.getChecksum();
         dto.algorithm = dataFile.getAlgorithm();
@@ -82,16 +87,13 @@ public class DataFileDto {
         dto.height = dataFile.getHeight();
         dto.width = dataFile.getWidth();
         // lets compute the online attribute
-        if (dataFile.getDataStorageUsed().getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
+        if (dataFile.getPrioritizedDataStorages().stream()
+                .filter(dataStorage -> dataStorage.getDataStorageType().equals(DataStorageType.ONLINE))
+                .findFirst().isPresent()) {
             dto.setOnline(true);
         }
         return dto;
     }
-
-    /**
-     * Default constructor
-     */
-    public DataFileDto() {}
 
     /**
      * @return the url
