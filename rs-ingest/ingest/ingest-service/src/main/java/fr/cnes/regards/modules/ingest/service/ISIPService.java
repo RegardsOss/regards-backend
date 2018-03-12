@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.storage.domain.RejectedSip;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
@@ -70,7 +71,7 @@ public interface ISIPService {
      * @return rejected or undeletable {@link SIPEntity}s
      * @throws EntityNotFoundException
      */
-    Collection<SIPEntity> deleteSIPEntitiesByIpIds(Collection<String> ipIds) throws ModuleException;
+    Collection<RejectedSip> deleteSIPEntitiesByIpIds(Collection<String> ipIds) throws ModuleException;
 
     /**
      * Delete all {@link SIPEntity} for the given sipId
@@ -78,7 +79,7 @@ public interface ISIPService {
      * @return rejected or undeletable {@link SIPEntity}s
      * @throws ModuleException
      */
-    Collection<SIPEntity> deleteSIPEntitiesForSipId(String sipId) throws ModuleException;
+    Collection<RejectedSip> deleteSIPEntitiesForSipId(String sipId) throws ModuleException;
 
     /**
      * Delete all {@link SIPEntity}s associated to the given session.
@@ -86,7 +87,7 @@ public interface ISIPService {
      * @return rejected or undeletable {@link SIPEntity}s
      * @throws ModuleException
      */
-    Collection<SIPEntity> deleteSIPEntitiesForSessionId(String sessionId) throws ModuleException;
+    Collection<RejectedSip> deleteSIPEntitiesForSessionId(String sessionId) throws ModuleException;
 
     /**
      * Delete all {@link SIPEntity}s.
@@ -94,7 +95,7 @@ public interface ISIPService {
      * @return rejected or undeletable {@link SIPEntity}s
      * @throws ModuleException
      */
-    Collection<SIPEntity> deleteSIPEntities(Collection<SIPEntity> sips) throws ModuleException;
+    Collection<RejectedSip> deleteSIPEntities(Collection<SIPEntity> sips) throws ModuleException;
 
     /**
      * Check if the SIP with the given ipId is deletable
