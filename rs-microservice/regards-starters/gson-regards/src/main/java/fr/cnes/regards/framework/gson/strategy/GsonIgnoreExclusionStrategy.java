@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
+
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 
 /**
@@ -36,10 +37,7 @@ import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
  */
 public class GsonIgnoreExclusionStrategy implements ExclusionStrategy {
 
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(GsonIgnoreExclusionStrategy.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GsonIgnoreExclusionStrategy.class);
 
     /**
      * Type to skip
@@ -63,8 +61,8 @@ public class GsonIgnoreExclusionStrategy implements ExclusionStrategy {
     public boolean shouldSkipField(FieldAttributes pFieldAttributes) {
         final boolean isSkipped = pFieldAttributes.getAnnotation(GsonIgnore.class) != null;
         if (isSkipped) {
-            LOG.debug(String.format("Skipping field %s in class %s.", pFieldAttributes.getName(),
-                                    pFieldAttributes.getClass()));
+            LOGGER.debug(String.format("Skipping field %s in class %s.", pFieldAttributes.getName(),
+                                       pFieldAttributes.getClass()));
         }
         return isSkipped;
     }

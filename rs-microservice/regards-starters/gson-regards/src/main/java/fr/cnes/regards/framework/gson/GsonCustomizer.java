@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.gson;
 
+import java.lang.annotation.Annotation;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Map;
@@ -32,6 +33,7 @@ import com.google.common.collect.Multimap;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
+
 import fr.cnes.regards.framework.gson.adapters.MimeTypeAdapter;
 import fr.cnes.regards.framework.gson.adapters.MultimapAdapter;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
@@ -41,6 +43,7 @@ import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterBean;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactoryBean;
 import fr.cnes.regards.framework.gson.strategy.GsonIgnoreExclusionStrategy;
+import fr.cnes.regards.framework.gson.strategy.SerializationExclusionStrategy;
 
 /**
  * Static Gson customizer
@@ -72,6 +75,11 @@ public final class GsonCustomizer {
         builder.registerTypeAdapter(MimeType.class, new MimeTypeAdapter().nullSafe());
         builder.registerTypeHierarchyAdapter(Multimap.class, new MultimapAdapter());
         builder.addSerializationExclusionStrategy(new GsonIgnoreExclusionStrategy());
+    }
+
+    public static <T extends Annotation> void withSerializationExclusionStrategy(GsonBuilder builder,
+            SerializationExclusionStrategy<T> strategy) {
+        builder.addSerializationExclusionStrategy(strategy);
     }
 
     /**
