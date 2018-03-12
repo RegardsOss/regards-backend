@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.modules.workspace.service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
@@ -28,11 +29,14 @@ import java.security.NoSuchAlgorithmException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
+import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 
 /**
@@ -47,13 +51,15 @@ public class WorkspaceServiceIT extends AbstractRegardsServiceIT {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private IWorkspaceNotifier notifier;
+
     @Test
     public void testSetIntoWorkspace() throws IOException {
         Path src = Paths.get("src", "test", "resources", "test.txt");
         InputStream is = Files.newInputStream(src);
         workspaceService.setIntoWorkspace(is, "test.txt");
-        Path pathInWS = Paths.get(workspaceService.getMicroserviceWorkspace().toString(),
-                                  runtimeTenantResolver.getTenant(), "test.txt");
+        Path pathInWS = Paths.get(workspaceService.getMicroserviceWorkspace().toString(), "test.txt");
         Assert.assertTrue(Files.exists(pathInWS));
     }
 
@@ -69,9 +75,25 @@ public class WorkspaceServiceIT extends AbstractRegardsServiceIT {
         Assert.assertEquals(srcChecksum, wsChecksum);
     }
 
+    @Test(expected = UnsupportedOperationException.class)
+    @Requirement("REGARDS_DSL_ING_CMP_010")
+    @Requirement("REGARDS_DSL_ING_CMP_020")
+    @Requirement("REGARDS_DSL_ING_CMP_030")
+    public void testMonitor() {
+        IWorkspaceNotifier spiedNotifier = Mockito.spy(notifier);
+        workspaceService.monitor(DEFAULT_TENANT);
+        Mockito.verify(spiedNotifier, Mockito.times(1))
+                .sendErrorNotification(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+        Assert.assertTrue(MaintenanceManager.getMaintenance(DEFAULT_TENANT));
+    }
+
     @After
     public void cleanUp() throws IOException {
-        Files.walk(workspaceService.getMicroserviceWorkspace()).forEach(p -> p.toFile().delete());
+        try {
+            Files.walk(workspaceService.getMicroserviceWorkspace()).forEach(p -> p.toFile().delete());
+        } catch (NoSuchFileException e) {
+            // we don't care
+        }
     }
 
 }

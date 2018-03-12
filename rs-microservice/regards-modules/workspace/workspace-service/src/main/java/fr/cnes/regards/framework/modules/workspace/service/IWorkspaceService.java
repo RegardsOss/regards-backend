@@ -82,4 +82,6 @@ public interface IWorkspaceService {
      * @return the path of the given file in the workspace of the current tenant
      */
     Path getFilePath(String fileName);
+
+    void monitor(String tenant);
 }

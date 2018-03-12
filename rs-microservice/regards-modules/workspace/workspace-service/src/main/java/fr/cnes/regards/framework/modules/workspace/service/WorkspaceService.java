@@ -174,7 +174,8 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
         }
     }
 
-    private void monitor(String tenant) {
+    @Override
+    public void monitor(String tenant) {
         try {
             WorkspaceMonitoringInformation workspaceMonitoringInfo = getMonitoringInformation(getTenantWorkspace());
             if (workspaceMonitoringInfo.getOccupationRatio() > workspaceOccupationThreshold) {
