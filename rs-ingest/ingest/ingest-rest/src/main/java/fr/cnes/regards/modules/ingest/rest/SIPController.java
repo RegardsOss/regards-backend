@@ -59,6 +59,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
+import fr.cnes.regards.modules.storage.domain.RejectedSip;
 
 /**
  * This controller manages SIP submission API.
@@ -158,16 +159,14 @@ public class SIPController implements IResourceController<SIPEntity> {
 
     @ResourceAccess(description = "Delete one SIP by is sipId.")
     @RequestMapping(method = RequestMethod.DELETE)
-    public ResponseEntity<Void> deleteSipEntityBySipId(@RequestParam("sipId") String sipId) throws ModuleException {
-        sipService.deleteSIPEntitiesForSipId(sipId);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<Collection<RejectedSip>> deleteSipEntityBySipId(@RequestParam("sipId") String sipId) throws ModuleException {
+        return new ResponseEntity<>(sipService.deleteSIPEntitiesForSipId(sipId), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Delete one SIP by is sipId.")
     @RequestMapping(value = IPID_PATH, method = RequestMethod.DELETE)
-    public ResponseEntity<Void> deleteSipEntity(@PathVariable("ipId") String sipId) throws ModuleException {
-        sipService.deleteSIPEntitiesByIpIds(Sets.newHashSet(sipId));
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<Collection<RejectedSip>> deleteSipEntity(@PathVariable("ipId") String sipId) throws ModuleException {
+        return new ResponseEntity<>(sipService.deleteSIPEntitiesByIpIds(Sets.newHashSet(sipId)), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Retry SIP ingestion by is ipId.")

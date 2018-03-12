@@ -329,7 +329,7 @@ public class SIPServiceTest extends AbstractSIPTest {
     @Test
     public void deleteSession() throws ModuleException {
         // Delete by session id
-        Collection<SIPEntity> rejectedSips = sipService.deleteSIPEntitiesForSessionId(COMPLEX_SESSION_ID);
+        Collection<RejectedSip> rejectedSips = sipService.deleteSIPEntitiesForSessionId(COMPLEX_SESSION_ID);
         // 2 SIP per state in COMPLEX_SESSION_ID.
         // Undeletable are QUEUED, VALID, DELETED
         Assert.assertEquals(6, rejectedSips.size());

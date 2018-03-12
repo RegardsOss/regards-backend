@@ -129,8 +129,9 @@ public class AIPService implements IAIPService {
                 List<RejectedAip> rejectedAips = gson.fromJson(e.getResponseBodyAsString(), bodyTypeToken.getType());
                 // set all aips to store_rejected
                 rejectedAips.forEach(rejectedAip -> rejectAip(rejectedAip.getIpId(), rejectedAip.getRejectionCauses()));
+            }finally {
+                FeignSecurityManager.reset();
             }
-            FeignSecurityManager.reset();
             if ((response != null) && (response.getStatusCode().is2xxSuccessful())) {
                 List<RejectedAip> rejectedAips = response.getBody();
                 // If there is rejected aips, remove them from the list of AIPEntity to set to QUEUED status.
