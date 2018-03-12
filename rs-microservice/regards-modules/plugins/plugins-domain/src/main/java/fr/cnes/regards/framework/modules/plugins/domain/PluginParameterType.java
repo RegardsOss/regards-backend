@@ -54,6 +54,11 @@ public class PluginParameterType {
     private String description;
 
     /**
+     * The parameter markdown description, an optional detailed human readable description.
+     */
+    private String markdown;
+
+    /**
      * The JAVA parameter's type
      */
     private String type;
@@ -210,6 +215,14 @@ public class PluginParameterType {
     public void setKeyLabel(String keyLabel) {
         Assert.hasText(keyLabel, "Key label is required");
         this.keyLabel = keyLabel;
+    }
+
+    public String getMarkdown() {
+        return markdown;
+    }
+
+    public void setMarkdown(String markdown) {
+        this.markdown = markdown;
     }
 
     /**

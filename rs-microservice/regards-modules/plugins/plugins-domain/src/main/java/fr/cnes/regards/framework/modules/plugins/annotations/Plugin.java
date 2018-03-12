@@ -50,6 +50,15 @@ public @interface Plugin {
     String description();
 
     /**
+     * Markdown file reference ending with .md extension. If not, information is skipped! If set, file must be available
+     * in the
+     * same package as the plugin.<br/>
+     * The system uses {@link Class#getResourceAsStream(String)} to load the file.
+     * @return
+     */
+    String markdown() default "";
+
+    /**
      * Version of the plugin. Use to check if the plugin changed
      *
      * @return the plugin's version

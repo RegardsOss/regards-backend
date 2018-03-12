@@ -19,9 +19,6 @@
 
 package fr.cnes.regards.framework.utils.plugins;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -58,13 +55,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType.Para
 public final class PluginParameterUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginParameterUtils.class);
-
-    /**
-     * Markdown extension available for plugin parameter description
-     */
-    private static final String MARKDOWN_EXTENSION = ".md";
-
-    private static final String END_LINE = "\n";
 
     /**
      * Retrieve {@link List} of {@link PluginParameterType} by reflection on class fields
@@ -142,11 +132,14 @@ public final class PluginParameterUtils {
             // Report values from annotation
             String name = getFieldName(field, pluginParameter);
 
-            // Manage description (text or markdown)
-            String description = getParameterDescription(pluginClass, pluginParameter.description());
+            result = PluginParameterType.create(name, pluginParameter.label(), pluginParameter.description(),
+                                                field.getType(), paramType, pluginParameter.optional());
 
-            result = PluginParameterType.create(name, pluginParameter.label(), description, field.getType(), paramType,
-                                                pluginParameter.optional());
+            // Manage markdown description
+            String markdown = AnnotationUtils.loadMarkdown(pluginClass, pluginParameter.markdown());
+            result.setMarkdown(markdown);
+
+            // Manage default value
             if ((pluginParameter.defaultValue() != null) && !pluginParameter.defaultValue().isEmpty()) {
                 result.setDefaultValue(pluginParameter.defaultValue());
             }
@@ -187,46 +180,6 @@ public final class PluginParameterUtils {
             tryPropagatingDiscovery(field.getType(), valueType, prefixes, alreadyManagedTypeNames, result);
         }
         return result;
-    }
-
-    private static String getParameterDescription(Class<?> pluginClass, String description) {
-        if ((description != null) && !description.isEmpty() && description.endsWith(MARKDOWN_EXTENSION)) {
-            // Try to load markdown description
-            // JDK 8 implementation does not work with ubber jar at the moment
-            // try {
-            // URL url = pluginClass.getResource(description);
-            // if (url != null) {
-            // URI uri = url.toURI();
-            // Path path = Paths.get(uri);
-            // StringBuilder data = new StringBuilder();
-            // Stream<String> lines = Files.lines(path);
-            // lines.forEach(line -> data.append(line).append(END_LINE));
-            // lines.close();
-            // return data.toString().trim();
-            // }
-            // } catch (URISyntaxException | IOException e) {
-            // LOGGER.warn("Markdown description cannot be loaded", e);
-            // // Fall back to raw description
-            // // Nothing to do
-            // }
-            // Alternative implementation
-            try {
-                StringBuilder data = new StringBuilder();
-                try (BufferedReader br = new BufferedReader(
-                        new InputStreamReader(pluginClass.getResourceAsStream(description)))) {
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        data.append(line).append(END_LINE);
-                    }
-                }
-                return data.toString().trim();
-            } catch (IOException e) {
-                LOGGER.warn("Markdown description cannot be loaded", e);
-                // Fall back to raw description
-                // Nothing to do
-            }
-        }
-        return description;
     }
 
     /**

@@ -29,8 +29,11 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterUtils.PrimitiveObject;
@@ -45,12 +48,11 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
  */
 public class PluginUtilsTest extends PluginUtilsTestConstants {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginUtilsTest.class);
 
     private static final String PLUGIN_PACKAGE = "fr.cnes.regards.framework.utils.plugins.basic";
+
+    private final Gson gson = new Gson();
 
     /**
      * Load all plugins
@@ -80,6 +82,20 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         Assert.assertNotNull(pluginMetaData.getLicence());
 
         LOGGER.debug(ENDING + toString());
+    }
+
+    @Test
+    public void testMarkdownMetadata() {
+        PluginMetaData mtd = PluginUtils.createPluginMetaData(SamplePlugin.class,
+                                                              SamplePlugin.class.getPackage().getName());
+        Assert.assertNotNull(mtd);
+        Assert.assertTrue((mtd.getMarkdown() != null) && !mtd.getMarkdown().isEmpty());
+        for (PluginParameterType ptype : mtd.getParameters()) {
+            if (SamplePlugin.FIELD_NAME_SUFFIX.equals(ptype.getName())) {
+                Assert.assertTrue((ptype.getMarkdown() != null) && !ptype.getMarkdown().isEmpty());
+            }
+        }
+        LOGGER.debug(gson.toJson(mtd));
     }
 
     /**

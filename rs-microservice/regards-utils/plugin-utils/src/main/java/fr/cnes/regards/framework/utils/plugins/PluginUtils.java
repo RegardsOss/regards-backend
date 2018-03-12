@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginDestroy;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
@@ -151,13 +152,18 @@ public final class PluginUtils {
      */
     public static PluginMetaData createPluginMetaData(final Class<?> pluginClass, final List<String> prefixes) {
         // Get implementation associated annotations
-        final Plugin plugin = pluginClass.getAnnotation(Plugin.class);
+        Plugin plugin = pluginClass.getAnnotation(Plugin.class);
 
         // Init plugin metadata
-        final PluginMetaData pluginMetaData = new PluginMetaData(plugin);
+        PluginMetaData pluginMetaData = new PluginMetaData(plugin);
+
+        // Manage markdown description
+        String markdown = AnnotationUtils.loadMarkdown(pluginClass, plugin.markdown());
+        pluginMetaData.setMarkdown(markdown);
+
         pluginMetaData.setPluginClassName(pluginClass.getCanonicalName());
 
-        // Search the plugin type of the plugin class : ie the interface has the @PluginInterface annotation
+        // Search the plugin type of the plugin class : i.e. the interface has the @PluginInterface annotation
         final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(prefixes);
         List<String> types = new ArrayList<>(); // FIXME: is really used?
 
@@ -193,7 +199,8 @@ public final class PluginUtils {
     public static <T> T getPlugin(PluginConfiguration pluginConf, PluginMetaData pluginMetadata,
             IPluginUtilsBean pluginUtilsBean, List<String> prefixes, Map<Long, Object> instantiatedPluginMap,
             PluginParameter... dynamicPluginParameters) {
-        return PluginUtils.getPlugin(pluginConf, pluginMetadata, prefixes, instantiatedPluginMap, dynamicPluginParameters);
+        return PluginUtils.getPlugin(pluginConf, pluginMetadata, prefixes, instantiatedPluginMap,
+                                     dynamicPluginParameters);
     }
 
     /**
@@ -252,8 +259,7 @@ public final class PluginUtils {
     public static <T> T getPlugin(List<PluginParameter> parameters, Class<T> pluginClass,
             IPluginUtilsBean pluginUtilsBean, List<String> prefixes, Map<Long, Object> instantiatedPluginMap,
             PluginParameter... pluginParameters) {
-        return PluginUtils.getPlugin(parameters, pluginClass, prefixes, instantiatedPluginMap,
-                                     pluginParameters);
+        return PluginUtils.getPlugin(parameters, pluginClass, prefixes, instantiatedPluginMap, pluginParameters);
     }
 
     /**
