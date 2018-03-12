@@ -151,17 +151,25 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     }
 
     @Override
-    public Path getMicroserviceWorkspace() {
-        return Paths.get(workspaceBasePath, runtimeTenantResolver.getTenant(), springApplicationName);
+    public Path getMicroserviceWorkspace() throws IOException {
+        Path path = Paths.get(workspaceBasePath, runtimeTenantResolver.getTenant(), springApplicationName);
+        if (Files.notExists(path)) {
+            Files.createDirectories(path);
+        }
+        return path;
     }
 
     @Override
-    public Path getTenantWorkspace() {
-        return Paths.get(workspaceBasePath, runtimeTenantResolver.getTenant());
+    public Path getTenantWorkspace() throws IOException {
+        Path path =Paths.get(workspaceBasePath, runtimeTenantResolver.getTenant());
+        if (Files.notExists(path)) {
+            Files.createDirectories(path);
+        }
+        return path;
     }
 
     @Override
-    public Path getFilePath(String fileName) {
+    public Path getFilePath(String fileName) throws IOException {
         return Paths.get(getMicroserviceWorkspace().toString(), fileName);
     }
 

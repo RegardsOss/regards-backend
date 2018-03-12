@@ -72,16 +72,16 @@ public interface IWorkspaceService {
     /**
      * Allows to get the current workspace path.
      */
-    Path getMicroserviceWorkspace();
+    Path getMicroserviceWorkspace() throws IOException;
 
-    Path getTenantWorkspace();
+    Path getTenantWorkspace() throws IOException;
 
     /**
      * Allows to get the path of the given file in the workspace of the current tenant.
      * @param fileName
      * @return the path of the given file in the workspace of the current tenant
      */
-    Path getFilePath(String fileName);
+    Path getFilePath(String fileName) throws IOException;
 
     void monitor(String tenant);
 }
