@@ -315,7 +315,7 @@ public class AIPController implements IResourceController<AIP> {
      */
     @RequestMapping(method = RequestMethod.DELETE)
     @ResponseBody
-    @ResourceAccess(description = "delete AIPs associated to the given SIP, given threw its ip id")
+    @ResourceAccess(description = "delete AIPs associated to the given SIP, given threw its ip id", role = DefaultRole.ADMIN)
     public ResponseEntity<List<RejectedSip>> deleteAipFromSips(@RequestParam("sip_ip_id") Set<String> sipIpIds)
             throws ModuleException {
         List<RejectedSip> notHandledSips = Lists.newArrayList();
@@ -441,7 +441,7 @@ public class AIPController implements IResourceController<AIP> {
      * Delete an aip, represented by its ip id
      */
     @RequestMapping(value = ID_PATH, method = RequestMethod.DELETE)
-    @ResourceAccess(description = "allow to update a given aip metadata", role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "allow to delete a given aip", role = DefaultRole.ADMIN)
     @ResponseBody
     public ResponseEntity<String> deleteAip(@PathVariable(name = "ip_id") String ipId) throws ModuleException {
         Set<StorageDataFile> notSuppressible = aipService.deleteAip(ipId);
