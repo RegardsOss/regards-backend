@@ -52,12 +52,25 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>multitenant-regards-starter</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>microservice-regards</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>amqp-regards-starter</artifactId>
+		</dependency>
 		<!-- to get access to default role -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-config</artifactId>
 		</dependency>
 		<!-- Test dependencies -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-regards-starter</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>

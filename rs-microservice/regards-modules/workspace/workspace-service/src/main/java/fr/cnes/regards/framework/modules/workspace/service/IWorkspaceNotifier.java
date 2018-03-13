@@ -35,4 +35,13 @@ public interface IWorkspaceNotifier {
      * @param role
      */
     void sendErrorNotification(String sender, String message, String title, DefaultRole role);
+
+    /**
+     * Send a warning notification from the given parameters
+     * @param sender
+     * @param message
+     * @param title
+     * @param role
+     */
+    void sendWarningNotification(String sender, String message, String title, DefaultRole role);
 }
