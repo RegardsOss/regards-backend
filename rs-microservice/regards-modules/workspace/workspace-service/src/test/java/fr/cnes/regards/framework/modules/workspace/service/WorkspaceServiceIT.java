@@ -75,7 +75,7 @@ public class WorkspaceServiceIT extends AbstractRegardsServiceIT {
         Assert.assertEquals(srcChecksum, wsChecksum);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = UnsupportedOperationException.class) // because of default workspace notifier implementation
     @Requirement("REGARDS_DSL_ING_CMP_010")
     @Requirement("REGARDS_DSL_ING_CMP_020")
     @Requirement("REGARDS_DSL_ING_CMP_030")
