@@ -463,6 +463,11 @@
                 <artifactId>workspace-rest</artifactId>
                 <version>${fr.cnes.regards.framework.modules.workspace.version}</version>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.workspace</groupId>
+                <artifactId>workspace-project-notifier</artifactId>
+                <version>${fr.cnes.regards.framework.modules.workspace.version}</version>
+            </dependency>
             <!-- Regards Plugins -->
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
