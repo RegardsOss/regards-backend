@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.dataaccess.client.IAccessRightClient;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
@@ -76,6 +77,8 @@ public class CatalogSearchServiceTest {
      */
     private IAccessRightFilter accessRightFilter;
 
+    private IAccessRightClient accessRightClient;
+
     /**
      * Service perfoming the ElasticSearch search
      */
@@ -100,6 +103,7 @@ public class CatalogSearchServiceTest {
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         resourceService = Mockito.mock(IResourceService.class);
         facetConverter = Mockito.mock(IFacetConverter.class);
+        accessRightClient = Mockito.mock(IAccessRightClient.class);
 
         Mockito.when(facetConverter.convert(SampleDataUtils.QUERY_FACETS)).thenReturn(SampleDataUtils.FACETS);
 
@@ -112,7 +116,7 @@ public class CatalogSearchServiceTest {
 
         // Instanciate the tested class
         catalogSearchService = new CatalogSearchService(searchService, openSearchService, accessRightFilter,
-                facetConverter);
+                facetConverter, accessRightClient);
     }
 
     /**
