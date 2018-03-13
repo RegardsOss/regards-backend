@@ -340,13 +340,16 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                           Files.exists(Paths.get(oldDataFile.get().getUrls().iterator().next().toURI())));
         // now lets launch the method without scheduling
         aipService.updateAlreadyStoredMetadata();
-
+        Set<UUID> jobIds = Streams.stream(jobInfoRepo.findAll())
+                .filter(jobInfo -> jobInfo.getStatus().equals(JobStatus.QUEUED) || jobInfo.getStatus()
+                        .equals(JobStatus.TO_BE_RUN) || jobInfo.getStatus().equals(JobStatus.RUNNING)).map(JobInfo::getId)
+                .collect(Collectors.toSet());
         // Here the AIP should be in STORING_METADATA state
         AIP newAIP = aipDao.findOneByIpId(aip.getId().toString()).get();
         Assert.assertTrue("AIP should be in storing metadata state",
                           newAIP.getState().equals(AIPState.STORING_METADATA));
         int count = 0;
-        while (Files.exists(Paths.get(oldDataFile.get().getUrls().iterator().next().toURI())) && (count < 40)) {
+        while (handler.getJobSucceeds().containsAll(jobIds) && (count < 40)) {
             Thread.sleep(1000);
             count++;
         }
