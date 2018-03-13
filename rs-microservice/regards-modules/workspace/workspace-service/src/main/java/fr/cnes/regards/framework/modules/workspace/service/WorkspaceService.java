@@ -95,8 +95,14 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     /**
      * The workspace occupation threshold at which point notification should be sent
      */
-    @Value("${regards.workspace.occupation.threshold:90}")
+    @Value("${regards.workspace.critical.occupation.threshold:70}")
     private Integer workspaceOccupationThreshold;
+
+    /**
+     * The workspace critical occupation threshold at which point notification should be sent and projet set to maintenance
+     */
+    @Value("${regards.workspace.critical.occupation.threshold:90}")
+    private Integer workspaceCriticalOccupationThreshold;
 
     /**
      * the spring application name
@@ -161,7 +167,7 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
 
     @Override
     public Path getTenantWorkspace() throws IOException {
-        Path path =Paths.get(workspaceBasePath, runtimeTenantResolver.getTenant());
+        Path path = Paths.get(workspaceBasePath, runtimeTenantResolver.getTenant());
         if (Files.notExists(path)) {
             Files.createDirectories(path);
         }
@@ -186,17 +192,33 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     public void monitor(String tenant) {
         try {
             WorkspaceMonitoringInformation workspaceMonitoringInfo = getMonitoringInformation(getTenantWorkspace());
-            if (workspaceMonitoringInfo.getOccupationRatio() > workspaceOccupationThreshold) {
-                String message = String.format("Workspace(%s) is too busy. Occupation is %s which is greater than %s",
-                                               workspaceMonitoringInfo.getPath(),
-                                               workspaceMonitoringInfo.getOccupationRatio().toString(),
-                                               workspaceOccupationThreshold.toString());
+            if (workspaceMonitoringInfo.getOccupationRatio() > workspaceCriticalOccupationThreshold) {
+                String message = String.format(
+                        "Workspace(%s) occupation is critical. Occupation is %s which is greater than %s(critical threshold). Project(%s) is being set to maintenance mode!",
+                        workspaceMonitoringInfo.getPath(),
+                        workspaceMonitoringInfo.getOccupationRatio().toString(),
+                        workspaceCriticalOccupationThreshold.toString(),
+                        tenant);
                 LOG.warn(message);
                 MaintenanceManager.setMaintenance(tenant);
                 notifier.sendErrorNotification(springApplicationName,
                                                message,
+                                               "Workspace occupation is critical",
+                                               DefaultRole.PROJECT_ADMIN);
+                return;
+            }
+            if (workspaceMonitoringInfo.getOccupationRatio() > workspaceOccupationThreshold) {
+                String message = String.format(
+                        "Workspace(%s) starts to be busy. Occupation is %s which is greater than %s(soft threshold).",
+                        workspaceMonitoringInfo.getPath(),
+                        workspaceMonitoringInfo.getOccupationRatio().toString(),
+                        workspaceCriticalOccupationThreshold.toString());
+                LOG.warn(message);
+                notifier.sendWarningNotification(springApplicationName,
+                                               message,
                                                "Workspace too busy",
                                                DefaultRole.PROJECT_ADMIN);
+                return;
             }
         } catch (IOException e) {
             String message = String.format("Error occured during workspace monitoring: %s", e.getMessage());
