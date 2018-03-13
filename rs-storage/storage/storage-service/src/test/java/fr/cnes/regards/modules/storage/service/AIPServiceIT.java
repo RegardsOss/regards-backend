@@ -341,15 +341,15 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // now lets launch the method without scheduling
         aipService.updateAlreadyStoredMetadata();
         Set<UUID> jobIds = Streams.stream(jobInfoRepo.findAll())
-                .filter(jobInfo -> jobInfo.getStatus().equals(JobStatus.QUEUED) || jobInfo.getStatus()
-                        .equals(JobStatus.TO_BE_RUN) || jobInfo.getStatus().equals(JobStatus.RUNNING)).map(JobInfo::getId)
+                .filter(jobInfo -> jobInfo.getStatus().getStatus().equals(JobStatus.QUEUED) || jobInfo.getStatus().getStatus()
+                        .equals(JobStatus.TO_BE_RUN) || jobInfo.getStatus().getStatus().equals(JobStatus.RUNNING)).map(JobInfo::getId)
                 .collect(Collectors.toSet());
         // Here the AIP should be in STORING_METADATA state
         AIP newAIP = aipDao.findOneByIpId(aip.getId().toString()).get();
         Assert.assertTrue("AIP should be in storing metadata state",
                           newAIP.getState().equals(AIPState.STORING_METADATA));
         int count = 0;
-        while (handler.getJobSucceeds().containsAll(jobIds) && (count < 40)) {
+        while (!handler.getJobSucceeds().containsAll(jobIds) && (count < 40)) {
             Thread.sleep(1000);
             count++;
         }
@@ -378,8 +378,8 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(aip);
         aipService.deleteAip(aipIpId);
         Set<UUID> jobIds = Streams.stream(jobInfoRepo.findAll())
-                .filter(jobInfo -> jobInfo.getStatus().equals(JobStatus.QUEUED) || jobInfo.getStatus()
-                        .equals(JobStatus.TO_BE_RUN) || jobInfo.getStatus().equals(JobStatus.RUNNING)).map(JobInfo::getId)
+                .filter(jobInfo -> jobInfo.getStatus().getStatus().equals(JobStatus.QUEUED) || jobInfo.getStatus().getStatus()
+                        .equals(JobStatus.TO_BE_RUN) || jobInfo.getStatus().getStatus().equals(JobStatus.RUNNING)).map(JobInfo::getId)
                 .collect(Collectors.toSet());
         aip = aipDao.findOneByIpId(aipIpId).get();
         Assert.assertEquals("AIP state should be DELETED now", AIPState.DELETED, aip.getState());
