@@ -45,6 +45,7 @@
 		<module>local-authorities-provider</module>
 		<module>remote-tenant-resolver</module>
 		<module>remote-authorities-provider</module>
+		<module>workspace-project-notifier</module>
 	</modules>
 
 </project>
