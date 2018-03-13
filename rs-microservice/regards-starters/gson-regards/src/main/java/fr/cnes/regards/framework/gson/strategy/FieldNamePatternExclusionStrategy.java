@@ -16,30 +16,35 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.cnes.regards.framework.gson.strategy;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 
 /**
- *
- * Class GsonIgnore
- *
- * @author Christophe Mertz
+ * Field exclusion strategy by name pattern
+ * @author Marc Sordi *
  */
-package fr.cnes.regards.framework.gson.annotation;
+public class FieldNamePatternExclusionStrategy implements ExclusionStrategy {
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+    private final Pattern pattern;
 
-import fr.cnes.regards.framework.gson.strategy.GsonViewIgnoreExclusionStrategy;
+    public FieldNamePatternExclusionStrategy(String regex) {
+        pattern = Pattern.compile(regex);
+    }
 
-/**
- * Mark a field to be ignore by GSON if {@link GsonViewIgnoreExclusionStrategy} is declared in the GSON instance
- *
- * @author Marc Sordi
- *
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD })
-public @interface GsonViewIgnore {
-    // Field tag only annotation
+    @Override
+    public boolean shouldSkipField(FieldAttributes f) {
+        Matcher m = pattern.matcher(f.getName());
+        return m.matches();
+    }
+
+    @Override
+    public boolean shouldSkipClass(Class<?> clazz) {
+        return false;
+    }
+
 }
