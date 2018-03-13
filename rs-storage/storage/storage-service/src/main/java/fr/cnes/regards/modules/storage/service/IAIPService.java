@@ -197,13 +197,13 @@ public interface IAIPService {
      * Remove an aip from the system. Its file are deleted if and only if no other aip point to them.
      * @return not suppressible files because they are in state {@link fr.cnes.regards.modules.storage.domain.database.DataFileState#PENDING}
      */
-    Set<StorageDataFile> deleteAip(String ipId);
+    Set<StorageDataFile> deleteAip(String ipId) throws ModuleException;
 
     /**
      * Remove {@link AIP}s associated the given sip, through its ip id
      * @param sipIpId
      */
-    Set<StorageDataFile> deleteAipFromSip(String sipIpId);
+    Set<StorageDataFile> deleteAipFromSip(String sipIpId) throws ModuleException;
 
     /**
      * Add tags to the specified aip, through its ip id

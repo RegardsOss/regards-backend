@@ -4,8 +4,6 @@
 package fr.cnes.regards.modules.storage.rest;
 
 import javax.validation.Valid;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -13,7 +11,6 @@ import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
@@ -315,7 +312,8 @@ public class AIPController implements IResourceController<AIP> {
      */
     @RequestMapping(method = RequestMethod.DELETE)
     @ResponseBody
-    @ResourceAccess(description = "delete AIPs associated to the given SIP, given threw its ip id", role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "delete AIPs associated to the given SIP, given threw its ip id",
+            role = DefaultRole.ADMIN)
     public ResponseEntity<List<RejectedSip>> deleteAipFromSips(@RequestParam("sip_ip_id") Set<String> sipIpIds)
             throws ModuleException {
         List<RejectedSip> notHandledSips = Lists.newArrayList();

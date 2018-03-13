@@ -36,6 +36,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -43,6 +44,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -145,7 +148,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
         tenantResolver.forceTenant(DEFAULT_TENANT);
-//         this.cleanUp(); //comment if you are not interrupting tests during their execution
+        //         this.cleanUp(); //comment if you are not interrupting tests during their execution
         subscriber.subscribeTo(JobEvent.class, handler);
         initDb();
     }
@@ -235,9 +238,11 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                 .findFirst().get();
         Assert.assertTrue("stored raw data should have only 2 urls", dataFile.getUrls().size() == 2);
         String storedLocation1 = Paths
-                .get(baseStorage1Location.getPath(), dataFile.getChecksum().substring(0, 3), dataFile.getChecksum()).toString();
+                .get(baseStorage1Location.getPath(), dataFile.getChecksum().substring(0, 3), dataFile.getChecksum())
+                .toString();
         String storedLocation2 = Paths
-                .get(baseStorage2Location.getPath(), dataFile.getChecksum().substring(0, 3), dataFile.getChecksum()).toString();
+                .get(baseStorage2Location.getPath(), dataFile.getChecksum().substring(0, 3), dataFile.getChecksum())
+                .toString();
         Assert.assertTrue(dataFile.getUrls().stream().map(url -> url.getPath()).collect(Collectors.toSet())
                                   .containsAll(Sets.newHashSet(storedLocation1, storedLocation2)));
         //same for the aips
@@ -368,7 +373,11 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         String aipIpId = aip.getId().toString();
         // lets get all the dataFile before deleting them for further verification
         Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(aip);
-        Set<UUID> jobIds = aipService.deleteAip(aipIpId);
+        aipService.deleteAip(aipIpId);
+        Set<UUID> jobIds = Streams.stream(jobInfoRepo.findAll())
+                .filter(jobInfo -> jobInfo.getStatus().equals(JobStatus.QUEUED) || jobInfo.getStatus()
+                        .equals(JobStatus.TO_BE_RUN) || jobInfo.getStatus().equals(JobStatus.RUNNING)).map(JobInfo::getId)
+                .collect(Collectors.toSet());
         aip = aipDao.findOneByIpId(aipIpId).get();
         Assert.assertEquals("AIP state should be DELETED now", AIPState.DELETED, aip.getState());
         // now lets wait for the deletion job to be finished
@@ -463,7 +472,8 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                     .forEach(File::delete);
         }
         if (baseStorage2Location != null) {
-            Files.walk(Paths.get(baseStorage2Location.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+            Files.walk(Paths.get(baseStorage2Location.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
+                    .forEach(File::delete);
         }
     }
 

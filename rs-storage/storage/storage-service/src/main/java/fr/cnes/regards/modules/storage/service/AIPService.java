@@ -936,7 +936,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     }
 
     @Override
-    public Set<StorageDataFile> deleteAip(String ipId) {
+    public Set<StorageDataFile> deleteAip(String ipId) throws ModuleException {
         Optional<AIP> toBeDeletedOpt = aipDao.findOneByIpId(ipId);
         Set<StorageDataFile> notSuppressible = Sets.newHashSet();
         if (toBeDeletedOpt.isPresent()) {
@@ -969,13 +969,14 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             toBeDeleted = toBeDeletedBuilder.build();
             toBeDeleted.setState(AIPState.DELETED);
             aipDao.save(toBeDeleted);
+            scheduleDeletion(dataFilesToDelete);
             return notSuppressible;
         }
         return notSuppressible;
     }
 
     @Override
-    public Set<StorageDataFile> deleteAipFromSip(String sipIpId) {
+    public Set<StorageDataFile> deleteAipFromSip(String sipIpId) throws ModuleException {
         Set<StorageDataFile> notSuppressible = new HashSet<>();
         for (AIP aip : aipDao.findAllBySipId(sipIpId)) {
             notSuppressible.addAll(deleteAip(aip.getId().toString()));
