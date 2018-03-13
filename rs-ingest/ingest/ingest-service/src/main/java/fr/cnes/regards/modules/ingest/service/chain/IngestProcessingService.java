@@ -45,10 +45,13 @@ import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.stream.JsonWriter;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.gson.GsonBuilderFactory;
+import fr.cnes.regards.framework.gson.strategy.FieldNamePatternExclusionStrategy;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -114,7 +117,9 @@ public class IngestProcessingService implements IIngestProcessingService {
     private IPluginService pluginService;
 
     @Autowired
-    private Gson gson;
+    private GsonBuilderFactory gsonBuilderFactory;
+
+    private Gson gsonWithIdExclusionStrategy;
 
     @Autowired
     private Validator validator;
@@ -124,6 +129,11 @@ public class IngestProcessingService implements IIngestProcessingService {
         pluginService.addPluginPackage(IAipGeneration.class.getPackage().getName());
         pluginService.addPluginPackage(DefaultSingleAIPGeneration.class.getPackage().getName());
         pluginService.addPluginPackage(DefaultSipValidation.class.getPackage().getName());
+
+        // Initialize specific GSON instance
+        GsonBuilder customBuilder = gsonBuilderFactory.newBuilder();
+        customBuilder.addSerializationExclusionStrategy(new FieldNamePatternExclusionStrategy("id"));
+        gsonWithIdExclusionStrategy = customBuilder.create();
     }
 
     @Override
@@ -235,7 +245,7 @@ public class IngestProcessingService implements IIngestProcessingService {
     public IngestProcessingChain createNewChain(InputStream input) throws ModuleException {
         Reader json = new InputStreamReader(input, Charset.forName("UTF-8"));
         try {
-            IngestProcessingChain ipc = gson.fromJson(json, IngestProcessingChain.class);
+            IngestProcessingChain ipc = gsonWithIdExclusionStrategy.fromJson(json, IngestProcessingChain.class);
             // Validate entry because not already done
             Errors errors = new MapBindingResult(new HashMap<>(), "ingestProcessingChain");
             validator.validate(ipc, errors);
@@ -259,7 +269,7 @@ public class IngestProcessingService implements IIngestProcessingService {
         IngestProcessingChain ipc = getChain(name);
         try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(os, "UTF-8"))) {
             writer.setIndent("  ");
-            gson.toJson(ipc, IngestProcessingChain.class, writer);
+            gsonWithIdExclusionStrategy.toJson(ipc, IngestProcessingChain.class, writer);
         }
     }
 

@@ -145,9 +145,9 @@ public class IngestProcessingChainController implements IResourceController<Inge
             // FIXME maybe already done!
             pResponse.getOutputStream().flush();
         } catch (IOException e) {
-            String message = String.format(
-                                           "Error with servlet output stream while exporting ingest processing chain %s.",
-                                           chain.getName());
+            String message = String
+                    .format("Error with servlet output stream while exporting ingest processing chain %s.",
+                            chain.getName());
             LOGGER.error(message, e);
             throw new ModuleException(e);
         }
