@@ -31,6 +31,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.microservice.rest.MicroserviceConfigurationController;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
@@ -74,6 +75,27 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         performDefaultFileUpload(IngestProcessingChainController.TYPE_MAPPING
                 + IngestProcessingChainController.IMPORT_PATH, filePath, requestBuilderCustomizer,
                                  "Should be able to import valid test processing chain");
+    }
 
+    @Test
+    public void exportConfiguration() {
+        // Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+
+        performDefaultGet(MicroserviceConfigurationController.TYPE_MAPPING, requestBuilderCustomizer,
+                          "Should export configuration");
+    }
+
+    @Test
+    public void importConfiguration() {
+        Path filePath = Paths.get("src", "test", "resources", "configuration.json");
+
+        // Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+
+        performDefaultFileUpload(MicroserviceConfigurationController.TYPE_MAPPING, filePath, requestBuilderCustomizer,
+                                 "Should be able to import configuration");
     }
 }

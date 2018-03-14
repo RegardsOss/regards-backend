@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.domain.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
@@ -32,12 +36,10 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 import org.hibernate.validator.constraints.NotBlank;
 
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
 /**
@@ -52,6 +54,7 @@ public class IngestProcessingChain {
 
     public static final String DEFAULT_INGEST_CHAIN_LABEL = "DefaultProcessingChain";
 
+    @ConfigIgnore
     @Id
     @SequenceGenerator(name = "IngestChainSequence", initialValue = 1, sequenceName = "seq_ingest_chain")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "IngestChainSequence")
