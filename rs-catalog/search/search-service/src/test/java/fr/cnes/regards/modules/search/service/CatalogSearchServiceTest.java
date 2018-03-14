@@ -77,8 +77,6 @@ public class CatalogSearchServiceTest {
      */
     private IAccessRightFilter accessRightFilter;
 
-    private IAccessRightClient accessRightClient;
-
     /**
      * Service perfoming the ElasticSearch search
      */
@@ -103,7 +101,6 @@ public class CatalogSearchServiceTest {
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         resourceService = Mockito.mock(IResourceService.class);
         facetConverter = Mockito.mock(IFacetConverter.class);
-        accessRightClient = Mockito.mock(IAccessRightClient.class);
 
         Mockito.when(facetConverter.convert(SampleDataUtils.QUERY_FACETS)).thenReturn(SampleDataUtils.FACETS);
 
@@ -116,7 +113,7 @@ public class CatalogSearchServiceTest {
 
         // Instanciate the tested class
         catalogSearchService = new CatalogSearchService(searchService, openSearchService, accessRightFilter,
-                facetConverter, accessRightClient);
+                facetConverter);
     }
 
     /**

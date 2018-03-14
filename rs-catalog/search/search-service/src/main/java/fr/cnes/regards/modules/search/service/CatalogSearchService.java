@@ -97,11 +97,6 @@ public class CatalogSearchService implements ICatalogSearchService {
     private final IAccessRightFilter accessRightFilter;
 
     /**
-     * Client handling access rights. Autowired by Spring.
-     */
-    private IAccessRightClient accessRightClient;
-
-    /**
      * Facet converter
      */
     private final IFacetConverter facetConverter;
@@ -115,13 +110,11 @@ public class CatalogSearchService implements ICatalogSearchService {
      * @param facetConverter manage facet conversion
      */
     public CatalogSearchService(ISearchService searchService, IOpenSearchService openSearchService,
-            IAccessRightFilter accessRightFilter, IFacetConverter facetConverter,
-            IAccessRightClient accessRightClient) {
+            IAccessRightFilter accessRightFilter, IFacetConverter facetConverter) {
         this.searchService = searchService;
         this.openSearchService = openSearchService;
         this.accessRightFilter = accessRightFilter;
         this.facetConverter = facetConverter;
-        this.accessRightClient = accessRightClient;
     }
 
     @SuppressWarnings("unchecked")
@@ -179,43 +172,23 @@ public class CatalogSearchService implements ICatalogSearchService {
                     && searchKey.getSearchTypeMap().values().contains(DataObject.class)) ||
                     ((searchKey.getResultClass() != null)
                       && TypeToken.of(searchKey.getResultClass()).getRawType() == DataObject.class)) {
-                // Cache (access group, dataset IPID) -> access right
-                Table<String, String, Boolean> accessRightTable = HashBasedTable.create();
+                Set<String> userGroups = accessRightFilter.getUserAccessGroups();
                 for (R entity : (List<R>) facetPage.getContent()) {
-                    DataObject dataObject = (DataObject)entity;
-                    // All group-dataset pairs associted th this data object
-                    Multimap<String, String> groupsMultimap = dataObject.getMetadata().getGroupsMultimap();
-                    boolean downloadable = false;
+                    if (entity instanceof DataObject) {
+                        DataObject dataObject = (DataObject) entity;
+                        // Map of { group -> data access right }
+                        Map<String, Boolean> groupsAccessRightMap = dataObject.getMetadata().getGroupsAccessRightsMap();
+                        boolean downloadable = false;
 
-                    // Looking for ONE group-dataset pair that permits access to data
-                    for (Map.Entry<String, String> entry : groupsMultimap.entries()) {
-                        boolean dataAccessGranted;
-                        // Access right already into cache
-                        if (accessRightTable.contains(entry.getKey(), entry.getValue())) {
-                            dataAccessGranted = accessRightTable.get(entry.getKey(), entry.getValue());
-                        } else {
-                            UniformResourceName datasetIpId = UniformResourceName.fromString(entry.getValue());
-                            ResponseEntity<AccessRight> response = accessRightClient
-                                    .retrieveAccessRight(entry.getKey(), datasetIpId);
-                            if (response.getStatusCode() == HttpStatus.NO_CONTENT) {
-                                dataAccessGranted = false;
-                            } else {
-                                AccessRight accessRight = response.getBody();
-                                // If we are here, it means we have the right on the meta data so inherited access means
-                                // access granted to data
-                                dataAccessGranted = (accessRight.getDataAccessRight().getDataAccessLevel()
-                                        == DataAccessLevel.INHERITED_ACCESS);
+                        // Looking for ONE user group that permits access to data
+                        for (String userGroup : userGroups) {
+                            if (groupsAccessRightMap.containsKey(userGroup) && groupsAccessRightMap.get(userGroup)) {
+                                downloadable = true;
+                                break;
                             }
-                            // Fill cache
-                            accessRightTable.put(entry.getKey(), entry.getValue(), dataAccessGranted);
                         }
-                        // Only one group-dataset granted access is sufficient
-                        if (dataAccessGranted) {
-                            downloadable = true;
-                            break;
-                        }
+                        dataObject.setDownloadable(downloadable);
                     }
-                    dataObject.setDownloadable(downloadable);
                 }
             }
             return facetPage;
