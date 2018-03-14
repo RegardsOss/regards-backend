@@ -18,43 +18,19 @@
  */
 package fr.cnes.regards.framework.module.manager;
 
+import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
+
 /**
- * This class represents a module configuration item. Class representing value may be annotated with
- * {@link ConfigIgnore} in addition to GsonIgnore to avoid specific field serialization.
+ *
+ * Informs GSON how to (de)serialize {@link ModuleConfigurationItem}.
+ *
  * @author Marc Sordi
  *
  */
-public abstract class ModuleConfigurationItem<T> {
+@SuppressWarnings("rawtypes")
+public class ModuleConfigurationItemAdapterFactory extends PolymorphicTypeAdapterFactory<ModuleConfigurationItem> {
 
-    /**
-     * The discriminator key for deserializing value. Discriminator key must be unique by {@link Class}
-     */
-    private String key;
-
-    /**
-     * JSON string instance of the above JAVA class
-     */
-    private T value;
-
-    public String getKey() {
-        return key;
+    public ModuleConfigurationItemAdapterFactory() {
+        super(ModuleConfigurationItem.class, "key");
     }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public T getValue() {
-        return value;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <U> U getTypedValue() {
-        return (U) value;
-    }
-
-    public void setValue(T value) {
-        this.value = value;
-    }
-
 }

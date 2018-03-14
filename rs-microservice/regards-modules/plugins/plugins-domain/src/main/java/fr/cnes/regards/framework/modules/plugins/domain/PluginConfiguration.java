@@ -19,6 +19,11 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
+import java.net.URL;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -35,10 +40,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
-import java.net.URL;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
@@ -48,8 +49,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
@@ -58,8 +61,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
  * @author oroussel
  */
 @Entity
-@Table(name = "t_plugin_configuration", indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
-        @Index(name = "idx_plugin_configuration_label", columnList = "label") },
+@Table(name = "t_plugin_configuration",
+        indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
+                @Index(name = "idx_plugin_configuration_label", columnList = "label") },
         uniqueConstraints = @UniqueConstraint(name = "uk_plugin_configuration_label", columnNames = { "label" }))
 @SequenceGenerator(name = "pluginConfSequence", initialValue = 1, sequenceName = "seq_plugin_conf")
 public class PluginConfiguration implements IIdentifiable<Long> {
@@ -77,6 +81,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Unique id
      */
+    @ConfigIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pluginConfSequence")
     private Long id;
@@ -301,15 +306,15 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public void logParams() {
         LOGGER.info("===> parameters <===");
-        LOGGER.info(
-                "  ---> number of dynamic parameters : " + getParameters().stream().filter(p -> p.isDynamic()).count());
+        LOGGER.info("  ---> number of dynamic parameters : "
+                + getParameters().stream().filter(p -> p.isDynamic()).count());
 
         getParameters().stream().filter(p -> p.isDynamic()).forEach(p -> {
             logParam(p, "  ---> dynamic parameter : ");
         });
 
-        LOGGER.info("  ---> number of no dynamic parameters : " + getParameters().stream().filter(p -> !p.isDynamic())
-                .count());
+        LOGGER.info("  ---> number of no dynamic parameters : "
+                + getParameters().stream().filter(p -> !p.isDynamic()).count());
         getParameters().stream().filter(p -> !p.isDynamic()).forEach(p -> {
             logParam(p, "  ---> parameter : ");
         });

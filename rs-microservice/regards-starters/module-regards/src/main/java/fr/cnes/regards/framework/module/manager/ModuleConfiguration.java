@@ -20,110 +20,38 @@ package fr.cnes.regards.framework.module.manager;
 
 import java.util.List;
 
-import org.hibernate.validator.constraints.NotBlank;
-
 /**
- * Module information are loaded from <b>module.properties</b> that must exist in same package as {@link IModuleManager}
- * bean implementation.
+ * Module configuration wrapper
  *
  * @author Marc Sordi
  *
  */
 public class ModuleConfiguration {
 
-    /**
-     * @return name of the module
-     */
-    @NotBlank
-    private String name;
+    private ModuleInformation module;
 
-    /**
-     *
-     * @return description of the module
-     */
-    private String description;
+    private List<ModuleConfigurationItem<?>> configuration;
 
-    /**
-     *
-     * @return version of the module
-     */
-    @NotBlank
-    private String version;
-
-    /**
-     *
-     * @return author of the module
-     */
-    @NotBlank
-    private String author;
-
-    /**
-     *
-     * @return legal owner of the module
-     */
-    private String legalOwner;
-
-    /**
-     *
-     * @return link to the documentation of the module
-     */
-    private String documentation;
-
-    private List<ModuleConfigurationItem> configuration;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public String getLegalOwner() {
-        return legalOwner;
-    }
-
-    public void setLegalOwner(String legalOwner) {
-        this.legalOwner = legalOwner;
-    }
-
-    public String getDocumentation() {
-        return documentation;
-    }
-
-    public void setDocumentation(String documentation) {
-        this.documentation = documentation;
-    }
-
-    public List<ModuleConfigurationItem> getConfiguration() {
+    public List<ModuleConfigurationItem<?>> getConfiguration() {
         return configuration;
     }
 
-    public void setConfiguration(List<ModuleConfigurationItem> configuration) {
+    public void setConfiguration(List<ModuleConfigurationItem<?>> configuration) {
         this.configuration = configuration;
+    }
+
+    public ModuleInformation getModule() {
+        return module;
+    }
+
+    public void setModule(ModuleInformation module) {
+        this.module = module;
+    }
+
+    public static ModuleConfiguration build(ModuleInformation info, List<ModuleConfigurationItem<?>> configuration) {
+        ModuleConfiguration moduleConfiguration = new ModuleConfiguration();
+        moduleConfiguration.setModule(info);
+        moduleConfiguration.setConfiguration(configuration);
+        return moduleConfiguration;
     }
 }

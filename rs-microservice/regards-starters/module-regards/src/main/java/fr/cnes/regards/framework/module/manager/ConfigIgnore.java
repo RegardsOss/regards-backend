@@ -18,15 +18,18 @@
  */
 package fr.cnes.regards.framework.module.manager;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
- * Bean contract for module management
+ * Annotation for ignoring field serialization during configuration export
  *
  * @author Marc Sordi
  *
  */
-public interface IModuleManager {
-
-    void importConfiguration(ModuleConfiguration configuration);
-
-    ModuleConfiguration exportConfiguration();
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.FIELD })
+public @interface ConfigIgnore {
 }
