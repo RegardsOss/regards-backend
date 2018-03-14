@@ -37,6 +37,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.dao.IModuleRepository;
+import fr.cnes.regards.modules.configuration.dao.ModuleSpecifications;
 import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
 import fr.cnes.regards.modules.configuration.domain.Module;
 import fr.cnes.regards.modules.configuration.domain.UIPage;
@@ -91,8 +92,9 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
     }
 
     @Override
-    public Page<Module> retrieveModules(final String pApplicationId, final Pageable pPageable) {
-        return repository.findByApplicationId(pApplicationId, pPageable);
+    public Page<Module> retrieveModules(final String applicationId, Boolean active, String type,
+            final Pageable pPageable) {
+        return repository.findAll(ModuleSpecifications.search(applicationId, active, type), pPageable);
     }
 
     @Override

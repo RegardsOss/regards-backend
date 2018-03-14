@@ -102,14 +102,10 @@ public class ModuleController implements IResourceController<Module> {
     @ResourceAccess(description = "Endpoint to retrieve IHM modules for given application", role = DefaultRole.PUBLIC)
     public HttpEntity<PagedResources<Resource<Module>>> retrieveModules(
             @PathVariable("applicationId") final String pApplicationId,
-            @RequestParam(value = "active", required = false) final String pOnlyActive, final Pageable pPageable,
+            @RequestParam(value = "active", required = false) final boolean pOnlyActive,
+            @RequestParam(value = "type", required = false) final String type, final Pageable pPageable,
             final PagedResourcesAssembler<Module> pAssembler) {
-        final Page<Module> modules;
-        if ((pOnlyActive != null) && (Boolean.parseBoolean(pOnlyActive))) {
-            modules = service.retrieveActiveModules(pApplicationId, pPageable);
-        } else {
-            modules = service.retrieveModules(pApplicationId, pPageable);
-        }
+        final Page<Module> modules = service.retrieveModules(pApplicationId, pOnlyActive, type, pPageable);
         final PagedResources<Resource<Module>> resources = toPagedResources(modules, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
