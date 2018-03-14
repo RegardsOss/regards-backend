@@ -383,8 +383,8 @@ public class STAFDataStorage implements INearlineDataStorage<STAFWorkingSubset> 
                                                   file.getName());
                 } else {
                     rejectedCause = String.format(
-                                                  "[STAFDataStorage Plugin] File \"%s\" ignored because the given STAF Node \"{}\"is not valid"
-                                                          + " to any archive directory. See your allocation strategy configuration.",
+                                                  "[STAFDataStorage Plugin] File \"%s\" ignored because the given STAF Node \"%s\"is not valid."
+                                                          + " See your allocation strategy configuration.",
                                                   file.getName(), stafNode);
                 }
                 LOG.error(rejectedCause);

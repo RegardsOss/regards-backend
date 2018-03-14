@@ -212,7 +212,12 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
         StorageDataFile invalidFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "/path/file4.txt")),
                 "eadcc622739d58e8a78170b67c6ff9f4", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
                 "file4.txt", null);
+        // Add an invalid file (staf node is not valid)
+        StorageDataFile invalidFile2 = new StorageDataFile(Sets.newHashSet(new URL("file", "", "/path/file5.txt")),
+                "eadcc622739d58e8a78170b67c6ff9f5", "md5", DataType.RAWDATA, 3339L, MimeTypeUtils.TEXT_PLAIN, aip,
+                "file5.txt", "/NODE-2");
         filesToPrepare.add(invalidFile);
+        filesToPrepare.add(invalidFile2);
 
         // prepare files
         WorkingSubsetWrapper<STAFWorkingSubset> subsetsWrapper = plugin.prepare(filesToPrepare,
@@ -220,7 +225,7 @@ public class STAFDataStorageTest extends AbstractRegardsServiceIT {
 
         Set<STAFWorkingSubset> subsets = subsetsWrapper.getWorkingSubSets();
         Assert.assertEquals("There should be 2 subsets created", 2, subsets.size());
-        Assert.assertEquals("There should be 1 file rejected", 1, subsetsWrapper.getRejectedDataFiles().size());
+        Assert.assertEquals("There should be 2 rejected files", 2, subsetsWrapper.getRejectedDataFiles().size());
         Assert.assertTrue("The rejected file should be in the rejected list",
                           subsetsWrapper.getRejectedDataFiles().containsKey(invalidFile));
     }
