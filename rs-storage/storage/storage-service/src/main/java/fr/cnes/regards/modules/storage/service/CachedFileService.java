@@ -46,7 +46,10 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
@@ -176,12 +179,44 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     @Autowired
     private IPrioritizedDataStorageService prioritizedDataStorageService;
 
+    @Autowired
+    private INotificationClient notificationClient;
+
+    @Value("${spring.application.name}")
+    private String springApplicationName;
+
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             initCacheFileSystem(tenant);
+            try {
+                checkDiskDBCoherence(tenant);
+            } catch (IOException e) {
+                LOG.error(String.format("Could not check if cache directory for tenant %s is dirty.", tenant), e);
+            }
         }
+    }
+
+    private void checkDiskDBCoherence(String tenant) throws IOException {
+        runtimeTenantResolver.forceTenant(tenant);
+        Set<CachedFile> shouldBeAvailableSet = cachedFileRepository.findAllByState(CachedFileState.AVAILABLE);
+        for (CachedFile shouldBeAvailable : shouldBeAvailableSet) {
+            if (Files.notExists(Paths.get(shouldBeAvailable.getLocation().getPath()))) {
+                cachedFileRepository.delete(shouldBeAvailable);
+            }
+        }
+        Set<String> availableFilePaths = cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).stream()
+                .map(availableFile -> availableFile.getLocation().getPath().toString()).collect(Collectors.toSet());
+        Files.walk(getTenantCachePath()).filter(path -> availableFilePaths.contains(path.toAbsolutePath().toString()))
+                .forEach(path -> notificationClient.notifyRoles(String.format(
+                        "File %s is present in cache directory while it shouldn't be. Please remove this file from the cache directory",
+                        path.toString()),
+                                                                "Dirty cache",
+                                                                springApplicationName,
+                                                                NotificationType.WARNING,
+                                                                DefaultRole.PROJECT_ADMIN));
+        runtimeTenantResolver.clearTenant();
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
@@ -309,7 +344,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             LOG.debug(
                     " -----------------> Handle queued cache restoration files for tenant {} START <-----------------------",
                     tenant);
-            Set<CachedFile> queuedFilesToCache = cachedFileRepository.findByState(CachedFileState.QUEUED);
+            Set<CachedFile> queuedFilesToCache = cachedFileRepository.findAllByState(CachedFileState.QUEUED);
             LOG.debug("{} queued files to restore in cache for tenant {}", queuedFilesToCache.size(), tenant);
             Set<String> checksums = queuedFilesToCache.stream().map(CachedFile::getChecksum)
                     .collect(Collectors.toSet());

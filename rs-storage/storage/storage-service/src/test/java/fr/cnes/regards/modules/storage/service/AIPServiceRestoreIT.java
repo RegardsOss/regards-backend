@@ -338,7 +338,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         fillNearlineDataFileDb(50L, "");
 
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
-                          cachedFileRepository.findByState(CachedFileState.AVAILABLE).isEmpty());
+                          cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).isEmpty());
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "10", "20", "30");
         AvailabilityResponse response = aipService.loadFiles(request);
         Assert.assertTrue(String.format("Invalid number of available files %d", response.getAlreadyAvailable().size()),
@@ -407,7 +407,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         fillNearlineDataFileDb((this.cacheSizeLimitKo * 1024) / 2, "");
 
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
-                          cachedFileRepository.findByState(CachedFileState.AVAILABLE).isEmpty());
+                          cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).isEmpty());
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "10", "20", "30");
         AvailabilityResponse response = aipService.loadFiles(request);
         Assert.assertTrue(String.format("Invalid number of available files %d", response.getAlreadyAvailable().size()),
@@ -497,7 +497,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         // The 3 files in cache have to simulate that the cache is full in order to test that a new load
         AIP aip = fillNearlineDataFileDb(50L, "");
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
-                          cachedFileRepository.findByState(CachedFileState.AVAILABLE).isEmpty());
+                          cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).isEmpty());
         // Simulate cache size full by adding files with big size.
         Long fileSize = ((this.cacheSizeLimitKo * 1024) / 3);
         fillCache(aip,
@@ -602,7 +602,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         Long fileSize = (this.cacheSizeLimitKo * 1024) / 2;
         AIP aip = fillNearlineDataFileDb(fileSize, "");
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
-                          cachedFileRepository.findByState(CachedFileState.AVAILABLE).isEmpty());
+                          cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).isEmpty());
         Path file1 = Files.createFile(Paths.get(cacheDir.toString(), "test1"));
         fillCache(aip,
                   file1.getFileName().toString(),
@@ -641,12 +641,12 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         Assert.assertTrue("Init error. File does not exists", file3.toFile().exists());
         Assert.assertFalse("Init error. File exists", file4.toFile().exists());
         Assert.assertTrue("Initialization error. The test should be 4 cached files in AVAILABLE status.",
-                          cachedFileRepository.findByState(CachedFileState.AVAILABLE).size() == 4);
+                          cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).size() == 4);
 
         // Wait for scheduled clean process run
         Thread.sleep(cleanCacheRate);
         Thread.sleep(2000);
-        int size = cachedFileRepository.findByState(CachedFileState.AVAILABLE).size();
+        int size = cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).size();
         Assert.assertTrue(String.format(
                 "After the cache clean process ran, there should be only one AVAILABLE file remaining not %s.",
                 size), size == 1);
@@ -671,7 +671,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         Long fileSize = (this.cacheSizeLimitKo * 1024) / 4;
         AIP aip = fillNearlineDataFileDb(fileSize, "");
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
-                          cachedFileRepository.findByState(CachedFileState.AVAILABLE).isEmpty());
+                          cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).isEmpty());
         Path file1 = Files.createFile(Paths.get(cacheDir.toString(), "test1"));
         fillCache(aip,
                   file1.getFileName().toString(),
@@ -710,7 +710,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         Assert.assertTrue("Init error. File does not exists", file3.toFile().exists());
         Assert.assertTrue("Init error. File does not exists", file4.toFile().exists());
         Assert.assertTrue("Initialization error. The test should be 4 cached files in AVAILABLE status.",
-                          cachedFileRepository.findByState(CachedFileState.AVAILABLE).size() == 4);
+                          cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).size() == 4);
 
         // Wait for scheduled clean process run
         // The cache is full, no files are expired, so the older files
@@ -723,7 +723,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         // The older files are calcualted with the lastRequestDate of the files.
         Thread.sleep(cleanCacheRate);
         Thread.sleep(2000);
-        int size = cachedFileRepository.findByState(CachedFileState.AVAILABLE).size();
+        int size = cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).size();
         Assert.assertTrue(String.format(
                 "After the cache clean process ran, there should be 2 AVAILABLE files remaining not %s.",
                 size), size == 2);
@@ -752,7 +752,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         AIP aip = fillNearlineDataFileDb(fileSize, "oldOnes");
         fillNearlineDataFileDb(100L, "newOnes");
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
-                          cachedFileRepository.findByState(CachedFileState.AVAILABLE).isEmpty());
+                          cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).isEmpty());
         Path file1 = Files.createFile(Paths.get(cacheDir.toString(), "test1"));
         fillCache(aip,
                   file1.getFileName().toString(),
@@ -778,9 +778,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                   OffsetDateTime.now().minusDays(20),
                   cacheDir.toFile().getAbsolutePath());
         Assert.assertTrue("Initialization error. The test should be 3 cached files in AVAILABLE status.",
-                          cachedFileRepository.findByState(CachedFileState.AVAILABLE).size() == 3);
+                          cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).size() == 3);
         Assert.assertTrue("Initialization error. The test shouldn't start with cached files in QUEUED status.",
-                          cachedFileRepository.findByState(CachedFileState.QUEUED).isEmpty());
+                          cachedFileRepository.findAllByState(CachedFileState.QUEUED).isEmpty());
 
         // Run a restore process (files should be set in QUEUED mode)
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(15),
@@ -788,7 +788,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
                                                               "newOnes20",
                                                               "newOnes30");
         aipService.loadFiles(request);
-        Set<CachedFile> queuedFiles = cachedFileRepository.findByState(CachedFileState.QUEUED);
+        Set<CachedFile> queuedFiles = cachedFileRepository.findAllByState(CachedFileState.QUEUED);
         Assert.assertTrue(String.format("After loadfiles process there should 3 files in QUEUED mode not %s",
                                         queuedFiles.size()), queuedFiles.size() == 3);
         queuedFiles.forEach(f -> LOG.info("Queued File exp date={}", f.getExpiration()));
@@ -800,7 +800,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
         // Some space should have been set in cache (all available files deleted)
         Assert.assertTrue("All expired AVAILABLE files should be deleted now",
-                          cachedFileRepository.findByState(CachedFileState.AVAILABLE).isEmpty());
+                          cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).isEmpty());
 
         // Wait for storeAndCreate queued files process run
         LOG.info("Waiting for restore queued files rate ...");
@@ -809,9 +809,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
         // Files should be create successfully.
         Assert.assertTrue("The new 3 loaded files should be AVAILABLE",
-                          cachedFileRepository.findByState(CachedFileState.AVAILABLE).size() == 3);
+                          cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).size() == 3);
         Assert.assertTrue("There should not be QUEUED files remaining",
-                          cachedFileRepository.findByState(CachedFileState.QUEUED).isEmpty());
+                          cachedFileRepository.findAllByState(CachedFileState.QUEUED).isEmpty());
 
         Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum("newOnes20");
         Assert.assertTrue("The nearLine file newOnes20 should be present in db as a cachedFile", ocf.isPresent());
@@ -860,7 +860,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         AvailabilityResponse response = aipService.loadFiles(request);
         Assert.assertTrue(String.format(
                 "Files with checksum: oldOnes10, oldOnes20, oldOnes30 should already be available. For now there is only %s available according to the database. From the resonse: %s",
-                Iterables.toString(cachedFileRepository.findByState(CachedFileState.AVAILABLE)),
+                Iterables.toString(cachedFileRepository.findAllByState(CachedFileState.AVAILABLE)),
                 Iterables.toString(response.getAlreadyAvailable())),
                           response.getAlreadyAvailable()
                                   .containsAll(Sets.newHashSet("oldOnes10", "oldOnes20", "oldOnes30")));

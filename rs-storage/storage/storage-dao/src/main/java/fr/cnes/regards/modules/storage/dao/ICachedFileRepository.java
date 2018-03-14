@@ -45,7 +45,7 @@ public interface ICachedFileRepository extends JpaRepository<CachedFile, Long> {
      * @param pQueued {@link CachedFileState}
      * @return {@link Set}<{@link CachedFile}
      */
-    Set<CachedFile> findByState(CachedFileState pQueued);
+    Set<CachedFile> findAllByState(CachedFileState pQueued);
 
     /**
      * Retrieve all {@link CachedFile}s for the given {@link CachedFileState} ordered by last request date
