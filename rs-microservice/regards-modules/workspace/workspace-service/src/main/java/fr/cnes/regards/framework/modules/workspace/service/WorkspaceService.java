@@ -112,6 +112,22 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
 
     @Override
     public void setIntoWorkspace(InputStream is, String fileName) throws IOException {
+        //first lets check if the wroskapce occupation is not critical
+        WorkspaceMonitoringInformation workspaceMonitoringInfo = getMonitoringInformation(getTenantWorkspace());
+        if (workspaceMonitoringInfo.getOccupationRatio() > workspaceCriticalOccupationThreshold) {
+            String message = String.format(
+                    "Workspace(%s) occupation is critical. Occupation is %s which is greater than %s(critical threshold). Project(%s) is being set to maintenance mode!",
+                    workspaceMonitoringInfo.getPath(),
+                    workspaceMonitoringInfo.getOccupationRatio().toString(),
+                    workspaceCriticalOccupationThreshold.toString(),
+                    runtimeTenantResolver.getTenant());
+            LOG.warn(message);
+            MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
+            notifier.sendErrorNotification(springApplicationName,
+                                           message,
+                                           "Workspace occupation is critical",
+                                           DefaultRole.PROJECT_ADMIN);
+        }
         Path workspacePath = getMicroserviceWorkspace();
         if (Files.notExists(workspacePath)) {
             Files.createDirectories(workspacePath);
