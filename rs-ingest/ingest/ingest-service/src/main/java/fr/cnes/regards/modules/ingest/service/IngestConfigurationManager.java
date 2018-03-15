@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.configuration;
+package fr.cnes.regards.modules.ingest.service;
 
 import java.util.ArrayList;
 import java.util.List;
