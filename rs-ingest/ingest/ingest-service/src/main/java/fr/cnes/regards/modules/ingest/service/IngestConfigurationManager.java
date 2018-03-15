@@ -35,11 +35,8 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
 
 /**
- *
  * Configuration manager for current module
- *
  * @author Marc Sordi
- *
  */
 @Service
 public class IngestConfigurationManager extends AbstractModuleConfigurationManager {

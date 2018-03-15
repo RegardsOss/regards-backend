@@ -3,7 +3,7 @@
     "modules": [
         {
             "module": {
-                "id": "ingestion",
+                "id": "ingest",
                 "name": "SIP management module",
                 "description": "SIP submission and management",
                 "version": "2.0.0-SNAPSHOT",
