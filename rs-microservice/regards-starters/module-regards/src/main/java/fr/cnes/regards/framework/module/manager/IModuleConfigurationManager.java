@@ -31,11 +31,6 @@ public interface IModuleConfigurationManager {
     static final String PROPERTY_FILE = "module.properties";
 
     /**
-     * Register sub types for deserialization
-     */
-    void configureFactory(ModuleConfigurationItemAdapterFactory factory);
-
-    /**
      * Module information
      */
     ModuleInformation getModuleInformation();

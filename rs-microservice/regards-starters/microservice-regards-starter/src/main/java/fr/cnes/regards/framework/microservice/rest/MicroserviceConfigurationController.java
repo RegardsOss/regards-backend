@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,16 +46,20 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 import fr.cnes.regards.framework.gson.GsonBuilderFactory;
+import fr.cnes.regards.framework.gson.adapters.ClassAdapter;
 import fr.cnes.regards.framework.gson.strategy.SerializationExclusionStrategy;
 import fr.cnes.regards.framework.microservice.manager.MicroserviceConfiguration;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.module.manager.IModuleConfigurationManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
-import fr.cnes.regards.framework.module.manager.ModuleConfigurationItemAdapterFactory;
+import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
+import fr.cnes.regards.framework.module.manager.ModuleConfigurationItemAdapter;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 
 /**
+ * Microservice configuration controller
+ *
  * @author Marc Sordi
  */
 @RestController
@@ -63,7 +68,7 @@ public class MicroserviceConfigurationController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MicroserviceConfigurationController.class);
 
-    public static final String TYPE_MAPPING = "/configuration";
+    public static final String TYPE_MAPPING = "/microservice/configuration";
 
     /**
      * Prefix for imported/exported filename
@@ -82,6 +87,8 @@ public class MicroserviceConfigurationController {
     private GsonBuilderFactory gsonBuilderFactory;
 
     private Gson configGson;
+
+    private Gson configItemGson;
 
     @Autowired(required = false)
     private List<IModuleConfigurationManager> managers;
@@ -118,8 +125,7 @@ public class MicroserviceConfigurationController {
 
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Import microservice configuration")
-    public ResponseEntity<MicroserviceConfiguration> importConfiguration(@RequestParam("file") MultipartFile file)
-            throws ModuleException {
+    public ResponseEntity<Void> importConfiguration(@RequestParam("file") MultipartFile file) throws ModuleException {
 
         try (JsonReader reader = new JsonReader(new InputStreamReader(file.getInputStream(), "UTF-8"))) {
             MicroserviceConfiguration microConfig = getConfigGson().fromJson(reader, MicroserviceConfiguration.class);
@@ -132,10 +138,10 @@ public class MicroserviceConfigurationController {
                         }
                     }
                 }
-                return ResponseEntity.ok(microConfig);
+                return ResponseEntity.status(HttpStatus.CREATED).build();
             } else {
                 LOGGER.warn("Configuration cannot be imported because no module configuration manager is found!");
-                return ResponseEntity.unprocessableEntity().body(microConfig);
+                return ResponseEntity.unprocessableEntity().build();
             }
 
         } catch (IOException e) {
@@ -145,21 +151,20 @@ public class MicroserviceConfigurationController {
         }
     }
 
-    public Gson getConfigGson() {
+    private Gson getConfigGson() {
         if (configGson == null) {
-
-            // Initialize serialization factory
-            ModuleConfigurationItemAdapterFactory confItemFactory = new ModuleConfigurationItemAdapterFactory();
-            if ((managers != null) && !managers.isEmpty()) {
-                for (IModuleConfigurationManager manager : managers) {
-                    manager.configureFactory(confItemFactory);
-                }
-            }
-
-            // Initialize specific GSON instance
+            // Create GSON for generic module configuration item adapter without itself! (avoid stackOverflow)
             GsonBuilder customBuilder = gsonBuilderFactory.newBuilder();
             customBuilder.addSerializationExclusionStrategy(new SerializationExclusionStrategy<>(ConfigIgnore.class));
-            customBuilder.registerTypeAdapterFactory(confItemFactory);
+            customBuilder.registerTypeHierarchyAdapter(Class.class, new ClassAdapter());
+            configItemGson = customBuilder.create();
+
+            // Create GSON with specific adapter to dynamically analyze parameterized type
+            customBuilder = gsonBuilderFactory.newBuilder();
+            customBuilder.addSerializationExclusionStrategy(new SerializationExclusionStrategy<>(ConfigIgnore.class));
+            customBuilder.registerTypeHierarchyAdapter(Class.class, new ClassAdapter());
+            customBuilder.registerTypeHierarchyAdapter(ModuleConfigurationItem.class,
+                                                       new ModuleConfigurationItemAdapter(configItemGson));
             configGson = customBuilder.create();
         }
         return configGson;

@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
  * @author Marc Sordi
  *
  */
+@Deprecated
 @SuppressWarnings("rawtypes")
 public class ModuleConfigurationItemAdapterFactory extends PolymorphicTypeAdapterFactory<ModuleConfigurationItem> {
 
@@ -34,3 +35,23 @@ public class ModuleConfigurationItemAdapterFactory extends PolymorphicTypeAdapte
         super(ModuleConfigurationItem.class, "key");
     }
 }
+
+// public Gson getConfigGson() {
+// if (configGson == null) {
+//
+// // Initialize serialization factory
+// ModuleConfigurationItemAdapterFactory confItemFactory = new ModuleConfigurationItemAdapterFactory();
+// if ((managers != null) && !managers.isEmpty()) {
+// for (IModuleConfigurationManager manager : managers) {
+// manager.configureFactory(confItemFactory);
+// }
+// }
+//
+// // Initialize specific GSON instance
+// GsonBuilder customBuilder = gsonBuilderFactory.newBuilder();
+// customBuilder.addSerializationExclusionStrategy(new SerializationExclusionStrategy<>(ConfigIgnore.class));
+// customBuilder.registerTypeAdapterFactory(confItemFactory);
+// configGson = customBuilder.create();
+// }
+// return configGson;
+// }

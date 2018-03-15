@@ -24,24 +24,22 @@ package fr.cnes.regards.framework.module.manager;
  * @author Marc Sordi
  *
  */
-public abstract class ModuleConfigurationItem<T> {
+public class ModuleConfigurationItem<T> {
 
     /**
-     * The discriminator key for deserializing value. Discriminator key must be unique by {@link Class}
+     * The instance class
      */
-    private String key;
+    private final Class<T> key;
 
     /**
      * JSON string instance of the above JAVA class
      */
-    private T value;
+    private final T value;
 
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
+    @SuppressWarnings("unchecked")
+    public ModuleConfigurationItem(T value) {
+        key = (Class<T>) value.getClass();
+        this.value = value;
     }
 
     public T getValue() {
@@ -53,8 +51,12 @@ public abstract class ModuleConfigurationItem<T> {
         return (U) value;
     }
 
-    public void setValue(T value) {
-        this.value = value;
+    public static <T> ModuleConfigurationItem<T> build(T value) {
+        ModuleConfigurationItem<T> mci = new ModuleConfigurationItem<T>(value);
+        return mci;
     }
 
+    public Class<T> getKey() {
+        return key;
+    }
 }
