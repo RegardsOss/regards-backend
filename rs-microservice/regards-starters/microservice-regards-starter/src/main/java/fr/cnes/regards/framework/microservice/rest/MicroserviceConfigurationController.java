@@ -70,6 +70,8 @@ public class MicroserviceConfigurationController {
 
     public static final String TYPE_MAPPING = "/microservice/configuration";
 
+    public static final String ENABLED_MAPPING = "/enabled";
+
     /**
      * Prefix for imported/exported filename
      */
@@ -92,6 +94,16 @@ public class MicroserviceConfigurationController {
 
     @Autowired(required = false)
     private List<IModuleConfigurationManager> managers;
+
+    @RequestMapping(method = RequestMethod.GET, value = ENABLED_MAPPING)
+    @ResourceAccess(description = "Import/export support information")
+    public ResponseEntity<Void> isConfigurationEnabled() throws ModuleException {
+        if ((managers != null) && !managers.isEmpty()) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        }
+    }
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Export microservice configuration")

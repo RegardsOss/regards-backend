@@ -41,6 +41,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  */
 public abstract class AbstractModuleConfigurationManager implements IModuleConfigurationManager {
 
+    private static final String PROPERTY_FILE = "module.properties";
+
     protected ModuleInformation info;
 
     @Autowired

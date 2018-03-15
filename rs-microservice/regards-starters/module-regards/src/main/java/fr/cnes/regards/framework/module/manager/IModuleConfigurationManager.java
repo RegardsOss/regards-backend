@@ -28,8 +28,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  */
 public interface IModuleConfigurationManager {
 
-    static final String PROPERTY_FILE = "module.properties";
-
     /**
      * Module information
      */
