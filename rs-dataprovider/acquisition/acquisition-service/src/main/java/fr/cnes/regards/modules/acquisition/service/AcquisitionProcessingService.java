@@ -154,6 +154,16 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
+    public List<AcquisitionProcessingChain> getFullChains() throws ModuleException {
+        List<AcquisitionProcessingChain> apcs = acqChainRepository.findAll();
+        List<AcquisitionProcessingChain> fullChains = new ArrayList<>();
+        for (AcquisitionProcessingChain apc : apcs) {
+            fullChains.add(getChain(apc.getId()));
+        }
+        return fullChains;
+    }
+
+    @Override
     public AcquisitionProcessingChain createChain(AcquisitionProcessingChain processingChain) throws ModuleException {
 
         // Check no identifier

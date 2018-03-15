@@ -40,6 +40,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.urn.DataType;
 
@@ -53,6 +54,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 @Table(name = "t_acq_file_info")
 public class AcquisitionFileInfo {
 
+    @ConfigIgnore
     @Id
     @SequenceGenerator(name = "AcqFileInfoSequence", initialValue = 1, sequenceName = "seq_acq_file_info")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "AcqFileInfoSequence")

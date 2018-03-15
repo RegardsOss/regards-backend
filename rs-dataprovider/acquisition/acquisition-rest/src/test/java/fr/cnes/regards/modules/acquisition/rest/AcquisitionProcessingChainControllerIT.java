@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.acquisition.rest;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -30,6 +33,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.google.common.collect.Lists;
 import com.jayway.jsonpath.JsonPath;
 
+import fr.cnes.regards.framework.microservice.rest.MicroserviceConfigurationController;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -225,4 +229,35 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
                            "Chain should be created!");
     }
 
+    @Test
+    public void exportConfiguration() {
+        // Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+
+        performDefaultGet(MicroserviceConfigurationController.TYPE_MAPPING, requestBuilderCustomizer,
+                          "Should export configuration");
+    }
+
+    @Test
+    public void importConfiguration() {
+        Path filePath = Paths.get("src", "test", "resources", "acquisition-configuration2.json");
+
+        // Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+
+        performDefaultFileUpload(MicroserviceConfigurationController.TYPE_MAPPING, filePath, requestBuilderCustomizer,
+                                 "Should be able to import configuration");
+    }
+
+    @Test
+    public void importExport() {
+        // Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+
+        performDefaultGet(MicroserviceConfigurationController.TYPE_MAPPING
+                + MicroserviceConfigurationController.ENABLED_MAPPING, requestBuilderCustomizer, "Shoulb be enabled");
+    }
 }

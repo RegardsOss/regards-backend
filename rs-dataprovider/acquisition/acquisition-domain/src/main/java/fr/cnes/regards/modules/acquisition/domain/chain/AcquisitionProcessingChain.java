@@ -50,6 +50,7 @@ import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
@@ -75,6 +76,7 @@ public class AcquisitionProcessingChain {
      */
     public static final String CHECKSUM_ALGORITHM = "MD5";
 
+    @ConfigIgnore
     @Id
     @SequenceGenerator(name = "AcquisitionChainSequence", initialValue = 1, sequenceName = "seq_acq_chain")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "AcquisitionChainSequence")
