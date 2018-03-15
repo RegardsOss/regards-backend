@@ -297,7 +297,8 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitHostAndPort[0],
                 Integer.parseInt(rabbitHostAndPort[1]));
         connectionFactory.setVirtualHost(virtualHost);
-
+        connectionFactory.setUsername(rabbitmqUserName);
+        connectionFactory.setPassword(rabbitmqPassword);
         registerConnectionFactory(virtualHost, connectionFactory);
     }
 
