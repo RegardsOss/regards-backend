@@ -168,10 +168,9 @@ public class CatalogSearchService implements ICatalogSearchService {
 
             // For all results, when searching for data objects, set the downloadable property depending on user DATA
             // access rights
-            if (((searchKey instanceof SimpleSearchKey)
-                    && searchKey.getSearchTypeMap().values().contains(DataObject.class)) ||
-                    ((searchKey.getResultClass() != null)
-                      && TypeToken.of(searchKey.getResultClass()).getRawType() == DataObject.class)) {
+            if (((searchKey instanceof SimpleSearchKey) && searchKey.getSearchTypeMap().values()
+                    .contains(DataObject.class)) || ((searchKey.getResultClass() != null)
+                    && TypeToken.of(searchKey.getResultClass()).getRawType() == DataObject.class)) {
                 Set<String> userGroups = accessRightFilter.getUserAccessGroups();
                 for (R entity : (List<R>) facetPage.getContent()) {
                     if (entity instanceof DataObject) {
@@ -273,12 +272,14 @@ public class CatalogSearchService implements ICatalogSearchService {
             final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
             // If accessGroups is null, user is admin
             if (accessGroups != null) {
-                // Retrieve all datasets that permit data objects retrieval (ie groups with FULL_ACCESS privilege), set
+                // Retrieve all datasets that permit data objects retrieval (ie datasets with at least one groups with
+                // data access right)
                 // page size to max value because datasets count isn't too large...
+                ICriterion dataObjectsGrantedCrit = ICriterion.or(accessGroups.stream().map(group -> ICriterion
+                        .eq("metadata.dataObjectsGroups." + group, true)).collect(Collectors.toSet()));
                 Page<Dataset> page = searchService
                         .search(Searches.onSingleEntity(searchKey.getSearchIndex(), EntityType.DATASET),
-                                ISearchService.MAX_PAGE_SIZE, ICriterion.in("metadata.dataObjectsGroups", accessGroups
-                                        .toArray(new String[accessGroups.size()])));
+                                ISearchService.MAX_PAGE_SIZE, dataObjectsGrantedCrit);
                 Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId)
                         .map(UniformResourceName::toString).collect(Collectors.toSet());
                 // If summary is restricted to a specified datasetIpId, it must be taken into account
