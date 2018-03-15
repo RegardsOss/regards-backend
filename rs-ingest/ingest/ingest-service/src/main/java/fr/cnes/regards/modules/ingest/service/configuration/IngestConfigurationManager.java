@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.module.manager.AbstractModuleConfigurationManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
-import fr.cnes.regards.framework.module.manager.ModuleConfigurationItemAdapterFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
@@ -53,17 +52,10 @@ public class IngestConfigurationManager extends AbstractModuleConfigurationManag
     @Autowired
     private IIngestProcessingChainRepository ingestChainRepository;
 
-    private static final String KEY = IngestProcessingChain.class.getName();
-
-    @Override
-    public void configureFactory(ModuleConfigurationItemAdapterFactory factory) {
-        factory.registerSubtype(IngestProcessingChainMCI.class, KEY);
-    }
-
     @Override
     public void importConfiguration(ModuleConfiguration configuration) throws ModuleException {
         for (ModuleConfigurationItem<?> item : configuration.getConfiguration()) {
-            if (KEY.equals(item.getKey())) {
+            if (IngestProcessingChain.class.isAssignableFrom(item.getKey())) {
                 IngestProcessingChain ipc = item.getTypedValue();
                 if (processingService.existsChain(ipc.getName())) {
                     LOGGER.warn("Ingest processing chain already exists with same name, skipping import of {}.",
@@ -80,10 +72,7 @@ public class IngestConfigurationManager extends AbstractModuleConfigurationManag
     public ModuleConfiguration exportConfiguration() {
         List<ModuleConfigurationItem<?>> configuration = new ArrayList<>();
         for (IngestProcessingChain ipc : ingestChainRepository.findAll()) {
-            ModuleConfigurationItem<IngestProcessingChain> mci = new IngestProcessingChainMCI();
-            mci.setKey(KEY);
-            mci.setValue(ipc);
-            configuration.add(mci);
+            configuration.add(ModuleConfigurationItem.build(ipc));
         }
         return ModuleConfiguration.build(info, configuration);
     }

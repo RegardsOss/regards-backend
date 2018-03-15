@@ -93,7 +93,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
 
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
 
         performDefaultFileUpload(MicroserviceConfigurationController.TYPE_MAPPING, filePath, requestBuilderCustomizer,
                                  "Should be able to import configuration");
