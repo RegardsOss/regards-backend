@@ -177,20 +177,14 @@ public class CatalogSearchService implements ICatalogSearchService {
                         DataObject dataObject = (DataObject) entity;
                         // Map of { group -> data access right }
                         Map<String, Boolean> groupsAccessRightMap = dataObject.getMetadata().getGroupsAccessRightsMap();
-                        boolean downloadable = false;
 
                         // Looking for ONE user group that permits access to data
-                        for (String userGroup : userGroups) {
-                            if (groupsAccessRightMap.containsKey(userGroup) && groupsAccessRightMap.get(userGroup)) {
-                                downloadable = true;
-                                break;
-                            }
-                        }
-                        dataObject.setDownloadable(downloadable);
+                        dataObject.setDownloadable((userGroups == null)
+                            || userGroups.stream().anyMatch(userGroup -> (groupsAccessRightMap.containsKey(userGroup)
+                                                                         && groupsAccessRightMap.get(userGroup))));
                     }
                 }
-            }
-            return facetPage;
+            } return facetPage;
         } catch (OpenSearchParseException e) {
             String message = "No query parameter";
             if (allParams != null) {
