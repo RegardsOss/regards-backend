@@ -71,6 +71,13 @@ public class ThemeService extends AbstractUiConfigurationService implements IThe
     @Value("classpath:DefaultEnergyTheme.json")
     private Resource defaultEnergyThemeResource;
 
+
+    /**
+     * The default configuration for ocean theme
+     */
+    @Value("classpath:DefaultOceanTheme.json")
+    private Resource defaultOceanThemeResource;
+
     @Autowired
     private IThemeRepository repository;
 
@@ -125,7 +132,6 @@ public class ThemeService extends AbstractUiConfigurationService implements IThe
      *
      * Set to false the defaultDynamicModule attribute of all modules for the given application id
      *
-     * @param pApplicationId
      * @since 1.0-SNAPSHOT
      */
     private void disableAllActiveThemes() {
@@ -175,6 +181,19 @@ public class ThemeService extends AbstractUiConfigurationService implements IThe
                 throw new InitUIException(e);
             }
             repository.save(defaultEnergyTheme);
+        }
+
+        if (!repository.findByName("Ocean").isPresent()) {
+            final Theme defaultOceanTheme = new Theme();
+            defaultOceanTheme.setName("Ocean");
+            defaultOceanTheme.setActive(false);
+            try {
+                defaultOceanTheme.setConfiguration(readDefaultFileResource(defaultOceanThemeResource));
+            } catch (final IOException e) {
+                LOG.error(e.getMessage(), e);
+                throw new InitUIException(e);
+            }
+            repository.save(defaultOceanTheme);
         }
     }
 

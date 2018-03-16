@@ -1,6 +1,20 @@
 {
-"title":"Regards user interface",
-"displayAuthentication":true,
-"displayLocaleSelector":true,
-"displayThemeSelector":true
+  "title": "Regards user interface",
+  "displayAuthentication": true,
+  "displayLocaleSelector": true,
+  "displayThemeSelector": true,
+  "displayCartSelector": true,
+  "displayNotificationsSelector": true,
+  "home": {
+    "title": {
+      "en": "Home",
+      "fr": "Accueil"
+    },
+    "icon": {
+      "type": "DEFAULT_HOME_ICON"
+    }
+  },
+  "navigation": [],
+  "contacts": "",
+  "projectAboutPage": ""
 }
