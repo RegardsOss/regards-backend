@@ -76,13 +76,21 @@
                                 </configuration>
 			</plugin>
 			<plugin>
-                                                <groupId>org.apache.maven.plugins</groupId>
-                                                <artifactId>maven-war-plugin</artifactId>
-                                                <version>3.0.0</version>
-                                                <configuration>
-                                                        <warSourceDirectory>${webapp.dir}/frontend-webapp/src/main/webapp/dist/prod</warSourceDirectory>
-                                                </configuration>
-                                    </plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<webResources>
+			            <resource>
+				              <directory>src/main/webapp</directory>
+			            </resource>
+			            <resource>
+			            	  <targetPath>static</targetPath>
+				              <directory>${webapp.dir}/frontend-webapp/src/main/webapp/dist/prod</directory>
+			            </resource>
+		          </webResources>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
