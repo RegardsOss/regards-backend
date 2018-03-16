@@ -728,27 +728,7 @@
             <!-- Access - Backend For Frontend -->
             <dependency>
                 <groupId>fr.cnes.regards.modules</groupId>
-                <artifactId>backend-for-frontend-client</artifactId>
-                <version>${fr.cnes.regards.modules.backend-for-frontend.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules</groupId>
                 <artifactId>backend-for-frontend-rest</artifactId>
-                <version>${fr.cnes.regards.modules.backend-for-frontend.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules</groupId>
-                <artifactId>backend-for-frontend-dao</artifactId>
-                <version>${fr.cnes.regards.modules.backend-for-frontend.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules</groupId>
-                <artifactId>backend-for-frontend-domain</artifactId>
-                <version>${fr.cnes.regards.modules.backend-for-frontend.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules</groupId>
-                <artifactId>backend-for-frontend-service</artifactId>
                 <version>${fr.cnes.regards.modules.backend-for-frontend.version}</version>
             </dependency>
             <!-- Entity -->
@@ -861,12 +841,6 @@
                 <version>${fr.cnes.regards.modules.dataaccess.version}</version>
             </dependency>
             <!-- Frontend -->
-            <dependency>
-                <groupId>fr.cnes.regards</groupId>
-                <artifactId>frontend-webapp</artifactId>
-                <type>war</type>
-                <version>${fr.cnes.regards.frontend-webapp.version}</version>
-            </dependency>
             <dependency>
                 <groupId>fr.cnes.regards</groupId>
                 <artifactId>bootstrap-frontend</artifactId>
