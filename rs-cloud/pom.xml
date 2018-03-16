@@ -26,5 +26,6 @@
 		<module>rs-gateway</module>
 		<module>rs-registry</module>
 		<module>rs-authentication</module>
+		<module>rs-frontend-boot</module>
 	</modules>
 </project>
