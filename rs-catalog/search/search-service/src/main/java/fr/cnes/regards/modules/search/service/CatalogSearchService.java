@@ -184,7 +184,8 @@ public class CatalogSearchService implements ICatalogSearchService {
                                                                          && groupsAccessRightMap.get(userGroup))));
                     }
                 }
-            } return facetPage;
+            }
+            return facetPage;
         } catch (OpenSearchParseException e) {
             String message = "No query parameter";
             if (allParams != null) {
