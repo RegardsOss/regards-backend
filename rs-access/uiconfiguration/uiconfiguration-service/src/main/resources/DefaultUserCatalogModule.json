@@ -1,5 +1,4 @@
 {
-  "displayMode": "data",
   "attributes": [
     {
       "attributeFullQualifiedName": "ipId",
@@ -14,7 +13,10 @@
       "order": 2
     }
   ],
+  "displayMode": "data",
+  "initialViewMode": "list",
   "enableFacettes": false,
-  "enableQuicklooks": false,
-  "enableDownload": false
+  "facettesInitiallySelected": false,
+  "enableDownload": false,
+  "enableQuicklooks": false
 }
