@@ -51,10 +51,6 @@
 		</dependency>
 		<!-- Module dependencies -->
 		<dependency>
-			<groupId>fr.cnes.regards.modules</groupId>
-			<artifactId>backend-for-frontend-service</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.modules.search</groupId>
 			<artifactId>search-client</artifactId>
 		</dependency>
