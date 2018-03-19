@@ -239,13 +239,23 @@ public class DataFileDto {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+
         DataFileDto that = (DataFileDto) o;
-        return Objects.equals(url, that.url);
+
+        if (checksum != null ? !checksum.equals(that.checksum) : that.checksum != null) {
+            return false;
+        }
+        if (algorithm != null ? !algorithm.equals(that.algorithm) : that.algorithm != null) {
+            return false;
+        }
+        return dataType == that.dataType;
     }
 
     @Override
     public int hashCode() {
-
-        return Objects.hash(url);
+        int result = checksum != null ? checksum.hashCode() : 0;
+        result = 31 * result + (algorithm != null ? algorithm.hashCode() : 0);
+        result = 31 * result + (dataType != null ? dataType.hashCode() : 0);
+        return result;
     }
 }
