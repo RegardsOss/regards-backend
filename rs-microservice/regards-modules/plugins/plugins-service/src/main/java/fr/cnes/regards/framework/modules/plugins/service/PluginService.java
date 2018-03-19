@@ -375,7 +375,7 @@ public class PluginService implements IPluginService {
 
         // Check if all parameters are really dynamic
         for (PluginParameter dynamicParameter : dynamicPluginParameters) {
-            if (!dynamicParameter.isDynamic()) {
+            if (!dynamicParameter.isDynamic() && !dynamicParameter.isOnlyDynamic()) {
                 String errorMessage = String.format(
                                                     "The parameter \"%s\" is not identified as dynamic. Plugin instanciation is cancelled.",
                                                     dynamicParameter.getName());

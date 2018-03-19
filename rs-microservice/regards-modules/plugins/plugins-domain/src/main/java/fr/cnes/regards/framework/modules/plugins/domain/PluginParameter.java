@@ -31,6 +31,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -93,6 +94,12 @@ public class PluginParameter implements IIdentifiable<Long> {
             foreignKey = @ForeignKey(name = "fk_plugin_param_dyn_value_param_id"))
     @Column(name = "value")
     private Set<PluginParameterValue> dynamicsValues = new HashSet<>();
+
+    /**
+     * The parameter is only dynamic
+     */
+    @Transient
+    private boolean onlyDynamic = false;
 
     /**
      * Needed for deserialization
@@ -260,5 +267,13 @@ public class PluginParameter implements IIdentifiable<Long> {
     public int compareTo(PluginParameter parameter) {
         return Comparator.comparing(PluginParameter::getName).thenComparing(PluginParameter::isDynamic)
                 .compare(this, parameter);
+    }
+
+    public boolean isOnlyDynamic() {
+        return onlyDynamic;
+    }
+
+    public void setOnlyDynamic(boolean onlyDynamic) {
+        this.onlyDynamic = onlyDynamic;
     }
 }

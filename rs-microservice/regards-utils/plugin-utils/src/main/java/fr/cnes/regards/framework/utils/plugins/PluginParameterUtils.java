@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -126,14 +125,19 @@ public final class PluginParameterUtils {
         // Create PluginParameter
         if (pluginParameter == null) {
             // Guess values
-            result = PluginParameterType.create(field.getName(), field.getName(), null, field.getType(), paramType,
-                                                false);
+            result = PluginParameterType
+                    .create(field.getName(), field.getName(), null, field.getType(), paramType, false, false);
         } else {
             // Report values from annotation
             String name = getFieldName(field, pluginParameter);
 
-            result = PluginParameterType.create(name, pluginParameter.label(), pluginParameter.description(),
-                                                field.getType(), paramType, pluginParameter.optional());
+            result = PluginParameterType.create(name,
+                                                pluginParameter.label(),
+                                                pluginParameter.description(),
+                                                field.getType(),
+                                                paramType,
+                                                pluginParameter.optional(),
+                                                pluginParameter.onlyDynamic());
 
             // Manage markdown description
             String markdown = AnnotationUtils.loadMarkdown(pluginClass, pluginParameter.markdown());
@@ -253,8 +257,8 @@ public final class PluginParameterUtils {
             } else if (Map.class.isAssignableFrom(field.getType())) {
                 parameterType = ParamType.MAP;
             } else {
-                throw new PluginUtilsRuntimeException(
-                        String.format("Parameter type not supported : %s", field.getGenericType()));
+                throw new PluginUtilsRuntimeException(String.format("Parameter type not supported : %s",
+                                                                    field.getGenericType()));
             }
         } else {
             parameterType = ParamType.OBJECT;
@@ -348,7 +352,8 @@ public final class PluginParameterUtils {
         // Test if the plugin configuration is active
         if (!plgConf.isActive()) {
             throw new PluginUtilsRuntimeException(String.format("The plugin configuration <%s-%s> is not active.",
-                                                                plgConf.getId(), plgConf.getLabel()));
+                                                                plgConf.getId(),
+                                                                plgConf.getLabel()));
         }
 
         // Look for annotated fields
@@ -356,8 +361,14 @@ public final class PluginParameterUtils {
             if (field.isAnnotationPresent(PluginParameter.class)) {
                 PluginParameter plgParamAnnotation = field.getAnnotation(PluginParameter.class);
                 Gson gsonProcessor = gson.isPresent() ? gson.get() : PluginGsonUtils.getInstance();
-                processPluginParameter(gsonProcessor, returnPlugin, plgConf, field, plgParamAnnotation, prefixes,
-                                       instantiatedPluginMap, dynamicPluginParameters);
+                processPluginParameter(gsonProcessor,
+                                       returnPlugin,
+                                       plgConf,
+                                       field,
+                                       plgParamAnnotation,
+                                       prefixes,
+                                       instantiatedPluginMap,
+                                       dynamicPluginParameters);
             }
         }
 
@@ -395,7 +406,12 @@ public final class PluginParameterUtils {
         switch (paramType) {
             case PRIMITIVE:
                 LOGGER.debug(String.format("primitive parameter : %s --> %s", field.getName(), field.getType()));
-                postProcessPrimitiveType(gson, pluginInstance, plgConf, field, typeWrapper, plgParamAnnotation,
+                postProcessPrimitiveType(gson,
+                                         pluginInstance,
+                                         plgConf,
+                                         field,
+                                         typeWrapper,
+                                         plgParamAnnotation,
                                          dynamicPluginParameters);
                 break;
             case PLUGIN:
@@ -405,9 +421,16 @@ public final class PluginParameterUtils {
             case OBJECT:
             case COLLECTION:
             case MAP:
-                LOGGER.debug(String.format("Object parameter %s : %s --> %s", paramType, field.getName(),
+                LOGGER.debug(String.format("Object parameter %s : %s --> %s",
+                                           paramType,
+                                           field.getName(),
                                            field.getType()));
-                postProcessObjectType(gson, pluginInstance, plgConf, field, plgParamAnnotation, paramType,
+                postProcessObjectType(gson,
+                                      pluginInstance,
+                                      plgConf,
+                                      field,
+                                      plgParamAnnotation,
+                                      paramType,
                                       dynamicPluginParameters);
                 break;
             default:
@@ -433,28 +456,37 @@ public final class PluginParameterUtils {
         if ((dynamicPluginParameters != null) && (dynamicPluginParameters.length > 0)) {
 
             // Search dynamic parameter for current parameter name
-            Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> dynamicParameter = Arrays
+            Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> dynamicParameterOpt = Arrays
                     .asList(dynamicPluginParameters).stream().filter(s -> s.getName().equals(parameterName))
                     .findFirst();
-            if (dynamicParameter.isPresent()) {
+            if (dynamicParameterOpt.isPresent()) {
+                fr.cnes.regards.framework.modules.plugins.domain.PluginParameter dynamicParameter = dynamicParameterOpt
+                        .get();
+                // Check if the parameter is only dynamic, in that case, we do not even lookup into the plugin conf
+                if (dynamicParameter.isOnlyDynamic()) {
+                    paramValue = dynamicParameter.getValue();
+                } else {
 
-                // Check if parameter can be dynamic in plugin configuration
-                Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> confParameter = pluginConf
-                        .getParameters().stream()
-                        .filter(s -> s.getName().equals(dynamicParameter.get().getName()) && s.isDynamic()).findFirst();
-                if (confParameter.isPresent()) {
+                    // Check if parameter can be dynamic in plugin configuration
+                    Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> confParameter = pluginConf
+                            .getParameters().stream()
+                            .filter(s -> s.getName().equals(dynamicParameter.getName()) && s.isDynamic()).findFirst();
+                    if (confParameter.isPresent()) {
 
-                    // Override plugin configuration value with dynamic one
-                    paramValue = dynamicParameter.get().getValue();
-                    LOGGER.debug("Parameter with name \"{}\" set to its dynamic value \"{}\"", parameterName,
-                                 paramValue);
+                        // Override plugin configuration value with dynamic one
+                        paramValue = dynamicParameterOpt.get().getValue();
+                        LOGGER.debug("Parameter with name \"{}\" set to its dynamic value \"{}\"",
+                                     parameterName,
+                                     paramValue);
 
-                    // Check if this value is valid
-                    if (!confParameter.get().isValidDynamicValue(paramValue)) {
-                        // The dynamic parameter value is not a possible value
-                        throw new PluginUtilsRuntimeException(
-                                String.format("The dynamic value <%s> is not an authorized value for the parameter %s.",
-                                              paramValue, parameterName));
+                        // Check if this value is valid
+                        if (!confParameter.get().isValidDynamicValue(paramValue)) {
+                            // The dynamic parameter value is not a possible value
+                            throw new PluginUtilsRuntimeException(String.format(
+                                    "The dynamic value <%s> is not an authorized value for the parameter %s.",
+                                    paramValue,
+                                    parameterName));
+                        }
                     }
                 }
             }
@@ -486,20 +518,25 @@ public final class PluginParameterUtils {
         // Retrieve parameter name
         String parameterName = getFieldName(field, plgParamAnnotation);
 
-        if (field.getType().isInterface()
-                && !(ParamType.COLLECTION.equals(paramType) || ParamType.MAP.equals(paramType))) {
-            throw new PluginUtilsRuntimeException(String
-                    .format("Invalid plugin parameter of non instanciable interface %s", field.getType().getName()));
+        if (field.getType().isInterface() && !(ParamType.COLLECTION.equals(paramType) || ParamType.MAP
+                .equals(paramType))) {
+            throw new PluginUtilsRuntimeException(String.format(
+                    "Invalid plugin parameter of non instanciable interface %s",
+                    field.getType().getName()));
         }
         if (ParamType.COLLECTION.equals(paramType) && !Collection.class.isAssignableFrom(field.getType())) {
-            throw new PluginUtilsRuntimeException(String
-                    .format("Invalid plugin parameter: plugin parameter %s is supposed to be of type %s but is not. It is of type : %s",
-                            parameterName, Collection.class.getName(), field.getType().getName()));
+            throw new PluginUtilsRuntimeException(String.format(
+                    "Invalid plugin parameter: plugin parameter %s is supposed to be of type %s but is not. It is of type : %s",
+                    parameterName,
+                    Collection.class.getName(),
+                    field.getType().getName()));
         }
         if (ParamType.MAP.equals(paramType) && !Map.class.isAssignableFrom(field.getType())) {
-            throw new PluginUtilsRuntimeException(String
-                    .format("Invalid plugin parameter: plugin parameter %s is supposed to be of type %s but is not. It is of type : %s",
-                            parameterName, Map.class.getName(), field.getType().getName()));
+            throw new PluginUtilsRuntimeException(String.format(
+                    "Invalid plugin parameter: plugin parameter %s is supposed to be of type %s but is not. It is of type : %s",
+                    parameterName,
+                    Map.class.getName(),
+                    field.getType().getName()));
         }
         // Get parameter value
         String paramValue = getParameterValue(parameterName, plgConf, dynamicPluginParameters);
@@ -517,8 +554,7 @@ public final class PluginParameterUtils {
                     field.set(pluginInstance, objectParamValue);
                 } catch (IllegalArgumentException | IllegalAccessException e) {
                     LOGGER.error(String.format("Error during Object parameter deserialization for parameter %s",
-                                               parameterName),
-                                 e);
+                                               parameterName), e);
                 }
             }
         }
@@ -591,13 +627,13 @@ public final class PluginParameterUtils {
                 effectiveVal = method.invoke(null, paramValue);
             }
             field.set(pluginInstance, effectiveVal);
-        } catch (final IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException
-                | InvocationTargetException e) {
+        } catch (final IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException e) {
             // Propagate exception
-            throw new PluginUtilsRuntimeException(
-                    String.format("Exception while processing param <%s> in plugin class <%s> with value <%s>.",
-                                  plgParamAnnotation.label(), pluginInstance.getClass(), paramValue),
-                    e);
+            throw new PluginUtilsRuntimeException(String.format(
+                    "Exception while processing param <%s> in plugin class <%s> with value <%s>.",
+                    plgParamAnnotation.label(),
+                    pluginInstance.getClass(),
+                    paramValue), e);
         }
 
         if (LOGGER.isDebugEnabled()) {
@@ -630,10 +666,11 @@ public final class PluginParameterUtils {
             field.set(pluginInstance, effectiveVal);
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // Propagate exception
-            throw new PluginUtilsRuntimeException(
-                    String.format("Exception while processing param <%s> in plugin class <%s> with value <%s>.",
-                                  plgParamAnnotation.label(), pluginInstance.getClass(), paramValue),
-                    e);
+            throw new PluginUtilsRuntimeException(String.format(
+                    "Exception while processing param <%s> in plugin class <%s> with value <%s>.",
+                    plgParamAnnotation.label(),
+                    pluginInstance.getClass(),
+                    paramValue), e);
         }
         LOGGER.debug("Ending postProcessInterface: {}", plgParamAnnotation.label());
     }
