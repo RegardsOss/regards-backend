@@ -93,9 +93,9 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
     public void testGetAllThemes() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(6)));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(7)));
         performDefaultGet(ThemeController.ROOT_MAPPING, expectations,
-                          "Error getting all themes. There should 5 themes. The 3 default ones and the 3 created in this test.");
+                          "Error getting all themes. There should 7 themes. The 4 default ones and the 3 created in this test.");
     }
 
     /**
@@ -143,9 +143,9 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
 
         expectations.clear();
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(7)));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(8)));
         performDefaultGet(ThemeController.ROOT_MAPPING, expectations,
-                          "There should be the 6 initial themes and the new created one.");
+                          "There should be the 7 initial themes and the new created one.");
     }
 
     /**
