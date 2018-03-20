@@ -973,6 +973,13 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             toBeDeleted.setState(AIPState.DELETED);
             aipDao.save(toBeDeleted);
             scheduleDeletion(dataFilesToDelete);
+            // Now that deletion has been scheduled, check if the aip metadata has been stored at least once
+            // If it has not been stored, lets remove it now and publish the event for the rest of the world
+            Optional<StorageDataFile> metadataOpt = dataFileDao.findByAipAndType(toBeDeleted, DataType.AIP);
+            if(!metadataOpt.isPresent()) {
+                publisher.publish(new AIPEvent(toBeDeleted));
+                aipDao.remove(toBeDeleted);
+            }
             return notSuppressible;
         }
         return notSuppressible;
