@@ -946,21 +946,21 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                 if(dataFile.getState().equals(DataFileState.ERROR)) {
                     dataFileDao.remove(dataFile);
                     publisher.publish(new DataStorageEvent(dataFile, StorageAction.DELETION, StorageEventType.SUCCESSFULL, null));
-                }
-                if (dataFile.getState().equals(DataFileState.PENDING)) {
-                    notSuppressible.add(dataFile);
                 } else {
-                    // we order deletion of a file if and only if no other aip references the same file
-                    Set<StorageDataFile> dataFilesWithSameFile = dataFileDao
-                            .findAllByChecksumIn(Sets.newHashSet(dataFile.getChecksum()));
-                    // well lets remove ourselves of course!
-                    dataFilesWithSameFile.remove(dataFile);
-                    if (dataFilesWithSameFile.isEmpty()) {
-                        // add to datafiles that should be removed
-                        dataFilesToDelete.add(dataFile);
+                    if (dataFile.getState().equals(DataFileState.PENDING)) {
+                        notSuppressible.add(dataFile);
                     } else {
-                        // if other datafiles are referencing a file, we just remove the data file from the database.
-                        dataFileDao.remove(dataFile);
+                        // we order deletion of a file if and only if no other aip references the same file
+                        Set<StorageDataFile> dataFilesWithSameFile = dataFileDao.findAllByChecksumIn(Sets.newHashSet(dataFile.getChecksum()));
+                        // well lets remove ourselves of course!
+                        dataFilesWithSameFile.remove(dataFile);
+                        if (dataFilesWithSameFile.isEmpty()) {
+                            // add to datafiles that should be removed
+                            dataFilesToDelete.add(dataFile);
+                        } else {
+                            // if other datafiles are referencing a file, we just remove the data file from the database.
+                            dataFileDao.remove(dataFile);
+                        }
                     }
                 }
             }
