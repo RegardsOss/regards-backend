@@ -941,6 +941,9 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             // check if data file are use by any other aip
             Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(toBeDeleted);
             for (StorageDataFile dataFile : dataFiles) {
+                if(dataFile.getState().equals(DataFileState.ERROR)) {
+                    dataFileDao.remove(dataFile);
+                }
                 if (dataFile.getState().equals(DataFileState.PENDING)) {
                     notSuppressible.add(dataFile);
                 } else {
