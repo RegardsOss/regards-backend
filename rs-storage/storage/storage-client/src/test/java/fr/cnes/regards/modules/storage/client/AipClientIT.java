@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,7 +24,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.compress.utils.Lists;
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -152,7 +152,8 @@ public class AipClientIT extends AbstractRegardsWebIT {
     @BeforeClass
     public static void initAll() throws IOException {
         if (Paths.get(workspace).toFile().exists()) {
-            FileUtils.deleteDirectory(Paths.get(workspace).toFile());
+            Files.walk(Paths.get(workspace)).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+
         }
         Files.createDirectory(Paths.get(workspace));
         baseStorageLocation = new URL("file", "", Paths.get("target/AIPServiceIT").toFile().getAbsolutePath());
@@ -161,11 +162,12 @@ public class AipClientIT extends AbstractRegardsWebIT {
     @Before
     public void init() throws ModuleException, IOException, URISyntaxException {
         if ((baseStorageLocation != null) && Paths.get(baseStorageLocation.toURI()).toFile().exists()) {
-            FileUtils.deleteDirectory(Paths.get(baseStorageLocation.toURI()).toFile());
+            Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
+                    .forEach(File::delete);
         }
 
         if (downloadDir.toFile().exists()) {
-            FileUtils.deleteDirectory(downloadDir.toFile());
+            Files.walk(downloadDir).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
         }
         Files.createDirectories(downloadDir);
         FeignClientBuilder.setMessageConverters(messageConverters);
@@ -293,9 +295,10 @@ public class AipClientIT extends AbstractRegardsWebIT {
         Assert.assertTrue("Http response should be OK adter retrieveAIPFiles.",
                           HttpStatus.OK.equals(resp3.getStatusCode()));
         Assert.assertTrue("There should be one DataObject from the AIP.", resp3.getBody() != null);
-        Assert.assertTrue(String
-                .format("There should be two DataObjects from the AIP(stored file and metadata file) not %s.",
-                        resp3.getBody().size()), resp3.getBody().size() == 2);
+        Assert.assertTrue(String.format(
+                                        "There should be two DataObjects from the AIP(stored file and metadata file) not %s.",
+                                        resp3.getBody().size()),
+                          resp3.getBody().size() == 2);
         // 4. Make file available for download
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(2), fileChecksum);
         ResponseEntity<AvailabilityResponse> response = client.makeFilesAvailable(request);
@@ -348,7 +351,9 @@ public class AipClientIT extends AbstractRegardsWebIT {
     static class Conf {
 
         @Bean
-        public IProjectsClient projectsClient() {return Mockito.mock(IProjectsClient.class);}
+        public IProjectsClient projectsClient() {
+            return Mockito.mock(IProjectsClient.class);
+        }
 
         @Bean
         public INotificationClient notificationClient() {
