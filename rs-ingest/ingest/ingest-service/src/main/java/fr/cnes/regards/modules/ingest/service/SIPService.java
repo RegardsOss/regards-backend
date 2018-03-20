@@ -151,6 +151,7 @@ public class SIPService implements ISIPService {
                 };
                 List<RejectedSip> rejectedSips = gson.fromJson(e.getResponseBodyAsString(), bodyTypeToken.getType());
                 undeletableSips.addAll(rejectedSips);
+                return undeletableSips;
             } finally {
                 FeignSecurityManager.reset();
             }
