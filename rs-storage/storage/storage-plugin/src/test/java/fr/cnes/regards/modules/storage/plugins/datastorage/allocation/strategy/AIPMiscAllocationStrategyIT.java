@@ -41,7 +41,6 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.staf.domain.STAFArchive;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
@@ -55,7 +54,6 @@ import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.AIPMiscAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.PluginConfigurationIdentifiersWrapper;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFDataStorage;
 
 /**
  * Test class for plugin {@link AIPMiscAllocationStrategyPlugin}
@@ -85,19 +83,13 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         initDataFiles();
     }
 
-    private PluginConfiguration initSTAFPluginConf(String pluginLabel, String archiveName) throws ModuleException {
-        STAFArchive archive = new STAFArchive();
-        archive.setArchiveName(archiveName);
-        archive.setPassword("password");
-        PluginMetaData stafDataStorageMeta = PluginUtils
-                .createPluginMetaData(STAFDataStorage.class, STAFDataStorage.class.getPackage().getName(),
+    private PluginConfiguration initNearLinePluginConf(String pluginLabel) throws ModuleException {
+        PluginMetaData nearlineMeta = PluginUtils
+                .createPluginMetaData(NearlineDataStorageTestPlugin.class,
+                                      NearlineDataStorageTestPlugin.class.getPackage().getName(),
                                       IDataStorage.class.getPackage().getName(),
                                       INearlineDataStorage.class.getPackage().getName());
-        List<PluginParameter> stafDataStorageParams = PluginParametersFactory.build()
-                .addParameter("workspaceDirectory", "dir").addParameter("archiveParameters", archive)
-                .addParameter(STAFDataStorage.STAF_STORAGE_TOTAL_SPACE, 9000000000000L).getParameters();
-        return pluginService.savePluginConfiguration(new PluginConfiguration(stafDataStorageMeta, pluginLabel,
-                stafDataStorageParams));
+        return pluginService.savePluginConfiguration(new PluginConfiguration(nearlineMeta, pluginLabel, null));
     }
 
     private PluginConfiguration initLocalPluginconf(String label)
@@ -154,7 +146,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         aipBuilder.getPDIBuilder().setFacility("CS");
         aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
                                                                  OffsetDateTime.now());
-        String storageJson = "[{\"pluginId\":\"STAF\",\"directory\":\"dir1\"},{\"pluginId\":\"Local\",\"directory\":\"dir2\"}]";
+        String storageJson = "[{\"pluginId\":\"" + NearlineDataStorageTestPlugin.PLUGIN_ID
+                + "\",\"directory\":\"dir1\"},{\"pluginId\":\"Local\",\"directory\":\"dir2\"}]";
         aipBuilder.addMiscInformation("storage", gson.fromJson(storageJson, Object.class));
         return aipBuilder.build();
     }
@@ -164,7 +157,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         pluginService.addPluginPackage(AIPMiscAllocationStrategyPlugin.class.getPackage().getName());
         pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
         pluginService.addPluginPackage(INearlineDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(STAFDataStorage.class.getPackage().getName());
+        pluginService.addPluginPackage(NearlineDataStorageTestPlugin.class.getPackage().getName());
         pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
     }
 
@@ -178,24 +171,25 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
      */
     @Test
     public void testOkWithMultipleConfigurations() throws ModuleException, IOException, URISyntaxException {
-        // Init two STAF plugin configurations
-        PluginConfiguration stafConf1 = initSTAFPluginConf("label1", "archive1");
-        PluginConfiguration stafConf2 = initSTAFPluginConf("label2", "archive2");
+        // Init two nearline plugin configurations
+        PluginConfiguration nearConf1 = initNearLinePluginConf("label1");
+        PluginConfiguration nearConf2 = initNearLinePluginConf("label2");
         // Init two Local plugin configurations
         PluginConfiguration localConf1 = initLocalPluginconf("label3");
         PluginConfiguration localConf2 = initLocalPluginconf("label4");
         // Init allocation strategy
         Map<String, PluginConfigurationIdentifiersWrapper> mapping = Maps.newHashMap();
-        mapping.put("STAF", new PluginConfigurationIdentifiersWrapper(Arrays.asList(stafConf1.getId())));
+        mapping.put(NearlineDataStorageTestPlugin.PLUGIN_ID,
+                    new PluginConfigurationIdentifiersWrapper(Arrays.asList(nearConf1.getId())));
         mapping.put("Local", new PluginConfigurationIdentifiersWrapper(Arrays.asList(localConf1.getId())));
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", mapping);
 
         AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
         Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles);
-        Assert.assertTrue(result.containsEntry(stafConf1.getId(), dataFile1));
-        Assert.assertFalse(result.containsKey(stafConf2.getId()));
+        Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile1));
+        Assert.assertFalse(result.containsKey(nearConf2.getId()));
         Assert.assertTrue(result.containsEntry(localConf1.getId(), dataFile1));
-        Assert.assertTrue(result.containsEntry(stafConf1.getId(), dataFile2));
+        Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile2));
         Assert.assertFalse(result.containsKey(localConf2.getId()));
         Assert.assertTrue(result.containsEntry(localConf1.getId(), dataFile2));
     }
@@ -212,22 +206,23 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
     @Test
     public void testPartialDispatchWithMultipleConfigurations()
             throws ModuleException, IOException, URISyntaxException {
-        // Init two STAF plugin configurations
-        PluginConfiguration stafConf1 = initSTAFPluginConf("label1", "archive1");
-        PluginConfiguration stafConf2 = initSTAFPluginConf("label2", "archive2");
+        // Init two nearline plugin configurations
+        PluginConfiguration nearConf1 = initNearLinePluginConf("label1");
+        PluginConfiguration nearConf2 = initNearLinePluginConf("label2");
         // Init two Local plugin configurations
         PluginConfiguration localConf1 = initLocalPluginconf("label3");
         PluginConfiguration localConf2 = initLocalPluginconf("label4");
         // Init allocation strategy
         Map<String, PluginConfigurationIdentifiersWrapper> mapping = Maps.newHashMap();
-        mapping.put("STAF", new PluginConfigurationIdentifiersWrapper(Arrays.asList(stafConf1.getId())));
+        mapping.put(NearlineDataStorageTestPlugin.PLUGIN_ID,
+                    new PluginConfigurationIdentifiersWrapper(Arrays.asList(nearConf1.getId())));
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", mapping);
 
         AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
         Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles);
-        Assert.assertTrue(result.containsEntry(stafConf1.getId(), dataFile1));
-        Assert.assertTrue(result.containsEntry(stafConf1.getId(), dataFile2));
-        Assert.assertFalse(result.containsKey(stafConf2.getId()));
+        Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile1));
+        Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile2));
+        Assert.assertFalse(result.containsKey(nearConf2.getId()));
         Assert.assertFalse(result.containsKey(localConf1.getId()));
         Assert.assertFalse(result.containsKey(localConf2.getId()));
     }
@@ -243,18 +238,18 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
      */
     @Test
     public void testOkWithoutConfiguration() throws ModuleException, IOException, URISyntaxException {
-        // Init two STAF plugin configurations
-        PluginConfiguration stafConf1 = initSTAFPluginConf("label1", "archive1");
-        // Init two Local plugin configurations
+        // Init one nearline plugin configurations
+        PluginConfiguration nearConf1 = initNearLinePluginConf("label1");
+        // Init one Local plugin configurations
         PluginConfiguration localConf1 = initLocalPluginconf("label3");
         // Init allocation strategy
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", null);
 
         AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
         Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles);
-        Assert.assertTrue(result.containsEntry(stafConf1.getId(), dataFile1));
+        Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile1));
         Assert.assertTrue(result.containsEntry(localConf1.getId(), dataFile1));
-        Assert.assertTrue(result.containsEntry(stafConf1.getId(), dataFile2));
+        Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile2));
         Assert.assertTrue(result.containsEntry(localConf1.getId(), dataFile2));
     }
 
@@ -267,9 +262,9 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
      */
     @Test
     public void testPartialDispatchWithoutConfiguration() throws ModuleException, IOException, URISyntaxException {
-        // Init two STAF plugin configurations
-        PluginConfiguration stafConf1 = initSTAFPluginConf("label1", "archive1");
-        PluginConfiguration stafConf2 = initSTAFPluginConf("label2", "archive2");
+        // Init two nealine plugin configurations
+        PluginConfiguration nearConf1 = initNearLinePluginConf("label1");
+        PluginConfiguration nearConf2 = initNearLinePluginConf("label2");
         // Init two Local plugin configurations
         PluginConfiguration localConf = initLocalPluginconf("label3");
         // Init allocation strategy
@@ -277,8 +272,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
 
         AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
         Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles);
-        Assert.assertFalse(result.containsKey(stafConf1.getId()));
-        Assert.assertFalse(result.containsKey(stafConf2.getId()));
+        Assert.assertFalse(result.containsKey(nearConf1.getId()));
+        Assert.assertFalse(result.containsKey(nearConf2.getId()));
         Assert.assertTrue(result.containsEntry(localConf.getId(), dataFile1));
         Assert.assertTrue(result.containsEntry(localConf.getId(), dataFile2));
     }
@@ -292,9 +287,9 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
      */
     @Test
     public void testKOWithoutAnyConfiguration() throws ModuleException, IOException, URISyntaxException {
-        // Init two STAF plugin configurations
-        initSTAFPluginConf("label1", "archive1");
-        initSTAFPluginConf("label2", "archive2");
+        // Init two nearline plugin configurations
+        initNearLinePluginConf("label1");
+        initNearLinePluginConf("label2");
         // Init two Local plugin configurations
         initLocalPluginconf("label3");
         initLocalPluginconf("label4");
