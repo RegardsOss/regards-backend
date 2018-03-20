@@ -2,9 +2,10 @@ package fr.cnes.regards.modules.storage.service.ready;
 
 import java.util.List;
 
-import org.assertj.core.util.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.module.ready.IModuleReady;
 import fr.cnes.regards.framework.module.ready.ModuleReadiness;
@@ -38,9 +39,8 @@ public class StorageModuleReady implements IModuleReady {
         long numberAllocationStrategy = pluginService.getPluginConfigurationsByType(IAllocationStrategy.class).stream()
                 .filter(pc -> pc.isActive()).count();
         if (numberAllocationStrategy != 1) {
-            reasons.add(
-                    "There should be one and only one Allocation Strategy configured and active in the system. There is currently: "
-                            + numberAllocationStrategy);
+            reasons.add("There should be one and only one Allocation Strategy configured and active in the system. There is currently: "
+                    + numberAllocationStrategy);
             ready = false;
         }
         // check data storage
