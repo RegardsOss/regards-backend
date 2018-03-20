@@ -377,13 +377,15 @@ public final class PluginUtils {
         // First lets apply equivalent to hibernate validation
         if (pluginConfiguration == null) {
             validationErrors.add("The plugin configuration cannot be null.");
+            return new EntityInvalidException(validationErrors);
         }
         if (pluginConfiguration.getPluginId() == null) {
             validationErrors.add("The unique identifier of the plugin (attribute pluginId) is required.");
         } else {
             if (pluginConfiguration.getPriorityOrder() == null) {
-                validationErrors.add(String.format("The plugin configuration priority order is required (pluginId: %s).",
-                                                   pluginConfiguration.getPluginId()));
+                validationErrors
+                        .add(String.format("The plugin configuration priority order is required (pluginId: %s).",
+                                           pluginConfiguration.getPluginId()));
             }
             if (pluginConfiguration.getVersion() == null) {
                 validationErrors.add(String.format("The plugin configuration version is required (pluginId: %s).",
@@ -422,6 +424,6 @@ public final class PluginUtils {
             LOGGER.error(e.getMessage(), e);
             validationErrors.add(e.getMessage());
         }
-        return new EntityInvalidException(validationErrors);
+        return validationErrors.isEmpty() ? null : new EntityInvalidException(validationErrors);
     }
 }
