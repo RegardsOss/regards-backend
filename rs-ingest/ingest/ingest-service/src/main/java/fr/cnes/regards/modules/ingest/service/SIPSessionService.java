@@ -31,15 +31,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPSessionRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPSessionSpecifications;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPSessionBuilder;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.storage.domain.RejectedSip;
 
 @Service
 @MultitenantTransactional
@@ -107,7 +108,7 @@ public class SIPSessionService implements ISIPSessionService {
     }
 
     @Override
-    public Collection<SIPEntity> deleteSIPSession(String id) throws ModuleException {
+    public Collection<RejectedSip> deleteSIPSession(String id) throws ModuleException {
         return sipService.deleteSIPEntitiesForSessionId(id);
     }
 

@@ -18,15 +18,24 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,6 +43,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -49,9 +59,18 @@ import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
 @RequestMapping(IngestProcessingChainController.TYPE_MAPPING)
 public class IngestProcessingChainController implements IResourceController<IngestProcessingChain> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestProcessingChainController.class);
+
     public static final String TYPE_MAPPING = "/processingchains";
 
     public static final String NAME_PATH = "/{name}";
+
+    public static final String IMPORT_PATH = "/import";
+
+    public static final String EXPORT_PATH = NAME_PATH + "/export";
+
+    @Value("${spring.application.name}")
+    private String applicationName;
 
     @Autowired
     private IIngestProcessingService ingestProcessingService;
@@ -87,13 +106,51 @@ public class IngestProcessingChainController implements IResourceController<Inge
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Create a new IngestProcessingChain.")
+    @ResourceAccess(description = "Create a new ingestion processing chain")
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<Resource<IngestProcessingChain>> create(
             @Valid @RequestBody IngestProcessingChain processingChain) throws ModuleException {
         IngestProcessingChain chain = ingestProcessingService.createNewChain(processingChain);
         return new ResponseEntity<>(toResource(chain), HttpStatus.CREATED);
 
+    }
+
+    @ResourceAccess(description = "Create a new ingestion processing chain importing JSON file")
+    @RequestMapping(method = RequestMethod.POST, value = IMPORT_PATH)
+    public ResponseEntity<Resource<IngestProcessingChain>> createByFile(@RequestParam("file") MultipartFile file)
+            throws ModuleException {
+        try {
+            IngestProcessingChain chain = ingestProcessingService.createNewChain(file.getInputStream());
+            return new ResponseEntity<>(toResource(chain), HttpStatus.CREATED);
+        } catch (IOException e) {
+            final String message = "Error with file stream while importing ingest processing chain.";
+            LOGGER.error(message, e);
+            throw new ModuleException(e);
+        }
+    }
+
+    @ResourceAccess(description = "Export an ingestion processing chain in JSON format")
+    @RequestMapping(method = RequestMethod.GET, value = EXPORT_PATH)
+    public void export(HttpServletRequest pRequest, HttpServletResponse pResponse, @PathVariable("name") String name)
+            throws ModuleException {
+        IngestProcessingChain chain = ingestProcessingService.getChain(name);
+        String exportedFilename = applicationName + "-" + chain.getName() + ".json";
+
+        // Produce octet stream to force navigator opening "save as" dialog
+        pResponse.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        pResponse.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + exportedFilename + "\"");
+
+        try {
+            ingestProcessingService.exportProcessingChain(name, pResponse.getOutputStream());
+            // FIXME maybe already done!
+            pResponse.getOutputStream().flush();
+        } catch (IOException e) {
+            String message = String
+                    .format("Error with servlet output stream while exporting ingest processing chain %s.",
+                            chain.getName());
+            LOGGER.error(message, e);
+            throw new ModuleException(e);
+        }
     }
 
     @ResourceAccess(description = "Update an existing IngestProcessingChain.")
@@ -119,6 +176,10 @@ public class IngestProcessingChainController implements IResourceController<Inge
         resourceService.addLink(resource, this.getClass(), "update", LinkRels.UPDATE,
                                 MethodParamFactory.build(String.class, ingestChain.getName()),
                                 MethodParamFactory.build(IngestProcessingChain.class));
+        resourceService.addLink(resource, this.getClass(), "export", "export",
+                                MethodParamFactory.build(HttpServletRequest.class),
+                                MethodParamFactory.build(HttpServletResponse.class),
+                                MethodParamFactory.build(String.class, ingestChain.getName()));
         return resource;
     }
 

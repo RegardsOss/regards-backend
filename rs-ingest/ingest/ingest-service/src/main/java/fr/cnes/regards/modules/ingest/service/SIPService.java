@@ -38,6 +38,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -87,8 +88,8 @@ public class SIPService implements ISIPService {
     @Override
     public Page<SIPEntity> search(String sipId, String sessionId, String owner, OffsetDateTime from,
             List<SIPState> state, String processing, Pageable page) {
-        return sipRepository
-                .findAll(SIPEntitySpecifications.search(sipId, sessionId, owner, from, state, processing), page);
+        return sipRepository.findAll(SIPEntitySpecifications.search(sipId, sessionId, owner, from, state, processing),
+                                     page);
     }
 
     @Override
@@ -127,7 +128,7 @@ public class SIPService implements ISIPService {
                 deletableSips.add(sip);
             } else {
                 String errorMsg = String.format("SIPEntity with state %s is not deletable", sip.getState());
-                undeletableSips.add(new RejectedSip(sip, errorMsg));
+                undeletableSips.add(new RejectedSip(sip.getIpId(), errorMsg));
                 LOGGER.error(errorMsg);
             }
         }
@@ -219,7 +220,8 @@ public class SIPService implements ISIPService {
 
     /**
      * Check if the given {@link SIPEntity} is in a state that allow to start a deletion process.
-     * In this case the deletion process have to wait for other microservice deletion results to change {@link SIPEntity} state
+     * In this case the deletion process have to wait for other microservice deletion results to change
+     * {@link SIPEntity} state
      * to deleted.
      * @param sip {@link SIPEntity} to check for deletion
      * @return
@@ -242,7 +244,8 @@ public class SIPService implements ISIPService {
     }
 
     /**
-     * Check if the given {@link SIPEntity} is in a state that allow to delete it directly without waiting for deletion confirmation
+     * Check if the given {@link SIPEntity} is in a state that allow to delete it directly without waiting for deletion
+     * confirmation
      * of other microservices.
      * @param sip {@link SIPEntity} to check for deletion.
      * @return

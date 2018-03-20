@@ -23,9 +23,10 @@ package fr.cnes.regards.modules.ingest.domain.entity;
  * SIP lifecycle
  *
  * <pre>
- *
- *           CREATED
+ *              o
  *    __________|_______ REJECTED
+ *   |          |
+ *   |       CREATED
  *   |          |
  *   |       QUEUED
  *   |          |_______ INVALID

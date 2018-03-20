@@ -27,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
+import fr.cnes.regards.modules.storage.domain.RejectedSip;
 
 /**
  * Service to handle {@link SIPSession} entities.
@@ -54,6 +55,6 @@ public interface ISIPSessionService {
      * @param id
      * @return Rejected {@link SIPEntity}s for deletion
      */
-    Collection<SIPEntity> deleteSIPSession(String id) throws ModuleException;
+    Collection<RejectedSip> deleteSIPSession(String id) throws ModuleException;
 
 }
