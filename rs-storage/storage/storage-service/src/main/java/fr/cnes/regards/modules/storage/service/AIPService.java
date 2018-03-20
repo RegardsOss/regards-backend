@@ -98,6 +98,8 @@ import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
+import fr.cnes.regards.modules.storage.domain.event.StorageAction;
+import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
@@ -943,6 +945,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             for (StorageDataFile dataFile : dataFiles) {
                 if(dataFile.getState().equals(DataFileState.ERROR)) {
                     dataFileDao.remove(dataFile);
+                    publisher.publish(new DataStorageEvent(dataFile, StorageAction.DELETION, StorageEventType.SUCCESSFULL, null));
                 }
                 if (dataFile.getState().equals(DataFileState.PENDING)) {
                     notSuppressible.add(dataFile);
