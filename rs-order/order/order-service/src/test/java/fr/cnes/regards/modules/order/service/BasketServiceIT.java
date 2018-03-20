@@ -65,6 +65,7 @@ public class BasketServiceIT {
     public void setUp() {
         basketRepository.deleteAll();
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
+        Mockito.when(authResolver.getUser()).thenReturn(USER_EMAIL);
 
         Project project = new Project();
         project.setHost("regardsHost");
@@ -185,7 +186,6 @@ public class BasketServiceIT {
 
         // manage periodic email notifications
         orderService.sendPeriodicNotifications();
-        //
     }
 
     static SimpleMailMessage mailMessage;

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -41,6 +42,9 @@ public class BasketService implements IBasketService {
 
     @Autowired
     private ISearchClient searchClient;
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     @Override
     public Basket findOrCreate(String user) {
@@ -88,8 +92,7 @@ public class BasketService implements IBasketService {
         // Compute summary for this selection
         Map<String, String> queryMap = new ImmutableMap.Builder<String, String>().put("q", openSearchRequest).build();
         try {
-            // computeDatasetsSummary() is set with INSTANCE_ADMIN role because it doesn't need to be called externally
-            FeignSecurityManager.asSystem();
+            FeignSecurityManager.asUser(authResolver.getUser(), authResolver.getRole());
             DocFilesSummary summary = searchClient
                     .computeDatasetsSummary(queryMap, datasetIpId, DataTypeSelection.ALL.getFileTypes()).getBody();
             // If global summary contains no files => EmptySelection

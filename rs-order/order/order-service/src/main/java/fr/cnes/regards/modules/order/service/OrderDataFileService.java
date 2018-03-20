@@ -144,18 +144,24 @@ public class OrderDataFileService implements IOrderDataFileService {
     @Override
     public void downloadFile(OrderDataFile dataFile, OutputStream os) throws IOException {
         Response response = aipClient.downloadFile(dataFile.getIpId().toString(), dataFile.getChecksum());
-        if (response.status() == HttpStatus.OK.value()) {
+        boolean error = (response.status() != HttpStatus.OK.value());
+        if (!error) {
             try (InputStream is = response.body().asInputStream()) {
-                ByteStreams.copy(is, os);
+                long copiedBytes = ByteStreams.copy(is, os);
                 os.close();
+                // File has not completly been copied
+                if (copiedBytes != dataFile.getSize()) {
+                    error = true;
+                }
             }
-            // Update OrderDataFile (set State as DOWNLOADED, even if it is online)
-            dataFile.setState(FileState.DOWNLOADED);
-        } else { // Update OrderDataFile
-            // set State as DOWNLOAD_ERROR ONLY IF file wasn't previously DOWLOADED (ie. AVAILABLE)
+        }
+        // Update OrderDataFile state
+        if (error) { // set State as DOWNLOAD_ERROR ONLY IF file wasn't previously DOWLOADED (ie. AVAILABLE)
             if (dataFile.getState() == FileState.AVAILABLE) {
                 dataFile.setState(FileState.DOWNLOAD_ERROR);
             }
+        } else { // Set State as DOWNLOADED, even if it is online
+            dataFile.setState(FileState.DOWNLOADED);
         }
         dataFile = self.save(dataFile);
         Order order = orderRepository.findSimpleById(dataFile.getOrderId());

@@ -205,6 +205,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_STO_CMD_120")
     @Requirement("REGARDS_DSL_STO_CMD_400")
     @Requirement("REGARDS_DSL_STO_CMD_410")
+    @Requirement("REGARDS_DSL_STO_ARC_420")
     @Test
     public void testDownloadFile()
             throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,

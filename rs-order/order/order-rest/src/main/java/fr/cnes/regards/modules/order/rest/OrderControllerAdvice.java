@@ -41,8 +41,8 @@ import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
  * @author oroussel
  */
 @RestControllerAdvice(annotations = RestController.class)
-@Order(Ordered.LOWEST_PRECEDENCE - 200)
-public class OrderControllerAdvice extends ResponseEntityExceptionHandler {
+@Order(0)
+public class OrderControllerAdvice {
 
     @ExceptionHandler(EmptyBasketException.class)
     public ResponseEntity<ServerErrorResponse> handleEmptyBasketException(EmptyBasketException ebe) {
