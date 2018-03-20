@@ -154,7 +154,9 @@ public class SIPService implements ISIPService {
                 FeignSecurityManager.reset();
             }
             if (HttpUtils.isSuccess(response.getStatusCode())) {
-                undeletableSips.addAll(response.getBody());
+                if(response.getBody()!= null) {
+                    undeletableSips.addAll(response.getBody());
+                }
             }
         }
         return undeletableSips;
