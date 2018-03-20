@@ -599,6 +599,15 @@ public final class PluginParameterUtils {
             return;
         }
 
+        // At this point, if the parameter value is not set, there is a problem( value is not defaulted and parameter is not optional)
+        if (Strings.isNullOrEmpty(paramValue)) {
+            throw new IllegalArgumentException(String.format(
+                    "Issue with Plugin %s and one of its configuration %s, parameter %s has no default value and is required.",
+                    plgConf.getPluginId(),
+                    plgConf.getLabel(),
+                    parameterName));
+        }
+
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(String.format("primitive parameter value : %s", paramValue));
         }
