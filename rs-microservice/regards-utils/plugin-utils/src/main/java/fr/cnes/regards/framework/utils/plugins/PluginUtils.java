@@ -368,7 +368,7 @@ public final class PluginUtils {
     }
 
     /**
-     * Validate that the plugin configuration is coherent according to the plugin metadata.
+     * Validate the plugin configuration
      * @param pluginConfiguration the plugin configuration to be validated
      * @return null if there is no validation issues, the exception containing all validation errors as messages
      */
@@ -416,8 +416,8 @@ public final class PluginUtils {
             //    lets check that all remaining parameters are correctly given
             for (PluginParameterType plgParamMeta : pluginParametersFromMeta) {
                 if (!plgParamMeta.isOptional() && !plgParamMeta.getOnlyDynamic()
-                        && pluginConfiguration.getParameter(plgParamMeta.getName()) == null) {
-                    validationErrors.add(String.format("Plugin Parameter {} is missing.", plgParamMeta.getName()));
+                        && (pluginConfiguration.getParameter(plgParamMeta.getName()) == null && plgParamMeta.getDefaultValue().isEmpty())) {
+                    validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
                 }
             }
         } catch (ClassNotFoundException e) {

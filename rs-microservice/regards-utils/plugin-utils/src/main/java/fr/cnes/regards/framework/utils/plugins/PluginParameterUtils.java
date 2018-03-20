@@ -588,11 +588,7 @@ public final class PluginParameterUtils {
         String paramValue = getParameterValue(parameterName, plgConf, dynamicPluginParameters);
 
         // If the parameter value is not defined, get the default parameter value
-        // FIXME
-        // if (Strings.isNullOrEmpty(paramValue) && !plgParamAnnotation.defaultValue().isEmpty()) {
-        // paramValue = plgParamAnnotation.defaultValue();
-        // }
-        if (Strings.isNullOrEmpty(paramValue)) {
+        if (Strings.isNullOrEmpty(paramValue) && !plgParamAnnotation.defaultValue().isEmpty()) {
             paramValue = plgParamAnnotation.defaultValue();
         }
 
