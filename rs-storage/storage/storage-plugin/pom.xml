@@ -31,10 +31,6 @@
             <artifactId>file-utils</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>staf-starter</artifactId>
-        </dependency>
-        <dependency>
             <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
             <artifactId>jobs-domain</artifactId>
         </dependency>

@@ -21,7 +21,7 @@ public class DataStorageInfo {
     public static final String BYTES_UNIT = "B";
 
     /**
-     * Identifier of the data storage being monitored. For example, the partition storagePhysicalId for {@link fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage}, the archive storagePhysicalId for {@link fr.cnes.regards.modules.storage.plugin.datastorage.staf.STAFDataStorage}.
+     * Identifier of the data storage being monitored.
      */
     @NotEmpty
     private String storagePhysicalId;
