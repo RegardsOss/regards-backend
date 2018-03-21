@@ -516,6 +516,7 @@
                 <artifactId>plugin-client</artifactId>
                 <version>${fr.cnes.regards.microservices.catalog.plugin-client.version}</version>
             </dependency>
+            
             <!-- Project -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.project</groupId>
@@ -556,11 +557,6 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.datasources</groupId>
-                <artifactId>datasources-plugin</artifactId>
-                <version>${fr.cnes.regards.modules.datasources.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.datasources</groupId>
                 <artifactId>datasources-rest</artifactId>
                 <version>${fr.cnes.regards.modules.datasources.version}</version>
             </dependency>
@@ -568,6 +564,17 @@
                 <groupId>fr.cnes.regards.modules.datasources</groupId>
                 <artifactId>datasource-oracle-plugins</artifactId>
                 <version>${fr.cnes.regards.modules.datasources.version}</version>
+            </dependency>
+            <!-- Datasource plugins -->
+            <dependency>
+                <groupId>fr.cnes.regards.modules.datasources.plugins</groupId>
+                <artifactId>postgresql-datasource</artifactId>
+                <version>2.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.datasources.plugins</groupId>
+                <artifactId>aip-datasource</artifactId>
+                <version>2.0.0-SNAPSHOT</version>
             </dependency>
             <!-- Models -->
             <dependency>
