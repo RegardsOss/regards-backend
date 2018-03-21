@@ -1,14 +1,14 @@
 package fr.cnes.regards.modules.storage.service;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -44,18 +44,14 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
         } else if (dataStorageConf.getInterfaceNames().contains(INearlineDataStorage.class.getName())) {
             dataStorageType = DataStorageType.NEARLINE;
         } else {
-            throw new EntityInvalidException(String.format(
-                    "Given plugin configuration(label: %s) is not a configuration for an online or nearline data storage (respectfully %s or %s)!",
-                    dataStorageConf.getLabel(),
-                    IOnlineDataStorage.class.getName(),
-                    INearlineDataStorage.class.getName()));
+            throw new EntityInvalidException(String
+                    .format("Given plugin configuration(label: %s) is not a configuration for an online or nearline data storage (respectfully %s or %s)!",
+                            dataStorageConf.getLabel(), IOnlineDataStorage.class.getName(),
+                            INearlineDataStorage.class.getName()));
         }
         Long actualLowestPriority = getLowestPriority(dataStorageType);
         return prioritizedDataStorageRepository.save(new PrioritizedDataStorage(dataStorageConf,
-                                                                                actualLowestPriority == null ?
-                                                                                        0 :
-                                                                                        actualLowestPriority + 1,
-                                                                                dataStorageType));
+                actualLowestPriority == null ? 0 : actualLowestPriority + 1, dataStorageType));
     }
 
     @Override
@@ -68,7 +64,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
         PrioritizedDataStorage lowestPrioritizedDataStorage = prioritizedDataStorageRepository
                 .findFirstByDataStorageTypeOrderByPriorityDesc(dataStorageType);
         if (lowestPrioritizedDataStorage == null) {
-            //in case there is no one yet, lets give it the highest priority
+            // in case there is no one yet, lets give it the highest priority
             return null;
         }
         return lowestPrioritizedDataStorage.getPriority();
@@ -86,7 +82,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
     public void delete(Long pluginConfId) {
         Optional<PrioritizedDataStorage> toDeleteOpt = prioritizedDataStorageRepository.findOneById(pluginConfId);
         if (toDeleteOpt.isPresent()) {
-            //first we need to increase all the priorities of those which are less prioritized than the one to delete
+            // first we need to increase all the priorities of those which are less prioritized than the one to delete
             PrioritizedDataStorage toDelete = toDeleteOpt.get();
             Set<PrioritizedDataStorage> lessPrioritizeds = prioritizedDataStorageRepository
                     .findAllByDataStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(toDelete.getDataStorageType(),
