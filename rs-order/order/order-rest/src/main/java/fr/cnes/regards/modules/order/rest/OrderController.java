@@ -151,7 +151,7 @@ public class OrderController implements IResourceController<OrderDto> {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Remove an order", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Remove an order", role = DefaultRole.INSTANCE_ADMIN)
     @RequestMapping(method = RequestMethod.DELETE, path = REMOVE_ORDER_PATH)
     public ResponseEntity<Void> removeOrder(@PathVariable("orderId") Long orderId) throws CannotRemoveOrderException {
         orderService.remove(orderId);
