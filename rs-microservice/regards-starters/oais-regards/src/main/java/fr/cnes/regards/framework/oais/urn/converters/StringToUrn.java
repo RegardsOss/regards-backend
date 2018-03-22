@@ -32,11 +32,6 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 @ControllerAdvice
 public class StringToUrn implements Converter<String, UniformResourceName> {
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-     */
     @Override
     public UniformResourceName convert(String pSource) {
         return UniformResourceName.fromString(pSource);
