@@ -97,14 +97,14 @@ public class ServicesAggregatorController {
     @ResourceAccess(description = "Returns services applied to all datasets plus those of the given dataset",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<List<Resource<PluginServiceDto>>> retrieveServices(
-            @RequestParam(value = "datasetIpId", required = false) final String pDatasetIpId,
+            @RequestParam(value = "datasetIpId", required = false) final List<String> pDatasetIpIds,
             @RequestParam(value = "applicationMode", required = false) final ServiceScope pApplicationMode) {
         // Retrieve catalog services
         ResponseEntity<List<Resource<PluginConfigurationDto>>> catalogServices = catalogServicesClient
-                .retrieveServices(pDatasetIpId, pApplicationMode);
+                .retrieveServices(pDatasetIpIds, pApplicationMode);
         // Retrive ui services
         List<UIPluginConfiguration> uiServices = uiPluginConfigurationService
-                .retrieveActivePluginServices(pDatasetIpId, pApplicationMode);
+                .retrieveActivePluginServices(pDatasetIpIds, pApplicationMode);
 
         try (Stream<PluginConfigurationDto> streamCatalogServices = HateoasUtils
                 .unwrapCollection(catalogServices.getBody()).stream();

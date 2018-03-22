@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.access.services.dao.ui;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -36,6 +37,9 @@ public interface ILinkUIPluginsDatasetsRepository extends JpaRepository<LinkUIPl
 
     @EntityGraph(value = "graph.link.configurations")
     LinkUIPluginsDatasets findOneByDatasetId(String pDatasetId);
+
+    @EntityGraph(value = "graph.link.configurations")
+    List<LinkUIPluginsDatasets> findByDatasetIdIn(List<String> pDatasetId);
 
     /**
      * Retrieve all links having the given configuration in their services list

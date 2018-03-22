@@ -57,14 +57,15 @@ public class ServicesAggregatorControllerTest {
         // Mock Catalog Services
         catalogServicesClient = Mockito.mock(ICatalogServicesClient.class);
         PluginConfigurationDto dto = new AccessServicesITConfiguration().dummyPluginConfigurationDto();
-        Mockito.when(catalogServicesClient.retrieveServices(Mockito.anyString(), Mockito.any()))
+        Mockito.when(catalogServicesClient.retrieveServices(Mockito.anyListOf(String.class), Mockito.any()))
                 .thenReturn(new ResponseEntity<List<Resource<PluginConfigurationDto>>>(
                         HateoasUtils.wrapList(Lists.newArrayList(dto)), HttpStatus.OK));
 
         // Mock Ui Services
         uiPluginConfigurationService = Mockito.mock(IUIPluginConfigurationService.class);
         UIPluginConfiguration uiPluginConfiguration = new AccessServicesITConfiguration().dummyUiPluginConfiguration();
-        Mockito.when(uiPluginConfigurationService.retrieveActivePluginServices(Mockito.anyString(), Mockito.any()))
+        Mockito.when(uiPluginConfigurationService.retrieveActivePluginServices(Mockito.anyListOf(String.class),
+                                                                               Mockito.any()))
                 .thenReturn(Lists.newArrayList(uiPluginConfiguration));
 
         // Mock the resource assembler
@@ -81,8 +82,8 @@ public class ServicesAggregatorControllerTest {
      */
     @Test
     public final void testRetrieveServices() {
-        ResponseEntity<List<Resource<PluginServiceDto>>> result = controller.retrieveServices("coucou",
-                                                                                              ServiceScope.MANY);
+        ResponseEntity<List<Resource<PluginServiceDto>>> result = controller
+                .retrieveServices(Lists.newArrayList("coucou"), ServiceScope.MANY);
         Assert.assertNotNull(result);
         Assert.assertThat(result.getBody(), Matchers.hasSize(2));
     }

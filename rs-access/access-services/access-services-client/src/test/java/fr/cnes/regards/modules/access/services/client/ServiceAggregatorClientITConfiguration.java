@@ -48,10 +48,9 @@ public class ServiceAggregatorClientITConfiguration {
         ICatalogServicesClient client = Mockito.mock(ICatalogServicesClient.class);
 
         ResponseEntity<List<Resource<PluginConfigurationDto>>> result = new ResponseEntity<List<Resource<PluginConfigurationDto>>>(
-                HateoasUtils.wrapList(Lists.newArrayList(dummyPluginConfigurationDto())),
-                HttpStatus.OK);
+                HateoasUtils.wrapList(Lists.newArrayList(dummyPluginConfigurationDto())), HttpStatus.OK);
 
-        Mockito.when(client.retrieveServices(Mockito.anyString(), Mockito.any())).thenReturn(result);
+        Mockito.when(client.retrieveServices(Mockito.anyListOf(String.class), Mockito.any())).thenReturn(result);
 
         return client;
     }

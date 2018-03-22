@@ -126,4 +126,14 @@ public interface IUIPluginConfigurationService {
      */
     List<UIPluginConfiguration> retrieveActivePluginServices(String pDatasetId, ServiceScope pApplicationMode);
 
+    /**
+     * Return all {@link UIPluginConfiguration} for plugins type service and associated to the given dataset id if any given.
+     *
+     * @param pDatasetIds Can be <code>null</code>.
+     * @param pApplicationMode Can be <code>null</code>.
+     * @return list of {@link UIPluginConfiguration}
+     * @since 1.0-SNAPSHOT
+     */
+    List<UIPluginConfiguration> retrieveActivePluginServices(List<String> pDatasetIds, ServiceScope pApplicationMode);
+
 }
