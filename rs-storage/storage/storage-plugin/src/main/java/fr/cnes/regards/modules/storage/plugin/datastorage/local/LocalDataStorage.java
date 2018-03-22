@@ -12,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
-import java.util.Set;
 import java.util.StringJoiner;
 
 import org.slf4j.Logger;
@@ -103,7 +102,8 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     }
 
     @Override
-    public WorkingSubsetWrapper<LocalWorkingSubset> prepare(Collection<StorageDataFile> dataFiles, DataStorageAccessModeEnum mode) {
+    public WorkingSubsetWrapper<LocalWorkingSubset> prepare(Collection<StorageDataFile> dataFiles,
+            DataStorageAccessModeEnum mode) {
         // We choose to use a simple parallel stream to store file on file system, so for now we treat everything at once
         WorkingSubsetWrapper<LocalWorkingSubset> wrapper = new WorkingSubsetWrapper<>();
         wrapper.getWorkingSubSets().add(new LocalWorkingSubset(Sets.newHashSet(dataFiles)));
@@ -197,11 +197,11 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
 
     private String getStorageLocation(StorageDataFile data) throws IOException {
         String checksum = data.getChecksum();
-        String storageLocation;
+        String storageLocation = baseStorageLocation.getPath() + "/";
         if (data.getStorageDirectory() != null) {
-            storageLocation = data.getStorageDirectory();
+            storageLocation = storageLocation + data.getStorageDirectory();
         } else {
-            storageLocation = baseStorageLocation.getPath() + "/" + checksum.substring(0, 3);
+            storageLocation = storageLocation + checksum.substring(0, 3);
         }
         if (!Paths.get(storageLocation).toFile().exists()) {
             Files.createDirectories(Paths.get(storageLocation));
