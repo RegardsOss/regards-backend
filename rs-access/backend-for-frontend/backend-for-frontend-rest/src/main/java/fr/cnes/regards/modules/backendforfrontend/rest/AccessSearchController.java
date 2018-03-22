@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.backendforfrontend.rest;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -29,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -116,7 +118,7 @@ public class AccessSearchController {
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
      * @param allParams all query parameters
-     * @param pFacets facets to apply as a list of strings
+     * @param facets facets to apply as a list of strings
      * @return the search result with services injected
      */
     @RequestMapping(path = SEARCH_WITH_FACETS, method = RequestMethod.GET)
@@ -125,8 +127,8 @@ public class AccessSearchController {
                     + "objects can be any mix of collection, dataset, dataobject and document. Injects applicable UI "
                     + "Services and Catalog Services.")
     public ResponseEntity<JsonObject> searchAll(@RequestParam final Map<String, String> allParams,
-            @RequestParam(value = "facets", required = false) final String[] pFacets) {
-        JsonObject entities = searchClient.searchAll(allParams, pFacets).getBody();
+            @RequestParam(value = "facets", required = false) final String[] facets) {
+        JsonObject entities = searchClient.searchAll(allParams, facets).getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
     }
@@ -169,39 +171,37 @@ public class AccessSearchController {
      * Perform an OpenSearch request on dataobjects. Only return required facets.
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
-     * @param allParams all query parameters
-     * @param pFacets the facets to apply
+     * @param allParams a MultiValueMap containing all request params (multi-valued because of multi "sort" params)
+     * @param facets the facets to apply
      * @return the search result with services injected
      */
     @RequestMapping(path = DATAOBJECTS_SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(
-            description = "Perform an OpenSearch request on dataobjects. Only return required facets. Injects "
-                    + "applicable UI Services and Catalog Services.",
-            role = DefaultRole.PUBLIC)
-    public ResponseEntity<JsonObject> searchDataobjects(@RequestParam final Map<String, String> allParams,
-            @RequestParam(value = "facets", required = false) String[] pFacets) {
-        JsonObject entities = searchClient.searchDataobjects(allParams, pFacets).getBody();
+    @ResourceAccess(description = "Perform an OpenSearch request on dataobjects. Only return required facets. Injects "
+            + "applicable UI Services and Catalog Services.", role = DefaultRole.PUBLIC)
+    public ResponseEntity<JsonObject> searchDataobjects(@RequestParam MultiValueMap<String, String> allParams,
+            @RequestParam(value = "facets", required = false) String[] facets) {
+        JsonObject entities = searchClient.searchDataobjects(allParams, facets).getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
     }
 
     /**
-     * Perform an joined OpenSearch request. The search will be performed on dataobjects attributes, but will return the
+     * Perform a joined OpenSearch request. The search will be performed on dataobjects attributes, but will return the
      * associated datasets.
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
      * @param allParams all query parameters
-     * @param pFacets the facets to apply
+     * @param facets the facets to apply
      * @return the search result with services injected
      */
     @RequestMapping(path = DATAOBJECTS_DATASETS_SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(
-            description = "Perform an joined OpenSearch request. The search will be performed on dataobjects attributes,"
+    @ResourceAccess(description =
+            "Perform an joined OpenSearch request. The search will be performed on dataobjects attributes,"
                     + " but will return the associated datasets. Injects applicable UI Services and Catalog Services.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(@RequestParam final Map<String, String> allParams,
-            @RequestParam(value = "facets", required = false) final String[] pFacets) {
-        JsonObject entities = searchClient.searchDataobjectsReturnDatasets(allParams, pFacets).getBody();
+            @RequestParam(value = "facets", required = false) final String[] facets) {
+        JsonObject entities = searchClient.searchDataobjectsReturnDatasets(allParams, facets).getBody();
         injectApplicableServices(entities);
         return new ResponseEntity<>(entities, HttpStatus.OK);
     }
@@ -216,8 +216,7 @@ public class AccessSearchController {
     @RequestMapping(path = DOCUMENTS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
             description = "Perform an OpenSearch request on documents. Injects applicable UI Services and Catalog "
-                    + "Services.",
-            role = DefaultRole.PUBLIC)
+                    + "Services.", role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDocuments(@RequestParam final Map<String, String> allParams) {
         JsonObject entities = searchClient.searchDocuments(allParams).getBody();
         injectApplicableServices(entities);
