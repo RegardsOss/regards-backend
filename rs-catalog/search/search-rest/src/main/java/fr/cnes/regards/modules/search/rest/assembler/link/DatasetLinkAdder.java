@@ -18,12 +18,16 @@
  */
 package fr.cnes.regards.modules.search.rest.assembler.link;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -68,10 +72,10 @@ public class DatasetLinkAdder implements ILinksAdder {
                                 MethodParamFactory.build(UniformResourceName.class, pResource.getContent().getIpId()),
                                 MethodParamFactory.build(DatasetResourcesAssembler.class));
 
-        Map<String, String> q = new HashMap<>();
-        q.put("q", "tags:" + ipId.toString());
+        MultiValueMap<String, String> q = new LinkedMultiValueMap<>();
+        q.put("q", Collections.singletonList("tags:" + ipId.toString()));
         resourceService.addLinkWithParams(pResource, SearchController.class, "searchDataobjects", LINK_TO_DATAOBJECTS,
-                                          MethodParamFactory.build(Map.class, q),
+                                          MethodParamFactory.build(MultiValueMap.class, q),
                                           MethodParamFactory.build(String[].class),
                                           MethodParamFactory.build(Pageable.class),
                                           MethodParamFactory.build(FacettedPagedResourcesAssembler.class));

@@ -19,8 +19,10 @@
 package fr.cnes.regards.modules.search.rest;
 
 import java.net.URLDecoder;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.StringJoiner;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
@@ -28,6 +30,8 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -40,6 +44,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -349,7 +354,7 @@ public class SearchController {
 
     /**
      * Perform an OpenSearch request on dataobjects. Only return required facets.
-     * @param allParams all query parameters
+     * @param allParams all query parameters multi valued because of sort
      * @param facets the facets to apply
      * @param pageable the page
      * @return the page of dataobjects matching the query
@@ -359,11 +364,16 @@ public class SearchController {
     @ResourceAccess(description = "Perform an OpenSearch request on dataobject. Only return required facets.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<FacettedPagedResources<Resource<DataObject>>> searchDataobjects(
-            @RequestParam Map<String, String> allParams,
+            @RequestParam MultiValueMap<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] facets, Pageable pageable,
             FacettedPagedResourcesAssembler<DataObject> assembler) throws SearchException {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
-        Map<String, String> decodedParams = getDecodedParams(allParams);
+        // There are several "sort=<name>,<ASC|DESC>" request parameters that are directly mapped into Pageable BUT
+        // to be taken into account, allParams MUST BE of type MultiValueMap, not Map.
+        // It is the only parameter that can be multi-occured so we only take its first value it from MultiValueMap and
+        // we "transform" MultiValueMap into Map (which is expected by searchService)
+        Map<String, String> params = allParams.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get(0)));
+        Map<String, String> decodedParams = getDecodedParams(params);
         FacetPage<DataObject> result = searchService.search(decodedParams, searchKey, facets, pageable);
         result.getContent().forEach(DataObject::containsPhysicalData);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
@@ -573,7 +583,7 @@ public class SearchController {
     private Map<String, String> getDecodedParams(Map<String, String> allParams) throws SearchException {
         try {
             // Store decoded params
-            Map<String, String> allParamsDecoded = new HashMap();
+            Map<String, String> allParamsDecoded = new HashMap(allParams.size());
             // Parse params to build the params map decoded
             for (Map.Entry<String, String> entry : allParams.entrySet()) {
                 allParamsDecoded.put(entry.getKey(), URLDecoder.decode(entry.getValue(), "UTF-8"));
