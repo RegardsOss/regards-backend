@@ -45,7 +45,6 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
 
 /**
  * This controller returns aggregations of UI services and Catalog services.
- *
  * @author Xavier-Alexandre Brochard
  */
 @RestController
@@ -70,41 +69,37 @@ public class ServicesAggregatorController {
     private final PluginServiceDtoResourcesAssembler assembler;
 
     /**
-     * @param pCatalogServicesClient
-     * @param pUiPluginConfigurationService
-     * @param pAssembler
+     * @param catalogServicesClient
+     * @param uiPluginConfigurationService
+     * @param assembler
      */
-    public ServicesAggregatorController(ICatalogServicesClient pCatalogServicesClient,
-            IUIPluginConfigurationService pUiPluginConfigurationService,
-            PluginServiceDtoResourcesAssembler pAssembler) {
+    public ServicesAggregatorController(ICatalogServicesClient catalogServicesClient,
+            IUIPluginConfigurationService uiPluginConfigurationService,
+            PluginServiceDtoResourcesAssembler assembler) {
         super();
-        catalogServicesClient = pCatalogServicesClient;
-        uiPluginConfigurationService = pUiPluginConfigurationService;
-        assembler = pAssembler;
+        this.catalogServicesClient = catalogServicesClient;
+        this.uiPluginConfigurationService = uiPluginConfigurationService;
+        this.assembler = assembler;
     }
 
     /**
      * Returns all services applied to all datasets plus those of the given dataset
-     *
-     * @param pDatasetIpId
-     *            the ip id of the {@link Dataset}
-     * @param pApplicationModes
-     *            the set of {@link ServiceScope}
+     * @param datasetIpIds the ip ids of the {@link Dataset}s
+     * @param applicationMode the set of {@link ServiceScope}
      * @return the list of services configured for the given dataset and the given scope
-     * @throws EntityNotFoundException
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Returns services applied to all datasets plus those of the given dataset",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<List<Resource<PluginServiceDto>>> retrieveServices(
-            @RequestParam(value = "datasetIpId", required = false) final String pDatasetIpId,
-            @RequestParam(value = "applicationMode", required = false) final ServiceScope pApplicationMode) {
+            @RequestParam(value = "datasetIpId", required = false) final List<String> datasetIpIds,
+            @RequestParam(value = "applicationMode", required = false) final ServiceScope applicationMode) {
         // Retrieve catalog services
         ResponseEntity<List<Resource<PluginConfigurationDto>>> catalogServices = catalogServicesClient
-                .retrieveServices(pDatasetIpId, pApplicationMode);
+                .retrieveServices(datasetIpIds, applicationMode);
         // Retrive ui services
         List<UIPluginConfiguration> uiServices = uiPluginConfigurationService
-                .retrieveActivePluginServices(pDatasetIpId, pApplicationMode);
+                .retrieveActivePluginServices(datasetIpIds, applicationMode);
 
         try (Stream<PluginConfigurationDto> streamCatalogServices = HateoasUtils
                 .unwrapCollection(catalogServices.getBody()).stream();

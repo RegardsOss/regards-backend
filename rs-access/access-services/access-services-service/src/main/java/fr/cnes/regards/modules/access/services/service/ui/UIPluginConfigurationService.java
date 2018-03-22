@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.access.services.service.ui;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -29,7 +29,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -61,9 +64,8 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
      * Builds a pedicate telling if the passed {@link UIPluginConfiguration} is applicable on passed {@link ServiceScope}.
      * Returns <code>true</code> if passed <code>pApplicationMode</code> is <code>null</code>.
      */
-    private static final Function<ServiceScope, Predicate<UIPluginConfiguration>> IS_APPLICABLE_ON = pApplicationMode -> pConfiguration ->
-            (pApplicationMode == null) || pConfiguration.getPluginDefinition().getApplicationModes()
-                    .contains(pApplicationMode);
+    private static final Function<ServiceScope, Predicate<UIPluginConfiguration>> IS_APPLICABLE_ON = pApplicationMode -> pConfiguration -> (pApplicationMode == null)
+            || pConfiguration.getPluginDefinition().getApplicationModes().contains(pApplicationMode);
 
     private final IUIPluginDefinitionRepository pluginRepository;
 
@@ -214,14 +216,16 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
     @Override
     public List<UIPluginConfiguration> retrieveActivePluginServices(final String pDatasetId,
             ServiceScope pApplicationMode) {
-        final List<UIPluginConfiguration> activePluginsConfigurations = new ArrayList<>();
-        final LinkUIPluginsDatasets link = linkedUiPluginRespository.findOneByDatasetId(pDatasetId);
-        if (link != null) {
-            link.getServices().forEach(pluginConf -> {
-                if (pluginConf.getActive()) {
-                    activePluginsConfigurations.add(pluginConf);
-                }
-            });
+        return retrieveActivePluginServices(Lists.newArrayList(pDatasetId), pApplicationMode);
+    }
+
+    @Override
+    public List<UIPluginConfiguration> retrieveActivePluginServices(List<String> pDatasetIds,
+            ServiceScope pApplicationMode) {
+        final Set<UIPluginConfiguration> activePluginsConfigurations = Sets.newHashSet();
+        if ((pDatasetIds != null) && !pDatasetIds.isEmpty()) {
+            final List<LinkUIPluginsDatasets> links = linkedUiPluginRespository.findByDatasetIdIn(pDatasetIds);
+            activePluginsConfigurations.addAll(getCommonServicesFromLinks(links));
         }
 
         // Retrieve plugins linked to all dataset
@@ -238,6 +242,27 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
         try (Stream<UIPluginConfiguration> stream = activePluginsConfigurations.stream()) {
             return stream.filter(IS_APPLICABLE_ON.apply(pApplicationMode)).collect(Collectors.toList());
         }
+    }
+
+    /**
+     * Retrieve unqi services from given {@link LinkUIPluginsDatasets}s
+     * @param links
+     * @return {@link UIPluginConfiguration}s
+     */
+    private Set<UIPluginConfiguration> getCommonServicesFromLinks(List<LinkUIPluginsDatasets> links) {
+        final Set<UIPluginConfiguration> services = Sets.newHashSet();
+        boolean first = true;
+        // Create a set with common service between all links (dataset/plugins)
+        for (LinkUIPluginsDatasets link : links) {
+            if (first) {
+                services.addAll(link.getServices());
+                first = false;
+            } else {
+                services.retainAll(link.getServices());
+            }
+        }
+        // Return only the active ones.
+        return services.stream().filter(s -> s.getActive()).collect(Collectors.toSet());
     }
 
 }

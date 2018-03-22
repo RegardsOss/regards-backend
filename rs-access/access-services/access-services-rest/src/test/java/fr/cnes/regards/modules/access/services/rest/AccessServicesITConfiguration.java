@@ -31,6 +31,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -63,11 +64,9 @@ public class AccessServicesITConfiguration {
     public ICatalogServicesClient catalogServicesClient() {
         ICatalogServicesClient client = Mockito.mock(ICatalogServicesClient.class);
 
-        Mockito.when(client.retrieveServices("datasetFromConfigClass", ServiceScope.MANY))
-                .thenReturn(new ResponseEntity<List<Resource<PluginConfigurationDto>>>(HateoasUtils
-                                                                                               .wrapList(Lists.newArrayList(
-                                                                                                       dummyPluginConfigurationDto())),
-                                                                                       HttpStatus.OK));
+        Mockito.when(client.retrieveServices(Lists.newArrayList("datasetFromConfigClass"), ServiceScope.MANY))
+                .thenReturn(new ResponseEntity<List<Resource<PluginConfigurationDto>>>(
+                        HateoasUtils.wrapList(Lists.newArrayList(dummyPluginConfigurationDto())), HttpStatus.OK));
 
         return client;
     }
