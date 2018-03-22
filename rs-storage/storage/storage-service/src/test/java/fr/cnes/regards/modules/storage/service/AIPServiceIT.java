@@ -38,6 +38,7 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -148,7 +149,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
         tenantResolver.forceTenant(DEFAULT_TENANT);
-        //         this.cleanUp(); //comment if you are not interrupting tests during their execution
+        // this.cleanUp(); //comment if you are not interrupting tests during their execution
         subscriber.subscribeTo(JobEvent.class, handler);
         initDb();
     }
@@ -167,10 +168,8 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorage1Location.toString())
                 .getParameters();
-        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta,
-                                                                      DATA_STORAGE_1_CONF_LABEL,
-                                                                      parameters,
-                                                                      0);
+        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, DATA_STORAGE_1_CONF_LABEL,
+                parameters, 0);
         dataStorageConf.setIsActive(true);
         PrioritizedDataStorage pds = prioritizedDataStorageService.create(dataStorageConf);
         Set<Long> dataStorageIds = Sets.newHashSet(pds.getId());
@@ -186,18 +185,15 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         pds = prioritizedDataStorageService.create(dataStorageConf);
         dataStorageIds.add(pds.getId());
         // forth, lets create a plugin configuration for IAllocationStrategy
-        PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultMultipleAllocationStrategy.class,
-                                                                         DefaultMultipleAllocationStrategy.class
-                                                                                 .getPackage().getName(),
-                                                                         IAllocationStrategy.class.getPackage()
-                                                                                 .getName());
+        PluginMetaData allocationMeta = PluginUtils
+                .createPluginMetaData(DefaultMultipleAllocationStrategy.class,
+                                      DefaultMultipleAllocationStrategy.class.getPackage().getName(),
+                                      IAllocationStrategy.class.getPackage().getName());
         List<PluginParameter> allocationParameter = PluginParametersFactory.build()
                 .addParameter(DefaultMultipleAllocationStrategy.DATA_STORAGE_IDS_PARAMETER_NAME, dataStorageIds)
                 .getParameters();
-        PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta,
-                                                                              ALLOCATION_CONF_LABEL,
-                                                                              allocationParameter,
-                                                                              0);
+        PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, ALLOCATION_CONF_LABEL,
+                allocationParameter, 0);
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
     }
@@ -233,7 +229,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                              dataFiles.stream()
                                      .filter(storageDataFile -> storageDataFile.getDataType().equals(DataType.AIP))
                                      .findFirst().get().getChecksum());
-        //lets check that the data has been successfully stored into the two storages and nothing else
+        // lets check that the data has been successfully stored into the two storages and nothing else
         StorageDataFile dataFile = dataFiles.stream().filter(df -> df.getDataType().equals(DataType.RAWDATA))
                 .findFirst().get();
         Assert.assertTrue("stored raw data should have only 2 urls", dataFile.getUrls().size() == 2);
@@ -244,8 +240,8 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
                 .get(baseStorage2Location.getPath(), dataFile.getChecksum().substring(0, 3), dataFile.getChecksum())
                 .toString();
         Assert.assertTrue(dataFile.getUrls().stream().map(url -> url.getPath()).collect(Collectors.toSet())
-                                  .containsAll(Sets.newHashSet(storedLocation1, storedLocation2)));
-        //same for the aips
+                .containsAll(Sets.newHashSet(storedLocation1, storedLocation2)));
+        // same for the aips
         StorageDataFile aip = dataFiles.stream().filter(df -> df.getDataType().equals(DataType.AIP)).findFirst().get();
         Assert.assertTrue("stored metadata should have only 2 urls", dataFile.getUrls().size() == 2);
         storedLocation1 = Paths
@@ -253,7 +249,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         storedLocation2 = Paths
                 .get(baseStorage2Location.getPath(), aip.getChecksum().substring(0, 3), aip.getChecksum()).toString();
         Assert.assertTrue(aip.getUrls().stream().map(url -> url.getPath()).collect(Collectors.toSet())
-                                  .containsAll(Sets.newHashSet(storedLocation1, storedLocation2)));
+                .containsAll(Sets.newHashSet(storedLocation1, storedLocation2)));
     }
 
     @Test
@@ -261,10 +257,8 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // first lets change the data location to be sure it fails
         aip.getProperties().getContentInformations()
                 .toArray(new ContentInformation[aip.getProperties().getContentInformations().size()])[0].getDataObject()
-                .setUrls(Sets.newHashSet(new URL("file",
-                                                 "",
-                                                 Paths.get("src/test/resources/data_that_does_not_exists.txt").toFile()
-                                                         .getAbsolutePath())));
+                        .setUrls(Sets.newHashSet(new URL("file", "", Paths
+                                .get("src/test/resources/data_that_does_not_exists.txt").toFile().getAbsolutePath())));
         Set<UUID> jobIds = aipService.storeAndCreate(Sets.newHashSet(aip));
         int wait = 0;
         LOG.info("Waiting for jobs end ...");
@@ -314,9 +308,8 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
             }
             Assert.assertFalse("Test failed because storage didn't failed! It succeeded!",
                                AIPState.STORED.equals(aipFromDB.get().getState()));
-            Assert.assertTrue(
-                    "Test in error because it took more than " + wait + " to fail the storage of the metadata",
-                    wait < MAX_WAIT_TEST);
+            Assert.assertTrue("Test in error because it took more than " + wait
+                    + " to fail the storage of the metadata", wait < MAX_WAIT_TEST);
             Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
             Set<StorageDataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
             Assert.assertEquals(1, dataFiles.size());
@@ -341,9 +334,10 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // now lets launch the method without scheduling
         aipService.updateAlreadyStoredMetadata();
         Set<UUID> jobIds = Streams.stream(jobInfoRepo.findAll())
-                .filter(jobInfo -> jobInfo.getStatus().getStatus().equals(JobStatus.QUEUED) || jobInfo.getStatus().getStatus()
-                        .equals(JobStatus.TO_BE_RUN) || jobInfo.getStatus().getStatus().equals(JobStatus.RUNNING)).map(JobInfo::getId)
-                .collect(Collectors.toSet());
+                .filter(jobInfo -> jobInfo.getStatus().getStatus().equals(JobStatus.QUEUED)
+                        || jobInfo.getStatus().getStatus().equals(JobStatus.TO_BE_RUN)
+                        || jobInfo.getStatus().getStatus().equals(JobStatus.RUNNING))
+                .map(JobInfo::getId).collect(Collectors.toSet());
         // Here the AIP should be in STORING_METADATA state
         AIP newAIP = aipDao.findOneByIpId(aip.getId().toString()).get();
         Assert.assertTrue("AIP should be in storing metadata state",
@@ -378,9 +372,10 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(aip);
         aipService.deleteAip(aipIpId);
         Set<UUID> jobIds = Streams.stream(jobInfoRepo.findAll())
-                .filter(jobInfo -> jobInfo.getStatus().getStatus().equals(JobStatus.QUEUED) || jobInfo.getStatus().getStatus()
-                        .equals(JobStatus.TO_BE_RUN) || jobInfo.getStatus().getStatus().equals(JobStatus.RUNNING)).map(JobInfo::getId)
-                .collect(Collectors.toSet());
+                .filter(jobInfo -> jobInfo.getStatus().getStatus().equals(JobStatus.QUEUED)
+                        || jobInfo.getStatus().getStatus().equals(JobStatus.TO_BE_RUN)
+                        || jobInfo.getStatus().getStatus().equals(JobStatus.RUNNING))
+                .map(JobInfo::getId).collect(Collectors.toSet());
         aip = aipDao.findOneByIpId(aipIpId).get();
         Assert.assertEquals("AIP state should be DELETED now", AIPState.DELETED, aip.getState());
         // now lets wait for the deletion job to be finished
@@ -411,9 +406,8 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     @Test
     @Requirement("REGARDS_DSL_STO_AIP_210")
-    public void testUpdatePDI()
-            throws MalformedURLException, EntityNotFoundException, EntityOperationForbiddenException,
-            EntityInconsistentIdentifierException {
+    public void testUpdatePDI() throws MalformedURLException, EntityNotFoundException,
+            EntityOperationForbiddenException, EntityInconsistentIdentifierException {
         AIP aip = getAIP();
         aip.setState(AIPState.STORED);
         aip = aipDao.save(aip);
@@ -423,28 +417,25 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         updated.addEvent(EventType.UPDATE.name(), "lets test update", OffsetDateTime.now());
         AIP preUpdateAIP = updated.build();
         AIP updatedAip = aipService.updateAip(aip.getId().toString(), preUpdateAIP);
-        Assert.assertEquals("new history size should be oldhistorysize + 1",
-                            oldHistorySize + 1,
+        Assert.assertEquals("new history size should be oldhistorysize + 1", oldHistorySize + 1,
                             updatedAip.getHistory().size());
     }
 
     private AIP getAIP() throws MalformedURLException {
 
-        AIPBuilder aipBuilder = new AIPBuilder(new UniformResourceName(OAISIdentifier.AIP,
-                                                                       EntityType.DATA,
-                                                                       DEFAULT_TENANT,
-                                                                       UUID.randomUUID(),
-                                                                       1), null, EntityType.DATA);
+        AIPBuilder aipBuilder = new AIPBuilder(
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
+                null, EntityType.DATA);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder()
-                .setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5", "de89a907d33a9716d11765582102b2e0");
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
+                                                                "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", "text/plain");
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
-        aipBuilder.getPDIBuilder()
-                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event", OffsetDateTime.now());
+        aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
+                                                                 OffsetDateTime.now());
         aipBuilder.addTags("tag");
 
         return aipBuilder.build();
@@ -462,7 +453,6 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     @After
     public void cleanUp() throws URISyntaxException, IOException {
-        subscriber.purgeQueue(JobEvent.class, RestoreJobEventHandler.class);
         subscriber.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class);
         unsubscribeAMQPEvents();
         jobInfoRepo.deleteAll();

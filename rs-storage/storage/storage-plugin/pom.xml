@@ -35,14 +35,6 @@
 			<artifactId>jobs-domain</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.search</groupId>
-			<artifactId>search-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.accessrights</groupId>
-			<artifactId>accessrights-client</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>authentication-regards-starter</artifactId>
 		</dependency>

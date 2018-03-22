@@ -7,7 +7,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
  * Plugin interface for all security delegation plugins
  * @author Sylvain VISSIERE-GUERINET
  */
-@PluginInterface(description = "Contract to respect by any Security Delecation plugin")
+@PluginInterface(description = "Contract to respect by any security delegation plugin")
 public interface ISecurityDelegation {
 
     /**
