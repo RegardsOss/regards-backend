@@ -33,6 +33,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -47,6 +49,7 @@ import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServic
 import fr.cnes.regards.modules.catalog.services.domain.annotations.GetCatalogServicePluginAnnotation;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
+import fr.cnes.regards.modules.catalog.services.plugins.AbstractCatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
 
@@ -99,14 +102,32 @@ public class ServiceManager implements IServiceManager {
     }
 
     @Override
-    public List<PluginConfigurationDto> retrieveServices(String pDatasetId, final ServiceScope pServiceScope) {
-        if (pDatasetId == null) {
+    public List<PluginConfigurationDto> retrieveServices(List<String> pDatasetIds, final ServiceScope pServiceScope) {
+        if ((pDatasetIds == null) || pDatasetIds.isEmpty()) {
             return new ArrayList<>();
         }
-        final LinkPluginsDatasets datasetPlugins = linkPluginsDatasetsService.retrieveLink(pDatasetId);
-        final Set<PluginConfiguration> services = datasetPlugins.getServices();
 
-        try (Stream<PluginConfiguration> stream = services.stream()) {
+        Set<PluginConfiguration> allServices = getServicesAssociatedToAllDatasets();
+        Set<PluginConfiguration> datasetsCommonServices = Sets.newHashSet();
+        boolean first = true;
+        // Get all services associated to each dataset given
+        for (String datasetId : pDatasetIds) {
+            final LinkPluginsDatasets datasetPlugins = linkPluginsDatasetsService.retrieveLink(datasetId);
+            final Set<PluginConfiguration> datasetServices = datasetPlugins.getServices();
+            if (first) {
+                datasetsCommonServices.addAll(datasetServices);
+                first = false;
+            } else {
+                datasetsCommonServices.retainAll(datasetServices);
+            }
+        }
+        for (PluginConfiguration datasetService : datasetsCommonServices) {
+            if (!allServices.contains(datasetService)) {
+                allServices.add(datasetService);
+            }
+        }
+
+        try (Stream<PluginConfiguration> stream = allServices.stream()) {
             return stream.filter(IS_APPLICABLE_ON.apply(pServiceScope)).map(PluginConfigurationDto::new)
                     .collect(Collectors.toList());
         }
@@ -136,6 +157,21 @@ public class ServiceManager implements IServiceManager {
                            factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
         return toExecute.apply(pServicePluginParameters, response);
 
+    }
+
+    private Set<PluginConfiguration> getServicesAssociatedToAllDatasets() {
+        Set<PluginConfiguration> allServices = Sets.newHashSet();
+        // 1. Retrieve all services configuration
+        List<PluginConfiguration> confs = pluginService.getPluginConfigurationsByType(IService.class);
+
+        // 2. Get all plugin conf with the applyToAllDataset parameter set to true.
+        for (PluginConfiguration conf : confs) {
+            PluginParameter param = conf.getParameter(AbstractCatalogServicePlugin.APPLY_TO_ALL_DATASETS_PARAM);
+            if ((param != null) && Boolean.parseBoolean(param.getValue())) {
+                allServices.add(conf);
+            }
+        }
+        return allServices;
     }
 
 }
