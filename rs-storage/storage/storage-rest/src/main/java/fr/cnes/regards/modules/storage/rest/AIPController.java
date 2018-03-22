@@ -526,7 +526,8 @@ public class AIPController implements IResourceController<AIP> {
     }
 
     /**
-     * Handles any changes that should occurred between private rs-storage information and how the rest of the world should see them.
+     * Handles any changes that should occurred between private rs-storage information and how the rest of the world
+     * should see them.
      * For example, change URL from file:// to http://[project_host]/[gateway prefix]/rs-storage/...
      */
     private void toPublicDataFile(DataFileDto dataFile, AIP owningAip) throws MalformedURLException {
