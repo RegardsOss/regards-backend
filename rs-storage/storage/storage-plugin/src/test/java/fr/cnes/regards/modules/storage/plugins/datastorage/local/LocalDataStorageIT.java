@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -167,6 +168,11 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
                 Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt")),
                 "538b3f98063b77e50f78b51f1a6acd8c", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip,
                 "data.txt", null);
+        // valid file to get a call to progressManager.storageSucceed
+        StorageDataFile validDFWithProvidedDirectory = new StorageDataFile(
+                Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data2.txt")),
+                "36fc2e44e266cd50f1f9dbc5b9767138", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip,
+                "data2.txt", "/provided/directory");
         // file that does not exist to get a call to progressManager.storageFailed
         StorageDataFile ghostDF = new StorageDataFile(
                 Sets.newHashSet(new URL("file", "",
@@ -178,11 +184,19 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
                 Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt")),
                 "01234567890123456789012345678901", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip,
                 "data.txt", null);
-        Set<StorageDataFile> dataFiles = Sets.newHashSet(validDF, ghostDF, invalidDF);
+        Set<StorageDataFile> dataFiles = Sets.newHashSet(validDF, validDFWithProvidedDirectory, ghostDF, invalidDF);
         LocalWorkingSubset workingSubSet = new LocalWorkingSubset(dataFiles);
         storagePlugin.store(workingSubSet, false, progressManager);
         Mockito.verify(progressManager).storageSucceed(Mockito.eq(validDF), Mockito.any(), Mockito.any());
+        Mockito.verify(progressManager).storageSucceed(Mockito.eq(validDFWithProvidedDirectory), Mockito.any(),
+                                                       Mockito.any());
         Mockito.verify(progressManager, Mockito.times(2)).storageFailed(Mockito.any(), Mockito.any());
+
+        // Check files are stored
+        Path pathToCheck = Paths.get(baseStorageLocation.getPath(), validDFWithProvidedDirectory.getStorageDirectory(),
+                                     validDFWithProvidedDirectory.getChecksum());
+        LOG.info("Checking file {}", pathToCheck.toString());
+        Assert.assertTrue(Files.exists(pathToCheck));
     }
 
     private AIP getAipFromFile() throws IOException {

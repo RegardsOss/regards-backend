@@ -127,7 +127,7 @@ public class AIPMiscAllocationStrategyPlugin implements IAllocationStrategy {
             try {
                 PluginConfiguration pluginConfigration = pluginService
                         .getPluginConfiguration(onlinePluginConfigrationId);
-                if (onlinePluginConfigration.getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
+                if (pluginConfigration.getInterfaceNames().contains(IOnlineDataStorage.class.getName())) {
                     onlinePluginConfigration = pluginConfigration;
                 } else {
                     LOG.error("Invalid Online plugin configuration id {}. The plugin is not an IOnlineDataStorage plugin.");
