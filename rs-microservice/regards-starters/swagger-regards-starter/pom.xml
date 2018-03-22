@@ -13,13 +13,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>swagger-regards-starter</artifactId>
-	<version>2.0.0-SNAPSHOT</version>
+	<version>2.0.0-RELEASE</version>
 	<description>REGARDS Swagger starter</description>
 
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
 		<artifactId>regards-starters</artifactId>
-		<version>2.0.0-SNAPSHOT</version>
+		<version>2.0.0-RELEASE</version>
 	</parent>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>

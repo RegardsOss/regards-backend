@@ -19,7 +19,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.framework.modules</groupId>
 		<artifactId>jobs</artifactId>
-		<version>2.0.0-SNAPSHOT</version>
+		<version>2.0.0-RELEASE</version>
 	</parent>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
