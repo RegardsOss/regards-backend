@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -53,8 +54,11 @@ public interface IJsonSearchClient {
     @RequestMapping(value = "/collections", method = RequestMethod.GET)
     ResponseEntity<JsonObject> searchCollections(@RequestParam Map<String, String> allParams);
 
+    /**
+     * See SearchController.searchDataObjects to understand why a MultiValueMap is used instead of a Map
+     */
     @RequestMapping(value = "/dataobjects/withfacets", method = RequestMethod.GET)
-    ResponseEntity<JsonObject> searchDataobjects(@RequestParam Map<String, String> allParams,
+    ResponseEntity<JsonObject> searchDataobjects(@RequestParam MultiValueMap<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] facets);
 
     @RequestMapping(value = "/dataobjects/datasets", method = RequestMethod.GET)
