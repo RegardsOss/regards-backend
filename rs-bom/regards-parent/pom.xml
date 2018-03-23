@@ -196,6 +196,14 @@
                         <skipDockerBuild>true</skipDockerBuild>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>com.spotify</groupId>
+                    <artifactId>dockerfile-maven-plugin</artifactId>
+                    <version>1.4.0</version>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
 				<!-- Plugin used to check versions -->
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
