@@ -133,6 +133,11 @@
         <fr.cnes.regards.microservices.administration.remote-authorities-provider>2.0.0-SNAPSHOT</fr.cnes.regards.microservices.administration.remote-authorities-provider>
 
         <custom.deployment.version>2.0.0-SNAPSHOT</custom.deployment.version>
+        
+        <!-- STAF -->
+        <fr.cnes.regards.staf.version>1.0.0</fr.cnes.regards.staf.version>
+        <fr.cnes.regards.data-storage-staf.plugin.version>1.0.0</fr.cnes.regards.data-storage-staf.plugin.version>
+        <fr.cnes.regards.allocation-storage-staf.plugin.version>1.0.0</fr.cnes.regards.allocation-storage-staf.plugin.version>
 
         <!-- COTS -->
         <flyway.version>4.2.0</flyway.version>
@@ -990,6 +995,22 @@
                 <groupId>fr.cnes.regards.modules.ingest</groupId>
                 <artifactId>ingest-domain</artifactId>
                 <version>${fr.cnes.regards.modules.ingest.version}</version>
+            </dependency>
+            <!-- STAF -->
+        	<dependency>
+                <groupId>fr.cnes.regards.staf</groupId>
+                <artifactId>staf-controller</artifactId>
+                <version>${fr.cnes.regards.staf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.staf</groupId>
+                <artifactId>staf-starter</artifactId>
+                <version>${fr.cnes.regards.staf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.staf.plugins</groupId>
+                <artifactId>storage-staf-plugins</artifactId>
+                <version>${fr.cnes.regards.data-storage-staf.plugin.version}</version>
             </dependency>
             <!-- COTS -->
             <dependency>
