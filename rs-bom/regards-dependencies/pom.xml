@@ -565,12 +565,17 @@
                 <artifactId>datasources-rest</artifactId>
                 <version>${fr.cnes.regards.modules.datasources.version}</version>
             </dependency>
+            <!-- Datasource plugins -->
+            <dependency>
+                <groupId>fr.cnes.regards.modules.datasources.plugins</groupId>
+                <artifactId>db-datasource-common</artifactId>
+                <version>${fr.cnes.regards.modules.datasources.version}</version>
+            </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.datasources</groupId>
                 <artifactId>datasource-oracle-plugins</artifactId>
                 <version>${fr.cnes.regards.modules.datasources.version}</version>
             </dependency>
-            <!-- Datasource plugins -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.datasources.plugins</groupId>
                 <artifactId>postgresql-datasource</artifactId>
