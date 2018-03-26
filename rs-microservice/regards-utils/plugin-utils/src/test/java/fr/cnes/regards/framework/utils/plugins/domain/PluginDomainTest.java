@@ -150,9 +150,9 @@ public class PluginDomainTest extends PluginDomainUtility {
         final String aDescription = USERROLE + BLUE + RED;
         plgMetaData.setDescription(aDescription);
         final List<PluginParameterType> parameters = Arrays
-                .asList(PluginParameterType.create(RED, "red", null, String.class, ParamType.PRIMITIVE, false),
-                        PluginParameterType.create(BLUE, "blue", null, String.class, ParamType.PRIMITIVE, false),
-                        PluginParameterType.create(GREEN, "green", null, String.class, ParamType.PLUGIN, false));
+                .asList(PluginParameterType.create(RED, "red", null, String.class, ParamType.PRIMITIVE, false, false),
+                        PluginParameterType.create(BLUE, "blue", null, String.class, ParamType.PRIMITIVE, false, false),
+                        PluginParameterType.create(GREEN, "green", null, String.class, ParamType.PLUGIN, false, false));
 
         plgMetaData.setParameters(parameters);
 

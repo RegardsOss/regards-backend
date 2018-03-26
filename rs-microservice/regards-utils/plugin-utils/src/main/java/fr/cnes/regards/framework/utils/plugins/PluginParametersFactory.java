@@ -127,6 +127,19 @@ public class PluginParametersFactory {
     }
 
     /**
+     * Add a parameter which can only be dynamic
+     * @param name the name parameter
+     * @param value may be an {@link Object}, a {@link Collection} or a {@link Map}.
+     * @return the factory
+     */
+    public PluginParametersFactory addOnlyDynamicParameter(String name, Object value) {
+        PluginParameter parameter = new PluginParameter(name, normalize(value));
+        parameter.setOnlyDynamic(true);
+        parameters.add(parameter);
+        return this;
+    }
+
+    /**
      * Add a dynamic parameter with its dynamic values
      * @param name the name parameter
      * @param value may be an {@link Object}, a {@link Collection} or a {@link Map}.

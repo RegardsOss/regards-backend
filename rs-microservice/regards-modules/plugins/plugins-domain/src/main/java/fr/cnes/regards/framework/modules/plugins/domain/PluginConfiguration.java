@@ -248,20 +248,13 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * @return the stripped value (no enclosing quotes)
      */
     public String getStripParameterValue(String parameterName) {
-        // Strip quotes using Gson
-        Gson gson = new Gson();
         String value = null;
         if (parameters != null) {
             Optional<PluginParameter> pluginParameter = parameters.stream()
                     .filter(s -> s.getName().equals(parameterName)).findFirst();
             if (pluginParameter.isPresent()) {
-                String tmp = pluginParameter.get().getValue();
-                if (tmp.startsWith("\"")) {
-                    JsonElement el = gson.fromJson(pluginParameter.get().getValue(), JsonElement.class);
-                    value = (el == null) ? null : el.getAsString();
-                } else {
-                    value = tmp;
-                }
+                // Strip quotes using Gson
+                return pluginParameter.get().getStripParameterValue();
             }
         }
         return value;

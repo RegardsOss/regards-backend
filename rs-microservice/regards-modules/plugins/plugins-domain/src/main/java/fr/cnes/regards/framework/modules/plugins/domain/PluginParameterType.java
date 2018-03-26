@@ -88,6 +88,8 @@ public class PluginParameterType {
      */
     private List<PluginParameterType> parameters = new ArrayList<>();
 
+    private Boolean onlyDynamic;
+
     /**
      * {@link PluginParameterType} builder.<br/>
      * Additional setter can be used :
@@ -106,7 +108,7 @@ public class PluginParameterType {
      * @return {@link PluginParameterType}
      */
     public static PluginParameterType create(String name, String label, String description, Class<?> clazz,
-            ParamType paramType, Boolean optional) {
+            ParamType paramType, Boolean optional, Boolean onlyDynamic) {
         PluginParameterType ppt = new PluginParameterType();
 
         // Validate and set
@@ -126,6 +128,8 @@ public class PluginParameterType {
 
         Assert.notNull(optional, "Optional value is required");
         ppt.setOptional(optional);
+
+        ppt.setOnlyDynamic(onlyDynamic);
 
         return ppt;
     }
@@ -223,6 +227,14 @@ public class PluginParameterType {
 
     public void setMarkdown(String markdown) {
         this.markdown = markdown;
+    }
+
+    public void setOnlyDynamic(Boolean onlyDynamic) {
+        this.onlyDynamic = onlyDynamic;
+    }
+
+    public Boolean getOnlyDynamic() {
+        return onlyDynamic;
     }
 
     /**
