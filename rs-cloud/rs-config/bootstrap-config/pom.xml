@@ -131,6 +131,7 @@
 							<targetPath>/</targetPath>
 							<directory>${project.basedir}/src/main/docker</directory>
 							<include>prestart.sh</include>
+							<filtering>true</filtering>
 						</resource>
 					</resources>
 				</configuration>
