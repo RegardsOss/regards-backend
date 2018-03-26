@@ -39,6 +39,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
 /**
@@ -161,6 +163,10 @@ public class PluginParameter implements IIdentifiable<Long> {
         return dynamicsValues;
     }
 
+    public void setDynamicsValues(Set<PluginParameterValue> pDynamicValues) {
+        dynamicsValues = pDynamicValues;
+    }
+
     public List<String> getDynamicsValuesAsString() {
         final List<String> result = new ArrayList<>();
         if ((dynamicsValues != null) && !dynamicsValues.isEmpty()) {
@@ -181,10 +187,6 @@ public class PluginParameter implements IIdentifiable<Long> {
             }
         }
         return false;
-    }
-
-    public void setDynamicsValues(Set<PluginParameterValue> pDynamicValues) {
-        dynamicsValues = pDynamicValues;
     }
 
     @Override
@@ -211,6 +213,23 @@ public class PluginParameter implements IIdentifiable<Long> {
         } else {
             this.value = null;
         }
+    }
+
+    /**
+     * @return the stripped value (no enclosing quotes)
+     */
+    public String getStripParameterValue() {
+        // Strip quotes using Gson
+        Gson gson = new Gson();
+        String value;
+        String tmp = this.value.getValue();
+        if (tmp.startsWith("\"")) {
+            JsonElement el = gson.fromJson(tmp, JsonElement.class);
+            value = (el == null) ? null : el.getAsString();
+        } else {
+            value = tmp;
+        }
+        return value;
     }
 
     @Override
