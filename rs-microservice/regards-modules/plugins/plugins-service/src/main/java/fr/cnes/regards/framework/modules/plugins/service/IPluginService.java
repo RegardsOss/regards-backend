@@ -126,9 +126,9 @@ public interface IPluginService {
      *
      * @param pluginConfiguration the plugin configuration to saved
      * @return the saved {@link PluginConfiguration}
-     * @throws ModuleException thrown if an error occurs
+     * @throws EntityInvalidException thrown if an error occurs
      */
-    PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConfiguration) throws ModuleException;
+    PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConfiguration) throws EntityInvalidException;
 
     /**
      * Delete a {@link PluginConfiguration}.

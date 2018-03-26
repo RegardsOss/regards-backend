@@ -158,7 +158,8 @@ public class CycleDetectionTest {
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_ACTIVE, true)
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_COEF, 12345)
-                .addParameter(SamplePluginWithPojo.FIELD_NAME_POJO, pojoParent).getParameters();
+                .addParameter(SamplePluginWithPojo.FIELD_NAME_POJO, pojoParent)
+                .addParameter(SamplePluginWithPojo.FIELD_NAME_SUFFIX, "suffix").getParameters();
 
         // instantiate plugin
         SamplePluginWithPojoWithSet samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojoWithSet.class,
