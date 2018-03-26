@@ -18,16 +18,30 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
- * Test plugin
- *
- * @author Marc Sordi
- *
+ * @author oroussel
  */
-@PluginInterface(description = "Plugin parameter test")
-public interface IParamTestPlugin {
+@Plugin(author = "REGARDS Team", description = "Plugin for plugin configuration plugin parameter type testing",
+        id = "InnerParamTestPlugin", version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        url = "https://regardsoss.github.io/")
+public class InnerParamTestPlugin implements IParamTestPlugin {
 
-    void doIt();
+    @PluginParameter(label = "toto", description = "toto")
+    private String toto;
+
+    @Override
+    public void doIt() {
+        // do nothing
+    }
+
+    public String getToto() {
+        return toto;
+    }
+
+    public void setToto(String toto) {
+        this.toto = toto;
+    }
 }
