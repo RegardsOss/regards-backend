@@ -118,6 +118,27 @@
 	<build>
 		<plugins>
 			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>prepare-dockerfile</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/scripts</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/docker</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>com.spotify</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
 				<configuration>
@@ -129,9 +150,8 @@
 						</resource>
 						<resource>
 							<targetPath>/</targetPath>
-							<directory>${project.basedir}/src/main/docker</directory>
+							<directory>${project.build.directory}/scripts</directory>
 							<include>prestart.sh</include>
-							<filtering>true</filtering>
 						</resource>
 					</resources>
 				</configuration>
