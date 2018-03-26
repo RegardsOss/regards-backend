@@ -168,7 +168,7 @@ public class PluginService implements IPluginService {
         }
 
         StringBuilder msg = new StringBuilder("Cannot save plugin configuration");
-        PluginConfiguration pluginConfInDb = pluginConfRepository.findOneByLabel(plgConf.getLabel());
+        PluginConfiguration pluginConfInDb = repos.findOneByLabel(plgConf.getLabel());
         if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), plgConf.getId()) && pluginConfInDb
                 .getLabel().equals(plgConf.getLabel())) {
             msg.append(String.format(". A plugin configuration with same label (%s) already exists.",
