@@ -56,11 +56,11 @@ public final class PluginParameterUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginParameterUtils.class);
 
     /**
-     * Retrieve {@link List} of {@link PluginParameterType} by reflection on class fields
+     * Retrieve List of {@link PluginParameterType} by reflection on class fields
      *
-     * @param pluginClass the target {@link Class}
-     * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
-     * @return {@link List} of {@link PluginParameterType} or null.
+     * @param pluginClass the target class
+     * @param prefixes a list of packages to scan to find {@link Plugin} and {@link PluginInterface}
+     * @return List of {@link PluginParameterType} or null.
      */
     public static List<PluginParameterType> getParameters(final Class<?> pluginClass, final List<String> prefixes) {
         return getParameters(pluginClass, prefixes, false, null);
