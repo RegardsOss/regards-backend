@@ -18,18 +18,19 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Embeddable;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Transient;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Embeddable;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Type;
 
@@ -176,8 +177,10 @@ public class JobStatusInfo implements Observer {
             OffsetDateTime now = OffsetDateTime.now();
             percentCompleted = (Integer) arg;
             Duration fromStart = Duration.between(startDate, now);
-            estimatedCompletion = startDate.plus((fromStart.toMillis() * 100l) / percentCompleted,
-                                                 ChronoUnit.MILLIS);
+            if (percentCompleted > 0) {
+                estimatedCompletion = startDate.plus((fromStart.toMillis() * 100l) / percentCompleted,
+                                                     ChronoUnit.MILLIS);
+            }
             completionChanged.set(true);
         }
     }
