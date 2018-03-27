@@ -17,5 +17,5 @@
 @Library('regards/standardPipeline') _
 
 standardPipeline {
-    upstreamProjects = 'rs-catalog-multi-branch/release/V2.0.0'
+    upstreamProjects = 'rs-catalog-multi-branch/release%2FV2.0.0'
 }
