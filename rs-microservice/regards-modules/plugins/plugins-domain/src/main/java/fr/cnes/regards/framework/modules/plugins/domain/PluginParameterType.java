@@ -95,7 +95,7 @@ public class PluginParameterType {
      * Additional setter can be used :
      * <ul>
      * <li>{@link #setDefaultValue(String)}</li>
-     * <li>{@link #setParameters(List)}</li>
+     * <li>{@link #addAllParameters(List)}</li>
      * <li>{@link #setParameterizedSubTypes(String...)}</li>
      * <li>{@link #setKeyLabel(String)}</li>
      * </ul>
