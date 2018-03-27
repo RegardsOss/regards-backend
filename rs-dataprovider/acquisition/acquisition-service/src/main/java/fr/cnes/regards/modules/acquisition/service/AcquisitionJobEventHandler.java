@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -34,6 +35,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * @author Marc Sordi
  *
  */
+@Component
 public class AcquisitionJobEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 
     @Autowired
