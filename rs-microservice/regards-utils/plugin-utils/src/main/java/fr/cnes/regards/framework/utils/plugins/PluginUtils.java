@@ -288,8 +288,7 @@ public final class PluginUtils {
      * @param pluginInstance the {@link Plugin} instance
      */
     public static <T> void doDestroyPlugin(final T pluginInstance) {
-        final Method[] allMethods = pluginInstance.getClass().getDeclaredMethods();
-        for (final Method method : allMethods) {
+        for (final Method method : ReflectionUtils.getAllDeclaredMethods(pluginInstance.getClass())) {
             if (method.isAnnotationPresent(PluginDestroy.class)) {
                 // Invoke method
                 ReflectionUtils.makeAccessible(method);
@@ -312,8 +311,7 @@ public final class PluginUtils {
      * @param pluginInstance the {@link Plugin} instance @ if a problem occurs
      */
     private static <T> void doInitPlugin(final T pluginInstance) {
-        final Method[] allMethods = pluginInstance.getClass().getDeclaredMethods();
-        for (final Method method : allMethods) {
+        for (final Method method : ReflectionUtils.getAllDeclaredMethods(pluginInstance.getClass())) {
             if (method.isAnnotationPresent(PluginInit.class)) {
                 // Invoke method
                 ReflectionUtils.makeAccessible(method);

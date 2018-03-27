@@ -19,6 +19,8 @@
 package fr.cnes.regards.framework.utils.plugins.inheritance;
 
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -30,6 +32,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 @Plugin(author = "REGARDS Team", description = "Plugin for inheritance testing", id = "BasicPlugin", version = "1.0.0",
         contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
 public class BasicPlugin extends AbstractPlugin {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicPlugin.class);
 
     public static final String FIELD_NAME_STRING = "field";
 

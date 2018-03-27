@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.framework.utils.plugins.inheritance;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
@@ -26,8 +30,15 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
  */
 public abstract class AbstractPlugin implements IBasicPlugin {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPlugin.class);
+
     public static final String INHERITED_FIELD_NAME_STRING = "inheritedField";
 
     @PluginParameter(name = INHERITED_FIELD_NAME_STRING, label = "Inherited string")
     protected String inheritedField;
+
+    @PluginInit
+    protected void init() {
+        LOGGER.info("Init the plugin in an inherited class"); // Just for manual test!
+    }
 }
