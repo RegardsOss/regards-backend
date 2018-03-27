@@ -81,4 +81,16 @@ public final class ReflectionUtils {
         return fields;
     }
 
+    /**
+     * Retrieve all declared methods of the class including inherited ones
+     */
+    public static List<Method> getAllDeclaredMethods(Class<?> clazz) {
+        List<Method> methods = new ArrayList<>();
+        methods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+        if (clazz.getSuperclass() != null) {
+            methods.addAll(getAllDeclaredMethods(clazz.getSuperclass()));
+        }
+        return methods;
+    }
+
 }
