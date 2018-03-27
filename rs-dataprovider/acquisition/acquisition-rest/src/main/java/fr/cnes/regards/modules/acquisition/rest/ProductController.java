@@ -46,6 +46,7 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
+import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
@@ -91,7 +92,7 @@ public class ProductController implements IResourceController<Product> {
     @ResourceAccess(description = "Search for products", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedResources<Resource<Product>>> search(
             @RequestParam(name = "state", required = false) List<ProductState> state,
-            @RequestParam(name = "sipState", required = false) List<SIPState> sipState,
+            @RequestParam(name = "sipState", required = false) List<ISipState> sipState,
             @RequestParam(name = "productName", required = false) String productName,
             @RequestParam(name = "session", required = false) String session,
             @RequestParam(name = "chainId", required = false) Long processingChainId,

@@ -31,6 +31,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
@@ -54,8 +55,8 @@ public class ProductSpecifications {
      * @param from {@link OffsetDateTime}
      * @return {@link Specification}<{@link Product}>
      */
-    public static Specification<Product> search(List<ProductState> states, List<SIPState> sipStates, String productName,
-            String session, Long processingChainId, OffsetDateTime from, Boolean noSession) {
+    public static Specification<Product> search(List<ProductState> states, List<ISipState> sipStates,
+            String productName, String session, Long processingChainId, OffsetDateTime from, Boolean noSession) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (productName != null) {
@@ -83,7 +84,7 @@ public class ProductSpecifications {
             }
             if ((sipStates != null) && !sipStates.isEmpty()) {
                 Set<Predicate> sipStatesPredicates = Sets.newHashSet();
-                for (SIPState state : sipStates) {
+                for (ISipState state : sipStates) {
                     sipStatesPredicates.add(cb.equal(root.get("sipState"), state));
                 }
                 predicates.add(cb.or(sipStatesPredicates.toArray(new Predicate[sipStatesPredicates.size()])));
