@@ -100,4 +100,10 @@ public @interface PluginParameter {
      * @return true if the plugin parameter is mandatory.
      */
     boolean optional() default false;
+
+    /**
+     * Is the plugin parameter only dynamic?
+     * @return true if the plugin parameter is only dynamic
+     */
+    boolean onlyDynamic() default false;
 }

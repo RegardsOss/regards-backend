@@ -16,27 +16,32 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.plugins;
+package fr.cnes.regards.framework.modules.plugins.rest;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
- * SamplePlugin
- *
- * @author Christophe Mertz
+ * @author oroussel
  */
-@Plugin(description = "Sample plugin test", id = "aOtherFakePlugin", version = "12345-6789-11", author = "REGARDS Team",
-        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
-public class FakeOtherPlugin implements IComplexInterfacePlugin {
+@Plugin(author = "REGARDS Team", description = "Plugin for plugin configuration plugin parameter type testing",
+        id = "InnerParamTestPlugin", version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        url = "https://regardsoss.github.io/")
+public class InnerParamTestPlugin implements IParamTestPlugin {
 
-    @PluginParameter(label = "test", defaultValue = "String")
-    private String string;
-
+    @PluginParameter(label = "toto", description = "toto")
+    private String toto;
 
     @Override
-    public int mult(int pFirst, int pSecond) {
-        return 0;
+    public void doIt() {
+        // do nothing
     }
 
+    public String getToto() {
+        return toto;
+    }
+
+    public void setToto(String toto) {
+        this.toto = toto;
+    }
 }

@@ -103,6 +103,19 @@
             },
             "type": "java.util.Map",
             "name": "scMap"
+        },
+        {
+            "dynamic": false,
+            "name": "innerPlugin",
+            "pluginConfiguration": {
+                "id": -1,
+                "active": true,
+                "interfaceNames": [],
+                "parameters": [],
+                "pluginId": "undefined",
+                "priorityOrder": 0,
+                "version": 0.0
+            }
         }
     ]
 }

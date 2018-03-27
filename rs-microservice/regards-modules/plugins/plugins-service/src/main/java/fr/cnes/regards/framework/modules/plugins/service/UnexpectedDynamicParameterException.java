@@ -16,7 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-/**
- * TODO Description 
- */
 package fr.cnes.regards.framework.modules.plugins.service;
+
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+
+/**
+ * This exception is thrown when a plugin is instanciated with a dynamic parameter that should not be.
+ *
+ * @author Marc Sordi
+ *
+ */
+@SuppressWarnings("serial")
+public class UnexpectedDynamicParameterException extends ModuleException {
+
+    public UnexpectedDynamicParameterException(String errorMessage) {
+        super(errorMessage);
+    }
+}
