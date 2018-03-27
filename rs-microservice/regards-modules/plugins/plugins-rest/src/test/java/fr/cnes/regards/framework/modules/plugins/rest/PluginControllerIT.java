@@ -28,6 +28,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.jayway.jsonpath.JsonPath;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.CannotInstanciatePluginException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -49,15 +52,26 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IRuntimeTenantResolver resolver;
 
+    @Autowired
+    private IPluginConfigurationRepository repository;
+
     @Test
     public void savePluginConfigurationTest() throws ModuleException {
 
         pluginService.addPluginPackage(this.getClass().getPackage().getName());
 
+        // Bad version plugin creation attempt
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
+
+        // Creation Inner plugin : must fail
+        performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, readJsonContract("innerConfUpdatedVersion.json"),
+                           customizer, "Configuration should be saved!", "InnerParamTestPlugin");
+
+        // Inner plugin creation
+        customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
 
-        // Creation Inner plugin
         ResultActions result = performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS,
                                                   readJsonContract("innerConf.json"), customizer,
                                                   "Configuration should be saved!", "InnerParamTestPlugin");
@@ -139,6 +153,44 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isForbidden());
         performDefaultDelete(PluginController.PLUGINS_PLUGINID_CONFIGID, customizer,
-                             "COnfiguration mustn't have been deleted", "InnerParamTestPlugin", innerConfigId);
+                             "Configuration mustn't have been deleted", "InnerParamTestPlugin", innerConfigId);
+
+        // Update Inner Plugin with a different version (2.0.0)
+        customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
+        json = readJsonContract("innerConfUpdatedVersion.json")
+                .replace("\"id\":0", "\"id\":" + innerConfigId.toString());
+        performDefaultPut(PluginController.PLUGINS_PLUGINID_CONFIGID, json, customizer,
+                          "Configuration should be saved!", "InnerParamTestPlugin", innerConfigId);
+    }
+
+    @Test(expected = CannotInstanciatePluginException.class)
+    public void instantiatePluginConfigurationTest() throws ModuleException {
+
+        pluginService.addPluginPackage(this.getClass().getPackage().getName());
+
+        // Inner plugin creation with version 1.0.0
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+
+        ResultActions result = performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS,
+                                                  readJsonContract("innerConf.json"), customizer,
+                                                  "Configuration should be saved!", "InnerParamTestPlugin");
+        String resultAsString = payload(result);
+        long innerConfigId = (Integer)JsonPath.read(resultAsString, "$.content.id");
+        // Remove from cache
+        resolver.forceTenant(DEFAULT_TENANT);
+        pluginService.cleanPluginCache(innerConfigId);
+
+        // Retrieve PLugin Configuration
+        PluginConfiguration pluginConf = pluginService.loadPluginConfiguration(innerConfigId);
+
+        // Change version
+        pluginConf.setVersion("3.0.0");
+        // Save like a piglet
+        repository.save(pluginConf);
+
+        // Try load it
+        InnerParamTestPlugin plugin = pluginService.getPlugin(pluginConf.getId());
     }
 }

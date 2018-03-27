@@ -161,7 +161,6 @@ public class PluginService implements IPluginService {
     @Override
     public PluginConfiguration savePluginConfiguration(PluginConfiguration plgConf) throws EntityInvalidException {
         // Check plugin configuration validity
-
         EntityInvalidException validityException = PluginUtils.validate(plgConf);
         if (validityException != null) {
             throw validityException;
@@ -171,8 +170,8 @@ public class PluginService implements IPluginService {
         PluginConfiguration pluginConfInDb = repos.findOneByLabel(plgConf.getLabel());
         if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), plgConf.getId()) && pluginConfInDb
                 .getLabel().equals(plgConf.getLabel())) {
-            msg.append(String.format(". A plugin configuration with same label (%s) already exists.",
-                                     plgConf.getLabel()));
+            msg.append(
+                    String.format(". A plugin configuration with same label (%s) already exists.", plgConf.getLabel()));
             throw new EntityInvalidException(msg.toString());
         }
 
@@ -184,12 +183,10 @@ public class PluginService implements IPluginService {
         boolean shouldPublishCreation = (plgConf.getId() == null);
         PluginConfiguration newConf = repos.save(plgConf);
         if (shouldPublishCreation) {
-            publisher.publish(new BroadcastPluginConfEvent(newConf.getId(),
-                                                           PluginServiceAction.CREATE,
+            publisher.publish(new BroadcastPluginConfEvent(newConf.getId(), PluginServiceAction.CREATE,
                                                            newConf.getInterfaceNames()));
-            publisher.publish(new PluginConfEvent(newConf.getId(),
-                                                  PluginServiceAction.CREATE,
-                                                  newConf.getInterfaceNames()));
+            publisher.publish(
+                    new PluginConfEvent(newConf.getId(), PluginServiceAction.CREATE, newConf.getInterfaceNames()));
 
         }
         return newConf;
@@ -221,36 +218,39 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pPluginConf) throws ModuleException {
-        final PluginConfiguration oldConf = repos.findById(pPluginConf.getId());
+    public PluginConfiguration updatePluginConfiguration(final PluginConfiguration pluginConf) throws ModuleException {
+        final PluginConfiguration oldConf = repos.findById(pluginConf.getId());
         if (oldConf == null) {
-            LOGGER.error(String.format("Error while updating the plugin configuration <%d>.", pPluginConf.getId()));
-            throw new EntityNotFoundException(pPluginConf.getId().toString(), PluginConfiguration.class);
+            LOGGER.error(String.format("Error while updating the plugin configuration <%d>.", pluginConf.getId()));
+            throw new EntityNotFoundException(pluginConf.getId().toString(), PluginConfiguration.class);
         }
         boolean oldConfActive = oldConf.isActive();
-        PluginConfiguration newConf = savePluginConfiguration(pPluginConf);
+        PluginConfiguration newConf = savePluginConfiguration(pluginConf);
 
         if (oldConfActive != newConf.isActive()) {
             // For CATALOG
-            publisher.publish(new BroadcastPluginConfEvent(pPluginConf.getId(),
-                                                           newConf.isActive() ?
-                                                                   PluginServiceAction.ACTIVATE :
-                                                                   PluginServiceAction.DISABLE,
-                                                           newConf.getInterfaceNames()));
+            publisher.publish(new BroadcastPluginConfEvent(pluginConf.getId(), newConf.isActive() ?
+                    PluginServiceAction.ACTIVATE :
+                    PluginServiceAction.DISABLE, newConf.getInterfaceNames()));
             // For DAM
-            publisher.publish(new PluginConfEvent(pPluginConf.getId(),
-                                                  newConf.isActive() ?
-                                                          PluginServiceAction.ACTIVATE :
-                                                          PluginServiceAction.DISABLE,
-                                                  newConf.getInterfaceNames()));
+            publisher.publish(new PluginConfEvent(pluginConf.getId(), newConf.isActive() ?
+                    PluginServiceAction.ACTIVATE :
+                    PluginServiceAction.DISABLE, newConf.getInterfaceNames()));
         }
-        // Remove the PluginConfiguratin from the map
-        cleanPluginCache(pPluginConf.getId());
-        // And don't forget to clean all PluginConfiguration that have this plugin as a parameter
-        List<PluginConfiguration> parentPluginConfs = repos.findByParametersPluginConfiguration(pPluginConf);
-        parentPluginConfs.forEach(pc -> cleanPluginCache(pc.getId()));
+        // Remove the plugin configuration from cache
+        cleanRecursively(pluginConf);
 
         return newConf;
+    }
+
+    /**
+     * Clean from cache given plugin configuration and all those which  use it (recursively)
+     */
+    private void cleanRecursively(PluginConfiguration pluginConf) {
+        // And don't forget to clean all PluginConfiguration that have this plugin as a parameter
+        List<PluginConfiguration> parentPluginConfs = repos.findByParametersPluginConfiguration(pluginConf);
+        parentPluginConfs.forEach(pc -> cleanRecursively(pc));
+        cleanPluginCache(pluginConf.getId());
     }
 
     @Override
@@ -263,8 +263,8 @@ public class PluginService implements IPluginService {
         if (!repos.findByParametersPluginConfiguration(toDelete).isEmpty()) {
             throw new EntityOperationForbiddenException("Operation cancelled: dependent plugin configurations exist.");
         }
-        publisher.publish(new BroadcastPluginConfEvent(pConfId, PluginServiceAction.DELETE,
-                toDelete.getInterfaceNames()));
+        publisher.publish(
+                new BroadcastPluginConfEvent(pConfId, PluginServiceAction.DELETE, toDelete.getInterfaceNames()));
         repos.delete(pConfId);
 
         // Remove the PluginConfiguration from the map
@@ -274,8 +274,7 @@ public class PluginService implements IPluginService {
 
     @Override
     public List<PluginConfiguration> getPluginConfigurationsByType(final Class<?> pInterfacePluginType) {
-        return repos.findAll().stream()
-                .filter(pc -> pc.getInterfaceNames().contains(pInterfacePluginType.getName()))
+        return repos.findAll().stream().filter(pc -> pc.getInterfaceNames().contains(pInterfacePluginType.getName()))
                 .collect(Collectors.toList());
     }
 
@@ -360,33 +359,37 @@ public class PluginService implements IPluginService {
      * @return plugin instance
      * @throws ModuleException if error occurs!
      */
-    private <T> T instanciatePluginAndCache(final Long pPluginConfigurationId,
-            final PluginParameter... dynamicPluginParameters) throws ModuleException {
+    private <T> T instanciatePluginAndCache(Long pPluginConfigurationId, PluginParameter... dynamicPluginParameters)
+            throws ModuleException {
 
         // Check if all parameters are really dynamic
         for (PluginParameter dynamicParameter : dynamicPluginParameters) {
             if (!dynamicParameter.isDynamic() && !dynamicParameter.isOnlyDynamic()) {
-                String errorMessage = String.format(
-                        "The parameter \"%s\" is not identified as dynamic. Plugin instanciation is cancelled.",
-                        dynamicParameter.getName());
+                String errorMessage = String
+                        .format("The parameter \"%s\" is not identified as dynamic. Plugin instanciation is cancelled.",
+                                dynamicParameter.getName());
                 LOGGER.error(errorMessage);
-                throw new UnexpectedDynamicParameter(errorMessage);
+                throw new UnexpectedDynamicParameterException(errorMessage);
             }
         }
 
         // Get last saved plugin configuration
-        final PluginConfiguration pluginConf = loadPluginConfiguration(pPluginConfigurationId);
+        PluginConfiguration pluginConf = loadPluginConfiguration(pPluginConfigurationId);
 
         // Get the plugin implementation associated
-        final PluginMetaData pluginMetadata = getLoadedPlugins().get(pluginConf.getPluginId());
+        PluginMetaData pluginMetadata = getLoadedPlugins().get(pluginConf.getPluginId());
 
         if (pluginMetadata == null) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("No plugin metadata found for plugin configuration id {}", pluginConf.getPluginId());
-                logPluginServiceState("instanciatePluginAndCache");
-            }
+            LOGGER.debug("No plugin metadata found for plugin configuration id {}", pluginConf.getPluginId());
+            logPluginServiceState("instanciatePluginAndCache");
             throw new PluginMetadataNotFoundRuntimeException(
                     "Metadata not found for plugin configuration identifier " + pluginConf.getPluginId());
+        }
+
+        if (!Objects.equals(pluginMetadata.getVersion(), pluginConf.getVersion())) {
+            throw new CannotInstanciatePluginException(
+                    String.format("Plugin configuration version (%s) is different from plugin one (%s).",
+                                  pluginConf.getVersion(), pluginMetadata.getVersion()));
         }
 
         // When pluginMap are loaded from database, maybe dependant pluginMap aren't yet loaded
@@ -422,32 +425,27 @@ public class PluginService implements IPluginService {
      * @param invokingMethod method that invoques logPluginServiceState
      */
     private void logPluginServiceState(String invokingMethod) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("logPluginServiceState invoked by : {}", invokingMethod);
-            LOGGER.debug("This identifier: {}", this.toString());
-            LOGGER.debug("List of plugin packages: {}", Joiner.on(" ,").join(pluginPackages));
-            StringBuilder buf = new StringBuilder();
-            for (Entry<String, PluginMetaData> entry : pluginMap.entrySet()) {
+        LOGGER.debug("logPluginServiceState invoked by : {}", invokingMethod);
+        LOGGER.debug("This identifier: {}", this.toString());
+        LOGGER.debug("List of plugin packages: {}", Joiner.on(" ,").join(pluginPackages));
+        StringBuilder buf = new StringBuilder();
+        for (Entry<String, PluginMetaData> entry : pluginMap.entrySet()) {
 
-                // Interfaces
-                Iterator<String> interfaceIt = entry.getValue().getInterfaceNames().iterator();
-                buf.delete(0, buf.length());
-                buf.append("[");
-                if (interfaceIt.hasNext()) {
+            // Interfaces
+            Iterator<String> interfaceIt = entry.getValue().getInterfaceNames().iterator();
+            buf.delete(0, buf.length());
+            buf.append("[");
+            if (interfaceIt.hasNext()) {
+                buf.append(interfaceIt.next());
+                while (interfaceIt.hasNext()) {
+                    buf.append(",");
                     buf.append(interfaceIt.next());
-                    while (interfaceIt.hasNext()) {
-                        buf.append(",");
-                        buf.append(interfaceIt.next());
-                    }
                 }
-                buf.append("]");
-
-                LOGGER.debug("Available pluginMap metadata : {} -> {} / {} / {}",
-                             entry.getKey(),
-                             entry.getValue().getPluginId(),
-                             entry.getValue().getPluginClassName(),
-                             buf.toString());
             }
+            buf.append("]");
+
+            LOGGER.debug("Available pluginMap metadata : {} -> {} / {} / {}", entry.getKey(),
+                         entry.getValue().getPluginId(), entry.getValue().getPluginClassName(), buf.toString());
         }
     }
 

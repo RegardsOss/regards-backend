@@ -37,7 +37,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.plugins.IComplexInterfacePlugin;
 import fr.cnes.regards.framework.plugins.INotInterfacePlugin;
 import fr.cnes.regards.framework.plugins.ISamplePlugin;
-import fr.cnes.regards.framework.plugins.SamplePlugin;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
@@ -199,7 +198,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      *
      * @throws ModuleException throw if an error occurs
      */
-    @Test
+    @Test(expected = CannotInstanciatePluginException.class)
     public void getAPluginWithBadVersionConfiguration() throws ModuleException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
@@ -214,10 +213,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId()))
                 .thenReturn(aPluginConfiguration);
 
-        final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
-
-        Assert.assertNotNull(aSamplePlugin);
-        Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(RED));
+        pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
     }
 
     /**

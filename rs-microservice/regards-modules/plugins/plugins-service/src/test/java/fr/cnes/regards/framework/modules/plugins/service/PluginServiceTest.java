@@ -266,8 +266,8 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Test
     @Requirement("REGARDS_DSL_SYS_ARC_100")
     @Requirement("REGARDS_DSL_CMP_PLG_100")
-    @Purpose("Update a plugin configuration identified by an identifier by desactivating it")
-    public void desactivateAPluginConfiguration() throws ModuleException {
+    @Purpose("Update a plugin configuration identified by an identifier by deactivating it")
+    public void deactivateAPluginConfiguration() throws ModuleException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
         Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId()))
@@ -623,12 +623,11 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     /**
-     * Get the first plugin of a specific type with a dynamic parameter. Used the default value for the dynamic
-     * parameter.
+     * Try to get a plugin of a specific type with a dynamic parameter BUT a bad version.
      *
      * @throws ModuleException throw if an error occurs
      */
-    @Test
+    @Test(expected = CannotInstanciatePluginException.class)
     public void getAPluginInstanceWithBadVersionConfiguration() throws ModuleException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
@@ -645,9 +644,6 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
-
-        Assert.assertNotNull(aSamplePlugin);
-        Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(RED));
     }
 
     /**
