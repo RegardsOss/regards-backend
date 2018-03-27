@@ -416,7 +416,7 @@ public final class PluginUtils {
             //    lets check that all remaining parameters are correctly given
             for (PluginParameterType plgParamMeta : pluginParametersFromMeta) {
                 if (!plgParamMeta.isOptional() && !plgParamMeta.getOnlyDynamic()
-                        && (pluginConfiguration.getParameter(plgParamMeta.getName()) == null && plgParamMeta.getDefaultValue().isEmpty())) {
+                        && (pluginConfiguration.getParameter(plgParamMeta.getName()) == null && plgParamMeta.getDefaultValue() == null)) {
                     validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
                 }
             }
