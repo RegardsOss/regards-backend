@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.storage.service.cache;
+package fr.cnes.regards.modules.storage.service;
 
 import java.util.Set;
 import java.util.UUID;

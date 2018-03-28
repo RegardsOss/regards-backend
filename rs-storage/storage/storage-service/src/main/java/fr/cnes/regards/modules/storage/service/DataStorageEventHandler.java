@@ -257,6 +257,17 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                 LOG.debug("[DELETE FILE SUCCESS] AIP {} is in UPDATED state",
                           dataFileDeleted.getAip().getId().toString());
                 dataFileDao.remove(dataFileDeleted);
+                // Now that deletion of this data file is done, check if the aip metadata has been stored at least once
+                Optional<StorageDataFile> metadataOpt = dataFileDao.findByAipAndType(associatedAIP, DataType.AIP);
+                if(!metadataOpt.isPresent()) {
+                    // If it has not been stored, lets check if any data file are still linked to it
+                    Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(associatedAIP);
+                    // If none are linked anymore, lets remove it now and publish the event for the rest of the world
+                    if(aipFiles.isEmpty()) {
+                        publisher.publish(new AIPEvent(associatedAIP));
+                        aipDao.remove(associatedAIP);
+                    }
+                }
             } else {
                 if (associatedAIP.getState() == AIPState.DELETED) {
                     // Deletion has been explicitly required, so lets remove all the dataFiles associated to this AIP...

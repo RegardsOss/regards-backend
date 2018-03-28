@@ -34,6 +34,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
@@ -430,7 +431,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
         aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
                                                                 "de89a907d33a9716d11765582102b2e0");
-        aipBuilder.getContentInformationBuilder().setSyntax("text", "description", "text/plain");
+        aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MimeType.valueOf("text/plain"));
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");

@@ -223,7 +223,7 @@ public class StorageDataFile {
         Set<StorageDataFile> dataFiles = Sets.newHashSet();
         for (ContentInformation ci : aip.getProperties().getContentInformations()) {
             OAISDataObject file = ci.getDataObject();
-            MimeType mimeType = MimeType.valueOf(ci.getRepresentationInformation().getSyntax().getMimeType());
+            MimeType mimeType = ci.getRepresentationInformation().getSyntax().getMimeType();
             dataFiles.add(new StorageDataFile(file, mimeType, aip));
         }
         return dataFiles;

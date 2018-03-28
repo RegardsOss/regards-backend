@@ -1,7 +1,7 @@
 /*
  * LICENSE_PLACEHOLDER
  */
-package fr.cnes.regards.modules.storage.service.cache;
+package fr.cnes.regards.modules.storage.service;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -81,9 +82,6 @@ import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
-import fr.cnes.regards.modules.storage.service.DataStorageEventHandler;
-import fr.cnes.regards.modules.storage.service.IAIPService;
-import fr.cnes.regards.modules.storage.service.IPrioritizedDataStorageService;
 import fr.cnes.regards.modules.storage.service.plugins.CatalogSecurityDelegationTestPlugin;
 import fr.cnes.regards.modules.storage.service.plugins.NearlineNoRetrieveDataStorage;
 import fr.cnes.regards.modules.storage.service.plugins.SimpleNearLineStoragePlugin;
@@ -917,7 +915,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
         aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
                                                                 "de89a907d33a9716d11765582102b2e0");
-        aipBuilder.getContentInformationBuilder().setSyntax("text", "description", "text/plain");
+        aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MediaType.valueOf("text/plain"));
         aipBuilder.addContentInformation();
 
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
