@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.acquisition.rest;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -36,12 +38,14 @@ import com.jayway.jsonpath.JsonPath;
 import fr.cnes.regards.framework.microservice.rest.MicroserviceConfigurationController;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
@@ -66,7 +70,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    private AcquisitionProcessingChain getNewChain(String labelPrefix) {
+    public static AcquisitionProcessingChain getNewChain(String labelPrefix) {
 
         // Create a processing chain
         AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
@@ -82,8 +86,10 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
         fileInfo.setDataType(DataType.RAWDATA);
 
-        PluginConfiguration scanPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), GlobDiskScanning.class, Lists.newArrayList());
+        List<PluginParameter> param = PluginParametersFactory.build()
+                .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(param, GlobDiskScanning.class,
+                                                                            Lists.newArrayList());
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel(labelPrefix + " : " + "Scan plugin");
         fileInfo.setScanPlugin(scanPlugin);
