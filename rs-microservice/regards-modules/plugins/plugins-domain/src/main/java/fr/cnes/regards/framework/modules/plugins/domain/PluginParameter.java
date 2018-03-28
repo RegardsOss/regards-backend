@@ -19,6 +19,12 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -32,13 +38,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 
 /**
  * Parameter associated to a plugin configuration <PluginConfiguration>
@@ -53,6 +55,7 @@ public class PluginParameter implements IIdentifiable<Long> {
     /**
      * Unique id
      */
+    @ConfigIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pluginParameterSequence")
     private Long id;
