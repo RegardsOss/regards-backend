@@ -20,12 +20,14 @@ package fr.cnes.regards.framework.oais;
 
 import javax.validation.constraints.NotNull;
 
+import org.springframework.util.MimeType;
+
 public class Syntax {
 
     private String description;
 
     @NotNull(message = "Mime type is required in syntax object")
-    private String mimeType;
+    private MimeType mimeType;
 
     private String name;
 
@@ -37,11 +39,11 @@ public class Syntax {
         description = pDescription;
     }
 
-    public String getMimeType() {
+    public MimeType getMimeType() {
         return mimeType;
     }
 
-    public void setMimeType(String pMimeType) {
+    public void setMimeType(MimeType pMimeType) {
         mimeType = pMimeType;
     }
 

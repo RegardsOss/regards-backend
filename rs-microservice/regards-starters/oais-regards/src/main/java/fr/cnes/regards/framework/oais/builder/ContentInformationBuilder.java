@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.oais.ContentInformation;
@@ -63,8 +64,8 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * <br/>
  * To set the representation information, use :
  * <ul>
- * <li>{@link #setSyntax(String, String, String)}</li>
- * <li>{@link #setSyntaxAndSemantic(String, String, String, String)}</li>
+ * <li>{@link #setSyntax(String, String, MimeType)}</li>
+ * <li>{@link #setSyntaxAndSemantic(String, String, MimeType, String)}</li>
  * <li>{@link #addHardwareEnvironmentProperty(String, Object)}</li>
  * <li>{@link #addSoftwareEnvironmentProperty(String, Object)}</li>
  * </ul>
@@ -207,8 +208,10 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param mimeDescription MIME description
      * @param mimeType MIME type
      */
-    public void setSyntax(String mimeName, String mimeDescription, String mimeType) {
-        Assert.hasLength(mimeType, "Mime type cannot be null");
+    public void setSyntax(String mimeName, String mimeDescription, MimeType mimeType) {
+        Assert.notNull(mimeType, "Mime type cannot be null");
+        Assert.hasLength(mimeType.getType(), "Mime type type cannot be null");
+        Assert.hasLength(mimeType.getSubtype(), "Mime type subtype cannot be null");
 
         Syntax syntax = new Syntax();
         syntax.setName(mimeName);
@@ -223,7 +226,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * Set syntax representation
      * @param mimeType MIME type
      */
-    public void setSyntax(String mimeType) {
+    public void setSyntax(MimeType mimeType) {
         setSyntax(null, null, mimeType);
     }
 
@@ -234,7 +237,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param mimeType MIME type
      * @param semanticDescription semantic description
      */
-    public void setSyntaxAndSemantic(String mimeName, String mimeDescription, String mimeType,
+    public void setSyntaxAndSemantic(String mimeName, String mimeDescription, MimeType mimeType,
             String semanticDescription) {
         setSyntax(mimeName, mimeDescription, mimeType);
 
@@ -250,7 +253,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
      * @param mimeType MIME type
      * @param semanticDescription semantic description
      */
-    public void setSyntaxAndSemantic(String mimeType, String semanticDescription) {
+    public void setSyntaxAndSemantic(MimeType mimeType, String semanticDescription) {
         setSyntaxAndSemantic(null, null, mimeType, semanticDescription);
     }
 
