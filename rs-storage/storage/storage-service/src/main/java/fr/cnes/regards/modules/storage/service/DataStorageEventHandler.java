@@ -20,6 +20,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -217,13 +218,18 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
      * Use the notification module in admin to create a notification for admins
      */
     private void notifyAdmins(String title, String message, NotificationType type) {
-        NotificationDTO notif = new NotificationDTO(message,
-                                                    Sets.newHashSet(),
-                                                    Sets.newHashSet(DefaultRole.ADMIN.name()),
-                                                    applicationName,
-                                                    title,
-                                                    type);
-        notificationClient.createNotification(notif);
+        FeignSecurityManager.asSystem();
+        try {
+            NotificationDTO notif = new NotificationDTO(message,
+                                                        Sets.newHashSet(),
+                                                        Sets.newHashSet(DefaultRole.ADMIN.name()),
+                                                        applicationName,
+                                                        title,
+                                                        type);
+            notificationClient.createNotification(notif);
+        }finally {
+            FeignSecurityManager.reset();
+        }
     }
 
 
