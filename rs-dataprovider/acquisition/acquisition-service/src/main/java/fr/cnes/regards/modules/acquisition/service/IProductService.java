@@ -176,7 +176,7 @@ public interface IProductService {
      * @param pageable
      * @return {@link Product}s
      */
-    Page<Product> search(List<ProductState> state, List<SIPState> sipState, String productName, String session,
+    Page<Product> search(List<ProductState> state, List<ISipState> sipState, String productName, String session,
             Long processingChainId, OffsetDateTime from, Boolean noSession, Pageable pageable);
 
     /**

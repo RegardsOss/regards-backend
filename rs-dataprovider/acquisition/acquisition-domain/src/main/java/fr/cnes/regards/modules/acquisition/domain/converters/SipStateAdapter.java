@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.domain;
+package fr.cnes.regards.modules.acquisition.domain.converters;
 
 import java.io.IOException;
 
@@ -27,6 +27,7 @@ import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
+import fr.cnes.regards.modules.acquisition.domain.SipStateManager;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
 /**

@@ -48,6 +48,7 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
@@ -172,11 +173,6 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProductMetadataPlugin.class);
 
     /**
-     * {@link Map} contenant pour chaque attribut la valeur correspondante
-     */
-    protected Map<String, List<? extends Object>> attributeValueMap;
-
-    /**
      * {@link Map} qui permet d'ordonner les attributs dans le fichier descripteur
      */
     protected Properties attributeOrderProperties;
@@ -219,6 +215,17 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
      */
     protected abstract String getProjectName();
 
+    /**
+     * Thread safe action done on plugin initialization
+     * @throws ModuleException
+     */
+    @PluginInit
+    private void setUp() throws ModuleException {
+        LOGGER.info("Loading plugin configuration for dataset {}", datasetName);
+        // Load configuration
+        loadDataSetConfiguration(datasetName);
+    }
+
     @Override
     public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
 
@@ -228,19 +235,18 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
             LOGGER.error(message);
             throw new EntityInvalidException(message);
         }
-        // Load configuration
-        loadDataSetConfiguration(datasetName);
 
         Map<File, ?> fileMap = buildMapFile(acqFiles);
 
         // add attribute from attribute finders
-        attributeValueMap = new HashMap<>();
+        // Map containing value of each attributes
+        Map<String, List<? extends Object>> attributeValueMap = new HashMap<>();
         SortedMap<Integer, Attribute> attributeMap = new TreeMap<>();
 
         // find all attributeValue and add each one into attributeMap
         // first do the specific attributes not depending from other attribute value
         // or should be available for finders
-        doCreateIndependantSpecificAttributes(fileMap, attributeMap);
+        doCreateIndependantSpecificAttributes(fileMap, attributeValueMap, attributeMap);
 
         for (AbstractAttributeFinder finder : pluginConfProperties.getFinderList()) {
             finder.setAttributProperties(pluginConfProperties);
@@ -249,7 +255,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
         }
 
         // then do specific attributes which can depend on other attribute value
-        doCreateDependantSpecificAttributes(fileMap, attributeMap);
+        doCreateDependantSpecificAttributes(fileMap, attributeValueMap, attributeMap);
 
         // log the calculated attributes
         LOGGER.info("[{}] {} attributes calcultated for {} AcquisitionFile", datasetName, attributeMap.size(),
@@ -327,29 +333,24 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     /**
      * permet d'ajouter d'autres attributs que ceux definit dans le fichier de configuration
      *
-     * @param attributeMap
      */
-    protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
+    protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
-        LOGGER.debug("");
+        // Nothing to do by default
     }
 
     /**
      * permet d'ajouter d'autres attributs que ceux definit dans le fichier de configuration
-     *
-     * @param attributeMap
      */
-    protected void doCreateDependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
+    protected void doCreateDependantSpecificAttributes(Map<File, ?> fileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> attributeMap)
             throws ModuleException {
-        LOGGER.debug("");
+        // Nothing to do by default
     }
 
     protected Properties getAttributeOrderProperties() {
         return attributeOrderProperties;
-    }
-
-    protected Map<String, List<? extends Object>> getAttributeValueMap() {
-        return attributeValueMap;
     }
 
     protected PluginConfigurationProperties getProperties() {

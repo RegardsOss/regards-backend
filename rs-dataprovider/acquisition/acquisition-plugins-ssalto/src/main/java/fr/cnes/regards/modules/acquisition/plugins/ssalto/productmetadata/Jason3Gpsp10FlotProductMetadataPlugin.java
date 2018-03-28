@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 
 /**
  * Metadata caculation's plugin for Jason3 Gpsp10_FLOT products.
@@ -41,11 +40,4 @@ public class Jason3Gpsp10FlotProductMetadataPlugin extends AbstractJasonGpsp10Fl
     protected String getProjectName() {
         return PROJECT_NAME;
     }
-
-    @PluginInit
-    private void init() {
-        System.out.println("coucou init du plugin");
-        // TODO CMZ tester que cyclePath existe et est accessible 
-    }
-
 }

@@ -86,10 +86,11 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
      * Add TIME_PERIOD and FILE_CREATION_DATE {@link Attribute}s
      */
     @Override
-    protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> pAttributeMap)
+    protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
-        registerTimePeriodAttributes(fileMap, pAttributeMap);
-        registerFileCreationDateAttribute(fileMap, pAttributeMap);
+        registerTimePeriodAttributes(fileMap, attributeValueMap, pAttributeMap);
+        registerFileCreationDateAttribute(fileMap, attributeValueMap, pAttributeMap);
     }
 
     /**
@@ -98,7 +99,8 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
      * @param attributeValueMap {@link Map} of the {@link Attribute}
      * @throws PluginAcquisitionException if an error occurs
      */
-    private void registerTimePeriodAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
+    private void registerTimePeriodAttributes(Map<File, ?> fileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + TIME_PERIOD);
 
@@ -110,8 +112,9 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
             timePeriodAttribute.addAttribute(startDateAttribute);
             attributeValueMap.put(START_DATE, startDateAttribute.getValueList());
 
-            Attribute stopDateAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, STOP_DATE,
-                                                                           getStopDateValue(fileMap.keySet()));
+            Attribute stopDateAttribute = AttributeFactory
+                    .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, STOP_DATE,
+                                     getStopDateValue(fileMap.keySet(), attributeValueMap));
             timePeriodAttribute.addAttribute(stopDateAttribute);
             attributeValueMap.put(STOP_DATE, stopDateAttribute.getValueList());
         } catch (DomainModelException e) {
@@ -131,7 +134,8 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
      * @param attributeValueMap {@link Map} of the {@link Attribute}
      * @throws PluginAcquisitionException if an error occurs when the {@link Attribute} creation
      */
-    private void registerFileCreationDateAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
+    private void registerFileCreationDateAttribute(Map<File, ?> fileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + CREATION_DATE);
 
@@ -153,7 +157,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
      * Get the START_DATE value to a set of {@link File}
      * @param files a set of {@link File}
      * @return valueList the START_DATE value of each {@link File}
-     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern}
      */
     protected List<OffsetDateTime> getStartDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
@@ -181,9 +185,10 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
      * Get the STOP_DATE value to a set of {@link File}
      * @param files a set of {@link File}
      * @return valueList the STOP_DATE value of each {@link File}
-     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern}
      */
-    protected List<OffsetDateTime> getStopDateValue(Collection<File> files) throws PluginAcquisitionException {
+    protected List<OffsetDateTime> getStopDateValue(Collection<File> files,
+            Map<String, List<? extends Object>> attributeValueMap) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
         int n = 0;
         for (File file : files) {
@@ -210,7 +215,7 @@ public abstract class AbstractJasonDoris10ProductMetadataPlugin extends Abstract
      * Get the CREATION_DATE value to a set of {@link File}
      * @param files a set of {@link File}
      * @return valueList the START_DATE value of each {@link File}
-     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern}
      */
     protected List<OffsetDateTime> getCreationDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();

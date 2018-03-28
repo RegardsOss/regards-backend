@@ -105,12 +105,14 @@ public class AcquisitionProcessingChain {
     /**
      * Flag to allow to run an action only once at a time
      */
+    @ConfigIgnore
     @Column(updatable = false, nullable = false)
     private boolean locked = false;
 
     /**
      * The last activation date when an acquisition were running.
      */
+    @ConfigIgnore
     @Column(name = "last_activation_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastActivationDate;
@@ -169,6 +171,7 @@ public class AcquisitionProcessingChain {
     @JoinColumn(name = "postprocesssip_conf_id", foreignKey = @ForeignKey(name = "fk_postprocesssip_conf_id"))
     private PluginConfiguration postProcessSipPluginConf;
 
+    @ConfigIgnore
     @OneToOne
     @JoinColumn(name = "acq_job_info_id", foreignKey = @ForeignKey(name = "fk_acq_job_info_id"))
     private JobInfo lastProductAcquisitionJobInfo;

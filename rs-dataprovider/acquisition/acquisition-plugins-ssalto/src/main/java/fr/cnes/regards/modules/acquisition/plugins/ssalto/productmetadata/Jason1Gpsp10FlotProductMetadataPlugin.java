@@ -47,13 +47,13 @@ import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 /**
  * Metadata caculation's plugin for Jason1 Gpsp10_FLOT products.
  * The TIME_PERIOD's attribute is managed specifically.
- * 
+ *
  * @author Christophe Mertz
- * 
+ *
  */
-@Plugin(description = "Metadata caculation's plugin for Jason1 Gpsp10_FLOT products", id = "Jason1Gpsp10FlotProductMetadataPlugin",
-        version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+@Plugin(description = "Metadata caculation's plugin for Jason1 Gpsp10_FLOT products",
+        id = "Jason1Gpsp10FlotProductMetadataPlugin", version = "1.0.0", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadataPlugin {
 
     /**
@@ -93,9 +93,10 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
     }
 
     @Override
-    protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
+    protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
-        registerTimePeriodAttributes(fileMap, attributeMap);
+        registerTimePeriodAttributes(fileMap, attributeValueMap, attributeMap);
     }
 
     /**
@@ -104,7 +105,8 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
      * @param attributeValueMap {@link Map} of the {@link Attribute}
      * @throws PluginAcquisitionException if an error occurs
      */
-    private void registerTimePeriodAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
+    private void registerTimePeriodAttributes(Map<File, ?> fileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + TIME_PERIOD);
 
@@ -181,7 +183,7 @@ public class Jason1Gpsp10FlotProductMetadataPlugin extends Jason1ProductMetadata
      * Get the CREATION_DATE value to a set of {@link File}
      * @param files a set of {@link File}
      * @return valueList the CREATION_DATE value of each {@link File}
-     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern}
      */
     protected List<OffsetDateTime> getCreationDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();

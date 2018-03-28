@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.acquisition.finder.AsciiFileFinder;
 
 /**
  * Metadata caculation's plugin for Envisat PLTM products.
- * 
+ *
  * @author Christophe Mertz
  */
 @Plugin(description = "Metadata caculation's plugin for Envisat PLTM products", id = "EnvisatPLTMProductMetadataPlugin",
@@ -48,7 +48,7 @@ import fr.cnes.regards.modules.acquisition.finder.AsciiFileFinder;
 public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlugin {
 
     /*
-     * Double value of 10exp-6 
+     * Double value of 10exp-6
      */
     private static final double DIX_MOINS_6 = 0.000001;
 
@@ -81,7 +81,8 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
      * LONGITUDE_MIN, LONGITUDE_MAX, LATITUDE_MIN, LATITUDE_MAX {@link Attribute}s creation
      */
     @Override
-    protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
+    protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
 
         // Init composite attribute GEO_COORDINATES
@@ -134,7 +135,7 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
 
     /**
      * Compute min longitude value
-     * 
+     *
      * @param fileMap a {@link Map} of the {@link File} to acquire
      * @param attributeValueMap {@link Map} of the {@link Attribute}
      * @throws PluginAcquisitionException if an error occurs
@@ -160,7 +161,7 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
 
     /**
      * Compute max longitude
-     * 
+     *
      * @param fileMap a {@link Map} of the {@link File} to acquire
      * @param attributeValueMap {@link Map} of the {@link Attribute}
      * @throws PluginAcquisitionException if an error occurs
@@ -186,7 +187,7 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
 
     /**
      * Compute latitude values
-     * 
+     *
      * @param fileMap a {@link Map} of the {@link File} to acquire
      * @param attributeValueMap {@link Map} of the {@link Attribute}
      * @throws PluginAcquisitionException if an error occurs
@@ -241,7 +242,7 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
 
     /**
      * Format the longitude for ENVISAT PLTM
-     * 
+     *
      * @param newValue the value to format
      * @return the formatted value
      */
@@ -258,7 +259,7 @@ public class EnvisatPLTMProductMetadataPlugin extends EnvisatProductMetadataPlug
 
     /**
      * Limit a value to 2 digits after the decimal point
-     * 
+     *
      * @param value the value to format
      * @return Formatted value
      */

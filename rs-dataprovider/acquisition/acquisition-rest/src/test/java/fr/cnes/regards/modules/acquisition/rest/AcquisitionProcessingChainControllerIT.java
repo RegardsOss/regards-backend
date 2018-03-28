@@ -70,7 +70,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    private AcquisitionProcessingChain getNewChain(String labelPrefix) {
+    public static AcquisitionProcessingChain getNewChain(String labelPrefix) {
 
         // Create a processing chain
         AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
@@ -86,9 +86,10 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
 
-        List<PluginParameter> params = PluginParametersFactory.build().addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
-        PluginConfiguration scanPlugin = PluginUtils
-                .getPluginConfiguration(params, GlobDiskScanning.class, Lists.newArrayList());
+        List<PluginParameter> param = PluginParametersFactory.build()
+                .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(param, GlobDiskScanning.class,
+                                                                            Lists.newArrayList());
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel(labelPrefix + " : " + "Scan plugin");
         fileInfo.setScanPlugin(scanPlugin);

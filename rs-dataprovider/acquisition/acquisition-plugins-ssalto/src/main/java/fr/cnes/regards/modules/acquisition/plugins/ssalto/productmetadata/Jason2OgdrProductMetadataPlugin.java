@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.acquisition.tools.NetCdfFileHelper;
 
 /**
  * Metadata caculation's plugin for Jason2 Ogdr products.
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -72,20 +72,22 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
     private static final String TRANSACTION_FILE = "/OGDRTranslationFile.properties";
 
     @Override
-    protected void doCreateDependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
+    protected void doCreateDependantSpecificAttributes(Map<File, ?> pFileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> pAttributeMap)
             throws ModuleException {
-        registerOptionAttribute(pFileMap, pAttributeMap);
+        registerOptionAttribute(pFileMap, attributeValueMap, pAttributeMap);
     }
 
     /**
      * Build an {@link Attribute} PRODUCT_OPTION and add it to the {@link Attribute}'s {@link Map}.<br>
-     * The attribute's value is calculated with the translation file OGDRTranslationFile.properties see {@link Jason2OgdrProductMetadataPlugin#TRANSACTION_FILE}.
+     * The attribute's value is calculated with the translation file OGDRTranslationFile.properties see
+     * {@link Jason2OgdrProductMetadataPlugin#TRANSACTION_FILE}.
      * @param fileMap a {@link Map} of the {@link File} to acquire
      * @param attributeValueMap {@link Map} of the {@link Attribute}
      * @throws PluginAcquisitionException an error occurs when the new {@link Attribute} is created
      */
-    private void registerOptionAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
-            throws PluginAcquisitionException {
+    private void registerOptionAttribute(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap,
+            Map<Integer, Attribute> attributeMap) throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + PRODUCT_OPTION);
         Attribute optionAttribute;
         try {
@@ -104,10 +106,12 @@ public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin
 
     /**
      * Get the product's type for a set of {@link File}.<br>
-     * The attribute's value is calculated with the translation file OGDRTranslationFile.properties see {@link Jason2OgdrProductMetadataPlugin#TRANSACTION_FILE}.
-     * @param acquisitionFileList the {@link File}'s {@link Map} for which to calculate the {@link Attribute} PRODUCT_OPTION.
+     * The attribute's value is calculated with the translation file OGDRTranslationFile.properties see
+     * {@link Jason2OgdrProductMetadataPlugin#TRANSACTION_FILE}.
+     * @param acquisitionFileList the {@link File}'s {@link Map} for which to calculate the {@link Attribute}
+     *            PRODUCT_OPTION.
      * @return the values's {@link List} calculated
-     * @throws PluginAcquisitionException a {@link File} name is not respecting the expected pattern  
+     * @throws PluginAcquisitionException a {@link File} name is not respecting the expected pattern
      */
     protected List<String> getOptionValue(Collection<File> acquisitionFileList) throws PluginAcquisitionException {
         String value = null;
