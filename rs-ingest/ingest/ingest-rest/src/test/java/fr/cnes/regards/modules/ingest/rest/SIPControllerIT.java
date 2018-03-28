@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -87,7 +88,8 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"),
                                                                 "sdsdfm1211vd");
         sipBuilder.setSyntax("FITS(FlexibleImageTransport)",
-                             "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
+                             "http://www.iana.org/assignments/media-types/application/fits", MediaType
+                                     .valueOf("application/fits"));
         sipBuilder.addContentInformation();
         collectionBuilder.add(sipBuilder.build());
 
@@ -96,7 +98,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data2.fits"),
                                                                 "sdsdfm1211vsdfdsfd");
         sipBuilder.setSyntax("FITS(FlexibleImageTransport)",
-                             "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
+                             "http://www.iana.org/assignments/media-types/application/fits", MediaType.valueOf("application/fits"));
         sipBuilder.addContentInformation();
         collectionBuilder.add(sipBuilder.build());
 
@@ -135,7 +137,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "FAKE_ALGO",
                                                                 "sdsdfm1211vd");
         sipBuilder.setSyntax("FITS(FlexibleImageTransport)",
-                             "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
+                             "http://www.iana.org/assignments/media-types/application/fits", MediaType.valueOf("application/fits"));
         sipBuilder.addContentInformation();
         collectionBuilder.add(sipBuilder.build());
 
@@ -144,7 +146,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data2.fits"),
                                                                 "sdsdfm1211vsdfdsfd");
         sipBuilder.setSyntax("FITS(FlexibleImageTransport)",
-                             "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
+                             "http://www.iana.org/assignments/media-types/application/fits", MediaType.valueOf("application/fits"));
         sipBuilder.addContentInformation();
         collectionBuilder.add(sipBuilder.build());
 
@@ -209,7 +211,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"),
                                                                 "sdsdfm1211vd");
         sipBuilder.setSyntax("FITS(FlexibleImageTransport)",
-                             "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
+                             "http://www.iana.org/assignments/media-types/application/fits", MediaType.valueOf("application/fits"));
         sipBuilder.addContentInformation();
         SIP sip = sipBuilder.build();
 

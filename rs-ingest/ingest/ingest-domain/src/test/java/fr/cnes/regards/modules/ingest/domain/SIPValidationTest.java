@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.MimeType;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
@@ -174,7 +175,7 @@ public class SIPValidationTest {
         // Content information - data object representation information
         sipBuilder.getContentInformationBuilder().setSyntaxAndSemantic("FITS",
                                                                        "http://www.iana.org/assignments/media-types/application/fits",
-                                                                       "application/fits", "semanticDescription");
+                                                                       MimeType.valueOf("application/fits"), "semanticDescription");
         // Effectively add content information to the current SIP
         sipBuilder.addContentInformation();
 
