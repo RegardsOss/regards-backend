@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
 
 import com.google.common.collect.Maps;
 
@@ -84,7 +85,7 @@ public class FixedStorageSIPGenerationIT extends AbstractMultitenantServiceTest 
         AcquisitionFile acqFile = new AcquisitionFile();
         AcquisitionFileInfo info = new AcquisitionFileInfo();
         info.setDataType(DataType.RAWDATA);
-        info.setMimeType("octet-stream");
+        info.setMimeType(MimeType.valueOf("application/octet-stream"));
         acqFile.setFileInfo(info);
         acqFile.setChecksum("checksum");
         acqFile.setChecksumAlgorithm("MD5");

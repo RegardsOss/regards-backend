@@ -34,11 +34,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.util.MimeType;
 
+import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -82,9 +85,11 @@ public class AcquisitionFileInfo {
     /**
      * A {@link String} corresponding to the data file mime-type
      */
-    @NotBlank(message = "Mime type is required")
+    @NotNull(message = "Mime type is required")
+    @Valid
+    @Convert(converter = MimeTypeConverter.class)
     @Column(name = "mime_type", length = 255)
-    private String mimeType;
+    private MimeType mimeType;
 
     @NotNull(message = "REGARDS data type is required")
     @Column(name = "data_type", length = 16)
@@ -114,11 +119,11 @@ public class AcquisitionFileInfo {
         this.scanPlugin = scanPlugin;
     }
 
-    public String getMimeType() {
+    public MimeType getMimeType() {
         return mimeType;
     }
 
-    public void setMimeType(String mimeType) {
+    public void setMimeType(MimeType mimeType) {
         this.mimeType = mimeType;
     }
 
