@@ -403,21 +403,17 @@ public class ProductService implements IProductService {
         if (JobEventType.FAILED.equals(jobEvent.getJobEventType())) {
             // Load job info
             JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
-            if (jobInfo == null) {
-                LOGGER.warn("Cannot retrieve job info for job id {}", jobEvent.getJobId());
-            } else {
-                handleSIPSubmissiontError(jobInfo);
-                try {
-                    handleSIPGenerationError(jobInfo);
-                } catch (ModuleException e) {
-                    LOGGER.error("Error handling SIP generation error", e);
-                }
+            handleSIPSubmissiontError(jobInfo);
+            try {
+                handleSIPGenerationError(jobInfo);
+            } catch (ModuleException e) {
+                LOGGER.error("Error handling SIP generation error", e);
             }
         }
     }
 
     private void handleSIPSubmissiontError(JobInfo jobInfo) {
-        if (SIPSubmissionJob.class.isAssignableFrom(jobInfo.getJob().getClass())) {
+        if (SIPSubmissionJob.class.getName().equals(jobInfo.getClassName())) {
             Map<String, JobParameter> params = jobInfo.getParametersAsMap();
             String ingestChain = params.get(SIPSubmissionJob.INGEST_CHAIN_PARAMETER).getValue();
             String session = params.get(SIPSubmissionJob.SESSION_PARAMETER).getValue();
@@ -439,7 +435,7 @@ public class ProductService implements IProductService {
     }
 
     private void handleSIPGenerationError(JobInfo jobInfo) throws ModuleException {
-        if (SIPGenerationJob.class.isAssignableFrom(jobInfo.getJob().getClass())) {
+        if (SIPGenerationJob.class.getName().equals(jobInfo.getClassName())) {
             JobParameter productIdParam = jobInfo.getParametersAsMap().get(SIPGenerationJob.PRODUCT_ID);
             if (productIdParam != null) {
                 Long productId = productIdParam.getValue();
