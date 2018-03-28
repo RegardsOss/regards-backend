@@ -16,30 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.domain;
+package fr.cnes.regards.modules.acquisition.domain.converters;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 
+import fr.cnes.regards.modules.acquisition.domain.SipStateManager;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
 /**
- * Converter for extended SIP state
+ * Implement the type conversion logic for a String to a {@link ISipState}.<br>
+ * This is automatically used by Spring if need be.
  *
- * @author Marc Sordi
- *
+ * @author Sébastien Binda
  */
-@Converter(autoApply = true)
-public class SipStateConverter implements AttributeConverter<ISipState, String> {
+@ControllerAdvice
+public class StringToISipState implements Converter<String, ISipState> {
 
     @Override
-    public String convertToDatabaseColumn(ISipState attribute) {
-        return attribute == null ? null : attribute.getName();
-    }
-
-    @Override
-    public ISipState convertToEntityAttribute(String dbData) {
-        return dbData == null ? null : SipStateManager.fromName(dbData);
+    public ISipState convert(String pSource) {
+        return SipStateManager.fromName(pSource);
     }
 
 }
