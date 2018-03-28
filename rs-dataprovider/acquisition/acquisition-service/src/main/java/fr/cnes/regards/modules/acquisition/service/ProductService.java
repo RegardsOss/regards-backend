@@ -403,11 +403,15 @@ public class ProductService implements IProductService {
         if (JobEventType.FAILED.equals(jobEvent.getJobEventType())) {
             // Load job info
             JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
-            handleSIPSubmissiontError(jobInfo);
-            try {
-                handleSIPGenerationError(jobInfo);
-            } catch (ModuleException e) {
-                LOGGER.error("Error handling SIP generation error", e);
+            if (jobInfo == null) {
+                LOGGER.warn("Cannot retrieve job info for job id {}", jobEvent.getJobId());
+            } else {
+                handleSIPSubmissiontError(jobInfo);
+                try {
+                    handleSIPGenerationError(jobInfo);
+                } catch (ModuleException e) {
+                    LOGGER.error("Error handling SIP generation error", e);
+                }
             }
         }
     }

@@ -75,10 +75,11 @@ public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJa
      * RADICAL attribute creation
      */
     @Override
-    protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
+    protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
-        super.doCreateIndependantSpecificAttributes(pFileMap, pAttributeMap);
-        registerRadicalAttribute(pFileMap, pAttributeMap);
+        super.doCreateIndependantSpecificAttributes(pFileMap, attributeValueMap, pAttributeMap);
+        registerRadicalAttribute(pFileMap, attributeValueMap, pAttributeMap);
     }
 
     @Override
@@ -113,7 +114,8 @@ public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJa
     }
 
     @Override
-    protected List<OffsetDateTime> getStopDateValue(Collection<File> files) throws PluginAcquisitionException {
+    protected List<OffsetDateTime> getStopDateValue(Collection<File> files,
+            Map<String, List<? extends Object>> attributeValueMap) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
         for (File file : files) {
             String fileName = file.getName();
@@ -192,8 +194,8 @@ public abstract class AbstractJasonPltm1ProductMetadataPlugin extends AbstractJa
      * @param attributeValueMap {@link Map} of the {@link Attribute}
      * @throws PluginAcquisitionException if an error occurs
      */
-    private void registerRadicalAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
-            throws PluginAcquisitionException {
+    private void registerRadicalAttribute(Map<File, ?> fileMap, Map<String, List<? extends Object>> attributeValueMap,
+            Map<Integer, Attribute> attributeMap) throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + RADICAL);
 
         try {

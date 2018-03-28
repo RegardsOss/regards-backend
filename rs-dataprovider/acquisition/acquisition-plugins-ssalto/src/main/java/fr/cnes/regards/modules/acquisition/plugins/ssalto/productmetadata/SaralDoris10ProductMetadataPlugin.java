@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 /**
  * Metadata caculation's plugin for SARAL using Doris1B instrument.<br>
  * The TIME_PERIOD and FILE_CREATION_DATE attributes are managed specifically.
- *  
+ * 
  * @author Christophe Mertz
  */
 @Plugin(description = "Metadata caculation's plugin for SARAL using Doris1B instrument",
@@ -102,10 +102,11 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
      * Add TIME_PERIOD and FILE_CREATION_DATE {@link Attribute}s
      */
     @Override
-    protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
+    protected void doCreateIndependantSpecificAttributes(Map<File, ?> fileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
-        registerTimePeriodAttributes(fileMap, attributeMap);
-        registerFileCreationDateAttribute(fileMap, attributeMap);
+        registerTimePeriodAttributes(fileMap, attributeValueMap, attributeMap);
+        registerFileCreationDateAttribute(fileMap, attributeValueMap, attributeMap);
     }
 
     /**
@@ -114,7 +115,8 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
      * @param attributeValueMap {@link Map} of the {@link Attribute}
      * @throws PluginAcquisitionException an error occurs when the new {@link Attribute} is created
      */
-    private void registerTimePeriodAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> pAttributeMap)
+    private void registerTimePeriodAttributes(Map<File, ?> fileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + TIME_PERIOD);
 
@@ -126,8 +128,9 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
             timePeriodAttribute.addAttribute(startDateAttribute);
             attributeValueMap.put(START_DATE, startDateAttribute.getValueList());
 
-            Attribute stopDateAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, STOP_DATE,
-                                                                           getStopDateValue(fileMap.keySet()));
+            Attribute stopDateAttribute = AttributeFactory
+                    .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, STOP_DATE,
+                                     getStopDateValue(fileMap.keySet(), attributeValueMap));
             timePeriodAttribute.addAttribute(stopDateAttribute);
             attributeValueMap.put(STOP_DATE, stopDateAttribute.getValueList());
         } catch (DomainModelException e) {
@@ -147,7 +150,8 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
      * @param attributeValueMap {@link Map} of the {@link Attribute}
      * @throws PluginAcquisitionException an error occurs when the new {@link Attribute} is created
      */
-    private void registerFileCreationDateAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
+    private void registerFileCreationDateAttribute(Map<File, ?> fileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + CREATION_DATE);
 
@@ -169,7 +173,7 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
      * Get the START_DATE value to a set of {@link File}
      * @param files a set of {@link File}
      * @return valueList the START_DATE value of each {@link File}
-     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern}
      */
     protected List<OffsetDateTime> getStartDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
@@ -203,9 +207,10 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
      * Get the STOP_DATE value to a set of {@link File}
      * @param files a set of {@link File}
      * @return valueList the STOP_DATE value of each {@link File}
-     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern}
      */
-    protected List<OffsetDateTime> getStopDateValue(Collection<File> files) throws PluginAcquisitionException {
+    protected List<OffsetDateTime> getStopDateValue(Collection<File> files,
+            Map<String, List<? extends Object>> attributeValueMap) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
         int n = 0;
         for (File file : files) {
@@ -241,7 +246,7 @@ public class SaralDoris10ProductMetadataPlugin extends SaralProductMetadataPlugi
      * Get the CREATION_DATE value to a set of {@link File}
      * @param files a set of {@link File}
      * @return valueList the START_DATE value of each {@link File}
-     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern}
      */
     protected List<OffsetDateTime> getCreationDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
