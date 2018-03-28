@@ -33,7 +33,6 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.Point;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
@@ -67,11 +66,6 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     private static final String GEO_POINT_ATTRIBUTE = "point coord";
 
     private static final Random random = new Random();
-
-    @PluginInit
-    private void setUp() {
-        LOGGER.info("setUp");
-    }
 
     @Override
     protected void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles) throws ModuleException {

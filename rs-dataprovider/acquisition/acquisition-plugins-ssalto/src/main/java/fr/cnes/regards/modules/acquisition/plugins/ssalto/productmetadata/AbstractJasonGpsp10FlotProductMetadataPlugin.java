@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
@@ -70,7 +71,8 @@ public abstract class AbstractJasonGpsp10FlotProductMetadataPlugin extends Abstr
     }
 
     @Override
-    protected List<OffsetDateTime> getStopDateValue(Collection<File> files) throws PluginAcquisitionException {
+    protected List<OffsetDateTime> getStopDateValue(Collection<File> files,
+            Map<String, List<? extends Object>> attributeValueMap) throws PluginAcquisitionException {
         long longValue = 0;
         for (File file : files) {
             RinexFileHelper helper = new RinexFileHelper(file);

@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.acquisition.exception.PluginAcquisitionException;
 
 /**
  * Metadata caculation's plugin for PK4 products.
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -68,7 +68,8 @@ public class Pk4OnBoardProductMetaDataPlugin extends AbstractProductMetadataPlug
     }
 
     @Override
-    protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
+    protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
 
         final Pattern pattern = Pattern.compile(PATH_PATTERN);

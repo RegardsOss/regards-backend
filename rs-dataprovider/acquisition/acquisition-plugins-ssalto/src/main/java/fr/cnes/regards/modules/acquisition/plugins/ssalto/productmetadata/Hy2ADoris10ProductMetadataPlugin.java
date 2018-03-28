@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.acquisition.tools.RinexFileHelper;
 
 /**
  * Metadata caculation's plugin for Hy2A products using Doris1B instrument.
- * 
+ *
  * @author Christophe Mertz
  */
 @Plugin(description = "Metadata caculation's plugin for Hy2A products using Doris1B instrument",
@@ -100,10 +100,11 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
      * Add TIME_PERIOD and FILE_CREATION_DATE {@link Attribute}s
      */
     @Override
-    protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap, Map<Integer, Attribute> pAttributeMap)
+    protected void doCreateIndependantSpecificAttributes(Map<File, ?> pFileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> pAttributeMap)
             throws PluginAcquisitionException {
-        registerTimePeriodAttributes(pFileMap, pAttributeMap);
-        registerFileCreationDateAttribute(pFileMap, pAttributeMap);
+        registerTimePeriodAttributes(pFileMap, attributeValueMap, pAttributeMap);
+        registerFileCreationDateAttribute(pFileMap, attributeValueMap, pAttributeMap);
     }
 
     /**
@@ -112,7 +113,8 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
      * @param attributeValueMap {@link Map} of the {@link Attribute}
      * @throws PluginAcquisitionException if an error occurs
      */
-    private void registerTimePeriodAttributes(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
+    private void registerTimePeriodAttributes(Map<File, ?> fileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + TIME_PERIOD);
 
@@ -124,8 +126,9 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
             timePeriodAttribute.addAttribute(startDateAttribute);
             attributeValueMap.put(START_DATE, startDateAttribute.getValueList());
 
-            Attribute stopDateAttribute = AttributeFactory.createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, STOP_DATE,
-                                                                           getStopDateValue(fileMap.keySet()));
+            Attribute stopDateAttribute = AttributeFactory
+                    .createAttribute(AttributeTypeEnum.TYPE_DATE_TIME, STOP_DATE,
+                                     getStopDateValue(fileMap.keySet(), attributeValueMap));
             timePeriodAttribute.addAttribute(stopDateAttribute);
             attributeValueMap.put(STOP_DATE, stopDateAttribute.getValueList());
         } catch (DomainModelException e) {
@@ -145,7 +148,8 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
      * @param attributeValueMap {@link Map} of the {@link Attribute}
      * @throws PluginAcquisitionException if an error occurs
      */
-    private void registerFileCreationDateAttribute(Map<File, ?> fileMap, Map<Integer, Attribute> attributeMap)
+    private void registerFileCreationDateAttribute(Map<File, ?> fileMap,
+            Map<String, List<? extends Object>> attributeValueMap, Map<Integer, Attribute> attributeMap)
             throws PluginAcquisitionException {
         LOGGER.info("START building attribute " + CREATION_DATE);
 
@@ -167,7 +171,7 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
      * Get the START_DATE value to a set of {@link File}
      * @param files a set of {@link File}
      * @return valueList the START_DATE value of each {@link File}
-     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern}
      */
     protected List<OffsetDateTime> getStartDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
@@ -202,9 +206,10 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
      * Get the STOP_DATE value to a set of {@link File}
      * @param files a set of {@link File}
      * @return valueList the STOP_DATE value of each {@link File}
-     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern}
      */
-    protected List<OffsetDateTime> getStopDateValue(Collection<File> files) throws PluginAcquisitionException {
+    protected List<OffsetDateTime> getStopDateValue(Collection<File> files,
+            Map<String, List<? extends Object>> attributeValueMap) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();
         int n = 0;
         for (File file : files) {
@@ -240,7 +245,7 @@ public class Hy2ADoris10ProductMetadataPlugin extends Hy2AProductMetadataPlugin 
      * Get the CREATION_DATE value to a set of {@link File}
      * @param files a set of {@link File}
      * @return valueList the CREATION_DATE value of each {@link File}
-     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern} 
+     * @throws PluginAcquisitionException a file name does not match the expected {@link Pattern}
      */
     protected List<OffsetDateTime> getCreationDateValue(Collection<File> files) throws PluginAcquisitionException {
         List<OffsetDateTime> valueList = new ArrayList<>();

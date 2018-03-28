@@ -413,7 +413,7 @@ public class ProductService implements IProductService {
     }
 
     private void handleSIPSubmissiontError(JobInfo jobInfo) {
-        if (SIPSubmissionJob.class.isAssignableFrom(jobInfo.getJob().getClass())) {
+        if (SIPSubmissionJob.class.getName().equals(jobInfo.getClassName())) {
             Map<String, JobParameter> params = jobInfo.getParametersAsMap();
             String ingestChain = params.get(SIPSubmissionJob.INGEST_CHAIN_PARAMETER).getValue();
             String session = params.get(SIPSubmissionJob.SESSION_PARAMETER).getValue();
@@ -435,7 +435,7 @@ public class ProductService implements IProductService {
     }
 
     private void handleSIPGenerationError(JobInfo jobInfo) throws ModuleException {
-        if (SIPGenerationJob.class.isAssignableFrom(jobInfo.getJob().getClass())) {
+        if (SIPGenerationJob.class.getName().equals(jobInfo.getClassName())) {
             JobParameter productIdParam = jobInfo.getParametersAsMap().get(SIPGenerationJob.PRODUCT_ID);
             if (productIdParam != null) {
                 Long productId = productIdParam.getValue();

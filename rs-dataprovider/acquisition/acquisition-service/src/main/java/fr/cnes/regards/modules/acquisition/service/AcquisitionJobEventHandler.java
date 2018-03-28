@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -37,6 +39,9 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  */
 @Component
 public class AcquisitionJobEventHandler implements ApplicationListener<ApplicationReadyEvent> {
+
+    @SuppressWarnings("unused")
+    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionJobEventHandler.class);
 
     @Autowired
     private ISubscriber subscriber;
@@ -66,6 +71,9 @@ public class AcquisitionJobEventHandler implements ApplicationListener<Applicati
             try {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
                 productService.handleProductJobEvent(wrapper.getContent());
+            } catch (Exception e) {
+                LOGGER.error("Error occurs during job event handling", e);
+                // FIXME add notification
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
