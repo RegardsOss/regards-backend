@@ -26,6 +26,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
 
+import org.hibernate.annotations.Type;
 import org.springframework.util.MimeType;
 
 import com.google.common.base.Strings;
@@ -33,6 +34,7 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
+import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
 import fr.cnes.regards.framework.jpa.converter.SetURLCsvConverter;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
@@ -165,6 +167,10 @@ public class StorageDataFile {
     @Column(name = "not_yet_stored_by")
     @Min(value = 0, message = "Attribute notYetStoredBy cannot be negative. Actual value : ${validatedValue}")
     private Long notYetStoredBy = 0L;
+
+    @Convert(converter = SetStringCsvConverter.class)
+    @Column(name = "failure_causes")
+    private final Set<String> failureCauses = new HashSet<>();
 
     /**
      * Default constructor
@@ -518,5 +524,17 @@ public class StorageDataFile {
         } else {
             notYetStoredBy--;
         }
+    }
+
+    public void emptyFailureCauses() {
+        this.failureCauses.clear();
+    }
+
+    public Set<String> getFailureCauses() {
+        return failureCauses;
+    }
+
+    public void addFailureCause(String failureCause) {
+        this.failureCauses.add(failureCause);
     }
 }
