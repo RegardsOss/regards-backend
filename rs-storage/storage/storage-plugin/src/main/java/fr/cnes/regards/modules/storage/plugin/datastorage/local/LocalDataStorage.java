@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.storage.domain.StorageDataFileUtils;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
@@ -57,6 +58,11 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     public static final String LOCAL_STORAGE_TOTAL_SPACE = "Local_Total_Space";
 
     /**
+     * Plugin parameter subdirectory to store AIP files
+     */
+    public static final String AIP_STORAGE_SUBDIRECTORY = "aipStorageSubdirectory";
+
+    /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(LocalDataStorage.class);
@@ -73,6 +79,14 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     @PluginParameter(name = BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, description = "Base storage location url to use",
             label = "Base storage location url")
     private String baseStorageLocationAsString;
+
+    /**
+     * Sub directoriy where to store AIP files if the storage directory is provided.
+     */
+    @PluginParameter(name = AIP_STORAGE_SUBDIRECTORY,
+            description = "Subdirectory used to store AIP files if the store directory is provided.",
+            defaultValue = "AIPS", label = "Subdirectory to store AIP files")
+    private String aipSubDirectory;
 
     /**
      * can this data storage delete files or not?
@@ -199,8 +213,13 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
         String checksum = data.getChecksum();
         String storageLocation = baseStorageLocation.getPath() + "/";
         if (data.getStorageDirectory() != null) {
+            // Storage directory is provider. use it
             storageLocation = storageLocation + data.getStorageDirectory();
+            if (data.getDataType().equals(DataType.AIP)) {
+                storageLocation = storageLocation + "/" + this.aipSubDirectory;
+            }
         } else {
+            // Storage directory is not provided, generate new one with checksum
             storageLocation = storageLocation + checksum.substring(0, 3);
         }
         if (!Paths.get(storageLocation).toFile().exists()) {
