@@ -550,6 +550,22 @@ public class PluginService implements IPluginService {
     }
 
     @Override
+    public void cleanPluginCache() {
+        Map<Long, Object> tenantCache = getPluginCache();
+        if (tenantCache != null) {
+            // Remove plugin from cache
+            for (Iterator<Entry<Long, Object>> i = tenantCache.entrySet().iterator(); i.hasNext(); ) {
+                Object plugin = i.next().getValue();
+                i.remove();
+                if (plugin != null) {
+                    // Launch destroy method
+                    PluginUtils.doDestroyPlugin(plugin);
+                }
+            }
+        }
+    }
+
+    @Override
     public Map<Long, Object> getPluginCache() {
         // Resolve tenant
         String tenant = runtimeTenantResolver.getTenant();

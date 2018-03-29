@@ -262,6 +262,11 @@ public interface IPluginService {
     void cleanPluginCache(Long confId);
 
     /**
+     * Remove all plugin instances from cache
+     */
+    void cleanPluginCache();
+
+    /**
      * @return tenant plugin cache
      */
     Map<Long, Object> getPluginCache();

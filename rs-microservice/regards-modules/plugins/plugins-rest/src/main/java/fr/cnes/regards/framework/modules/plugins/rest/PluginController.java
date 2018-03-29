@@ -100,6 +100,11 @@ public class PluginController implements IResourceController<PluginConfiguration
     public static final String PLUGINS_CONFIGID = PLUGINS_CONFIGS + "/{configId}";
 
     /**
+     * REST mapping resource : /plugins/cache
+     */
+    public static final String PLUGINS_CACHE = PLUGINS + "/cache";
+
+    /**
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginController.class);
@@ -322,6 +327,17 @@ public class PluginController implements IResourceController<PluginConfiguration
     public ResponseEntity<Void> deletePluginConfiguration(@PathVariable("pluginId") String pluginId,
             @PathVariable("configId") Long configId) throws ModuleException {
         pluginService.deletePluginConfiguration(configId);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * Empty cache
+     */
+    @RequestMapping(value = PLUGINS_CACHE, method = RequestMethod.DELETE)
+    @ResourceAccess(description = "Empty plugins cache")
+    public ResponseEntity<Void> emptyCache() {
+        pluginService.cleanPluginCache();
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
