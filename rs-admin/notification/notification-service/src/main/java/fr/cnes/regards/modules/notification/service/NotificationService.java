@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.notification.service;
 
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -155,7 +156,7 @@ public class NotificationService implements INotificationService, ApplicationLis
         notification.setType(pDto.getType());
         notification.setProjectUserRecipients(pDto.getProjectUserRecipients());
 
-        notification.setRoleRecipients(pDto.getRoleRecipients());
+        notification.setRoleRecipients(getAllRecipientRoles(pDto.getRoleRecipients()));
 
         // check the notification type and send it immediately if FATAL or ERROR
         if (notification.getType() == NotificationType.FATAL || notification.getType() == NotificationType.ERROR) {
@@ -168,6 +169,22 @@ public class NotificationService implements INotificationService, ApplicationLis
         // TODO Trigger NOTIFICATION event on message broker
 
         return notification;
+    }
+
+    /**
+     * Lets get all roles that should have the notification through the role hierarchy
+     * @param roleRecipients
+     * @return all recipient role names
+     */
+    private Set<String> getAllRecipientRoles(Set<String> roleRecipients) {
+        Set<String> allRecipientRoleNames = new HashSet<>();
+        for (String roleName : roleRecipients) {
+            ResponseEntity<Set<Role>> response = rolesClient.retrieveRoleAscendants(roleName);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                response.getBody().forEach(r -> allRecipientRoleNames.add(r.getName()));
+            }
+        }
+        return allRecipientRoleNames;
     }
 
     @Override
@@ -257,6 +274,7 @@ public class NotificationService implements INotificationService, ApplicationLis
     }
 
     private class ProjectUserEventListener implements IHandler<ProjectUserEvent> {
+
         @Override
         public void handle(TenantWrapper<ProjectUserEvent> wrapper) {
             ProjectUserEvent event = wrapper.getContent();
@@ -275,6 +293,7 @@ public class NotificationService implements INotificationService, ApplicationLis
     }
 
     private class RoleEventListener implements IHandler<RoleEvent> {
+
         @Override
         public void handle(TenantWrapper<RoleEvent> wrapper) {
             String tenant = wrapper.getTenant();

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.accessrights.client;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
@@ -42,7 +43,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * @since 1.0-SNAPSHOT
  */
 @RestClient(name = "rs-admin")
-@RequestMapping(value = IRolesClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = IRolesClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IRolesClient { // NOSONAR
 
     /**
@@ -54,6 +56,8 @@ public interface IRolesClient { // NOSONAR
      * Mapping for managing a role mapping for requests of this rest controller
      */
     public static final String ROLE_MAPPING = "/{role_name}";
+
+    public static final String ROLE_ASCENDANTS = ROLE_MAPPING + "/ascendants";
 
     /**
      * Mapping for retrieving borrowable role of the current user
@@ -110,6 +114,13 @@ public interface IRolesClient { // NOSONAR
      */
     @RequestMapping(method = RequestMethod.GET, value = ROLE_MAPPING)
     public ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") final String pRoleName);
+
+    /**
+     * Define the endpoint for retrieving the ascendant {@link Role}s of passed role through its name
+     * @return the ascendants wrapped into a {@link ResponseEntity}
+     */
+    @RequestMapping(method = RequestMethod.GET, path = ROLE_ASCENDANTS)
+    public ResponseEntity<Set<Role>> retrieveRoleAscendants(@PathVariable("role_name") String roleName);
 
     /**
      * Define the endpoint for updating the {@link Role} of id <code>pRoleId</code>.

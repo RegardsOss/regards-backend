@@ -56,6 +56,9 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private INotificationService notificationService;
 
+    @Autowired
+    private IRolesClient rolesClient;
+
     @Override
     protected Logger getLogger() {
         return LoggerFactory.getLogger(this.getClass());
@@ -77,6 +80,8 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                                                     "microservice",
                                                     "test",
                                                     NotificationType.INFO);
+        Mockito.when(rolesClient.retrieveRoleAscendants(roleName))
+                .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
 
         List<ResultMatcher> expectations = Lists.newArrayList();
         expectations.add(MockMvcResultMatchers.status().isCreated());
@@ -107,6 +112,8 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                                     "microservice",
                                     "test",
                                     NotificationType.INFO);
+        Mockito.when(rolesClient.retrieveRoleAscendants(roleName))
+                .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
         notificationService.createNotification(notif);
         notif = new NotificationDTO("2018",
                                     Sets.newHashSet(),
@@ -114,6 +121,8 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                                     "microservice",
                                     "test",
                                     NotificationType.INFO);
+        Mockito.when(rolesClient.retrieveRoleAscendants(roleName))
+                .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
         notificationService.createNotification(notif);
         //some lorem ipsum so we have a notification with content
         notif = new NotificationDTO(
@@ -123,6 +132,8 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                 "microservice",
                 "test",
                 NotificationType.INFO);
+        Mockito.when(rolesClient.retrieveRoleAscendants(roleName))
+                .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
         notificationService.createNotification(notif);
         RequestBuilderCustomizer requestCustomizer = getNewRequestBuilderCustomizer();
         requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
@@ -148,6 +159,8 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                                                               "microservice",
                                                               "test",
                                                               NotificationType.INFO);
+        Mockito.when(rolesClient.retrieveRoleAscendants(roleName))
+                .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
         Notification notification = notificationService.createNotification(notificationDTO);
         RequestBuilderCustomizer requestCustomizer = getNewRequestBuilderCustomizer();
         requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
@@ -173,6 +186,8 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                                                               "microservice",
                                                               "test",
                                                               NotificationType.INFO);
+        Mockito.when(rolesClient.retrieveRoleAscendants(roleName))
+                .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
         Notification notification = notificationService.createNotification(notificationDTO);
         // set the notification to read
         notificationService.updateNotificationStatus(notification.getId(), NotificationStatus.READ);
