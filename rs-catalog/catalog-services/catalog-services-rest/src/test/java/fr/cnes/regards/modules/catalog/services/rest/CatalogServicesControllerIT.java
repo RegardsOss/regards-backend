@@ -112,7 +112,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         metaData.setPluginId("tata");
         metaData.setAuthor("toto");
         metaData.setDescription("titi");
-        metaData.setVersion("tutu");
+        metaData.setVersion("1.0.0");
         metaData.getInterfaceNames().add(IService.class.getName());
         metaData.setPluginClassName(TestService.class.getName());
         // Create two plugin services linked to the same dataset
