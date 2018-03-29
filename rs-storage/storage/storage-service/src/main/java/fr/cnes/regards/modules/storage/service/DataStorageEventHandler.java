@@ -55,7 +55,6 @@ import fr.cnes.regards.modules.storage.service.job.StorageJobProgressManager;
  * Handler for DataStorageEvent events. This events are sent by the {@link StorageJobProgressManager} associated
  * to the {@link IDataStorage} plugins. After each {@link StorageDataFile} stored, deleted or restored a {@link DataStorageEvent}
  * should be sent thought the {@link StorageJobProgressManager}.
- *
  * @author Sylvain Vissiere-Guerinet
  * @author Sébastien Binda
  */
@@ -220,18 +219,14 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
     private void notifyAdmins(String title, String message, NotificationType type) {
         FeignSecurityManager.asSystem();
         try {
-            NotificationDTO notif = new NotificationDTO(message,
-                                                        Sets.newHashSet(),
-                                                        Sets.newHashSet(DefaultRole.ADMIN.name()),
-                                                        applicationName,
-                                                        title,
-                                                        type);
+            NotificationDTO notif = new NotificationDTO(message, Sets.newHashSet(),
+                                                        Sets.newHashSet(DefaultRole.ADMIN.name()), applicationName,
+                                                        title, type);
             notificationClient.createNotification(notif);
-        }finally {
+        } finally {
             FeignSecurityManager.reset();
         }
     }
-
 
     /**
      * Method called when a SUCCESSFULL {@link DataStorageEvent} {@link StorageAction#DELETION} event is received.
@@ -265,11 +260,11 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                 dataFileDao.remove(dataFileDeleted);
                 // Now that deletion of this data file is done, check if the aip metadata has been stored at least once
                 Optional<StorageDataFile> metadataOpt = dataFileDao.findByAipAndType(associatedAIP, DataType.AIP);
-                if(!metadataOpt.isPresent()) {
+                if (!metadataOpt.isPresent()) {
                     // If it has not been stored, lets check if any data file are still linked to it
                     Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(associatedAIP);
                     // If none are linked anymore, lets remove it now and publish the event for the rest of the world
-                    if(aipFiles.isEmpty()) {
+                    if (aipFiles.isEmpty()) {
                         publisher.publish(new AIPEvent(associatedAIP));
                         aipDao.remove(associatedAIP);
                     }
@@ -308,13 +303,8 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                 AIP associatedAIP = optionalAssociatedAip.get();
                 switch (type) {
                     case SUCCESSFULL:
-                        handleStoreSuccess(data,
-                                           event.getChecksum(),
-                                           event.getNewUrl(),
-                                           event.getFileSize(),
-                                           event.getStorageConfId(),
-                                           event.getWidth(),
-                                           event.getHeight(),
+                        handleStoreSuccess(data, event.getChecksum(), event.getNewUrl(), event.getFileSize(),
+                                           event.getStorageConfId(), event.getWidth(), event.getHeight(),
                                            associatedAIP);
                         break;
                     case FAILED:
@@ -346,9 +336,8 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
         try {
             prioritizedDataStorageUsed = prioritizedDataStorageService.retrieve(dataStoragePluginConfId);
         } catch (ModuleException e) {
-            LOG.error(
-                    "You should not have this issue here! That means that the plugin used to storeAndCreate the dataFile just has been removed from the application",
-                    e);
+            LOG.error("You shouldn't have this issue here! This means the plugin used to storeAndCreate the dataFile "
+                              + "has just been removed from the application", e);
             return;
         }
         storedDataFile.setChecksum(storedFileChecksum);
