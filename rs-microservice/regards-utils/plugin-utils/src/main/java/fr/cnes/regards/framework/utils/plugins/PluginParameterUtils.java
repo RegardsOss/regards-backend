@@ -137,7 +137,7 @@ public final class PluginParameterUtils {
                                                 field.getType(),
                                                 paramType,
                                                 pluginParameter.optional(),
-                                                pluginParameter.onlyDynamic());
+                                                pluginParameter.unconfigurable());
 
             // Manage markdown description
             String markdown = AnnotationUtils.loadMarkdown(pluginClass, pluginParameter.markdown());

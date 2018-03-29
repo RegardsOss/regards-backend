@@ -102,8 +102,8 @@ public @interface PluginParameter {
     boolean optional() default false;
 
     /**
-     * Is the plugin parameter only dynamic?
-     * @return true if the plugin parameter is only dynamic
+     * Is the plugin parameter configurable by the users?
+     * @return true if the plugin parameter is not configurable by users
      */
-    boolean onlyDynamic() default false;
+    boolean unconfigurable() default false;
 }

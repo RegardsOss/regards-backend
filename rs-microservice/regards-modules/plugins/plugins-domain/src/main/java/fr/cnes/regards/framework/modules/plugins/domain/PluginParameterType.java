@@ -88,7 +88,7 @@ public class PluginParameterType {
      */
     private List<PluginParameterType> parameters = new ArrayList<>();
 
-    private Boolean onlyDynamic;
+    private Boolean unconfigurable;
 
     /**
      * {@link PluginParameterType} builder.<br/>
@@ -129,7 +129,7 @@ public class PluginParameterType {
         Assert.notNull(optional, "Optional value is required");
         ppt.setOptional(optional);
 
-        ppt.setOnlyDynamic(onlyDynamic);
+        ppt.setUnconfigurable(onlyDynamic);
 
         return ppt;
     }
@@ -229,12 +229,12 @@ public class PluginParameterType {
         this.markdown = markdown;
     }
 
-    public void setOnlyDynamic(Boolean onlyDynamic) {
-        this.onlyDynamic = onlyDynamic;
+    public void setUnconfigurable(Boolean unconfigurable) {
+        this.unconfigurable = unconfigurable;
     }
 
-    public Boolean getOnlyDynamic() {
-        return onlyDynamic;
+    public Boolean getUnconfigurable() {
+        return unconfigurable;
     }
 
     /**
