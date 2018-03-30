@@ -61,6 +61,7 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
@@ -320,6 +321,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      * @throws InterruptedException
      */
     @Test
+    @Requirements({ @Requirement("REGARDS_DSL_STO_CMD_110") })
     public void loadNearlineFilesTest() throws MalformedURLException, InterruptedException, ModuleException {
         LOG.info("Start test loadNearlineFilesTest ...");
         fillNearlineDataFileDb(50L, "");
@@ -350,18 +352,24 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         Assert.assertTrue(String.format("The nearLine file 10 should be have status AVAILABLE not %s.",
                                         ocf.get().getState()),
                           ocf.get().getState().equals(CachedFileState.AVAILABLE));
+        Assert.assertTrue("The file should be physicly in cache directory",
+                          Paths.get(ocf.get().getLocation().getPath()).toFile().exists());
 
         ocf = cachedFileRepository.findOneByChecksum("20");
         Assert.assertTrue("The nearLine file 20 should be present in db as a cachedFile", ocf.isPresent());
         Assert.assertTrue(String.format("The nearLine file 20 should be have status AVAILABLE not %s.",
                                         ocf.get().getState()),
                           ocf.get().getState().equals(CachedFileState.AVAILABLE));
+        Assert.assertTrue("The file should be physicly in cache directory",
+                          Paths.get(ocf.get().getLocation().getPath()).toFile().exists());
 
         ocf = cachedFileRepository.findOneByChecksum("30");
         Assert.assertTrue("The nearLine file 30 should be present in db as a cachedFile", ocf.isPresent());
         Assert.assertTrue(String.format("The nearLine file 30 should be have status AVAILABLE not %s.",
                                         ocf.get().getState()),
                           ocf.get().getState().equals(CachedFileState.AVAILABLE));
+        Assert.assertTrue("The file should be physicly in cache directory",
+                          Paths.get(ocf.get().getLocation().getPath()).toFile().exists());
 
         count = 0;
         while (dataHandler.getRestoredChecksum().isEmpty() && (count < 6)) {
@@ -369,6 +377,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
             Thread.sleep(1000);
         }
         Assert.assertTrue("There should be 3 DataEvent received.", dataHandler.getRestoredChecksum().size() == 3);
+
+        // Check that all requested files are in cache
+
         LOG.info("End test loadNearlineFilesTest ...");
     }
 
@@ -572,6 +583,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      * @throws IOException
      */
     @Test
+    @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_450") })
     public void cleanCacheDeleteExpiredFilesTest() throws InterruptedException, IOException {
         LOG.info("Start test testCleanCacheDeleteExpiredFiles ...");
         Long fileSize = (this.cacheSizeLimitKo * 1024) / 2;
@@ -621,6 +633,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      * @throws IOException
      */
     @Test
+    @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_450") })
     public void cleanCacheDeleteOlderFilesTest() throws InterruptedException, IOException {
         LOG.info("Start test testCleanCacheDeleteOlderFiles ...");
         // Simulate each file size as the cache is full with 4 files and fill it.
@@ -882,19 +895,19 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         AIP aip = getAIP();
         aipDao.save(aip);
         Set<StorageDataFile> datafiles = Sets.newHashSet();
-        URL url = new URL("file://PLOP/Node/file10.test");
+        URL url = Paths.get("src/test/resources/income/file10.txt").toUri().toURL();
         StorageDataFile df = new StorageDataFile(Sets.newHashSet(url), checksumPrefix + "10", "MD5", DataType.RAWDATA,
                 fileSize, MimeType.valueOf("application/text"), aip, "file10.test", null);
         df.addDataStorageUsed(nearlineDataStorageConf);
         df.addDataStorageUsed(nearlineNoRetrieveDataStorageConf);
         datafiles.add(df);
-        url = new URL("file://PLOP/Node/file20.test");
+        url = Paths.get("src/test/resources/income/file20.txt").toUri().toURL();
         df = new StorageDataFile(Sets.newHashSet(url), checksumPrefix + "20", "MD5", DataType.RAWDATA, fileSize,
                 MimeType.valueOf("application/text"), aip, "file20.test", null);
         df.addDataStorageUsed(nearlineDataStorageConf);
         df.addDataStorageUsed(nearlineNoRetrieveDataStorageConf);
         datafiles.add(df);
-        url = new URL("file://PLOP/Node/file30.test");
+        Paths.get("src/test/resources/income/file30.txt").toUri().toURL();
         df = new StorageDataFile(Sets.newHashSet(url), checksumPrefix + "30", "MD5", DataType.RAWDATA, fileSize,
                 MimeType.valueOf("application/text"), aip, "file30.test", null);
         df.addDataStorageUsed(nearlineDataStorageConf);
