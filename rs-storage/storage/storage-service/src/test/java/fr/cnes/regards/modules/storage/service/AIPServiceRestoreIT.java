@@ -57,6 +57,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -678,6 +679,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      * @throws InterruptedException
      */
     @Test
+    @Requirement("REGARDS_DSL_STO_ARC_440")
     public void loadAlreadyQueuedFilesTest() throws IOException, InterruptedException, ModuleException {
         LOG.info("Start test testStoreQueuedFiles ...");
 
