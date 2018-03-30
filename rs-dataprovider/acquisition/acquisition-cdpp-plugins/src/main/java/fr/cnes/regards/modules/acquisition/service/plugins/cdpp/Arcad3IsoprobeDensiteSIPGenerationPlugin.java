@@ -33,6 +33,7 @@ import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -54,6 +55,10 @@ public class Arcad3IsoprobeDensiteSIPGenerationPlugin implements ISipGenerationP
     private static final String LINE_PATTERN = ".*([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z).*";
 
     private static final Pattern linePattern = Pattern.compile(LINE_PATTERN);
+
+    @PluginParameter(label = "Tags",
+            description = "List of tags useful to classify SIP for business purpose and harvesting", optional = true)
+    private List<String> tags;
 
     @Override
     public SIP generate(Product product) throws ModuleException {
@@ -107,6 +112,11 @@ public class Arcad3IsoprobeDensiteSIPGenerationPlugin implements ISipGenerationP
                 LOGGER.error(e.getMessage(), e);
                 throw new EntityInvalidException(e.getMessage());
             }
+        }
+
+        // Add tags
+        if ((tags != null) && !tags.isEmpty()) {
+            sipBuilder.addTags(tags.toArray(new String[tags.size()]));
         }
 
         // Add creation event
