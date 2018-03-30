@@ -57,7 +57,7 @@ public class DefaultSIPGeneration implements ISipGenerationPlugin {
                                                                         af.getFilePath().toAbsolutePath().toUri()
                                                                                 .toURL(),
                                                                         af.getChecksumAlgorithm(), af.getChecksum());
-                sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
+                sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType().toString());
                 sipBuilder.addContentInformation();
             } catch (MalformedURLException e) {
                 LOGGER.error(e.getMessage(), e);
