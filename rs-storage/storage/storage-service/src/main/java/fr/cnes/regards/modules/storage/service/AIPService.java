@@ -278,14 +278,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
     public void onApplicationEvent(ApplicationReadyEvent event) {
         // Subscribe to events on {@link StorageDataFile} changes.
         subscriber.subscribeTo(DataStorageEvent.class, dataStorageEventHandler);
-
-        pluginService.addPluginPackage(IAllocationStrategy.class.getPackage().getName());
-        pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(IOnlineDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(INearlineDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(ISecurityDelegation.class.getPackage().getName());
-        pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(DefaultAllocationStrategyPlugin.class.getPackage().getName());
+        pluginService.addPluginPackage("fr.cnes.regards.modules.storage");
     }
 
     @Override

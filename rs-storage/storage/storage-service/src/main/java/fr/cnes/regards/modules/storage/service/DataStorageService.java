@@ -192,7 +192,7 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
+        pluginService.addPluginPackage("fr.cnes.regards.modules.storage");
     }
 
     /**
