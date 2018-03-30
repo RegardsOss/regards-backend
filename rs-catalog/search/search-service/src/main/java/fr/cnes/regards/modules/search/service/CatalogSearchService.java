@@ -174,14 +174,7 @@ public class CatalogSearchService implements ICatalogSearchService {
                 Set<String> userGroups = accessRightFilter.getUserAccessGroups();
                 for (R entity : (List<R>) facetPage.getContent()) {
                     if (entity instanceof DataObject) {
-                        DataObject dataObject = (DataObject) entity;
-                        // Map of { group -> data access right }
-                        Map<String, Boolean> groupsAccessRightMap = dataObject.getMetadata().getGroupsAccessRightsMap();
-
-                        // Looking for ONE user group that permits access to data
-                        dataObject.setDownloadable((userGroups == null)
-                            || userGroups.stream().anyMatch(userGroup -> (groupsAccessRightMap.containsKey(userGroup)
-                                                                         && groupsAccessRightMap.get(userGroup))));
+                        manageDownloadable(userGroups, (DataObject) entity);
                     }
                 }
             }
@@ -200,6 +193,24 @@ public class CatalogSearchService implements ICatalogSearchService {
         }
     }
 
+    /**
+     * Update downloadable property on given DataObject depending on current user groups and DataObject data access
+     * rights i.e. determine wether or not user has the right to download data object associate files.<br/>
+     * BE CAREFUL : this doesn't mean files exist (see containsPhysicalData property)
+     * @param userGroups current user groups (or null if user is ADMIN)
+     * @param entity entity to update
+     */
+    private void manageDownloadable(Set<String> userGroups, DataObject entity) {
+        DataObject dataObject = entity;
+        // Map of { group -> data access right }
+        Map<String, Boolean> groupsAccessRightMap = dataObject.getMetadata().getGroupsAccessRightsMap();
+
+        // Looking for ONE user group that permits access to data
+        dataObject.setDownloadable((userGroups == null)
+            || userGroups.stream().anyMatch(userGroup -> (groupsAccessRightMap.containsKey(userGroup)
+                                                         && groupsAccessRightMap.get(userGroup))));
+    }
+
     @Override
     public <E extends AbstractEntity> E get(UniformResourceName urn)
             throws EntityOperationForbiddenException, EntityNotFoundException {
@@ -216,7 +227,10 @@ public class CatalogSearchService implements ICatalogSearchService {
                                                         "You do not have access to this " + entity.getClass()
                                                                 .getSimpleName());
         }
-
+        // Fill downloadable property if entity is a DataObject
+        if (entity instanceof DataObject) {
+            manageDownloadable(userGroups, (DataObject) entity);
+        }
         if (userGroups == null) {
             // According to the doc it means that current user is an admin, admins always has rights to access entities!
             return entity;
