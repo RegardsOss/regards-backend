@@ -68,7 +68,7 @@ public class Arcad3IsoprobeDensiteSIPGenerationPlugin implements ISipGenerationP
                                                                         af.getFilePath().toAbsolutePath().toUri()
                                                                                 .toURL(),
                                                                         af.getChecksumAlgorithm(), af.getChecksum());
-                sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
+                sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType().toString());
                 sipBuilder.addContentInformation();
 
                 // Add descriptive information from raw data
