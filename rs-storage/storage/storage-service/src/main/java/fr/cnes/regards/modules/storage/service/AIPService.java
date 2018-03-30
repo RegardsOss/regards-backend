@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -275,12 +277,17 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
+
     public void onApplicationEvent(ApplicationReadyEvent event) {
         // Subscribe to events on {@link StorageDataFile} changes.
         subscriber.subscribeTo(DataStorageEvent.class, dataStorageEventHandler);
-        pluginService.addPluginPackage("fr.cnes.regards.modules.storage");
     }
 
+    @PostConstruct
+    public void init() {
+        pluginService.addPluginPackage("fr.cnes.regards.modules.storage");
+    }
+    
     @Override
     public Set<UUID> storeAndCreate(Set<AIP> aips) throws ModuleException {
         LOG.trace("Entering method storeAndCreate(Set<AIP>) with {} aips", aips.size());
