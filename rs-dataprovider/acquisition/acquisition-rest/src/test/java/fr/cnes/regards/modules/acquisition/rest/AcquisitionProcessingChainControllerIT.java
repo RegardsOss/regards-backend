@@ -83,7 +83,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
         fileInfo.setMandatory(Boolean.TRUE);
         fileInfo.setComment("A comment");
-        fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
 
         List<PluginParameter> param = PluginParametersFactory.build()
@@ -148,8 +148,9 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         Assert.assertNotNull("Chain must exist", loadedChain);
 
         // Update scan plugin
+        List<PluginParameter> params = PluginParametersFactory.build().addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
         PluginConfiguration scanPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), GlobDiskScanning.class, Lists.newArrayList());
+                .getPluginConfiguration(params, GlobDiskScanning.class, Lists.newArrayList());
         scanPlugin.setIsActive(true);
         String label = "Scan plugin update";
         scanPlugin.setLabel(label);

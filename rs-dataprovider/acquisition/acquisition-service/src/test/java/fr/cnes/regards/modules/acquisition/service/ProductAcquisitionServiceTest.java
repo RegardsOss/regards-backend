@@ -108,7 +108,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
         fileInfo.setMandatory(Boolean.TRUE);
         fileInfo.setComment("A comment");
-        fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
 
         // Search directory

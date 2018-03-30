@@ -68,7 +68,7 @@ public class Jason2IgdrProcessingChainTest extends AbstractAcquisitionChainTest 
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
         fileInfo.setMandatory(Boolean.TRUE);
         fileInfo.setComment("A comment");
-        fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
 
         // TODO invalid folder "/var/regards/data/invalid"
