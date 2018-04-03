@@ -546,7 +546,7 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
                                                                         af.getFilePath().toAbsolutePath().toUri()
                                                                                 .toURL(),
                                                                         af.getChecksumAlgorithm(), af.getChecksum());
-                sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType().toString());
+                sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
                 sipBuilder.addContentInformation();
             } catch (MalformedURLException e) {
                 LOGGER.error(e.getMessage(), e);
