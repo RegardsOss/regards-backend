@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
@@ -152,7 +153,8 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         SIPBuilder builder = new SIPBuilder(SIP_DEFAULT_CHAIN_ID_TEST);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "sdsdfm1211vd");
         builder.setSyntax("FITS(FlexibleImageTransport)",
-                          "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
+                          "http://www.iana.org/assignments/media-types/application/fits", MediaType
+                                  .valueOf("application/fits"));
         builder.addContentInformation();
         collection.add(builder.build());
 
@@ -168,7 +170,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         builder = new SIPBuilder(SIP_ID_TEST);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vd");
         builder.setSyntax("FITS(FlexibleImageTransport)",
-                          "http://www.iana.org/assignments/media-types/application/fits", "application/fits");
+                          "http://www.iana.org/assignments/media-types/application/fits", MediaType.valueOf("application/fits"));
         builder.addContentInformation();
         collection.add(builder.build());
 
@@ -184,7 +186,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         builder = new SIPBuilder(SIP_REF_ID_TEST);
         collection.add(builder.buildReference(Paths.get("src/test/resources/file_ref.xml"),
                                               "1e2d4ab665784e43243b9b07724cd483"));
-        builder.setSyntax("XML", "https://en.wikipedia.org/wiki/XML", "application/xml");
+        builder.setSyntax("XML", "https://en.wikipedia.org/wiki/XML", MediaType.valueOf("application/xml"));
         results = ingestService.ingest(collection);
         ipId = results.stream().findFirst().get().getIpId();
         resultSip = sipRepository.findOneByIpId(ipId);
