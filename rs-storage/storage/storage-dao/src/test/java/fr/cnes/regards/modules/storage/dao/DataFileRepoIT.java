@@ -18,6 +18,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
@@ -218,7 +219,7 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
                                                                     new Long((new Random()).nextInt(10000000)),
                                                                     new URL("ftp://bla"));
             ippBuilder.getContentInformationBuilder()
-                    .setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION", "application/name", "DESCRIPTION");
+                    .setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION", MimeType.valueOf("application/name"), "DESCRIPTION");
             ippBuilder.addContentInformation();
         }
     }

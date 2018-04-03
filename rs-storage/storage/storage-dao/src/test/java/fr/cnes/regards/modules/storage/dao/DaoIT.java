@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
@@ -181,7 +182,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
                                                                     sha1("blahblah"),
                                                                     new Long((new Random()).nextInt(10000000)), new URL("ftp://bla"));
             ippBuilder.getContentInformationBuilder().setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION",
-                                                                           "application/name", "DESCRIPTION");
+                                                                           MimeType.valueOf("application/name"), "DESCRIPTION");
             ippBuilder.addContentInformation();
         }
     }
