@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -192,7 +194,11 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
+    }
+
+    @PostConstruct
+    public void init() {
+        pluginService.addPluginPackage("fr.cnes.regards.modules.storage");
     }
 
     /**

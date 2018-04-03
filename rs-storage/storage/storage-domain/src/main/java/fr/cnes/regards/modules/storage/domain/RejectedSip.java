@@ -1,7 +1,5 @@
 package fr.cnes.regards.modules.storage.domain;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-
 /**
  * POJO allowing to known why a sip has been rejected
  * @author Sylvain VISSIERE-GUERINET

@@ -69,6 +69,8 @@ public class DataStorageEvent implements ISubscribable {
      */
     private Path restorationPath;
 
+    private String failureCause;
+
     /**
      * Default constructor
      */
@@ -260,5 +262,13 @@ public class DataStorageEvent implements ISubscribable {
         result = (31 * result) + (storageAction != null ? storageAction.hashCode() : 0);
         result = (31 * result) + (type != null ? type.hashCode() : 0);
         return result;
+    }
+
+    public void setFailureCause(String failureCause) {
+        this.failureCause = failureCause;
+    }
+
+    public String getFailureCause() {
+        return failureCause;
     }
 }

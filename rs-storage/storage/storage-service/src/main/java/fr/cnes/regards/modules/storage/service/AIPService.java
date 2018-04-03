@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -275,19 +277,17 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
 
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
+
     public void onApplicationEvent(ApplicationReadyEvent event) {
         // Subscribe to events on {@link StorageDataFile} changes.
         subscriber.subscribeTo(DataStorageEvent.class, dataStorageEventHandler);
-
-        pluginService.addPluginPackage(IAllocationStrategy.class.getPackage().getName());
-        pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(IOnlineDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(INearlineDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(ISecurityDelegation.class.getPackage().getName());
-        pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(DefaultAllocationStrategyPlugin.class.getPackage().getName());
     }
 
+    @PostConstruct
+    public void init() {
+        pluginService.addPluginPackage("fr.cnes.regards.modules.storage");
+    }
+    
     @Override
     public Set<UUID> storeAndCreate(Set<AIP> aips) throws ModuleException {
         LOG.trace("Entering method storeAndCreate(Set<AIP>) with {} aips", aips.size());
@@ -978,13 +978,6 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
             toBeDeleted.setState(AIPState.DELETED);
             aipDao.save(toBeDeleted);
             scheduleDeletion(dataFilesToDelete);
-            // Now that deletion has been scheduled, check if the aip metadata has been stored at least once
-            // If it has not been stored, lets remove it now and publish the event for the rest of the world
-            Optional<StorageDataFile> metadataOpt = dataFileDao.findByAipAndType(toBeDeleted, DataType.AIP);
-            if (!metadataOpt.isPresent()) {
-                publisher.publish(new AIPEvent(toBeDeleted));
-                aipDao.remove(toBeDeleted);
-            }
             return notSuppressible;
         }
         return notSuppressible;

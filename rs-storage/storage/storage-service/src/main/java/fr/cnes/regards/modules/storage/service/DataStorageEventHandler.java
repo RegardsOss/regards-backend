@@ -6,6 +6,7 @@ package fr.cnes.regards.modules.storage.service;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,9 +21,9 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -54,7 +55,6 @@ import fr.cnes.regards.modules.storage.service.job.StorageJobProgressManager;
  * Handler for DataStorageEvent events. This events are sent by the {@link StorageJobProgressManager} associated
  * to the {@link IDataStorage} plugins. After each {@link StorageDataFile} stored, deleted or restored a {@link DataStorageEvent}
  * should be sent thought the {@link StorageJobProgressManager}.
- *
  * @author Sylvain Vissiere-Guerinet
  * @author Sébastien Binda
  */
@@ -201,7 +201,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                 default:
                     // IDataStorage plugin used to delete the file is not able to delete the file right now.
                     // Maybe the file can be deleted later. So do nothing and just notify administrator.
-                    String message = String.format("Error deleting file %s.", event.getDataFileId());
+                    String message = String.format("Error deleting file (id: %s, checksum: %s).", event.getDataFileId(), event.getChecksum());
                     LOG.error(message);
                     notifyAdmins("File deletion error", message, NotificationType.INFO);
                     break;
@@ -217,15 +217,16 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
      * Use the notification module in admin to create a notification for admins
      */
     private void notifyAdmins(String title, String message, NotificationType type) {
-        NotificationDTO notif = new NotificationDTO(message,
-                                                    Sets.newHashSet(),
-                                                    Sets.newHashSet(DefaultRole.ADMIN.name()),
-                                                    applicationName,
-                                                    title,
-                                                    type);
-        notificationClient.createNotification(notif);
+        FeignSecurityManager.asSystem();
+        try {
+            NotificationDTO notif = new NotificationDTO(message, Sets.newHashSet(),
+                                                        Sets.newHashSet(DefaultRole.ADMIN.name()), applicationName,
+                                                        title, type);
+            notificationClient.createNotification(notif);
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
-
 
     /**
      * Method called when a SUCCESSFULL {@link DataStorageEvent} {@link StorageAction#DELETION} event is received.
@@ -237,7 +238,6 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
         Optional<AIP> optionalAssociatedAIP = aipDao.findOneByIpId(dataFileDeleted.getAip().getId().toString());
         if (optionalAssociatedAIP.isPresent() && dataFileDeleted.getChecksum().equals(checksumOfDeletedFile)) {
             AIP associatedAIP = optionalAssociatedAIP.get();
-            Optional<StorageDataFile> metadataAIPFile = dataFileDao.findByAipAndType(associatedAIP, DataType.AIP);
             // If deleted file is not an AIP metadata file
             // Set the AIP to UPDATED state.
             if (!DataType.AIP.equals(dataFileDeleted.getDataType())) {
@@ -257,6 +257,17 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                 LOG.debug("[DELETE FILE SUCCESS] AIP {} is in UPDATED state",
                           dataFileDeleted.getAip().getId().toString());
                 dataFileDao.remove(dataFileDeleted);
+                // Now that deletion of this data file is done, check if the aip metadata has been stored at least once
+                Optional<StorageDataFile> metadataOpt = dataFileDao.findByAipAndType(associatedAIP, DataType.AIP);
+                if (!metadataOpt.isPresent()) {
+                    // If it has not been stored, lets check if any data file are still linked to it
+                    Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(associatedAIP);
+                    // If none are linked anymore, lets remove it now and publish the event for the rest of the world
+                    if (aipFiles.isEmpty()) {
+                        publisher.publish(new AIPEvent(associatedAIP));
+                        aipDao.remove(associatedAIP);
+                    }
+                }
             } else {
                 if (associatedAIP.getState() == AIPState.DELETED) {
                     // Deletion has been explicitly required, so lets remove all the dataFiles associated to this AIP...
@@ -291,17 +302,12 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                 AIP associatedAIP = optionalAssociatedAip.get();
                 switch (type) {
                     case SUCCESSFULL:
-                        handleStoreSuccess(data,
-                                           event.getChecksum(),
-                                           event.getNewUrl(),
-                                           event.getFileSize(),
-                                           event.getStorageConfId(),
-                                           event.getWidth(),
-                                           event.getHeight(),
+                        handleStoreSuccess(data, event.getChecksum(), event.getNewUrl(), event.getFileSize(),
+                                           event.getStorageConfId(), event.getWidth(), event.getHeight(),
                                            associatedAIP);
                         break;
                     case FAILED:
-                        handleStoreFailed(data, associatedAIP);
+                        handleStoreFailed(data, associatedAIP, event.getFailureCause());
                         break;
                     default:
                         LOG.error("Unhandle DataStorage STORE event type {}", type);
@@ -329,9 +335,8 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
         try {
             prioritizedDataStorageUsed = prioritizedDataStorageService.retrieve(dataStoragePluginConfId);
         } catch (ModuleException e) {
-            LOG.error(
-                    "You should not have this issue here! That means that the plugin used to storeAndCreate the dataFile just has been removed from the application",
-                    e);
+            LOG.error("You shouldn't have this issue here! This means the plugin used to storeAndCreate the dataFile "
+                              + "has just been removed from the application", e);
             return;
         }
         storedDataFile.setChecksum(storedFileChecksum);
@@ -343,6 +348,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
         storedDataFile.setWidth(dataWidth);
         if (storedDataFile.getNotYetStoredBy() == 0) {
             storedDataFile.setState(DataFileState.STORED);
+            storedDataFile.emptyFailureCauses();
             //specific save once it is stored
             dataFileDao.save(storedDataFile);
             LOG.debug("[STORE FILE SUCCESS] DATA FILE {} is in STORED state", storedDataFile.getUrls());
@@ -394,14 +400,17 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
      * Method called when a FAILURE {@link DataStorageEvent} {@link StorageAction#STORE} event is received.
      * @param storeFailFile {@link StorageDataFile} not deleted.
      * @param associatedAIP {@link AIP} Associated to the {@link StorageDataFile} in error.
+     * @param failureCause
      */
-    private void handleStoreFailed(StorageDataFile storeFailFile, AIP associatedAIP) {
+    private void handleStoreFailed(StorageDataFile storeFailFile, AIP associatedAIP, String failureCause) {
         // update data status
         storeFailFile.setState(DataFileState.ERROR);
+        storeFailFile.addFailureCause(failureCause);
         dataFileDao.save(storeFailFile);
         // Update associated AIP in db
         associatedAIP.setState(AIPState.STORAGE_ERROR);
         aipDao.save(associatedAIP);
+        notifyAdmins("Storage of file " + storeFailFile.getChecksum() + " failed", failureCause, NotificationType.INFO);
         publisher.publish(new AIPEvent(associatedAIP));
     }
 }

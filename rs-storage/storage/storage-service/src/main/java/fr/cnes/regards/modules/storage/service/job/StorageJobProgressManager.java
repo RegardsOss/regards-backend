@@ -86,6 +86,7 @@ public class StorageJobProgressManager implements IProgressManager {
         failedDataFile.add(dataFile);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
                 StorageEventType.FAILED, storageConfId);
+        dataStorageEvent.setFailureCause(cause);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
         publisher.publish(dataStorageEvent);

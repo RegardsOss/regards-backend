@@ -44,6 +44,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
@@ -260,7 +261,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA,
                                                              new URL("file://" + file.toFile().getAbsolutePath()),
                                                              "MD5", fileChecksum);
-        builder.getContentInformationBuilder().setSyntax("application/text", "text", "application/text");
+        builder.getContentInformationBuilder().setSyntax("application/text", "text", MimeType.valueOf("application/text"));
         builder.addContentInformation();
 
         builder.addEvent(EventType.SUBMISSION.toString(), "Creation", OffsetDateTime.now());
