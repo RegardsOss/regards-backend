@@ -858,13 +858,8 @@ public class RoleService implements IRoleService {
         return borrowablesRoles;
     }
 
-    /**
-     * Retrieve ascendants(parent and uncles) and brotherhood of the given role
-     *
-     * @param pRole
-     * @return All ascendants of the given role
-     */
-    private Set<Role> getAscendants(final Role pRole) {
+    @Override
+    public Set<Role> getAscendants(final Role pRole) {
         final Set<Role> ascendants = Sets.newHashSet(pRole);
         // if pRole doesn't have parent then it's finished
         Role parent = pRole.getParentRole();

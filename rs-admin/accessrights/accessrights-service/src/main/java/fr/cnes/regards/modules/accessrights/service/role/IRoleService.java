@@ -267,6 +267,14 @@ public interface IRoleService {
     Set<Role> retrieveBorrowableRoles();
 
     /**
+     * Retrieve ascendants(parent and uncles) and brotherhood of the given role
+     *
+     * @param pRole
+     * @return All ascendants of the given role
+     */
+    Set<Role> getAscendants(Role pRole);
+
+    /**
      *
      * Retrieve roles associated to ginve resource id
      *

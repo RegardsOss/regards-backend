@@ -42,7 +42,6 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -236,7 +235,9 @@ public class NotificationServiceTest {
                                                       projectUserClient,
                                                       Mockito.mock(ApplicationEventPublisher.class),
                                                       runtimeTenantResolver,
-                                                      authenticationResolver, Mockito.mock(ISubscriber.class), NotificationMode.MULTITENANT);
+                                                      authenticationResolver,
+                                                      Mockito.mock(ISubscriber.class),
+                                                      NotificationMode.MULTITENANT);
     }
 
     /**
@@ -291,6 +292,9 @@ public class NotificationServiceTest {
         dto.setRoleRecipients(roleRecipientsAsString);
         dto.setSender(SENDER);
         dto.setType(NotificationType.INFO);
+
+        Mockito.when(rolesClient.retrieveRoleAscendants(ROLE_NAME_0))
+                .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(ROLE_NAME_0)), HttpStatus.OK));
 
         // Define expected
         final Notification expected = new Notification();
@@ -502,7 +506,7 @@ public class NotificationServiceTest {
 
         // Compare
         Assert.assertEquals(expected.size(), actual.size());
-        Assert.assertTrue(actual.containsAll(expected.stream().map(pu->pu.getEmail()).collect(Collectors.toList())));
+        Assert.assertTrue(actual.containsAll(expected.stream().map(pu -> pu.getEmail()).collect(Collectors.toList())));
     }
 
     /**
