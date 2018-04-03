@@ -377,17 +377,19 @@ public final class PluginUtils {
             // Don't forget to add the implementation package
             packages.add(pluginClass.getPackage().getName());
             PluginMetaData pluginMetadata = createPluginMetaData(pluginClass, packages);
-            // Check that version is the same between plugin one and plugin configuration one
-            if (!Objects.equals(pluginMetadata.getVersion(), pluginConfiguration.getVersion())) {
-                validationErrors
-                        .add(String.format("Plugin configuration version (%s) is different from plugin one (%s).",
-                                           pluginConfiguration.getVersion(), pluginMetadata.getVersion()));
-            }
             // Now that we have the metadata, lets check everything and eventualy set some properties
             // as version (a null version means a plugin configuration creation
             if (pluginConfiguration.getVersion() == null) {
                 pluginConfiguration.setVersion(pluginMetadata.getVersion());
+            } else {
+                // Check that version is the same between plugin one and plugin configuration one
+                if (!Objects.equals(pluginMetadata.getVersion(), pluginConfiguration.getVersion())) {
+                    validationErrors
+                            .add(String.format("Plugin configuration version (%s) is different from plugin one (%s).",
+                                               pluginConfiguration.getVersion(), pluginMetadata.getVersion()));
+                }
             }
+
             // First lets check the plugin parameters
             //    first simple test, are there enough parameters?
             List<PluginParameterType> pluginParametersFromMeta = pluginMetadata.getParameters();
