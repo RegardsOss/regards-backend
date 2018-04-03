@@ -100,4 +100,10 @@ public @interface PluginParameter {
      * @return true if the plugin parameter is mandatory.
      */
     boolean optional() default false;
+
+    /**
+     * Is the plugin parameter configurable by the users?
+     * @return true if the plugin parameter is not configurable by users
+     */
+    boolean unconfigurable() default false;
 }

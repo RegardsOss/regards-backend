@@ -25,7 +25,8 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.plugins.IComplexInterfacePlugin;
+import fr.cnes.regards.framework.plugins.DummyPlugin;
+import fr.cnes.regards.framework.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.plugins.SamplePlugin;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 
@@ -49,7 +50,8 @@ public class PluginServiceUtility {
     /**
      * Version
      */
-    protected static final String VERSION = "12345-6789-11";
+    protected static final String VERSION = "0.0.1";
+//    protected static final String VERSION = "12345-6789-11";
 
     /**
      * Role used for test
@@ -158,8 +160,8 @@ public class PluginServiceUtility {
 
     protected PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setPluginClassName(Integer.class.getCanonicalName());
-        pluginMetaData.setInterfaceNames(Sets.newHashSet(IComplexInterfacePlugin.class.getName()));
+        pluginMetaData.setPluginClassName(DummyPlugin.class.getCanonicalName());
+        pluginMetaData.setInterfaceNames(Sets.newHashSet(ISamplePlugin.class.getName()));
         pluginMetaData.setPluginId("aSamplePlugin");
         pluginMetaData.setAuthor("CS-SI");
         pluginMetaData.setVersion(VERSION);

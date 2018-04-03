@@ -19,11 +19,6 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
-import java.net.URL;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -40,6 +35,10 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
+import java.net.URL;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
@@ -47,9 +46,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
@@ -114,7 +110,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     @NotNull
     @Column(nullable = false, updatable = true)
-    private Integer priorityOrder;
+    private Integer priorityOrder = 0;
 
     /**
      * The plugin configuration is active.
@@ -131,14 +127,14 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     @Column(columnDefinition = "text")
     @Convert(converter = SetStringCsvConverter.class)
-    private Set<String> interfaceNames;
+    private Set<String> interfaceNames = Sets.newHashSet();;
 
     /**
      * Configuration parameters of the plugin
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "parent_conf_id", foreignKey = @ForeignKey(name = "fk_plg_conf_param_id"))
-    private List<PluginParameter> parameters;
+    private List<PluginParameter> parameters = Lists.newArrayList();
 
     /**
      * Icon of the plugin. It must be an URL to a svg file.
@@ -151,11 +147,6 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public PluginConfiguration() {
         super();
-        pluginId = "undefined";
-        priorityOrder = 0;
-        version = "0.0";
-        interfaceNames = Sets.newHashSet();
-        parameters = Lists.newArrayList();
     }
 
     /**
@@ -248,20 +239,13 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * @return the stripped value (no enclosing quotes)
      */
     public String getStripParameterValue(String parameterName) {
-        // Strip quotes using Gson
-        Gson gson = new Gson();
         String value = null;
         if (parameters != null) {
             Optional<PluginParameter> pluginParameter = parameters.stream()
                     .filter(s -> s.getName().equals(parameterName)).findFirst();
             if (pluginParameter.isPresent()) {
-                String tmp = pluginParameter.get().getValue();
-                if (tmp.startsWith("\"")) {
-                    JsonElement el = gson.fromJson(pluginParameter.get().getValue(), JsonElement.class);
-                    value = (el == null) ? null : el.getAsString();
-                } else {
-                    value = tmp;
-                }
+                // Strip quotes using Gson
+                return pluginParameter.get().getStripParameterValue();
             }
         }
         return value;

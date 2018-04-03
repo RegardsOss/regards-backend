@@ -27,6 +27,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.springframework.util.Assert;
+import org.springframework.util.MimeType;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -387,7 +388,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
      * @param mimeDescription
      * @param mimeType
      */
-    public void setSyntax(String mimeName, String mimeDescription, String mimeType) {
+    public void setSyntax(String mimeName, String mimeDescription, MimeType mimeType) {
         contentInformationBuilder.setSyntax(mimeName, mimeDescription, mimeType);
     }
 
@@ -398,7 +399,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
      * @param mimeType
      * @param semanticDescription
      */
-    public void setSyntaxAndSemantic(String mimeName, String mimeDescription, String mimeType,
+    public void setSyntaxAndSemantic(String mimeName, String mimeDescription, MimeType mimeType,
             String semanticDescription) {
         contentInformationBuilder.setSyntaxAndSemantic(mimeName, mimeDescription, mimeType, semanticDescription);
     }

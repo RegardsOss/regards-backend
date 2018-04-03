@@ -26,7 +26,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
  * @author Marc Sordi
  *
  */
-@FunctionalInterface
 @PluginInterface(description = "Plugin parameter test")
 public interface IParamTestPlugin {
 

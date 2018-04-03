@@ -126,9 +126,9 @@ public interface IPluginService {
      *
      * @param pluginConfiguration the plugin configuration to saved
      * @return the saved {@link PluginConfiguration}
-     * @throws ModuleException thrown if an error occurs
+     * @throws EntityInvalidException thrown if an error occurs
      */
-    PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConfiguration) throws ModuleException;
+    PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConfiguration) throws EntityInvalidException;
 
     /**
      * Delete a {@link PluginConfiguration}.
@@ -260,6 +260,11 @@ public interface IPluginService {
      * @param confId configuration identifier
      */
     void cleanPluginCache(Long confId);
+
+    /**
+     * Remove all plugin instances from cache
+     */
+    void cleanPluginCache();
 
     /**
      * @return tenant plugin cache

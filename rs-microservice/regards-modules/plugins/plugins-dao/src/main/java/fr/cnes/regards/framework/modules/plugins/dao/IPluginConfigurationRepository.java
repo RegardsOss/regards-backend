@@ -71,6 +71,8 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
     @EntityGraph(attributePaths = { "parameters", "parameters.dynamicsValues" })
     PluginConfiguration findById(Long id);
 
+    List<PluginConfiguration> findByParametersPluginConfiguration(PluginConfiguration plgConf);
+
     @Override
     @Modifying
     @Query(value = "TRUNCATE {h-schema}t_plugin_configuration CASCADE", nativeQuery = true)

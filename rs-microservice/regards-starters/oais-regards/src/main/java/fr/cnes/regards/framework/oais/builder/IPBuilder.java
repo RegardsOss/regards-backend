@@ -28,6 +28,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
@@ -417,7 +418,7 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
      * @param mimeDescription
      * @param mimeType
      */
-    public void setSyntax(String mimeName, String mimeDescription, String mimeType) {
+    public void setSyntax(String mimeName, String mimeDescription, MimeType mimeType) {
         ipPropertiesBuilder.setSyntax(mimeName, mimeDescription, mimeType);
     }
 
@@ -428,7 +429,7 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
      * @param mimeType
      * @param semanticDescription
      */
-    public void setSyntaxAndSemantic(String mimeName, String mimeDescription, String mimeType,
+    public void setSyntaxAndSemantic(String mimeName, String mimeDescription, MimeType mimeType,
             String semanticDescription) {
         ipPropertiesBuilder.setSyntaxAndSemantic(mimeName, mimeDescription, mimeType, semanticDescription);
     }
