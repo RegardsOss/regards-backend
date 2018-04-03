@@ -48,8 +48,8 @@ public interface IOrderRepository extends JpaRepository<Order, Long> {
             int minAvailableCount, OrderStatus... statuses);
 
     @EntityGraph("graph.order.simple")
-    List<Order> findByAvailableFilesCountGreaterThanAndAvailableUpdateDateLessThanOrderByOwner(int count,
-            OffsetDateTime date);
+    List<Order> findByAvailableFilesCountGreaterThanAndAvailableUpdateDateLessThanAndStatusNotInOrderByOwner(int count,
+            OffsetDateTime date, OrderStatus... statuses);
 
     @EntityGraph("graph.order.simple")
     Optional<Order> findOneByExpirationDateLessThanAndStatusIn(OffsetDateTime date, OrderStatus... statuses);
@@ -60,8 +60,12 @@ public interface IOrderRepository extends JpaRepository<Order, Long> {
      * Orders are sorted by owner
      */
     default List<Order> findAsideOrders(int daysBeforeConsideringAside) {
-        return findByAvailableFilesCountGreaterThanAndAvailableUpdateDateLessThanOrderByOwner(0, OffsetDateTime.now()
-                .minus(daysBeforeConsideringAside, ChronoUnit.DAYS));
+        OffsetDateTime date = OffsetDateTime.now().minus(daysBeforeConsideringAside, ChronoUnit.DAYS);
+        return findByAvailableFilesCountGreaterThanAndAvailableUpdateDateLessThanAndStatusNotInOrderByOwner(0, date,
+                                                                                                            OrderStatus.PENDING,
+                                                                                                            OrderStatus.DELETED,
+                                                                                                            OrderStatus.FAILED,
+                                                                                                            OrderStatus.EXPIRED);
     }
 
     /**

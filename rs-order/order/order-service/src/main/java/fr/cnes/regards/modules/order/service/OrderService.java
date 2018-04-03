@@ -296,6 +296,7 @@ public class OrderService implements IOrderService {
         // Metalink file public url
         Map<String, String> dataMap = new HashMap<>();
         dataMap.put("expiration_date", order.getExpirationDate().toString());
+        dataMap.put("project", runtimeTenantResolver.getTenant());
         dataMap.put("metalink_download_url", urlStart + "/user/orders/metalink/download?" + tokenRequestParam);
         dataMap.put("regards_downloader_url", "https://github.com/RegardsOss/RegardsDownloader/releases");
         dataMap.put("orders_url", host + order.getFrontendUrl());
@@ -676,6 +677,9 @@ public class OrderService implements IOrderService {
         }
     }
 
+    /**
+     * 0 0 7 * * MON-FRI : every working day at 7 AM
+     */
     @Override
     @Transactional(Transactional.TxType.NEVER) // Must not create a transaction, it is a multitenant method
     @Scheduled(cron = "${regards.order.periodic.files.availability.check.cron:0 0 7 * * MON-FRI}")
@@ -699,6 +703,7 @@ public class OrderService implements IOrderService {
             OffsetDateTime now = OffsetDateTime.now();
             Map<String, Object> dataMap = new HashMap<>();
             dataMap.put("orders", entry.getValue());
+            dataMap.put("project", runtimeTenantResolver.getTenant());
             // Create mail
             SimpleMailMessage email;
             try {

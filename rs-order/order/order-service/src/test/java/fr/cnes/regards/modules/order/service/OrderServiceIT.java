@@ -438,6 +438,7 @@ public class OrderServiceIT {
 
         // Change available update date (-4 days)
         order.setAvailableUpdateDate(OffsetDateTime.now().minus(4, ChronoUnit.DAYS));
+        order.setStatus(OrderStatus.DONE);
         orderRepos.save(order);
 
         orderService.sendPeriodicNotifications();
@@ -445,7 +446,7 @@ public class OrderServiceIT {
         Assert.assertNotNull(mailMessage);
         Assert.assertEquals(order.getOwner(), mailMessage.getTo()[0]);
         // Check that email text has been interpreted before being sent
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+        SimpleDateFormat sdf = new SimpleDateFormat("d MMM yyyy HH:mm:ss z");
         Assert.assertTrue(mailMessage.getText().contains(sdf.format(Date.from(order.getExpirationDate().toInstant()))));
         Assert.assertTrue(mailMessage.getText().contains(sdf.format(Date.from(order.getCreationDate().toInstant()))));
 
