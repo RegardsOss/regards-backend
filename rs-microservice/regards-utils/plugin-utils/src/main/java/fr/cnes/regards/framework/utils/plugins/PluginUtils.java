@@ -361,11 +361,6 @@ public final class PluginUtils {
                         .add(String.format("The plugin configuration priority order is required (pluginId: %s).",
                                            pluginConfiguration.getPluginId()));
             }
-            if (pluginConfiguration.getVersion() == null) {
-                validationErrors.add(String.format("The plugin configuration version is required (pluginId: %s).",
-                                                   pluginConfiguration.getPluginId()));
-            }
-
             if (Strings.isNullOrEmpty(pluginConfiguration.getLabel())) {
                 validationErrors.add(String.format("The plugin configuration label is required (pluginId: %s).",
                                                    pluginConfiguration.getPluginId()));
@@ -388,15 +383,20 @@ public final class PluginUtils {
                         .add(String.format("Plugin configuration version (%s) is different from plugin one (%s).",
                                            pluginConfiguration.getVersion(), pluginMetadata.getVersion()));
             }
-            // Now that we have the metadata, lets check everything
+            // Now that we have the metadata, lets check everything and eventualy set some properties
+            // as version (a null version means a plugin configuration creation
+            if (pluginConfiguration.getVersion() == null) {
+                pluginConfiguration.setVersion(pluginMetadata.getVersion());
+            }
             // First lets check the plugin parameters
             //    first simple test, are there enough parameters?
             List<PluginParameterType> pluginParametersFromMeta = pluginMetadata.getParameters();
             //    the plugin configuration should not have any reference to plugin parameters that are only dynamic
             //    lets check that all remaining parameters are correctly given
             for (PluginParameterType plgParamMeta : pluginParametersFromMeta) {
-                if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable()
-                        && (pluginConfiguration.getParameter(plgParamMeta.getName()) == null && plgParamMeta.getDefaultValue() == null)) {
+                if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && (
+                        pluginConfiguration.getParameter(plgParamMeta.getName()) == null
+                                && plgParamMeta.getDefaultValue() == null)) {
                     validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
                 }
             }
