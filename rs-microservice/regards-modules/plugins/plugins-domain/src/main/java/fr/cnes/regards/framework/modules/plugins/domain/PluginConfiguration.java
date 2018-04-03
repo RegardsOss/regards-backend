@@ -100,8 +100,9 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Version of the plugin configuration. Is set with the plugin version. This attribute is used to check if the saved
      * configuration plugin version differs from the loaded plugin.
+     * <b>DO NOT SET @NotNull even if version must not be null. Validation is done between front and back but at
+     * creation version is retrieved from plugin metdata and thus set by back</b>
      */
-    @NotNull
     @Column(nullable = false, updatable = true)
     private String version;
 

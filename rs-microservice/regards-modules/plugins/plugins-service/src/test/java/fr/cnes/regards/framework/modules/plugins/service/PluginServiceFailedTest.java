@@ -142,7 +142,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     @Test(expected = EntityInvalidException.class)
     public void saveAPluginConfigurationWithoutVersion() throws EntityInvalidException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
-        aPluginConfiguration.setVersion(null);
+        aPluginConfiguration.setVersion("bad");
         pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);
         Assert.fail();
     }
