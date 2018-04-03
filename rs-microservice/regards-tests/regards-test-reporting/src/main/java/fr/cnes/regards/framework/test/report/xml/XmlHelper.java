@@ -24,8 +24,11 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,13 +123,15 @@ public final class XmlHelper {
      * @throws ReportException
      *             if report cannot be read
      */
-    public static <T> T read(Path pDirectory, String pFilename, Class<T> pClass) throws ReportException {
+    public static <T> T read(Path pDirectory, String pFilename, Class<T> pClass)
+            throws ReportException, UnsupportedEncodingException {
         // Validate
         assertNotNull(pDirectory, "Missing directory path");
         assertNotNull(pFilename, "Missing filename");
         assertNotNull(pClass, "Missing JAXB annotated class");
 
-        final File sourceFile = pDirectory.resolve(pFilename).toFile();
+        //because jaxb unmarshall uses urls, lets url encode the %
+        final File sourceFile = Paths.get(pDirectory.resolve(pFilename).toAbsolutePath().toString().replaceAll("%", "%25")).toFile();
 
         try {
             // Init unmarshaller
@@ -159,7 +164,7 @@ public final class XmlHelper {
      * @throws ReportException
      *             if report cannot be read
      */
-    public static <T> T read(Path pFilePath, Class<T> pClass) throws ReportException {
+    public static <T> T read(Path pFilePath, Class<T> pClass) throws ReportException, UnsupportedEncodingException {
         // Validate
         assertNotNull(pFilePath, "Missing full file path");
         assertNotNull(pClass, "Missing JAXB annotated class");
@@ -203,7 +208,8 @@ public final class XmlHelper {
      * @throws ReportException
      *             if method cannot aggregate reports
      */
-    public static XmlRequirements aggregateReports(List<Path> pReports) throws ReportException {
+    public static XmlRequirements aggregateReports(List<Path> pReports)
+            throws ReportException, UnsupportedEncodingException {
         // Init aggregation map
         final Map<String, XmlRequirement> rqmtMap = new HashMap<>();
 

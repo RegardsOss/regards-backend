@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.test.report.xml;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Paths;
 
 import org.junit.Assert;
@@ -74,7 +75,7 @@ public class XmlReportTest {
     }
 
     @Test
-    public void testXML() {
+    public void testXML() throws UnsupportedEncodingException {
 
         String filename = "requirements.xml";
 
