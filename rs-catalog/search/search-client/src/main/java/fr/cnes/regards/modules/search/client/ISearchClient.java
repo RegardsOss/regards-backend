@@ -39,7 +39,7 @@ public interface ISearchClient {
     /**
      * Entity get mapping
      */
-    String ENTITY_GET_MAPPING = "/entities/{urn}";
+    String ENTITY_BACK_GET_MAPPING = "/entities/{urn}/back";
 
     /**
      * Return dataset
@@ -63,7 +63,7 @@ public interface ISearchClient {
      * @param urn the entity URN
      * @return an entity
      */
-    @RequestMapping(path = ENTITY_GET_MAPPING, method = RequestMethod.GET)
-    <E extends AbstractEntity> ResponseEntity<Resource<E>> getEntity(
+    @RequestMapping(path = ENTITY_BACK_GET_MAPPING, method = RequestMethod.GET)
+    <E extends AbstractEntity> ResponseEntity<E> getEntity(
             @Valid @PathVariable("urn") UniformResourceName urn);
 }

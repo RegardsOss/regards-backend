@@ -129,6 +129,8 @@ public class SearchController {
 
     public static final String ENTITY_GET_MAPPING = "/entities/{urn}";
 
+    public static final String ENTITY_BACK_GET_MAPPING = "/entities/{urn}/back";
+
     public static final String COLLECTIONS_URN = "/collections/{urn}";
 
     public static final String DATASETS_URN = "/datasets/{urn}";
@@ -473,6 +475,24 @@ public class SearchController {
             resource = toResource(indexable);
         }
         return new ResponseEntity<>(resource, HttpStatus.OK);
+    }
+
+    /**
+     * Unified entity retrieval endpoint
+     * @param urn the entity URN
+     * @return an entity
+     * @throws EntityNotFoundException           if no entity with identifier provided can be found
+     * @throws EntityOperationForbiddenException if the current user does not have suffisant rights
+     */
+    @SuppressWarnings("unchecked")
+    @RequestMapping(path = ENTITY_BACK_GET_MAPPING, method = RequestMethod.GET)
+    @ResourceAccess(description = "Return given URN entity.", role = DefaultRole.INSTANCE_ADMIN)
+    public <E extends AbstractEntity> ResponseEntity<E> getEntityBack(
+            @Valid @PathVariable("urn") UniformResourceName urn, DatasetResourcesAssembler assembler)
+            throws EntityOperationForbiddenException, EntityNotFoundException {
+        // Retrieve entity
+        E indexable = searchService.get(urn);
+        return new ResponseEntity<>(indexable, HttpStatus.OK);
     }
 
     /**
