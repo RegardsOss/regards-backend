@@ -19,15 +19,14 @@
 package fr.cnes.regards.framework.module.rest.exception;
 
 /**
- * Exception indicating an entity is not found according to the passed identifier
+ * Exception indicating that an entity is not found according to the given identifier
  *
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
 public class EntityNotFoundException extends EntityException {
 
     public EntityNotFoundException(final String entityIdentifier, final Class<?> entityClass) {
-        super(String.format("Entity %s with id : %s doesn't exists", entityClass.getName(), entityIdentifier));
+        super(String.format("Entity %s with id : %s doesn't exist", entityClass.getName(), entityIdentifier));
     }
 
     public EntityNotFoundException(final Long entityIdentifier, final Class<?> entityClass) {
