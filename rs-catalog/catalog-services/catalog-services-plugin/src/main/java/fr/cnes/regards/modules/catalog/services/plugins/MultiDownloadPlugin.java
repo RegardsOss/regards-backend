@@ -68,7 +68,7 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseExcep
         id = "MultiDownloadPlugin", version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr",
         licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 @CatalogServicePlugin(applicationModes = { ServiceScope.MANY }, entityTypes = { EntityType.DATA })
-public class MultiDownloadPlugin implements IEntitiesServicePlugin {
+public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements IEntitiesServicePlugin {
 
     /**
      * Class logger

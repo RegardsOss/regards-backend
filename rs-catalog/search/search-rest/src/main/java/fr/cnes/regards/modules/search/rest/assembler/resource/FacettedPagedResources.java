@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 
 /**
  * Extend the {@link PagedResources} to add a "facets" field.
- * @param <T> The type of the resoures
+ * @param <T> The type of the resources
  * @author Xavier-Alexandre Brochard
  */
 public class FacettedPagedResources<T> extends PagedResources<T> {

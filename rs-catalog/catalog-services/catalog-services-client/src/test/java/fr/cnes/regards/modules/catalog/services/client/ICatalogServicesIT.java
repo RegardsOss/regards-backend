@@ -34,6 +34,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -86,8 +88,8 @@ public class ICatalogServicesIT extends AbstractRegardsWebIT {
     @Requirement("REGARDS_DSL_ACC_ARC_130")
     @Purpose("Check that we can retrieve IHM Service augmented with their meta information")
     public void retrieveServicesWithMeta() {
-        ResponseEntity<List<Resource<PluginConfigurationDto>>> result = client.retrieveServices("whatever",
-                                                                                                ServiceScope.MANY);
+        ResponseEntity<List<Resource<PluginConfigurationDto>>> result = client
+                .retrieveServices(Lists.newArrayList("whatever"), ServiceScope.MANY);
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.NOT_FOUND));
     }
 

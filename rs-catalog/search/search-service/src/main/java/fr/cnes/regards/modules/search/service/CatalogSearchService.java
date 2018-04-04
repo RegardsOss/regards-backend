@@ -33,10 +33,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 import com.google.common.reflect.TypeToken;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -44,6 +49,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.dataaccess.client.IAccessRightClient;
+import fr.cnes.regards.modules.dataaccess.domain.accessright.AccessRight;
+import fr.cnes.regards.modules.dataaccess.domain.accessright.DataAccessLevel;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
@@ -70,6 +78,7 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 @Service
 @MultitenantTransactional
 public class CatalogSearchService implements ICatalogSearchService {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(CatalogSearchService.class);
 
     /**
@@ -94,9 +103,9 @@ public class CatalogSearchService implements ICatalogSearchService {
 
     /**
      * @param searchService Service perfoming the ElasticSearch search from criterions. Autowired by Spring. Must not be
-     *            null.
+     * null.
      * @param openSearchService The OpenSearch service building {@link ICriterion} from a request string. Autowired by
-     *            Spring. Must not be null.
+     * Spring. Must not be null.
      * @param accessRightFilter Service handling the access groups in criterion. Autowired by Spring. Must not be null.
      * @param facetConverter manage facet conversion
      */
@@ -110,10 +119,10 @@ public class CatalogSearchService implements ICatalogSearchService {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <S, R extends IIndexable> FacetPage<R> search(Map<String, String> allParams, SearchKey<S, R> pSearchKey,
-            String[] facets, Pageable pPageable) throws SearchException {
+    public <S, R extends IIndexable> FacetPage<R> search(Map<String, String> allParams, SearchKey<S, R> inSearchKey,
+            String[] facets, Pageable pageable) throws SearchException {
         try {
-            SearchKey<?, ?> searchKey = pSearchKey;
+            SearchKey<?, ?> searchKey = inSearchKey;
             // Build criterion from query
             ICriterion criterion = openSearchService.parse(allParams);
 
@@ -132,30 +141,44 @@ public class CatalogSearchService implements ICatalogSearchService {
             // JoinEntitySearchKey<?, Dataset> without any criterion on searchType => just directly search
             // datasets (ie SimpleSearchKey<DataSet>)
             // This is correct because all
-            if ((criterion == null) && (searchKey instanceof JoinEntitySearchKey)
-                    && (TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)) {
-                searchKey = Searches.onSingleEntity(searchKey.getSearchIndex(),
-                                                    Searches.fromClass(searchKey.getResultClass()));
+            if ((criterion == null) && (searchKey instanceof JoinEntitySearchKey) && (
+                    TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)) {
+                searchKey = Searches
+                        .onSingleEntity(searchKey.getSearchIndex(), Searches.fromClass(searchKey.getResultClass()));
             }
 
             // Perform search
+            FacetPage<R> facetPage;
             if (searchKey instanceof SimpleSearchKey) {
-                return searchService.search((SimpleSearchKey<R>) searchKey, pPageable, criterion, searchFacets);
+                facetPage = searchService.search((SimpleSearchKey<R>) searchKey, pageable, criterion, searchFacets);
             } else {
                 // It may be necessary to filter returned objects (before pagination !!!) by user access groups to avoid
                 // getting datasets on which user has no right
                 final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
-                if ((TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)
-                        && (accessGroups != null)) { // accessGroups null means superuser
+                if ((TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class) && (accessGroups
+                        != null)) { // accessGroups null means superuser
                     Predicate<Dataset> datasetGroupAccessFilter = ds -> !Sets.intersection(ds.getGroups(), accessGroups)
                             .isEmpty();
-                    return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion,
-                                                (Predicate<R>) datasetGroupAccessFilter);
+                    facetPage = searchService.search((JoinEntitySearchKey<S, R>) searchKey, pageable, criterion,
+                                                     (Predicate<R>) datasetGroupAccessFilter);
                 } else {
-                    return searchService.search((JoinEntitySearchKey<S, R>) searchKey, pPageable, criterion);
+                    facetPage = searchService.search((JoinEntitySearchKey<S, R>) searchKey, pageable, criterion);
                 }
             }
 
+            // For all results, when searching for data objects, set the downloadable property depending on user DATA
+            // access rights
+            if (((searchKey instanceof SimpleSearchKey) && searchKey.getSearchTypeMap().values()
+                    .contains(DataObject.class)) || ((searchKey.getResultClass() != null)
+                    && TypeToken.of(searchKey.getResultClass()).getRawType() == DataObject.class)) {
+                Set<String> userGroups = accessRightFilter.getUserAccessGroups();
+                for (R entity : (List<R>) facetPage.getContent()) {
+                    if (entity instanceof DataObject) {
+                        manageDownloadable(userGroups, (DataObject) entity);
+                    }
+                }
+            }
+            return facetPage;
         } catch (OpenSearchParseException e) {
             String message = "No query parameter";
             if (allParams != null) {
@@ -168,6 +191,24 @@ public class CatalogSearchService implements ICatalogSearchService {
             LOGGER.debug("Falling back to empty page", e);
             return new FacetPage<>(new ArrayList<>(), null);
         }
+    }
+
+    /**
+     * Update downloadable property on given DataObject depending on current user groups and DataObject data access
+     * rights i.e. determine wether or not user has the right to download data object associate files.<br/>
+     * BE CAREFUL : this doesn't mean files exist (see containsPhysicalData property)
+     * @param userGroups current user groups (or null if user is ADMIN)
+     * @param entity entity to update
+     */
+    private void manageDownloadable(Set<String> userGroups, DataObject entity) {
+        DataObject dataObject = entity;
+        // Map of { group -> data access right }
+        Map<String, Boolean> groupsAccessRightMap = dataObject.getMetadata().getGroupsAccessRightsMap();
+
+        // Looking for ONE user group that permits access to data
+        dataObject.setDownloadable((userGroups == null)
+            || userGroups.stream().anyMatch(userGroup -> (groupsAccessRightMap.containsKey(userGroup)
+                                                         && groupsAccessRightMap.get(userGroup))));
     }
 
     @Override
@@ -183,9 +224,13 @@ public class CatalogSearchService implements ICatalogSearchService {
         } catch (AccessRightFilterException e) {
             LOGGER.error("Forbidden operation", e);
             throw new EntityOperationForbiddenException(urn.toString(), entity.getClass(),
-                    "You do not have access to this " + entity.getClass().getSimpleName());
+                                                        "You do not have access to this " + entity.getClass()
+                                                                .getSimpleName());
         }
-
+        // Fill downloadable property if entity is a DataObject
+        if (entity instanceof DataObject) {
+            manageDownloadable(userGroups, (DataObject) entity);
+        }
         if (userGroups == null) {
             // According to the doc it means that current user is an admin, admins always has rights to access entities!
             return entity;
@@ -196,7 +241,8 @@ public class CatalogSearchService implements ICatalogSearchService {
             return entity;
         }
         throw new EntityOperationForbiddenException(urn.toString(), entity.getClass(),
-                "You do not have access to this " + entity.getClass().getSimpleName());
+                                                    "You do not have access to this " + entity.getClass()
+                                                            .getSimpleName());
     }
 
     @Override
@@ -211,7 +257,7 @@ public class CatalogSearchService implements ICatalogSearchService {
                 }
             }
             // Apply security filter (ie user groups)
-            criterion = accessRightFilter.addAccessRights(criterion);
+            criterion = accessRightFilter.addDataAccessRights(criterion);
             // Perform compute
             DocFilesSummary summary = searchService.computeDataFilesSummary(searchKey, criterion, "tags", fileTypes);
             // Be careful ! "tags" is used to discriminate docFiles summaries because dataset URN is set into it BUT
@@ -235,11 +281,14 @@ public class CatalogSearchService implements ICatalogSearchService {
             final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
             // If accessGroups is null, user is admin
             if (accessGroups != null) {
-                // Retrieve all datasets that permit data objects retrieval (ie groups with FULL_ACCESS privilege), set
+                // Retrieve all datasets that permit data objects retrieval (ie datasets with at least one groups with
+                // data access right)
                 // page size to max value because datasets count isn't too large...
+                ICriterion dataObjectsGrantedCrit = ICriterion.or(accessGroups.stream().map(group -> ICriterion
+                        .eq("metadata.dataObjectsGroups." + group, true)).collect(Collectors.toSet()));
                 Page<Dataset> page = searchService
-                        .search(Searches.onSingleEntity(searchKey.getSearchIndex(), EntityType.DATASET), ISearchService.MAX_PAGE_SIZE,
-                                ICriterion.in("metadata.dataObjectsGroups", accessGroups.toArray(new String[accessGroups.size()])));
+                        .search(Searches.onSingleEntity(searchKey.getSearchIndex(), EntityType.DATASET),
+                                ISearchService.MAX_PAGE_SIZE, dataObjectsGrantedCrit);
                 Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId)
                         .map(UniformResourceName::toString).collect(Collectors.toSet());
                 // If summary is restricted to a specified datasetIpId, it must be taken into account

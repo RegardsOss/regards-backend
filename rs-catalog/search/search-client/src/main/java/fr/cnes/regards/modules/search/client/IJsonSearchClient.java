@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,7 +33,7 @@ import static fr.cnes.regards.modules.search.client.IJsonSearchClient.PATH;
 
 /**
  * Feign client to call SearchController methods but with JsonObject as result types.
- * This client is mostly called by rs-access AccessSearchController (to avoid directly call SearchController from
+ * This client is mostly called by rs-access AccessSearchController (to avoid calling directly SearchController from
  * the front)
  * @author oroussel
  */
@@ -48,18 +49,21 @@ public interface IJsonSearchClient {
 
     @RequestMapping(value = "/withfacets", method = RequestMethod.GET)
     ResponseEntity<JsonObject> searchAll(@RequestParam Map<String, String> allParams,
-            @RequestParam(value = "facets", required = false) String[] pFacets);
+            @RequestParam(value = "facets", required = false) String[] facets);
 
     @RequestMapping(value = "/collections", method = RequestMethod.GET)
     ResponseEntity<JsonObject> searchCollections(@RequestParam Map<String, String> allParams);
 
+    /**
+     * See SearchController.searchDataObjects to understand why a MultiValueMap is used instead of a Map
+     */
     @RequestMapping(value = "/dataobjects/withfacets", method = RequestMethod.GET)
-    ResponseEntity<JsonObject> searchDataobjects(@RequestParam Map<String, String> allParams,
-            @RequestParam(value = "facets", required = false) String[] pFacets);
+    ResponseEntity<JsonObject> searchDataobjects(@RequestParam MultiValueMap<String, String> allParams,
+            @RequestParam(value = "facets", required = false) String[] facets);
 
     @RequestMapping(value = "/dataobjects/datasets", method = RequestMethod.GET)
     ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(@RequestParam Map<String, String> allParams,
-            @RequestParam(value = "facets", required = false) String[] pFacets);
+            @RequestParam(value = "facets", required = false) String[] facets);
 
     @RequestMapping(value = "/datasets", method = RequestMethod.GET)
     ResponseEntity<JsonObject> searchDatasets(@RequestParam Map<String, String> allParams);

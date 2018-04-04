@@ -83,6 +83,12 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
 
     private static final String DATA_SET_NAME = "test";
 
+    private static final String DATA_SET_NAME_2 = "test_2";
+
+    private static final String PLUGIN_CONF_LABEL_1 = "pluginLabel1";
+
+    private static final String PLUGIN_CONF_LABEL_2 = "pluginLabel2";
+
     @Autowired
     private IPluginService pluginService;
 
@@ -106,24 +112,48 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         metaData.setPluginId("tata");
         metaData.setAuthor("toto");
         metaData.setDescription("titi");
-        metaData.setVersion("tutu");
+        metaData.setVersion("1.0.0");
         metaData.getInterfaceNames().add(IService.class.getName());
         metaData.setPluginClassName(TestService.class.getName());
+        // Create two plugin services linked to the same dataset
+        // 1. first one
         conf = new PluginConfiguration(metaData, "testConf", parameters);
         pluginService.addPluginPackage(TestService.class.getPackage().getName());
         conf = pluginService.savePluginConfiguration(conf);
-
+        // 2. second one
         parameters = PluginParametersFactory.build().addDynamicParameter(SampleServicePlugin.RESPONSE_TYPE_PARAMETER,
                                                                          SampleServicePlugin.RESPONSE_TYPE_JSON)
                 .getParameters();
         samplePlgConf = new PluginConfiguration(
                 PluginUtils.createPluginMetaData(SampleServicePlugin.class,
                                                  Arrays.asList(SampleServicePlugin.class.getPackage().getName())),
-                "SampleServicePlugin", parameters);
+                PLUGIN_CONF_LABEL_1, parameters);
         pluginService.savePluginConfiguration(samplePlgConf);
+
+        // Create a plugin service linked to an other dataset
+        final PluginMetaData metaData2 = new PluginMetaData();
+        metaData2.setPluginId("otherPluginMetaId");
+        metaData2.setAuthor("otherPluginMetaAuthor");
+        metaData2.setDescription("otherPlugin");
+        metaData2.setVersion("1.0");
+        metaData2.getInterfaceNames().add(IService.class.getName());
+        metaData2.setPluginClassName(TestService.class.getName());
+
+        parameters = PluginParametersFactory.build().addDynamicParameter(SampleServicePlugin.RESPONSE_TYPE_PARAMETER,
+                                                                         SampleServicePlugin.RESPONSE_TYPE_JSON)
+                .getParameters();
+        PluginConfiguration samplePlgConf2 = new PluginConfiguration(
+                PluginUtils.createPluginMetaData(SampleServicePlugin.class,
+                                                 Arrays.asList(SampleServicePlugin.class.getPackage().getName())),
+                PLUGIN_CONF_LABEL_2, parameters);
+        pluginService.savePluginConfiguration(samplePlgConf2);
 
         linkService.updateLink(DATA_SET_NAME,
                                new LinkPluginsDatasets(DATA_SET_NAME, Sets.newHashSet(conf, samplePlgConf)));
+
+        linkService
+                .updateLink(DATA_SET_NAME_2,
+                            new LinkPluginsDatasets(DATA_SET_NAME_2, Sets.newHashSet(samplePlgConf2, samplePlgConf)));
     }
 
     @Test
@@ -132,7 +162,8 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
-        requestBuilderCustomizer.customizeRequestParam().param("dataset_id", DATA_SET_NAME)
+        requestBuilderCustomizer.customizeRequestParam()
+                .param(CatalogServicesController.DATASET_IDS_QUERY_PARAM, DATA_SET_NAME)
                 .param("service_scope", ServiceScope.MANY.toString());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultGet(CatalogServicesController.PATH_SERVICES, requestBuilderCustomizer,
@@ -145,7 +176,8 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$").isNotEmpty());
-        requestBuilderCustomizer.customizeRequestParam().param("dataset_id", DATA_SET_NAME)
+        requestBuilderCustomizer.customizeRequestParam()
+                .param(CatalogServicesController.DATASET_IDS_QUERY_PARAM, DATA_SET_NAME)
                 .param("service_scope", ServiceScope.ONE.toString());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultGet(CatalogServicesController.PATH_SERVICES, requestBuilderCustomizer,
@@ -155,25 +187,69 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
     @Test
     public void retrieveServices_shouldHaveMeta() {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        //
+        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.pluginId",
+        //                                                                               Matchers.is("tata")));
+        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+        //                .jsonPath(JSON_PATH_ROOT + "[0].content.applicationModes", Matchers.containsInAnyOrder("MANY", "ONE")));
+        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+        //                .jsonPath(JSON_PATH_ROOT + "[0].content.entityTypes", Matchers.contains("DATA")));
+        //
+        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.pluginId",
+        //                                                                               Matchers.is("aSampleServicePlugin")));
+        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+        //                .jsonPath(JSON_PATH_ROOT + "[1].content.applicationModes", Matchers.containsInAnyOrder("MANY", "ONE")));
+        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+        //                .jsonPath(JSON_PATH_ROOT + "[1].content.entityTypes", Matchers.contains(EntityType.DATA.toString())));
+        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.label",
+        //                                                                               Matchers.is(PLUGIN_CONF_LABEL_1)));
+        //
+        //        // Retrieve plugin services for first dataset. Should be two services as linked in init method
+        //        requestBuilderCustomizer.customizeRequestParam()
+        //                .param(CatalogServicesController.DATASET_IDS_QUERY_PARAM, DATA_SET_NAME)
+        //                .param("service_scope", ServiceScope.ONE.toString());
+        //        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        //        performDefaultGet(CatalogServicesController.PATH_SERVICES, requestBuilderCustomizer,
+        //                          "There should be plugin configurations augmented with meta data");
+        //
+        //        // Retrieve plugin services for second dataset. Should be two services as linked in init method
+        //        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
+        //
+        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.label",
+        //                                                                               Matchers.is(PLUGIN_CONF_LABEL_2)));
+        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+        //                .jsonPath(JSON_PATH_ROOT + "[0].content.applicationModes", Matchers.containsInAnyOrder("MANY", "ONE")));
+        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+        //                .jsonPath(JSON_PATH_ROOT + "[0].content.entityTypes", Matchers.contains(EntityType.DATA.toString())));
+        //        requestBuilderCustomizer.customizeRequestParam()
+        //                .param(CatalogServicesController.DATASET_IDS_QUERY_PARAM, DATA_SET_NAME_2)
+        //                .param("service_scope", ServiceScope.ONE.toString());
+        //        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        //        performDefaultGet(CatalogServicesController.PATH_SERVICES, requestBuilderCustomizer,
+        //                          "There should be plugin configurations augmented with meta data");
+
+        // Retrieve plugin services for both datasets. Should be only the common one between the two datasets.
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.pluginId",
-                                                                               Matchers.is("tata")));
+
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.label",
+                                                                               Matchers.is(PLUGIN_CONF_LABEL_1)));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
                 .jsonPath(JSON_PATH_ROOT + "[0].content.applicationModes", Matchers.containsInAnyOrder("MANY", "ONE")));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + "[0].content.entityTypes", Matchers.contains("DATA")));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.pluginId",
-                                                                               Matchers.is("aSampleServicePlugin")));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + "[1].content.applicationModes", Matchers.containsInAnyOrder("MANY", "ONE")));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + "[1].content.entityTypes", Matchers.contains(EntityType.DATA.toString())));
-        requestBuilderCustomizer.customizeRequestParam().param("dataset_id", DATA_SET_NAME)
+                .jsonPath(JSON_PATH_ROOT + "[0].content.entityTypes", Matchers.contains(EntityType.DATA.toString())));
+        requestBuilderCustomizer.customizeRequestParam()
+                .param(CatalogServicesController.DATASET_IDS_QUERY_PARAM, DATA_SET_NAME_2 + "," + DATA_SET_NAME)
                 .param("service_scope", ServiceScope.ONE.toString());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultGet(CatalogServicesController.PATH_SERVICES, requestBuilderCustomizer,
                           "There should be plugin configurations augmented with meta data");
+
     }
 
     @Test
