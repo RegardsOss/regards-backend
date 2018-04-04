@@ -496,7 +496,7 @@ public class SearchController {
      */
     @SuppressWarnings("unchecked")
     @RequestMapping(path = ENTITY_BACK_GET_MAPPING, method = RequestMethod.GET)
-    @ResourceAccess(description = "Return given URN entity.", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "Return given URN entity.", role = DefaultRole.PUBLIC)
     public <E extends AbstractEntity> ResponseEntity<E> getEntityBack(
             @Valid @PathVariable("urn") UniformResourceName urn, DatasetResourcesAssembler assembler)
             throws EntityOperationForbiddenException, EntityNotFoundException {

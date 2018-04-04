@@ -64,6 +64,6 @@ public interface ISearchClient {
      * @return an entity
      */
     @RequestMapping(path = ENTITY_BACK_GET_MAPPING, method = RequestMethod.GET)
-    <E extends AbstractEntity> ResponseEntity<E> getEntity(
+    ResponseEntity<AbstractEntity> getEntity(
             @Valid @PathVariable("urn") UniformResourceName urn);
 }
