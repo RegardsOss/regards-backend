@@ -114,7 +114,7 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     /**
      * The name of the subdirectory where to store microservice workspace.
      */
-    @Value("${microservice.workspace.directory.name}")
+    @Value("${microservice.workspace.directory.name:${spring.application.name}}")
     private String microserviceWorkspaceName;
 
     @Override
@@ -174,11 +174,7 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
 
     @Override
     public Path getMicroserviceWorkspace() throws IOException {
-        String workspaceDir = springApplicationName;
-        if (this.microserviceWorkspaceName != null) {
-            workspaceDir = microserviceWorkspaceName;
-        }
-        Path path = Paths.get(workspaceBasePath, runtimeTenantResolver.getTenant(), workspaceDir);
+        Path path = Paths.get(workspaceBasePath, runtimeTenantResolver.getTenant(), microserviceWorkspaceName);
         if (Files.notExists(path)) {
             Files.createDirectories(path);
         }
