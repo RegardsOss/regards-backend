@@ -51,7 +51,6 @@
         <feign.starter.version>2.0.0-SNAPSHOT</feign.starter.version>
         <geojson.starter.version>2.0.0-SNAPSHOT</geojson.starter.version>
         <gson.starter.version>2.0.0-SNAPSHOT</gson.starter.version>
-        <staf.starter.version>2.0.0-SNAPSHOT</staf.starter.version>
         <hateoas.starter.version>2.0.0-SNAPSHOT</hateoas.starter.version>
         <jpa.data.version>2.0.0-SNAPSHOT</jpa.data.version>
         <jpa.common.version>2.0.0-SNAPSHOT</jpa.common.version>
@@ -378,11 +377,6 @@
                 <groupId>fr.cnes.regards.framework</groupId>
                 <artifactId>websocket-regards-starter</artifactId>
                 <version>${websocket.starter.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework</groupId>
-                <artifactId>staf-starter</artifactId>
-                <version>${staf.starter.version}</version>
             </dependency>
 
             <!-- Test dependencies -->
@@ -1002,9 +996,14 @@
                 <version>${fr.cnes.regards.modules.ingest.version}</version>
             </dependency>
             <!-- STAF -->
-        	<dependency>
+            <dependency>
                 <groupId>fr.cnes.regards.staf</groupId>
                 <artifactId>staf-controller</artifactId>
+                <version>${fr.cnes.regards.staf.version}</version>
+            </dependency>
+        	<dependency>
+                <groupId>fr.cnes.regards.staf</groupId>
+                <artifactId>staf-url-protocol-handler</artifactId>
                 <version>${fr.cnes.regards.staf.version}</version>
             </dependency>
             <dependency>
