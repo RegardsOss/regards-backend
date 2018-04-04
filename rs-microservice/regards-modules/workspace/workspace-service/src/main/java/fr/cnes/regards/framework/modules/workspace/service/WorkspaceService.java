@@ -39,6 +39,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.google.common.io.ByteStreams;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -110,22 +111,24 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     @Value("${spring.application.name}")
     private String springApplicationName;
 
+    /**
+     * The name of the subdirectory where to store microservice workspace.
+     */
+    @Value("${microservice.workspace.directory.name}")
+    private String microserviceWorkspaceName;
+
     @Override
     public void setIntoWorkspace(InputStream is, String fileName) throws IOException {
         //first lets check if the wroskapce occupation is not critical
         WorkspaceMonitoringInformation workspaceMonitoringInfo = getMonitoringInformation(getTenantWorkspace());
         if (workspaceMonitoringInfo.getOccupationRatio() > workspaceCriticalOccupationThreshold) {
-            String message = String.format(
-                    "Workspace(%s) occupation is critical. Occupation is %s which is greater than %s(critical threshold). Project(%s) is being set to maintenance mode!",
-                    workspaceMonitoringInfo.getPath(),
-                    workspaceMonitoringInfo.getOccupationRatio().toString(),
-                    workspaceCriticalOccupationThreshold.toString(),
-                    runtimeTenantResolver.getTenant());
+            String message = String
+                    .format("Workspace(%s) occupation is critical. Occupation is %s which is greater than %s(critical threshold). Project(%s) is being set to maintenance mode!",
+                            workspaceMonitoringInfo.getPath(), workspaceMonitoringInfo.getOccupationRatio().toString(),
+                            workspaceCriticalOccupationThreshold.toString(), runtimeTenantResolver.getTenant());
             LOG.warn(message);
             MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
-            notifier.sendErrorNotification(springApplicationName,
-                                           message,
-                                           "Workspace occupation is critical",
+            notifier.sendErrorNotification(springApplicationName, message, "Workspace occupation is critical",
                                            DefaultRole.PROJECT_ADMIN);
         }
         Path workspacePath = getMicroserviceWorkspace();
@@ -165,16 +168,17 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
         long totalSpace = fileStore.getTotalSpace();
         long usableSpace = fileStore.getUsableSpace();
         long usedSpace = totalSpace - usableSpace;
-        return new WorkspaceMonitoringInformation(fileStore.name(),
-                                                  totalSpace,
-                                                  usedSpace,
-                                                  usableSpace,
-                                                  getMicroserviceWorkspace().toString());
+        return new WorkspaceMonitoringInformation(fileStore.name(), totalSpace, usedSpace, usableSpace,
+                getMicroserviceWorkspace().toString());
     }
 
     @Override
     public Path getMicroserviceWorkspace() throws IOException {
-        Path path = Paths.get(workspaceBasePath, runtimeTenantResolver.getTenant(), springApplicationName);
+        String workspaceDir = springApplicationName;
+        if (this.microserviceWorkspaceName != null) {
+            workspaceDir = microserviceWorkspaceName;
+        }
+        Path path = Paths.get(workspaceBasePath, runtimeTenantResolver.getTenant(), workspaceDir);
         if (Files.notExists(path)) {
             Files.createDirectories(path);
         }
@@ -210,38 +214,31 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
             WorkspaceMonitoringInformation workspaceMonitoringInfo = getMonitoringInformation(getTenantWorkspace());
             if (workspaceMonitoringInfo.getOccupationRatio() > workspaceCriticalOccupationThreshold) {
                 String message = String.format(
-                        "Workspace(%s) occupation is critical. Occupation is %s which is greater than %s(critical threshold). Project(%s) is being set to maintenance mode!",
-                        workspaceMonitoringInfo.getPath(),
-                        workspaceMonitoringInfo.getOccupationRatio().toString(),
-                        workspaceCriticalOccupationThreshold.toString(),
-                        tenant);
+                                               "Workspace(%s) occupation is critical. Occupation is %s which is greater than %s(critical threshold). Project(%s) is being set to maintenance mode!",
+                                               workspaceMonitoringInfo.getPath(),
+                                               workspaceMonitoringInfo.getOccupationRatio().toString(),
+                                               workspaceCriticalOccupationThreshold.toString(), tenant);
                 LOG.warn(message);
                 MaintenanceManager.setMaintenance(tenant);
-                notifier.sendErrorNotification(springApplicationName,
-                                               message,
-                                               "Workspace occupation is critical",
+                notifier.sendErrorNotification(springApplicationName, message, "Workspace occupation is critical",
                                                DefaultRole.PROJECT_ADMIN);
                 return;
             }
             if (workspaceMonitoringInfo.getOccupationRatio() > workspaceOccupationThreshold) {
                 String message = String.format(
-                        "Workspace(%s) starts to be busy. Occupation is %s which is greater than %s(soft threshold).",
-                        workspaceMonitoringInfo.getPath(),
-                        workspaceMonitoringInfo.getOccupationRatio().toString(),
-                        workspaceCriticalOccupationThreshold.toString());
+                                               "Workspace(%s) starts to be busy. Occupation is %s which is greater than %s(soft threshold).",
+                                               workspaceMonitoringInfo.getPath(),
+                                               workspaceMonitoringInfo.getOccupationRatio().toString(),
+                                               workspaceCriticalOccupationThreshold.toString());
                 LOG.warn(message);
-                notifier.sendWarningNotification(springApplicationName,
-                                               message,
-                                               "Workspace too busy",
-                                               DefaultRole.PROJECT_ADMIN);
+                notifier.sendWarningNotification(springApplicationName, message, "Workspace too busy",
+                                                 DefaultRole.PROJECT_ADMIN);
                 return;
             }
         } catch (IOException e) {
             String message = String.format("Error occured during workspace monitoring: %s", e.getMessage());
             LOG.error(message, e);
-            notifier.sendErrorNotification(springApplicationName,
-                                           message,
-                                           "Error during workspace monitoring",
+            notifier.sendErrorNotification(springApplicationName, message, "Error during workspace monitoring",
                                            DefaultRole.PROJECT_ADMIN);
         }
     }
