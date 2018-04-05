@@ -38,7 +38,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -56,10 +55,6 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  *
  */
 @RestController
-@ModuleInfo(name = "Aqcuired products controller",
-        description = "Controller to manage acquired products through acquisition processing chains",
-        version = "2.0.0-SNAPSHOT", author = "CSSI", legalOwner = "CNES",
-        documentation = "https://github.com/RegardsOss")
 @RequestMapping(ProductController.TYPE_PATH)
 public class ProductController implements IResourceController<Product> {
 
