@@ -11,10 +11,10 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
  *
  * @author Christophe Mertz
  */
-@Plugin(author = "REGARDS Team", description = "Plugin handling the security thanks to catalog",
-        id = "CatalogSecurityDelegation", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3",
+@Plugin(author = "REGARDS Team", description = "Plugin does not apply any security control",
+        id = "NoCatalogSecurityDelegation", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3",
         owner = "CNES", url = "https://regardsoss.github.io/")
-public class TrueCatalogSecurityDelegationPlugin implements ISecurityDelegation {
+public class NoCatalogSecurityDelegationPlugin implements ISecurityDelegation {
 
     @Override
     public boolean hasAccess(String ipId) throws EntityNotFoundException {
