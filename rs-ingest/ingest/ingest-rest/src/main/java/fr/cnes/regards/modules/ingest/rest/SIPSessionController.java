@@ -39,15 +39,12 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.service.ISIPSessionService;
 
 @RestController
-@ModuleInfo(name = "SIPSessionController", description = "Manage SIPSession entities", version = "2.0.0-SNAPSHOT",
-        author = "CSSI", legalOwner = "CNES", documentation = "https://github.com/RegardsOss")
 @RequestMapping(SIPSessionController.TYPE_MAPPING)
 public class SIPSessionController implements IResourceController<SIPSession> {
 

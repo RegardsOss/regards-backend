@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepExceptio
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPostprocessing;
-import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
+import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**

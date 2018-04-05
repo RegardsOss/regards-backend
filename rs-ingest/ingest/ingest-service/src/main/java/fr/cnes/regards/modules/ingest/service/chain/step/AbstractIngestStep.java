@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
+import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
 /**
  * Common ingest processing step

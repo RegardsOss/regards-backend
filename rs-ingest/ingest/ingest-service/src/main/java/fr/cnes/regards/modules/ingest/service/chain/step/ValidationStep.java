@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
-import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
+import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
 /**
  * Validation step is used to validate {@link SIP} calling {@link ISipValidation#validate(SIP, Errors)}.

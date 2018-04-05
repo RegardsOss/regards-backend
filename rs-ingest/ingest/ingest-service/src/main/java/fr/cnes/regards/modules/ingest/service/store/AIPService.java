@@ -19,52 +19,60 @@
 package fr.cnes.regards.modules.ingest.service.store;
 
 import java.time.OffsetDateTime;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.StringJoiner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 import com.google.common.collect.Sets;
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
-import fr.cnes.regards.modules.storage.client.IAipClient;
+import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
+import fr.cnes.regards.modules.ingest.service.job.AIPSubmissionJob;
 import fr.cnes.regards.modules.storage.client.IAipEntityClient;
-import fr.cnes.regards.modules.storage.domain.AIPCollection;
-import fr.cnes.regards.modules.storage.domain.RejectedAip;
+import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.IAipState;
+import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 
 /**
  * Service to handle aip related issues in ingest, including sending bulk request of AIP to store to archival storage
  * microservice.
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
+ * @author Marc Sordi
  */
 @Service
 @MultitenantTransactional
 public class AIPService implements IAIPService {
 
+    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPService.class);
 
     @Autowired
@@ -80,78 +88,16 @@ public class AIPService implements IAIPService {
     private IAIPRepository aipRepository;
 
     @Autowired
-    private IAipClient aipClient;
+    private IIngestProcessingService processingService;
 
     @Autowired
-    private Gson gson;
+    private IJobInfoService jobInfoService;
 
-    @Value("${regards.ingest.aips.bulk.request.limit:10000}")
+    @Value("${regards.ingest.aips.bulk.request.limit:1000}")
     private Integer bulkRequestLimit;
 
     @Override
-    public void postAIPStorageBulkRequest() {
-
-        // 1. Retrieve all aip ready to be stored
-        Set<Long> aipIds = aipRepository.findIdByStateAndLock(AIPState.CREATED);
-
-        // 2. Use archival storage client to post the associated request
-        AIPCollection aips = new AIPCollection();
-        Iterator<Long> it = aipIds.iterator();
-        Set<String> aipsInRequest = Sets.newHashSet();
-        while ((aipsInRequest.size() < bulkRequestLimit) && it.hasNext()) {
-            Long aipId = it.next();
-            AIPEntity aip = aipRepository.findOne(aipId);
-            aips.add(aip.getAip());
-            aipsInRequest.add(aip.getIpId());
-        }
-        // Update all aip in request to AIPState to QUEUED.
-        aipsInRequest.forEach(aipId -> aipRepository.updateAIPEntityStateAndErrorMessage(AIPState.QUEUED, aipId, null));
-        if (!aipsInRequest.isEmpty()) {
-            FeignSecurityManager.asSystem(); // as we are using this method into a schedule, we clearly use the
-            ResponseEntity<List<RejectedAip>> response = null;
-            try {
-                response = aipClient.store(aips);
-            } catch (HttpClientErrorException e) {
-                // Feign only throws exceptions in case the response status is neither 404 or one of the 2xx,
-                // so lets catch the exception and if it not one of our API normal status rethrow it
-                if (e.getStatusCode() != HttpStatus.UNPROCESSABLE_ENTITY) {
-                    // Response error. Microservice may be not available at the time. Update all AIPs to CREATE state to
-                    // be handle next time
-                    aipsInRequest.forEach(aipId -> aipRepository.updateAIPEntityStateAndErrorMessage(AIPState.CREATED,
-                                                                                                     aipId, null));
-                    throw e;
-                }
-                // first lets get the string from the body then lets deserialize it using gson
-                @SuppressWarnings("serial")
-                TypeToken<List<RejectedAip>> bodyTypeToken = new TypeToken<List<RejectedAip>>() {
-
-                };
-                List<RejectedAip> rejectedAips = gson.fromJson(e.getResponseBodyAsString(), bodyTypeToken.getType());
-                // set all aips to store_rejected
-                rejectedAips.forEach(rejectedAip -> rejectAip(rejectedAip.getIpId(), rejectedAip.getRejectionCauses()));
-            }finally {
-                FeignSecurityManager.reset();
-            }
-            if ((response != null) && (response.getStatusCode().is2xxSuccessful())) {
-                List<RejectedAip> rejectedAips = response.getBody();
-                // If there is rejected aips, remove them from the list of AIPEntity to set to QUEUED status.
-                if ((rejectedAips != null) && !rejectedAips.isEmpty()) {
-                    rejectedAips
-                            .forEach(rejectedAip -> rejectAip(rejectedAip.getIpId(), rejectedAip.getRejectionCauses()));
-                }
-            }
-        }
-    }
-
-    private void rejectAip(String aipId, List<String> rejectionCauses) {
-        LOGGER.warn("Created AIP {}, has been rejected by archival storage microservice for store action", aipId);
-        StringJoiner errorMessage = new StringJoiner(", ");
-        rejectionCauses.forEach(cause -> errorMessage.add(cause));
-        setAipInError(aipId, AIPState.STORE_REJECTED, errorMessage.toString());
-    }
-
-    @Override
-    public void setAipInError(String ipId, AIPState state, String errorMessage) {
+    public void setAipInError(String ipId, IAipState state, String errorMessage) {
         Optional<AIPEntity> oAip = aipRepository.findByIpId(ipId);
         if (oAip.isPresent()) {
             // Update AIP State
@@ -165,18 +111,18 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void setAipToStored(String ipId) {
+    public void setAipToStored(String ipId, IAipState state) {
         // Retrieve aip and set the new status to stored
         Optional<AIPEntity> oAip = aipRepository.findByIpId(ipId);
         if (oAip.isPresent()) {
             AIPEntity aip = oAip.get();
-            aip.setState(AIPState.STORED);
+            aip.setState(state);
             aip.setErrorMessage(null);
             aipRepository.save(aip);
             // If all AIP are stored update SIP state to STORED
             Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
             if (sipAips.stream()
-                    .allMatch(a -> AIPState.STORED.equals(a.getState()) || AIPState.INDEXED.equals(a.getState()))) {
+                    .allMatch(a -> AIPState.STORED.equals(a.getState()) || SipAIPState.INDEXED.equals(a.getState()))) {
                 SIPEntity sip = aip.getSip();
                 sip.setState(SIPState.STORED);
                 sipService.saveSIPEntity(sip);
@@ -185,7 +131,7 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void deleteAip(String ipId, String sipIpId) {
+    public void deleteAip(String ipId, String sipIpId, IAipState state) {
         // Check if deleted AIP exists in internal database
         Optional<AIPEntity> oAip = aipRepository.findByIpId(ipId);
         if (oAip.isPresent()) {
@@ -223,12 +169,12 @@ public class AIPService implements IAIPService {
 
     @Override
     public AIPEntity setAipToIndexed(AIPEntity aip) {
-        aip.setState(AIPState.INDEXED);
+        aip.setState(SipAIPState.INDEXED);
         aip.setErrorMessage(null);
         aipRepository.save(aip);
         // If all AIP are stored update SIP state to STORED
         Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
-        if (sipAips.stream().allMatch(a -> AIPState.INDEXED.equals(a.getState()))) {
+        if (sipAips.stream().allMatch(a -> SipAIPState.INDEXED.equals(a.getState()))) {
             SIPEntity sip = aip.getSip();
             sip.setState(SIPState.INDEXED);
             sipService.saveSIPEntity(sip);
@@ -238,4 +184,91 @@ public class AIPService implements IAIPService {
         return aip;
     }
 
+    /**
+     * This method is called by a time scheduler. We only schedule on job per ingest chain if and
+     * only if an existing job not already exists. To detect that a job is already scheduled, we check the AIP state of
+     * the chain. AIPs not already scheduled will be scheduled on next scheduler call.
+     */
+    @Override
+    public void scheduleAIPStorageBulkRequest() {
+        // Find all processing chains
+        List<IngestProcessingChain> ipcs = processingService.findAll();
+        // For each processing chain
+        for (IngestProcessingChain ipc : ipcs) {
+            // Check if submission not already scheduled
+            if (!aipRepository.isAlreadyWorking(ipc.getName())) {
+                Page<AIPEntity> page = aipRepository
+                        .findWithLockBySipProcessingAndState(ipc.getName(), SipAIPState.CREATED,
+                                                             new PageRequest(0, bulkRequestLimit));
+                if (page.hasContent()) {
+                    // Schedule AIP page submission
+                    for (AIPEntity aip : page.getContent()) {
+                        aip.setState(SipAIPState.SUBMISSION_SCHEDULED);
+                        aipRepository.save(aip);
+                    }
+                    // Schedule job
+                    Set<JobParameter> jobParameters = Sets.newHashSet();
+                    jobParameters.add(new JobParameter(AIPSubmissionJob.INGEST_CHAIN_PARAMETER, ipc.getName()));
+
+                    JobInfo jobInfo = new JobInfo(false);
+                    jobInfo.setParameters(jobParameters);
+                    jobInfo.setClassName(AIPSubmissionJob.class.getName());
+                    jobInfoService.createAsQueued(jobInfo);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void handleJobEvent(JobEvent jobEvent) {
+        if (JobEventType.FAILED.equals(jobEvent.getJobEventType())) {
+            // Load job info
+            JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
+            handleAIPSubmissiontError(jobInfo);
+        }
+    }
+
+    private void handleAIPSubmissiontError(JobInfo jobInfo) {
+        if (AIPSubmissionJob.class.getName().equals(jobInfo.getClassName())) {
+            Map<String, JobParameter> params = jobInfo.getParametersAsMap();
+            String ingestChain = params.get(AIPSubmissionJob.INGEST_CHAIN_PARAMETER).getValue();
+            // Set to submission error
+            Set<AIPEntity> aips = aipRepository.findBySipProcessingAndState(ingestChain,
+                                                                            SipAIPState.SUBMISSION_SCHEDULED);
+            for (AIPEntity aip : aips) {
+                setAipInError(aip.getIpId(), SipAIPState.SUBMISSION_ERROR, "Submission job error");
+            }
+        }
+    }
+
+    @Override
+    public void handleAipEvent(AIPEvent aipEvent) {
+        switch (aipEvent.getAipState()) {
+            case STORAGE_ERROR:
+                setAipInError(aipEvent.getIpId(), aipEvent.getAipState(), aipEvent.getFailureCause());
+                break;
+            case STORED:
+                setAipToStored(aipEvent.getIpId(), aipEvent.getAipState());
+                break;
+            case DELETED:
+                deleteAip(aipEvent.getIpId(), aipEvent.getSipId(), aipEvent.getAipState());
+                break;
+            case PENDING:
+            case STORING_METADATA:
+            case UPDATED:
+            case VALID:
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public AIPEntity save(AIPEntity entity) {
+        return aipRepository.save(entity);
+    }
+
+    @Override
+    public Set<AIPEntity> findAIPToSubmit(String ingestProcessingChain) {
+        return aipRepository.findBySipProcessingAndState(ingestProcessingChain, SipAIPState.SUBMISSION_SCHEDULED);
+    }
 }

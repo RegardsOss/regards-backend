@@ -1,9 +1,10 @@
 package fr.cnes.regards.modules.ingest.domain.entity;
 
+import java.time.OffsetDateTime;
+
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -14,7 +15,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -22,7 +22,9 @@ import org.hibernate.annotations.TypeDefs;
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.modules.ingest.domain.entity.converters.AipStateConverter;
 import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.IAipState;
 
 @Entity
 @Table(name = "t_aip", indexes = { @Index(name = "idx_aip_id", columnList = "id,ipId,sip_id") })
@@ -51,8 +53,8 @@ public class AIPEntity {
     private SIPEntity sip;
 
     @NotNull
-    @Enumerated(EnumType.STRING)
-    private AIPState state;
+    @Convert(converter = AipStateConverter.class)
+    private IAipState state;
 
     @NotNull
     @Column(name = "creation_date")
@@ -78,11 +80,11 @@ public class AIPEntity {
         this.sip = sip;
     }
 
-    public AIPState getState() {
+    public IAipState getState() {
         return state;
     }
 
-    public void setState(AIPState state) {
+    public void setState(IAipState state) {
         this.state = state;
     }
 
