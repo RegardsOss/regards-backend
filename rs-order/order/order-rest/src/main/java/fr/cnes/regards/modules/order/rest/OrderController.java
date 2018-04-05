@@ -188,7 +188,7 @@ public class OrderController implements IResourceController<OrderDto> {
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = ZIP_DOWNLOAD_PATH)
     public ResponseEntity<StreamingResponseBody> downloadAllAvailableFiles(@PathVariable("orderId") Long orderId,
-            HttpServletResponse response) throws EntityNotFoundException, IOException {
+            HttpServletResponse response) throws EntityNotFoundException {
         Order order = orderService.loadSimple(orderId);
         if (order == null) {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
@@ -210,7 +210,7 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Download a Metalink file containing all files", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = METALINK_DOWNLOAD_PATH)
     public ResponseEntity<StreamingResponseBody> downloadMetalinkFile(@PathVariable("orderId") Long orderId,
-            HttpServletResponse response) throws NotYetAvailableException, EntityNotFoundException {
+            HttpServletResponse response) throws EntityNotFoundException {
         Order order = orderService.loadSimple(orderId);
         if (order == null) {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
@@ -223,7 +223,7 @@ public class OrderController implements IResourceController<OrderDto> {
     @RequestMapping(method = RequestMethod.GET, path = PUBLIC_METALINK_DOWNLOAD_PATH)
     public ResponseEntity<StreamingResponseBody> publicDownloadMetalinkFile(
             @RequestParam(name = IOrderService.ORDER_TOKEN) String token, HttpServletResponse response)
-            throws NotYetAvailableException, EntityNotFoundException {
+            throws EntityNotFoundException {
         Long orderId;
         try {
             Claims claims = jwtService.parseToken(token, secret);

@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.order.service;
 
-import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -38,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
@@ -112,6 +112,7 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
  */
 @Service
 @MultitenantTransactional
+@RefreshScope
 public class OrderService implements IOrderService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
@@ -266,7 +267,11 @@ public class OrderService implements IOrderService {
         // Order is ready to be taken into account
         order.setStatus(OrderStatus.RUNNING);
         order = repos.save(order);
-        sendOrderCreationEmail(order);
+        try {
+            sendOrderCreationEmail(order);
+        } catch (Exception e) {
+            LOGGER.warn("Error while attempting to send order creation email (order has been created anyway)", e);
+        }
         orderJobService.manageUserOrderJobInfos(order.getOwner());
         return order;
     }
