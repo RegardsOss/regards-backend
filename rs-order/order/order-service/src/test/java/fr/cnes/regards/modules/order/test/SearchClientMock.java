@@ -32,8 +32,10 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
+import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.entities.domain.Document;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
@@ -91,7 +93,17 @@ public class SearchClientMock implements ISearchClient {
     }
 
     @Override
-    public <E extends AbstractEntity> ResponseEntity<Resource<E>> getEntity(UniformResourceName uniformResourceName) {
+    public ResponseEntity<Resource<DataObject>> getDataobject(UniformResourceName urn) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<Resource<Collection>> getCollection(UniformResourceName urn) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<Resource<Document>> getDocument(UniformResourceName urn) {
         return null;
     }
 
