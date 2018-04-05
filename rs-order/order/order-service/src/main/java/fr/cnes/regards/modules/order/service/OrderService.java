@@ -37,10 +37,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -53,6 +55,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.io.ByteStreams;
+import feign.Response;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -65,11 +68,15 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.FileState;
@@ -105,6 +112,7 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
  */
 @Service
 @MultitenantTransactional
+@RefreshScope
 public class OrderService implements IOrderService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
@@ -155,10 +163,11 @@ public class OrderService implements IOrderService {
     @Autowired
     private ISubscriber subscriber;
 
+    @Autowired
+    private INotificationClient notificationClient;
+
     @Value("${regards.order.files.bucket.size.Mb:100}")
     private int bucketSizeMb;
-//    private int bucketSizeMb = 1;
-
 
     @Value("${regards.order.validation.period.days:3}")
     private int orderValidationPeriodDays;
@@ -172,16 +181,19 @@ public class OrderService implements IOrderService {
     @Value("${regards.order.secret}")
     private String secret;
 
+    @Value("${zuul.prefix}")
+    private String urlPrefix;
+
     @Autowired
     private IEmailClient emailClient;
 
-    private final long bucketSize = bucketSizeMb * 1024l * 1024l;
+    private Long bucketSize = null;
 
     /**
      * Set of DataTypes to retrieve on DataObjects
      */
-    private static final Set<DataType> DATA_TYPES = Stream.of(DataTypeSelection.ALL.getFileTypes()).map(DataType::valueOf)
-            .collect(Collectors.toSet());
+    private static final Set<DataType> DATA_TYPES = Stream.of(DataTypeSelection.ALL.getFileTypes())
+            .map(DataType::valueOf).collect(Collectors.toSet());
 
     @Override
     public Order createOrder(Basket basket, String url) {
@@ -195,6 +207,10 @@ public class OrderService implements IOrderService {
         order = repos.save(order);
         int priority = orderJobService.computePriority(order.getOwner(), authResolver.getRole());
 
+        // Be careful ! bucketSize must be computed AFTER bucketSizeMb is filled by Spring
+        if (bucketSize == null) {
+            bucketSize = bucketSizeMb * 1024l * 1024l;
+        }
         // Dataset selections
         for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
             DatasetTask dsTask = createDatasetTask(dsSel);
@@ -217,6 +233,17 @@ public class OrderService implements IOrderService {
                                 OrderDataFile orderDataFile = new OrderDataFile(file, object.getIpId(), order.getId());
                                 dataFileService.save(orderDataFile);
                                 bucketFiles.add(orderDataFile);
+                                // Send a very useful notification if file is bigger than bucket size
+                                if (orderDataFile.getSize() > bucketSize) {
+                                    FeignSecurityManager.asSystem();
+                                    NotificationDTO notif = new NotificationDTO(
+                                            String.format("File \"%s\" is bigger than sub-order size",
+                                                          orderDataFile.getName()), Collections.emptySet(),
+                                            Collections.singleton(DefaultRole.PROJECT_ADMIN.name()), microserviceName,
+                                            "Order creation", NotificationType.WARNING);
+                                    notificationClient.createNotification(notif);
+                                    FeignSecurityManager.reset();
+                                }
                             }
                         }
                     }
@@ -240,7 +267,11 @@ public class OrderService implements IOrderService {
         // Order is ready to be taken into account
         order.setStatus(OrderStatus.RUNNING);
         order = repos.save(order);
-        sendOrderCreationEmail(order);
+        try {
+            sendOrderCreationEmail(order);
+        } catch (Exception e) {
+            LOGGER.warn("Error while attempting to send order creation email (order has been created anyway)", e);
+        }
         orderJobService.manageUserOrderJobInfos(order.getOwner());
         return order;
     }
@@ -265,12 +296,12 @@ public class OrderService implements IOrderService {
         String host = project.getHost();
         FeignSecurityManager.reset();
 
-        // FIXME => Sylvain Vessière Guerinet (cf. OpenSearchDescriptionBuilder)
-        String urlStart = host + "/api/v1/" + encode4Uri(microserviceName);
+        String urlStart = host + urlPrefix + "/" + encode4Uri(microserviceName);
 
         // Metalink file public url
         Map<String, String> dataMap = new HashMap<>();
         dataMap.put("expiration_date", order.getExpirationDate().toString());
+        dataMap.put("project", runtimeTenantResolver.getTenant());
         dataMap.put("metalink_download_url", urlStart + "/user/orders/metalink/download?" + tokenRequestParam);
         dataMap.put("regards_downloader_url", "https://github.com/RegardsOss/RegardsDownloader/releases");
         dataMap.put("orders_url", host + order.getFrontendUrl());
@@ -304,15 +335,16 @@ public class OrderService implements IOrderService {
     /**
      * Create a sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to DatasetTask
      */
-    private void createSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles,
-            Order order, int priority) {
+    private void createSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order,
+            int priority) {
         OffsetDateTime expirationDate = order.getExpirationDate();
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(order.getId());
         currentFilesTask.setOwner(order.getOwner());
         currentFilesTask.addAllFiles(bucketFiles);
 
-        JobInfo storageJobInfo = new JobInfo();
+        // storageJobInfo is pointed by currentFilesTask so it must be locked to avoid being cleaned before FilesTask
+        JobInfo storageJobInfo = new JobInfo(true);
         storageJobInfo.setParameters(new FilesJobParameter(bucketFiles.toArray(new OrderDataFile[bucketFiles.size()])),
                                      new ExpirationDateJobParameter(expirationDate),
                                      new UserJobParameter(authResolver.getUser()),
@@ -320,6 +352,7 @@ public class OrderService implements IOrderService {
         storageJobInfo.setOwner(basket.getOwner());
         storageJobInfo.setClassName("fr.cnes.regards.modules.order.service.job.StorageFilesJob");
         storageJobInfo.setPriority(priority);
+        storageJobInfo.setExpirationDate(order.getExpirationDate());
         // Create JobInfo and associate to FilesTask
         currentFilesTask.setJobInfo(jobInfoService.createAsPending(storageJobInfo));
         dsTask.addReliantTask(currentFilesTask);
@@ -393,6 +426,12 @@ public class OrderService implements IOrderService {
         }
         // Delete all order data files
         dataFileService.removeAll(order.getId());
+        // Delete all filesTasks
+        for (DatasetTask dsTask : order.getDatasetTasks()) {
+            dsTask.getReliantTasks().clear();
+        }
+        // Deactivate waitingForUser tag
+        order.setWaitingForUser(false);
         order.setStatus(OrderStatus.DELETED);
         repos.save(order);
     }
@@ -402,7 +441,7 @@ public class OrderService implements IOrderService {
      */
     private boolean orderEffectivelyInPause(Order order) {
         return order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                .map(ft -> ft.getJobInfo().getStatus().getStatus()).allMatch(JobStatus::isCompatibleWithPause);
+                .map(ft -> ft.getJobInfo().getStatus().getStatus()).allMatch(JobStatus::isFinished);
     }
 
     @Override
@@ -475,9 +514,10 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os) throws IOException {
+    public void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os)
+            throws IOException {
         List<OrderDataFile> availableFiles = new ArrayList<>(inDataFiles);
-        List<OrderDataFile> inErrorFiles = new ArrayList<>();
+        List<OrderDataFile> downloadErrorFiles = new ArrayList<>();
 
         try (ZipOutputStream zos = new ZipOutputStream(os)) {
             // A multiset to manage multi-occurrences of files
@@ -485,45 +525,53 @@ public class OrderService implements IOrderService {
             for (Iterator<OrderDataFile> i = availableFiles.iterator(); i.hasNext(); ) {
                 OrderDataFile dataFile = i.next();
                 String aip = dataFile.getIpId().toString();
-                try (InputStream is = aipClient.downloadFile(aip, dataFile.getChecksum()).body().asInputStream()) {
-                    // If storage cannot provide file
-                    if (is == null) {
-                        // By now, only state is used for everything
-//                        if (!dataFile.getOnline()) {
-                            inErrorFiles.add(dataFile);
-//                        }
-                        i.remove();
-                        LOGGER.warn(
-                                String.format("Cannot retrieve data file from storage (aip : %s, checksum : %s)", aip,
-                                              dataFile.getChecksum()));
-                        continue;
-                    }
-                    // Add filename to multiset
-                    String filename = dataFile.getName();
-                    dataFiles.add(filename);
-                    // If same file appears several times, add "(n)" juste before extension (n is occurrence of course
-                    // you dumb ass ! What do you thing it could be ?)
-                    int filenameCount = dataFiles.count(filename);
-                    if (filenameCount > 1) {
-                        String suffix = " (" + (filenameCount - 1) + ")";
-                        int lastDotIdx = filename.lastIndexOf('.');
-                        if (lastDotIdx != -1) {
-                            filename = filename.substring(0, lastDotIdx) + suffix + filename.substring(lastDotIdx);
-                        } else { // No extension
-                            filename += suffix;
+                Response response = aipClient.downloadFile(aip, dataFile.getChecksum());
+                // Unable to download file from storage
+                if (response.status() != HttpStatus.OK.value()) {
+                    downloadErrorFiles.add(dataFile);
+                    i.remove();
+                    LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})", aip,
+                                dataFile.getChecksum());
+                    continue;
+                } else { // Download ok
+                    try (InputStream is = response.body().asInputStream()) {
+                        // Add filename to multiset
+                        String filename = dataFile.getName();
+                        dataFiles.add(filename);
+                        // If same file appears several times, add "(n)" juste before extension (n is occurrence of course
+                        // you dumb ass ! What do you thing it could be ?)
+                        int filenameCount = dataFiles.count(filename);
+                        if (filenameCount > 1) {
+                            String suffix = " (" + (filenameCount - 1) + ")";
+                            int lastDotIdx = filename.lastIndexOf('.');
+                            if (lastDotIdx != -1) {
+                                filename = filename.substring(0, lastDotIdx) + suffix + filename.substring(lastDotIdx);
+                            } else { // No extension
+                                filename += suffix;
+                            }
+                        }
+                        zos.putNextEntry(new ZipEntry(filename));
+                        long copiedBytes = ByteStreams.copy(is, zos);
+                        zos.closeEntry();
+                        // Check that file has been completely been copied
+                        if (copiedBytes != dataFile.getSize()) {
+                            downloadErrorFiles.add(dataFile);
+                            i.remove();
+                            LOGGER.warn("Cannot completely retrieve data file from storage (aip : {}, checksum : {})",
+                                        aip, dataFile.getChecksum());
                         }
                     }
-                    zos.putNextEntry(new ZipEntry(filename));
-                    ByteStreams.copy(is, zos);
-                    zos.closeEntry();
                 }
             }
             zos.flush();
             zos.finish();
         }
+        // Set statuses of all downloaded files
         availableFiles.forEach(f -> f.setState(FileState.DOWNLOADED));
-        inErrorFiles.forEach(f -> f.setState(FileState.ERROR));
-        availableFiles.addAll(inErrorFiles);
+        // Set statuses of all not downloaded files
+        downloadErrorFiles.forEach(f -> f.setState(FileState.DOWNLOAD_ERROR));
+        // use one set to save everybody
+        availableFiles.addAll(downloadErrorFiles);
         dataFileService.save(availableFiles);
 
         // Don't forget to manage user order jobs (maybe order is in waitingForUser state)
@@ -561,8 +609,7 @@ public class OrderService implements IOrderService {
             // Build URL to publicdownloadFile
             StringBuilder buff = new StringBuilder();
             buff.append(host);
-            // FIXME => Sylvain Vessière Guerinet (cf. OpenSearchDescriptionBuilder)
-            buff.append("/api/v1/").append(encode4Uri(microserviceName));
+            buff.append(urlPrefix).append("/").append(encode4Uri(microserviceName));
             buff.append("/orders/aips/").append(encode4Uri(file.getIpId().toString())).append("/files/");
             buff.append(file.getChecksum()).append("?").append(tokenRequestParam);
             buff.append("&").append(scopeRequestParam);
@@ -626,14 +673,18 @@ public class OrderService implements IOrderService {
         if (!orders.isEmpty()) {
             repos.save(orders);
         }
+        // Because previous method (updateCurrentOrdersComputedValues) takes care of CURRENT jobs, it is necessary
+        // to update finished ones ie setting availableFilesCount to 0 for finished jobs not waiting for user
         List<Order> finishedOrders = repos.findFinishedOrdersToUpdate();
         if (!finishedOrders.isEmpty()) {
             finishedOrders.forEach(o -> o.setAvailableFilesCount(0));
             repos.save(finishedOrders);
         }
-
     }
 
+    /**
+     * 0 0 7 * * MON-FRI : every working day at 7 AM
+     */
     @Override
     @Transactional(Transactional.TxType.NEVER) // Must not create a transaction, it is a multitenant method
     @Scheduled(cron = "${regards.order.periodic.files.availability.check.cron:0 0 7 * * MON-FRI}")
@@ -657,6 +708,7 @@ public class OrderService implements IOrderService {
             OffsetDateTime now = OffsetDateTime.now();
             Map<String, Object> dataMap = new HashMap<>();
             dataMap.put("orders", entry.getValue());
+            dataMap.put("project", runtimeTenantResolver.getTenant());
             // Create mail
             SimpleMailMessage email;
             try {
@@ -704,15 +756,13 @@ public class OrderService implements IOrderService {
         return optional;
     }
 
-
-
     @Override
     @Transactional(Transactional.TxType.NEVER)
     // No transaction because :
     // - loadComplete use a new one and so when delete is called, order state is at start of transaction (so with state
     // EXPIRED)
     // - loadComplete needs a new transaction each time it is called. If nothing is specified, it seems that the same
-    // transaction is used each time loadComplete is called (I think it is due to Hibernate Flush mode set a NEVER
+    // transaction is used each time loadComplete is called (I think it is due to Hibernate Flush mode set as NEVER
     // specified by Spring so it is cached in first level)
     public void cleanExpiredOrder(Order order) {
         // Ask for all jobInfos abortion (don't call self.pause() because of status, order must stay EXPIRED)
@@ -732,6 +782,13 @@ public class OrderService implements IOrderService {
         // Delete all its data files
         // Don't forget no relation is hardly mapped between OrderDataFile and Order
         dataFileService.removeAll(order.getId());
+        // Delete all filesTasks
+        for (DatasetTask dsTask : order.getDatasetTasks()) {
+            dsTask.getReliantTasks().clear();
+        }
+        // Deactivate waitingForUser tag
+        order.setWaitingForUser(false);
         // Order is already at EXPIRED state so let it be
+        repos.save(order);
     }
 }

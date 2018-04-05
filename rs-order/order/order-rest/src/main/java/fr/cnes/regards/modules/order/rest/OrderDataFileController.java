@@ -85,14 +85,11 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
             for (OrderDataFile dataFile : filesTask.getFiles()) {
                 if ((cpt >= pageRequest.getOffset()) && (cpt < pageRequest.getOffset() + pageRequest.getPageSize())) {
                     dataFiles.add(dataFile);
-                } else if (cpt >= pageRequest.getOffset() + pageRequest.getPageSize()) {
-                    return ResponseEntity
-                            .ok(toPagedResources(new PageImpl<>(dataFiles, pageRequest, dataFiles.size()), assembler));
                 }
                 cpt++;
             }
         }
-        return ResponseEntity.ok(toPagedResources(new PageImpl<>(dataFiles, pageRequest, dataFiles.size()), assembler));
+        return ResponseEntity.ok(toPagedResources(new PageImpl<>(dataFiles, pageRequest, cpt), assembler));
     }
 
     @ResourceAccess(description = "Download a file that is part of an order", role = DefaultRole.REGISTERED_USER)

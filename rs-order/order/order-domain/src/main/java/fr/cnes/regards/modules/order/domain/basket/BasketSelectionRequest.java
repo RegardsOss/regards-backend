@@ -1,8 +1,13 @@
 package fr.cnes.regards.modules.order.domain.basket;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Strings;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequestException;
 
 /**
@@ -45,12 +50,34 @@ public class BasketSelectionRequest {
      * Compute openSearch request taking into account all parameters (selectAllOpenSearchRequest, ipIds, ...)
      */
     public String computeOpenSearchRequest() throws BadBasketSelectionRequestException {
+        // Need to do this here because of injection by introspection
+        if (!Strings.isNullOrEmpty(selectAllOpenSearchRequest)) {
+            try {
+                selectAllOpenSearchRequest = URLDecoder
+                        .decode(this.selectAllOpenSearchRequest, Charset.defaultCharset().toString());
+            } catch (UnsupportedEncodingException e) {
+                throw new RsRuntimeException(e);
+            }
+        }
+        // Idem
+        String charset = Charset.defaultCharset().toString();
+        if (ipIds != null) {
+            ipIds = ipIds.stream().map(ipId -> {
+                try {
+                    return URLDecoder.decode(ipId, charset);
+                } catch (UnsupportedEncodingException e) {
+                    throw new RsRuntimeException(e);
+                }
+            }).collect(Collectors.toSet());
+        }
+
         String ipIdsOpenSearch = null;
         // ipIds specified
         if ((ipIds != null) && !ipIds.isEmpty()) {
             ipIdsOpenSearch = ipIds.stream().map(ipId -> "ipId:\"" + ipId + "\"").collect(Collectors.joining(" OR "));
         } else if (selectAllOpenSearchRequest == null) {
-            throw new BadBasketSelectionRequestException("If opensearch request is null, at least on IP_ID must be provided");
+            throw new BadBasketSelectionRequestException(
+                    "If opensearch request is null, at least on IP_ID must be provided");
         } else { // no IpIds specified => selectAll
             return selectAllOpenSearchRequest;
         }

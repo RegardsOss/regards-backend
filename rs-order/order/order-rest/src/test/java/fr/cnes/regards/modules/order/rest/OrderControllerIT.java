@@ -205,6 +205,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_STO_CMD_120")
     @Requirement("REGARDS_DSL_STO_CMD_400")
     @Requirement("REGARDS_DSL_STO_CMD_410")
+    @Requirement("REGARDS_DSL_STO_ARC_420")
     @Test
     public void testDownloadFile()
             throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,
@@ -320,7 +321,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
             String[] urlParts = url.split("/");
             String aipId = urlParts[3];
             String checksum = urlParts[5].substring(0, urlParts[5].indexOf('?'));
-            String token = urlParts[5].substring(urlParts[5].indexOf('=') + 1);
+            // Stop at "scope=PROJECT"
+            String token = urlParts[5].substring(urlParts[5].indexOf('=') + 1, urlParts[5].indexOf('&'));
 
             List<ResultMatcher> expects;
             // File file3.txt has a status PENDING...
@@ -455,6 +457,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         dataFile1.setSize(file.length());
         dataFile1.setIpId(aipId);
         dataFile1.setOnline(online);
+        dataFile1.setState(state);
         dataFile1.setChecksum(filename);
         dataFile1.setOrderId(order.getId());
         dataFile1.setMimeType(MediaType.TEXT_PLAIN);

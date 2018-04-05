@@ -21,6 +21,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.ISearchClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
@@ -111,5 +112,10 @@ public class ServiceConfiguration {
     @Bean
     public IEmailClient mockEmailClient() {
         return Mockito.mock(IEmailClient.class);
+    }
+
+    @Bean
+    public INotificationClient notificationClient() {
+        return Mockito.mock(INotificationClient.class);
     }
 }
