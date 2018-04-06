@@ -193,14 +193,6 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
                 handleNotHandledDataFile(notHandled);
             }
         }
-        if (!handled.containsAll(workingSubset.getDataFiles())) {
-            // not all data files have been handled, lets get the difference and make the not handled fail
-            Sets.SetView<StorageDataFile> notHandledFiles = Sets.difference(workingSubset.getDataFiles(),
-                                                                            Sets.newHashSet(handled));
-            for (StorageDataFile notHandled : notHandledFiles) {
-                handleNotHandledDataFile(notHandled);
-            }
-        }
         if (progressManager.isProcessError()) {
             // RuntimeException allows us to make the job fail and respect Runnable interface
             throw new StorageException(String
