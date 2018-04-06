@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -41,6 +43,7 @@ import fr.cnes.regards.modules.storage.client.IAipClient;
 @Service
 @MultitenantTransactional
 public class OrderDataFileService implements IOrderDataFileService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrderDataFileService.class);
 
     @Autowired
     private IOrderDataFileRepository repos;
@@ -143,8 +146,13 @@ public class OrderDataFileService implements IOrderDataFileService {
 
     @Override
     public void downloadFile(OrderDataFile dataFile, OutputStream os) throws IOException {
-        Response response = aipClient.downloadFile(dataFile.getIpId().toString(), dataFile.getChecksum());
-        boolean error = (response.status() != HttpStatus.OK.value());
+        Response response = null;
+        try {
+            response = aipClient.downloadFile(dataFile.getIpId().toString(), dataFile.getChecksum());
+        } catch (RuntimeException e) {
+            LOGGER.error("Error while downloadinf file from Archival Storage", e);
+        }
+        boolean error = (response == null) || (response.status() != HttpStatus.OK.value());
         if (!error) {
             try (InputStream is = response.body().asInputStream()) {
                 long copiedBytes = ByteStreams.copy(is, os);
