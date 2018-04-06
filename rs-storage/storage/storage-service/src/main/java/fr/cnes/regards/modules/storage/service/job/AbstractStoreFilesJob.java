@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.CommonFileUtils;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.storage.domain.StorageException;
@@ -83,6 +84,9 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
      */
     @Autowired
     protected IPublisher publisher;
+
+    @Autowired
+    protected IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * The progress manager allowing to get a communication between the job, the plugin and the AIPService
@@ -157,7 +161,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     @Override
     public void run() {
         progressManager = new StorageJobProgressManager(publisher, this,
-                (Long) parameters.get(PLUGIN_TO_USE_PARAMETER_NAME).getValue());
+                (Long) parameters.get(PLUGIN_TO_USE_PARAMETER_NAME).getValue(), runtimeTenantResolver);
         try {
             doRun(parameters);
         } catch (RuntimeException e) {
@@ -184,11 +188,10 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         // before we make the job fail, lets check if all StorageDataFile have been handled
         Collection<StorageDataFile> handled = progressManager.getHandledDataFile();
         IWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
-        // ... by making the difference between the two set and check if the result is empty
-        Sets.SetView<StorageDataFile> notHandledFiles = Sets.difference(workingSubset.getDataFiles(),
-                                                                        Sets.newHashSet(handled));
-        if (!notHandledFiles.isEmpty()) {
+        if (!handled.containsAll(workingSubset.getDataFiles())) {
             // not all data files have been handled, lets get the difference and make the not handled fail
+            Sets.SetView<StorageDataFile> notHandledFiles = Sets.difference(workingSubset.getDataFiles(),
+                                                                            Sets.newHashSet(handled));
             for (StorageDataFile notHandled : notHandledFiles) {
                 handleNotHandledDataFile(notHandled);
             }
