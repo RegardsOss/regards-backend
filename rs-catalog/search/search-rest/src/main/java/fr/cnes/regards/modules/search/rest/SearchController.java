@@ -372,7 +372,8 @@ public class SearchController {
         // to be taken into account, allParams MUST BE of type MultiValueMap, not Map.
         // It is the only parameter that can be multi-occured so we only take its first value it from MultiValueMap and
         // we "transform" MultiValueMap into Map (which is expected by searchService)
-        Map<String, String> params = allParams.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get(0)));
+        Map<String, String> params = allParams.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get(0)));
         Map<String, String> decodedParams = getDecodedParams(params);
         FacetPage<DataObject> result = searchService.search(decodedParams, searchKey, facets, pageable);
         result.getContent().forEach(DataObject::containsPhysicalData);
@@ -573,12 +574,10 @@ public class SearchController {
                                                                            partialText));
     }
 
-
     /**
      * Decode params
      * @param allParams params received by the endpoint
      * @return params decoded
-     * @throws SearchException
      */
     private Map<String, String> getDecodedParams(Map<String, String> allParams) throws SearchException {
         try {
