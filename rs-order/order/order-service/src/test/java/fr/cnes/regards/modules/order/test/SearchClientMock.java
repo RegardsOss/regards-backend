@@ -88,6 +88,11 @@ public class SearchClientMock implements ISearchClient {
     }
 
     @Override
+    public ResponseEntity<Boolean> hasAccess(UniformResourceName urn) {
+        return null;
+    }
+
+    @Override
     public ResponseEntity<Resource<Dataset>> getDataset(UniformResourceName urn) {
         return new ResponseEntity<>(new Resource<>(DS_MAP.get(urn)), HttpStatus.OK);
     }
