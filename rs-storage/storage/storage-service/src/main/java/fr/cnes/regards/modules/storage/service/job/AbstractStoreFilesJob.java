@@ -184,6 +184,15 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         // before we make the job fail, lets check if all StorageDataFile have been handled
         Collection<StorageDataFile> handled = progressManager.getHandledDataFile();
         IWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
+        // ... by making the difference between the two set and check if the result is empty
+        Sets.SetView<StorageDataFile> notHandledFiles = Sets.difference(workingSubset.getDataFiles(),
+                                                                        Sets.newHashSet(handled));
+        if (!notHandledFiles.isEmpty()) {
+            // not all data files have been handled, lets get the difference and make the not handled fail
+            for (StorageDataFile notHandled : notHandledFiles) {
+                handleNotHandledDataFile(notHandled);
+            }
+        }
         if (!handled.containsAll(workingSubset.getDataFiles())) {
             // not all data files have been handled, lets get the difference and make the not handled fail
             Sets.SetView<StorageDataFile> notHandledFiles = Sets.difference(workingSubset.getDataFiles(),
