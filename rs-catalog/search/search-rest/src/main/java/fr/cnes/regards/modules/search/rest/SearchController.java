@@ -18,19 +18,16 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import java.net.URLDecoder;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.StringJoiner;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -572,6 +569,17 @@ public class SearchController {
         return ResponseEntity.ok(searchService
                                          .retrieveEnumeratedPropertyValues(allParams, searchKey, propertyPath, maxCount,
                                                                            partialText));
+    }
+
+    @RequestMapping(path = ENTITY_GET_MAPPING + "/access", method = RequestMethod.GET)
+    @ResourceAccess(description = "allows to know if the user can download an entity", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Boolean> hasAccess(@PathVariable("urn") UniformResourceName urn)
+            throws EntityOperationForbiddenException, EntityNotFoundException {
+        AbstractEntity entity = searchService.get(urn);
+        if(entity instanceof DataObject) {
+            return ResponseEntity.ok(((DataObject) entity).getDownloadable());
+        }
+        return ResponseEntity.ok(true);
     }
 
     /**
