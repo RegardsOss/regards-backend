@@ -12,6 +12,7 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
@@ -57,15 +58,22 @@ public class StorageJobProgressManager implements IProgressManager {
      */
     private final Collection<StorageDataFile> failedDataFile = Sets.newConcurrentHashSet();
 
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    private final String tenant;
+
     /**
      * Collection of data files that has been handled
      */
     private final Collection<StorageDataFile> handledDataFile = Sets.newConcurrentHashSet();
 
-    public StorageJobProgressManager(IPublisher publisher, IJob<?> job, Long storageConfId) {
+    public StorageJobProgressManager(IPublisher publisher, IJob<?> job, Long storageConfId,
+            IRuntimeTenantResolver runtimeTenantResolver) {
         this.publisher = publisher;
         this.job = job;
         this.storageConfId = storageConfId;
+        this.tenant = runtimeTenantResolver.getTenant();
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
@@ -76,7 +84,7 @@ public class StorageJobProgressManager implements IProgressManager {
         handledDataFile.add(dataFile);
         job.advanceCompletion();
         // hell yeah this is not the usual publish method, but i know what i'm doing so trust me!
-        publisher.publish(dataStorageEvent);
+        publishWithTenant(dataStorageEvent);
     }
 
     @Override
@@ -84,12 +92,12 @@ public class StorageJobProgressManager implements IProgressManager {
         failureCauses.add(cause);
         errorStatus = true;
         failedDataFile.add(dataFile);
-        DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
-                StorageEventType.FAILED, storageConfId);
+        DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE, StorageEventType.FAILED,
+                storageConfId);
         dataStorageEvent.setFailureCause(cause);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
-        publisher.publish(dataStorageEvent);
+        publishWithTenant(dataStorageEvent);
     }
 
     public Boolean isProcessError() {
@@ -104,7 +112,7 @@ public class StorageJobProgressManager implements IProgressManager {
         job.advanceCompletion();
         failureCauses.add(failureCause);
         errorStatus = true;
-        publisher.publish(dataStorageEvent);
+        publishWithTenant(dataStorageEvent);
     }
 
     @Override
@@ -113,7 +121,7 @@ public class StorageJobProgressManager implements IProgressManager {
                 StorageEventType.SUCCESSFULL, storageConfId);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
-        publisher.publish(dataStorageEvent);
+        publishWithTenant(dataStorageEvent);
     }
 
     @Override
@@ -123,7 +131,7 @@ public class StorageJobProgressManager implements IProgressManager {
         dataStorageEvent.setRestorationPath(restoredFilePath);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
-        publisher.publish(dataStorageEvent);
+        publishWithTenant(dataStorageEvent);
     }
 
     @Override
@@ -134,7 +142,13 @@ public class StorageJobProgressManager implements IProgressManager {
         errorStatus = true;
         handledDataFile.add(dataFile);
         job.advanceCompletion();
-        publisher.publish(dataStorageEvent);
+        publishWithTenant(dataStorageEvent);
+    }
+
+    private void publishWithTenant(DataStorageEvent event) {
+        runtimeTenantResolver.forceTenant(tenant);
+        publisher.publish(event);
+        runtimeTenantResolver.clearTenant();
     }
 
     /**

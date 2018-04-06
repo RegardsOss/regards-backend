@@ -170,11 +170,9 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
             switch (type) {
                 case SUCCESSFULL:
                     cachedFileService.handleRestorationSuccess(data.get(), restorationPath);
-                    publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, data.get().getChecksum()));
                     break;
                 case FAILED:
                     cachedFileService.handleRestorationFailure(data.get());
-                    publisher.publish(new DataFileEvent(DataFileEventState.ERROR, data.get().getChecksum()));
                     break;
                 default:
                     break;
