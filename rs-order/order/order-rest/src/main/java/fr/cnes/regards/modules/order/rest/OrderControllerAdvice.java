@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
+import java.util.NoSuchElementException;
+
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -54,7 +56,6 @@ public class OrderControllerAdvice {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ServerErrorResponse(ebe.getMessage()));
     }
 
-
     @ExceptionHandler(NotYetAvailableException.class)
     public ResponseEntity<ServerErrorResponse> handleNotYetAvailableException(NotYetAvailableException e) {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ServerErrorResponse(e.getMessage()));
@@ -64,7 +65,6 @@ public class OrderControllerAdvice {
     public ResponseEntity<ServerErrorResponse> handleCannotPauseOrderException(CannotPauseOrderException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage()));
     }
-
 
     @ExceptionHandler(CannotDeleteOrderException.class)
     public ResponseEntity<ServerErrorResponse> handleCannotDeleteOrderException(CannotDeleteOrderException e) {
@@ -85,5 +85,10 @@ public class OrderControllerAdvice {
     public ResponseEntity<ServerErrorResponse> handleBadBasketSelectionRequestException(
             BadBasketSelectionRequestException e) {
         return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ServerErrorResponse(e.getMessage()));
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<ServerErrorResponse> handleNoSuchElementException(NoSuchElementException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(e.getMessage()));
     }
 }
