@@ -5,10 +5,8 @@ package fr.cnes.regards.modules.storage.service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -44,6 +42,12 @@ import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
 public interface IAIPService {
 
     /**
+     * Synchronous method for validating and storing an AIP collection submitted through Rest API.<br/>
+     * All heavy work will be done asynchronously.
+     */
+    List<RejectedAip> validateAndStore(AIPCollection aips) throws ModuleException;
+
+    /**
      * Schedule asynchronous jobs to handle new {@link AIP}s creation.<br/>
      * This process handle :
      * <ul>
@@ -66,20 +70,9 @@ public interface IAIPService {
     Set<UUID> storeRetry(Set<String> aipIpIds) throws ModuleException;
 
     /**
-     * Apply creation validation on each {@link AIP}:
-     * <ul>
-     *     <li>Aip does not already exists in the database</li>
-     *     <li>Aip is valid</li>
-     * </ul>
-     * @param aips
-     * @return Rejected aips, through their ip id, with the rejection cause.
-     */
-    List<RejectedAip> applyCreationChecks(AIPCollection aips);
-
-    /**
      * Apply retry validation on each {@link AIP} represented by their ipId:
      * <ul>
-     *     <li>Aip is known in the system</li>
+     * <li>Aip is known in the system</li>
      * </ul>
      * @param aipIpIds
      * @return
@@ -91,7 +84,8 @@ public interface IAIPService {
      * Files that are already available are return in the response. For other ones, asynchronous jobs are scheduled
      * to make them available. As soon as a file is available, a {@link DataFileEvent} is published into the
      * system message queue.
-     * @param availabilityRequest {@link AvailabilityRequest} containing request informations. Files checksum to make available and
+     * @param availabilityRequest {@link AvailabilityRequest} containing request informations. Files checksum to make
+     *            available and
      *            files lifetime in cache.
      * @return checksums of files that are already available
      */
@@ -118,7 +112,8 @@ public interface IAIPService {
      * @param pageable
      * @return {@link AIP}s corresponding to parameters given.
      */
-    Page<AipDataFiles> retrieveAipDataFiles(AIPState state, Set<String> tags, OffsetDateTime fromLastUpdateDate, Pageable pageable);
+    Page<AipDataFiles> retrieveAipDataFiles(AIPState state, Set<String> tags, OffsetDateTime fromLastUpdateDate,
+            Pageable pageable);
 
     /**
      * Retrieve the files metadata associated to an aip
@@ -181,7 +176,8 @@ public interface IAIPService {
     AIP retrieveAip(String ipId) throws EntityNotFoundException;
 
     /**
-     * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation, storeAndCreate a
+     * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation,
+     * storeAndCreate a
      * new aip with a different version and use storeAndCreate method.
      * @param ipId information package identifier of the aip
      * @param updated object containing changes
@@ -195,7 +191,8 @@ public interface IAIPService {
 
     /**
      * Remove an aip from the system. Its file are deleted if and only if no other aip point to them.
-     * @return not suppressible files because they are in state {@link fr.cnes.regards.modules.storage.domain.database.DataFileState#PENDING}
+     * @return not suppressible files because they are in state
+     *         {@link fr.cnes.regards.modules.storage.domain.database.DataFileState#PENDING}
      */
     Set<StorageDataFile> deleteAip(String ipId) throws ModuleException;
 
@@ -218,8 +215,8 @@ public interface IAIPService {
      * @param ipId
      * @param tagsToRemove
      */
-    void removeTags(String ipId, Set<String> tagsToRemove) throws EntityNotFoundException,
-            EntityInconsistentIdentifierException, EntityOperationForbiddenException;
+    void removeTags(String ipId, Set<String> tagsToRemove)
+            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     ////////////////// These methods should only be called by IAIPServices
