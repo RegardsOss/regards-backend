@@ -117,7 +117,7 @@ public class OrderDataFileService implements IOrderDataFileService {
     public OrderDataFile load(Long dataFileId) throws NoSuchElementException {
         OrderDataFile dataFile = repos.findOne(dataFileId);
         if (dataFile == null) {
-            throw new NoSuchElementException();
+            throw new NoSuchElementException(String.format("Data file with id: %d doesn't exist.", dataFileId));
         }
         return dataFile;
     }

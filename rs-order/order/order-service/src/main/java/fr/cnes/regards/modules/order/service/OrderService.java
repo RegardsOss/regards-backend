@@ -302,7 +302,9 @@ public class OrderService implements IOrderService {
         Map<String, String> dataMap = new HashMap<>();
         dataMap.put("expiration_date", order.getExpirationDate().toString());
         dataMap.put("project", runtimeTenantResolver.getTenant());
-        dataMap.put("metalink_download_url", urlStart + "/user/orders/metalink/download?" + tokenRequestParam);
+        dataMap.put("metalink_download_url",
+                    urlStart + "/user/orders/metalink/download?" + tokenRequestParam + "&scope=" + runtimeTenantResolver
+                            .getTenant());
         dataMap.put("regards_downloader_url", "https://github.com/RegardsOss/RegardsDownloader/releases");
         dataMap.put("orders_url", host + order.getFrontendUrl());
 
