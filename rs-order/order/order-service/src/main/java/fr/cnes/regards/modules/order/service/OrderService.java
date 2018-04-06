@@ -527,9 +527,14 @@ public class OrderService implements IOrderService {
             for (Iterator<OrderDataFile> i = availableFiles.iterator(); i.hasNext(); ) {
                 OrderDataFile dataFile = i.next();
                 String aip = dataFile.getIpId().toString();
-                Response response = aipClient.downloadFile(aip, dataFile.getChecksum());
+                Response response = null;
+                try {
+                    response = aipClient.downloadFile(aip, dataFile.getChecksum());
+                } catch (RuntimeException e) {
+                    LOGGER.error("Error while downloading file from Archival Storage", e);
+                }
                 // Unable to download file from storage
-                if (response.status() != HttpStatus.OK.value()) {
+                if ((response == null) || (response.status() != HttpStatus.OK.value())) {
                     downloadErrorFiles.add(dataFile);
                     i.remove();
                     LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})", aip,
@@ -567,6 +572,8 @@ public class OrderService implements IOrderService {
             }
             zos.flush();
             zos.finish();
+        } catch (IOException | RuntimeException e) {
+            LOGGER.error("Cannot create ZIP file.", e);
         }
         // Set statuses of all downloaded files
         availableFiles.forEach(f -> f.setState(FileState.DOWNLOADED));
