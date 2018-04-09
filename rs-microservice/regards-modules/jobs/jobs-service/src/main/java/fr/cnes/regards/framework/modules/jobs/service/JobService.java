@@ -1,6 +1,5 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import javax.annotation.PostConstruct;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.OffsetDateTime;
@@ -19,6 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -52,7 +54,8 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
  * @author oroussel
  */
 @Service
-public class JobService implements IJobService {
+@RefreshScope
+public class JobService implements IJobService, ApplicationListener<EnvironmentChangeEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
 
@@ -104,9 +107,10 @@ public class JobService implements IJobService {
         statusInfo.setStackTrace(sw.toString());
     }
 
-    @PostConstruct
-    private void init() {
+    @Override
+    public void onApplicationEvent(EnvironmentChangeEvent event) {
         threadPool = new JobThreadPoolExecutor(poolSize, jobInfoService, jobsMap, runtimeTenantResolver, publisher);
+        LOGGER.info("JobService refreshed with poolSize: {}", poolSize);
     }
 
     @Override
