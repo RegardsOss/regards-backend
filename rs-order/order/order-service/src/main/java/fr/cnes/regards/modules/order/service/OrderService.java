@@ -38,6 +38,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
@@ -113,7 +115,7 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 @Service
 @MultitenantTransactional
 @RefreshScope
-public class OrderService implements IOrderService {
+public class OrderService implements IOrderService, ApplicationListener<RefreshScopeRefreshedEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
 
@@ -194,6 +196,12 @@ public class OrderService implements IOrderService {
      */
     private static final Set<DataType> DATA_TYPES = Stream.of(DataTypeSelection.ALL.getFileTypes())
             .map(DataType::valueOf).collect(Collectors.toSet());
+
+    @Override
+    public void onApplicationEvent(RefreshScopeRefreshedEvent event) {
+        LOGGER.info("OrderService refreshed...");
+    }
+
 
     @Override
     public Order createOrder(Basket basket, String url) {
@@ -800,4 +808,5 @@ public class OrderService implements IOrderService {
         // Order is already at EXPIRED state so let it be
         repos.save(order);
     }
+
 }
