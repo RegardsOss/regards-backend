@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.search.client;
 
 import java.lang.reflect.ParameterizedType;
 
+import org.elasticsearch.index.IndexNotFoundException;
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -90,7 +91,11 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
 
     @After
     public void tearDown() {
-        esRepository.deleteIndex(DEFAULT_TENANT);
+        try {
+            esRepository.deleteIndex(DEFAULT_TENANT);
+        } catch (IndexNotFoundException e) {
+            // Who cares ?
+        }
     }
 
     @Override

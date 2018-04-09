@@ -18,19 +18,16 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import java.net.URLDecoder;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.StringJoiner;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -372,7 +369,8 @@ public class SearchController {
         // to be taken into account, allParams MUST BE of type MultiValueMap, not Map.
         // It is the only parameter that can be multi-occured so we only take its first value it from MultiValueMap and
         // we "transform" MultiValueMap into Map (which is expected by searchService)
-        Map<String, String> params = allParams.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get(0)));
+        Map<String, String> params = allParams.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get(0)));
         Map<String, String> decodedParams = getDecodedParams(params);
         FacetPage<DataObject> result = searchService.search(decodedParams, searchKey, facets, pageable);
         result.getContent().forEach(DataObject::containsPhysicalData);
@@ -573,12 +571,21 @@ public class SearchController {
                                                                            partialText));
     }
 
+    @RequestMapping(path = ENTITY_GET_MAPPING + "/access", method = RequestMethod.GET)
+    @ResourceAccess(description = "allows to know if the user can download an entity", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Boolean> hasAccess(@PathVariable("urn") UniformResourceName urn)
+            throws EntityOperationForbiddenException, EntityNotFoundException {
+        AbstractEntity entity = searchService.get(urn);
+        if(entity instanceof DataObject) {
+            return ResponseEntity.ok(((DataObject) entity).getDownloadable());
+        }
+        return ResponseEntity.ok(true);
+    }
 
     /**
      * Decode params
      * @param allParams params received by the endpoint
      * @return params decoded
-     * @throws SearchException
      */
     private Map<String, String> getDecodedParams(Map<String, String> allParams) throws SearchException {
         try {
