@@ -181,4 +181,6 @@ public interface IAIPDao {
      * @return aips which sip ip id matches
      */
     Set<AIP> findAllBySipId(String sipIpId);
+
+    Page<AIP> findAllByStateAndLastEventDateAfter(AIPState state, OffsetDateTime fromLastUpdateDate, Pageable pageable);
 }

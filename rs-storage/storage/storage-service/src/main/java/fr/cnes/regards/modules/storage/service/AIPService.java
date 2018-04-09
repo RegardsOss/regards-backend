@@ -453,9 +453,17 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
         // we have two cases: there is a date or not
         Page<AIP> aips;
         if (fromLastUpdateDate == null) {
-            aips = aipDao.findAllByStateAndTagsIn(state, tags, pageable);
+            if(tags == null || tags.isEmpty()) {
+                aips = aipDao.findAllByState(state, pageable);
+            } else {
+                aips = aipDao.findAllByStateAndTagsIn(state, tags, pageable);
+            }
         } else {
-            aips = aipDao.findAllByStateAndTagsInAndLastEventDateAfter(state, tags, fromLastUpdateDate, pageable);
+            if(tags == null || tags.isEmpty()) {
+                aips = aipDao.findAllByStateAndLastEventDateAfter(state, fromLastUpdateDate, pageable);
+            } else {
+                aips = aipDao.findAllByStateAndTagsInAndLastEventDateAfter(state, tags, fromLastUpdateDate, pageable);
+            }
         }
         // now lets get the data files for each aip which are the aip metadata itself
         List<AipDataFiles> aipDataFiles = new ArrayList<>();

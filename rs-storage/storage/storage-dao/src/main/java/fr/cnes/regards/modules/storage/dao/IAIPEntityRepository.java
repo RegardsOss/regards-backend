@@ -142,4 +142,7 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      */
     @EntityGraph("graph.aip.tags")
     Page<AIPEntity> findAllBySipId(String sipId, Pageable pageable);
+
+    @EntityGraph("graph.aip.tags")
+    Page<AIPEntity> findAllByStateAndLastEventDateAfter(AIPState state, OffsetDateTime fromLastUpdateDate, Pageable pageable);
 }
