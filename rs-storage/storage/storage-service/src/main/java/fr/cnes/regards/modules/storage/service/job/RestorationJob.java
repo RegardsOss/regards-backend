@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.storage.service.job;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -10,7 +12,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
@@ -49,6 +50,9 @@ public class RestorationJob extends AbstractStoreFilesJob {
         Long confIdToUse = parameterMap.get(PLUGIN_TO_USE_PARAMETER_NAME).getValue();
         Path destination = parameterMap.get(DESTINATION_PATH_PARAMETER_NAME).getValue();
         try {
+            if (!Files.exists(destination)) {
+                Files.createDirectories(destination);
+            }
             INearlineDataStorage<IWorkingSubset> storagePlugin = pluginService.getPlugin(confIdToUse);
             // now that we have the plugin instance, lets retrieve the aip from the job parameters and ask the plugin to
             // do the storage
@@ -56,7 +60,7 @@ public class RestorationJob extends AbstractStoreFilesJob {
             logger.debug("Plugin {} - Running restoration for {}files", storagePlugin.getClass().getName(),
                          workingSubset.getDataFiles().size());
             storagePlugin.retrieve(workingSubset, destination, progressManager);
-        } catch (ModuleException e) {
+        } catch (ModuleException | IOException e) {
             // throwing new runtime allows us to make the job fail.
             throw new RsRuntimeException(e);
         }

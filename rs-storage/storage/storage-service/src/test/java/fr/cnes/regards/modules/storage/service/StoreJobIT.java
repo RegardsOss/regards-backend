@@ -247,6 +247,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
 
     @After
     public void after() throws URISyntaxException, IOException {
+        tenantResolver.forceTenant(DEFAULT_TENANT);
         Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
                 .forEach(File::delete);
         jobInfoRepo.deleteAll();
