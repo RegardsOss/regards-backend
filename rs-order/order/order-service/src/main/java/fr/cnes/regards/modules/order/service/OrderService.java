@@ -200,10 +200,12 @@ public class OrderService implements IOrderService, ApplicationListener<Environm
 
     @Override
     public void onApplicationEvent(EnvironmentChangeEvent event) {
-        LOGGER.info("##################################################################");
-        LOGGER.info("OrderService refreshed...");
+        // Compute bucketSize from bucketSizeMb filled by Spring
+        bucketSize = bucketSizeMb * 1024l * 1024l;
+        LOGGER.info(
+                "OrderService refreshed with bucketSize: {}, orderValidationPeriodDays: {}, daysBeforeSendingNotifEmail: {}...",
+                bucketSize, orderValidationPeriodDays, daysBeforeSendingNotifEmail);
     }
-
 
     @Override
     public Order createOrder(Basket basket, String url) {
@@ -217,10 +219,6 @@ public class OrderService implements IOrderService, ApplicationListener<Environm
         order = repos.save(order);
         int priority = orderJobService.computePriority(order.getOwner(), authResolver.getRole());
 
-        // Be careful ! bucketSize must be computed AFTER bucketSizeMb is filled by Spring
-        if (bucketSize == null) {
-            bucketSize = bucketSizeMb * 1024l * 1024l;
-        }
         // Dataset selections
         for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
             DatasetTask dsTask = createDatasetTask(dsSel);
