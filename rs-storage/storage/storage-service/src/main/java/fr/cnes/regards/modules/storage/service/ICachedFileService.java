@@ -11,7 +11,6 @@ import java.util.Set;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
-import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
@@ -51,15 +50,14 @@ public interface ICachedFileService {
     Optional<CachedFile> getAvailableCachedFile(String pChecksum);
 
     /**
-     * Clean cache
+     * Purge cache
      */
-    void cleanCache();
+    void purge();
 
     /**
-     * Periodicly tries to restore all {@link CachedFile}s in {@link CachedFileState#QUEUED} status.
-     * Default : scheduled to be run every 2minutes.
+     * Restore all files waiting for restoring
      */
-    void handleQueuedFiles();
+    void restoreQueued();
 
     void processEvent(TenantConnectionReady event);
 }

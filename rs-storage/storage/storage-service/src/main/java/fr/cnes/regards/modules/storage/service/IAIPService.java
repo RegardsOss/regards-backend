@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +29,7 @@ import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
+import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
 
@@ -42,32 +42,32 @@ import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
 public interface IAIPService {
 
     /**
+     * Save AIP and publish event if requested
+     */
+    AIP save(AIP aip, boolean publish);
+
+    /**
      * Synchronous method for validating and storing an AIP collection submitted through Rest API.<br/>
      * All heavy work will be done asynchronously.
      */
     List<RejectedAip> validateAndStore(AIPCollection aips) throws ModuleException;
 
     /**
-     * Schedule asynchronous jobs to handle new {@link AIP}s creation.<br/>
-     * This process handle :
+     * Asynchronously makes the heavy work of storing AIP following these steps :
      * <ul>
-     * <li>Storage in db of {@link AIP}</li>
-     * <li>Storage in db of each {@link StorageDataFile} associated</li>
-     * <li>Physical storage of each {@link StorageDataFile} through {@link IDataStorage} plugins</li>
-     * <li>Creation of physical file containing AIP metadata informations and storage through {@link IDataStorage}
-     * plugins</li>
+     * <li>Extract data files from {@link AIP}</li>
+     * <li>Dispatch them on {@link IDataStorage} plugins through the single active {@link IAllocationStrategy}
+     * plugin</li>
+     * <li>Prepare and schedule storage jobs for data files</li>
      * </ul>
-     * @param pAIP new {@link Set}<{@link AIP}> to store
-     * @return {@link Set}<{@link UUID}> of scheduled store AIP Jobs.
-     * @throws ModuleException
      */
-    Set<UUID> storeAndCreate(Set<AIP> pAIP) throws ModuleException;
+    void store() throws ModuleException;
 
     /**
      * Schedule asynchronous jobs to handle failed storage of existing {@link AIP}.<br/>
      * @param aipIpIds collection of aip ip ids to try to store back
      */
-    Set<UUID> storeRetry(Set<String> aipIpIds) throws ModuleException;
+    void storeRetry(Set<String> aipIpIds) throws ModuleException;
 
     /**
      * Apply retry validation on each {@link AIP} represented by their ipId:
@@ -129,11 +129,6 @@ public interface IAIPService {
      * @return the aip versions ip ids
      */
     List<String> retrieveAIPVersionHistory(UniformResourceName pIpId);
-
-    /**
-     * Handle update of physical AIP metadata files associated to {@link AIP} updated in database.
-     */
-    void updateAlreadyStoredMetadata();
 
     /**
      * Retrieve the input stream towards the desired file.

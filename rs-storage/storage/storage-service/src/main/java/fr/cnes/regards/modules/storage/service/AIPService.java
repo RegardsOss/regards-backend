@@ -31,13 +31,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeType;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
@@ -63,8 +61,6 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.OAISDataObject;
@@ -160,6 +156,12 @@ public class AIPService implements IAIPService {
     private static final String AIP_ACCESS_FORBIDDEN = "You do not have suffisent access right to get this aip.";
 
     /**
+     * Number of created AIPs processed on each iteration by project
+     */
+    @Value("${regards.storage.aips.iteration.limit:100}")
+    private Integer aipIterationLimit;
+
+    /**
      * DAO to access {@link AIP} entities through the {@link AIPEntity} entities stored in db.
      */
     @Autowired
@@ -190,18 +192,6 @@ public class AIPService implements IAIPService {
     private IJobInfoService jobInfoService;
 
     /**
-     * Resolver to know all existing tenants of the current REGARDS instance.
-     */
-    @Autowired
-    private ITenantResolver tenantResolver;
-
-    /**
-     * {@link IRuntimeTenantResolver} instance
-     */
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    /**
      * {@link IAuthenticationResolver} instance
      */
     @Autowired
@@ -212,12 +202,6 @@ public class AIPService implements IAIPService {
      */
     @Autowired
     private Gson gson;
-
-    /**
-     * to get transactionnality inside scheduled
-     */
-    @Autowired
-    private IAIPService self;
 
     /**
      * Service to manage avaibility of nearline files.
@@ -258,6 +242,15 @@ public class AIPService implements IAIPService {
     @PostConstruct
     public void init() {
         pluginService.addPluginPackage("fr.cnes.regards.modules.storage");
+    }
+
+    @Override
+    public AIP save(AIP aip, boolean publish) {
+        AIP daoAip = aipDao.save(aip);
+        if (publish) {
+            publisher.publish(new AIPEvent(daoAip));
+        }
+        return daoAip;
     }
 
     @Override
@@ -314,45 +307,37 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Set<UUID> storeAndCreate(Set<AIP> aips) throws ModuleException {
-        LOGGER.trace("Entering method storeAndCreate(Set<AIP>) with {} aips", aips.size());
-        Set<AIP> aipsInDb = Sets.newHashSet();
-        Set<StorageDataFile> dataFilesToStore = Sets.newHashSet();
-        // 1. Create each AIP into database with VALID state.
-        // 2. Create each StorageDataFile of each AIP into database with PENDING state.
-        long aipNb = aips.size();
-        long index = 1;
-        for (AIP aip : aips) {
-            LOGGER.info("Registering AIP {} ({}/{})", aip.getId().toString(), index, aipNb);
-            index++;
-            // Can not create an existing AIP.
-            aip.setState(AIPState.VALID);
-            aip.addEvent(EventType.SUBMISSION.name(), "Submission to REGARDS");
-            aipsInDb.add(aipDao.save(aip));
-            Collection<StorageDataFile> dataFiles = dataFileDao.save(StorageDataFile.extractDataFiles(aip));
-            dataFiles.forEach(df -> df.setState(DataFileState.PENDING));
-            dataFilesToStore.addAll(dataFiles);
-            // Notify system for new VALID AIP created.
-            publisher.publish(new AIPEvent(aip));
-        }
-        LOGGER.trace("{} aips built {} data objects to storeAndCreate", aips.size(), dataFilesToStore.size());
-        // change the state to PENDING
-        for (AIP aip : aipsInDb) {
-            aip.setState(AIPState.PENDING);
-            aipDao.save(aip);
-            // Notify system for AIP updated to PENDING state.
-            publisher.publish(new AIPEvent(aip));
-        }
-        return store(dataFilesToStore);
-    }
+    public void store() throws ModuleException {
 
-    /**
-     * Actually run the storage logic: dispatching data files between data storages and scheduling the storage jobs.
-     * @return job ids scheduled for the storage
-     */
-    protected Set<UUID> store(Set<StorageDataFile> dataFilesToStore) throws ModuleException {
-        Multimap<Long, StorageDataFile> storageWorkingSetMap = dispatchAndCheck(dataFilesToStore);
-        return scheduleStorage(storageWorkingSetMap, true);
+        long startTime = System.currentTimeMillis();
+        // Extract data files from valid AIP (microservice concurrent action)
+        Page<AIP> createdAips = aipDao.findAllWithLockByState(AIPState.VALID, new PageRequest(0, aipIterationLimit));
+        if (createdAips.hasContent()) {
+            List<AIP> aips = createdAips.getContent();
+            Set<StorageDataFile> dataFilesToStore = Sets.newHashSet();
+
+            for (AIP aip : aips) {
+                // Retrieve data files to store
+                Collection<StorageDataFile> dataFiles;
+                if (aip.isRetry()) {
+                    dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip);
+                } else {
+                    // Extract data files
+                    dataFiles = dataFileDao.save(StorageDataFile.extractDataFiles(aip));
+                }
+                dataFiles.forEach(df -> df.setState(DataFileState.PENDING)); // FIXME ???
+                dataFilesToStore.addAll(dataFiles);
+                aip.setState(AIPState.PENDING);
+                aip.setRetry(false);
+                save(aip, true);
+            }
+            // Dispatch and check data files
+            Multimap<Long, StorageDataFile> storageWorkingSetMap = dispatchAndCheck(dataFilesToStore);
+            // Schedule storage jobs
+            scheduleStorage(storageWorkingSetMap, true);
+        }
+        long scheduleTime = System.currentTimeMillis();
+        LOGGER.info("Scheduling time : {}", scheduleTime - startTime);
     }
 
     /**
@@ -378,11 +363,15 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Set<UUID> storeRetry(Set<String> aipIpIds) throws ModuleException {
+    public void storeRetry(Set<String> aipIpIds) throws ModuleException {
         // lets get the data file which are in storage error state and ask for their storage, once again
         Set<AIP> failedAips = aipDao.findAllByIpIdIn(aipIpIds);
-        Set<StorageDataFile> failedDataFiles = dataFileDao.findAllByStateAndAipIn(DataFileState.ERROR, failedAips);
-        return store(failedDataFiles);
+        for (AIP aip : failedAips) {
+            if (AIPState.STORAGE_ERROR.equals(aip.getState())) {
+                aip.setState(AIPState.VALID);
+                aip.setRetry(true);
+            }
+        }
     }
 
     @Override
@@ -748,31 +737,6 @@ public class AIPService implements IAIPService {
         }
     }
 
-    /**
-     * This cron action executed every minutes handle update of {@link AIP} state by
-     * looking for all associated {@link StorageDataFile} states. An {@link AIP} is STORED
-     * when all his {@link StorageDataFile}s are STORED.
-     */
-    @Scheduled(fixedDelayString = "${regards.storage.check.aip.metadata.delay:60000}")
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void storeMetadata() {
-        LOGGER.debug(" ------------------------> Update AIP storage informations - START<---------------------------- ");
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            Set<StorageDataFile> metadataToStore = Sets.newHashSet();
-            // first lets get AIP that are not fully stored(at least metadata are not stored)
-            metadataToStore.addAll(self.prepareNotFullyStored());
-            if (metadataToStore.isEmpty()) {
-                LOGGER.debug("No updated metadata files to storeAndCreate.");
-            } else {
-                LOGGER.debug("Scheduling {} updated metadata files for storage.", metadataToStore.size());
-                // now that we know all the metadata that should be stored, lets schedule their storage!
-                self.scheduleStorageMetadata(metadataToStore);
-            }
-        }
-        LOGGER.debug(" ------------------------> Update AIP storage informations - END <---------------------------- ");
-    }
-
     @Override
     public Set<StorageDataFile> prepareNotFullyStored() {
         Set<StorageDataFile> metadataToStore = Sets.newHashSet();
@@ -1093,29 +1057,6 @@ public class AIPService implements IAIPService {
         return metadataAipFile;
     }
 
-    /*
-     * Non javadoc, but explanatory: due to settings only interfaces are proxyfied by spring, so we need to use a self
-     * reference on the interface to profit from transaction management from spring. This is a self reference because
-     * AIPService is annotated @Service with default component scope which is "spring' SINGLETON
-     */
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    @Scheduled(fixedDelayString = "${regards.storage.update.aip.metadata.delay:7200000}") // 2 hours
-    @Override
-    public void updateAlreadyStoredMetadata() {
-        // Then lets get AIP that should be stored again after an update
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.debug(String.format("[METADATA UPDATE DAEMON] Starting to prepare update jobs for tenant %s",
-                                       tenant));
-            Set<UpdatableMetadataFile> metadataToUpdate = self.prepareUpdatedAIP();
-            if (!metadataToUpdate.isEmpty()) {
-                self.scheduleStorageMetadataUpdate(metadataToUpdate);
-            }
-            LOGGER.debug(String.format("[METADATA UPDATE DAEMON] Update jobs for tenant %s have been scheduled",
-                                       tenant));
-        }
-    }
-
     /**
      * Prepare all AIP in UPDATED state in order to create and store the new AIP metadata file (descriptor file)
      * asscoiated.<br/>
@@ -1282,4 +1223,5 @@ public class AIPService implements IAIPService {
             throw new EntityNotFoundException(pAipId, AIP.class);
         }
     }
+
 }

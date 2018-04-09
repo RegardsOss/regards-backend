@@ -48,6 +48,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.dao.IAIPEntityRepository;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
+import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
@@ -61,12 +62,11 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=cdpp_it",
         "regards.storage.cache.path=target/cache", "regards.storage.cache.minimum.time.to.live.hours=1",
         "regards.tenants=PROJECT", "regards.tenant=PROJECT", "regards.amqp.enabled=true",
-        "regards.storage.check.aip.metadata.delay=5000" })
+        "regards.storage.check.aip.metadata.delay=5000", "spring.jpa.show-sql=false" })
 // Storage uses AMQP to synchronize storage
-@ActiveProfiles("testAmqp")
+@ActiveProfiles({ "testAmqp" })
 public class CDPPStoreTest extends AbstractMultitenantServiceTest {
 
-    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(CDPPStoreTest.class);
 
     @Autowired
@@ -135,27 +135,24 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
         List<RejectedAip> rejectedAips = aipService.validateAndStore(collection);
         Assert.assertNotNull(rejectedAips);
         Assert.assertTrue(rejectedAips.isEmpty());
-
-        // Set<UUID> aipIds = aipService.storeAndCreate(Sets.newHashSet(collection.getFeatures()));
         long submitTime = System.currentTimeMillis();
         LOGGER.info("Submission time : {}", submitTime - startTime);
-        // Assert.assertNotNull(aipIds);
 
         // Wait until all AIP are STORED
-        // int storedAIP = 0;
-        // int expected = 305;
-        // int loops = 1000;
-        // do {
-        // Thread.sleep(1_000);
-        // storedAIP = aipRepository.findAllByStateIn(AIPState.STORED).size();
-        // loops--;
-        // } while ((storedAIP != expected) && (loops != 0));
-        //
-        // long stopTime = System.currentTimeMillis();
-        // LOGGER.info("Time elapsed : {}", stopTime - startTime);
-        //
-        // if (storedAIP != expected) {
-        // Assert.fail();
-        // }
+        int storedAIP = 0;
+        int expected = 305;
+        int loops = 1000;
+        do {
+            Thread.sleep(1_000);
+            storedAIP = aipRepository.findAllByStateIn(AIPState.STORED).size();
+            loops--;
+        } while ((storedAIP != expected) && (loops != 0));
+
+        long stopTime = System.currentTimeMillis();
+        LOGGER.info("Time elapsed : {}", stopTime - startTime);
+
+        if (storedAIP != expected) {
+            Assert.fail();
+        }
     }
 }
