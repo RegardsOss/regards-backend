@@ -28,7 +28,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -70,6 +75,9 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
     @Autowired
     private IIngestClient ingestClient;
 
+    @Autowired
+    private Gson gson;
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
@@ -100,14 +108,28 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
             // Create SIP collection
             SIPCollectionBuilder sipCollectionBuilder = new SIPCollectionBuilder(ingestChain, session.orElse(null));
             products.getContent().forEach(p -> sipCollectionBuilder.add(p.getSip()));
-            // Enable system call as follow (thread safe action)
-            FeignSecurityManager.asSystem();
-            // Submit SIP collection
-            ResponseEntity<Collection<SIPDto>> response = ingestClient.ingest(sipCollectionBuilder.build());
-            // Handle response
-            handleResponse(response, products.getContent());
-            // Disable system call if necessary after client request(s)
-            FeignSecurityManager.reset();
+
+            try {
+                // Enable system call as follow (thread safe action)
+                FeignSecurityManager.asSystem();
+                // Submit SIP collection
+                ResponseEntity<Collection<SIPDto>> response = ingestClient.ingest(sipCollectionBuilder.build());
+                // Handle response
+                handleResponse(response.getStatusCode(), response.getBody(), products.getContent());
+            } catch (HttpClientErrorException e) {
+                // Handle non 2xx or 404 status code
+                Collection<SIPDto> dtos = null;
+                if (e.getStatusCode() == HttpStatus.UNPROCESSABLE_ENTITY) {
+                    @SuppressWarnings("serial")
+                    TypeToken<Collection<SIPDto>> bodyTypeToken = new TypeToken<Collection<SIPDto>>() {
+                    };
+                    dtos = gson.fromJson(e.getResponseBodyAsString(), bodyTypeToken.getType());
+                }
+                handleResponse(e.getStatusCode(), dtos, products.getContent());
+            } finally {
+                // Disable system call if necessary after client request(s)
+                FeignSecurityManager.reset();
+            }
         }
 
         // Continue if remaining page
@@ -118,11 +140,12 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
 
     /**
      * Handle INGEST response
+     * @param status INGEST response status
      * @param response INGEST response
      * @param products list of related products
      */
-    private void handleResponse(ResponseEntity<Collection<SIPDto>> response, List<Product> products) {
-        switch (response.getStatusCode()) {
+    private void handleResponse(HttpStatus status, Collection<SIPDto> response, List<Product> products) {
+        switch (status) {
             case CREATED:
             case PARTIAL_CONTENT:
             case UNPROCESSABLE_ENTITY:
@@ -130,7 +153,7 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                 Map<String, Product> productMap = products.stream()
                         .collect(Collectors.toMap(p -> p.getSip().getId(), p -> p));
                 // Process all SIP to update all products!
-                for (SIPDto dto : response.getBody()) {
+                for (SIPDto dto : response) {
                     Product product = productMap.get(dto.getId());
                     product.setSipState(dto.getState());
                     product.setIpId(dto.getIpId()); // May be null
