@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.domain.Page;
@@ -115,7 +116,7 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 @Service
 @MultitenantTransactional
 @RefreshScope
-public class OrderService implements IOrderService, ApplicationListener<RefreshScopeRefreshedEvent> {
+public class OrderService implements IOrderService, ApplicationListener<EnvironmentChangeEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
 
@@ -198,7 +199,8 @@ public class OrderService implements IOrderService, ApplicationListener<RefreshS
             .map(DataType::valueOf).collect(Collectors.toSet());
 
     @Override
-    public void onApplicationEvent(RefreshScopeRefreshedEvent event) {
+    public void onApplicationEvent(EnvironmentChangeEvent event) {
+        LOGGER.info("##################################################################");
         LOGGER.info("OrderService refreshed...");
     }
 
