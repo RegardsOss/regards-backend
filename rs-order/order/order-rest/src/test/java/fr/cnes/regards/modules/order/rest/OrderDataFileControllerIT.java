@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -46,6 +47,7 @@ import fr.cnes.regards.modules.storage.client.IAipClient;
  * @author oroussel
  */
 @ContextConfiguration(classes = OrderConfiguration.class)
+@DirtiesContext
 public class OrderDataFileControllerIT extends AbstractRegardsIT {
 
     @Autowired
