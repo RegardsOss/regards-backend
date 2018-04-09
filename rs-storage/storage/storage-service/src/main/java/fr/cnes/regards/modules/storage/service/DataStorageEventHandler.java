@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
 
@@ -129,6 +131,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent>, IDat
     private String applicationName;
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onApplicationEvent(ApplicationReadyEvent event) {
         // Subscribe to events on {@link StorageDataFile} changes.
         subscriber.subscribeTo(DataStorageEvent.class, this);
