@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import com.google.common.base.Strings;
-import feign.Body;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -45,7 +44,6 @@ import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
-import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
 import fr.cnes.regards.modules.order.service.IBasketService;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderService;
@@ -82,6 +80,8 @@ public class OrderController implements IResourceController<OrderDto> {
     private PagedResourcesAssembler<OrderDto> orderDtoPagedResourcesAssembler;
 
     public static final String ADMIN_ROOT_PATH = "/orders";
+
+    public static final String CSV = "/csv";
 
     public static final String USER_ROOT_PATH = "/user/orders";
 
@@ -170,8 +170,10 @@ public class OrderController implements IResourceController<OrderDto> {
     }
 
     @ResourceAccess(description = "Generate a CSV file with all orders", role = DefaultRole.PROJECT_ADMIN)
-    @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH, produces = "text/csv")
+    @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH + CSV, produces = "text/csv")
     public void generateCsv(HttpServletResponse response) throws IOException {
+        response.addHeader("Content-disposition", "attachment;filename=orders.csv");
+        response.setContentType("text/csv");
         orderService.writeAllOrdersInCsv(new BufferedWriter(response.getWriter()));
     }
 
@@ -259,6 +261,7 @@ public class OrderController implements IResourceController<OrderDto> {
     }
 
     public static class OrderRequest {
+
         private String onSuccessUrl;
 
         public String getOnSuccessUrl() {
