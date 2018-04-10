@@ -49,7 +49,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -79,10 +78,11 @@ import fr.cnes.regards.modules.storage.service.IAIPService;
  * @author Sylvain Vissiere-Guerinet
  */
 @RestController
-@ModuleInfo(name = "storage", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(AIPController.AIP_PATH)
 public class AIPController implements IResourceController<AIP> {
+
+    @SuppressWarnings("unused")
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPController.class);
 
     /**
      * Controller path for retries
@@ -148,11 +148,6 @@ public class AIPController implements IResourceController<AIP> {
      * Controller path using an aip ip id and a file checksum as path variable
      */
     public static final String DOWNLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
-
-    /**
-     * Class logger.
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(AIPController.class);
 
     /**
      * {@link IResourceService} instance
@@ -283,27 +278,22 @@ public class AIPController implements IResourceController<AIP> {
      * @return the aips that could not be prepared for storage
      */
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
-    @ResponseBody
     @ResourceAccess(description = "validate and store the specified AIP")
     public ResponseEntity<List<RejectedAip>> store(@RequestBody AIPCollection aips) throws ModuleException {
-        // lets validate the inputs and get those in error
-        List<RejectedAip> rejectedAips = aipService.applyCreationChecks(aips);
-        // if there is some errors, lets handle the issues
-        if (!rejectedAips.isEmpty()) {
-            // now lets remove the inputs in error from aips to store
-            Set<String> rejectedIpIds = rejectedAips.stream().map(ra -> ra.getIpId()).collect(Collectors.toSet());
-            Set<AIP> aipNotToBeStored = aips.getFeatures().stream()
-                    .filter(aip -> rejectedIpIds.contains(aip.getId().toString())).collect(Collectors.toSet());
-            aips.getFeatures().removeAll(aipNotToBeStored);
-            // if there is nothing more to be stored, UNPROCESABLE ENTITY
-            if (aips.getFeatures().isEmpty()) {
-                return new ResponseEntity<>(rejectedAips, HttpStatus.UNPROCESSABLE_ENTITY);
-            }
-            aipService.storeAndCreate(Sets.newHashSet(aips.getFeatures()));
+
+        int originalAipNb = aips.getFeatures().size();
+
+        // Just store AIP / Heavy work will be done asynchronously
+        List<RejectedAip> rejectedAips = aipService.validateAndStore(aips);
+
+        // Manage API response
+        if (rejectedAips.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        } else if (rejectedAips.size() == originalAipNb) {
+            return new ResponseEntity<>(rejectedAips, HttpStatus.UNPROCESSABLE_ENTITY);
+        } else {
             return new ResponseEntity<>(rejectedAips, HttpStatus.PARTIAL_CONTENT);
         }
-        aipService.storeAndCreate(Sets.newHashSet(aips.getFeatures()));
-        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     /**

@@ -1,5 +1,8 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
+import java.time.OffsetDateTime;
+import java.util.Set;
+
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -17,14 +20,13 @@ import javax.persistence.NamedEntityGraph;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import java.time.OffsetDateTime;
-import java.util.Set;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -33,15 +35,17 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 
 /**
  * Metadata of an AIP metadata.
- * It was not necessary to map all the AIP structure into the database so we just mapped some metadata and added the whole AIP as a json field.
+ * It was not necessary to map all the AIP structure into the database so we just mapped some metadata and added the
+ * whole AIP as a json field.
  *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
-@Table(name = "t_aip", indexes = { @Index(name = "idx_aip_ip_id", columnList = "ip_id"),
-        @Index(name = "idx_aip_state", columnList = "state"),
-        @Index(name = "idx_aip_submission_date", columnList = "submissionDate"),
-        @Index(name = "idx_aip_last_event_date", columnList = "date") },
+@Table(name = "t_aip",
+        indexes = { @Index(name = "idx_aip_ip_id", columnList = "ip_id"),
+                @Index(name = "idx_aip_state", columnList = "state"),
+                @Index(name = "idx_aip_submission_date", columnList = "submissionDate"),
+                @Index(name = "idx_aip_last_event_date", columnList = "date") },
         uniqueConstraints = { @UniqueConstraint(name = "uk_aip_ipId", columnNames = "ip_id") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @NamedEntityGraph(name = "graph.aip.tags", attributeNodes = { @NamedAttributeNode("tags") })
@@ -87,6 +91,11 @@ public class AIPEntity {
     @Column
     @Enumerated(EnumType.STRING)
     private AIPState state;
+
+    /**
+     * Whether to retry storage after a storage error
+     */
+    private boolean retry;
 
     /**
      * Last Event that affected this AIP
@@ -252,7 +261,7 @@ public class AIPEntity {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 
@@ -264,5 +273,13 @@ public class AIPEntity {
     @Override
     public int hashCode() {
         return ipId != null ? ipId.hashCode() : 0;
+    }
+
+    public boolean isRetry() {
+        return retry;
+    }
+
+    public void setRetry(boolean retry) {
+        this.retry = retry;
     }
 }

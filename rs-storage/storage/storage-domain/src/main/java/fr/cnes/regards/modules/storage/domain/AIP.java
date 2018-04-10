@@ -28,6 +28,9 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
     @GsonIgnore
     private AIPState state;
 
+    @GsonIgnore
+    private boolean retry;
+
     /**
      * Default constructor
      */
@@ -63,5 +66,13 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
      */
     public void setSipId(String sipId) {
         this.sipId = sipId;
+    }
+
+    public boolean isRetry() {
+        return retry;
+    }
+
+    public void setRetry(boolean retry) {
+        this.retry = retry;
     }
 }

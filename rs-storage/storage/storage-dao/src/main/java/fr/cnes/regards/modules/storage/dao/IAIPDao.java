@@ -44,6 +44,13 @@ public interface IAIPDao {
     Page<AIP> findAllByState(AIPState state, Pageable pageable);
 
     /**
+     * Find {@link AIP} by state in transaction with pessimistic read lock
+     * @param sipState {@link ISipState}
+     * @return a set of products with the above properties
+     */
+    Page<AIP> findAllWithLockByState(AIPState state, Pageable pageable);
+
+    /**
      * Retrieve all existing {@link AIP}s with submission date after the given {@link OffsetDateTime}
      * @param submissionAfter {@link OffsetDateTime} submission date.
      * @param pageable {@link Pageable} pagination parameters.
@@ -70,7 +77,7 @@ public interface IAIPDao {
     Page<AIP> findAllByStateAndLastEventDateBefore(AIPState state, OffsetDateTime lastEventBefore, Pageable pageable);
 
     /**
-     * Retrieve all existing {@link AIP}s  with submission date after the given  {@link OffsetDateTime},
+     * Retrieve all existing {@link AIP}s with submission date after the given {@link OffsetDateTime},
      * last event date before the given {@link OffsetDateTime} and with given {@link AIPState} state.
      * @param state {@link AIPState} state requested.
      * @param submissionAfter {@link OffsetDateTime} submission date.
@@ -92,7 +99,7 @@ public interface IAIPDao {
     Page<AIP> findAllByStateAndSubmissionDateAfter(AIPState state, OffsetDateTime submissionAfter, Pageable pageable);
 
     /**
-     * Retrieve all existing {@link AIP}s  with submission date after the given  {@link OffsetDateTime}
+     * Retrieve all existing {@link AIP}s with submission date after the given {@link OffsetDateTime}
      * and last event date before the given {@link OffsetDateTime}.
      * @param submissionAfter {@link OffsetDateTime} submission date.
      * @param lastEventBefore {@link OffsetDateTime} last event date.
@@ -103,12 +110,14 @@ public interface IAIPDao {
             OffsetDateTime lastEventBefore, Pageable pageable);
 
     /**
-     * Retrieve a page of aip which state is the one provided and contains at least one of the provided tags and which last event occurred after the given date
+     * Retrieve a page of aip which state is the one provided and contains at least one of the provided tags and which
+     * last event occurred after the given date
      * @param state
      * @param tags
      * @param fromLastUpdateDate
      * @param pageable
-     * @return a page of aip which state is the one provided and contains at least one of the provided tags and which last event occurred after the given date
+     * @return a page of aip which state is the one provided and contains at least one of the provided tags and which
+     *         last event occurred after the given date
      */
     Page<AIP> findAllByStateAndTagsInAndLastEventDateAfter(AIPState state, Set<String> tags,
             OffsetDateTime fromLastUpdateDate, Pageable pageable);

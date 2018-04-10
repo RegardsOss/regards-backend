@@ -55,6 +55,7 @@ public class AIPDao implements IAIPDao {
         AIP aip = fromDb.getAip();
         // as fromDb.getAip gives us the aip serialized, we have to restore ignored attributes as state
         aip.setState(fromDb.getState());
+        aip.setRetry(fromDb.isRetry());
         return aip;
     }
 
@@ -63,6 +64,12 @@ public class AIPDao implements IAIPDao {
         Page<AIPEntity> fromDb = repo.findAllByStateIn(state, pageable);
         return fromDb.map(this::buildAipFromAIPEntity);
 
+    }
+
+    @Override
+    public Page<AIP> findAllWithLockByState(AIPState state, Pageable pageable) {
+        Page<AIPEntity> fromDb = repo.findAllWithLockByState(state, pageable);
+        return fromDb.map(this::buildAipFromAIPDataBase);
     }
 
     @Override
@@ -153,7 +160,7 @@ public class AIPDao implements IAIPDao {
     @Override
     public void remove(AIP aip) {
         Optional<AIPEntity> opt = repo.findOneByIpId(aip.getId().toString());
-        if(opt.isPresent()) {
+        if (opt.isPresent()) {
             repo.delete(opt.get());
         }
     }
