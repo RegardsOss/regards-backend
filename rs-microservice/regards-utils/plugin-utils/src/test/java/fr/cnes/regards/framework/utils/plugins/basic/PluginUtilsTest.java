@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +40,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginParameterUtils.PrimitiveObj
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.ReflectionUtils;
 
 /**
  * Unit testing of {@link PluginUtils}.
@@ -63,6 +65,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + toString());
 
         // Get all the plugins
+        ReflectionUtils.REFLECTIONS = new Reflections(PLUGIN_PACKAGE);
         final Map<String, PluginMetaData> maps = PluginUtils.getPlugins(PLUGIN_PACKAGE, Arrays.asList(PLUGIN_PACKAGE));
         Assert.assertNotNull(maps);
         Assert.assertTrue(maps.size() > 1);
