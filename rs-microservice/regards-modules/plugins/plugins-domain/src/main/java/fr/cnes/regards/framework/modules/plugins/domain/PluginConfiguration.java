@@ -85,9 +85,10 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Unique identifier of the plugin. This id is the id defined in the "@Plugin" annotation of the plugin
      * implementation class.
+     * <b>DO NOT SET @NotNull even if pluginId must not be null. Validation is done between front and back but at
+     * creation, pluginId is retrieved from plugin metadata and thus set by back</b>
      */
     @Column(nullable = false)
-    @NotNull(message="the pluginId cannot be null")
     private String pluginId;
 
     /**
@@ -101,7 +102,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * Version of the plugin configuration. Is set with the plugin version. This attribute is used to check if the saved
      * configuration plugin version differs from the loaded plugin.
      * <b>DO NOT SET @NotNull even if version must not be null. Validation is done between front and back but at
-     * creation version is retrieved from plugin metdata and thus set by back</b>
+     * creation, version is retrieved from plugin metadata and thus set by back</b>
      */
     @Column(nullable = false, updatable = true)
     private String version;
