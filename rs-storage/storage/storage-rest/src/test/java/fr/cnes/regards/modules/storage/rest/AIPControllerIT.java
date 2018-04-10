@@ -94,7 +94,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final String CATALOG_SECURITY_DELEGATION_LABEL = "AIPControllerIT_SECU_DELEG";
 
-    private static final int MAX_WAIT = 12000;
+    private static final int MAX_WAIT = 60000;
 
     @Autowired
     private IPluginService pluginService;
@@ -229,7 +229,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // ask for an aip to be stored
         testStore();
         // wait for the AIP
-        Thread.sleep(4000);
+        Thread.sleep(20000);
         // get the datafiles checksum
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(aip);

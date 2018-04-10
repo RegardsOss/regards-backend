@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +29,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
@@ -50,10 +48,7 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.PluginStorageInfo;
 @RegardsTransactional
 public class DataStorageService implements IDataStorageService, ApplicationListener<ApplicationReadyEvent> {
 
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(DataStorageInfo.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataStorageInfo.class);
 
     /**
      * {@link IPluginService} instance
@@ -66,12 +61,6 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
      */
     @Autowired
     private IDataFileDao dataFileDao;
-
-    /**
-     * {@link ITenantResolver} instance
-     */
-    @Autowired
-    private ITenantResolver tenantResolver;
 
     /**
      * {@link IRuntimeTenantResolver} instance
@@ -102,23 +91,25 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
         Set<PluginStorageInfo> monitoringInfos = Sets.newHashSet();
         List<PluginConfiguration> dataStorageConfigurations = pluginService
                 .getPluginConfigurationsByType(IDataStorage.class);
-        //lets take only the activated ones
+        // lets take only the activated ones
         Set<PluginConfiguration> activeDataStorageConfs = dataStorageConfigurations.stream().filter(pc -> pc.isActive())
                 .collect(Collectors.toSet());
-        //for each active conf, lets get their DataStorageInfo
+        // for each active conf, lets get their DataStorageInfo
         // lets ask the data base to calculate the used space per data storage
         Collection<MonitoringAggregation> monitoringAggregations = dataFileDao.getMonitoringAggregation();
         // now lets transform it into Map<Long, Long>, it is easier to use
         Map<Long, Long> monitoringAggregationMap = monitoringAggregations.stream().collect(Collectors
                 .toMap(MonitoringAggregation::getDataStorageUsedId, MonitoringAggregation::getUsedSize));
         for (PluginConfiguration activeDataStorageConf : activeDataStorageConfs) {
-            //lets initialize the monitoring information for this data storage configuration by getting plugin informations
+            // lets initialize the monitoring information for this data storage configuration by getting plugin
+            // informations
             Long activeDataStorageConfId = activeDataStorageConf.getId();
             PluginMetaData activeDataStorageMeta = pluginService
                     .getPluginMetaDataById(activeDataStorageConf.getPluginId());
             PluginStorageInfo monitoringInfo = new PluginStorageInfo(activeDataStorageConfId,
                     activeDataStorageMeta.getDescription(), activeDataStorageConf.getLabel());
-            //now lets get the data storage monitoring information from the plugin
+            // now lets get the data storage monitoring information from the plugin
+            @SuppressWarnings("rawtypes")
             Long dataStorageTotalSpace = ((IDataStorage) pluginService.getPlugin(activeDataStorageConfId))
                     .getTotalSpace();
             DataStorageInfo dataStorageInfo;
@@ -139,55 +130,51 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
     }
 
     @Override
-    @Scheduled(fixedRateString = "${regards.storage.check.data.storage.disk.usage.rate:60000}",
-            initialDelay = 60 * 1000)
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void monitorDataStorages() {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            List<PluginConfiguration> dataStorageConfigurations = pluginService
-                    .getPluginConfigurationsByType(IDataStorage.class);
-            //lets take only the activated ones
-            Set<PluginConfiguration> activeDataStorageConfs = dataStorageConfigurations.stream()
-                    .filter(pc -> pc.isActive()).collect(Collectors.toSet());
-            // lets ask the data base to calculate the used space per data storage
-            Collection<MonitoringAggregation> monitoringAggregations = dataFileDao.getMonitoringAggregation();
-            if (!monitoringAggregations.isEmpty()) {
-                // now lets transform it into Map<Long, Long>, it is easier to use
-                Map<Long, Long> monitoringAggregationMap = monitoringAggregations.stream().collect(Collectors
-                        .toMap(MonitoringAggregation::getDataStorageUsedId, MonitoringAggregation::getUsedSize));
-                // lets instantiate those data storage and get their total space
-                for (PluginConfiguration activeDataStorageConf : activeDataStorageConfs) {
-                    //lets initialize the monitoring information for this data storage configuration by getting plugin informations
-                    try {
-                        IDataStorage<?> activeDataStorage = pluginService.getPlugin(activeDataStorageConf.getId());
 
-                        Long activeDataStorageConfId = activeDataStorageConf.getId();
-                        Long dataStorageTotalSpace = activeDataStorage.getTotalSpace();
-                        if (monitoringAggregationMap.containsKey(activeDataStorageConfId)) {
-                            DataStorageInfo dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(),
-                                    dataStorageTotalSpace, monitoringAggregationMap.get(activeDataStorageConfId));
-                            Double ratio = dataStorageInfo.getRatio();
-                            if (ratio >= threshold) {
-                                String message = String.format(
-                                                               "Data storage(configuration id: %s, configuration label: %s) has reach its disk usage threshold. Actual occupation: %s, threshold: %s",
-                                                               activeDataStorageConf.getId().toString(),
-                                                               activeDataStorageConf.getLabel(), ratio, threshold);
-                                LOG.error(message);
-                                notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
-                                             message, NotificationType.ERROR);
-                                MaintenanceManager.setMaintenance(tenant);
-                            }
+        List<PluginConfiguration> dataStorageConfigurations = pluginService
+                .getPluginConfigurationsByType(IDataStorage.class);
+        // lets take only the activated ones
+        Set<PluginConfiguration> activeDataStorageConfs = dataStorageConfigurations.stream().filter(pc -> pc.isActive())
+                .collect(Collectors.toSet());
+        // lets ask the data base to calculate the used space per data storage
+        Collection<MonitoringAggregation> monitoringAggregations = dataFileDao.getMonitoringAggregation();
+        if (!monitoringAggregations.isEmpty()) {
+            // now lets transform it into Map<Long, Long>, it is easier to use
+            Map<Long, Long> monitoringAggregationMap = monitoringAggregations.stream().collect(Collectors
+                    .toMap(MonitoringAggregation::getDataStorageUsedId, MonitoringAggregation::getUsedSize));
+            // lets instantiate those data storage and get their total space
+            for (PluginConfiguration activeDataStorageConf : activeDataStorageConfs) {
+                // lets initialize the monitoring information for this data storage configuration by getting plugin
+                // informations
+                try {
+                    IDataStorage<?> activeDataStorage = pluginService.getPlugin(activeDataStorageConf.getId());
 
+                    Long activeDataStorageConfId = activeDataStorageConf.getId();
+                    Long dataStorageTotalSpace = activeDataStorage.getTotalSpace();
+                    if (monitoringAggregationMap.containsKey(activeDataStorageConfId)) {
+                        DataStorageInfo dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(),
+                                dataStorageTotalSpace, monitoringAggregationMap.get(activeDataStorageConfId));
+                        Double ratio = dataStorageInfo.getRatio();
+                        if (ratio >= threshold) {
+                            String message = String
+                                    .format("Data storage(configuration id: %s, configuration label: %s) has reach its disk usage threshold. Actual occupation: %s, threshold: %s",
+                                            activeDataStorageConf.getId().toString(), activeDataStorageConf.getLabel(),
+                                            ratio, threshold);
+                            LOGGER.error(message);
+                            notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
+                                         message, NotificationType.ERROR);
+                            MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
                         }
 
-                    } catch (ModuleException e) {
-                        //should never happens, currently it is an exception that cannot be thrown in this code(issues with dynamic parameters)
-                        LOG.error(e.getMessage(), e);
                     }
+
+                } catch (ModuleException e) {
+                    // should never happens, currently it is an exception that cannot be thrown in this code(issues with
+                    // dynamic parameters)
+                    LOGGER.error(e.getMessage(), e);
                 }
             }
-            runtimeTenantResolver.clearTenant();
         }
     }
 

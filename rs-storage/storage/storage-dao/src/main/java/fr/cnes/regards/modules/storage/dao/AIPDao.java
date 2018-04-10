@@ -55,6 +55,7 @@ public class AIPDao implements IAIPDao {
         AIP aip = fromDb.getAip();
         // as fromDb.getAip gives us the aip serialized, we have to restore ignored attributes as state
         aip.setState(fromDb.getState());
+        aip.setRetry(fromDb.isRetry());
         return aip;
     }
 
@@ -63,6 +64,12 @@ public class AIPDao implements IAIPDao {
         Page<AIPEntity> fromDb = repo.findAllByStateIn(state, pageable);
         return fromDb.map(this::buildAipFromAIPEntity);
 
+    }
+
+    @Override
+    public Page<AIP> findAllWithLockByState(AIPState state, Pageable pageable) {
+        Page<AIPEntity> fromDb = repo.findAllWithLockByState(state, pageable);
+        return fromDb.map(this::buildAipFromAIPEntity);
     }
 
     @Override
@@ -91,9 +98,8 @@ public class AIPDao implements IAIPDao {
     @Override
     public Page<AIP> findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(AIPState state,
             OffsetDateTime submissionAfter, OffsetDateTime lastEventBefore, Pageable pageable) {
-        return repo
-                .findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(state, submissionAfter, lastEventBefore,
-                                                                            pageable)
+        return repo.findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(state, submissionAfter, lastEventBefore,
+                                                                               pageable)
                 .map(this::buildAipFromAIPEntity);
     }
 
@@ -119,10 +125,8 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Page<AIP> findAllByStateAndTagsIn(AIPState state, Set<String> tags,
-            Pageable pageable) {
-        return repo.findAllByStateAndTagsIn(state, tags, pageable)
-                .map(this::buildAipFromAIPEntity);
+    public Page<AIP> findAllByStateAndTagsIn(AIPState state, Set<String> tags, Pageable pageable) {
+        return repo.findAllByStateAndTagsIn(state, tags, pageable).map(this::buildAipFromAIPEntity);
     }
 
     @Override
@@ -153,7 +157,7 @@ public class AIPDao implements IAIPDao {
     @Override
     public void remove(AIP aip) {
         Optional<AIPEntity> opt = repo.findOneByIpId(aip.getId().toString());
-        if(opt.isPresent()) {
+        if (opt.isPresent()) {
             repo.delete(opt.get());
         }
     }
@@ -176,7 +180,8 @@ public class AIPDao implements IAIPDao {
     @Override
     public Page<AIP> findAllByStateAndLastEventDateAfter(AIPState state, OffsetDateTime fromLastUpdateDate,
             Pageable pageable) {
-        return repo.findAllByStateAndLastEventDateAfter(state, fromLastUpdateDate, pageable).map(this::buildAipFromAIPEntity);
+        return repo.findAllByStateAndLastEventDateAfter(state, fromLastUpdateDate, pageable)
+                .map(this::buildAipFromAIPEntity);
     }
 
     @Override

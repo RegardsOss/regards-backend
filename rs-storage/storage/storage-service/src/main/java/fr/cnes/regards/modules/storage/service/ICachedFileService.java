@@ -8,8 +8,9 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Set;
 
-import fr.cnes.regards.modules.storage.domain.database.CachedFile;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
+import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
@@ -47,4 +48,16 @@ public interface ICachedFileService {
      * @return {@link CachedFile} or empty if it does not exists or is not available.
      */
     Optional<CachedFile> getAvailableCachedFile(String pChecksum);
+
+    /**
+     * Purge cache
+     */
+    void purge();
+
+    /**
+     * Restore all files waiting for restoring
+     */
+    void restoreQueued();
+
+    void processEvent(TenantConnectionReady event);
 }
