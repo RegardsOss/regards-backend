@@ -65,7 +65,7 @@ public class PluginParameter implements IIdentifiable<Long> {
      * Parameter name
      */
     @Column(nullable = false)
-    @NotNull
+    @NotNull(message="The plugin parameter name cannot be null")
     private String name;
 
     /**

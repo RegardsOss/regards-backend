@@ -87,13 +87,13 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * implementation class.
      */
     @Column(nullable = false)
-    @NotNull
+    @NotNull(message="the pluginId cannot be null")
     private String pluginId;
 
     /**
      * Label to identify the configuration.
      */
-    @NotBlank
+    @NotBlank(message="the label cannot be blank")
     @Column(name = "label", length = MAX_STRING_LENGTH)
     private String label;
 
@@ -109,7 +109,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Priority order of the plugin.
      */
-    @NotNull
+    @NotNull(message ="the priorityOrder cannot be null")
     @Column(nullable = false, updatable = true)
     private Integer priorityOrder = 0;
 
