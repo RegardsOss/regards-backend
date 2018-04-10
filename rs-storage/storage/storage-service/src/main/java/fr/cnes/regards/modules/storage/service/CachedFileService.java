@@ -315,12 +315,12 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                 cf.setLocation(restorationPath.toUri().toURL());
                 cf.setState(CachedFileState.AVAILABLE);
                 cf = cachedFileRepository.save(cf);
-                LOG.debug("File {} is now available in cache until {}", cf.getChecksum(),
-                          cf.getExpiration().toString());
+                LOGGER.debug("File {} is now available in cache until {}", cf.getChecksum(),
+                             cf.getExpiration().toString());
                 publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, data.getChecksum()));
             } else {
-                LOG.error("Restauration succeed but the file with checksum {} is not associated to any cached file is database.",
-                          data.getChecksum());
+                LOGGER.error("Restauration succeed but the file with checksum {} is not associated to any cached file is database.",
+                             data.getChecksum());
                 publisher.publish(new DataFileEvent(DataFileEventState.ERROR, data.getChecksum()));
             }
         } catch (MalformedURLException e) {
@@ -337,10 +337,10 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         if (ocf.isPresent()) {
             CachedFile cf = ocf.get();
             cachedFileRepository.delete(cf);
-            LOG.error("Error during cache file restoration {}", cf.getChecksum());
+            LOGGER.error("Error during cache file restoration {}", cf.getChecksum());
         } else {
-            LOG.error("Restauration fails but the file with checksum {} is not associated to any cached file is database.",
-                      data.getChecksum());
+            LOGGER.error("Restauration fails but the file with checksum {} is not associated to any cached file is database.",
+                         data.getChecksum());
         }
         publisher.publish(new DataFileEvent(DataFileEventState.ERROR, data.getChecksum()));
     }
