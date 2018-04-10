@@ -18,18 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import javax.persistence.LockModeType;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.persistence.LockModeType;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
+import fr.cnes.regards.modules.storage.domain.IAipState;
 
 /**
  * JPA Repository to access {@link AIPEntity}
@@ -61,20 +66,22 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
 
     /**
      * Retrieve an {@link AIPEntity} by is {@link AIPEntity#getState()}
-     * @param state {@link AIPState}
+     * @param state {@link SipAIPState}
      * @return optional {@link AIPEntity}
      */
     @Query("select id from AIPEntity a where a.state= ?1")
-    Set<Long> findIdByState(AIPState state);
+    Set<Long> findIdByState(IAipState state);
 
-    /**
-     * Retrieve an {@link AIPEntity} by is {@link AIPEntity#getState()}
-     * @param state {@link AIPState}
-     * @return optional {@link AIPEntity}
-     */
+    default boolean isAlreadyWorking(String processingChain) {
+        Page<AIPEntity> page = findWithLockBySipProcessingAndState(processingChain, SipAIPState.SUBMISSION_SCHEDULED,
+                                                                   new PageRequest(0, 1));
+        return page.hasContent();
+    }
+
     @Lock(LockModeType.PESSIMISTIC_READ)
-    @Query("select id from AIPEntity a where a.state= ?1")
-    Set<Long> findIdByStateAndLock(AIPState state);
+    Page<AIPEntity> findWithLockBySipProcessingAndState(String processingChain, IAipState state, Pageable pageable);
+
+    Set<AIPEntity> findBySipProcessingAndState(String processingChain, IAipState state);
 
     /**
      * Update state of the given {@link AIPEntity}
@@ -83,6 +90,6 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
      */
     @Modifying
     @Query("UPDATE AIPEntity a set a.state = ?1, a.errorMessage = ?3 where a.ipId = ?2")
-    void updateAIPEntityStateAndErrorMessage(AIPState state, String ipId, String errorMessage);
+    void updateAIPEntityStateAndErrorMessage(IAipState state, String ipId, String errorMessage);
 
 }

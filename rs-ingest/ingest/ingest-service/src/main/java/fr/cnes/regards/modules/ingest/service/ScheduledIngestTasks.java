@@ -79,7 +79,7 @@ public class ScheduledIngestTasks {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             LOG.info("Scheduled task : Process new AIP bulk request to archival storage for tenant {}", tenant);
             runtimeTenantResolver.forceTenant(tenant);
-            aipBulkRequestService.postAIPStorageBulkRequest();
+            aipBulkRequestService.scheduleAIPStorageBulkRequest();
             runtimeTenantResolver.clearTenant();
         }
     }

@@ -49,7 +49,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -68,8 +67,6 @@ import fr.cnes.regards.modules.storage.domain.RejectedSip;
  *
  */
 @RestController
-@ModuleInfo(name = "SIP management module", description = "SIP submission and management", version = "2.0.0-SNAPSHOT",
-        author = "CSSI", legalOwner = "CNES", documentation = "https://github.com/RegardsOss")
 @RequestMapping(SIPController.TYPE_MAPPING)
 public class SIPController implements IResourceController<SIPEntity> {
 
@@ -159,13 +156,15 @@ public class SIPController implements IResourceController<SIPEntity> {
 
     @ResourceAccess(description = "Delete one SIP by is sipId.")
     @RequestMapping(method = RequestMethod.DELETE)
-    public ResponseEntity<Collection<RejectedSip>> deleteSipEntityBySipId(@RequestParam("sipId") String sipId) throws ModuleException {
+    public ResponseEntity<Collection<RejectedSip>> deleteSipEntityBySipId(@RequestParam("sipId") String sipId)
+            throws ModuleException {
         return new ResponseEntity<>(sipService.deleteSIPEntitiesForSipId(sipId), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Delete one SIP by is sipId.")
     @RequestMapping(value = IPID_PATH, method = RequestMethod.DELETE)
-    public ResponseEntity<Collection<RejectedSip>> deleteSipEntity(@PathVariable("ipId") String sipId) throws ModuleException {
+    public ResponseEntity<Collection<RejectedSip>> deleteSipEntity(@PathVariable("ipId") String sipId)
+            throws ModuleException {
         return new ResponseEntity<>(sipService.deleteSIPEntitiesByIpIds(Sets.newHashSet(sipId)), HttpStatus.OK);
     }
 

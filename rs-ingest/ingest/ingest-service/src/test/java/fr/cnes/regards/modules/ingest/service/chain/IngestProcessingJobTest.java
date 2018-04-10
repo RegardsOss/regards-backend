@@ -66,12 +66,13 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.TestConfiguration;
+import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPTaggingTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSingleAIPGeneration;
@@ -353,7 +354,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         aips = aipRepository.findBySip(resultSip);
         Assert.assertTrue("There should be one AIP generated associated to the entry sip", aips.size() == 1);
         Assert.assertTrue("The AIP generated should be in CREATED state",
-                          AIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
+                          SipAIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
 
     }
 
@@ -377,7 +378,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         Set<AIPEntity> aips = aipRepository.findBySip(resultSip);
         Assert.assertTrue("There should be one AIP generated associated to the entry sip", aips.size() == 1);
         Assert.assertTrue("The AIP generated should be in CREATED state",
-                          AIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
+                          SipAIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
 
     }
 
