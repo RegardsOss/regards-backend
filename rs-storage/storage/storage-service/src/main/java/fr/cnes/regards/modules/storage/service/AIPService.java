@@ -1257,7 +1257,7 @@ public class AIPService implements IAIPService, ApplicationListener<ApplicationR
                     // first let see if this file is stored on an online data storage and lets get the most prioritized
                     Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = dataFile
                             .getPrioritizedDataStorages().stream()
-                            .filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE)).sorted()
+                            .filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE) && pds.getDataStorageConfiguration().isActive()).sorted()
                             .findFirst();
                     if (onlinePrioritizedDataStorageOpt.isPresent()) {
                         InputStream dataFileIS = ((IOnlineDataStorage) pluginService
