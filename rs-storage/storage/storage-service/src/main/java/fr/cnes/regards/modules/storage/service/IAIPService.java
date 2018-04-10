@@ -5,12 +5,9 @@ package fr.cnes.regards.modules.storage.service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +29,7 @@ import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
+import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
 
@@ -44,42 +42,37 @@ import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
 public interface IAIPService {
 
     /**
-     * Schedule asynchronous jobs to handle new {@link AIP}s creation.<br/>
-     * This process handle :
-     * <ul>
-     * <li>Storage in db of {@link AIP}</li>
-     * <li>Storage in db of each {@link StorageDataFile} associated</li>
-     * <li>Physical storage of each {@link StorageDataFile} through {@link IDataStorage} plugins</li>
-     * <li>Creation of physical file containing AIP metadata informations and storage through {@link IDataStorage}
-     * plugins</li>
-     * </ul>
-     * @param pAIP new {@link Set}<{@link AIP}> to store
-     * @return {@link Set}<{@link UUID}> of scheduled store AIP Jobs.
-     * @throws ModuleException
+     * Save AIP and publish event if requested
      */
-    Set<UUID> storeAndCreate(Set<AIP> pAIP) throws ModuleException;
+    AIP save(AIP aip, boolean publish);
+
+    /**
+     * Synchronous method for validating and storing an AIP collection submitted through Rest API.<br/>
+     * All heavy work will be done asynchronously.
+     */
+    List<RejectedAip> validateAndStore(AIPCollection aips) throws ModuleException;
+
+    /**
+     * Asynchronously makes the heavy work of storing AIP following these steps :
+     * <ul>
+     * <li>Extract data files from {@link AIP}</li>
+     * <li>Dispatch them on {@link IDataStorage} plugins through the single active {@link IAllocationStrategy}
+     * plugin</li>
+     * <li>Prepare and schedule storage jobs for data files</li>
+     * </ul>
+     */
+    void store() throws ModuleException;
 
     /**
      * Schedule asynchronous jobs to handle failed storage of existing {@link AIP}.<br/>
      * @param aipIpIds collection of aip ip ids to try to store back
      */
-    Set<UUID> storeRetry(Set<String> aipIpIds) throws ModuleException;
-
-    /**
-     * Apply creation validation on each {@link AIP}:
-     * <ul>
-     *     <li>Aip does not already exists in the database</li>
-     *     <li>Aip is valid</li>
-     * </ul>
-     * @param aips
-     * @return Rejected aips, through their ip id, with the rejection cause.
-     */
-    List<RejectedAip> applyCreationChecks(AIPCollection aips);
+    void storeRetry(Set<String> aipIpIds) throws ModuleException;
 
     /**
      * Apply retry validation on each {@link AIP} represented by their ipId:
      * <ul>
-     *     <li>Aip is known in the system</li>
+     * <li>Aip is known in the system</li>
      * </ul>
      * @param aipIpIds
      * @return
@@ -91,7 +84,8 @@ public interface IAIPService {
      * Files that are already available are return in the response. For other ones, asynchronous jobs are scheduled
      * to make them available. As soon as a file is available, a {@link DataFileEvent} is published into the
      * system message queue.
-     * @param availabilityRequest {@link AvailabilityRequest} containing request informations. Files checksum to make available and
+     * @param availabilityRequest {@link AvailabilityRequest} containing request informations. Files checksum to make
+     *            available and
      *            files lifetime in cache.
      * @return checksums of files that are already available
      */
@@ -112,13 +106,14 @@ public interface IAIPService {
     /**
      * Retrieve pages of AIP with files public information filtered according to the parameters
      *
-     * @param state
-     * @param tags
-     * @param fromLastUpdateDate
+     * @param state cannot be null
+     * @param tags can be null
+     * @param fromLastUpdateDate can be null
      * @param pageable
      * @return {@link AIP}s corresponding to parameters given.
      */
-    Page<AipDataFiles> retrieveAipDataFiles(AIPState state, Set<String> tags, OffsetDateTime fromLastUpdateDate, Pageable pageable);
+    Page<AipDataFiles> retrieveAipDataFiles(AIPState state, Set<String> tags, OffsetDateTime fromLastUpdateDate,
+            Pageable pageable);
 
     /**
      * Retrieve the files metadata associated to an aip
@@ -134,11 +129,6 @@ public interface IAIPService {
      * @return the aip versions ip ids
      */
     List<String> retrieveAIPVersionHistory(UniformResourceName pIpId);
-
-    /**
-     * Handle update of physical AIP metadata files associated to {@link AIP} updated in database.
-     */
-    void updateAlreadyStoredMetadata();
 
     /**
      * Retrieve the input stream towards the desired file.
@@ -181,7 +171,8 @@ public interface IAIPService {
     AIP retrieveAip(String ipId) throws EntityNotFoundException;
 
     /**
-     * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation, storeAndCreate a
+     * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation,
+     * storeAndCreate a
      * new aip with a different version and use storeAndCreate method.
      * @param ipId information package identifier of the aip
      * @param updated object containing changes
@@ -195,7 +186,8 @@ public interface IAIPService {
 
     /**
      * Remove an aip from the system. Its file are deleted if and only if no other aip point to them.
-     * @return not suppressible files because they are in state {@link fr.cnes.regards.modules.storage.domain.database.DataFileState#PENDING}
+     * @return not suppressible files because they are in state
+     *         {@link fr.cnes.regards.modules.storage.domain.database.DataFileState#PENDING}
      */
     Set<StorageDataFile> deleteAip(String ipId) throws ModuleException;
 
@@ -218,8 +210,8 @@ public interface IAIPService {
      * @param ipId
      * @param tagsToRemove
      */
-    void removeTags(String ipId, Set<String> tagsToRemove) throws EntityNotFoundException,
-            EntityInconsistentIdentifierException, EntityOperationForbiddenException;
+    void removeTags(String ipId, Set<String> tagsToRemove)
+            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     ////////////////// These methods should only be called by IAIPServices

@@ -6,7 +6,6 @@ package fr.cnes.regards.modules.storage.service;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -15,16 +14,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.ContentInformation;
@@ -53,18 +56,16 @@ import fr.cnes.regards.modules.storage.service.job.StorageJobProgressManager;
 
 /**
  * Handler for DataStorageEvent events. This events are sent by the {@link StorageJobProgressManager} associated
- * to the {@link IDataStorage} plugins. After each {@link StorageDataFile} stored, deleted or restored a {@link DataStorageEvent}
+ * to the {@link IDataStorage} plugins. After each {@link StorageDataFile} stored, deleted or restored a
+ * {@link DataStorageEvent}
  * should be sent thought the {@link StorageJobProgressManager}.
  * @author Sylvain Vissiere-Guerinet
  * @author Sébastien Binda
  */
 @Component
 @RegardsTransactional
-public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
+public class DataStorageEventHandler implements IHandler<DataStorageEvent>, IDataStorageEventHandler {
 
-    /**
-     * Class logger.
-     */
     private static final Logger LOG = LoggerFactory.getLogger(DataStorageEventHandler.class);
 
     /**
@@ -111,12 +112,6 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
     @Autowired
     private ICachedFileService cachedFileService;
 
-    /**
-     * Service to retrieve and use Plugins more specificly the {@link IDataStorage} plugins.
-     */
-    @Autowired
-    private PluginService pluginService;
-
     @Autowired
     private IWorkspaceService workspaceService;
 
@@ -126,11 +121,21 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
     @Autowired
     private INotificationClient notificationClient;
 
+    @Autowired
+    private ISubscriber subscriber;
+
     /**
      * The spring application name ~= microservice type
      */
     @Value("${spring.application.name}")
     private String applicationName;
+
+    @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        // Subscribe to events on {@link StorageDataFile} changes.
+        subscriber.subscribeTo(DataStorageEvent.class, this);
+    }
 
     /**
      * Dispatch actions to handle by {@link StorageAction}
@@ -199,15 +204,15 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                 default:
                     // IDataStorage plugin used to delete the file is not able to delete the file right now.
                     // Maybe the file can be deleted later. So do nothing and just notify administrator.
-                    String message = String.format("Error deleting file (id: %s, checksum: %s).", event.getDataFileId(), event.getChecksum());
+                    String message = String.format("Error deleting file (id: %s, checksum: %s).", event.getDataFileId(),
+                                                   event.getChecksum());
                     LOG.error(message);
                     notifyAdmins("File deletion error", message, NotificationType.INFO);
                     break;
             }
         } else {
-            LOG.error(
-                    "[DATAFILE DELETION EVENT] Invalid StorageDataFile deletion event. StorageDataFile does not exists in db for id {}",
-                    event.getDataFileId());
+            LOG.error("[DATAFILE DELETION EVENT] Invalid StorageDataFile deletion event. StorageDataFile does not exists in db for id {}",
+                      event.getDataFileId());
         }
     }
 
@@ -218,8 +223,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
         FeignSecurityManager.asSystem();
         try {
             NotificationDTO notif = new NotificationDTO(message, Sets.newHashSet(),
-                                                        Sets.newHashSet(DefaultRole.ADMIN.name()), applicationName,
-                                                        title, type);
+                    Sets.newHashSet(DefaultRole.ADMIN.name()), applicationName, title, type);
             notificationClient.createNotification(notif);
         } finally {
             FeignSecurityManager.reset();
@@ -239,7 +243,8 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
             // If deleted file is not an AIP metadata file
             // Set the AIP to UPDATED state.
             if (!DataType.AIP.equals(dataFileDeleted.getDataType())) {
-                // Get from the AIP all the content informations to remove. All content informations to remove are the content informations with the same checksum that
+                // Get from the AIP all the content informations to remove. All content informations to remove are the
+                // content informations with the same checksum that
                 // the deleted StorageDataFile.
                 // @formatter:off
                 Set<ContentInformation> cisToRemove =
@@ -274,8 +279,10 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                     aipDao.remove(associatedAIP);
                     publisher.publish(new AIPEvent(associatedAIP));
                 } else {
-                    // Do not delete the dataFileDeleted from db. At this time in db the file is the new one that has been
-                    // stored previously to replace the deleted one. This is a special case for AIP metadata file because,
+                    // Do not delete the dataFileDeleted from db. At this time in db the file is the new one that has
+                    // been
+                    // stored previously to replace the deleted one. This is a special case for AIP metadata file
+                    // because,
                     // at any time we want to ensure that there is only one StorageDataFile of AIP type for a given AIP.
                     LOG.debug("[DELETE FILE SUCCESS] AIP metadata file replaced.",
                               dataFileDeleted.getAip().getId().toString());
@@ -334,7 +341,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
             prioritizedDataStorageUsed = prioritizedDataStorageService.retrieve(dataStoragePluginConfId);
         } catch (ModuleException e) {
             LOG.error("You shouldn't have this issue here! This means the plugin used to storeAndCreate the dataFile "
-                              + "has just been removed from the application", e);
+                    + "has just been removed from the application", e);
             return;
         }
         storedDataFile.setChecksum(storedFileChecksum);
@@ -347,7 +354,7 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
         if (storedDataFile.getNotYetStoredBy() == 0) {
             storedDataFile.setState(DataFileState.STORED);
             storedDataFile.emptyFailureCauses();
-            //specific save once it is stored
+            // specific save once it is stored
             dataFileDao.save(storedDataFile);
             LOG.debug("[STORE FILE SUCCESS] DATA FILE {} is in STORED state", storedDataFile.getUrls());
             if (storedDataFile.getDataType() == DataType.AIP) {
@@ -377,10 +384,9 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent> {
                         .findFirst();
             // @formatter:on
                 if (ci.isPresent()) {
-                    associatedAIP.getProperties().getPdi().getProvenanceInformation().addEvent(EventType.STORAGE.name(),
-                                                                                               "File " + storedDataFile
-                                                                                                       .getName()
-                                                                                                       + " stored into REGARDS");
+                    associatedAIP.getProperties().getPdi().getProvenanceInformation()
+                            .addEvent(EventType.STORAGE.name(),
+                                      "File " + storedDataFile.getName() + " stored into REGARDS");
                     ci.get().getDataObject().setFileSize(storedDataFile.getFileSize());
                     ci.get().getDataObject().getUrls().addAll(storedDataFile.getUrls());
                     ci.get().getDataObject().setFilename(storedDataFile.getName());

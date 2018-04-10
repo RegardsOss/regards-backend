@@ -8,14 +8,16 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.persistence.LockModeType;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 
@@ -32,6 +34,13 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * Find a page of aips which state is the provided one
      * @return a page of aips which state is the provided one
      */
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    Page<AIPEntity> findAllWithLockByState(AIPState state, Pageable pageable);
+
+    /**
+     * Find a page of aips which state is the provided one
+     * @return a page of aips which state is the provided one
+     */
     @EntityGraph("graph.aip.tags")
     Page<AIPEntity> findAllByStateIn(AIPState state, Pageable pageable);
 
@@ -43,8 +52,10 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
     Set<AIPEntity> findAllByStateIn(AIPState... states);
 
     /**
-     * Find a page of aips which state is the provided one and which has been submitted after the given date and which last event occurred before the given date
-     * @return a page of aips which state is the provided one and which has been submitted after the given date and which last event occurred before the given date
+     * Find a page of aips which state is the provided one and which has been submitted after the given date and which
+     * last event occurred before the given date
+     * @return a page of aips which state is the provided one and which has been submitted after the given date and
+     *         which last event occurred before the given date
      */
     @EntityGraph("graph.aip.tags")
     Page<AIPEntity> findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(AIPState state, OffsetDateTime from,
@@ -65,8 +76,10 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
     Page<AIPEntity> findAllByStateAndLastEventDateBefore(AIPState state, OffsetDateTime from, Pageable pageable);
 
     /**
-     * Find a page of aips which has been submitted after the given date and which last event occurred before the given date
-     * @return a page of aips which has been submitted after the given date and which last event occurred before the given date
+     * Find a page of aips which has been submitted after the given date and which last event occurred before the given
+     * date
+     * @return a page of aips which has been submitted after the given date and which last event occurred before the
+     *         given date
      */
     @EntityGraph("graph.aip.tags")
     Page<AIPEntity> findAllBySubmissionDateAfterAndLastEventDateBefore(OffsetDateTime from, OffsetDateTime to,
@@ -87,8 +100,10 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
     Page<AIPEntity> findAllByLastEventDateBefore(OffsetDateTime to, Pageable pageable);
 
     /**
-     * Retrieve a page of aip which state is the one provided and contains the provided tags and which last event occurred after the given date
-     * @return a page of aip which state is the one provided and contains the provided tags and which last event occurred after the given date
+     * Retrieve a page of aip which state is the one provided and contains the provided tags and which last event
+     * occurred after the given date
+     * @return a page of aip which state is the one provided and contains the provided tags and which last event
+     *         occurred after the given date
      */
     @EntityGraph("graph.aip.tags")
     Page<AIPEntity> findAllByStateAndTagsInAndLastEventDateAfter(AIPState state, Set<String> tags,
@@ -142,4 +157,7 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      */
     @EntityGraph("graph.aip.tags")
     Page<AIPEntity> findAllBySipId(String sipId, Pageable pageable);
+
+    @EntityGraph("graph.aip.tags")
+    Page<AIPEntity> findAllByStateAndLastEventDateAfter(AIPState state, OffsetDateTime fromLastUpdateDate, Pageable pageable);
 }
