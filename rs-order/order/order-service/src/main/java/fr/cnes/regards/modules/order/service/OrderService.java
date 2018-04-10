@@ -1,5 +1,7 @@
 package fr.cnes.regards.modules.order.service;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.transaction.Transactional;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -116,7 +118,7 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 @Service
 @MultitenantTransactional
 @RefreshScope
-public class OrderService implements IOrderService, ApplicationListener<EnvironmentChangeEvent> {
+public class OrderService implements IOrderService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
 
@@ -198,13 +200,16 @@ public class OrderService implements IOrderService, ApplicationListener<Environm
     private static final Set<DataType> DATA_TYPES = Stream.of(DataTypeSelection.ALL.getFileTypes())
             .map(DataType::valueOf).collect(Collectors.toSet());
 
-    @Override
-    public void onApplicationEvent(EnvironmentChangeEvent event) {
+    /**
+     * Method called at creation AND after a resfresh
+     */
+    @PostConstruct
+    public void init() {
         // Compute bucketSize from bucketSizeMb filled by Spring
         bucketSize = bucketSizeMb * 1024l * 1024l;
-        LOGGER.info(
-                "OrderService refreshed with bucketSize: {}, orderValidationPeriodDays: {}, daysBeforeSendingNotifEmail: {}...",
-                bucketSize, orderValidationPeriodDays, daysBeforeSendingNotifEmail);
+        LOGGER.info("OrderService created/refreshed with bucketSize: {}, orderValidationPeriodDays: {}"
+                            + ", daysBeforeSendingNotifEmail: {}...", bucketSize, orderValidationPeriodDays,
+                    daysBeforeSendingNotifEmail);
     }
 
     @Override
