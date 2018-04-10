@@ -30,7 +30,7 @@ import org.springframework.context.annotation.PropertySource;
  */
 @Configuration
 @EnableAutoConfiguration(exclude = JacksonAutoConfiguration.class)
-@PropertySource("classpath:dao.properties")
+@PropertySource({ "classpath:dao.properties", "classpath:amqp.properties" })
 public class DefaultDaoTestConfiguration {
 
 }
