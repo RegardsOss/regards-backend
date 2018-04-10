@@ -87,7 +87,7 @@ public final class PluginUtils {
         final Map<String, PluginMetaData> plugins = new HashMap<>();
 
         // Scan class path with Reflections library
-        final Reflections reflections = new Reflections(prefix);
+        final Reflections reflections = ReflectionUtils.REFLECTIONS;
         final Set<Class<?>> annotatedPlugins = reflections.getTypesAnnotatedWith(Plugin.class, true);
 
         // Create a plugin object for each class
