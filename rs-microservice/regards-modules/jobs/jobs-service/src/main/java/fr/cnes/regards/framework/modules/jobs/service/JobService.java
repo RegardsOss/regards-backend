@@ -1,5 +1,7 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.OffsetDateTime;
@@ -9,8 +11,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,8 +23,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -55,7 +57,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
  */
 @Service
 @RefreshScope
-public class JobService implements IJobService, ApplicationListener<EnvironmentChangeEvent> {
+public class JobService implements IJobService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
 
@@ -107,10 +109,25 @@ public class JobService implements IJobService, ApplicationListener<EnvironmentC
         statusInfo.setStackTrace(sw.toString());
     }
 
-    @Override
-    public void onApplicationEvent(EnvironmentChangeEvent event) {
+    /**
+     * Destroy or refresh
+     */
+    @PreDestroy
+    public void preDestroy() {
+        LOGGER.info("Shutting down job thread pool...");
+        threadPool.shutdown();
+        LOGGER.info("Waiting 60s max for jobs to be terminated...");
+        try {
+            threadPool.awaitTermination(60, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.warn("Waiting task interrupted");
+        }
+    }
+
+    @PostConstruct
+    public void init() {
         threadPool = new JobThreadPoolExecutor(poolSize, jobInfoService, jobsMap, runtimeTenantResolver, publisher);
-        LOGGER.info("JobService refreshed with poolSize: {}", poolSize);
+        LOGGER.info("JobService created/refreshed with poolSize: {}", poolSize);
     }
 
     @Override
@@ -215,6 +232,10 @@ public class JobService implements IJobService, ApplicationListener<EnvironmentC
             jobInfo.setJob(job);
             // Run job (before executing Job, JobThreadPoolExecutor save JobInfo, have a look if you don't believe me)
             jobsMap.put(jobInfo, (RunnableFuture<Void>) threadPool.submit(job));
+        } catch (RejectedExecutionException e) {
+            // ThreadPool has been shutted down (maybe due to a refresh)
+            LOGGER.warn("Job thread pool rejects job {}", jobInfo.getId());
+            resetJob(jobInfo);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             LOGGER.error("Unable to instantiate job", e);
             manageJobInstantiationError(jobInfo, e);
@@ -228,6 +249,16 @@ public class JobService implements IJobService, ApplicationListener<EnvironmentC
             LOGGER.error("Invalid parameter", e);
             manageJobInstantiationError(jobInfo, e);
         }
+    }
+
+    /**
+     * Job has been rejected by thread pool so reset to its previous state to be taken into account later
+     * @param jobInfo
+     */
+    private void resetJob(JobInfo jobInfo) {
+        jobInfo.updateStatus(JobStatus.QUEUED);
+        jobInfo.setTenant(null);
+        jobInfoService.save(jobInfo);
     }
 
     /**
