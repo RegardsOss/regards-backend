@@ -1,6 +1,5 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -23,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -103,6 +103,9 @@ public class JobService implements IJobService {
 
     private ThreadPoolExecutor threadPool;
 
+    // Boolean permitting to determine if method manage() can pull jobs and executing them
+    private boolean canManage = true;
+
     private static void printStackTrace(JobStatusInfo statusInfo, Exception e) {
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
@@ -114,7 +117,10 @@ public class JobService implements IJobService {
      */
     @PreDestroy
     public void preDestroy() {
+        subscriber.unsubscribeFrom(StopJobEvent.class);
         LOGGER.info("Shutting down job thread pool...");
+        // Avoid pulling new jobs
+        canManage = false;
         threadPool.shutdown();
         LOGGER.info("Waiting 60s max for jobs to be terminated...");
         try {
@@ -124,23 +130,29 @@ public class JobService implements IJobService {
         }
     }
 
-    @PostConstruct
-    public void init() {
+    @EventListener
+    public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
         threadPool = new JobThreadPoolExecutor(poolSize, jobInfoService, jobsMap, runtimeTenantResolver, publisher);
         LOGGER.info("JobService created/refreshed with poolSize: {}", poolSize);
-    }
-
-    @Override
-    @EventListener
-    public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(StopJobEvent.class, new StopJobHandler());
     }
 
+    @EventListener
+    public void handleRefreshScopeRefreshedEvent(RefreshScopeRefreshedEvent event) {
+        threadPool = new JobThreadPoolExecutor(poolSize, jobInfoService, jobsMap, runtimeTenantResolver, publisher);
+        LOGGER.info("JobService refreshed with poolSize: {}", poolSize);
+        subscriber.subscribeTo(StopJobEvent.class, new StopJobHandler());
+    }
+
+    /**
+     * After a refresh, canManage is automatically reset to true and this method is magically re-executed as soon as
+     * necessary even if JobInitializer isn't @RefreshScope'd
+     */
     @Override
     @Async
     public void manage() {
         // To avoid starvation, loop on each tenant before executing jobs
-        while (true) {
+        while (canManage) {
             boolean noJobAtAll = true;
             for (String tenant : tenantResolver.getAllActiveTenants()) {
                 runtimeTenantResolver.forceTenant(tenant);
