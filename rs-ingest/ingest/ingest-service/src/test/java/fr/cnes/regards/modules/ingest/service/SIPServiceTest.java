@@ -162,7 +162,7 @@ public class SIPServiceTest extends AbstractSIPTest {
                 .thenAnswer(invocation -> simulateRetrieveAIPResponseFromStorage((String) invocation
                         .getArguments()[0]));
 
-        // Simulate AIPClient to return empty  rejected SIP from AIPs deletion
+        // Simulate AIPClient to return empty rejected SIP from AIPs deletion
         Mockito.when(aipClient.deleteAipFromSips(Mockito.anySet()))
                 .thenReturn(simulateDeleteSIPAIPsREsponseFromStorage());
     }
@@ -181,7 +181,8 @@ public class SIPServiceTest extends AbstractSIPTest {
             sipService.deleteSIPEntitiesByIpIds(Sets.newHashSet(sipWithManyAIPs.getIpId()));
             // 1.1 Check call to the archival storage for deletion of associated AIPs.
             Mockito.verify(aipClient, Mockito.times(1)).deleteAipFromSips(Sets.newHashSet(sipWithManyAIPs.getIpId()));
-            // 2. Simulate that one of the AIPs to delete has been successfully deleted by the archival storage microservice
+            // 2. Simulate that one of the AIPs to delete has been successfully deleted by the archival storage
+            // microservice
             simulateAipDeletionFromStorage(getSipSimulatedAIPs(sipWithManyAIPs.getIpId()).get(0).getId());
             // 2.1 SIP should be in INCOMPLETE state as there is another AIP to delete
             Assert.assertTrue("SIP should be in INCOMPLETE state",
@@ -219,7 +220,8 @@ public class SIPServiceTest extends AbstractSIPTest {
             sipService.deleteSIPEntitiesByIpIds(Sets.newHashSet(sipWithOneAIP.getIpId()));
             // 1.1 Check call to the archival storage for deletion of associated AIPs.
             Mockito.verify(aipClient, Mockito.times(1)).deleteAipFromSips(Sets.newHashSet(sipWithOneAIP.getIpId()));
-            // 2. Simulate that one of the AIPs to delete has been successfully deleted by the archival storage microservice
+            // 2. Simulate that one of the AIPs to delete has been successfully deleted by the archival storage
+            // microservice
             simulateAipDeletionFromStorage(getSipSimulatedAIPs(sipWithOneAIP.getIpId()).get(0).getId());
             // 2.1 All AIP has been deleted, SIP should be in DELETED STATE
             SIPEntity deletedSip = sipRepository.findOne(sipWithOneAIP.getId());
@@ -254,7 +256,8 @@ public class SIPServiceTest extends AbstractSIPTest {
             Mockito.verify(aipClient, Mockito.times(1)).deleteAipFromSips(sipWithManyVersions.stream()
                     .map(SIPEntity::getIpId).collect(Collectors.toSet()));
             for (SIPEntity sip : sipWithManyVersions) {
-                // 2. Simulate that one of the AIPs to delete has been successfully deleted by the archival storage microservice
+                // 2. Simulate that one of the AIPs to delete has been successfully deleted by the archival storage
+                // microservice
                 simulateAipDeletionFromStorage(getSipSimulatedAIPs(sip.getIpId()).get(0).getId());
                 // 2.1 All AIP has been deleted, SIP should be in DELETED STATE
                 SIPEntity deletedSip = sipRepository.findOne(sip.getId());
@@ -337,7 +340,8 @@ public class SIPServiceTest extends AbstractSIPTest {
         @SuppressWarnings("rawtypes")
         ArgumentCaptor<Set> argument = ArgumentCaptor.forClass(Set.class);
         Mockito.verify(aipClient, Mockito.times(1)).deleteAipFromSips(argument.capture());
-        // Valid SIP for deletion are other states (CREATED, AIP_CREATED, INVALID, AIP_GEN_ERROR, REJECTED, STORED, STORE_ERROR, INCOMPLETE, INDEXED)
+        // Valid SIP for deletion are other states (CREATED, AIP_CREATED, INVALID, AIP_GEN_ERROR, REJECTED, STORED,
+        // STORE_ERROR, INCOMPLETE, INDEXED)
         Assert.assertEquals(18, argument.getValue().size());
         // Check that not stored SIP are already is DELETED state
         // Not stored state are CREATED, AIP_CREATED, INVALID, AIP_GEN_ERROR, REJECTED, DELETED
@@ -349,7 +353,8 @@ public class SIPServiceTest extends AbstractSIPTest {
     }
 
     /**
-     * Simulate response from {@link IAipClient#retrieveAIPs(String, AIPState, java.time.OffsetDateTime, java.time.OffsetDateTime, int, int)}
+     * Simulate response from
+     * {@link IAipClient#retrieveAIPs(String, AIPState, java.time.OffsetDateTime, java.time.OffsetDateTime, int, int)}
      * @param sipId
      * @return
      */
@@ -392,7 +397,7 @@ public class SIPServiceTest extends AbstractSIPTest {
             AIP aipToDelete = oAip.get();
             aipToDelete.setState(AIPState.DELETED);
             publisher.publish(new AIPEvent(aipToDelete));
-            Thread.sleep(1000);
+            Thread.sleep(5000);
         }
     }
 
