@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
+import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
 
@@ -119,6 +120,7 @@ public class NotificationSettingsService implements INotificationSettingsService
     private NotificationSettings createNotificationSettings(final String pProjectUser) {
         final NotificationSettings settings = new NotificationSettings();
         settings.setProjectUserEmail(pProjectUser);
+        settings.setFrequency(NotificationFrequency.WEEKLY);
         return notificationSettingsRepository.save(settings);
     }
 
