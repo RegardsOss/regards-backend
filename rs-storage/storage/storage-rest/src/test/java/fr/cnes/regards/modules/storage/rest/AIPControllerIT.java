@@ -20,6 +20,7 @@ import org.hamcrest.core.IsCollectionContaining;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.internal.matchers.NotNull;
@@ -84,6 +85,7 @@ import fr.cnes.regards.modules.storage.service.IPrioritizedDataStorageService;
  */
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles("testAmqp")
+@Ignore
 public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final String ALLOCATION_CONF_LABEL = "AIPControllerIT_ALLOCATION";

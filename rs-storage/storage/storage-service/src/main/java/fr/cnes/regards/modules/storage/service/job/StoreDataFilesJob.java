@@ -19,7 +19,8 @@ public class StoreDataFilesJob extends AbstractStoreFilesJob {
     @Override
     protected void handleWorkspaceException(IOException e) throws JobWorkspaceException {
         Long storageConfId = parameters.get(PLUGIN_TO_USE_PARAMETER_NAME).getValue();
-        StorageJobProgressManager progressManager = new StorageJobProgressManager(publisher, this, storageConfId);
+        StorageJobProgressManager progressManager = new StorageJobProgressManager(publisher, this, storageConfId,
+                runtimeTenantResolver);
         IWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
         workingSubset.getDataFiles().forEach(file -> progressManager.storageFailed(file, e.toString()));
         super.handleWorkspaceException(e);

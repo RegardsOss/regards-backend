@@ -106,9 +106,9 @@ public interface IAIPService {
     /**
      * Retrieve pages of AIP with files public information filtered according to the parameters
      *
-     * @param state
-     * @param tags
-     * @param fromLastUpdateDate
+     * @param state cannot be null
+     * @param tags can be null
+     * @param fromLastUpdateDate can be null
      * @param pageable
      * @return {@link AIP}s corresponding to parameters given.
      */

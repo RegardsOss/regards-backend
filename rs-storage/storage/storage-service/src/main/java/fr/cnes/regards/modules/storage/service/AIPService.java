@@ -473,9 +473,17 @@ public class AIPService implements IAIPService {
         // we have two cases: there is a date or not
         Page<AIP> aips;
         if (fromLastUpdateDate == null) {
-            aips = aipDao.findAllByStateAndTagsIn(state, tags, pageable);
+            if(tags == null || tags.isEmpty()) {
+                aips = aipDao.findAllByState(state, pageable);
+            } else {
+                aips = aipDao.findAllByStateAndTagsIn(state, tags, pageable);
+            }
         } else {
-            aips = aipDao.findAllByStateAndTagsInAndLastEventDateAfter(state, tags, fromLastUpdateDate, pageable);
+            if(tags == null || tags.isEmpty()) {
+                aips = aipDao.findAllByStateAndLastEventDateAfter(state, fromLastUpdateDate, pageable);
+            } else {
+                aips = aipDao.findAllByStateAndTagsInAndLastEventDateAfter(state, tags, fromLastUpdateDate, pageable);
+            }
         }
         // now lets get the data files for each aip which are the aip metadata itself
         List<AipDataFiles> aipDataFiles = new ArrayList<>();
@@ -740,7 +748,7 @@ public class AIPService implements IAIPService {
     @Override
     public Set<StorageDataFile> prepareNotFullyStored() {
         Set<StorageDataFile> metadataToStore = Sets.newHashSet();
-        Set<AIP> notFullyStored = aipDao.findAllByStateInService(AIPState.PENDING, AIPState.STORAGE_ERROR);
+        Set<AIP> notFullyStored = aipDao.findAllByStateInService(AIPState.PENDING);
         // first lets handle the case where every dataFiles of an AIP are successfully stored.
         for (AIP aip : notFullyStored) {
             Set<StorageDataFile> storedDataFile = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
@@ -1196,7 +1204,7 @@ public class AIPService implements IAIPService {
                     // first let see if this file is stored on an online data storage and lets get the most prioritized
                     Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = dataFile
                             .getPrioritizedDataStorages().stream()
-                            .filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE)).sorted()
+                            .filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE) && pds.getDataStorageConfiguration().isActive()).sorted()
                             .findFirst();
                     if (onlinePrioritizedDataStorageOpt.isPresent()) {
                         @SuppressWarnings("rawtypes")
