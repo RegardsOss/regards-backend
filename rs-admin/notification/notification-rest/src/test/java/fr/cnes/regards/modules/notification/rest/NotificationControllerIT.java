@@ -201,6 +201,21 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                           notification.getId());
     }
 
+    @Test
+    public void testRetrieveNotifSetting() {
+        RequestBuilderCustomizer requestCustomizer = getNewRequestBuilderCustomizer();
+        requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath("$.id", Matchers.notNullValue(Long.class)));
+        requestCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath("$.projectUserEmail", Matchers.notNullValue(Long.class)));
+        requestCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath("$.frequency", Matchers.notNullValue(Long.class)));
+        performDefaultGet(NotificationController.NOTIFICATION_PATH + NotificationController.NOTIFICATION_SETTINGS,
+                          requestCustomizer,
+                          "could not retrieve notification settings");
+    }
+
     @Configuration
     static class Conf {
 
