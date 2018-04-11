@@ -20,7 +20,7 @@ properties([
   pipelineTriggers([
     upstream(
       threshold: hudson.model.Result.SUCCESS,
-      upstreamProjects: 'rs-admin-multi-branch/develop'
+      upstreamProjects: 'rs-admin-multi-branch%2Fdevelop'
     )
   ])
 ])

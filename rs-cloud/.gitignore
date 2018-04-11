@@ -32,3 +32,11 @@ Thumbs.db
 # Logs
 ######################
 
+
+deliver_brutaly\.sh
+
+deliver_config_brutaly\.sh
+
+deliver_gateway_brutaly\.sh
+
+*.swp

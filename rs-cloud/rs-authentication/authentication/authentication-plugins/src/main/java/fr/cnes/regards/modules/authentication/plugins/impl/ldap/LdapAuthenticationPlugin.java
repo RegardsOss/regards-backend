@@ -99,14 +99,14 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
      * LDAP User login attribute.
      */
     @PluginParameter(name = PARAM_LDAP_USER_LOGIN_ATTTRIBUTE, label = "LDAP login attribute",
-            description = "LDAP User parameter containing user login (default=sAMAccountLogin)")
+            description = "LDAP User parameter containing user login (default=sAMAccountLogin)", optional = true)
     private String ldapUserLoginAttribute;
 
     /**
      * LDAP Filter to find the User object
      */
     @PluginParameter(name = PARAM_LDAP_USER_FILTER_ATTTRIBUTE, label = "LDAP Filter",
-            description = "LDAP Filter to find the user object (default = (ObjectClass=user)")
+            description = "LDAP Filter to find the user object (default = (ObjectClass=user)", optional = true)
     private String ldapSearchUserFilter;
 
     /**
