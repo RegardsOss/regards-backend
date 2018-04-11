@@ -389,6 +389,16 @@ public final class PluginUtils {
                                                pluginConfiguration.getVersion(), pluginMetadata.getVersion()));
                 }
             }
+            if (pluginConfiguration.getPluginId() == null) {
+                pluginConfiguration.setPluginId(pluginMetadata.getPluginId());
+            } else {
+                // Check that pluginId is the same between plugin one and plugin configuration one
+                if (!Objects.equals(pluginMetadata.getPluginId(), pluginConfiguration.getPluginId())) {
+                    validationErrors
+                            .add(String.format("Plugin configuration pluginId (%s) is different from plugin one (%s).",
+                                               pluginConfiguration.getPluginId(), pluginMetadata.getPluginId()));
+                }
+            }
 
             // First lets check the plugin parameters
             //    first simple test, are there enough parameters?
