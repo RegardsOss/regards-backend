@@ -45,7 +45,7 @@ public class Basket implements IIdentifiable<Long> {
     @Column(name = "owner", length = 100, nullable = false)
     private String owner;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "basket_id", foreignKey = @ForeignKey(name = "fk_dataset_selection"))
     @SortNatural
     private SortedSet<BasketDatasetSelection> datasetSelections = new TreeSet<>();

@@ -257,6 +257,7 @@ public class OrderServiceIT {
         Assert.assertEquals(1, dataFiles.size());
     }
 
+    @Ignore
     @Test
     @Requirement("REGARDS_DSL_STO_CMD_050")
     @Requirement("REGARDS_DSL_STO_CMD_050")
