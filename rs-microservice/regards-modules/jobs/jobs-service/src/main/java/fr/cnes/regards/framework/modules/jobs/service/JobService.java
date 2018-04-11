@@ -17,12 +17,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -57,7 +61,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
  */
 @Service
 @RefreshScope
-public class JobService implements IJobService {
+public class JobService implements IJobService, ApplicationContextAware {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
 
@@ -74,7 +78,6 @@ public class JobService implements IJobService {
     @Autowired
     private IWorkspaceService workspaceService;
 
-    @Autowired
     private IJobInfoService jobInfoService;
 
     /**
@@ -86,16 +89,13 @@ public class JobService implements IJobService {
     /**
      * Current tenant resolver
      */
-    @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Value("${regards.jobs.pool.size:10}")
     private int poolSize;
 
-    @Autowired
     private ISubscriber subscriber;
 
-    @Autowired
     private IPublisher publisher;
 
     @Autowired
@@ -105,6 +105,8 @@ public class JobService implements IJobService {
 
     // Boolean permitting to determine if method manage() can pull jobs and executing them
     private boolean canManage = true;
+
+    private ApplicationContext applicationContext;
 
     private static void printStackTrace(JobStatusInfo statusInfo, Exception e) {
         StringWriter sw = new StringWriter();
@@ -128,14 +130,34 @@ public class JobService implements IJobService {
         } catch (InterruptedException e) {
             LOGGER.warn("Waiting task interrupted");
         }
+        threadPool = null;
     }
 
     @EventListener
-    public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
-        threadPool = new JobThreadPoolExecutor(poolSize, jobInfoService, jobsMap, runtimeTenantResolver, publisher);
-        LOGGER.info("JobService created/refreshed with poolSize: {}", poolSize);
-        subscriber.subscribeTo(StopJobEvent.class, new StopJobHandler());
+    public void handleContextRefreshedEvent(ContextRefreshedEvent event) {
+        if (this.threadPool == null) {
+            jobInfoService = applicationContext.getBean(IJobInfoService.class);
+            runtimeTenantResolver = applicationContext.getBean(IRuntimeTenantResolver.class);
+            publisher = applicationContext.getBean(IPublisher.class);
+            subscriber = applicationContext.getBean(ISubscriber.class);
+            if (jobInfoService != null && runtimeTenantResolver != null && publisher != null && subscriber != null) {
+                threadPool = new JobThreadPoolExecutor(poolSize,
+                                                       jobInfoService,
+                                                       jobsMap,
+                                                       runtimeTenantResolver,
+                                                       publisher);
+                LOGGER.info("JobService created/refreshed with poolSize: {}", poolSize);
+                subscriber.subscribeTo(StopJobEvent.class, new StopJobHandler());
+            }
+        }
     }
+
+//    @EventListener
+//    public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
+//        threadPool = new JobThreadPoolExecutor(poolSize, jobInfoService, jobsMap, runtimeTenantResolver, publisher);
+//        LOGGER.info("JobService created/refreshed with poolSize: {}", poolSize);
+//        subscriber.subscribeTo(StopJobEvent.class, new StopJobHandler());
+//    }
 
     @EventListener
     public void handleRefreshScopeRefreshedEvent(RefreshScopeRefreshedEvent event) {
@@ -162,7 +184,7 @@ public class JobService implements IJobService {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                                   + "of the end, pray for your soul", e);
+                                             + "of the end, pray for your soul", e);
                     }
                 }
                 // Find highest priority job to execute
@@ -283,15 +305,9 @@ public class JobService implements IJobService {
         publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
     }
 
-    private class StopJobHandler implements IHandler<StopJobEvent> {
-
-        @Override
-        public void handle(TenantWrapper<StopJobEvent> wrapper) {
-            if (wrapper.getContent() != null) {
-                runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                JobService.this.abort(wrapper.getContent().getJobId());
-            }
-        }
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 
     /**
@@ -325,6 +341,17 @@ public class JobService implements IJobService {
                     break;
                 default:
                     break;
+            }
+        }
+    }
+
+    private class StopJobHandler implements IHandler<StopJobEvent> {
+
+        @Override
+        public void handle(TenantWrapper<StopJobEvent> wrapper) {
+            if (wrapper.getContent() != null) {
+                runtimeTenantResolver.forceTenant(wrapper.getTenant());
+                JobService.this.abort(wrapper.getContent().getJobId());
             }
         }
     }

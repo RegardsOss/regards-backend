@@ -2,6 +2,7 @@ package fr.cnes.regards.framework.modules.jobs.service;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 /**
  * Job service. It's a daemon that listen for jobs to be executed and a service that handles abort, suspend or
@@ -10,7 +11,7 @@ import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEven
  */
 public interface IJobService {
 
-    void handleApplicationReadyEvent(ApplicationReadyEvent event);
+    void handleContextRefreshedEvent(ContextRefreshedEvent event);
 
     void handleRefreshScopeRefreshedEvent(RefreshScopeRefreshedEvent event);
 
