@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPEntityBuilder;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
@@ -122,7 +122,7 @@ public abstract class AbstractSIPTest extends AbstractRegardsServiceTransactiona
         return sipRepository.save(sipEntity);
     }
 
-    protected AIPEntity createAIP(UniformResourceName aipId, SIPEntity sip, AIPState state) {
+    protected AIPEntity createAIP(UniformResourceName aipId, SIPEntity sip, SipAIPState state) {
         AIPEntity aip = new AIPEntity();
         aip.setAip(new AIPBuilder(aipId, sip.getIpId(), EntityType.DATA).build());
         aip.setCreationDate(OffsetDateTime.now());

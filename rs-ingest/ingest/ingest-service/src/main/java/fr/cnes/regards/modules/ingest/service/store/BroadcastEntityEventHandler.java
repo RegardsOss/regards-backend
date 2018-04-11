@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
@@ -110,7 +110,7 @@ public class BroadcastEntityEventHandler
                 LOGGER.info("AIP \"{}\" is now indexed.", ipId.toString());
                 // If all AIP are indexed update SIP state to STORED
                 Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
-                if (sipAips.stream().allMatch(a -> AIPState.INDEXED.equals(a.getState()))) {
+                if (sipAips.stream().allMatch(a -> SipAIPState.INDEXED.equals(a.getState()))) {
                     SIPEntity sip = aip.getSip();
                     sip.setState(SIPState.INDEXED);
                     sipService.saveSIPEntity(sip);

@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPreprocessing;
-import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingJob;
+import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
 /**
  * Preprocessing step is used to do something before starting real processing calling

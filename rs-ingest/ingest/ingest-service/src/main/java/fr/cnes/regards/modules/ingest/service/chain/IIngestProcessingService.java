@@ -28,10 +28,11 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
+import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
@@ -70,7 +71,7 @@ public interface IIngestProcessingService {
      * @param aip
      * @return
      */
-    AIPEntity createAIP(Long sipEntityId, AIPState aipState, AIP aip);
+    AIPEntity createAIP(Long sipEntityId, SipAIPState aipState, AIP aip);
 
     /**
      * Create a new {@link IngestProcessingChain}
@@ -108,10 +109,13 @@ public interface IIngestProcessingService {
 
     /**
      * Search for existing {@link IngestProcessingChain} with optional search criterion.
-     * @param pageable
-     * @return
      */
     Page<IngestProcessingChain> searchChains(String name, Pageable pageable);
+
+    /**
+     * Get all tenant processing chains
+     */
+    List<IngestProcessingChain> findAll();
 
     /**
      * Retrieve a {@link IngestProcessingChain} by name

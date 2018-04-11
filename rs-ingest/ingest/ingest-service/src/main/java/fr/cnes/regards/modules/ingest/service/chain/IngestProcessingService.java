@@ -69,12 +69,13 @@ import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IngestProcessingChainSpecifications;
 import fr.cnes.regards.modules.ingest.domain.builder.AIPEntityBuilder;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
+import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSingleAIPGeneration;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSipValidation;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -187,9 +188,9 @@ public class IngestProcessingService implements IIngestProcessingService {
     }
 
     @Override
-    public AIPEntity createAIP(Long pSipEntityId, AIPState pAipState, AIP pAip) {
+    public AIPEntity createAIP(Long pSipEntityId, SipAIPState pAipState, AIP pAip) {
         SIPEntity sip = sipRepository.findOne(pSipEntityId);
-        return aipRepository.save(AIPEntityBuilder.build(sip, AIPState.CREATED, pAip));
+        return aipRepository.save(AIPEntityBuilder.build(sip, SipAIPState.CREATED, pAip));
     }
 
     /**
@@ -397,6 +398,11 @@ public class IngestProcessingService implements IIngestProcessingService {
     public boolean existsChain(String name) {
         Optional<IngestProcessingChain> oChain = ingestChainRepository.findOneByName(name);
         return oChain.isPresent();
+    }
+
+    @Override
+    public List<IngestProcessingChain> findAll() {
+        return ingestChainRepository.findAll();
     }
 
 }

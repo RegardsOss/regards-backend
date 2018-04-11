@@ -18,29 +18,31 @@
  */
 package fr.cnes.regards.modules.ingest.domain.entity;
 
-public enum AIPState {
-    /**
-     * AIP is ready to be stored
-     */
-    CREATED,
-    /**
-     * AIP is handled by storage.
-     */
-    QUEUED,
-    /**
-     * AIP has been rejected by storage
-     */
-    STORE_REJECTED,
-    /**
-     * Error during store process.
-     */
-    STORE_ERROR,
-    /**
-     * AIP is stored
-     */
-    STORED,
-    /**
-     * AIP is indexed
-     */
-    INDEXED;
+import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.IAipState;
+
+/**
+ * {@link IAipState} utils
+ *
+ * @author Marc Sordi
+ */
+public class AipStateManager {
+
+    private AipStateManager() {
+        // Nothing to do
+    }
+
+    public static IAipState fromName(String name) {
+        for (AIPState state : AIPState.values()) {
+            if (state.getName().equals(name)) {
+                return state;
+            }
+        }
+        for (SipAIPState state : SipAIPState.values()) {
+            if (state.getName().equals(name)) {
+                return state;
+            }
+        }
+        throw new IllegalArgumentException("Unknown SIP state " + name);
+    }
 }

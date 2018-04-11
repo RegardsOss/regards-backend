@@ -19,43 +19,48 @@
 package fr.cnes.regards.modules.ingest.service.store;
 
 import java.util.Optional;
+import java.util.Set;
 
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.AIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
+import fr.cnes.regards.modules.storage.domain.IAipState;
+import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 
 /**
- * AIP Service interface. Service to handle business aroud {@link AIPEntity}s
+ * AIP Service interface. Service to handle business around {@link AIPEntity}s
  * @author Sébastien Binda
  */
 public interface IAIPService {
 
     /**
-     * Send a bulk request to storage microservice with all {@link AIPEntity}s in {@link AIPState#CREATED} state
+     * Handle job event
      */
-    void postAIPStorageBulkRequest();
+    void handleJobEvent(JobEvent jobEvent);
 
     /**
-     * Set the status of the given AIP to {@link AIPState#STORE_ERROR}
-     * @param ipId
-     * @param storeError
-     * @param failureCause
+     * Handle AIP event from STORAGE
      */
-    void setAipInError(String ipId, AIPState storeError, String failureCause);
+    void handleAipEvent(AIPEvent aipEvent);
+
+    /**
+     * Set the status of the given AIP to {@link SipAIPState#STORE_ERROR}
+     */
+    void setAipInError(String ipId, IAipState storeError, String failureCause);
 
     /**
      * Delete the {@link AIPEntity} by his ipId
      */
-    void deleteAip(String ipId, String sipIpId);
+    void deleteAip(String ipId, String sipIpId, IAipState state);
 
     /**
-     * Set {@link AIPEntity} state to {@link AIPState#STORED}
-     * @param ipId
+     * Set {@link AIPEntity} state to {@link SipAIPState#STORED}
      */
-    void setAipToStored(String ipId);
+    void setAipToStored(String ipId, IAipState state);
 
     /**
-     * Set {@link AIPEntity} state to {@link AIPState#INDEXED}
+     * Set {@link AIPEntity} state to {@link SipAIPState#INDEXED}
      * @param ipId
      * @return {@link AIPEntity} updated
      */
@@ -67,4 +72,19 @@ public interface IAIPService {
      * @return
      */
     Optional<AIPEntity> searchAip(UniformResourceName ipId);
+
+    /**
+     * Schedule storage bulk request job according to available AIPs
+     */
+    void scheduleAIPStorageBulkRequest();
+
+    /**
+     * Save AIP
+     */
+    AIPEntity save(AIPEntity entity);
+
+    /**
+     * Get AIP to submit in {@link SipAIPState#SUBMISSION_SCHEDULED} state for specific ingest processing chain
+     */
+    Set<AIPEntity> findAIPToSubmit(String ingestProcessingChain);
 }
