@@ -82,6 +82,7 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
+import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.FileState;
@@ -128,6 +129,9 @@ public class OrderService implements IOrderService {
 
     @Autowired
     private IOrderRepository repos;
+
+    @Autowired
+    private IBasketRepository basketRepository;
 
     @Autowired
     private IOrderDataFileService dataFileService;
@@ -232,7 +236,7 @@ public class OrderService implements IOrderService {
 
             // Execute opensearch request
             int page = 0;
-            List<DataObject> objects = searchDataObjects(dsSel.getOpenSearchRequest(), page);
+            List<DataObject> objects = searchDataObjects(dsTask.getOpenSearchRequest(), page);
             while (!objects.isEmpty()) {
                 // For each DataObject
                 for (DataObject object : objects) {
@@ -343,7 +347,13 @@ public class OrderService implements IOrderService {
         dsTask.setFilesCount(dsSel.getFilesCount());
         dsTask.setFilesSize(dsSel.getFilesSize());
         dsTask.setObjectsCount(dsSel.getObjectsCount());
-        dsTask.setOpenSearchRequest(dsSel.getOpenSearchRequest());
+        // In some cases ("select all" on files from many datasets), opensearch request from selection doesn't
+        // contain dataset IP_ID
+        String dsOpenSearchRequest = dsSel.getOpenSearchRequest();
+        if (!dsOpenSearchRequest.contains(dsSel.getDatasetIpid())) {
+            dsOpenSearchRequest = "(" + dsOpenSearchRequest + " AND tags:\"" + dsSel.getDatasetIpid() + "\")";
+        }
+        dsTask.setOpenSearchRequest(dsOpenSearchRequest);
         return dsTask;
     }
 

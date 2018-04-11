@@ -192,7 +192,7 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
     }
 
     @Override
-    public final void setOnline(Boolean online) {
+    public void setOnline(Boolean online) {
         super.setOnline(online);
     }
 }
