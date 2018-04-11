@@ -48,7 +48,7 @@ import fr.cnes.regards.modules.acquisition.tools.NetCdfFileHelper;
  */
 @Plugin(author = "CS-SI", description = "Metadata caculation's plugin for Jason2 Ogdr products", owner = "CNES",
         contact = "CS-SI", id = "Jason2OgdrProductMetadataPlugin", licence = "Apache ", url = "http://regards.org",
-        version = "1.0")
+        version = "1.0.0")
 public class Jason2OgdrProductMetadataPlugin extends Jason2ProductMetadataPlugin {
 
     /**

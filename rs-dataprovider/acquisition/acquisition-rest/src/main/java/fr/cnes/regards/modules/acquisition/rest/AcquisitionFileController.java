@@ -37,7 +37,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
@@ -46,10 +45,6 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 
 @RestController
-@ModuleInfo(name = "Aqcuired files controller",
-        description = "Controller to manage acquired files through acquisition processing chains",
-        version = "2.0.0-SNAPSHOT", author = "CSSI", legalOwner = "CNES",
-        documentation = "https://github.com/RegardsOss")
 @RequestMapping(AcquisitionFileController.TYPE_PATH)
 public class AcquisitionFileController implements IResourceController<AcquisitionFile> {
 
