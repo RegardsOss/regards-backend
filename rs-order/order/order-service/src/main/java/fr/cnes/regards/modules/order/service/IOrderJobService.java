@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
+
 /**
  * Order job service.
  * This service is responsible of managing order jobs taken into account user restrictions on priorities and number of
@@ -25,6 +28,11 @@ package fr.cnes.regards.modules.order.service;
  * @author oroussel
  */
 public interface IOrderJobService {
+
+    void handleApplicationReadyEvent(ApplicationReadyEvent event);
+
+    void handleRefreshScopeRefreshedEvent(RefreshScopeRefreshedEvent event);
+
     /**
      * Compute priority for next order/jobInfo(s)
      * @param user user concerned by priority computing

@@ -1,5 +1,7 @@
 package fr.cnes.regards.modules.order.service;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.transaction.Transactional;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -38,6 +40,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
+import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
@@ -195,6 +200,18 @@ public class OrderService implements IOrderService {
     private static final Set<DataType> DATA_TYPES = Stream.of(DataTypeSelection.ALL.getFileTypes())
             .map(DataType::valueOf).collect(Collectors.toSet());
 
+    /**
+     * Method called at creation AND after a resfresh
+     */
+    @PostConstruct
+    public void init() {
+        // Compute bucketSize from bucketSizeMb filled by Spring
+        bucketSize = bucketSizeMb * 1024l * 1024l;
+        LOGGER.info("OrderService created/refreshed with bucketSize: {}, orderValidationPeriodDays: {}"
+                            + ", daysBeforeSendingNotifEmail: {}...", bucketSize, orderValidationPeriodDays,
+                    daysBeforeSendingNotifEmail);
+    }
+
     @Override
     public Order createOrder(Basket basket, String url) {
         Order order = new Order();
@@ -207,10 +224,6 @@ public class OrderService implements IOrderService {
         order = repos.save(order);
         int priority = orderJobService.computePriority(order.getOwner(), authResolver.getRole());
 
-        // Be careful ! bucketSize must be computed AFTER bucketSizeMb is filled by Spring
-        if (bucketSize == null) {
-            bucketSize = bucketSizeMb * 1024l * 1024l;
-        }
         // Dataset selections
         for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
             DatasetTask dsTask = createDatasetTask(dsSel);
@@ -800,4 +813,5 @@ public class OrderService implements IOrderService {
         // Order is already at EXPIRED state so let it be
         repos.save(order);
     }
+
 }

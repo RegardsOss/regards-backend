@@ -88,7 +88,6 @@ public class OrderControllerIT extends AbstractRegardsIT {
     @Autowired
     private IAuthenticationResolver authResolver;
 
-
     public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
                                                                                 "ORDER", UUID.randomUUID(), 1);
 
@@ -169,8 +168,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         results = performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, okExpectations(), "error", orderId);
 
         // remove
-        results = performDefaultDelete(OrderController.REMOVE_ORDER_PATH,
-                                       okExpectations(), "error", orderId);
+        results = performDefaultDelete(OrderController.REMOVE_ORDER_PATH, okExpectations(), "error", orderId);
     }
 
     private void assertStatus(Long orderId, OrderStatus expectedStatus) throws UnsupportedEncodingException {
@@ -375,7 +373,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // All specific user orders
         expects = okExpectations();
         expects.add(MockMvcResultMatchers.jsonPath("$.content.length()", org.hamcrest.Matchers.is(1)));
-        results = performDefaultGet(OrderController.ADMIN_ROOT_PATH, expects, "errors", RequestParamBuilder.build().param("user", "FIFI"));
+        results = performDefaultGet(OrderController.ADMIN_ROOT_PATH, expects, "errors",
+                                    RequestParamBuilder.build().param("user", "FIFI"));
 
         // Only owner orders
         expects = okExpectations();
@@ -383,7 +382,6 @@ public class OrderControllerIT extends AbstractRegardsIT {
         results = performDefaultGet(OrderController.USER_ROOT_PATH, expects, "errors");
         System.out.println(results.andReturn().getResponse().getContentAsString());
     }
-
 
     @Test
     public void testCsv() throws URISyntaxException, UnsupportedEncodingException {
@@ -436,10 +434,11 @@ public class OrderControllerIT extends AbstractRegardsIT {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpConstants.CONTENT_TYPE, "application/json");
         headers.add(HttpConstants.ACCEPT, "text/csv");
-        ResultActions results = performDefaultGet(OrderController.ADMIN_ROOT_PATH, okExpectations(), "error",
-                                                  headers);
+        ResultActions results = performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV,
+                                                  okExpectations(), "error", headers);
         // Just test headers are present and CSV format is ok
-        Assert.assertTrue(results.andReturn().getResponse().getContentAsString().startsWith("ORDER_ID;CREATION_DATE;EXPIRATION_DATE"));
+        Assert.assertTrue(results.andReturn().getResponse().getContentAsString()
+                                  .startsWith("ORDER_ID;CREATION_DATE;EXPIRATION_DATE"));
     }
 
     private OrderDataFile createOrderDataFile(Order order, UniformResourceName aipId, String filename, FileState state)
@@ -447,9 +446,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         return createOrderDataFile(order, aipId, filename, state, false);
     }
 
-
-        private OrderDataFile createOrderDataFile(Order order, UniformResourceName aipId, String filename, FileState state, boolean online)
-            throws URISyntaxException {
+    private OrderDataFile createOrderDataFile(Order order, UniformResourceName aipId, String filename, FileState state,
+            boolean online) throws URISyntaxException {
         OrderDataFile dataFile1 = new OrderDataFile();
         dataFile1.setUrl("file:///test/files/" + filename);
         dataFile1.setName(filename);
