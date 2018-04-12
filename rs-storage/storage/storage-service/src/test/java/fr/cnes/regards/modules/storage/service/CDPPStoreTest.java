@@ -89,6 +89,9 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
 
     @Before
     public void before() throws IOException {
+        // Simulate boot event
+        simulateApplicationReadyEvent();
+
         // Local storage
         Path localStorage = Paths.get("target", "localstorage");
         Files.createDirectories(localStorage);
