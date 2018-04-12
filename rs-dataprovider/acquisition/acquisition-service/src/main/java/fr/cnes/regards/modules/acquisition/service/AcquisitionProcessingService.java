@@ -691,8 +691,13 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
         summary.setNbSIPGenerationJobs(productService
                 .countByProcessingChainAndSipStateIn(chain, Arrays.asList(ProductSIPState.SCHEDULED)));
-        summary.setNbSIPSubmissionJobs(productService
-                .countByProcessingChainAndSipStateIn(chain, Arrays.asList(ProductSIPState.SUBMISSION_SCHEDULED)));
+        if (productService
+                .countByProcessingChainAndSipStateIn(chain, Arrays.asList(ProductSIPState.SUBMISSION_SCHEDULED)) > 0) {
+            summary.setNbSIPSubmissionJobs(1);
+        } else {
+            summary.setNbSIPSubmissionJobs(0);
+
+        }
         summary.isActive();
 
         return summary;
