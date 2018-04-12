@@ -33,7 +33,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import com.google.gson.Gson;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -75,31 +74,28 @@ public class BasketControllerIT extends AbstractRegardsIT {
     private IAuthenticationResolver authResolver;
 
     public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DS2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DS3_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO3_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO4_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO5_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
-
-    @Autowired
-    private Gson gson;
+            "ORDER", UUID.randomUUID(), 1);
 
     @Before
     public void init() {
@@ -186,8 +182,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
         BasketSelectionRequest request = new BasketSelectionRequest();
         request.setSelectAllOpenSearchRequest("MACHIN: BIDULE AND PATATIPATAT: POUET");
 
-        Assert.assertEquals("MACHIN: BIDULE AND PATATIPATAT: POUET",
-                            request.computeOpenSearchRequest());
+        Assert.assertEquals("MACHIN: BIDULE AND PATATIPATAT: POUET", request.computeOpenSearchRequest());
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
