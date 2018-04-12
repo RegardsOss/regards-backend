@@ -920,7 +920,8 @@ public class AIPService implements IAIPService {
             Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(toBeDeleted);
             for (StorageDataFile dataFile : dataFiles) {
                 if (dataFile.getState().equals(DataFileState.ERROR)) {
-                    dataFileDao.remove(dataFile);
+                    // we do not do remove immediately because the aip metadata has to be updated first
+                    // and the logic is already implemented into DataStorageEventHandler
                     publisher.publish(new DataStorageEvent(dataFile, StorageAction.DELETION,
                             StorageEventType.SUCCESSFULL, null));
                 } else {
@@ -938,7 +939,10 @@ public class AIPService implements IAIPService {
                         } else {
                             // if other datafiles are referencing a file, we just remove the data file from the
                             // database.
-                            dataFileDao.remove(dataFile);
+                            // we do not do remove immediately because the aip metadata has to be updated first
+                            // and the logic is already implemented into DataStorageEventHandler
+                            publisher.publish(new DataStorageEvent(dataFile, StorageAction.DELETION,
+                                                                   StorageEventType.SUCCESSFULL, null));
                         }
                     }
                 }
