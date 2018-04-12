@@ -61,6 +61,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.OAISDataObject;
@@ -233,6 +234,9 @@ public class AIPService implements IAIPService {
     @Autowired
     private IWorkspaceService workspaceService;
 
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
     /**
      * The spring application name ~= microservice type
      */
@@ -335,9 +339,11 @@ public class AIPService implements IAIPService {
             Multimap<Long, StorageDataFile> storageWorkingSetMap = dispatchAndCheck(dataFilesToStore);
             // Schedule storage jobs
             scheduleStorage(storageWorkingSetMap, true);
+
+            long scheduleTime = System.currentTimeMillis();
+            LOGGER.info("Scheduling storage jobs of {} AIP(s) for {} tenant (scheduling time : {})", aips.size(),
+                        runtimeTenantResolver.getTenant(), scheduleTime - startTime);
         }
-        long scheduleTime = System.currentTimeMillis();
-        LOGGER.info("Scheduling time : {}", scheduleTime - startTime);
     }
 
     /**
@@ -473,13 +479,13 @@ public class AIPService implements IAIPService {
         // we have two cases: there is a date or not
         Page<AIP> aips;
         if (fromLastUpdateDate == null) {
-            if(tags == null || tags.isEmpty()) {
+            if ((tags == null) || tags.isEmpty()) {
                 aips = aipDao.findAllByState(state, pageable);
             } else {
                 aips = aipDao.findAllByStateAndTagsIn(state, tags, pageable);
             }
         } else {
-            if(tags == null || tags.isEmpty()) {
+            if ((tags == null) || tags.isEmpty()) {
                 aips = aipDao.findAllByStateAndLastEventDateAfter(state, fromLastUpdateDate, pageable);
             } else {
                 aips = aipDao.findAllByStateAndTagsInAndLastEventDateAfter(state, tags, fromLastUpdateDate, pageable);
@@ -942,7 +948,7 @@ public class AIPService implements IAIPService {
                             // we do not do remove immediately because the aip metadata has to be updated first
                             // and the logic is already implemented into DataStorageEventHandler
                             publisher.publish(new DataStorageEvent(dataFile, StorageAction.DELETION,
-                                                                   StorageEventType.SUCCESSFULL, null));
+                                    StorageEventType.SUCCESSFULL, null));
                         }
                     }
                 }
@@ -1208,8 +1214,9 @@ public class AIPService implements IAIPService {
                     // first let see if this file is stored on an online data storage and lets get the most prioritized
                     Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = dataFile
                             .getPrioritizedDataStorages().stream()
-                            .filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE) && pds.getDataStorageConfiguration().isActive()).sorted()
-                            .findFirst();
+                            .filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE)
+                                    && pds.getDataStorageConfiguration().isActive())
+                            .sorted().findFirst();
                     if (onlinePrioritizedDataStorageOpt.isPresent()) {
                         @SuppressWarnings("rawtypes")
                         InputStream dataFileIS = ((IOnlineDataStorage) pluginService
