@@ -353,18 +353,14 @@ public final class PluginUtils {
             validationErrors.add("The plugin configuration cannot be null.");
             return new EntityInvalidException(validationErrors);
         }
-        if (pluginConfiguration.getPluginId() == null) {
-            validationErrors.add("The unique identifier of the plugin (attribute pluginId) is required.");
-        } else {
-            if (pluginConfiguration.getPriorityOrder() == null) {
-                validationErrors
-                        .add(String.format("The plugin configuration priority order is required (pluginId: %s).",
-                                           pluginConfiguration.getPluginId()));
-            }
-            if (Strings.isNullOrEmpty(pluginConfiguration.getLabel())) {
-                validationErrors.add(String.format("The plugin configuration label is required (pluginId: %s).",
-                                                   pluginConfiguration.getPluginId()));
-            }
+        if (pluginConfiguration.getPriorityOrder() == null) {
+            validationErrors
+                    .add(String.format("The plugin configuration priority order is required (pluginId: %s).",
+                                       pluginConfiguration.getPluginId()));
+        }
+        if (Strings.isNullOrEmpty(pluginConfiguration.getLabel())) {
+            validationErrors.add(String.format("The plugin configuration label is required (pluginId: %s).",
+                                               pluginConfiguration.getPluginId()));
         }
         // Now lets apply some more complicated validation that required introspection
         try {

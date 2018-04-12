@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.test;
 
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
@@ -35,7 +38,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * <br/>
  * <b>Warning : this context does not manage Spring Boot Application events (i.e. events starting with "Application"
  * like
- * {@link ApplicationReadyEvent}! You have to simulate them programmatically!</b>
+ * {@link ApplicationReadyEvent}! You have to simulate them programmatically using
+ * {@link #simulateApplicationReadyEvent()}!</b>
  * <br/>
  * <br/>
  * Warning : <b>all configuration files in the classpath will be detected and used. Add them carefully!</b>
@@ -63,6 +67,9 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 @ContextConfiguration(classes = { AbstractMultitenantServiceTest.ScanningConfiguration.class })
 public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
 
+    @Autowired
+    private ApplicationEventPublisher springPublisher;
+
     @Configuration
     @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
     static class ScanningConfiguration {
@@ -77,5 +84,12 @@ public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
     @BeforeTransaction
     public void beforeTransaction() {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+    }
+
+    /**
+     * Useful class to simulate a Spring Boot {@link ApplicationReadyEvent}
+     */
+    protected void simulateApplicationReadyEvent() {
+        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null));
     }
 }

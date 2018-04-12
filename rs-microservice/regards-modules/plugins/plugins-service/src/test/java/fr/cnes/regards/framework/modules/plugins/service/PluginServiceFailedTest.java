@@ -109,19 +109,6 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     }
 
     /**
-     * Save a {@link PluginConfiguration} without pluginId attribute.
-     *
-     * @throws ModuleException throw if an error occurs
-     */
-    @Test(expected = EntityInvalidException.class)
-    public void saveAPluginConfigurationWithoutPluginId() throws EntityInvalidException {
-        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
-        aPluginConfiguration.setPluginId(null);
-        pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);
-        Assert.fail();
-    }
-
-    /**
      * Save a {@link PluginConfiguration} without priorityOrder attribute.
      *
      * @throws ModuleException throw if an error occurs
