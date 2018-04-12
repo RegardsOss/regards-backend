@@ -96,7 +96,7 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     /**
      * The workspace occupation threshold at which point notification should be sent
      */
-    @Value("${regards.workspace.critical.occupation.threshold:70}")
+    @Value("${regards.workspace.occupation.threshold:70}")
     private Integer workspaceOccupationThreshold;
 
     /**
@@ -208,7 +208,7 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     public void monitor(String tenant) {
         try {
             WorkspaceMonitoringInformation workspaceMonitoringInfo = getMonitoringInformation(getTenantWorkspace());
-            if (workspaceMonitoringInfo.getOccupationRatio() > workspaceCriticalOccupationThreshold) {
+            if (workspaceMonitoringInfo.getOccupationRatio()*100 > workspaceCriticalOccupationThreshold) {
                 String message = String.format(
                                                "Workspace(%s) occupation is critical. Occupation is %s which is greater than %s(critical threshold). Project(%s) is being set to maintenance mode!",
                                                workspaceMonitoringInfo.getPath(),
@@ -220,12 +220,12 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
                                                DefaultRole.PROJECT_ADMIN);
                 return;
             }
-            if (workspaceMonitoringInfo.getOccupationRatio() > workspaceOccupationThreshold) {
+            if (workspaceMonitoringInfo.getOccupationRatio()*100 > workspaceOccupationThreshold) {
                 String message = String.format(
                                                "Workspace(%s) starts to be busy. Occupation is %s which is greater than %s(soft threshold).",
                                                workspaceMonitoringInfo.getPath(),
                                                workspaceMonitoringInfo.getOccupationRatio().toString(),
-                                               workspaceCriticalOccupationThreshold.toString());
+                                               workspaceOccupationThreshold.toString());
                 LOG.warn(message);
                 notifier.sendWarningNotification(springApplicationName, message, "Workspace too busy",
                                                  DefaultRole.PROJECT_ADMIN);
