@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
@@ -255,6 +256,9 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
 
     @Override
     public CoupleAvailableError restore(Set<StorageDataFile> dataFilesToRestore, OffsetDateTime cacheExpirationDate) {
+        if(dataFilesToRestore.isEmpty()) {
+            return new CoupleAvailableError(new HashSet<>(), new HashSet<>());
+        }
         LOGGER.debug("CachedFileService : run restoration process for {} files.", dataFilesToRestore.size());
         // Get files already in cache
         Set<String> dataFilesToRestoreChecksums = dataFilesToRestore.stream().map(df -> df.getChecksum())
