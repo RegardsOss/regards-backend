@@ -65,6 +65,8 @@ public class Arcad3IsoprobeDensiteSIPGenerationPlugin implements ISipGenerationP
 
         // Init the builder
         SIPBuilder sipBuilder = new SIPBuilder(product.getProductName());
+        // Add product name to descriptive information
+        sipBuilder.addDescriptiveInformation("productName", product.getProductName());
 
         // Fill SIP with product information
         for (AcquisitionFile af : product.getActiveAcquisitionFiles()) {
