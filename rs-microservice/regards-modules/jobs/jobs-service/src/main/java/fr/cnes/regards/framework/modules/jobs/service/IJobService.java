@@ -1,6 +1,5 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 
