@@ -131,7 +131,7 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
 
         long startTime = System.currentTimeMillis();
 
-        AIPCollection collection = getCollection("all_cdpp_aips3.json");
+        AIPCollection collection = getCollection("cdpp_aips.json");
         List<RejectedAip> rejectedAips = aipService.validateAndStore(collection);
         Assert.assertNotNull(rejectedAips);
         Assert.assertTrue(rejectedAips.isEmpty());
@@ -140,8 +140,8 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
 
         // Wait until all AIP are STORED
         int storedAIP = 0;
-        int expected = 305;
-        int loops = 1000;
+        int expected = 1;
+        int loops = 120;
         do {
             Thread.sleep(1_000);
             storedAIP = aipRepository.findAllByStateIn(AIPState.STORED).size();
