@@ -1,5 +1,7 @@
 package fr.cnes.regards.modules.order.service;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.transaction.Transactional;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -80,6 +82,7 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
+import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.FileState;
@@ -116,7 +119,7 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 @Service
 @MultitenantTransactional
 @RefreshScope
-public class OrderService implements IOrderService, ApplicationListener<EnvironmentChangeEvent> {
+public class OrderService implements IOrderService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
 
@@ -126,6 +129,9 @@ public class OrderService implements IOrderService, ApplicationListener<Environm
 
     @Autowired
     private IOrderRepository repos;
+
+    @Autowired
+    private IBasketRepository basketRepository;
 
     @Autowired
     private IOrderDataFileService dataFileService;
@@ -198,13 +204,16 @@ public class OrderService implements IOrderService, ApplicationListener<Environm
     private static final Set<DataType> DATA_TYPES = Stream.of(DataTypeSelection.ALL.getFileTypes())
             .map(DataType::valueOf).collect(Collectors.toSet());
 
-    @Override
-    public void onApplicationEvent(EnvironmentChangeEvent event) {
+    /**
+     * Method called at creation AND after a resfresh
+     */
+    @PostConstruct
+    public void init() {
         // Compute bucketSize from bucketSizeMb filled by Spring
         bucketSize = bucketSizeMb * 1024l * 1024l;
-        LOGGER.info(
-                "OrderService refreshed with bucketSize: {}, orderValidationPeriodDays: {}, daysBeforeSendingNotifEmail: {}...",
-                bucketSize, orderValidationPeriodDays, daysBeforeSendingNotifEmail);
+        LOGGER.info("OrderService created/refreshed with bucketSize: {}, orderValidationPeriodDays: {}"
+                            + ", daysBeforeSendingNotifEmail: {}...", bucketSize, orderValidationPeriodDays,
+                    daysBeforeSendingNotifEmail);
     }
 
     @Override
@@ -227,7 +236,7 @@ public class OrderService implements IOrderService, ApplicationListener<Environm
 
             // Execute opensearch request
             int page = 0;
-            List<DataObject> objects = searchDataObjects(dsSel.getOpenSearchRequest(), page);
+            List<DataObject> objects = searchDataObjects(dsTask.getOpenSearchRequest(), page);
             while (!objects.isEmpty()) {
                 // For each DataObject
                 for (DataObject object : objects) {
@@ -338,7 +347,13 @@ public class OrderService implements IOrderService, ApplicationListener<Environm
         dsTask.setFilesCount(dsSel.getFilesCount());
         dsTask.setFilesSize(dsSel.getFilesSize());
         dsTask.setObjectsCount(dsSel.getObjectsCount());
-        dsTask.setOpenSearchRequest(dsSel.getOpenSearchRequest());
+        // In some cases ("select all" on files from many datasets), opensearch request from selection doesn't
+        // contain dataset IP_ID
+        String dsOpenSearchRequest = dsSel.getOpenSearchRequest();
+        if (!dsOpenSearchRequest.contains(dsSel.getDatasetIpid())) {
+            dsOpenSearchRequest = "(" + dsOpenSearchRequest + " AND tags:\"" + dsSel.getDatasetIpid() + "\")";
+        }
+        dsTask.setOpenSearchRequest(dsOpenSearchRequest);
         return dsTask;
     }
 
