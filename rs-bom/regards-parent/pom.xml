@@ -422,6 +422,8 @@
 								<goal>shade</goal>
 							</goals>
 							<configuration>
+								<shadedArtifactAttached>true</shadedArtifactAttached>
+								<shadedClassifierName>shaded</shadedClassifierName>
 								<minimizeJar>true</minimizeJar>
 								<transformers>
 									<transformer
