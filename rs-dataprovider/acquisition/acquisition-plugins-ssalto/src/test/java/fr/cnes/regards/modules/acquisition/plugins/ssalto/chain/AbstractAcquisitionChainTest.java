@@ -24,11 +24,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -48,7 +47,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  *
  */
 @ContextConfiguration(classes = { AbstractAcquisitionChainTest.AcquisitionConfiguration.class })
-public abstract class AbstractAcquisitionChainTest extends AbstractDaoTest {
+public abstract class AbstractAcquisitionChainTest extends AbstractMultitenantServiceTest {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAcquisitionChainTest.class);
@@ -63,7 +62,6 @@ public abstract class AbstractAcquisitionChainTest extends AbstractDaoTest {
     protected IProductRepository productRepository;
 
     @Configuration
-    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
     static class AcquisitionConfiguration {
 
         @Bean
@@ -92,6 +90,8 @@ public abstract class AbstractAcquisitionChainTest extends AbstractDaoTest {
     @Purpose("A plugin can generate a SIP from a data file respecting a pattern")
     @Test
     public void startChain() throws ModuleException, InterruptedException {
+        simulateApplicationReadyEvent();
+
         AcquisitionProcessingChain processingChain = processingService.createChain(createAcquisitionChain());
 
         processingService.startManualChain(processingChain.getId());
