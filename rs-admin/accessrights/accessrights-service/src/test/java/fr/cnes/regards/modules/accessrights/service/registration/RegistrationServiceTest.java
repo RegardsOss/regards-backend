@@ -48,7 +48,9 @@ import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners.WaitForQualificationListener;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
@@ -146,23 +148,16 @@ public class RegistrationServiceTest {
         // Mock
         Mockito.when(roleService.getDefaultRole()).thenReturn(ROLE);
 
+        WaitForQualificationListener listener = new WaitForQualificationListener(projectUserRepository,
+                projectUserWorkflowManager, Mockito.mock(IAccessSettingsService.class));
+
         // Create the tested service
-        registrationService = new RegistrationService(projectUserRepository,
-                                                      roleService,
-                                                      tokenService,
-                                                      projectUserWorkflowManager,
-                                                      accountSettingsClient,
-                                                      accountsClient);
+        registrationService = new RegistrationService(projectUserRepository, roleService, tokenService,
+                accountSettingsClient, accountsClient, listener);
 
         // Prepare the access request
-        dto = new AccessRequestDto(EMAIL,
-                                   FIRST_NAME,
-                                   LAST_NAME,
-                                   ROLE.getName(),
-                                   META_DATA,
-                                   PASSOWRD,
-                                   ORIGIN_URL,
-                                   REQUEST_LINK);
+        dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), META_DATA, PASSOWRD, ORIGIN_URL,
+                REQUEST_LINK);
 
         // Prepare the account we expect to be create by the access request
         account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSOWRD);
@@ -293,14 +288,8 @@ public class RegistrationServiceTest {
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
 
         // Trigger the exception
-        final AccessRequestDto dto = new AccessRequestDto(EMAIL,
-                                                          FIRST_NAME,
-                                                          LAST_NAME,
-                                                          ROLE.getName(),
-                                                          META_DATA,
-                                                          PASSOWRD,
-                                                          ORIGIN_URL,
-                                                          REQUEST_LINK);
+        final AccessRequestDto dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), META_DATA,
+                PASSOWRD, ORIGIN_URL, REQUEST_LINK);
         registrationService.requestAccess(dto);
     }
 

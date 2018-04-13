@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners.WaitForQualificationListener;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
@@ -86,21 +86,18 @@ public class RegistrationService implements IRegistrationService {
      */
     private final IEmailVerificationTokenService tokenService;
 
-    /**
-     * Account workflow manager
-     */
-    private final ProjectUserWorkflowManager projectUserWorkflowManager;
+    private final WaitForQualificationListener listener;
 
     public RegistrationService(IProjectUserRepository pProjectUserRepository, IRoleService pRoleService,
-            IEmailVerificationTokenService pTokenService, ProjectUserWorkflowManager projectUserWorkflowManager,
-            IAccountSettingsClient accountSettingsClient, IAccountsClient accountsClient) {
+            IEmailVerificationTokenService pTokenService, IAccountSettingsClient accountSettingsClient,
+            IAccountsClient accountsClient, WaitForQualificationListener listener) {
         super();
         projectUserRepository = pProjectUserRepository;
         roleService = pRoleService;
         tokenService = pTokenService;
         this.accountsClient = accountsClient;
         this.accountSettingsClient = accountSettingsClient;
-        this.projectUserWorkflowManager = projectUserWorkflowManager;
+        this.listener = listener;
     }
 
     @Override
@@ -181,7 +178,9 @@ public class RegistrationService implements IRegistrationService {
 
             // Check the status
             if (AccountStatus.ACTIVE.equals(account.getStatus())) {
-                projectUserWorkflowManager.grantAccess(projectUser);
+                LOG.info("Account is already active for new user {}. Sending AccountAcceptedEvent to handle ProjectUser status.",
+                         account.getEmail());
+                listener.onAccountActivation(account.getEmail());
             }
         } finally {
             FeignSecurityManager.reset();
