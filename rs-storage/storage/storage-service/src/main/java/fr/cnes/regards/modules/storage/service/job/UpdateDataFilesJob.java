@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -35,13 +36,11 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
         super.checkParameters(parameters);
         // lets see if old data files has been given or not
         JobParameter oldDataFiles;
-        if (((oldDataFiles = parameters.get(OLD_DATA_FILES_PARAMETER_NAME)) == null) || !(oldDataFiles
-                .getValue() instanceof StorageDataFile[])) {
-            JobParameterMissingException e = new JobParameterMissingException(String.format(PARAMETER_MISSING,
-                                                                                            this.getClass().getName(),
-                                                                                            StorageDataFile[].class
-                                                                                                    .getName(),
-                                                                                            OLD_DATA_FILES_PARAMETER_NAME));
+        if (((oldDataFiles = parameters.get(OLD_DATA_FILES_PARAMETER_NAME)) == null)
+                || !(oldDataFiles.getValue() instanceof StorageDataFile[])) {
+            JobParameterMissingException e = new JobParameterMissingException(
+                    String.format(PARAMETER_MISSING, this.getClass().getName(), StorageDataFile[].class.getName(),
+                                  OLD_DATA_FILES_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
@@ -69,7 +68,7 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
             // now we have the old data files that have been replaced
             WorkingSubsetWrapper<IWorkingSubset> subSetsToDelete = storagePlugin
                     .prepare(oldDataFiles, DataStorageAccessModeEnum.DELETION_MODE);
-            for(Map.Entry<StorageDataFile, String> entry : subSetsToDelete.getRejectedDataFiles().entrySet()) {
+            for (Map.Entry<StorageDataFile, String> entry : subSetsToDelete.getRejectedDataFiles().entrySet()) {
                 progressManager.deletionFailed(entry.getKey(), entry.getValue());
             }
             for (IWorkingSubset toDelete : subSetsToDelete.getWorkingSubSets()) {

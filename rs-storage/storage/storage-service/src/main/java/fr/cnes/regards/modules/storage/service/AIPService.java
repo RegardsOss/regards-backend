@@ -24,6 +24,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -237,6 +238,9 @@ public class AIPService implements IAIPService {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private EntityManager em;
+
     /**
      * The spring application name ~= microservice type
      */
@@ -343,6 +347,20 @@ public class AIPService implements IAIPService {
             long scheduleTime = System.currentTimeMillis();
             LOGGER.info("Scheduling storage jobs of {} AIP(s) for {} tenant (scheduling time : {})", aips.size(),
                         runtimeTenantResolver.getTenant(), scheduleTime - startTime);
+        }
+    }
+
+    @Override
+    public void storeMetadata() {
+        Set<StorageDataFile> metadataToStore = Sets.newHashSet();
+        // first lets get AIP that are not fully stored(at least metadata are not stored)
+        metadataToStore.addAll(prepareNotFullyStored());
+        if (metadataToStore.isEmpty()) {
+            LOGGER.debug("No updated metadata files to storeAndCreate.");
+        } else {
+            LOGGER.debug("Scheduling {} updated metadata files for storage.", metadataToStore.size());
+            // now that we know all the metadata that should be stored, lets schedule their storage!
+            scheduleStorageMetadata(metadataToStore);
         }
     }
 
@@ -906,6 +924,9 @@ public class AIPService implements IAIPService {
                 updatingBuilder.addDescriptiveInformation(descriptiveEntry.getKey(), descriptiveEntry.getValue());
             }
         }
+
+        // Add update event
+        updatingBuilder.addEvent(EventType.UPDATE.toString(), "AIP metadata has been updated.", OffsetDateTime.now());
         // now that all updates are set into the builder, lets build and save the updatedAip. Update event is added
         // once the metadata are stored
         AIP updatedAip = updatingBuilder.build();
@@ -913,6 +934,14 @@ public class AIPService implements IAIPService {
         LOGGER.debug(String.format("[METADATA UPDATE] Update of aip %s metadata done", ipId));
         LOGGER.trace(String.format("[METADATA UPDATE] Updated aip : %s", gson.toJson(updatedAip)));
         return aipDao.save(updatedAip);
+    }
+
+    @Override
+    public void updateAipMetadata() {
+        Set<UpdatableMetadataFile> metadataToUpdate = prepareUpdatedAIP();
+        if (!metadataToUpdate.isEmpty()) {
+            scheduleStorageMetadataUpdate(metadataToUpdate);
+        }
     }
 
     @Override
@@ -955,10 +984,9 @@ public class AIPService implements IAIPService {
             }
             // schedule removal of data and metadata
             AIPBuilder toBeDeletedBuilder = new AIPBuilder(toBeDeleted);
-            toBeDeletedBuilder
-                    .addEvent(EventType.DELETION.name(),
-                              "AIP deletion was requested, AIP is considered deleted until its removal from archives",
-                              OffsetDateTime.now());
+            toBeDeletedBuilder.addEvent(EventType.DELETION.name(),
+                                        "AIP deletion was requested, AIP is considered deleted until its removal from archives",
+                                        OffsetDateTime.now());
             toBeDeleted = toBeDeletedBuilder.build();
             toBeDeleted.setState(AIPState.DELETED);
             aipDao.save(toBeDeleted);
@@ -1057,12 +1085,12 @@ public class AIPService implements IAIPService {
                         new MimeType("application", "json"), aip, aip.getId().toString() + JSON_FILE_EXT, null);
             } else {
                 workspaceService.removeFromWorkspace(metadataName);
-                LOGGER.error(String
-                        .format("Storage of AIP metadata(%s) into workspace(%s) failed. Computed checksum once stored does not "
-                                + "match expected one", aip.getId().toString(),
-                                workspaceService.getMicroserviceWorkspace()));
-                throw new FileCorruptedException(String
-                        .format("File has been corrupted during storage into workspace. Checksums before(%s) and after (%s) are"
+                LOGGER.error(String.format(
+                                           "Storage of AIP metadata(%s) into workspace(%s) failed. Computed checksum once stored does not "
+                                                   + "match expected one",
+                                           aip.getId().toString(), workspaceService.getMicroserviceWorkspace()));
+                throw new FileCorruptedException(
+                        String.format("File has been corrupted during storage into workspace. Checksums before(%s) and after (%s) are"
                                 + " different", checksum, fileChecksum));
             }
         } catch (NoSuchAlgorithmException e) {
@@ -1095,6 +1123,7 @@ public class AIPService implements IAIPService {
             if (optionalExistingAIPMetadataFile.isPresent()) {
                 // Create new AIP file (descriptor file) for the given updated AIP.
                 StorageDataFile existingAIPMetadataFile = optionalExistingAIPMetadataFile.get();
+                em.detach(existingAIPMetadataFile);
                 StorageDataFile newAIPMetadataFile;
                 try {
                     // To ensure that at any time there is only one StorageDataFile of AIP type, we do not create
@@ -1162,10 +1191,10 @@ public class AIPService implements IAIPService {
         for (UpdatableMetadataFile oldNew : metadataToUpdate) {
             Set<PrioritizedDataStorage> oldDataStorages = oldNew.getOldOne().getPrioritizedDataStorages();
             oldNew.getNewOne().setNotYetStoredBy(((Number) oldDataStorages.size()).longValue());
-            dataFileDao.save(oldNew.getNewOne());
             for (PrioritizedDataStorage oldDataStorage : oldDataStorages) {
                 toPrepareMap.put(oldDataStorage.getId(), oldNew.getNewOne());
             }
+            dataFileDao.save(oldNew.getNewOne());
         }
         // now lets work with workingSubsets
         for (Long dataStorageConfId : toPrepareMap.keySet()) {
