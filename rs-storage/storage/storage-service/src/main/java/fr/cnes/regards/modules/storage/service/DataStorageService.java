@@ -83,8 +83,11 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
     /**
      * data storage occupation threshold in percent
      */
-    @Value("${regards.storage.data.storage.threshold.percent:90}")
+    @Value("${regards.storage.data.storage.threshold.percent:70}")
     private Integer threshold;
+
+    @Value("${regards.storage.data.storage.critical.threshold.percent:90}")
+    private Integer criticalThreshold;
 
     @Override
     public Collection<PluginStorageInfo> getMonitoringInfos() throws ModuleException, IOException {
@@ -156,17 +159,28 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
                         DataStorageInfo dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(),
                                 dataStorageTotalSpace, monitoringAggregationMap.get(activeDataStorageConfId));
                         Double ratio = dataStorageInfo.getRatio();
-                        if (ratio >= threshold) {
+                        if (ratio >= criticalThreshold) {
                             String message = String
-                                    .format("Data storage(configuration id: %s, configuration label: %s) has reach its disk usage threshold. Actual occupation: %s, threshold: %s",
+                                    .format("Data storage(configuration id: %s, configuration label: %s) has reach its "
+                                                    + "disk usage critical threshold. Actual occupation: %s, critical threshold: %s",
                                             activeDataStorageConf.getId().toString(), activeDataStorageConf.getLabel(),
                                             ratio, threshold);
                             LOGGER.error(message);
                             notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
                                          message, NotificationType.ERROR);
                             MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
+                            return;
                         }
-
+                        if (ratio >= threshold) {
+                            String message = String
+                                    .format("Data storage(configuration id: %s, configuration label: %s) has reach its "
+                                                    + "disk usage threshold. Actual occupation: %s, threshold: %s",
+                                            activeDataStorageConf.getId().toString(), activeDataStorageConf.getLabel(),
+                                            ratio, threshold);
+                            LOGGER.warn(message);
+                            notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
+                                         message, NotificationType.WARNING);
+                        }
                     }
 
                 } catch (ModuleException e) {
