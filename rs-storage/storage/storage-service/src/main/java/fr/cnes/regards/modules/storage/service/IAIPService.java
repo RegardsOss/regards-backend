@@ -64,6 +64,11 @@ public interface IAIPService {
     void store() throws ModuleException;
 
     /**
+     * Asynchronusly makes the heavy work of storing AIP metadata.
+     */
+    void storeMetadata();
+
+    /**
      * Schedule asynchronous jobs to handle failed storage of existing {@link AIP}.<br/>
      * @param aipIpIds collection of aip ip ids to try to store back
      */
@@ -183,6 +188,11 @@ public interface IAIPService {
      */
     AIP updateAip(String ipId, AIP updated)
             throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
+
+    /**
+     * Updates all AIP metadta to update.
+     */
+    void updateAipMetadata();
 
     /**
      * Remove an aip from the system. Its file are deleted if and only if no other aip point to them.

@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +25,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -90,16 +86,7 @@ public class ScheduleStorageTasks {
         LOGGER.debug(" ------------------------> Update AIP storage informations - START<---------------------------- ");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            Set<StorageDataFile> metadataToStore = Sets.newHashSet();
-            // first lets get AIP that are not fully stored(at least metadata are not stored)
-            metadataToStore.addAll(aipService.prepareNotFullyStored());
-            if (metadataToStore.isEmpty()) {
-                LOGGER.debug("No updated metadata files to storeAndCreate.");
-            } else {
-                LOGGER.debug("Scheduling {} updated metadata files for storage.", metadataToStore.size());
-                // now that we know all the metadata that should be stored, lets schedule their storage!
-                aipService.scheduleStorageMetadata(metadataToStore);
-            }
+            aipService.storeMetadata();
         }
         LOGGER.debug(" ------------------------> Update AIP storage informations - END <---------------------------- ");
     }
@@ -116,10 +103,7 @@ public class ScheduleStorageTasks {
             runtimeTenantResolver.forceTenant(tenant);
             LOGGER.debug(String.format("[METADATA UPDATE DAEMON] Starting to prepare update jobs for tenant %s",
                                        tenant));
-            Set<UpdatableMetadataFile> metadataToUpdate = aipService.prepareUpdatedAIP();
-            if (!metadataToUpdate.isEmpty()) {
-                aipService.scheduleStorageMetadataUpdate(metadataToUpdate);
-            }
+            aipService.updateAipMetadata();
             LOGGER.debug(String.format("[METADATA UPDATE DAEMON] Update jobs for tenant %s have been scheduled",
                                        tenant));
         }
