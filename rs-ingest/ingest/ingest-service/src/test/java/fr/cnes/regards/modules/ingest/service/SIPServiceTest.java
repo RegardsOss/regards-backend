@@ -397,7 +397,7 @@ public class SIPServiceTest extends AbstractSIPTest {
             AIP aipToDelete = oAip.get();
             aipToDelete.setState(AIPState.DELETED);
             publisher.publish(new AIPEvent(aipToDelete));
-            Thread.sleep(5000);
+            Thread.sleep(1000);
         }
     }
 

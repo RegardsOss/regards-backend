@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -79,6 +80,12 @@ public class AipSubmissionTest extends AbstractMultitenantServiceTest {
         }
     }
 
+    @Before
+    public void before() {
+        // Enable jobs
+        simulateApplicationReadyEvent();
+    }
+
     @Requirement("REGARDS_DSL_ING_PRO_120")
     @Purpose("Manage scheduled ingestion tasks for all CREATED SIP")
     @Test
@@ -106,7 +113,7 @@ public class AipSubmissionTest extends AbstractMultitenantServiceTest {
         // Wait until AIP is VALID
         int validAips = 0;
         int expectedAips = 1;
-        int loops = 60;
+        int loops = 30;
         do {
             Thread.sleep(1_000);
             validAips = aipRepository
