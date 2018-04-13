@@ -564,8 +564,14 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
 
         // Get the PluginMetadata
         List<PluginMetaData> metaDatas = pluginService.getPluginsByType(ISIPGenerationPluginWithMetadataToolbox.class);
+        // Select right metadata
+        java.util.Optional<PluginMetaData> metadata = metaDatas.stream().filter(m -> m.getPluginId().equals(pluginId))
+                .findFirst();
+        if (!metadata.isPresent()) {
+            Assert.fail("Missing plugin metadata for plugin id " + pluginId);
+        }
 
-        PluginConfiguration pluginConfiguration = new PluginConfiguration(metaDatas.get(0),
+        PluginConfiguration pluginConfiguration = new PluginConfiguration(metadata.get(),
                 "Automatic plugin configuration for plugin id : " + pluginId + " (" + UUID.randomUUID().toString()
                         + ")");
         pluginConfiguration.setPluginId(pluginId);
