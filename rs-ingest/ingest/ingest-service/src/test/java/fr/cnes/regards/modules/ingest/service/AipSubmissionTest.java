@@ -106,7 +106,7 @@ public class AipSubmissionTest extends AbstractMultitenantServiceTest {
         // Wait until AIP is VALID
         int validAips = 0;
         int expectedAips = 1;
-        int loops = 30;
+        int loops = 60;
         do {
             Thread.sleep(1_000);
             validAips = aipRepository
