@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -77,6 +78,12 @@ public class AipSubmissionTest extends AbstractMultitenantServiceTest {
         public IAipClient aipClient() {
             return Mockito.mock(IAipClient.class);
         }
+    }
+
+    @Before
+    public void before() {
+        // Enable jobs
+        simulateApplicationReadyEvent();
     }
 
     @Requirement("REGARDS_DSL_ING_PRO_120")
