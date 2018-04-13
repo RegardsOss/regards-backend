@@ -84,13 +84,16 @@ public class JobService implements IJobService {
     /**
      * Current tenant resolver
      */
+    @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Value("${regards.jobs.pool.size:10}")
     private int poolSize;
 
+    @Autowired
     private ISubscriber subscriber;
 
+    @Autowired
     private IPublisher publisher;
 
     @Autowired

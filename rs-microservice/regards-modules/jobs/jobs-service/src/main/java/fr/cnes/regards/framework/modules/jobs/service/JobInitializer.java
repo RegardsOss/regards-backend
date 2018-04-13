@@ -1,7 +1,7 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ public class JobInitializer {
     private IJobService jobService;
 
     @EventListener
-    public void onApplicationEvent(ApplicationReadyEvent event) {
+    public void onApplicationEvent(ContextRefreshedEvent event) {
         jobService.manage();
     }
 }
