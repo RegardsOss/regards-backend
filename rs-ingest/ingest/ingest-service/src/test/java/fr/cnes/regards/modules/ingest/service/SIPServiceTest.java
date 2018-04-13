@@ -32,6 +32,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -67,6 +69,8 @@ import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
  * @author Sébastien Binda
  */
 public class SIPServiceTest extends AbstractSIPTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SIPServiceTest.class);
 
     @Autowired
     private ISIPSessionRepository sipSessionRepository;
@@ -196,6 +200,7 @@ public class SIPServiceTest extends AbstractSIPTest {
             simulateAipDeletionFromStorage(getSipSimulatedAIPs(sipWithManyAIPs.getIpId()).get(1).getId());
             // 3.1 All AIP has been deleted, SIP should be in DELETED STATE
             SIPEntity deletedSip = sipRepository.findOne(sipWithManyAIPs.getId());
+            LOGGER.debug("Deleted SIP state : {}", deletedSip.getState());
             Assert.assertTrue("SIP should be in DELETED state", SIPState.DELETED.equals(deletedSip.getState()));
             // 3.2 A SIPevent associated should have been sent
             Assert.assertTrue("A SIPEvent should had been sent with delete SIP IpId",
@@ -261,6 +266,7 @@ public class SIPServiceTest extends AbstractSIPTest {
                 simulateAipDeletionFromStorage(getSipSimulatedAIPs(sip.getIpId()).get(0).getId());
                 // 2.1 All AIP has been deleted, SIP should be in DELETED STATE
                 SIPEntity deletedSip = sipRepository.findOne(sip.getId());
+                LOGGER.debug("Deleted SIP state : {}", deletedSip.getState());
                 Assert.assertTrue("SIP should be in DELETED state", SIPState.DELETED.equals(deletedSip.getState()));
                 // 2.1 A SIPevent associated should have been sent
                 Assert.assertTrue("A SIPEvent should had been sent with delete SIP IpId", handler.getReceivedEvents()
