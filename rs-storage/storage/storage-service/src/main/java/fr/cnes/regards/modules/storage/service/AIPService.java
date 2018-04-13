@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.storage.service;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
