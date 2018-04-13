@@ -106,31 +106,37 @@ public class WaitForQualificationListener
     public void handle(TenantWrapper<AccountAcceptedEvent> wrapper) {
         // Retrieve the account/project user email
         String email = wrapper.getContent().getAccountEmail();
+        LOG.info("Account accepted event received for user {}.", email);
         // Now for each tenant, lets handle this account activation
-        for(String tenant: tenantResolver.getAllActiveTenants()) {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            // Retrieve the project user
-            Optional<ProjectUser> optional = projectUserRepository.findOneByEmail(email);
-            ProjectUser projectUser = optional.isPresent() ? optional.get() : null;
-            if (projectUser != null) {
-                // Change state
-                try {
-                    projectUserWorkflowManager.makeWaitForQualification(projectUser);
-
-                    // Auto-accept if configured so
-                    final AccessSettings settings = accessSettingsService.retrieve();
-                    if (AccessSettings.AUTO_ACCEPT_MODE.equals(settings.getMode())) {
-                        projectUserWorkflowManager.grantAccess(projectUser);
-                    }
-
-                    // Save
-                    projectUserRepository.save(projectUser);
-                } catch (EntityException e) {
-                    LOG.warn(String.format("The system tried to set the project user %s state to %s from %s but failed", email,
-                                           UserStatus.WAITING_ACCESS, UserStatus.WAITING_ACCOUNT_ACTIVE), e);
-                }
-            }
+            onAccountActivation(email);
             runtimeTenantResolver.clearTenant();
+        }
+    }
+
+    public void onAccountActivation(String email) {
+        // Retrieve the project user
+        Optional<ProjectUser> optional = projectUserRepository.findOneByEmail(email);
+        ProjectUser projectUser = optional.isPresent() ? optional.get() : null;
+        if (projectUser != null) {
+            // Change state
+            try {
+                projectUserWorkflowManager.makeWaitForQualification(projectUser);
+
+                // Auto-accept if configured so
+                final AccessSettings settings = accessSettingsService.retrieve();
+                if (AccessSettings.AUTO_ACCEPT_MODE.equals(settings.getMode())) {
+                    projectUserWorkflowManager.grantAccess(projectUser);
+                }
+
+                // Save
+                projectUserRepository.save(projectUser);
+            } catch (EntityException e) {
+                LOG.warn(String.format("The system tried to set the project user %s state to %s from %s but failed",
+                                       email, UserStatus.WAITING_ACCESS, UserStatus.WAITING_ACCOUNT_ACTIVE),
+                         e);
+            }
         }
     }
 
