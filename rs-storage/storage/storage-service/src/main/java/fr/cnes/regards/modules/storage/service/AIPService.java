@@ -25,9 +25,6 @@ import java.util.UUID;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1102,11 +1099,11 @@ public class AIPService implements IAIPService {
             } else {
                 workspaceService.removeFromWorkspace(metadataName);
                 LOGGER.error(String.format(
-                                           "Storage of AIP metadata(%s) into workspace(%s) failed. Computed checksum once stored does not "
-                                                   + "match expected one",
-                                           aip.getId().toString(), workspaceService.getMicroserviceWorkspace()));
-                throw new FileCorruptedException(
-                        String.format("File has been corrupted during storage into workspace. Checksums before(%s) and after (%s) are"
+                        "Storage of AIP metadata(%s) into workspace(%s) failed. Computed checksum once stored does not "
+                                + "match expected one", aip.getId().toString(),
+                        workspaceService.getMicroserviceWorkspace()));
+                throw new FileCorruptedException(String.format(
+                        "File has been corrupted during storage into workspace. Checksums before(%s) and after (%s) are"
                                 + " different", checksum, fileChecksum));
             }
         } catch (NoSuchAlgorithmException e) {
