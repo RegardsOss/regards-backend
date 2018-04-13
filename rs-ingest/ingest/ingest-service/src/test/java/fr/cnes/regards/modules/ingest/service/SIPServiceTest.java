@@ -161,10 +161,6 @@ public class SIPServiceTest extends AbstractSIPTest {
             a.setSipId(entity.getIpId());
             simulatedStorageAips.add(a);
         }
-        // Simulate AIPClient to return AIPs associated to SIP
-        Mockito.when(aipEntityClient.retrieveAIPEntities(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
-                .thenAnswer(invocation -> simulateRetrieveAIPResponseFromStorage((String) invocation
-                        .getArguments()[0]));
 
         // Simulate AIPClient to return empty rejected SIP from AIPs deletion
         Mockito.when(aipClient.deleteAipFromSips(Mockito.anySet()))
@@ -180,6 +176,12 @@ public class SIPServiceTest extends AbstractSIPTest {
     @Purpose("Manage SIP deletion by ipId when SIP is associated to multiple AIPs")
     @Test
     public void deleteByIpIdMultiplesAIPs() throws InterruptedException {
+
+        // Simulate AIPClient to return AIPs associated to SIP
+        Mockito.when(aipEntityClient.retrieveAIPEntities(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenAnswer(invocation -> simulateRetrieveAIPResponseFromStorage((String) invocation
+                        .getArguments()[0]));
+
         try {
             // 1. Run sip deletion by ipId
             sipService.deleteSIPEntitiesByIpIds(Sets.newHashSet(sipWithManyAIPs.getIpId()));
@@ -220,6 +222,12 @@ public class SIPServiceTest extends AbstractSIPTest {
     @Purpose("Manage SIP deletion by ipId when SIP is associated to only one AIP")
     @Test
     public void deleteByIpId() throws InterruptedException {
+
+        // Simulate AIPClient to return AIPs associated to SIP
+        Mockito.when(aipEntityClient.retrieveAIPEntities(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenAnswer(invocation -> simulateRetrieveAIPResponseFromStorage((String) invocation
+                        .getArguments()[0]));
+
         try {
             // 1. Run sip deletion by ipId
             sipService.deleteSIPEntitiesByIpIds(Sets.newHashSet(sipWithOneAIP.getIpId()));
@@ -252,6 +260,12 @@ public class SIPServiceTest extends AbstractSIPTest {
     @Purpose("Manage SIP deletion by sipId")
     @Test
     public void deleteBySipId() {
+
+        // Simulate AIPClient to return AIPs associated to SIP
+        Mockito.when(aipEntityClient.retrieveAIPEntities(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenAnswer(invocation -> simulateRetrieveAIPResponseFromStorage((String) invocation
+                        .getArguments()[0]));
+
         try {
             // 1. Run sip deletion by sipId
             sipService.deleteSIPEntitiesForSipId(sipWithManyVersions.stream().findFirst().get().getSipId());
