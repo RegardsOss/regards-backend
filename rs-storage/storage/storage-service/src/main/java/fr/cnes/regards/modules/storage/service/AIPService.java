@@ -272,6 +272,9 @@ public class AIPService implements IAIPService {
             aip.setState(AIPState.VALID);
             aip.addEvent(EventType.SUBMISSION.name(), "Submission to REGARDS");
             aipDao.save(aip);
+            // Extract data files
+            Set<StorageDataFile> dataFiles = StorageDataFile.extractDataFiles(aip);
+            dataFiles.forEach(df-> { df.setState(DataFileState.PENDING); dataFileDao.save(df); });
         }
 
         return rejectedAips;
@@ -329,10 +332,8 @@ public class AIPService implements IAIPService {
                 if (aip.isRetry()) {
                     dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip);
                 } else {
-                    // Extract data files
-                    dataFiles = dataFileDao.save(StorageDataFile.extractDataFiles(aip));
+                    dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.PENDING, aip);
                 }
-                dataFiles.forEach(df -> df.setState(DataFileState.PENDING)); // FIXME ???
                 dataFilesToStore.addAll(dataFiles);
                 aip.setState(AIPState.PENDING);
                 aip.setRetry(false);
@@ -344,7 +345,7 @@ public class AIPService implements IAIPService {
             scheduleStorage(storageWorkingSetMap, true);
 
             long scheduleTime = System.currentTimeMillis();
-            LOGGER.info("Scheduling storage jobs of {} AIP(s) for {} tenant (scheduling time : {})", aips.size(),
+            LOGGER.info("Scheduling storage jobs of {} AIP(s) for {} tenant (scheduling time : {} ms)", aips.size(),
                         runtimeTenantResolver.getTenant(), scheduleTime - startTime);
         }
     }
