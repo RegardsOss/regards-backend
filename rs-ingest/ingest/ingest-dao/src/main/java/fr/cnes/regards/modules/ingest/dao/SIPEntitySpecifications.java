@@ -47,7 +47,7 @@ public final class SIPEntitySpecifications {
      * @param sesssionId
      * @param owner
      * @param from
-     * @param state
+     * @param states
      * @return
      */
     public static Specification<SIPEntity> search(String sipId, String sesssionId, String owner, OffsetDateTime from,
