@@ -80,7 +80,7 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                                                     "microservice",
                                                     "test",
                                                     NotificationType.INFO);
-        Mockito.when(rolesClient.retrieveRoleAscendants(roleName))
+        Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
 
         List<ResultMatcher> expectations = Lists.newArrayList();
@@ -112,7 +112,7 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                                     "microservice",
                                     "test",
                                     NotificationType.INFO);
-        Mockito.when(rolesClient.retrieveRoleAscendants(roleName))
+        Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
         notificationService.createNotification(notif);
         notif = new NotificationDTO("2018",
@@ -121,7 +121,7 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                                     "microservice",
                                     "test",
                                     NotificationType.INFO);
-        Mockito.when(rolesClient.retrieveRoleAscendants(roleName))
+        Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
         notificationService.createNotification(notif);
         //some lorem ipsum so we have a notification with content
@@ -132,7 +132,7 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                 "microservice",
                 "test",
                 NotificationType.INFO);
-        Mockito.when(rolesClient.retrieveRoleAscendants(roleName))
+        Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
         notificationService.createNotification(notif);
         RequestBuilderCustomizer requestCustomizer = getNewRequestBuilderCustomizer();
@@ -159,7 +159,7 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                                                               "microservice",
                                                               "test",
                                                               NotificationType.INFO);
-        Mockito.when(rolesClient.retrieveRoleAscendants(roleName))
+        Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
         Notification notification = notificationService.createNotification(notificationDTO);
         RequestBuilderCustomizer requestCustomizer = getNewRequestBuilderCustomizer();
@@ -186,7 +186,7 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                                                               "microservice",
                                                               "test",
                                                               NotificationType.INFO);
-        Mockito.when(rolesClient.retrieveRoleAscendants(roleName))
+        Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
         Notification notification = notificationService.createNotification(notificationDTO);
         // set the notification to read

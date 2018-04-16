@@ -57,7 +57,7 @@ public interface IRolesClient { // NOSONAR
      */
     public static final String ROLE_MAPPING = "/{role_name}";
 
-    public static final String ROLE_ASCENDANTS = ROLE_MAPPING + "/ascendants";
+    public static final String ROLE_DESCENDANTS = ROLE_MAPPING + "/descendants";
 
     /**
      * Mapping for retrieving borrowable role of the current user
@@ -116,11 +116,11 @@ public interface IRolesClient { // NOSONAR
     public ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") final String pRoleName);
 
     /**
-     * Define the endpoint for retrieving the ascendant {@link Role}s of passed role through its name
+     * Define the endpoint for retrieving the descendant {@link Role}s of passed role through its name
      * @return the ascendants wrapped into a {@link ResponseEntity}
      */
-    @RequestMapping(method = RequestMethod.GET, path = ROLE_ASCENDANTS)
-    public ResponseEntity<Set<Role>> retrieveRoleAscendants(@PathVariable("role_name") String roleName);
+    @RequestMapping(method = RequestMethod.GET, path = ROLE_DESCENDANTS)
+    public ResponseEntity<Set<Role>> retrieveRoleDescendants(@PathVariable("role_name") String roleName);
 
     /**
      * Define the endpoint for updating the {@link Role} of id <code>pRoleId</code>.

@@ -859,6 +859,24 @@ public class RoleService implements IRoleService {
     }
 
     @Override
+    public Set<Role> getDescendants(final Role role) {
+        // Role entity hierarchy being inverted, parent of ADMIN is REGISTERED_USER
+        // so if we want the descendants of REGISTERED_USER, we need to seek for role which parent is REGISTERED_USER and so on.
+        Set<Role> children = roleRepository.findByParentRoleName(role.getName());
+        Set<Role> descendants = Sets.newHashSet(children);
+        for(Role child: children) {
+            descendants.addAll(getDescendants(child));
+        }
+        if (children.isEmpty()) {
+            // More over, PROJECT_ADMIN is the descendant of all role, but is not connected to them in a conventional way so lets add him.
+            descendants.add(roleRepository.findOneByName(DefaultRole.PROJECT_ADMIN.toString()).get());
+        }
+        // lets add the role for which we are looking its descendants too
+        descendants.add(role);
+        return descendants;
+    }
+
+    @Override
     public Set<Role> getAscendants(final Role pRole) {
         final Set<Role> ascendants = Sets.newHashSet(pRole);
         // if pRole doesn't have parent then it's finished

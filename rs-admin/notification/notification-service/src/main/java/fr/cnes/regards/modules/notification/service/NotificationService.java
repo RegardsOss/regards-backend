@@ -179,7 +179,7 @@ public class NotificationService implements INotificationService, ApplicationLis
     private Set<String> getAllRecipientRoles(Set<String> roleRecipients) {
         Set<String> allRecipientRoleNames = new HashSet<>();
         for (String roleName : roleRecipients) {
-            ResponseEntity<Set<Role>> response = rolesClient.retrieveRoleAscendants(roleName);
+            ResponseEntity<Set<Role>> response = rolesClient.retrieveRoleDescendants(roleName);
             if (response.getStatusCode().is2xxSuccessful()) {
                 response.getBody().forEach(r -> allRecipientRoleNames.add(r.getName()));
             }
