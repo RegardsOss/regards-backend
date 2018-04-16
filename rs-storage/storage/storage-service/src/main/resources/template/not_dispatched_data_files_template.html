@@ -3,7 +3,7 @@
     <div>
         One or more files could not be associated to a data storage:
         <#list dataFiles as dataFile>
-            - File ${dataFile.urls} associated to aip ${dataFile.aipDataBase.id} could not be affected to any data
+            - File (urls:<#list dataFile.urls as dataFileUrl> ${dataFileUrl}</#list>) associated to aip ${dataFile.aipEntity.id} could not be affected to any data
             storages by the following allocation strategy ${allocationStrategy.label}.<br/>
         </#list>
     </div>

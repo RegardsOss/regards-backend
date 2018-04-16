@@ -694,6 +694,7 @@ public class AIPService implements IAIPService {
             // lets prepare the notification message
             Map<String, Object> dataMap = new HashMap<>();
             dataMap.put("dataFilesMap", workingSubsetWrapper.getRejectedDataFiles());
+            dataMap.put("dataStorage", pluginService.getPluginConfiguration(dataStorageConfId));
             // lets use the template service to get our message
             SimpleMailMessage email;
             try {
