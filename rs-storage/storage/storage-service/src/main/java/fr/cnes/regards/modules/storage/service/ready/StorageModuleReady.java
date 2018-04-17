@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.module.ready.IModuleReady;
 import fr.cnes.regards.framework.module.ready.ModuleReadiness;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 
 /**
  * Allows to know if module storage is ready or not.
@@ -39,15 +39,25 @@ public class StorageModuleReady implements IModuleReady {
         long numberAllocationStrategy = pluginService.getPluginConfigurationsByType(IAllocationStrategy.class).stream()
                 .filter(pc -> pc.isActive()).count();
         if (numberAllocationStrategy != 1) {
-            reasons.add("There should be one and only one Allocation Strategy configured and active in the system. There is currently: "
-                    + numberAllocationStrategy);
+            reasons.add(
+                    "There should be one and only one Allocation Strategy configured and active in the system. There is currently: "
+                            + numberAllocationStrategy);
             ready = false;
         }
         // check data storage
-        long numberDataStorage = pluginService.getPluginConfigurationsByType(IDataStorage.class).stream()
+        long numberDataStorage = pluginService.getPluginConfigurationsByType(IOnlineDataStorage.class).stream()
                 .filter(pc -> pc.isActive()).count();
         if (numberDataStorage <= 0) {
-            reasons.add("There should be at least one DataStorage configured and active in the system.");
+            reasons.add("There should be at least one ONLINE DataStorage configured and active in the system.");
+            ready = false;
+        }
+        // check security delegation
+        long numberSecurityDelegation = pluginService.getPluginConfigurationsByType(ISecurityDelegation.class).stream()
+                .filter(pc -> pc.isActive()).count();
+        if (numberSecurityDelegation != 1) {
+            reasons.add(
+                    "There should be one and only one Security Delegation configured and active in the system. There is currently: "
+                            + numberSecurityDelegation);
             ready = false;
         }
         return new ModuleReadiness(ready, reasons);
