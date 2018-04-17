@@ -117,7 +117,6 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
         try {
             email = templateService.writeToEmail(MDP_RESET_TEMPLATE, data, recipients);
         } catch (final EntityNotFoundException e) {
-            LOG.warn("Could not find the template to generate a password reset email. Falling back to default.", e);
             email = new SimpleMailMessage();
             email.setTo(recipients);
             email.setSubject("REGARDS - Password Reset");
