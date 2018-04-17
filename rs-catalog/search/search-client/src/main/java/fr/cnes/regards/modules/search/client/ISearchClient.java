@@ -2,18 +2,22 @@ package fr.cnes.regards.modules.search.client;
 
 import javax.validation.Valid;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
@@ -37,7 +41,9 @@ public interface ISearchClient {
 
     String DATASET_URN_PATH = "/datasets/{urn}";
     
-    String ENTITY_GET_MAPPING = "/entities/{urn}";
+    String ENTITY_HAS_ACCESS = "/entities/{urn}/access";
+
+    String ENTITIES_HAS_ACCESS = "/entities/access";
 
     String DATAOBJECTS_COMPUTE_FILES_SUMMARY = "/dataobjects/computefilessummary";
 
@@ -60,8 +66,11 @@ public interface ISearchClient {
     @RequestMapping(path = DOCUMENTS_URN, method = RequestMethod.GET)
     ResponseEntity<Resource<Document>> getDocument(@Valid @PathVariable("urn") UniformResourceName urn);
 
-    @RequestMapping(path = ENTITY_GET_MAPPING + "/access", method = RequestMethod.GET)
+    @RequestMapping(path = ENTITY_HAS_ACCESS, method = RequestMethod.GET)
     ResponseEntity<Boolean> hasAccess(@PathVariable("urn") UniformResourceName urn);
+
+    @RequestMapping(path = ENTITIES_HAS_ACCESS, method = RequestMethod.GET)
+    ResponseEntity<Set<UniformResourceName>> hasAccess(@RequestBody java.util.Collection<UniformResourceName> urns);
 
     @RequestMapping(path = DATAOBJECTS_COMPUTE_FILES_SUMMARY, method = RequestMethod.GET)
     ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestParam Map<String, String> allParams,

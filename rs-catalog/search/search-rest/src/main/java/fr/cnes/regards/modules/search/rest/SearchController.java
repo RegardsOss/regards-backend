@@ -25,8 +25,11 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
@@ -43,12 +46,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
 import feign.Response;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
@@ -130,6 +135,10 @@ public class SearchController {
     public static final String DESCRIPTOR = "/descriptor.xml";
 
     public static final String ENTITY_GET_MAPPING = "/entities/{urn}";
+
+    public static final String ENTITY_HAS_ACCESS = ENTITY_GET_MAPPING + "/access";
+
+    public static final String ENTITIES_HAS_ACCESS = "/entities/access";
 
     public static final String COLLECTIONS_URN = "/collections/{urn}";
 
@@ -571,15 +580,35 @@ public class SearchController {
                                                                            partialText));
     }
 
-    @RequestMapping(path = ENTITY_GET_MAPPING + "/access", method = RequestMethod.GET)
+    @RequestMapping(path = ENTITY_HAS_ACCESS, method = RequestMethod.GET)
     @ResourceAccess(description = "allows to know if the user can download an entity", role = DefaultRole.PUBLIC)
     public ResponseEntity<Boolean> hasAccess(@PathVariable("urn") UniformResourceName urn)
             throws EntityOperationForbiddenException, EntityNotFoundException {
         AbstractEntity entity = searchService.get(urn);
-        if(entity instanceof DataObject) {
+        if (entity instanceof DataObject) {
             return ResponseEntity.ok(((DataObject) entity).getDownloadable());
         }
         return ResponseEntity.ok(true);
+    }
+
+    @RequestMapping(path = ENTITIES_HAS_ACCESS, method = RequestMethod.GET)
+    @ResourceAccess(description = "allows to know if the user can download entities", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Set<UniformResourceName>> hasAccess(
+            @RequestBody java.util.Collection<UniformResourceName> urns)
+            throws EntityOperationForbiddenException, EntityNotFoundException {
+        Set<UniformResourceName> urnsWithAccess = Sets.newHashSet(urns);
+        for (Iterator<UniformResourceName> i = urns.iterator(); i.hasNext(); ) {
+            try {
+                AbstractEntity entity = searchService.get(i.next());
+                // Only a DataObject without downloadable property hasn'et access
+                if ((entity instanceof DataObject) && !((DataObject) entity).getDownloadable()) {
+                    i.remove();
+                }
+            } catch (EntityOperationForbiddenException | EntityNotFoundException e) {
+                i.remove();
+            }
+        }
+        return ResponseEntity.ok(urnsWithAccess);
     }
 
     /**
