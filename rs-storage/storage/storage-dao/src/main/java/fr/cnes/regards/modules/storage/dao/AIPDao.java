@@ -5,11 +5,13 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
@@ -165,6 +167,11 @@ public class AIPDao implements IAIPDao {
     @Override
     public Set<AIP> findAllByIpIdIn(Collection<String> ipIds) {
         return repo.findAllByIpIdIn(ipIds).stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Stream<UniformResourceName> findUrnsByIpIdIn(Collection<String> ipIds) {
+        return repo.findByIpIdIn(ipIds).map(aipEntity -> aipEntity.getAip().getId());
     }
 
     @Override

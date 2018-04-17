@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,6 +44,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -274,7 +276,10 @@ public class AIPService implements IAIPService {
             aipDao.save(aip);
             // Extract data files
             Set<StorageDataFile> dataFiles = StorageDataFile.extractDataFiles(aip);
-            dataFiles.forEach(df-> { df.setState(DataFileState.PENDING); dataFileDao.save(df); });
+            dataFiles.forEach(df -> {
+                df.setState(DataFileState.PENDING);
+                dataFileDao.save(df);
+            });
         }
 
         return rejectedAips;
@@ -420,7 +425,7 @@ public class AIPService implements IAIPService {
         Set<StorageDataFile> onlineFiles = Sets.newHashSet();
         Set<StorageDataFile> nearlineFiles = Sets.newHashSet();
 
-        // 2. Check for online files. Online files doesn't need to be stored in the cache
+        // 2. Check for online files. Online files don't need to be stored in the cache
         // they can be accessed directly where they are stored.
         for (StorageDataFile df : dataFilesWithAccess) {
             if (df.getPrioritizedDataStorages() != null) {
@@ -446,23 +451,33 @@ public class AIPService implements IAIPService {
     }
 
     private Set<StorageDataFile> checkLoadFilesAccessRights(Set<StorageDataFile> dataFiles) throws ModuleException {
-        Set<StorageDataFile> dataFilesWithAccess = Sets.newHashSet(dataFiles);
         // Creating a multimap of { aip -> files } to remove all files from not authorized AIPs
-        Collector<StorageDataFile, HashMultimap<AIP, StorageDataFile>, HashMultimap<AIP, StorageDataFile>> multimapCollector = Collector
-                .of(HashMultimap::create, (hashMultimap, df) -> hashMultimap.put(df.getAip(), df),
+        Collector<StorageDataFile, HashMultimap<UniformResourceName, StorageDataFile>, HashMultimap<UniformResourceName, StorageDataFile>> multimapCollector = Collector
+                .of(HashMultimap::create, (hashMultimap, df) -> hashMultimap.put(df.getAip().getId(), df),
                     (hashMultimap, hashMultimap2) -> {
                         hashMultimap.putAll(hashMultimap2);
                         return hashMultimap;
                     });
-        Multimap<AIP, StorageDataFile> aipIdsMap = dataFilesWithAccess.parallelStream().collect(multimapCollector);
+        // Apply multimapCollector in parallel
+        Multimap<UniformResourceName, StorageDataFile> aipIdsMap = dataFiles.parallelStream().collect(multimapCollector);
         ISecurityDelegation securityDelegationPlugin = getSecurityDelegationPlugin();
-        // Check security
-        for (Map.Entry<AIP, Collection<StorageDataFile>> entry : aipIdsMap.asMap().entrySet()) {
-            if (!securityDelegationPlugin.hasAccess(entry.getKey().getId().toString())) {
-                dataFilesWithAccess.removeAll(entry.getValue());
+        // Check security...
+        Set<UniformResourceName> urnsWithAccess = securityDelegationPlugin.hasAccess(aipIdsMap.keySet());
+        if (urnsWithAccess.size() != aipIdsMap.keySet().size()) {
+            for (Iterator<UniformResourceName> i = aipIdsMap.keySet().iterator(); i.hasNext(); ) {
+                if (!urnsWithAccess.contains(i.next())) {
+                    i.remove();
+                }
             }
         }
-        return dataFilesWithAccess;
+//        for (Iterator<Map.Entry<UniformResourceName, Collection<StorageDataFile>>> i = aipIdsMap.asMap().entrySet().iterator(); i
+//                .hasNext(); ) {
+//            // ...for each aip
+//            if (!securityDelegationPlugin.hasAccess(i.next().getKey())) {
+//                i.remove();
+//            }
+//        }
+        return ImmutableSet.copyOf(aipIdsMap.values());
     }
 
     @Override
