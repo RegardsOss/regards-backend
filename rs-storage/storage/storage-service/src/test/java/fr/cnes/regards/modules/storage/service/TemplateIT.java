@@ -150,8 +150,6 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
         alloConf.setIsActive(true);
         alloConf = pluginService.savePluginConfiguration(alloConf);
 
-        //lets simulate as in the code, so lets create a workingSubsetWrapper full of rejected data files
-        WorkingSubsetWrapper<LocalWorkingSubset> workingSubsetWrapper = new WorkingSubsetWrapper<>();
         AIP aip = aipDao.save(getAIP());
         Set<StorageDataFile> dataFiles = StorageDataFile.extractDataFiles(aip);
         dataFiles = Sets.newHashSet(dataFileDao.save(dataFiles));

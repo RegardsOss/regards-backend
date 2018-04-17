@@ -684,10 +684,12 @@ public class AIPService implements IAIPService {
             Set<Map.Entry<StorageDataFile, String>> rejectedSet = workingSubsetWrapper.getRejectedDataFiles()
                     .entrySet();
             for (Map.Entry<StorageDataFile, String> rejected : rejectedSet) {
-                rejected.getKey().setState(DataFileState.ERROR);
-                AIP aip = rejected.getKey().getAip();
+                StorageDataFile dataFile = rejected.getKey();
+                dataFile.setState(DataFileState.ERROR);
+                dataFile.addFailureCause(rejected.getValue());
+                AIP aip = dataFile.getAip();
                 aip.setState(AIPState.STORAGE_ERROR);
-                dataFileDao.save(rejected.getKey());
+                dataFileDao.save(dataFile);
                 aipDao.save(aip);
                 publisher.publish(new AIPEvent(aip));
             }
