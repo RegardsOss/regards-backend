@@ -1,19 +1,14 @@
 <#setting datetime_format='d MMM yyyy HH:mm:ss z'>
-<h1>REGARDS - Order created</h1>
-<div>Yo Bro !
+<div>Dear User,
     <br>
-    Your order from project <b>${project}</b> has been created.<br/>
-        It will be available until <b>${expiration_date?datetime.iso}</b>.
+    <p>Your order from project <b>${project}</b> can be followed at this address: <a href="${orders_url}">Orders list</a> (don't forget to connect).</p>
+    <p>Your order <b>${order_id}</b>  will be available until <b>${expiration_date?datetime.iso}</b>.<br/>
+        A <a href="${metalink_download_url}">metalink</a> file is available.</br>
+        It can be used with <a href="${regards_downloader_url}">RegardsDownloader</a>.
     </p>
-    <p>A <a href="${metalink_download_url}">metalink</a> file is available.</p>
+    <p>If there is any problem, do not hesitate to contact us at regards-admin@c-s.fr</p>
 
-    <p>It can be used with <a href="${regards_downloader_url}">RegardsDownloader</a>.</p>
-
-    <p>Your order can be followed at this address: <a href="${orders_url}">Orders list</a> (don't forget to connect).
-    </p>
-
-    <br/>
     <p>
-        Cheers, Imhotep
+        Best regards
     </p>
 </div>

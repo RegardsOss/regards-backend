@@ -327,6 +327,7 @@ public class OrderService implements IOrderService {
         Map<String, String> dataMap = new HashMap<>();
         dataMap.put("expiration_date", order.getExpirationDate().toString());
         dataMap.put("project", runtimeTenantResolver.getTenant());
+        dataMap.put("order_id", order.getId().toString());
         dataMap.put("metalink_download_url",
                     urlStart + "/user/orders/metalink/download?" + tokenRequestParam + "&scope=" + runtimeTenantResolver
                             .getTenant());
@@ -336,8 +337,9 @@ public class OrderService implements IOrderService {
         // Create mail
         SimpleMailMessage email;
         try {
-            email = templateService
-                    .writeToEmail(TemplateServiceConfiguration.ORDER_CREATED_TEMPLATE_CODE, dataMap, order.getOwner());
+            email = templateService.writeToEmail(TemplateServiceConfiguration.ORDER_CREATED_TEMPLATE_CODE,
+                                                 String.format("Your order %d is OK", order.getId()), dataMap,
+                                                 order.getOwner());
         } catch (EntityNotFoundException e) {
             throw new RsRuntimeException(e);
         }
