@@ -286,6 +286,7 @@ public class OrderService implements IOrderService {
         }
         // Create order only if it contains at least one DatasetTask
         if (order.getDatasetTasks().isEmpty()) {
+            repos.delete(order.getId());
             return null;
         }
         // Order is ready to be taken into account

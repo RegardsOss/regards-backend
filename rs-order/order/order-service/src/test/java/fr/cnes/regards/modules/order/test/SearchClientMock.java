@@ -348,6 +348,7 @@ public class SearchClientMock implements ISearchClient {
                         fileMultimap.put(getDataType(file.getName()), dataFile);
                     }
                     object.setFiles(fileMultimap);
+                    object.setDownloadable(true);
                     list.add(new Resource<>(object));
                 }
 
