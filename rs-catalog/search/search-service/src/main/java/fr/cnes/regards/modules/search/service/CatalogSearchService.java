@@ -172,7 +172,7 @@ public class CatalogSearchService implements ICatalogSearchService {
                     .contains(DataObject.class)) || ((searchKey.getResultClass() != null)
                     && TypeToken.of(searchKey.getResultClass()).getRawType() == DataObject.class)) {
                 Set<String> userGroups = accessRightFilter.getUserAccessGroups();
-                for (R entity : (List<R>) facetPage.getContent()) {
+                for (R entity : facetPage.getContent()) {
                     if (entity instanceof DataObject) {
                         manageDownloadable(userGroups, (DataObject) entity);
                     }
