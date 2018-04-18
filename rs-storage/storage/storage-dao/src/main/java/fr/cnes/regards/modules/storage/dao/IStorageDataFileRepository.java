@@ -56,9 +56,9 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
     Optional<StorageDataFile> findOneById(Long dataFileId);
 
     /**
-     * Find all data files which checksum is one of the provided ones
+     * Find all data files of which checksum is one of the provided ones
      * @param checksums
-     * @return data files which checksum is one of the provided ones
+     * @return data files of which checksum is one of the provided ones
      */
     @EntityGraph(value = "graph.datafile.full")
     Set<StorageDataFile> findAllByChecksumIn(Set<String> checksums);
