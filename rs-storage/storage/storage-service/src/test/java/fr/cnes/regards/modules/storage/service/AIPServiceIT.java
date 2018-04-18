@@ -31,6 +31,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -58,7 +60,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
@@ -87,8 +89,8 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage
 @ContextConfiguration(classes = { TestConfig.class, AIPServiceIT.Config.class })
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles({ "testAmqp", "disableStorageTasks" })
-@DirtiesContext
-public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
+@DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_CLASS)
+public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(AIPServiceIT.class);
 
@@ -156,6 +158,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         int waitCount = 0;
         while ((events.size() < nbExpectedEvents) && (waitCount < 5)) {
             Thread.sleep(WAITING_TIME_MS);
+            mockEventHandler.log();
             events = mockEventHandler.getReceivedEvents().stream().filter(e -> e.getAipState().equals(state))
                     .collect(Collectors.toSet());
             waitCount++;
@@ -224,10 +227,7 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_010"), @Requirement("REGARDS_DSL_STOP_AIP_070") })
     public void createSuccessTest() throws ModuleException, InterruptedException {
-
         storeAIP(aip);
-        // Wait for AIP set STORED status
-        LOG.info("Waiting for AIP {} stored", aip.getId().toString());
         Set<AIPEvent> events = waitForEventsReceived(AIPState.STORED, 1);
         Assert.assertEquals("There whould be only one datastorage success event", 1, events.size());
 
@@ -289,13 +289,19 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     @Test
     public void createFailOnMetadataTest() throws ModuleException, InterruptedException, IOException {
+        LOG.info("");
+        LOG.info("START -> createFailOnMetadataTest");
+        LOG.info("---------------------------------");
+        LOG.info("");
         Path workspacePath = workspaceService.getMicroserviceWorkspace();
         Set<PosixFilePermission> oldPermissions = Files.getPosixFilePermissions(workspacePath);
         try {
             // Run AIP storage
             aipService.validateAndStore(new AIPCollection(aip));
             aipService.store();
+            LOG.info("Waiting for storage jobs ends ...");
             Thread.sleep(2000);
+            LOG.info("Waiting for storage jobs ends OK");
             // to make the process fail just on metadata storage, lets remove permissions from the workspace
             Files.setPosixFilePermissions(workspacePath, Sets.newHashSet());
             aipService.storeMetadata();
@@ -314,6 +320,10 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         } finally {
             // to avoid issues with following tests, lets set back the permissions
             Files.setPosixFilePermissions(workspacePath, oldPermissions);
+            LOG.info("");
+            LOG.info("STOP -> createFailOnMetadataTest");
+            LOG.info("---------------------------------");
+            LOG.info("");
         }
     }
 
@@ -363,30 +373,24 @@ public class AIPServiceIT extends AbstractRegardsServiceTransactionalIT {
         // lets get all the dataFile before deleting them for further verification
         Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(aip);
         aipService.deleteAip(aipIpId);
-        Thread.sleep(15000);
+        Thread.sleep(1000);
 
         // Wait for AIP deleteion
         Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 1);
         Assert.assertEquals("There should been only one AIP delete event ", 1, events.size());
         Assert.assertFalse("AIP should not be referenced in the database", aipDao.findOneByIpId(aipIpId).isPresent());
         for (StorageDataFile df : aipFiles) {
-            if (df.getDataType() == DataType.AIP) {
-                Assert.assertFalse("AIP metadata should not be on disk anymore",
-                                   Files.exists(Paths.get(df.getUrls().iterator().next().toURI())));
-            } else {
-                // As only one of the two storage system allow deletion, only one file should be deleted on disk
-                for (URL fileLocation : df.getUrls()) {
-                    if (fileLocation.toString().contains(baseStorage1Location.toString())) {
-                        Assert.assertFalse("AIP data should not be on disk anymore",
-                                           Files.exists(Paths.get(fileLocation.toURI())));
-                    } else if (fileLocation.toString().contains(baseStorage2Location.toString())) {
-                        Assert.assertTrue("AIP data should be on disk. The storage configuration do not allow deletion",
-                                          Files.exists(Paths.get(fileLocation.toURI())));
-                    } else {
-                        Assert.fail("The file should not be stored in " + fileLocation.toString());
-                    }
+            // As only one of the two storage system allow deletion, only one file should be deleted on disk
+            for (URL fileLocation : df.getUrls()) {
+                if (fileLocation.toString().contains(baseStorage1Location.toString())) {
+                    Assert.assertFalse("AIP data should not be on disk anymore",
+                                       Files.exists(Paths.get(fileLocation.toURI())));
+                } else if (fileLocation.toString().contains(baseStorage2Location.toString())) {
+                    Assert.assertTrue("AIP data should be on disk. The storage configuration do not allow deletion",
+                                      Files.exists(Paths.get(fileLocation.toURI())));
+                } else {
+                    Assert.fail("The file should not be stored in " + fileLocation.toString());
                 }
-
             }
         }
     }

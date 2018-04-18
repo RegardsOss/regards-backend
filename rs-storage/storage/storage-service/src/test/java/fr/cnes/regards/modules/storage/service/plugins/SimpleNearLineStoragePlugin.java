@@ -3,10 +3,13 @@
  */
 package fr.cnes.regards.modules.storage.service.plugins;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -34,7 +37,7 @@ public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWo
     public WorkingSubsetWrapper<LocalWorkingSubset> prepare(Collection<StorageDataFile> pDataFiles,
             DataStorageAccessModeEnum pMode) {
         // Return only one workingSubset
-        LOG.info("SimpleNearLineStoragePlugin preparing files for restoration");
+        LOG.info("SimpleNearLineStoragePlugin preparing {} files for restoration", pDataFiles.size());
         LocalWorkingSubset ws = new LocalWorkingSubset();
         Set<StorageDataFile> dataFiles = Sets.newHashSet();
         dataFiles.addAll(pDataFiles);
@@ -67,14 +70,16 @@ public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWo
     @Override
     public void retrieve(LocalWorkingSubset pWorkingSubset, Path pDestinationPath, IProgressManager pProgressManager) {
         for (StorageDataFile file : pWorkingSubset.getDataFiles()) {
-            String filePath = file.getUrls().stream().findFirst().get().getPath();
-            LOG.info("FILE REstored id : {} cs : {} path: {}", file.getId(), file.getChecksum(), filePath);
+            URL fileUrl = file.getUrls().stream().findFirst().get();
+            LOG.info("FILE REstored id : {} cs : {} path: {}", file.getId(), file.getChecksum(), fileUrl.getPath());
             try {
-                Files.copy(Paths.get(filePath).toFile(), pDestinationPath.toFile());
-                pProgressManager.restoreSucceed(file, pDestinationPath);
+                File sourceFile = new File(fileUrl.getPath());
+                File destinationFile = Paths.get(pDestinationPath.toString(), sourceFile.getName()).toFile();
+                Files.copy(sourceFile, destinationFile);
+                pProgressManager.restoreSucceed(file, fileUrl, Paths.get(destinationFile.getPath()));
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
-                pProgressManager.restoreFailed(file, e.getMessage());
+                pProgressManager.restoreFailed(file, Optional.of(fileUrl), e.getMessage());
             }
 
         }

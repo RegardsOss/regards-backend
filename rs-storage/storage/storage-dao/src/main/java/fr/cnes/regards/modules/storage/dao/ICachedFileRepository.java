@@ -4,6 +4,7 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -26,6 +27,13 @@ public interface ICachedFileRepository extends JpaRepository<CachedFile, Long> {
      * @return {@link CachedFile}s
      */
     Set<CachedFile> findAllByChecksumIn(Set<String> checksums);
+
+    /**
+     * Get all {@link CachedFile}s for the given {@link String}s of checksums.
+     * @param checksums {@link String}s
+     * @return {@link CachedFile}s
+     */
+    List<CachedFile> findAllByChecksumInOrderByLastRequestDateAsc(Set<String> checksums);
 
     /**
      * Retrieve a {@link CachedFile} by his checksum
@@ -55,12 +63,20 @@ public interface ICachedFileRepository extends JpaRepository<CachedFile, Long> {
     Set<CachedFile> findByStateOrderByLastRequestDateAsc(CachedFileState pQueued);
 
     /**
+     * Retrieve all {@link CachedFile}s for the given {@link CachedFileState} ordered by last request date
+     * @param pQueued
+     * @return {@link Set}<{@link CachedFile}
+     */
+    Set<CachedFile> findByStateOrderByLastRequestDateDesc(CachedFileState pQueued);
+
+    /**
      * Retrieve all {@link CachedFile}s for the given {@link CachedFileState} and {@link OffsetDateTime} last request date before the given one
      * ordered by last request date.
      * @param pQueued
      * @return {@link Set}<{@link CachedFile}
      */
-    Set<CachedFile> findByStateAndLastRequestDateBeforeOrderByLastRequestDateAsc(CachedFileState pQueued, OffsetDateTime pLastRequestDate);
+    Set<CachedFile> findByStateAndLastRequestDateBeforeOrderByLastRequestDateAsc(CachedFileState pQueued,
+            OffsetDateTime pLastRequestDate);
 
     /**
      * Retrieve all {@link CachedFile}s with expiration date before the given {@link OffsetDateTime}

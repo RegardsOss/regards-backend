@@ -6,9 +6,9 @@ import java.util.Set;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * DAO to access metadata of files associated to aips into the database
@@ -73,6 +73,8 @@ public interface IDataFileDao {
      * @return the data file wrapped into an optional to avoid nulls
      */
     Optional<StorageDataFile> findOneById(Long dataFileId);
+
+    Optional<StorageDataFile> findLockedOneById(Long dataFileId);
 
     /**
      * Find all data files which checksum is one of the provided ones

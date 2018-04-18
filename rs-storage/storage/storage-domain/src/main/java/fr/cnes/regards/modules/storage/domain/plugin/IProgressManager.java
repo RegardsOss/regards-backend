@@ -5,6 +5,7 @@ package fr.cnes.regards.modules.storage.domain.plugin;
 
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
@@ -34,35 +35,40 @@ public interface IProgressManager {
     /**
      * Notify the system that the given {@link StorageDataFile} couldn't be stored.
      * @param dataFileFailed {@link StorageDataFile} not stored.
+     * @param failedUrl url storage error
      * @param cause {@link String} error message.
      */
-    public void storageFailed(StorageDataFile dataFileFailed, String cause);
+    public void storageFailed(StorageDataFile dataFileFailed, Optional<URL> failedUrl, String cause);
 
     /**
      * Notify system that the given {@link StorageDataFile} is deleted.
      * @param dataFileDeleted {@link StorageDataFile} deleted.
+     * @param deletedUrl deleted url
      */
-    public void deletionSucceed(StorageDataFile dataFileDeleted);
+    public void deletionSucceed(StorageDataFile dataFileDeleted, URL deletedUrl);
 
     /**
      * Notify the system that the given {@link StorageDataFile} couldn't be deleted.
      * @param dataFileFailed {@link StorageDataFile} not deleted.
+     * @param failedUrl url deletion error
      * @param failureCause {@link String} error message.
      */
-    public void deletionFailed(StorageDataFile dataFileFailed, String failureCause);
+    public void deletionFailed(StorageDataFile dataFileFailed, Optional<URL> failedUrl, String failureCause);
 
     /**
      * Notify system that the given {@link StorageDataFile} is restored.
      * @param dataFile {@link StorageDataFile} restored.
+     * @param restoredFromUrl url restoration
      * @param restoredFilePath {@link Path} of the restored file.
      */
-    public void restoreSucceed(StorageDataFile dataFile, Path restoredFilePath);
+    public void restoreSucceed(StorageDataFile dataFile, URL restoredFromUrl, Path restoredFilePath);
 
     /**
      * Notify the system that the given {@link StorageDataFile} couldn't be restored.
      * @param dataFile {@link StorageDataFile} not restored.
+     * @param failedUrl url restoration error
      * @param failureCause {@link String} error message.
      */
-    public void restoreFailed(StorageDataFile dataFile, String failureCause);
+    public void restoreFailed(StorageDataFile dataFile, Optional<URL> failedUrl, String failureCause);
 
 }

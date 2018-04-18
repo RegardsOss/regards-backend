@@ -3,6 +3,8 @@ package fr.cnes.regards.modules.storage.domain.event;
 import java.net.URL;
 import java.nio.file.Path;
 
+import javax.annotation.Nullable;
+
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -60,9 +62,9 @@ public class DataStorageEvent implements ISubscribable {
     private StorageEventType type;
 
     /**
-     * The data file new url
+     * The data file url handled by the current action
      */
-    private URL newUrl;
+    private URL handledUrl;
 
     /**
      * The data file restoration path
@@ -83,9 +85,10 @@ public class DataStorageEvent implements ISubscribable {
      * @param storageAction
      * @param type
      */
-    public DataStorageEvent(StorageDataFile dataFile, StorageAction storageAction, StorageEventType type, Long storageConfId, URL newUrl) {
+    public DataStorageEvent(StorageDataFile dataFile, StorageAction storageAction, StorageEventType type,
+            Long storageConfId, @Nullable URL newUrl) {
         this.dataFileId = dataFile.getId();
-        this.newUrl = newUrl;
+        this.handledUrl = newUrl;
         this.storageAction = storageAction;
         this.type = type;
         this.storageConfId = storageConfId;
@@ -93,11 +96,6 @@ public class DataStorageEvent implements ISubscribable {
         this.checksum = dataFile.getChecksum();
         this.width = dataFile.getWidth();
         this.height = dataFile.getHeight();
-    }
-
-    public DataStorageEvent(StorageDataFile dataFile, StorageAction storageAction, StorageEventType type,
-            Long storageConfId) {
-        this(dataFile, storageAction, type, storageConfId, null);
     }
 
     /**
@@ -148,16 +146,16 @@ public class DataStorageEvent implements ISubscribable {
     /**
      * @return the new url
      */
-    public URL getNewUrl() {
-        return newUrl;
+    public URL getHandledUrl() {
+        return handledUrl;
     }
 
     /**
      * Set the new url
      * @param newUrl
      */
-    public void setNewUrl(URL newUrl) {
-        this.newUrl = newUrl;
+    public void setHandledUrl(URL url) {
+        this.handledUrl = url;
     }
 
     /**

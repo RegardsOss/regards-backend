@@ -21,11 +21,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -38,7 +40,6 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
@@ -68,9 +69,11 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 @ContextConfiguration(classes = { TestConfig.class, TemplateIT.Config.class })
 @TestPropertySource(locations = "classpath:test.properties")
 @RegardsTransactional
+@ActiveProfiles({ "testAmqp", "disableStorageTasks" })
 public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final String DATA_STORAGE_CONF_LABEL = "DataStorage_TemplateIT";
+
     private static final String ALLO_CONF_LABEL = "Allo_TemplateIT";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TemplateIT.class);
@@ -103,17 +106,14 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
                                                                       IDataStorage.class.getPackage().getName(),
                                                                       IOnlineDataStorage.class.getPackage().getName());
-        URL baseStorageLocation = new URL("file",
-                                          "",
-                                          Paths.get("target/AIPServiceIT/Local2").toFile().getAbsolutePath());
+        URL baseStorageLocation = new URL("file", "",
+                Paths.get("target/AIPServiceIT/Local2").toFile().getAbsolutePath());
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION, false).getParameters();
-        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta,
-                                                                      DATA_STORAGE_CONF_LABEL,
-                                                                      parameters,
-                                                                      0);
+        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, DATA_STORAGE_CONF_LABEL, parameters,
+                0);
         dataStorageConf.setIsActive(true);
         PrioritizedDataStorage prioritizedDataStorage = prioritizedDataStorageService.create(dataStorageConf);
 
@@ -133,7 +133,9 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
         // lets use the template service to get our message
         SimpleMailMessage email = templateService
                 .writeToEmail(TemplateServiceConfiguration.NOT_SUBSETTED_DATA_FILES_CODE, dataMap);
-        Assert.assertNotEquals(templateRepository.findOneByCode(TemplateServiceConfiguration.NOT_SUBSETTED_DATA_FILES_CODE).get().getContent(), email.getText());
+        Assert.assertNotEquals(templateRepository
+                .findOneByCode(TemplateServiceConfiguration.NOT_SUBSETTED_DATA_FILES_CODE).get().getContent(),
+                               email.getText());
         LOGGER.info(email.getText());
     }
 
@@ -142,11 +144,8 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         Map<String, Object> dataMap = new HashMap<>();
         PluginMetaData AlloMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class,
-                                                                      IAllocationStrategy.class.getPackage().getName());
-        PluginConfiguration alloConf = new PluginConfiguration(AlloMeta,
-                                                                      ALLO_CONF_LABEL,
-                                                                      new ArrayList<>(),
-                                                                      0);
+                                                                   IAllocationStrategy.class.getPackage().getName());
+        PluginConfiguration alloConf = new PluginConfiguration(AlloMeta, ALLO_CONF_LABEL, new ArrayList<>(), 0);
         alloConf.setIsActive(true);
         alloConf = pluginService.savePluginConfiguration(alloConf);
 
@@ -158,11 +157,11 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
         // lets use the template service to get our message
         SimpleMailMessage email = templateService
                 .writeToEmail(TemplateServiceConfiguration.NOT_DISPATCHED_DATA_FILES_CODE, dataMap);
-        Assert.assertNotEquals(templateRepository.findOneByCode(TemplateServiceConfiguration.NOT_DISPATCHED_DATA_FILES_CODE).get().getContent(), email.getText());
+        Assert.assertNotEquals(templateRepository
+                .findOneByCode(TemplateServiceConfiguration.NOT_DISPATCHED_DATA_FILES_CODE).get().getContent(),
+                               email.getText());
         LOGGER.info(email.getText());
     }
-
-
 
     private AIP getAIP() throws MalformedURLException {
 

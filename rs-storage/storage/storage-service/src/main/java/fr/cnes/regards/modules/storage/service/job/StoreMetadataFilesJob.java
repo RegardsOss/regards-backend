@@ -4,7 +4,9 @@
 package fr.cnes.regards.modules.storage.service.job;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Map;
+import java.util.Optional;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobWorkspaceException;
@@ -27,7 +29,8 @@ public class StoreMetadataFilesJob extends AbstractStoreFilesJob {
         StorageJobProgressManager progressManager = new StorageJobProgressManager(publisher, this, storageConfId,
                 runtimeTenantResolver);
         IWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
-        workingSubset.getDataFiles().forEach(file -> progressManager.storageFailed(file, e.toString()));
+        workingSubset.getDataFiles()
+                .forEach(file -> progressManager.storageFailed(file, Optional.empty(), e.toString()));
         super.handleWorkspaceException(e);
     }
 
@@ -37,8 +40,8 @@ public class StoreMetadataFilesJob extends AbstractStoreFilesJob {
     }
 
     @Override
-    protected void handleNotHandledDataFile(StorageDataFile notHandled) {
-        progressManager.storageFailed(notHandled, NOT_HANDLED_MSG);
+    protected void handleNotHandledDataFile(StorageDataFile notHandled, Optional<URL> notHandledUrl) {
+        progressManager.storageFailed(notHandled, notHandledUrl, NOT_HANDLED_MSG);
     }
 
 }

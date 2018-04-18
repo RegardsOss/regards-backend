@@ -3,7 +3,9 @@
  */
 package fr.cnes.regards.modules.storage.service.job;
 
+import java.net.URL;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -24,6 +26,15 @@ import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
  * @author Sylvain VISSIERE-GUERINET
  */
 public class UpdateDataFilesJob extends AbstractStoreFilesJob {
+
+    /**
+     * Failure causes message format
+     */
+    {
+        {
+            FAILURE_CAUSES = "Update failed due to the following reasons: %s";
+        }
+    }
 
     /**
      * Job Parameter name for the old data files
@@ -69,7 +80,7 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
             WorkingSubsetWrapper<IWorkingSubset> subSetsToDelete = storagePlugin
                     .prepare(oldDataFiles, DataStorageAccessModeEnum.DELETION_MODE);
             for (Map.Entry<StorageDataFile, String> entry : subSetsToDelete.getRejectedDataFiles().entrySet()) {
-                progressManager.deletionFailed(entry.getKey(), entry.getValue());
+                progressManager.deletionFailed(entry.getKey(), Optional.empty(), entry.getValue());
             }
             for (IWorkingSubset toDelete : subSetsToDelete.getWorkingSubSets()) {
                 storagePlugin.delete(toDelete, progressManager);
@@ -84,8 +95,8 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
     }
 
     @Override
-    protected void handleNotHandledDataFile(StorageDataFile notHandled) {
-        progressManager.storageFailed(notHandled, NOT_HANDLED_MSG);
+    protected void handleNotHandledDataFile(StorageDataFile notHandled, Optional<URL> notHandledUrl) {
+        progressManager.storageFailed(notHandled, notHandledUrl, NOT_HANDLED_MSG);
     }
 
     @Override

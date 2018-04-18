@@ -14,6 +14,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -256,14 +257,15 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
 
     @Override
     public CoupleAvailableError restore(Set<StorageDataFile> dataFilesToRestore, OffsetDateTime cacheExpirationDate) {
-        if(dataFilesToRestore.isEmpty()) {
+        if (dataFilesToRestore.isEmpty()) {
             return new CoupleAvailableError(new HashSet<>(), new HashSet<>());
         }
         LOGGER.debug("CachedFileService : run restoration process for {} files.", dataFilesToRestore.size());
         // Get files already in cache
         Set<String> dataFilesToRestoreChecksums = dataFilesToRestore.stream().map(df -> df.getChecksum())
                 .collect(Collectors.toSet());
-        Set<CachedFile> cachedFiles = cachedFileRepository.findAllByChecksumIn(dataFilesToRestoreChecksums);
+        List<CachedFile> cachedFiles = cachedFileRepository
+                .findAllByChecksumInOrderByLastRequestDateAsc(dataFilesToRestoreChecksums);
         Set<StorageDataFile> alreadyCachedData = dataFileDao
                 .findAllByChecksumIn(cachedFiles.stream().map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
         // Update expiration to the new cacheExpirationDate if above the last one.
@@ -280,8 +282,8 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         Set<StorageDataFile> alreadyAvailableData = dataFileDao.findAllByChecksumIn(availableCachedFiles.stream()
                 .map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
         // Get cached files queued
-        Set<CachedFile> queuedCachedFiles = cachedFiles.stream()
-                .filter(cf -> CachedFileState.QUEUED.equals(cf.getState())).collect(Collectors.toSet());
+        List<CachedFile> queuedCachedFiles = cachedFiles.stream()
+                .filter(cf -> CachedFileState.QUEUED.equals(cf.getState())).collect(Collectors.toList());
         Set<StorageDataFile> queuedData = dataFileDao.findAllByChecksumIn(queuedCachedFiles.stream()
                 .map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
 
@@ -384,30 +386,33 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
      * {@link #cacheSizePurgeLowerThreshold}.
      */
     private void purgeOlderCachedFiles() {
-        // Calculate chache size
+        // Calculate cache size
         Long cacheCurrentSize = getCacheSizeUsedOctets();
         Long cacheSizePurgeUpperThresholdInOctets = cacheSizePurgeUpperThreshold * 1024;
         Long cacheSizePurgeLowerThresholdInOctets = cacheSizePurgeLowerThreshold * 1024;
         // If cache is over upper threshold size then delete older files to reached the lower threshold.
         if ((cacheCurrentSize > cacheSizePurgeUpperThresholdInOctets)
                 && (cacheSizePurgeUpperThreshold > cacheSizePurgeLowerThreshold)) {
-            LOGGER.debug("Cache is overloaded.({}Mo) Deleting older files from cache",
-                         cacheCurrentSize / (1024 * 1024));
-            Long filesTotalSizeToDelete = cacheCurrentSize - cacheSizePurgeLowerThresholdInOctets;
-            Set<CachedFile> allOlderDeletableCachedFiles = cachedFileRepository
-                    .findByStateAndLastRequestDateBeforeOrderByLastRequestDateAsc(CachedFileState.AVAILABLE,
-                                                                                  OffsetDateTime.now()
-                                                                                          .minusHours(this.cacheFilesMinTtl));
-
-            Long fileSizesSum = 0L;
-            Set<CachedFile> filesToDelete = Sets.newHashSet();
-            Iterator<CachedFile> it = allOlderDeletableCachedFiles.iterator();
-            while ((fileSizesSum < filesTotalSizeToDelete) && it.hasNext()) {
-                CachedFile fileToDelete = it.next();
-                filesToDelete.add(fileToDelete);
-                fileSizesSum += fileToDelete.getFileSize();
+            // If files are in queued mode, so delete older files if there minimum time to live (minTtl) is reached.
+            // This limit is configurable is sprinf properties of the current microservice.
+            if (!cachedFileRepository.findAllByState(CachedFileState.QUEUED).isEmpty()) {
+                LOGGER.warn("Cache is overloaded.({}Mo) Deleting older files from cache to reached lower threshold ({}Mo). ",
+                            cacheCurrentSize / (1024 * 1024), cacheSizePurgeLowerThresholdInOctets / (1024 * 1024));
+                Long filesTotalSizeToDelete = cacheCurrentSize - cacheSizePurgeLowerThresholdInOctets;
+                Set<CachedFile> allOlderDeletableCachedFiles = cachedFileRepository
+                        .findByStateAndLastRequestDateBeforeOrderByLastRequestDateAsc(CachedFileState.AVAILABLE,
+                                                                                      OffsetDateTime.now()
+                                                                                              .minusHours(this.cacheFilesMinTtl));
+                Long fileSizesSum = 0L;
+                Set<CachedFile> filesToDelete = Sets.newHashSet();
+                Iterator<CachedFile> it = allOlderDeletableCachedFiles.iterator();
+                while ((fileSizesSum < filesTotalSizeToDelete) && it.hasNext()) {
+                    CachedFile fileToDelete = it.next();
+                    filesToDelete.add(fileToDelete);
+                    fileSizesSum += fileToDelete.getFileSize();
+                }
+                deleteCachedFiles(filesToDelete);
             }
-            deleteCachedFiles(filesToDelete);
         }
     }
 
