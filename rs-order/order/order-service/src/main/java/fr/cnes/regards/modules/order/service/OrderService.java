@@ -388,8 +388,9 @@ public class OrderService implements IOrderService {
 
         ResponseEntity<PagedResources<Resource<DataObject>>> pagedResourcesResponseEntity = searchClient
                 .searchDataobjects(requestMap, page, MAX_PAGE_SIZE);
+        // It is mandatory to check NOW, at creation instant of order from basket, if data object files are still downloadable
         return pagedResourcesResponseEntity.getBody().getContent().stream().map(r -> r.getContent())
-                .collect(Collectors.toList());
+                .filter(dataObject -> dataObject.getDownloadable()).collect(Collectors.toList());
     }
 
     @Override
