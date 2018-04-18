@@ -91,4 +91,9 @@ public class OrderControllerAdvice {
     public ResponseEntity<ServerErrorResponse> handleNoSuchElementException(NoSuchElementException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(e.getMessage()));
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ServerErrorResponse> handleIllegalStateException(IllegalStateException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(e.getMessage()));
+    }
 }

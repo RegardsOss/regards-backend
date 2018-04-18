@@ -279,7 +279,15 @@ public class OrderService implements IOrderService {
                 createSubOrder(basket, dsTask, bucketFiles, order, priority);
             }
 
-            order.addDatasetOrderTask(dsTask);
+            // Add dsTask ONLY IF it contains at least one FilesTask
+            if (!dsTask.getReliantTasks().isEmpty()) {
+                order.addDatasetOrderTask(dsTask);
+            }
+        }
+        // Create order only if it contains at least one DatasetTask
+        if (order.getDatasetTasks().isEmpty()) {
+            repos.delete(order.getId());
+            return null;
         }
         // Order is ready to be taken into account
         order.setStatus(OrderStatus.RUNNING);
@@ -319,6 +327,7 @@ public class OrderService implements IOrderService {
         Map<String, String> dataMap = new HashMap<>();
         dataMap.put("expiration_date", order.getExpirationDate().toString());
         dataMap.put("project", runtimeTenantResolver.getTenant());
+        dataMap.put("order_id", order.getId().toString());
         dataMap.put("metalink_download_url",
                     urlStart + "/user/orders/metalink/download?" + tokenRequestParam + "&scope=" + runtimeTenantResolver
                             .getTenant());
@@ -328,8 +337,9 @@ public class OrderService implements IOrderService {
         // Create mail
         SimpleMailMessage email;
         try {
-            email = templateService
-                    .writeToEmail(TemplateServiceConfiguration.ORDER_CREATED_TEMPLATE_CODE, dataMap, order.getOwner());
+            email = templateService.writeToEmail(TemplateServiceConfiguration.ORDER_CREATED_TEMPLATE_CODE,
+                                                 String.format("Your order %d is OK", order.getId()), dataMap,
+                                                 order.getOwner());
         } catch (EntityNotFoundException e) {
             throw new RsRuntimeException(e);
         }
@@ -388,8 +398,9 @@ public class OrderService implements IOrderService {
 
         ResponseEntity<PagedResources<Resource<DataObject>>> pagedResourcesResponseEntity = searchClient
                 .searchDataobjects(requestMap, page, MAX_PAGE_SIZE);
+        // It is mandatory to check NOW, at creation instant of order from basket, if data object files are still downloadable
         return pagedResourcesResponseEntity.getBody().getContent().stream().map(r -> r.getContent())
-                .collect(Collectors.toList());
+                .filter(dataObject -> dataObject.getDownloadable()).collect(Collectors.toList());
     }
 
     @Override

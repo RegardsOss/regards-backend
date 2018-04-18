@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,6 +26,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.ObjectArrays;
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -90,6 +92,11 @@ public class SearchClientMock implements ISearchClient {
     @Override
     public ResponseEntity<Boolean> hasAccess(UniformResourceName urn) {
         return null;
+    }
+
+    @Override
+    public ResponseEntity<Set<UniformResourceName>> hasAccess(java.util.Collection<UniformResourceName> urns) {
+        return ResponseEntity.ok(Sets.newHashSet(urns));
     }
 
     @Override
@@ -341,6 +348,7 @@ public class SearchClientMock implements ISearchClient {
                         fileMultimap.put(getDataType(file.getName()), dataFile);
                     }
                     object.setFiles(fileMultimap);
+                    object.setDownloadable(true);
                     list.add(new Resource<>(object));
                 }
 

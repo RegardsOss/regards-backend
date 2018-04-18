@@ -57,6 +57,7 @@ import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.metalink.schema.FileType;
 import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
 import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
@@ -140,12 +141,22 @@ public class OrderControllerIT extends AbstractRegardsIT {
         basket.setOwner(DEFAULT_USER_EMAIL);
         basketRepos.save(basket);
 
-        // Test POST without argument : order should be created with RUNNING status
+        // Test POST with empty order => 409
         ResultActions results = performDefaultPost(OrderController.USER_ROOT_PATH, new OrderController.OrderRequest(),
-                                                   Lists.newArrayList(MockMvcResultMatchers.status().isCreated()),
+                                                   Lists.newArrayList(MockMvcResultMatchers.status().isConflict()),
                                                    "error");
-        String jsonResult = results.andReturn().getResponse().getContentAsString();
-        Long orderId = Long.valueOf(jsonResult.replaceAll(".*\"id\":(\\d+).*", "$1"));
+
+        // Create an order by hand
+        tenantResolver.forceTenant(DEFAULT_TENANT);
+        Order order = new Order();
+        order.setOwner(DEFAULT_USER_EMAIL);
+        order.setCreationDate(OffsetDateTime.now());
+        order.setExpirationDate(order.getCreationDate().plus(3, ChronoUnit.DAYS));
+        order.setFrontendUrl("http://perdu.com");
+        order.setStatus(OrderStatus.RUNNING);
+        orderRepository.save(order);
+
+        Long orderId = order.getId();
 
         // Retrieve order and test its status
         assertStatus(orderId, OrderStatus.RUNNING);
