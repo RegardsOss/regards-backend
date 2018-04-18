@@ -470,13 +470,6 @@ public class AIPService implements IAIPService {
                 }
             }
         }
-//        for (Iterator<Map.Entry<UniformResourceName, Collection<StorageDataFile>>> i = aipIdsMap.asMap().entrySet().iterator(); i
-//                .hasNext(); ) {
-//            // ...for each aip
-//            if (!securityDelegationPlugin.hasAccess(i.next().getKey())) {
-//                i.remove();
-//            }
-//        }
         return ImmutableSet.copyOf(aipIdsMap.values());
     }
 
