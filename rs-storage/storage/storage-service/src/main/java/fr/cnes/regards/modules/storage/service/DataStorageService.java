@@ -310,7 +310,7 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
         if (data.isPresent()) {
             switch (type) {
                 case SUCCESSFULL:
-                    handleDeletionSuccess(data.get(), event.getChecksum());
+                    handleDeletionSuccess(data.get(), event.getHandledUrl(), event.getChecksum());
                     break;
                 case FAILED:
                 default:
@@ -332,14 +332,46 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
      * @see fr.cnes.regards.modules.storage.service.IPlop#handleDeletionSuccess(fr.cnes.regards.modules.storage.domain.database.StorageDataFile, java.lang.String)
      */
     @Override
-    public void handleDeletionSuccess(StorageDataFile dataFileDeleted, String checksumOfDeletedFile) {
+    public void handleDeletionSuccess(StorageDataFile dataFileDeleted, URL deletedUrl, String checksumOfDeletedFile) {
         // Get the associated AIP of the deleted StorageDataFile from db
         Optional<AIP> optionalAssociatedAIP = aipDao.findOneByIpId(dataFileDeleted.getAip().getId().toString());
+        // Verify that deleted file checksum match StorageDataFile checksum
         if (optionalAssociatedAIP.isPresent() && dataFileDeleted.getChecksum().equals(checksumOfDeletedFile)) {
             AIP associatedAIP = optionalAssociatedAIP.get();
-            // If deleted file is not an AIP metadata file
-            // Set the AIP to UPDATED state.
-            if (!DataType.AIP.equals(dataFileDeleted.getDataType())) {
+            // 1. Remove deleted file location from AIP.
+            removeDeletedUrlFromDataFile(dataFileDeleted, deletedUrl, associatedAIP);
+            if (DataType.AIP.equals(dataFileDeleted.getDataType())
+                    && (!associatedAIP.getState().equals(AIPState.DELETED))) {
+                // Do not delete the dataFileDeleted from db. At this time in db the file is the new one that has
+                // been
+                // stored previously to replace the deleted one. This is a special case for AIP metadata file
+                // because,
+                // at any time we want to ensure that there is only one StorageDataFile of AIP type for a given AIP.
+                LOGGER.debug("[DELETE FILE SUCCESS] AIP metadata file replaced.",
+                             dataFileDeleted.getAip().getId().toString());
+                associatedAIP.addEvent(EventType.UPDATE.name(), METADATA_UPDATED_SUCCESSFULLY);
+                aipDao.save(associatedAIP);
+            }
+        } else {
+            LOGGER.warn("Deleted file checksum {}, does not match StorageDataFile {} checksum {}",
+                        checksumOfDeletedFile, dataFileDeleted.getName(), dataFileDeleted.getChecksum());
+        }
+    }
+
+    /**
+     * Handle deletion of one location of the given {@link StorageDataFile} file.
+     * @param dataFileDeleted {@link StorageDataFile}
+     * @param urlToRemove location deleted.
+     * @param associatedAIP {@link AIP} associated to the given {@link StorageDataFile}
+     */
+    private void removeDeletedUrlFromDataFile(StorageDataFile dataFileDeleted, URL urlToRemove, AIP associatedAIP) {
+        if (dataFileDeleted.getUrls().isEmpty()) {
+            LOGGER.debug("Datafile to delete does not contains any location url. Deletion of the dataFile {}",
+                         dataFileDeleted.getName());
+            dataFileDao.remove(dataFileDeleted);
+        }
+        if (dataFileDeleted.getUrls().contains(urlToRemove)) {
+            if (dataFileDeleted.getUrls().size() == 1) {
                 // Get from the AIP all the content informations to remove. All content informations to remove are the
                 // content informations with the same checksum that
                 // the deleted StorageDataFile.
@@ -347,55 +379,40 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
                 Set<ContentInformation> cisToRemove =
                         associatedAIP.getProperties().getContentInformations()
                             .stream()
-                            .filter(ci -> checksumOfDeletedFile.equals(ci.getDataObject().getChecksum()))
+                            .filter(ci -> dataFileDeleted.getChecksum().equals(ci.getDataObject().getChecksum()))
                             .collect(Collectors.toSet());
                 // @formatter:on
                 associatedAIP.getProperties().getContentInformations().removeAll(cisToRemove);
                 associatedAIP.addEvent(EventType.DELETION.name(),
-                                       String.format(DATAFILE_DELETED_SUCCESSFULLY, dataFileDeleted.getName()));
-                aipDao.save(associatedAIP);
+                                       String.format(DATAFILE_DELETED_SUCCESSFULLY, urlToRemove));
+                associatedAIP = aipDao.save(associatedAIP);
                 LOGGER.debug("[DELETE FILE SUCCESS] AIP {} is in UPDATED state",
                              dataFileDeleted.getAip().getId().toString());
+                LOGGER.debug("Deleted location {} is the only one location of the StorageDataFile {}. So we can completly remove the StorageDataFile.",
+                             urlToRemove, dataFileDeleted.getName());
                 dataFileDao.remove(dataFileDeleted);
-                // Now that deletion of this data file is done, check if the aip metadata has been stored at least once
-                Optional<StorageDataFile> metadataOpt = dataFileDao.findByAipAndType(associatedAIP, DataType.AIP);
-                if (!metadataOpt.isPresent()) {
-                    // If it has not been stored, lets check if any data file are still linked to it
-                    Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(associatedAIP);
-                    // If none are linked anymore, lets remove it now and publish the event for the rest of the world
-                    if (aipFiles.isEmpty()) {
-                        publisher.publish(new AIPEvent(associatedAIP));
-                        aipDao.remove(associatedAIP);
-                    }
-                }
             } else {
-                if (associatedAIP.getState() == AIPState.DELETED) {
-                    // Deletion has been explicitly required, so lets remove all the dataFiles associated to this AIP...
-                    dataFileDao.findAllByAip(associatedAIP).forEach(df -> dataFileDao.remove(df));
-                    // ...and the aip itself
-                    aipDao.remove(associatedAIP);
-                    publisher.publish(new AIPEvent(associatedAIP));
-                } else {
-                    // Do not delete the dataFileDeleted from db. At this time in db the file is the new one that has
-                    // been
-                    // stored previously to replace the deleted one. This is a special case for AIP metadata file
-                    // because,
-                    // at any time we want to ensure that there is only one StorageDataFile of AIP type for a given AIP.
-                    LOGGER.debug("[DELETE FILE SUCCESS] AIP metadata file replaced.",
-                                 dataFileDeleted.getAip().getId().toString());
-                    associatedAIP.addEvent(EventType.UPDATE.name(), METADATA_UPDATED_SUCCESSFULLY);
-                    // unless no other datafiles are linked to the metadata, in that case it means it
-                }
+                LOGGER.info("Partial deletion of StorageDataFile {}. One of the location has been removed {}.",
+                            dataFileDeleted.getName(), urlToRemove);
+                associatedAIP.getProperties().getContentInformations().stream()
+                        .filter(ci -> dataFileDeleted.getChecksum().equals(ci.getDataObject().getChecksum()))
+                        .forEach(ci -> ci.getDataObject().getUrls().remove(urlToRemove));
+                associatedAIP.addEvent(EventType.DELETION.name(),
+                                       String.format(DATAFILE_DELETED_SUCCESSFULLY, urlToRemove));
+                aipDao.save(associatedAIP);
+                dataFileDeleted.getUrls().remove(urlToRemove);
+                dataFileDao.save(dataFileDeleted);
             }
+        } else {
+            LOGGER.warn("Removed URL {} is not associated to the StorageDataFile to delete {}", urlToRemove,
+                        dataFileDeleted.getName());
         }
-    }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.storage.service.IPlop#removeDeletedUrlFromDataFile(fr.cnes.regards.modules.storage.domain.database.StorageDataFile, java.net.URL)
-     */
-    @Override
-    public void removeDeletedUrlFromDataFile(StorageDataFile dataFile, URL urlToRemove) {
-
+        // If associated AIP is not linked to any dataFile anymore, delete aip.
+        if (dataFileDao.findAllByAip(associatedAIP).isEmpty()) {
+            publisher.publish(new AIPEvent(associatedAIP));
+            aipDao.remove(associatedAIP);
+        }
     }
 
     /* (non-Javadoc)

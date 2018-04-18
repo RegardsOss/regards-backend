@@ -55,9 +55,7 @@ public interface IDataStorageService {
      * @param dataFileDeleted {@link StorageDataFile} deleted.
      * @param checksumOfDeletedFile {@link String} checksum of the deleted {@link StorageDataFile}
      */
-    void handleDeletionSuccess(StorageDataFile dataFileDeleted, String checksumOfDeletedFile);
-
-    void removeDeletedUrlFromDataFile(StorageDataFile dataFile, URL urlToRemove);
+    void handleDeletionSuccess(StorageDataFile dataFileDeleted, URL deletedUrl, String checksumOfDeletedFile);
 
     /**
      * Handle {@link DataStorageEvent} events for {@link StorageAction#STORE} type.

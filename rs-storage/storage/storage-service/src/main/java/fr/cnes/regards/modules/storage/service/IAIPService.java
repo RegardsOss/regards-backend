@@ -251,4 +251,10 @@ public interface IAIPService {
      * @return data files to store
      */
     Set<StorageDataFile> prepareNotFullyStored();
+
+    /**
+     * Handle physical deletion of AIPs for each entity in state DELETED and associated to no other
+     * StorageDataFile. This state is reached when all locations of all DataObject are deleted for an AIP metadata.
+     */
+    void removeDeletedAIPMetadatas();
 }

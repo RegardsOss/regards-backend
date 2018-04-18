@@ -143,6 +143,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     private final MockEventHandler mockEventHandler = new MockEventHandler();
 
+    private PluginConfiguration dsConfWithDeleteDisabled;
+
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
         tenantResolver.forceTenant(DEFAULT_TENANT);
@@ -192,9 +194,9 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorage2Location.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION, false).getParameters();
-        dataStorageConf = new PluginConfiguration(dataStoMeta, DATA_STORAGE_2_CONF_LABEL, parameters, 0);
-        dataStorageConf.setIsActive(true);
-        pds = prioritizedDataStorageService.create(dataStorageConf);
+        dsConfWithDeleteDisabled = new PluginConfiguration(dataStoMeta, DATA_STORAGE_2_CONF_LABEL, parameters, 0);
+        dsConfWithDeleteDisabled.setIsActive(true);
+        pds = prioritizedDataStorageService.create(dsConfWithDeleteDisabled);
         dataStorageIds.add(pds.getId());
         // forth, lets create a plugin configuration for IAllocationStrategy
         PluginMetaData allocationMeta = PluginUtils
@@ -367,13 +369,61 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_100") })
-    public void testDeleteAip() throws InterruptedException, ModuleException, URISyntaxException {
+    public void testPartialDeleteAip() throws InterruptedException, ModuleException, URISyntaxException {
         createSuccessTest();
         String aipIpId = aip.getId().toString();
         // lets get all the dataFile before deleting them for further verification
         Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(aip);
         aipService.deleteAip(aipIpId);
+
         Thread.sleep(1000);
+
+        aipService.removeDeletedAIPMetadatas();
+
+        // Wait for AIP deleteion
+        Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 1);
+        Assert.assertEquals("There should not been any AIP delete event ", 0, events.size());
+        Assert.assertTrue("AIP should be referenced in the database", aipDao.findOneByIpId(aipIpId).isPresent());
+        for (StorageDataFile df : aipFiles) {
+            // As only one of the two storage system allow deletion, only one file should be deleted on disk
+            if (df.getDataType().equals(DataType.AIP)) {
+                for (URL fileLocation : df.getUrls()) {
+                    Assert.assertTrue("AIP metadata should be on disk. As a datafile cannot be deleted metadata should never be deleted.",
+                                      Files.exists(Paths.get(fileLocation.toURI())));
+                }
+            } else {
+                for (URL fileLocation : df.getUrls()) {
+                    if (fileLocation.toString().contains(baseStorage1Location.toString())) {
+                        Assert.assertFalse("AIP data should not be on disk anymore",
+                                           Files.exists(Paths.get(fileLocation.toURI())));
+                    } else if (fileLocation.toString().contains(baseStorage2Location.toString())) {
+                        Assert.assertTrue("AIP data should be on disk. The storage configuration do not allow deletion",
+                                          Files.exists(Paths.get(fileLocation.toURI())));
+                    } else {
+                        Assert.fail("The file should not be stored in " + fileLocation.toString());
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_100") })
+    public void testDeleteAip() throws InterruptedException, ModuleException, URISyntaxException {
+
+        dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
+                .setValue(Boolean.TRUE.toString());
+        pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
+
+        createSuccessTest();
+        String aipIpId = aip.getId().toString();
+        // lets get all the dataFile before deleting them for further verification
+        Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(aip);
+        aipService.deleteAip(aipIpId);
+
+        Thread.sleep(5000);
+
+        aipService.removeDeletedAIPMetadatas();
 
         // Wait for AIP deleteion
         Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 1);
@@ -382,15 +432,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         for (StorageDataFile df : aipFiles) {
             // As only one of the two storage system allow deletion, only one file should be deleted on disk
             for (URL fileLocation : df.getUrls()) {
-                if (fileLocation.toString().contains(baseStorage1Location.toString())) {
-                    Assert.assertFalse("AIP data should not be on disk anymore",
-                                       Files.exists(Paths.get(fileLocation.toURI())));
-                } else if (fileLocation.toString().contains(baseStorage2Location.toString())) {
-                    Assert.assertTrue("AIP data should be on disk. The storage configuration do not allow deletion",
-                                      Files.exists(Paths.get(fileLocation.toURI())));
-                } else {
-                    Assert.fail("The file should not be stored in " + fileLocation.toString());
-                }
+                Assert.assertFalse("AIP data should not be on disk anymore",
+                                   Files.exists(Paths.get(fileLocation.toURI())));
             }
         }
     }

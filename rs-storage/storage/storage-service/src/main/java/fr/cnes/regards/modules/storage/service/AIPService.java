@@ -461,12 +461,13 @@ public class AIPService implements IAIPService {
                         return hashMultimap;
                     });
         // Apply multimapCollector in parallel
-        Multimap<UniformResourceName, StorageDataFile> aipIdsMap = dataFiles.parallelStream().collect(multimapCollector);
+        Multimap<UniformResourceName, StorageDataFile> aipIdsMap = dataFiles.parallelStream()
+                .collect(multimapCollector);
         ISecurityDelegation securityDelegationPlugin = getSecurityDelegationPlugin();
         // Check security...
         Set<UniformResourceName> urnsWithAccess = securityDelegationPlugin.hasAccess(aipIdsMap.keySet());
         if (urnsWithAccess.size() != aipIdsMap.keySet().size()) {
-            for (Iterator<UniformResourceName> i = aipIdsMap.keySet().iterator(); i.hasNext(); ) {
+            for (Iterator<UniformResourceName> i = aipIdsMap.keySet().iterator(); i.hasNext();) {
                 if (!urnsWithAccess.contains(i.next())) {
                     i.remove();
                 }
@@ -972,13 +973,13 @@ public class AIPService implements IAIPService {
         if (toBeDeletedOpt.isPresent()) {
             AIP toBeDeleted = toBeDeletedOpt.get();
             Set<StorageDataFile> dataFilesToDelete = Sets.newHashSet();
-            // check if data file are use by any other aip
-            Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(toBeDeleted);
-            for (StorageDataFile dataFile : dataFiles) {
-                if (dataFile.getState().equals(DataFileState.ERROR)) {
+            Set<StorageDataFile> dataFilesWithoutMetadata = dataFileDao.findAllByAip(toBeDeleted).stream()
+                    .filter(df -> !DataType.AIP.equals(df.getDataType())).collect(Collectors.toSet());
+            for (StorageDataFile dataFile : dataFilesWithoutMetadata) {
+                // If dataFile is in error state and no storage succeeded. So no urls are associated to the dataFile.
+                if (dataFile.getState().equals(DataFileState.ERROR) && dataFile.getUrls().isEmpty()) {
                     // we do not do remove immediately because the aip metadata has to be updated first
                     // and the logic is already implemented into DataStorageEventHandler
-                    // FIXME : Handle multistorage ...
                     publisher.publish(new DataStorageEvent(dataFile, StorageAction.DELETION,
                             StorageEventType.SUCCESSFULL, null, null));
                 } else {
@@ -1291,6 +1292,24 @@ public class AIPService implements IAIPService {
 
         } else {
             throw new EntityNotFoundException(pAipId, AIP.class);
+        }
+    }
+
+    @Override
+    public void removeDeletedAIPMetadatas() {
+        Set<AIP> aips = aipDao.findAllByStateService(AIPState.DELETED);
+        Set<StorageDataFile> aipDataFilesToDelete = Sets.newHashSet();
+        for (AIP aip : aips) {
+            Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(aip);
+            if (dataFiles.stream().filter(df -> !DataType.AIP.equals(df.getDataType())).count() == 0) {
+                aipDataFilesToDelete.addAll(dataFiles);
+            }
+        }
+        try {
+            scheduleDeletion(aipDataFilesToDelete);
+        } catch (ModuleException e) {
+            // Exception thrown for plugin instanciation errors. Only log error.
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
