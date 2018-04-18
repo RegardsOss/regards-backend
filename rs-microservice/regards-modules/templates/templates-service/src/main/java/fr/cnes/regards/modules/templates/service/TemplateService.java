@@ -55,7 +55,6 @@ import freemarker.template.Version;
  * @author Marc Sordi
  */
 @Service
-// @MultitenantTransactional A réactiver
 public class TemplateService implements ITemplateService {
 
     /**
@@ -109,9 +108,6 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    // @Autowired
-    // private Template emailAccountValidationTemplate;
-
     @Autowired
     private Template passwordResetTemplate;
 
@@ -120,18 +116,6 @@ public class TemplateService implements ITemplateService {
 
     @Autowired
     private Template accountRefusedTemplate;
-
-    // @Autowired
-    // private Template projectUserActivatedTemplate;
-    //
-    // @Autowired
-    // private Template projectUserInactivatedTemplate;
-    //
-    // @Autowired
-    // private Template orderCreatedTemplate;
-    //
-    // @Autowired
-    // private Template asideOrdersNotificationTemplate;
 
     @Autowired
     @Resource(name = TemplateServiceConfiguration.TEMPLATES)
@@ -174,14 +158,6 @@ public class TemplateService implements ITemplateService {
     private void initDefaultTemplates() {
         // Look into classpath (via TemplateServiceConfiguration) if some templates are present. If yes, check if they
         // exist into Database, if not, create them
-        // checkAndSaveIfNecessary(passwordResetTemplate);
-        // checkAndSaveIfNecessary(accountUnlockTemplate);
-        // checkAndSaveIfNecessary(emailAccountValidationTemplate);
-        // checkAndSaveIfNecessary(accountRefusedTemplate);
-        // checkAndSaveIfNecessary(projectUserActivatedTemplate);
-        // checkAndSaveIfNecessary(projectUserInactivatedTemplate);
-        // checkAndSaveIfNecessary(orderCreatedTemplate);
-        // checkAndSaveIfNecessary(asideOrdersNotificationTemplate);
         for (Template template : templates) {
             checkAndSaveIfNecessary(template);
         }
@@ -201,7 +177,7 @@ public class TemplateService implements ITemplateService {
     @Override
     public Template create(final Template template) {
         final Template toCreate = new Template(template.getCode(), template.getContent(), template.getDataStructure(),
-                template.getSubject());
+                                               template.getSubject());
         return templateRepository.save(toCreate);
     }
 
@@ -242,8 +218,9 @@ public class TemplateService implements ITemplateService {
      * @throws IOException when error occurs during template loading
      */
     private void configureTemplateLoader() throws IOException {
-        configuration = new Configuration(new Version(INCOMPATIBLE_IMPROVEMENTS_VERSION_MAJOR,
-                INCOMPATIBLE_IMPROVEMENTS_VERSION_MINOR, INCOMPATIBLE_IMPROVEMENTS_VERSION_MICRO));
+        configuration = new Configuration(
+                new Version(INCOMPATIBLE_IMPROVEMENTS_VERSION_MAJOR, INCOMPATIBLE_IMPROVEMENTS_VERSION_MINOR,
+                            INCOMPATIBLE_IMPROVEMENTS_VERSION_MICRO));
         loader = new StringTemplateLoader();
         configuration.setTemplateLoader(loader);
         configuration.setDefaultEncoding("UTF-8");
@@ -251,8 +228,8 @@ public class TemplateService implements ITemplateService {
     }
 
     @Override
-    public SimpleMailMessage writeToEmail(final String templateCode, final Map<String, ? extends Object> dataModel,
-            final String... recipients) throws EntityNotFoundException {
+    public SimpleMailMessage writeToEmail(String templateCode, String subject, Map<String, ? extends Object> dataModel,
+            String... recipients) throws EntityNotFoundException {
         // Retrieve the template of given code
         Template template = null;
         if (!runtimeTenantResolver.isInstance()) {
@@ -283,12 +260,12 @@ public class TemplateService implements ITemplateService {
             text = out.toString();
         } catch (TemplateException | IOException e) {
             LOG.warn("Unable to process the data into the template of code " + template.getCode()
-                    + ". Falling back to the not templated content.", e);
+                             + ". Falling back to the not templated content.", e);
             text = template.getContent();
         }
 
         final SimpleMailMessage message = new SimpleMailMessage();
-        message.setSubject(template.getSubject());
+        message.setSubject((subject == null) ? template.getSubject() : subject);
         message.setText(text);
         message.setTo(recipients);
         message.setFrom(noReplyAdress);
