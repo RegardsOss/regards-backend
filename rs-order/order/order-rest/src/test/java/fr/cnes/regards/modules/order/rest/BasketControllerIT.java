@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
@@ -53,6 +54,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  * @author oroussel
  */
 @ContextConfiguration(classes = OrderConfiguration.class)
+@Ignore
 public class BasketControllerIT extends AbstractRegardsIT {
 
     @Autowired
