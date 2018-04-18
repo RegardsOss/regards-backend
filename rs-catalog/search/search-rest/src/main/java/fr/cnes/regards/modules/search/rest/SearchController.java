@@ -594,13 +594,12 @@ public class SearchController {
     @RequestMapping(path = ENTITIES_HAS_ACCESS, method = RequestMethod.GET)
     @ResourceAccess(description = "allows to know if the user can download entities", role = DefaultRole.PUBLIC)
     public ResponseEntity<Set<UniformResourceName>> hasAccess(
-            @RequestBody java.util.Collection<UniformResourceName> urns)
-            throws EntityOperationForbiddenException, EntityNotFoundException {
+            @RequestBody java.util.Collection<UniformResourceName> urns) {
         Set<UniformResourceName> urnsWithAccess = Sets.newHashSet(urns);
         for (Iterator<UniformResourceName> i = urns.iterator(); i.hasNext(); ) {
             try {
                 AbstractEntity entity = searchService.get(i.next());
-                // Only a DataObject without downloadable property hasn'et access
+                // Only a DataObject without downloadable property hasn't access
                 if ((entity instanceof DataObject) && !((DataObject) entity).getDownloadable()) {
                     i.remove();
                 }
