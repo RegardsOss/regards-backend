@@ -108,7 +108,7 @@ public class OrderController implements IResourceController<OrderDto> {
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, path = USER_ROOT_PATH)
     public ResponseEntity<Resource<OrderDto>> createOrder(@RequestBody OrderRequest orderRequest)
-            throws EmptyBasketException {
+            throws EmptyBasketException, IllegalStateException {
         String user = authResolver.getUser();
         Basket basket = basketService.find(user);
 
@@ -118,7 +118,7 @@ public class OrderController implements IResourceController<OrderDto> {
         basketService.deleteIfExists(user);
 
         if (order == null) {
-            throw new EmptyBasketException("Because of data access changes, basket is empty");
+            throw new IllegalStateException("Basket data is no longer valid");
         }
         return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
     }
