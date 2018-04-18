@@ -279,7 +279,14 @@ public class OrderService implements IOrderService {
                 createSubOrder(basket, dsTask, bucketFiles, order, priority);
             }
 
-            order.addDatasetOrderTask(dsTask);
+            // Add dsTask ONLY IF it contains at least one FilesTask
+            if (!dsTask.getReliantTasks().isEmpty()) {
+                order.addDatasetOrderTask(dsTask);
+            }
+        }
+        // Create order only if it contains at least one DatasetTask
+        if (order.getDatasetTasks().isEmpty()) {
+            return null;
         }
         // Order is ready to be taken into account
         order.setStatus(OrderStatus.RUNNING);

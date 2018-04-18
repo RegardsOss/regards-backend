@@ -9,4 +9,8 @@ public class EmptyBasketException extends ModuleException {
     public EmptyBasketException() {
         super("Basket is empty");
     }
+
+    public EmptyBasketException(String msg) {
+        super(msg);
+    }
 }
