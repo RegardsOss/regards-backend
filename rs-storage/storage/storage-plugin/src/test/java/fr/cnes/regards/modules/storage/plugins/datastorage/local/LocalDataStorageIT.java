@@ -190,7 +190,7 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
         Mockito.verify(progressManager).storageSucceed(Mockito.eq(validDF), Mockito.any(), Mockito.any());
         Mockito.verify(progressManager).storageSucceed(Mockito.eq(validDFWithProvidedDirectory), Mockito.any(),
                                                        Mockito.any());
-        Mockito.verify(progressManager, Mockito.times(2)).storageFailed(Mockito.any(), Mockito.any());
+        Mockito.verify(progressManager, Mockito.times(2)).storageFailed(Mockito.any(), Mockito.any(), Mockito.any());
 
         // Check files are stored
         Path pathToCheck = Paths.get(baseStorageLocation.getPath(), validDFWithProvidedDirectory.getStorageDirectory(),

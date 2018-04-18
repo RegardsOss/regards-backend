@@ -6,7 +6,11 @@ package fr.cnes.regards.modules.storage.service.job;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
@@ -27,6 +31,11 @@ import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
  * @author Sébastien Binda
  */
 public class StorageJobProgressManager implements IProgressManager {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(StorageJobProgressManager.class);
 
     /**
      * Publisher to notify system of files events (stored, retrieved or deleted).
@@ -78,6 +87,8 @@ public class StorageJobProgressManager implements IProgressManager {
 
     @Override
     public void storageSucceed(StorageDataFile dataFile, URL storedUrl, Long storedFileSize) {
+        LOG.debug("[STORAGE SUCCESS] - PluginConf id : {} - Store success for file {} in {} (checksum: {}).",
+                  storageConfId, dataFile.getName(), storedUrl.toString(), dataFile.getChecksum());
         dataFile.setFileSize(storedFileSize);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
                 StorageEventType.SUCCESSFULL, storageConfId, storedUrl);
@@ -88,12 +99,14 @@ public class StorageJobProgressManager implements IProgressManager {
     }
 
     @Override
-    public void storageFailed(StorageDataFile dataFile, String cause) {
+    public void storageFailed(StorageDataFile dataFile, Optional<URL> failedUrl, String cause) {
+        LOG.error("[STORE ERROR] - PluginConf id : {} - Store error for file {} in {} (checksum: {}). Cause : {}",
+                  storageConfId, dataFile.getName(), failedUrl.orElse(null), dataFile.getChecksum(), cause);
         failureCauses.add(cause);
         errorStatus = true;
         failedDataFile.add(dataFile);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE, StorageEventType.FAILED,
-                storageConfId);
+                storageConfId, failedUrl.orElse(null));
         dataStorageEvent.setFailureCause(cause);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
@@ -105,9 +118,11 @@ public class StorageJobProgressManager implements IProgressManager {
     }
 
     @Override
-    public void deletionFailed(StorageDataFile dataFile, String failureCause) {
+    public void deletionFailed(StorageDataFile dataFile, Optional<URL> failedUrl, String failureCause) {
+        LOG.error("[DELETION ERROR] - PluginConf id : {} - Deletion error for file {} from {} (checksum: {}). Cause : {}",
+                  storageConfId, dataFile.getName(), failedUrl.orElse(null), dataFile.getChecksum(), failureCause);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.DELETION,
-                StorageEventType.FAILED, storageConfId);
+                StorageEventType.FAILED, storageConfId, failedUrl.orElse(null));
         handledDataFile.add(dataFile);
         job.advanceCompletion();
         failureCauses.add(failureCause);
@@ -116,18 +131,22 @@ public class StorageJobProgressManager implements IProgressManager {
     }
 
     @Override
-    public void deletionSucceed(StorageDataFile dataFile) {
+    public void deletionSucceed(StorageDataFile dataFile, URL deletedUrl) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.DELETION,
-                StorageEventType.SUCCESSFULL, storageConfId);
+                StorageEventType.SUCCESSFULL, storageConfId, deletedUrl);
+        LOG.debug("[DELETION SUCCESS] - PluginConf id : {} - Deletion success for file {} from {} (checksum: {})",
+                  storageConfId, dataFile.getName(), deletedUrl.toString(), dataFile.getChecksum());
         handledDataFile.add(dataFile);
         job.advanceCompletion();
         publishWithTenant(dataStorageEvent);
     }
 
     @Override
-    public void restoreSucceed(StorageDataFile dataFile, Path restoredFilePath) {
+    public void restoreSucceed(StorageDataFile dataFile, URL restoredFromUrl, Path restoredFilePath) {
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION,
-                StorageEventType.SUCCESSFULL, storageConfId);
+                StorageEventType.SUCCESSFULL, storageConfId, restoredFromUrl);
+        LOG.debug("[RESTORATION SUCCESS] - PluginConf id : {} - Restoration success for file {} from {} (checksum: {})",
+                  storageConfId, dataFile.getName(), restoredFromUrl.toString(), dataFile.getChecksum());
         dataStorageEvent.setRestorationPath(restoredFilePath);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
@@ -135,9 +154,11 @@ public class StorageJobProgressManager implements IProgressManager {
     }
 
     @Override
-    public void restoreFailed(StorageDataFile dataFile, String failureCause) {
+    public void restoreFailed(StorageDataFile dataFile, Optional<URL> failedUrl, String failureCause) {
+        LOG.error("[RESTORATION ERROR] - PluginConf id : {} - Restoration error for file {} from {} (checksum: {}). Cause : {}",
+                  storageConfId, dataFile.getName(), failedUrl.orElse(null), dataFile.getChecksum(), failureCause);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.RESTORATION,
-                StorageEventType.FAILED, storageConfId);
+                StorageEventType.FAILED, storageConfId, failedUrl.orElse(null));
         failureCauses.add(failureCause);
         errorStatus = true;
         handledDataFile.add(dataFile);

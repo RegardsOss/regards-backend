@@ -108,6 +108,11 @@ public class ScheduleStorageTasks {
             aipService.updateAipMetadata();
             LOGGER.debug(String.format("[METADATA UPDATE DAEMON] Update jobs for tenant %s have been scheduled",
                                        tenant));
+            LOGGER.debug(String.format("[METADATA DELETION DAEMON] Starting to prepare deletion jobs for tenant %s",
+                                       tenant));
+            aipService.removeDeletedAIPMetadatas();
+            LOGGER.debug(String.format("[METADATA DELETION DAEMON] Deletion jobs for tenant %s have been scheduled",
+                                       tenant));
         }
     }
 

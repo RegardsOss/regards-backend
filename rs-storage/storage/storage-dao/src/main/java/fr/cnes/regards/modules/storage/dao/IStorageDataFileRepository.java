@@ -4,15 +4,18 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.persistence.LockModeType;
+
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
-import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * Repository handling JPA representation of metadata of files associated to aips
@@ -52,13 +55,21 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
      * @param dataFileId
      * @return the data file wrapped into an optional to avoid nulls
      */
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    Optional<StorageDataFile> findLockedOneById(Long dataFileId);
+
+    /**
+     * Retrieve a data file by its id
+     * @param dataFileId
+     * @return the data file wrapped into an optional to avoid nulls
+     */
     @EntityGraph(value = "graph.datafile.full")
     Optional<StorageDataFile> findOneById(Long dataFileId);
 
     /**
-     * Find all data files which checksum is one of the provided ones
+     * Find all data files of which checksum is one of the provided ones
      * @param checksums
-     * @return data files which checksum is one of the provided ones
+     * @return data files of which checksum is one of the provided ones
      */
     @EntityGraph(value = "graph.datafile.full")
     Set<StorageDataFile> findAllByChecksumIn(Set<String> checksums);

@@ -1,6 +1,8 @@
 package fr.cnes.regards.modules.storage.service.job;
 
+import java.net.URL;
 import java.util.Map;
+import java.util.Optional;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -13,6 +15,15 @@ import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
  * @author Sylvain VISSIERE-GUERINET
  */
 public class DeleteDataFilesJob extends AbstractStoreFilesJob {
+
+    /**
+     * Failure causes message format
+     */
+    {
+        {
+            FAILURE_CAUSES = "Deletion failed due to the following reasons: %s";
+        }
+    }
 
     @Override
     protected void doRun(Map<String, JobParameter> parameterMap) {
@@ -36,7 +47,7 @@ public class DeleteDataFilesJob extends AbstractStoreFilesJob {
     }
 
     @Override
-    protected void handleNotHandledDataFile(StorageDataFile notHandled) {
-        progressManager.deletionFailed(notHandled, NOT_HANDLED_MSG);
+    protected void handleNotHandledDataFile(StorageDataFile notHandled, Optional<URL> notHandledUrl) {
+        progressManager.deletionFailed(notHandled, notHandledUrl, NOT_HANDLED_MSG);
     }
 }

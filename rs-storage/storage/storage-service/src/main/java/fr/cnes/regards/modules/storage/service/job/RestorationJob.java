@@ -4,9 +4,11 @@
 package fr.cnes.regards.modules.storage.service.job;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -23,6 +25,15 @@ import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
  * @author Sylvain VISSIERE-GUERINET
  */
 public class RestorationJob extends AbstractStoreFilesJob {
+
+    /**
+     * Failure causes message format
+     */
+    {
+        {
+            FAILURE_CAUSES = "Restoration failed due to the following reasons: %s";
+        }
+    }
 
     /**
      * Job parameter name of destination path
@@ -67,8 +78,8 @@ public class RestorationJob extends AbstractStoreFilesJob {
     }
 
     @Override
-    protected void handleNotHandledDataFile(StorageDataFile notHandled) {
-        progressManager.restoreFailed(notHandled, NOT_HANDLED_MSG);
+    protected void handleNotHandledDataFile(StorageDataFile notHandled, Optional<URL> notHandledUrl) {
+        progressManager.restoreFailed(notHandled, notHandledUrl, NOT_HANDLED_MSG);
     }
 
 }

@@ -4,10 +4,12 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
@@ -45,7 +47,6 @@ public interface IAIPDao {
 
     /**
      * Find {@link AIP} by state in transaction with pessimistic read lock
-     * @param sipState {@link ISipState}
      * @return a set of products with the above properties
      */
     Page<AIP> findAllWithLockByState(AIPState state, Pageable pageable);
@@ -176,6 +177,11 @@ public interface IAIPDao {
      * @return aips which ip id is one of the requested
      */
     Set<AIP> findAllByIpIdIn(Collection<String> ipIds);
+
+    /**
+     * Retrieve all existing IpId from given list
+     */
+    Stream<UniformResourceName> findUrnsByIpIdIn(Collection<String> ipIds);
 
     /**
      * Retrieve all aips which are tagged with the given tag

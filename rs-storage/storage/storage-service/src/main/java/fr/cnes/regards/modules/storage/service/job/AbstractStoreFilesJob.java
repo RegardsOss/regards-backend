@@ -61,7 +61,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     /**
      * Failure causes message format
      */
-    protected static final String FAILURE_CAUSES = "Storage failed due to the following reasons: %s";
+    protected static String FAILURE_CAUSES = "Storage failed due to the following reasons: %s";
 
     /**
      * Job parameter missing message format
@@ -193,7 +193,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
             Sets.SetView<StorageDataFile> notHandledFiles = Sets.difference(workingSubset.getDataFiles(),
                                                                             Sets.newHashSet(handled));
             for (StorageDataFile notHandled : notHandledFiles) {
-                handleNotHandledDataFile(notHandled);
+                handleNotHandledDataFile(notHandled, Optional.empty());
             }
         }
         if (progressManager.isProcessError()) {
@@ -207,8 +207,9 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     /**
      * Method called when the job detects files that have not been handled by the storage plugin.
      * @param notHandled a data file that have not been handled by the storage plugin
+     * @param notHandledUrl optional URL not handled during store action.
      */
-    protected abstract void handleNotHandledDataFile(StorageDataFile notHandled);
+    protected abstract void handleNotHandledDataFile(StorageDataFile notHandled, Optional<URL> notHandledUrl);
 
     /**
      * Store files thanks to the parametrized data storage. Indicated to the data storage if the file should be replaced or not
@@ -230,7 +231,8 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
                     // In case of error during quicklook dimensions recovering, lets set this data file to error
                     logger.error(e.getMessage(), e);
                     dataFilesNotToStore.add(dataFile);
-                    progressManager.storageFailed(dataFile, "Issue occurred during quicklook dimension recovery");
+                    progressManager.storageFailed(dataFile, Optional.empty(),
+                                                  "Issue occurred during quicklook dimension recovery");
                 }
             }
         }

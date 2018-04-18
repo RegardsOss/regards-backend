@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -9,12 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
-import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -26,13 +26,13 @@ public class DataFileDao implements IDataFileDao {
      * {@link IStorageDataFileRepository} instance
      */
     @Autowired
-    private IStorageDataFileRepository repository;
+    private final IStorageDataFileRepository repository;
 
     /**
      * {@link IAIPEntityRepository} instance
      */
     @Autowired
-    private IAIPEntityRepository aipRepo;
+    private final IAIPEntityRepository aipRepo;
 
     /**
      * Constructor setting the parameters as attributes
@@ -118,6 +118,11 @@ public class DataFileDao implements IDataFileDao {
     @Override
     public Optional<StorageDataFile> findOneById(Long dataFileId) {
         return repository.findOneById(dataFileId);
+    }
+
+    @Override
+    public Optional<StorageDataFile> findLockedOneById(Long dataFileId) {
+        return repository.findLockedOneById(dataFileId);
     }
 
     @Override
