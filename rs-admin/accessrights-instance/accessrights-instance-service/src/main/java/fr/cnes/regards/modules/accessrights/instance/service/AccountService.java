@@ -299,12 +299,15 @@ public class AccountService implements IAccountService {
     @Scheduled(cron = "${regards.accounts.validity.check.cron}")
     @Override
     public void checkAccountValidity() {
+        LOG.info("Starting to check accounts for inactivity");
         final Set<Account> toCheck = accountRepository.findAllByStatusNot(AccountStatus.INACTIVE);
+        // Account#equals being on email, we create a fake Account with the INSTANCE_ADMIN login and we remove it from the database result.
+        toCheck.remove(new Account(rootAdminUserLogin, "", "", rootAdminUserPassword));
         // lets check issues with the invalidity date
         if ((accountValidityDuration != null) && !accountValidityDuration.equals(0L)) {
             final LocalDateTime now = LocalDateTime.now();
             toCheck.stream().filter(a -> a.getInvalidityDate().isBefore(now))
-                    .peek(a -> a.setStatus(AccountStatus.INACTIVE)).forEach(accountRepository::save);
+                    .peek(a -> a.setStatus(AccountStatus.INACTIVE)).peek(a -> LOG.info("Account {} set to inactive because of its account validity date", a.getEmail())).forEach(accountRepository::save);
         }
         // lets check issues with the password
         if ((accountPasswordValidityDuration != null) && !accountPasswordValidityDuration.equals(0L)) {
@@ -312,6 +315,7 @@ public class AccountService implements IAccountService {
             // get all account that are not already locked, those already locked would not be re-locked anyway
             toCheck.stream().filter(a -> a.getExternal().equals(false) && (a.getPasswordUpdateDate() != null) && a
                     .getPasswordUpdateDate().isBefore(minValidityDate)).peek(a -> a.setStatus(AccountStatus.INACTIVE))
+                    .peek(a -> LOG.info("Account {} set to inactive because of its password validity date", a.getEmail()))
                     .forEach(accountRepository::save);
         }
     }
