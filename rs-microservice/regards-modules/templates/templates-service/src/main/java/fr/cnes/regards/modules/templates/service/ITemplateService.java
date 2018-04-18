@@ -76,12 +76,27 @@ public interface ITemplateService {
     void deleteAll();
 
     /**
-     * @param pTemplateCode the code of the template
-     * @param pDataModel the data to bind into to template
-     * @param pRecipients the array of recipients
+     * @param templateCode the code of the template
+     * @param subject email subject (can be null, in this case template one is used)
+     * @param dataModel the data to bind into to template
+     * @param recipients the array of recipients
      * @return the mail
      * @throws EntityNotFoundException when a {@link Template} of given <code>code</code> could not be found
      */
-    SimpleMailMessage writeToEmail(String pTemplateCode, Map<String, ? extends Object> pDataModel, String... pRecipients)
+    SimpleMailMessage writeToEmail(String templateCode, String subject, Map<String, ? extends Object> dataModel, String... recipients)
             throws EntityNotFoundException;
+
+    /**
+     * Write email with default subject
+     * @param templateCode the code of the template
+     * @param dataModel the data to bind into to template
+     * @param recipients the array of recipients
+     * @return the mail
+     * @throws EntityNotFoundException when a {@link Template} of given <code>code</code> could not be found
+     */
+    default SimpleMailMessage writeToEmail(String templateCode, Map<String, ? extends Object> dataModel, String... recipients)
+            throws EntityNotFoundException {
+        return writeToEmail(templateCode, null, dataModel, recipients);
+    }
+
 }

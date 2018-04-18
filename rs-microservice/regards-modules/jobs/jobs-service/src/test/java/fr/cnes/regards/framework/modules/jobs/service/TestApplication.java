@@ -27,7 +27,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author msordi
  *
  */
-// CHECKSTYLE:OFF
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.microservices" })
 public class TestApplication {
 
