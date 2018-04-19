@@ -24,7 +24,7 @@ public interface ISecurityDelegation {
      * @param ipId identifier of aip that we are wondeering if we have access to.
      * @return weither we have access to the aip or not
      */
-    boolean hasAccess(String ipId) throws EntityNotFoundException;
+    boolean hasAccess(String ipId);
 
     /**
      * @return weither the current user has access to features returning collections of AIP
