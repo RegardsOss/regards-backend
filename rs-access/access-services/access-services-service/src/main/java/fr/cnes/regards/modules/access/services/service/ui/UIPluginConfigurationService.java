@@ -64,8 +64,8 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
      * Builds a pedicate telling if the passed {@link UIPluginConfiguration} is applicable on passed {@link ServiceScope}.
      * Returns <code>true</code> if passed <code>pApplicationMode</code> is <code>null</code>.
      */
-    private static final Function<ServiceScope, Predicate<UIPluginConfiguration>> IS_APPLICABLE_ON = pApplicationMode -> pConfiguration -> (pApplicationMode == null)
-            || pConfiguration.getPluginDefinition().getApplicationModes().contains(pApplicationMode);
+    private static final Function<List<ServiceScope>, Predicate<UIPluginConfiguration>> IS_APPLICABLE_ON = pApplicationModes -> pConfiguration -> (pApplicationModes == null)
+            || pConfiguration.getPluginDefinition().getApplicationModes().containsAll(pApplicationModes);
 
     private final IUIPluginDefinitionRepository pluginRepository;
 
@@ -215,13 +215,13 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
 
     @Override
     public List<UIPluginConfiguration> retrieveActivePluginServices(final String pDatasetId,
-            ServiceScope pApplicationMode) {
-        return retrieveActivePluginServices(Lists.newArrayList(pDatasetId), pApplicationMode);
+            List<ServiceScope> pApplicationModes) {
+        return retrieveActivePluginServices(Lists.newArrayList(pDatasetId), pApplicationModes);
     }
 
     @Override
     public List<UIPluginConfiguration> retrieveActivePluginServices(List<String> pDatasetIds,
-            ServiceScope pApplicationMode) {
+            List<ServiceScope> pApplicationModes) {
         final Set<UIPluginConfiguration> activePluginsConfigurations = Sets.newHashSet();
         if ((pDatasetIds != null) && !pDatasetIds.isEmpty()) {
             final List<LinkUIPluginsDatasets> links = linkedUiPluginRespository.findByDatasetIdIn(pDatasetIds);
@@ -240,7 +240,7 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
         }
 
         try (Stream<UIPluginConfiguration> stream = activePluginsConfigurations.stream()) {
-            return stream.filter(IS_APPLICABLE_ON.apply(pApplicationMode)).collect(Collectors.toList());
+            return stream.filter(IS_APPLICABLE_ON.apply(pApplicationModes)).collect(Collectors.toList());
         }
     }
 
