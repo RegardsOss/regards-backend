@@ -64,6 +64,7 @@ import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
+import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
@@ -121,6 +122,9 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IPrioritizedDataStorageService prioritizedDataStorageService;
+
+    @Autowired
+    private IPrioritizedDataStorageRepository prioritizedDataStorageRepository;
 
     private URL baseStorageLocation;
 
@@ -372,6 +376,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         jobInfoRepo.deleteAll();
         dataFileDao.deleteAll();
         aipDao.deleteAll();
+        prioritizedDataStorageRepository.deleteAll();
         pluginRepo.deleteAll();
         if (baseStorageLocation != null) {
             Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
