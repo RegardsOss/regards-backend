@@ -21,13 +21,16 @@ package fr.cnes.regards.modules.storage.service;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,16 +43,23 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IAIPEntityRepository;
+import fr.cnes.regards.modules.storage.dao.IDataFileDao;
+import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
+import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 
@@ -86,6 +96,21 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
 
     @Autowired
     private IAIPEntityRepository aipRepository;
+
+    @Autowired
+    private IPluginConfigurationRepository pluginRepo;
+
+    @Autowired
+    private IAIPDao aipDao;
+
+    @Autowired
+    private IDataFileDao dataFileDao;
+
+    @Autowired
+    private IJobInfoRepository jobInfoRepo;
+
+    @Autowired
+    private IPrioritizedDataStorageRepository prioritizedDataStorageRepository;
 
     @Before
     public void before() throws IOException {
@@ -157,5 +182,14 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
         if (storedAIP != expected) {
             Assert.fail();
         }
+    }
+
+    @After
+    public void cleanUp() throws URISyntaxException, IOException {
+        jobInfoRepo.deleteAll();
+        dataFileDao.deleteAll();
+        aipDao.deleteAll();
+        prioritizedDataStorageRepository.deleteAll();
+        pluginRepo.deleteAll();
     }
 }
