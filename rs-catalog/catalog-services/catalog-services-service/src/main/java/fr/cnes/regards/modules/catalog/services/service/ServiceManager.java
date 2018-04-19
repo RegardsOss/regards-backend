@@ -81,9 +81,9 @@ public class ServiceManager implements IServiceManager {
      * Builds a pedicate telling if the passed {@link PluginConfiguration} is applicable on passed {@link ServiceScope}.
      * Returns <code>true</code> if passed <code>pServiceScope</code> is <code>null</code>.
      */
-    private static final Function<ServiceScope, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = pServiceScope -> configuration -> (pServiceScope == null)
+    private static final Function<List<ServiceScope>, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = pServiceScope -> configuration -> (pServiceScope == null)
             || Arrays.asList(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(configuration).applicationModes())
-                    .contains(pServiceScope);
+                    .containsAll(pServiceScope);
 
     /**
      * Constructor
@@ -102,7 +102,7 @@ public class ServiceManager implements IServiceManager {
     }
 
     @Override
-    public List<PluginConfigurationDto> retrieveServices(List<String> pDatasetIds, final ServiceScope pServiceScope) {
+    public List<PluginConfigurationDto> retrieveServices(List<String> pDatasetIds, List<ServiceScope> pServiceScopes) {
         if ((pDatasetIds == null) || pDatasetIds.isEmpty()) {
             return new ArrayList<>();
         }
@@ -128,7 +128,7 @@ public class ServiceManager implements IServiceManager {
         }
 
         try (Stream<PluginConfiguration> stream = allServices.stream()) {
-            return stream.filter(IS_APPLICABLE_ON.apply(pServiceScope)).map(PluginConfigurationDto::new)
+            return stream.filter(IS_APPLICABLE_ON.apply(pServiceScopes)).map(PluginConfigurationDto::new)
                     .collect(Collectors.toList());
         }
     }

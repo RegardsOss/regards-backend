@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.catalog.services.service;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,12 +35,12 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
-import fr.cnes.regards.modules.models.domain.EntityType;
-import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
 
 /**
  * Unit test for {@link ServiceManager}
@@ -64,8 +65,14 @@ public class ServiceManagerTest {
     private static final Set<PluginConfiguration> PLUGIN_CONFIGURATIONS = new HashSet<>();
     static {
         final PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setPluginClassName("fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin");
+        pluginMetaData.setPluginClassName(ExampleOneManyPlugin.class.getName());
         PLUGIN_CONFIGURATIONS.add(new PluginConfiguration(pluginMetaData, "First configuration"));
+        final PluginMetaData pluginMetaDataMany = new PluginMetaData();
+        pluginMetaDataMany.setPluginClassName(ExampleManyPlugin.class.getName());
+        PLUGIN_CONFIGURATIONS.add(new PluginConfiguration(pluginMetaDataMany, "Second configuration"));
+        final PluginMetaData pluginMetaDataOne = new PluginMetaData();
+        pluginMetaDataOne.setPluginClassName(ExampleOnePlugin.class.getName());
+        PLUGIN_CONFIGURATIONS.add(new PluginConfiguration(pluginMetaDataOne, "Third configuration"));
     };
 
     /**
@@ -107,7 +114,7 @@ public class ServiceManagerTest {
                 .thenThrow(EntityNotFoundException.class);
 
         // Trigger exception
-        serviceManager.retrieveServices("test", ServiceScope.ONE);
+        serviceManager.retrieveServices(Arrays.asList("test"), Arrays.asList(ServiceScope.ONE));
     }
 
     /**
@@ -124,7 +131,7 @@ public class ServiceManagerTest {
         Mockito.when(linkPluginsDatasetsService.retrieveLink(Mockito.anyString())).thenReturn(linkPluginsDatasets);
 
         // Trigger exception
-        serviceManager.retrieveServices("test", ServiceScope.ONE);
+        serviceManager.retrieveServices(Arrays.asList("test"), Arrays.asList(ServiceScope.ONE));
     }
 
     /**
@@ -133,18 +140,48 @@ public class ServiceManagerTest {
      */
     @Test
     public final void testRetrieveServices() {
+        String datasetId = "aSampleServicePlugin";
         // Prepare test
-        final LinkPluginsDatasets linkPluginsDatasets = new LinkPluginsDatasets("aSampleServicePlugin",
-                PLUGIN_CONFIGURATIONS);
+        final LinkPluginsDatasets linkPluginsDatasets = new LinkPluginsDatasets(datasetId, PLUGIN_CONFIGURATIONS);
         Mockito.when(linkPluginsDatasetsService.retrieveLink(Mockito.anyString())).thenReturn(linkPluginsDatasets);
 
         // Call tested method
-        final List<PluginConfigurationDto> pluginConfigurationDtos = serviceManager
-                .retrieveServices("aSampleServicePlugin", ServiceScope.ONE);
+        List<PluginConfigurationDto> pluginConfigurationDtos = serviceManager
+                .retrieveServices(Arrays.asList(datasetId), Arrays.asList(ServiceScope.ONE));
 
         // Define expected
-        Set<ServiceScope> expectedApplicationModes = Sets.newHashSet(ServiceScope.ONE, ServiceScope.MANY);
-        Set<EntityType> expectedEntityTypes = Sets.newHashSet(EntityType.DATASET);
+        Set<ServiceScope> expectedApplicationModes = Sets.newHashSet(ServiceScope.ONE);
+        Set<EntityType> expectedEntityTypes = Sets.newHashSet(EntityType.DATA);
+
+        // Check
+        Assert.assertThat(pluginConfigurationDtos, Matchers.hasSize(2));
+        Assert.assertThat(pluginConfigurationDtos, Matchers
+                .hasItem(Matchers.hasProperty("applicationModes", Matchers.equalTo(expectedApplicationModes))));
+        Assert.assertThat(pluginConfigurationDtos,
+                          Matchers.hasItem(Matchers.hasProperty("entityTypes", Matchers.equalTo(expectedEntityTypes))));
+
+        // Call tested method
+        pluginConfigurationDtos = serviceManager.retrieveServices(Arrays.asList(datasetId),
+                                                                  Arrays.asList(ServiceScope.MANY));
+
+        // Define expected
+        expectedApplicationModes = Sets.newHashSet(ServiceScope.MANY);
+        expectedEntityTypes = Sets.newHashSet(EntityType.DATA);
+
+        // Check
+        Assert.assertThat(pluginConfigurationDtos, Matchers.hasSize(2));
+        Assert.assertThat(pluginConfigurationDtos, Matchers
+                .hasItem(Matchers.hasProperty("applicationModes", Matchers.equalTo(expectedApplicationModes))));
+        Assert.assertThat(pluginConfigurationDtos,
+                          Matchers.hasItem(Matchers.hasProperty("entityTypes", Matchers.equalTo(expectedEntityTypes))));
+
+        // Call tested method
+        pluginConfigurationDtos = serviceManager.retrieveServices(Arrays.asList(datasetId),
+                                                                  Arrays.asList(ServiceScope.MANY, ServiceScope.ONE));
+
+        // Define expected
+        expectedApplicationModes = Sets.newHashSet(ServiceScope.ONE, ServiceScope.MANY);
+        expectedEntityTypes = Sets.newHashSet(EntityType.DATA);
 
         // Check
         Assert.assertThat(pluginConfigurationDtos, Matchers.hasSize(1));

@@ -50,7 +50,7 @@ public interface IServiceManager {
      * @return PluginConfigurations in the system for plugins of type {@link IService} linked to a dataset for a given
      *         scope. Returns an empty list if <code>pDatasetId</code> is <code>null</code>
      */
-    List<PluginConfigurationDto> retrieveServices(List<String> pDatasetIds, ServiceScope pServiceScope);
+    List<PluginConfigurationDto> retrieveServices(List<String> pDatasetIds, List<ServiceScope> pServiceScopes);
 
     /**
      * Apply the service
