@@ -83,7 +83,7 @@ public class ServicesAggregatorControllerTest {
     @Test
     public final void testRetrieveServices() {
         ResponseEntity<List<Resource<PluginServiceDto>>> result = controller
-                .retrieveServices(Lists.newArrayList("coucou"), ServiceScope.MANY);
+                .retrieveServices(Lists.newArrayList("coucou"), Lists.newArrayList(ServiceScope.MANY));
         Assert.assertNotNull(result);
         Assert.assertThat(result.getBody(), Matchers.hasSize(2));
     }

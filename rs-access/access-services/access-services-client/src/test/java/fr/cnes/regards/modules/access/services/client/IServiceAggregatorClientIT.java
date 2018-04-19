@@ -1,5 +1,7 @@
 package fr.cnes.regards.modules.access.services.client;
 
+import java.util.Arrays;
+
 /*
  * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
@@ -87,7 +89,8 @@ public class IServiceAggregatorClientIT extends AbstractRegardsWebIT {
      */
     @Test
     public void retrieveServices_shouldReturnServices() {
-        ResponseEntity<List<Resource<PluginServiceDto>>> result = client.retrieveServices("coucou", ServiceScope.MANY);
+        ResponseEntity<List<Resource<PluginServiceDto>>> result = client
+                .retrieveServices(Arrays.asList("coucou"), Arrays.asList(ServiceScope.MANY));
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
     }
 
