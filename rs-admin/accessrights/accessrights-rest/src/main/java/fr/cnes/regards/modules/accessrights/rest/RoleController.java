@@ -73,7 +73,7 @@ public class RoleController implements IResourceController<Role> {
      */
     public static final String ROLE_MAPPING = "/{role_name}";
 
-    public static final String ROLE_ASCENDANTS = ROLE_MAPPING + "/ascendants";
+    public static final String ROLE_DESCENDANTS = ROLE_MAPPING + "/descendants";
 
     /**
      * Mapping for retrieving borrowable role of the current user
@@ -177,16 +177,16 @@ public class RoleController implements IResourceController<Role> {
     }
 
     /**
-     * Define the endpoint for retrieving the ascendant {@link Role}s of passed role through its name
+     * Define the endpoint for retrieving the descendnats {@link Role}s of passed role through its name
      * @return the ascendants wrapped into a {@link ResponseEntity}
      * @throws EntityNotFoundException if given role does not exists
      */
-    @ResourceAccess(description = "Retrieve a role ascendants")
-    @RequestMapping(method = RequestMethod.GET, path = ROLE_ASCENDANTS)
-    public ResponseEntity<Set<Role>> retrieveRoleAscendants(@PathVariable("role_name") String roleName)
+    @ResourceAccess(description = "Retrieve a role descendants")
+    @RequestMapping(method = RequestMethod.GET, path = ROLE_DESCENDANTS)
+    public ResponseEntity<Set<Role>> retrieveRoleDescendants(@PathVariable("role_name") String roleName)
             throws EntityNotFoundException {
         Role role = roleService.retrieveRole(roleName);
-        return new ResponseEntity<>(roleService.getAscendants(role), HttpStatus.OK);
+        return new ResponseEntity<>(roleService.getDescendants(role), HttpStatus.OK);
     }
 
     /**

@@ -293,7 +293,7 @@ public class NotificationServiceTest {
         dto.setSender(SENDER);
         dto.setType(NotificationType.INFO);
 
-        Mockito.when(rolesClient.retrieveRoleAscendants(ROLE_NAME_0))
+        Mockito.when(rolesClient.retrieveRoleDescendants(ROLE_NAME_0))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(ROLE_NAME_0)), HttpStatus.OK));
 
         // Define expected

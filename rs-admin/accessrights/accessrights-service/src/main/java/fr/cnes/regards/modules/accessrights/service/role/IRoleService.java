@@ -267,6 +267,13 @@ public interface IRoleService {
     Set<Role> retrieveBorrowableRoles();
 
     /**
+     * Retrieve descendants of a role.
+     * @param role
+     * @return all descendants of "role" and "role" itself
+     */
+    Set<Role> getDescendants(Role role);
+
+    /**
      * Retrieve ascendants(parent and uncles) and brotherhood of the given role
      *
      * @param pRole
