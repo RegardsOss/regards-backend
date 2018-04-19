@@ -89,7 +89,7 @@ public class ICatalogServicesIT extends AbstractRegardsWebIT {
     @Purpose("Check that we can retrieve IHM Service augmented with their meta information")
     public void retrieveServicesWithMeta() {
         ResponseEntity<List<Resource<PluginConfigurationDto>>> result = client
-                .retrieveServices(Lists.newArrayList("whatever"), ServiceScope.MANY);
+                .retrieveServices(Lists.newArrayList("whatever"), Lists.newArrayList(ServiceScope.MANY));
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.NOT_FOUND));
     }
 

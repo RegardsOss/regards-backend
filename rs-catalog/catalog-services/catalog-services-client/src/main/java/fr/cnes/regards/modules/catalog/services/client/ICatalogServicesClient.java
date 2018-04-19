@@ -33,7 +33,7 @@ public interface ICatalogServicesClient {
      */
     @RequestMapping(method = RequestMethod.GET)
     ResponseEntity<List<Resource<PluginConfigurationDto>>> retrieveServices(
-            @RequestParam(value = "dataset_ids", required = false) final List<String> datasetIds,
-            @RequestParam(value = "service_scope", required = false) final ServiceScope serviceScope);
+            @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIds,
+            @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> serviceScopes);
 
 }

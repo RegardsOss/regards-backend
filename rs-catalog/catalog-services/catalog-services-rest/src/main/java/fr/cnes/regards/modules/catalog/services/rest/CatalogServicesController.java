@@ -60,7 +60,9 @@ public class CatalogServicesController {
 
     public static final String PATH_SERVICE_NAME = "/{pluginConfigurationId}/apply";
 
-    public static final String DATASET_IDS_QUERY_PARAM = "dataset_ids";
+    public static final String DATASET_IDS_QUERY_PARAM = "datasetIpIds";
+
+    public static final String SCOPES_QUERY_PARAM = "applicationModes";
 
     /**
      * {@link IServiceManager} instance
@@ -85,8 +87,8 @@ public class CatalogServicesController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<List<Resource<PluginConfigurationDto>>> retrieveServices(
             @RequestParam(value = DATASET_IDS_QUERY_PARAM, required = false) final List<String> pDatasetIds,
-            @RequestParam(value = "service_scope", required = false) final ServiceScope pServiceScope) {
-        final List<PluginConfigurationDto> services = serviceManager.retrieveServices(pDatasetIds, pServiceScope);
+            @RequestParam(value = SCOPES_QUERY_PARAM, required = false) final List<ServiceScope> pServiceScopes) {
+        final List<PluginConfigurationDto> services = serviceManager.retrieveServices(pDatasetIds, pServiceScopes);
         return new ResponseEntity<>(HateoasUtils.wrapList(services), HttpStatus.OK);
     }
 
