@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.backendforfrontend.rest;
 
+import java.util.Arrays;
+
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,9 +42,11 @@ public class BackendForFrontendTestConfiguration {
     @Primary
     public IServiceAggregatorClient serviceAggregatorClient() {
         IServiceAggregatorClient mock = Mockito.mock(IServiceAggregatorClient.class);
-        Mockito.when(mock.retrieveServices(BackendForFrontendTestUtils.DATASET_0.getIpId().toString(), null))
+        Mockito.when(mock.retrieveServices(Arrays.asList(BackendForFrontendTestUtils.DATASET_0.getIpId().toString()),
+                                           null))
                 .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_0);
-        Mockito.when(mock.retrieveServices(BackendForFrontendTestUtils.DATASET_1.getIpId().toString(), null))
+        Mockito.when(mock.retrieveServices(Arrays.asList(BackendForFrontendTestUtils.DATASET_1.getIpId().toString()),
+                                           null))
                 .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_1);
         return mock;
     }
@@ -51,12 +55,17 @@ public class BackendForFrontendTestConfiguration {
     public IJsonSearchClient searchClient() {
         IJsonSearchClient mock = Mockito.mock(IJsonSearchClient.class);
         Mockito.when(mock.searchAll(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
-        Mockito.when(mock.searchAll(Mockito.any(), Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
-        Mockito.when(mock.searchCollections(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_COLLECTIONS_RESULT);
+        Mockito.when(mock.searchAll(Mockito.any(), Mockito.any()))
+                .thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
+        Mockito.when(mock.searchCollections(Mockito.any()))
+                .thenReturn(BackendForFrontendTestUtils.SEARCH_COLLECTIONS_RESULT);
         Mockito.when(mock.searchDatasets(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
-        Mockito.when(mock.searchDataobjects(Mockito.any(), Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_DATAOBJECTS_RESULT);
-        Mockito.when(mock.searchDataobjectsReturnDatasets(Mockito.any(), Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
-        Mockito.when(mock.searchDocuments(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_DOCUMENTS_RESULT);
+        Mockito.when(mock.searchDataobjects(Mockito.any(), Mockito.any()))
+                .thenReturn(BackendForFrontendTestUtils.SEARCH_DATAOBJECTS_RESULT);
+        Mockito.when(mock.searchDataobjectsReturnDatasets(Mockito.any(), Mockito.any()))
+                .thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
+        Mockito.when(mock.searchDocuments(Mockito.any()))
+                .thenReturn(BackendForFrontendTestUtils.SEARCH_DOCUMENTS_RESULT);
 
         return mock;
     }
