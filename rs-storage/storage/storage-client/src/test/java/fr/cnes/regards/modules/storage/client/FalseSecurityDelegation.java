@@ -23,7 +23,7 @@ public class FalseSecurityDelegation implements ISecurityDelegation {
     }
 
     @Override
-    public boolean hasAccess(String ipId) throws EntityNotFoundException {
+    public boolean hasAccess(String ipId) {
         return true;
     }
 
