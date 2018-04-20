@@ -4,7 +4,7 @@
     One or more of your orders are waiting for you to be downloaded:
     </p>
     <#list orders as order>
-    <p>- Your order <b>${order.id}</b> from project <b>${project}</b> created the <b>${order.creationDate?datetime.iso}</b> will expire the <b>${order.expirationDate?datetime.iso}</b>.<br/>
+    <p>- Your order <b>${order.id?c}</b> from project <b>${project}</b> created the <b>${order.creationDate?datetime.iso}</b> will expire the <b>${order.expirationDate?datetime.iso}</b>.<br/>
       It contains <b>${order.availableFilesCount}</b> available for download files since at least ${order.availableUpdateDate?datetime.iso}.</p>
     </#list>
 </div>
