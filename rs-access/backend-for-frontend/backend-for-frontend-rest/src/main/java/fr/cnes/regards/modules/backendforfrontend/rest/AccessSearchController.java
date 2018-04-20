@@ -252,6 +252,7 @@ public class AccessSearchController {
     private JsonElement entityToApplicableServices(JsonObject pEntity) {
         // @formatter:off
         List<Resource<PluginServiceDto>> applicableServices = JSON_ARRAY_TO_STREAM.apply(pEntity.get("tags").getAsJsonArray()) // Retrieve tags list and convert it to stream
+            .filter(tag -> tag != null)
             .map(JsonElement::getAsString) // Convert elements of the stream to strings
             .filter(UniformResourceName::isValidUrn) // Only keep URNs
             .map(UniformResourceName::fromString) // Convert elements of the stream to URNs
