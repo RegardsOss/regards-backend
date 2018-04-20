@@ -189,6 +189,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             catalog.setContainer("page-content-module");
             catalog.setDescription("Catalog");
             catalog.setType("search-results");
+            catalog.setPage(new UIPage(false, "DEFAULT", null, "{\"en\":\"Catalog\",\"fr\":\"Catalogue\"}"));
             try {
                 catalog.setConf(readDefaultFileResource(defaultUserCatalogModuleResource));
             } catch (final IOException e) {
@@ -209,6 +210,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             menu.setContainer("header");
             menu.setDescription(String.format("Portal menu"));
             menu.setType("menu");
+
             try {
                 menu.setConf(readDefaultFileResource(defaultPortalMenuResource));
             } catch (final IOException e) {
