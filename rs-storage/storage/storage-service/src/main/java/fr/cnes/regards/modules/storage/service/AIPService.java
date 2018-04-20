@@ -1007,10 +1007,9 @@ public class AIPService implements IAIPService {
             }
             // schedule removal of data and metadata
             AIPBuilder toBeDeletedBuilder = new AIPBuilder(toBeDeleted);
-            toBeDeletedBuilder
-                    .addEvent(EventType.DELETION.name(),
-                              "AIP deletion was requested, AIP is considered deleted until its removal from archives",
-                              OffsetDateTime.now());
+            toBeDeletedBuilder.addEvent(EventType.DELETION.name(),
+                                        "AIP deletion was requested, AIP is considered deleted until its removal from archives",
+                                        OffsetDateTime.now());
             toBeDeleted = toBeDeletedBuilder.build();
             toBeDeleted.setState(AIPState.DELETED);
             aipDao.save(toBeDeleted);
@@ -1108,12 +1107,12 @@ public class AIPService implements IAIPService {
                         new MimeType("application", "json"), aip, aip.getId().toString() + JSON_FILE_EXT, null);
             } else {
                 workspaceService.removeFromWorkspace(metadataName);
-                LOGGER.error(String
-                        .format("Storage of AIP metadata(%s) into workspace(%s) failed. Computed checksum once stored does not "
-                                + "match expected one", aip.getId().toString(),
-                                workspaceService.getMicroserviceWorkspace()));
-                throw new FileCorruptedException(String
-                        .format("File has been corrupted during storage into workspace. Checksums before(%s) and after (%s) are"
+                LOGGER.error(String.format(
+                                           "Storage of AIP metadata(%s) into workspace(%s) failed. Computed checksum once stored does not "
+                                                   + "match expected one",
+                                           aip.getId().toString(), workspaceService.getMicroserviceWorkspace()));
+                throw new FileCorruptedException(
+                        String.format("File has been corrupted during storage into workspace. Checksums before(%s) and after (%s) are"
                                 + " different", checksum, fileChecksum));
             }
         } catch (NoSuchAlgorithmException e) {
