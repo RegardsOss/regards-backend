@@ -27,7 +27,7 @@ public class CatalogSecurityDelegationTestPlugin implements ISecurityDelegation 
         return Sets.newHashSet(urns);
     }
     @Override
-    public boolean hasAccess(String ipId) throws EntityNotFoundException {
+    public boolean hasAccess(String ipId) {
         return true;
     }
 

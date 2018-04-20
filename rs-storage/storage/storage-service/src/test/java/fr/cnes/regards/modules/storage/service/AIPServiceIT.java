@@ -287,6 +287,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         LOG.info("AIP {} is in ERROR State", aip.getId().toString());
         Set<StorageDataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip);
         Assert.assertEquals(1, dataFiles.size());
+        StorageDataFile dataFile = dataFiles.iterator().next();
+        Assert.assertFalse("The data file should contains its error", dataFile.getFailureCauses().isEmpty());
     }
 
     @Test
@@ -318,7 +320,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
                                    aipFromDB.get().getState());
             Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
             Set<StorageDataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
-            Assert.assertEquals("File should have beed stored but not the metadatas", 1, dataFiles.size());
+            Assert.assertEquals("File should have been stored but not the metadatas", 1, dataFiles.size());
         } finally {
             // to avoid issues with following tests, lets set back the permissions
             Files.setPosixFilePermissions(workspacePath, oldPermissions);

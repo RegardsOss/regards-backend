@@ -65,17 +65,15 @@ public class ScheduleStorageTasks {
 
     @Scheduled(fixedDelayString = "${regards.storage.store.delay:60000}", initialDelay = 10000)
     public void store() throws ModuleException {
-        LOGGER.debug(" ------------------------> Store AIP - START<---------------------------- ");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
-                LOGGER.debug("Trying to store valid AIP for tenant {}", tenant);
                 runtimeTenantResolver.forceTenant(tenant);
                 aipService.store();
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
+
         }
-        LOGGER.debug(" ------------------------> Store AIP - END<---------------------------- ");
     }
 
     /**
