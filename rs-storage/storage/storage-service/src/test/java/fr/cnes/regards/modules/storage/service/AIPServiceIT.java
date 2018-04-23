@@ -212,12 +212,14 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         pluginService.savePluginConfiguration(allocationConfiguration);
     }
 
-    private void storeAIP(AIP aipToStore) throws ModuleException, InterruptedException {
+    private void storeAIP(AIP aipToStore, Boolean storeMeta) throws ModuleException, InterruptedException {
         aipService.validateAndStore(new AIPCollection(aipToStore));
         aipService.store();
         Thread.sleep(2000);
-        aipService.storeMetadata();
-        Thread.sleep(2000);
+        if (storeMeta) {
+            aipService.storeMetadata();
+            Thread.sleep(2000);
+        }
     }
 
     private void updateAIP(AIP aipToUpdate) throws InterruptedException, ModuleException {
@@ -229,7 +231,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_010"), @Requirement("REGARDS_DSL_STOP_AIP_070") })
     public void createSuccessTest() throws ModuleException, InterruptedException {
-        storeAIP(aip);
+        storeAIP(aip, true);
         Set<AIPEvent> events = waitForEventsReceived(AIPState.STORED, 1);
         Assert.assertEquals("There whould be only one datastorage success event", 1, events.size());
 
@@ -276,7 +278,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
                 .toArray(new ContentInformation[aip.getProperties().getContentInformations().size()])[0].getDataObject()
                         .setUrls(Sets.newHashSet(new URL("file", "", Paths
                                 .get("src/test/resources/data_that_does_not_exists.txt").toFile().getAbsolutePath())));
-        storeAIP(aip);
+        storeAIP(aip, true);
 
         // Wait for error event
         Set<AIPEvent> events = waitForEventsReceived(AIPState.STORAGE_ERROR, 2);
@@ -433,6 +435,42 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         Assert.assertFalse("AIP should not be referenced in the database", aipDao.findOneByIpId(aipIpId).isPresent());
         for (StorageDataFile df : aipFiles) {
             // As only one of the two storage system allow deletion, only one file should be deleted on disk
+            for (URL fileLocation : df.getUrls()) {
+                Assert.assertFalse("AIP data should not be on disk anymore",
+                                   Files.exists(Paths.get(fileLocation.toURI())));
+            }
+        }
+    }
+
+    @Test
+    public void testDeleteErrorAip() throws InterruptedException, ModuleException, URISyntaxException {
+
+        dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
+                .setValue(Boolean.TRUE.toString());
+        pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
+
+        // Store a new AIP withou metadata
+        storeAIP(aip, false);
+        // Simulate aip state to STORE_ERROR
+        aip.setState(AIPState.STORAGE_ERROR);
+        aip = aipService.save(aip, false);
+
+        // lets get all the dataFile before deleting them for further verification
+        String aipIpId = aip.getId().toString();
+        Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(aip);
+
+        // Delete AIP
+        aipService.deleteAip(aipIpId);
+        Thread.sleep(5000);
+        aipService.removeDeletedAIPMetadatas();
+
+        // Wait for AIP deletion
+        Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 1);
+        Assert.assertEquals("There should been only one AIP delete event ", 1, events.size());
+        Assert.assertFalse("AIP should not be referenced in the database", aipDao.findOneByIpId(aipIpId).isPresent());
+        for (StorageDataFile df : aipFiles) {
+            // All files should be deleted. But no AIP metadata as it was not stored
+            Assert.assertFalse("No AIP metadata should be stored", DataType.AIP.equals(df.getDataType()));
             for (URL fileLocation : df.getUrls()) {
                 Assert.assertFalse("AIP data should not be on disk anymore",
                                    Files.exists(Paths.get(fileLocation.toURI())));
