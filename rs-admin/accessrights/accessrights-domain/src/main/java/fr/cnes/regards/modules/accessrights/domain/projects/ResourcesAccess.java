@@ -258,4 +258,10 @@ public class ResourcesAccess implements IIdentifiable<Long> {
         defaultRole = pDefaultRole;
     }
 
+    @Override
+    public String toString() {
+        return "ResourcesAccess{" + "id=" + id + ", description='" + description + '\'' + ", microservice='"
+                + microservice + '\'' + ", controllerSimpleName='" + controllerSimpleName + '\'' + ", resource='"
+                + resource + '\'' + ", verb=" + verb + ", defaultRole=" + defaultRole + '}';
+    }
 }
