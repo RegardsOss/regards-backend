@@ -120,6 +120,14 @@ public class RegistrationService implements IRegistrationService {
             if (accountResponse.getStatusCode() != HttpStatus.NOT_FOUND) {
                 LOG.info("Requesting access with an existing account. Ok, no account created");
                 return;
+            } else {
+                // Check that all information are provided to create account
+                if ((pDto.getEmail() == null) || (pDto.getFirstName() == null) || (pDto.getLastName() == null)
+                        || (pDto.getPassword() == null)) {
+                    LOG.error("Account does not exists for user {} and there not enought information to create a new one.",
+                              pDto.getEmail());
+                    throw new EntityNotFoundException(pDto.getEmail(), Account.class);
+                }
             }
 
             // Create the new account
