@@ -6,7 +6,7 @@
 
     <groupId>fr.cnes.regards.microservices</groupId>
     <artifactId>storage</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.0.0-RELEASE</version>
     <packaging>pom</packaging>
     
 	<description>Microservice providing long-term, perennial storage of the data through the CNES' storage system</description>
@@ -34,7 +34,7 @@
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-aggregator-parent</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
+	<version>2.0.0-RELEASE</version>
         <relativePath/>
     </parent>
 
