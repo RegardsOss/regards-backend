@@ -19,10 +19,8 @@ public class DeleteDataFilesJob extends AbstractStoreFilesJob {
     /**
      * Failure causes message format
      */
-    {
-        {
-            FAILURE_CAUSES = "Deletion failed due to the following reasons: %s";
-        }
+    static {
+        failureCauses = "Deletion failed due to the following reasons: %s";
     }
 
     @Override
@@ -37,8 +35,7 @@ public class DeleteDataFilesJob extends AbstractStoreFilesJob {
             } catch (IllegalStateException e) {
                 throw new IllegalStateException(
                         String.format("Could not delete data for plugin configuration with label: %s",
-                                      pluginService.getPluginConfiguration(confIdToUse).getLabel()),
-                        e);
+                                      pluginService.getPluginConfiguration(confIdToUse).getLabel()), e);
             }
         } catch (ModuleException e) {
             //throwing new runtime allows us to make the job fail.
