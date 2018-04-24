@@ -36,7 +36,15 @@ import org.reflections.Reflections;
  */
 public final class ReflectionUtils {
 
-    public static final Reflections REFLECTIONS = new Reflections("fr.cnes.regards");
+    private static Reflections reflections = new Reflections("fr.cnes.regards");
+
+    public static Reflections getReflections() {
+        return reflections;
+    }
+
+    public static void setReflections(Reflections reflections) {
+        ReflectionUtils.reflections = reflections;
+    }
 
     /**
      * A private constructor

@@ -78,7 +78,7 @@ public final class PluginInterfaceUtils {
     public static List<String> getInterfaces(final String pPrefix) {
         final List<String> interfaces = new ArrayList<>();
         // Scan class path with Reflections library
-        final Reflections reflections = ReflectionUtils.REFLECTIONS;
+        final Reflections reflections = ReflectionUtils.getReflections();
         final Set<Class<?>> annotatedPlugins = reflections.getTypesAnnotatedWith(PluginInterface.class, true);
         if (!annotatedPlugins.isEmpty()) {
             annotatedPlugins.stream().forEach(str -> {
