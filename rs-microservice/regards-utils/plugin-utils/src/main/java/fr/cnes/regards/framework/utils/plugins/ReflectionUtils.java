@@ -36,7 +36,7 @@ import org.reflections.Reflections;
  */
 public final class ReflectionUtils {
 
-    public static Reflections REFLECTIONS = new Reflections("fr.cnes.regards");
+    public static final Reflections REFLECTIONS = new Reflections("fr.cnes.regards");
 
     /**
      * A private constructor
