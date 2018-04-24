@@ -144,6 +144,12 @@ public class UIPluginDefinitionService
             plugin.setSourcePath("/plugins/criterion/two-temporal/plugin.js");
             plugin.setType(UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
+
+            plugin = new UIPluginDefinition();
+            plugin.setName("enumerated-criteria");
+            plugin.setSourcePath("/plugins/criterion/enumerated/plugin.js");
+            plugin.setType(UIPluginTypesEnum.CRITERIA);
+            repository.save(plugin);
         }
     }
 
