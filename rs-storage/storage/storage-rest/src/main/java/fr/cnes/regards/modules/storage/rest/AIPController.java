@@ -186,8 +186,8 @@ public class AIPController implements IResourceController<AIP> {
     /**
      * Retrieve a page of aip metadata according to the given parameters
      * @param pState state the aips should be in
-     * @param pFrom date after which the aip should have been added to the system
-     * @param pTo date before which the aip should have been added to the system
+     * @param from date(UTC) after which the aip should have been added to the system
+     * @param to date(UTC) before which the aip should have been added to the system
      * @return page of aip metadata respecting the constraints
      */
     @RequestMapping(method = RequestMethod.GET)
@@ -195,10 +195,12 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "send a page of aips")
     public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState pState,
-            @RequestParam(name = "from", required = false) OffsetDateTime pFrom,
-            @RequestParam(name = "to", required = false) OffsetDateTime pTo, final Pageable pPageable,
+            @RequestParam(name = "from", required = false) String from,
+            @RequestParam(name = "to", required = false) String to, final Pageable pPageable,
             final PagedResourcesAssembler<AIP> pAssembler) throws ModuleException {
-        Page<AIP> aips = aipService.retrieveAIPs(pState, pFrom, pTo, pPageable);
+        OffsetDateTime fromDate = OffsetDateTimeAdapter.parse(from);
+        OffsetDateTime toDate = OffsetDateTimeAdapter.parse(to);
+        Page<AIP> aips = aipService.retrieveAIPs(pState, fromDate, toDate, pPageable);
         return new ResponseEntity<>(toPagedResources(aips, pAssembler), HttpStatus.OK);
     }
 
@@ -278,7 +280,7 @@ public class AIPController implements IResourceController<AIP> {
      * @return the aips that could not be prepared for storage
      */
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
-    @ResourceAccess(description = "validate and store the specified AIP")
+    @ResourceAccess(description = "validate and store the specified AIPs")
     public ResponseEntity<List<RejectedAip>> store(@RequestBody AIPCollection aips) throws ModuleException {
 
         int originalAipNb = aips.getFeatures().size();

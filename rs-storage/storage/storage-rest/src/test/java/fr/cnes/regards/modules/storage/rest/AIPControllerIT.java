@@ -16,11 +16,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.hamcrest.Matchers;
 import org.hamcrest.core.IsCollectionContaining;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.internal.matchers.NotNull;
@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -37,7 +38,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -72,6 +72,7 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
+import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
@@ -95,6 +96,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
     private static final String CATALOG_SECURITY_DELEGATION_LABEL = "AIPControllerIT_SECU_DELEG";
 
     private static final int MAX_WAIT = 60000;
+
+    private final MockEventHandler mockEventHandler = new MockEventHandler();
 
     @Autowired
     private IPluginService pluginService;
@@ -132,13 +135,14 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException {
+        cleanUp();
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         // first of all, lets get an AIP with accessible dataObjects and real checksums
         aip = getAIP();
         // second, lets storeAndCreate a plugin configuration for IAllocationStrategy
-        PluginMetaData allocationMeta = PluginUtils
-                .createPluginMetaData(DefaultAllocationStrategyPlugin.class,
-                                      DefaultAllocationStrategyPlugin.class.getPackage().getName());
+        PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class,
+                                                                         DefaultAllocationStrategyPlugin.class
+                                                                                 .getPackage().getName());
         PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, ALLOCATION_CONF_LABEL);
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
@@ -152,17 +156,21 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000000L)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .getParameters();
-        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, DATA_STORAGE_CONF_LABEL, parameters,
-                0);
+        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta,
+                                                                      DATA_STORAGE_CONF_LABEL,
+                                                                      parameters,
+                                                                      0);
         dataStorageConf.setIsActive(true);
         prioritizedDataStorageService.create(dataStorageConf);
         // forth, lets configure a plugin for security checks
         pluginService.addPluginPackage(FakeSecurityDelegation.class.getPackage().getName());
-        PluginMetaData catalogSecuDelegMeta = PluginUtils
-                .createPluginMetaData(FakeSecurityDelegation.class, FakeSecurityDelegation.class.getPackage().getName(),
-                                      ISecurityDelegation.class.getPackage().getName());
+        PluginMetaData catalogSecuDelegMeta = PluginUtils.createPluginMetaData(FakeSecurityDelegation.class,
+                                                                               FakeSecurityDelegation.class.getPackage()
+                                                                                       .getName(),
+                                                                               ISecurityDelegation.class.getPackage()
+                                                                                       .getName());
         PluginConfiguration catalogSecuDelegConf = new PluginConfiguration(catalogSecuDelegMeta,
-                CATALOG_SECURITY_DELEGATION_LABEL);
+                                                                           CATALOG_SECURITY_DELEGATION_LABEL);
         pluginService.savePluginConfiguration(catalogSecuDelegConf);
     }
 
@@ -175,7 +183,9 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
         // perform request
-        performDefaultPost(AIPController.AIP_PATH, new AIPCollection(aip), requestBuilderCustomizer,
+        performDefaultPost(AIPController.AIP_PATH,
+                           new AIPCollection(aip),
+                           requestBuilderCustomizer,
                            "AIP storage should have been schedule properly");
     }
 
@@ -186,7 +196,9 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
         // perform request
-        performDefaultPost(AIPController.AIP_PATH, new AIPCollection(aip), requestBuilderCustomizer,
+        performDefaultPost(AIPController.AIP_PATH,
+                           new AIPCollection(aip),
+                           requestBuilderCustomizer,
                            "AIP storage should have been schedule properly");
     }
 
@@ -199,7 +211,9 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
         // perform request
-        performDefaultPost(AIPController.AIP_PATH, new AIPCollection(aip), requestBuilderCustomizer,
+        performDefaultPost(AIPController.AIP_PATH,
+                           new AIPCollection(aip),
+                           requestBuilderCustomizer,
                            "Same AIP cannot be stored twice");
     }
 
@@ -214,7 +228,9 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         AIP aip2 = getAIP();
 
         // perform request
-        performDefaultPost(AIPController.AIP_PATH, new AIPCollection(aip, aip2), requestBuilderCustomizer,
+        performDefaultPost(AIPController.AIP_PATH,
+                           new AIPCollection(aip, aip2),
+                           requestBuilderCustomizer,
                            "Success should be partial, aip cannot be re stored but aip2 can be stored");
     }
 
@@ -239,12 +255,17 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         Set<String> dataFilesChecksum = dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
         // ask for availability
         AvailabilityRequest availabilityRequest = new AvailabilityRequest(OffsetDateTime.now().plusDays(2),
-                dataFilesChecksum.toArray(new String[dataFilesChecksum.size()]));
+                                                                          dataFilesChecksum
+                                                                                  .toArray(new String[dataFilesChecksum
+                                                                                          .size()]));
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content()
-                .json(gson.toJson(new AvailabilityResponse(Sets.newHashSet(), dataFiles, Sets.newHashSet()))));
-        performDefaultPost(AIPController.AIP_PATH + AIPController.PREPARE_DATA_FILES, availabilityRequest,
+                                                        .json(gson.toJson(new AvailabilityResponse(Sets.newHashSet(),
+                                                                                                   dataFiles,
+                                                                                                   Sets.newHashSet()))));
+        performDefaultPost(AIPController.AIP_PATH + AIPController.PREPARE_DATA_FILES,
+                           availabilityRequest,
                            requestBuilderCustomizer,
                            "data should already be available as they are in an online data storage");
     }
@@ -255,8 +276,10 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         testStore();
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(AIPController.AIP_PATH + AIPController.ID_PATH, requestBuilderCustomizer,
-                          "we should have the aip", aip.getId().toString());
+        performDefaultGet(AIPController.AIP_PATH + AIPController.ID_PATH,
+                          requestBuilderCustomizer,
+                          "we should have the aip",
+                          aip.getId().toString());
     }
 
     @Test
@@ -266,15 +289,18 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         // first we expect that the aip has a DELETION event in its history
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$.properties.pdi.provenanceInformation.history[*].type",
-                          IsCollectionContaining.hasItem(EventType.DELETION.name())));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                "$.properties.pdi.provenanceInformation.history[*].type",
+                IsCollectionContaining.hasItem(EventType.DELETION.name())));
         // now we expect that those events does have a date
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$.properties.pdi.provenanceInformation.history[?(@.type == \"" + EventType.DELETION.name()
-                        + "\")].date", NotNull.NOT_NULL));
-        performDefaultGet(AIPController.AIP_PATH + AIPController.ID_PATH, requestBuilderCustomizer,
-                          "we should have the aip", aip.getId().toString());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                "$.properties.pdi.provenanceInformation.history[?(@.type == \"" + EventType.DELETION.name()
+                        + "\")].date",
+                NotNull.NOT_NULL));
+        performDefaultGet(AIPController.AIP_PATH + AIPController.ID_PATH,
+                          requestBuilderCustomizer,
+                          "we should have the aip",
+                          aip.getId().toString());
     }
 
     @Test
@@ -284,8 +310,10 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         testStore();
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultPost(AIPController.AIP_PATH + AIPController.AIP_BULK, Sets.newHashSet(aip.getId().toString()),
-                           requestBuilderCustomizer, "we should have the aips");
+        performDefaultPost(AIPController.AIP_PATH + AIPController.AIP_BULK,
+                           Sets.newHashSet(aip.getId().toString()),
+                           requestBuilderCustomizer,
+                           "we should have the aips");
     }
 
     @Test
@@ -295,8 +323,11 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         testStore();
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(AIPController.AIP_PATH + AIPController.TAG, requestBuilderCustomizer,
-                          "we should have the aips", aip.getId().toString(), "tag");
+        performDefaultGet(AIPController.AIP_PATH + AIPController.TAG,
+                          requestBuilderCustomizer,
+                          "we should have the aips",
+                          aip.getId().toString(),
+                          "tag");
     }
 
     @Test
@@ -304,17 +335,24 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         testStore();
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         int wait = 0;
-        // lets wait for this AIP to be stored (at most 12 sec)
-        while ((aipDao.findOneByIpId(aip.getId().toString()).get().getState() != AIPState.STORED)
-                && (wait < MAX_WAIT)) {
+        // lets wait for this AIP to be stored
+        while ((aipDao.findOneByIpId(aip.getId().toString()).get().getState() != AIPState.STORED) && (wait
+                < MAX_WAIT)) {
             Thread.sleep(1000);
             wait += 1000;
         }
-        Assert.assertTrue("AIP was not fully stored in time", wait < MAX_WAIT);
+        Assert.assertTrue("AIP was not fully stored in time: " + wait, wait < MAX_WAIT);
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
-        performDefaultDelete(AIPController.AIP_PATH + AIPController.ID_PATH, requestBuilderCustomizer,
-                             "deletion of this aip should be possible", aip.getId().toString());
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+                                                                                                     .parameterWithName(
+                                                                                                             "ip_id")
+                                                                                                     .description(
+                                                                                                             "IpId of the AIP")));
+        performDefaultDelete(AIPController.AIP_PATH + AIPController.ID_PATH,
+                             requestBuilderCustomizer,
+                             "deletion of this aip should be possible",
+                             aip.getId().toString());
     }
 
     @Test
@@ -323,8 +361,10 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         testStore();
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(AIPController.AIP_PATH + AIPController.OBJECT_LINK_PATH, requestBuilderCustomizer,
-                          "we should have the metadata of the files of the aip", aip.getId().toString());
+        performDefaultGet(AIPController.AIP_PATH + AIPController.OBJECT_LINK_PATH,
+                          requestBuilderCustomizer,
+                          "we should have the metadata of the files of the aip",
+                          aip.getId().toString());
     }
 
     @Test
@@ -333,8 +373,10 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         testStore();
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(AIPController.AIP_PATH + AIPController.VERSION_PATH, requestBuilderCustomizer,
-                          "we should have the different versions of an aip", aip.getId().toString());
+        performDefaultGet(AIPController.AIP_PATH + AIPController.VERSION_PATH,
+                          requestBuilderCustomizer,
+                          "we should have the different versions of an aip",
+                          aip.getId().toString());
     }
 
     @Test
@@ -343,8 +385,10 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         testStore();
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(AIPController.AIP_PATH + AIPController.HISTORY_PATH, requestBuilderCustomizer,
-                          "we should have the history of an aip", aip.getId().toString());
+        performDefaultGet(AIPController.AIP_PATH + AIPController.HISTORY_PATH,
+                          requestBuilderCustomizer,
+                          "we should have the history of an aip",
+                          aip.getId().toString());
     }
 
     @Test
@@ -362,11 +406,27 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // now lets download it!
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
-        requestBuilderCustomizer.customizeHeaders().put(HttpConstants.ACCEPT,
-                                                        Lists.newArrayList(dataFile.getMimeType().toString()));
+        requestBuilderCustomizer.customizeHeaders()
+                .put(HttpConstants.ACCEPT, Lists.newArrayList(dataFile.getMimeType().toString()));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(AIPController.AIP_PATH + AIPController.DOWNLOAD_AIP_FILE, requestBuilderCustomizer,
-                          "We should be downloading the data file", aip.getId().toString(), dataFile.getChecksum());
+        performDefaultGet(AIPController.AIP_PATH + AIPController.DOWNLOAD_AIP_FILE,
+                          requestBuilderCustomizer,
+                          "We should be downloading the data file",
+                          aip.getId().toString(),
+                          dataFile.getChecksum());
+    }
+
+    @Test
+    public void testRetrieveAips() {
+        testStore();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeRequestParam()
+                .param("from", OffsetDateTime.now().minusDays(40).toString())
+                .param("to", OffsetDateTime.now().toString());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath("$.content", Matchers.not(Matchers.empty())));
+        performDefaultGet(AIPController.AIP_PATH, requestBuilderCustomizer, "There should be some AIP to show");
     }
 
     @After
@@ -386,22 +446,38 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
     private AIP getAIP() throws MalformedURLException {
 
-        AIPBuilder aipBuilder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                null, EntityType.DATA);
+        AIPBuilder aipBuilder = new AIPBuilder(new UniformResourceName(OAISIdentifier.AIP,
+                                                                       EntityType.DATA,
+                                                                       DEFAULT_TENANT,
+                                                                       UUID.randomUUID(),
+                                                                       1), null, EntityType.DATA);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
-                                                                "de89a907d33a9716d11765582102b2e0");
+        aipBuilder.getContentInformationBuilder()
+                .setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5", "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MimeType.valueOf("text/plain"));
         aipBuilder.addContentInformation();
         aipBuilder.addTags("tag");
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
-        aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
-                                                                 OffsetDateTime.now());
+        aipBuilder.getPDIBuilder()
+                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event", OffsetDateTime.now());
 
         return aipBuilder.build();
+    }
+
+    private Set<AIPEvent> waitForEventsReceived(AIPState state, int nbExpectedEvents) throws InterruptedException {
+        Set<AIPEvent> events = mockEventHandler.getReceivedEvents().stream().filter(e -> e.getAipState().equals(state))
+                .collect(Collectors.toSet());
+        int waitCount = 0;
+        while ((events.size() < nbExpectedEvents) && (waitCount < 5)) {
+            Thread.sleep(MAX_WAIT);
+            mockEventHandler.log();
+            events = mockEventHandler.getReceivedEvents().stream().filter(e -> e.getAipState().equals(state))
+                    .collect(Collectors.toSet());
+            waitCount++;
+        }
+        return events;
     }
 
     @Configuration
