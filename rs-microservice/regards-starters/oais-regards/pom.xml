@@ -48,8 +48,13 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards</artifactId>
+			<artifactId>jpa-data-regards</artifactId>
+			<scope>provided</scope>
 		</dependency>
+		<!--<dependency>-->
+			<!--<groupId>fr.cnes.regards.framework</groupId>-->
+			<!--<artifactId>jpa-multitenant-regards</artifactId>-->
+		<!--</dependency>-->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>gson-regards</artifactId>
