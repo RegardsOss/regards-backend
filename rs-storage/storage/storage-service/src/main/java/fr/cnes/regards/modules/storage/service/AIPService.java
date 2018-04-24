@@ -1301,7 +1301,13 @@ public class AIPService implements IAIPService {
         Set<StorageDataFile> aipDataFilesToDelete = Sets.newHashSet();
         for (AIP aip : aips) {
             Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(aip);
-            if (dataFiles.stream().filter(df -> !DataType.AIP.equals(df.getDataType())).count() == 0) {
+            if (dataFiles.isEmpty()) {
+                // Error case recovering. If AIP is in DELETED state and there is no DataFile linked to it, we can
+                // delete aip from database.
+                LOGGER.warn("Delete AIP {} wich is not associated to any datafile.", aip.getId());
+                publisher.publish(new AIPEvent(aip));
+                aipDao.remove(aip);
+            } else if (dataFiles.stream().filter(df -> !DataType.AIP.equals(df.getDataType())).count() == 0) {
                 aipDataFilesToDelete.addAll(dataFiles);
             }
         }

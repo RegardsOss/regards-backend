@@ -115,6 +115,21 @@ public class ScheduleStorageTasks {
     }
 
     /**
+     * Periodicaly delete AIPs metadata in status DELETED. Delete physical file and reference in database.
+     */
+    @Scheduled(fixedDelayString = "${regards.storage.delete.aip.metadata.delay:120000}") // 2 minutes
+    public void deleteMetadata() {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            LOGGER.debug(String.format("[METADATA DELETION DAEMON] Starting to prepare deletion jobs for tenant %s",
+                                       tenant));
+            aipService.removeDeletedAIPMetadatas();
+            LOGGER.debug(String.format("[METADATA DELETION DAEMON] Deletion jobs for tenant %s have been scheduled",
+                                       tenant));
+        }
+    }
+
+    /**
      * Periodicly check the cache total size and delete expired files or/and older files if needed.
      * Default : scheduled to be run every 5minutes.
      */

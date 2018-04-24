@@ -30,10 +30,8 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
     /**
      * Failure causes message format
      */
-    {
-        {
-            FAILURE_CAUSES = "Update failed due to the following reasons: %s";
-        }
+    static {
+        failureCauses = "Update failed due to the following reasons: %s";
     }
 
     /**
@@ -47,8 +45,8 @@ public class UpdateDataFilesJob extends AbstractStoreFilesJob {
         super.checkParameters(parameters);
         // lets see if old data files has been given or not
         JobParameter oldDataFiles;
-        if (((oldDataFiles = parameters.get(OLD_DATA_FILES_PARAMETER_NAME)) == null)
-                || !(oldDataFiles.getValue() instanceof StorageDataFile[])) {
+        if (((oldDataFiles = parameters.get(OLD_DATA_FILES_PARAMETER_NAME)) == null) || !(oldDataFiles
+                .getValue() instanceof StorageDataFile[])) {
             JobParameterMissingException e = new JobParameterMissingException(
                     String.format(PARAMETER_MISSING, this.getClass().getName(), StorageDataFile[].class.getName(),
                                   OLD_DATA_FILES_PARAMETER_NAME));

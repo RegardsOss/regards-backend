@@ -21,7 +21,6 @@ import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 
 /**
  * Restoration job implementation. It allows to restore DataFiles
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class RestorationJob extends AbstractStoreFilesJob {
@@ -29,10 +28,8 @@ public class RestorationJob extends AbstractStoreFilesJob {
     /**
      * Failure causes message format
      */
-    {
-        {
-            FAILURE_CAUSES = "Restoration failed due to the following reasons: %s";
-        }
+    static {
+        failureCauses = "Restoration failed due to the following reasons: %s";
     }
 
     /**
