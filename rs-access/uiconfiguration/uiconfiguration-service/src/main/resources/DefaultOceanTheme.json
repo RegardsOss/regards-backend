@@ -50,15 +50,6 @@
       "height": "58px",
       "textTop": "-13px"
     },
-    "module": {
-      "titleBarHeight": "48px",
-      "titleMarginLeft": 0,
-      "titleIconSize": 24,
-      "titleTextMarginLeft": 8,
-      "titleFontSize": "20px",
-      "titleFontWeight": "500",
-      "subtitleMarginTop": -4
-    },
     "module:menu": {
       "background": "rgba(0, 32, 47, 0.85)",
       "borderWidth": "0 0 1px 0",
@@ -157,6 +148,11 @@
     },
     "tableHeaderColumn": {
       "height": 48
+    },
+    "module": {
+      "common": {
+        "titleMarginLeft": 0
+      }
     }
   },
   "alternativeTheme": {}
