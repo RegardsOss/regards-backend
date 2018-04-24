@@ -46,6 +46,10 @@
             <artifactId>storage-plugin</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>feign-regards-starter</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.modules.notification</groupId>
             <artifactId>notification-client</artifactId>
         </dependency>
