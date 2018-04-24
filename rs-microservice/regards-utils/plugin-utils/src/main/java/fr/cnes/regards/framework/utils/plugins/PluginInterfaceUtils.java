@@ -47,43 +47,46 @@ public final class PluginInterfaceUtils {
     /**
      *
      * Retrieve all annotated {@link PluginInterface}.
-     * 
+     *
      * @param pPrefixs
      *            a list of package prefix used for the search
      * @return all class annotated {@link PluginInterface}
      */
     public static List<String> getInterfaces(final List<String> pPrefixs) {
         final List<String> interfaces = new ArrayList<>();
-
-        pPrefixs.forEach(p -> {
+        pPrefixs.stream().distinct().forEach(p -> {
             final List<String> ll = getInterfaces(p);
-            if (ll != null && !ll.isEmpty()) {
-                ll.forEach(s -> interfaces.add(s));
+            if ((ll != null) && !ll.isEmpty()) {
+                ll.forEach(s -> {
+                    if (!interfaces.contains(s)) {
+                        interfaces.add(s);
+                    }
+                });
             }
         });
-
         return interfaces;
     }
 
     /**
      *
      * Retrieve all annotated {@link PluginInterface}.
-     * 
+     *
      * @param pPrefix
      *            a package prefix used for the search
      * @return all class annotated {@link PluginInterface}
      */
     public static List<String> getInterfaces(final String pPrefix) {
         final List<String> interfaces = new ArrayList<>();
-
         // Scan class path with Reflections library
-        final Reflections reflections = ReflectionUtils.REFLECTIONS;
+        final Reflections reflections = ReflectionUtils.getReflections();
         final Set<Class<?>> annotatedPlugins = reflections.getTypesAnnotatedWith(PluginInterface.class, true);
-
         if (!annotatedPlugins.isEmpty()) {
-            annotatedPlugins.stream().forEach(str -> interfaces.add(str.getCanonicalName()));
+            annotatedPlugins.stream().forEach(str -> {
+                if (!interfaces.contains(str.getCanonicalName())) {
+                    interfaces.add(str.getCanonicalName());
+                }
+            });
         }
-
         return interfaces;
     }
 

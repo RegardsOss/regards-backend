@@ -96,7 +96,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     public void loadPluginsInterfaceEmpty() {
         LOGGER.debug(STARTING + toString());
         // Get all the plugin interfaces
-        ReflectionUtils.REFLECTIONS = new Reflections(PLUGIN_EMPTY_PACKAGE);
+        ReflectionUtils.setReflections(new Reflections(PLUGIN_EMPTY_PACKAGE));
         final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(PLUGIN_EMPTY_PACKAGE);
         Assert.assertNotNull(pluginInterfaces);
         Assert.assertTrue(pluginInterfaces.isEmpty());
@@ -110,7 +110,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     public void loadPluginsInterfaceSeveralPrefix() {
         LOGGER.debug(STARTING + toString());
         // Get all the plugin interfaces
-        ReflectionUtils.REFLECTIONS = new Reflections(PLUGIN_CURRENT_PACKAGE);
+        ReflectionUtils.setReflections(new Reflections(PLUGIN_CURRENT_PACKAGE));
         final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(Arrays.asList(PLUGIN_CURRENT_PACKAGE));
         Assert.assertNotNull(pluginInterfaces);
         pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
@@ -125,7 +125,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     public void loadNoPluginsInterfaceSeveralPrefix() {
         LOGGER.debug(STARTING + toString());
         // Get all the plugin interfaces
-        ReflectionUtils.REFLECTIONS = new Reflections(PLUGIN_EMPTY_PACKAGES);
+        ReflectionUtils.setReflections(new Reflections(PLUGIN_EMPTY_PACKAGES));
         final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(PLUGIN_EMPTY_PACKAGES);
         Assert.assertNotNull(pluginInterfaces);
         Assert.assertTrue(pluginInterfaces.isEmpty());
@@ -141,7 +141,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     public void getComplexPlugin() {
         final ComplexPlugin complexPlugin;
         LOGGER.debug(STARTING + toString());
-        ReflectionUtils.REFLECTIONS = new Reflections(PLUGIN_CURRENT_PACKAGE);
+        ReflectionUtils.setReflections(new Reflections(PLUGIN_CURRENT_PACKAGE));
         /*
          * Set all parameters
          */
