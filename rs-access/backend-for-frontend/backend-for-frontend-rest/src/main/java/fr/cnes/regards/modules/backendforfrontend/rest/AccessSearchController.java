@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.backendforfrontend.rest;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -40,6 +40,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -105,7 +106,8 @@ public class AccessSearchController {
     @ResourceAccess(
             description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return "
                     + "objects can be any mix of collection, dataset, dataobject and document. Injects applicable "
-                    + "UI Services and Catalog Services.", role = DefaultRole.PUBLIC)
+                    + "UI Services and Catalog Services.",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchAll(@RequestParam(required = false) final Map<String, String> allParams) {
         JsonObject entities = searchClient.searchAll(allParams).getBody();
         injectApplicableServices(entities);
@@ -143,7 +145,8 @@ public class AccessSearchController {
     @RequestMapping(path = COLLECTIONS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
             description = "Perform an OpenSearch request on collections. Injects applicable UI Services and Catalog "
-                    + "Services.", role = DefaultRole.PUBLIC)
+                    + "Services.",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchCollections(@RequestParam final Map<String, String> allParams) {
         JsonObject entities = searchClient.searchCollections(allParams).getBody();
         injectApplicableServices(entities);
@@ -160,7 +163,8 @@ public class AccessSearchController {
     @RequestMapping(path = DATASETS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
             description = "Perform an OpenSearch request on datasets. Injects applicable UI Services and Catalog "
-                    + "Services.", role = DefaultRole.PUBLIC)
+                    + "Services.",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDatasets(@RequestParam final Map<String, String> allParams) {
         JsonObject entities = searchClient.searchDatasets(allParams).getBody();
         injectApplicableServices(entities);
@@ -195,8 +199,8 @@ public class AccessSearchController {
      * @return the search result with services injected
      */
     @RequestMapping(path = DATAOBJECTS_DATASETS_SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(description =
-            "Perform an joined OpenSearch request. The search will be performed on dataobjects attributes,"
+    @ResourceAccess(
+            description = "Perform an joined OpenSearch request. The search will be performed on dataobjects attributes,"
                     + " but will return the associated datasets. Injects applicable UI Services and Catalog Services.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(@RequestParam final Map<String, String> allParams,
@@ -216,7 +220,8 @@ public class AccessSearchController {
     @RequestMapping(path = DOCUMENTS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
             description = "Perform an OpenSearch request on documents. Injects applicable UI Services and Catalog "
-                    + "Services.", role = DefaultRole.PUBLIC)
+                    + "Services.",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDocuments(@RequestParam final Map<String, String> allParams) {
         JsonObject entities = searchClient.searchDocuments(allParams).getBody();
         injectApplicableServices(entities);
@@ -247,13 +252,14 @@ public class AccessSearchController {
     private JsonElement entityToApplicableServices(JsonObject pEntity) {
         // @formatter:off
         List<Resource<PluginServiceDto>> applicableServices = JSON_ARRAY_TO_STREAM.apply(pEntity.get("tags").getAsJsonArray()) // Retrieve tags list and convert it to stream
+            .filter(jsonElement -> !jsonElement.isJsonNull())
             .map(JsonElement::getAsString) // Convert elements of the stream to strings
             .filter(UniformResourceName::isValidUrn) // Only keep URNs
             .map(UniformResourceName::fromString) // Convert elements of the stream to URNs
             .filter(urn -> EntityType.DATASET.equals(urn.getEntityType())) // Only keep URNs of datasets
             .map(UniformResourceName::toString) // Go back to strings
             .distinct() // Remove doubles
-            .map(datasetIpId -> serviceAggregatorClient.retrieveServices(datasetIpId, null))
+            .map(datasetIpId -> serviceAggregatorClient.retrieveServices(Arrays.asList(datasetIpId), null))
             .map(ResponseEntity::getBody)
             .flatMap(List::stream) // Now each element of the stream is a List of services, so we flatten the structure in a stream of services
             .distinct() // Remove doubles

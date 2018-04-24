@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
@@ -74,8 +73,7 @@ public class ServicesAggregatorController {
      * @param assembler
      */
     public ServicesAggregatorController(ICatalogServicesClient catalogServicesClient,
-            IUIPluginConfigurationService uiPluginConfigurationService,
-            PluginServiceDtoResourcesAssembler assembler) {
+            IUIPluginConfigurationService uiPluginConfigurationService, PluginServiceDtoResourcesAssembler assembler) {
         super();
         this.catalogServicesClient = catalogServicesClient;
         this.uiPluginConfigurationService = uiPluginConfigurationService;
@@ -92,14 +90,14 @@ public class ServicesAggregatorController {
     @ResourceAccess(description = "Returns services applied to all datasets plus those of the given dataset",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<List<Resource<PluginServiceDto>>> retrieveServices(
-            @RequestParam(value = "datasetIpId", required = false) final List<String> datasetIpIds,
-            @RequestParam(value = "applicationMode", required = false) final ServiceScope applicationMode) {
+            @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIpIds,
+            @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> applicationModes) {
         // Retrieve catalog services
         ResponseEntity<List<Resource<PluginConfigurationDto>>> catalogServices = catalogServicesClient
-                .retrieveServices(datasetIpIds, applicationMode);
+                .retrieveServices(datasetIpIds, applicationModes);
         // Retrive ui services
         List<UIPluginConfiguration> uiServices = uiPluginConfigurationService
-                .retrieveActivePluginServices(datasetIpIds, applicationMode);
+                .retrieveActivePluginServices(datasetIpIds, applicationModes);
 
         try (Stream<PluginConfigurationDto> streamCatalogServices = HateoasUtils
                 .unwrapCollection(catalogServices.getBody()).stream();

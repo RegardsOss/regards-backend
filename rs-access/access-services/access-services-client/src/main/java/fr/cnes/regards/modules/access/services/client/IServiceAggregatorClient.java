@@ -45,8 +45,8 @@ public interface IServiceAggregatorClient {
     @Cacheable(value = IServiceAggregatorClient.CACHE_NAME, sync = true)
     @RequestMapping(method = RequestMethod.GET)
     ResponseEntity<List<Resource<PluginServiceDto>>> retrieveServices(
-            @RequestParam(value = "datasetIpId", required = false) final String pDatasetIpId,
-            @RequestParam(value = "applicationMode", required = false) final ServiceScope pApplicationMode);
+            @RequestParam(value = "datasetIpIds", required = false) final List<String> pDatasetIpId,
+            @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> pApplicationMode);
 
     /**
      * Empty the whole "servicesAggregated" cache. Maybe we can perform a finer eviction?

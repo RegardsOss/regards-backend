@@ -64,7 +64,8 @@ public class AccessServicesITConfiguration {
     public ICatalogServicesClient catalogServicesClient() {
         ICatalogServicesClient client = Mockito.mock(ICatalogServicesClient.class);
 
-        Mockito.when(client.retrieveServices(Lists.newArrayList("datasetFromConfigClass"), ServiceScope.MANY))
+        Mockito.when(client.retrieveServices(Lists.newArrayList("datasetFromConfigClass"),
+                                             Lists.newArrayList(ServiceScope.MANY)))
                 .thenReturn(new ResponseEntity<List<Resource<PluginConfigurationDto>>>(
                         HateoasUtils.wrapList(Lists.newArrayList(dummyPluginConfigurationDto())), HttpStatus.OK));
 
