@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.storage.dao;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -81,6 +82,12 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
+    public Set<StorageDataFile> findAllByAipIn(Collection<AIP> aips) {
+        Collection<AIPEntity> aipEntities = findAipsDataBase(aips);
+        return repository.findAllByAipEntityIn(aipEntities);
+    }
+
+    @Override
     public StorageDataFile save(StorageDataFile dataFile) {
         Optional<AIPEntity> aipDatabase = getAipDataBase(dataFile);
         if (aipDatabase.isPresent()) {
@@ -143,6 +150,11 @@ public class DataFileDao implements IDataFileDao {
     private Optional<AIPEntity> getAipDataBase(AIP aip) {
         return aipRepo.findOneByIpId(aip.getId().toString());
     }
+
+    private Collection<AIPEntity> findAipsDataBase(Collection<AIP> aips) {
+        return aipRepo.findAllByIpIdIn(aips.stream().map(aip -> aip.getId().toString()).collect(Collectors.toSet()));
+    }
+
 
     private Optional<AIPEntity> getAipDataBase(StorageDataFile dataFile) {
         return aipRepo.findOneByIpId(dataFile.getAipEntity().getIpId());

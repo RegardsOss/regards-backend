@@ -41,6 +41,13 @@ public interface IDataFileDao {
     Set<StorageDataFile> findAllByAip(AIP aip);
 
     /**
+     * Find all {@link StorageDataFile}s associated to the given {@link AIP}s
+     * @param aips some {@link AIP}s
+     * @return {@link StorageDataFile}s
+     */
+    Set<StorageDataFile> findAllByAipIn(Collection<AIP> aips);
+
+    /**
      * Save a data file into the database
      * @param prepareFailed
      * @return saved data file
