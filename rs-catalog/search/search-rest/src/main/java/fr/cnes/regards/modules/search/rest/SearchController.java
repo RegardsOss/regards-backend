@@ -626,11 +626,9 @@ public class SearchController {
             return allParamsDecoded;
         } catch (UnsupportedEncodingException e) {
             String message = "Unsupported query parameters";
-            if (allParams != null) {
-                StringJoiner sj = new StringJoiner("&");
-                allParams.forEach((key, value) -> sj.add(key + "=" + value));
-                message += sj.toString();
-            }
+            StringJoiner sj = new StringJoiner("&");
+            allParams.forEach((key, value) -> sj.add(key + "=" + value));
+            message += sj.toString();
             throw new SearchException(message, e);
         }
     }
