@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.search.plugin;
 
+import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
-import fr.cnes.regards.modules.indexer.domain.facet.FacetPage;
 import fr.cnes.regards.modules.search.domain.SearchContext;
 
 /**

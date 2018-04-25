@@ -29,8 +29,8 @@ import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 
+import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
-import fr.cnes.regards.modules.indexer.domain.facet.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
 

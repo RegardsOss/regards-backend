@@ -18,20 +18,20 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -54,6 +54,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
+
 import feign.Response;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
@@ -69,9 +70,9 @@ import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.Document;
+import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
-import fr.cnes.regards.modules.indexer.domain.facet.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.opensearch.service.description.OpenSearchDescriptionBuilder;
@@ -185,8 +186,9 @@ public class SearchController {
      * @throws SearchException when an error occurs while parsing the query
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Perform an OpenSearch request on all indexed data, regardless of the type. The "
-            + "returned objects can be any mix of collection, dataset, dataobject and document.",
+    @ResourceAccess(
+            description = "Perform an OpenSearch request on all indexed data, regardless of the type. The "
+                    + "returned objects can be any mix of collection, dataset, dataobject and document.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<AbstractEntity>>> searchAll(
             @RequestParam Map<String, String> allParams, Pageable pageable,
@@ -231,7 +233,7 @@ public class SearchController {
      * Return the collection of passed URN_COLLECTION.
      * @param urn the Uniform Resource Name of the collection
      * @return the collection
-     * @throws EntityNotFoundException           if no collection with identifier provided can be found
+     * @throws EntityNotFoundException if no collection with identifier provided can be found
      * @throws EntityOperationForbiddenException if the current user does not have suffisant rights
      */
     @RequestMapping(path = COLLECTIONS_URN, method = RequestMethod.GET)
@@ -256,8 +258,8 @@ public class SearchController {
     public ResponseEntity<PagedResources<Resource<Collection>>> searchCollections(
             @RequestParam final Map<String, String> allParams, Pageable pageable,
             PagedResourcesAssembler<Collection> assembler) throws SearchException {
-        SimpleSearchKey<Collection> searchKey = Searches
-                .onSingleEntity(tenantResolver.getTenant(), EntityType.COLLECTION);
+        SimpleSearchKey<Collection> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(),
+                                                                        EntityType.COLLECTION);
         Map<String, String> decodedParams = getDecodedParams(allParams);
         FacetPage<Collection> result = searchService.search(decodedParams, searchKey, null, pageable);
         return new ResponseEntity<>(toPagedResources(result, assembler), HttpStatus.OK);
@@ -269,14 +271,14 @@ public class SearchController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchCollectionsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescBuilder.build(EntityType.COLLECTION, PATH + COLLECTIONS_SEARCH),
-                                    HttpStatus.OK);
+                HttpStatus.OK);
     }
 
     /**
      * Return the dataset of passed URN_COLLECTION.
      * @param urn the Uniform Resource Name of the dataset
      * @return the dataset
-     * @throws EntityNotFoundException           if no dataset with identifier provided can be found
+     * @throws EntityNotFoundException if no dataset with identifier provided can be found
      * @throws EntityOperationForbiddenException if the current user does not have suffisant rights
      */
     @RequestMapping(path = DATASETS_URN, method = RequestMethod.GET)
@@ -345,7 +347,7 @@ public class SearchController {
      * Return the dataobject of passed URN_COLLECTION.
      * @param urn the Uniform Resource Name of the dataobject
      * @return the dataobject
-     * @throws EntityNotFoundException           if no dataobject with identifier provided can be found
+     * @throws EntityNotFoundException if no dataobject with identifier provided can be found
      * @throws EntityOperationForbiddenException if the current user does not have suffisant rights
      */
     @RequestMapping(path = DATAOBJECTS_URN, method = RequestMethod.GET)
@@ -412,7 +414,7 @@ public class SearchController {
             role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDataobjectsDescriptor() throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_SEARCH_WITH_FACETS),
-                                    HttpStatus.OK);
+                HttpStatus.OK);
     }
 
     /**
@@ -426,9 +428,10 @@ public class SearchController {
      * @throws SearchException when an error occurs while parsing the query
      */
     @RequestMapping(path = DATAOBJECTS_DATASETS_SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(description =
-            "Perform a joined OpenSearch request. The search will be performed on dataobjects attributes, "
-                    + "but will return the associated datasets.", role = DefaultRole.PUBLIC)
+    @ResourceAccess(
+            description = "Perform a joined OpenSearch request. The search will be performed on dataobjects attributes, "
+                    + "but will return the associated datasets.",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDataobjectsReturnDatasets(
             @RequestParam Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] facets, Pageable pageable,
@@ -444,18 +447,19 @@ public class SearchController {
             produces = MediaType.APPLICATION_XML_VALUE)
     @ResourceAccess(
             description = "endpoint allowing to get the OpenSearch descriptor for searches on data but result returned "
-                    + "are datasets", role = DefaultRole.PUBLIC)
+                    + "are datasets",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<OpenSearchDescription> searchDataobjectsReturnDatasetsDescriptor()
             throws UnsupportedEncodingException {
         return new ResponseEntity<>(osDescBuilder.build(EntityType.DATA, PATH + DATAOBJECTS_DATASETS_SEARCH),
-                                    HttpStatus.OK);
+                HttpStatus.OK);
     }
 
     /**
      * Return the document of passed URN_COLLECTION.
      * @param urn the Uniform Resource Name of the document
      * @return the document
-     * @throws EntityNotFoundException           if no document with identifier provided can be found
+     * @throws EntityNotFoundException if no document with identifier provided can be found
      * @throws EntityOperationForbiddenException if the current user does not have suffisant rights
      */
     @RequestMapping(path = DOCUMENTS_URN, method = RequestMethod.GET)
@@ -471,7 +475,7 @@ public class SearchController {
      * Unified entity retrieval endpoint
      * @param urn the entity URN
      * @return an entity
-     * @throws EntityNotFoundException           if no entity with identifier provided can be found
+     * @throws EntityNotFoundException if no entity with identifier provided can be found
      * @throws EntityOperationForbiddenException if the current user does not have suffisant rights
      */
     @SuppressWarnings("unchecked")
@@ -526,8 +530,8 @@ public class SearchController {
             @RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] facets, final Pageable pageable,
             FacettedPagedResourcesAssembler<Document> assembler) throws SearchException {
-        final SimpleSearchKey<Document> searchKey = Searches
-                .onSingleEntity(tenantResolver.getTenant(), EntityType.DOCUMENT);
+        final SimpleSearchKey<Document> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(),
+                                                                            EntityType.DOCUMENT);
         Map<String, String> decodedParams = getDecodedParams(allParams);
         final FacetPage<Document> result = searchService.search(decodedParams, searchKey, facets, pageable);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
@@ -575,9 +579,8 @@ public class SearchController {
             @RequestParam Map<String, String> allParams, @RequestParam(value = "maxCount") int maxCount,
             @RequestParam(value = "partialText", required = false) String partialText) throws SearchException {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
-        return ResponseEntity.ok(searchService
-                                         .retrieveEnumeratedPropertyValues(allParams, searchKey, propertyPath, maxCount,
-                                                                           partialText));
+        return ResponseEntity.ok(searchService.retrieveEnumeratedPropertyValues(allParams, searchKey, propertyPath,
+                                                                                maxCount, partialText));
     }
 
     @RequestMapping(path = ENTITY_HAS_ACCESS, method = RequestMethod.GET)
@@ -596,7 +599,7 @@ public class SearchController {
     public ResponseEntity<Set<UniformResourceName>> hasAccess(
             @RequestBody java.util.Collection<UniformResourceName> urns) {
         Set<UniformResourceName> urnsWithAccess = Sets.newHashSet(urns);
-        for (Iterator<UniformResourceName> i = urns.iterator(); i.hasNext(); ) {
+        for (Iterator<UniformResourceName> i = urns.iterator(); i.hasNext();) {
             try {
                 AbstractEntity entity = searchService.get(i.next());
                 // Only a DataObject without downloadable property hasn't access
