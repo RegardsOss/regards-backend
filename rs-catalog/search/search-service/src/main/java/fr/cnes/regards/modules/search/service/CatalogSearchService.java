@@ -122,7 +122,6 @@ public class CatalogSearchService implements ICatalogSearchService {
     public <S, R extends IIndexable> FacetPage<R> search(Map<String, String> allParams, SearchKey<S, R> inSearchKey,
             String[] facets, Pageable pageable) throws SearchException {
         try {
-            SearchKey<?, ?> searchKey = inSearchKey;
             // Build criterion from query
             ICriterion criterion = openSearchService.parse(allParams);
 
@@ -131,6 +130,23 @@ public class CatalogSearchService implements ICatalogSearchService {
                     LOGGER.debug("Query param \"{}\" mapped to value \"{}\"", osEntry.getKey(), osEntry.getValue());
                 }
             }
+            return this.search(criterion, inSearchKey, facets, pageable);
+        } catch (OpenSearchParseException e) {
+            String message = "No query parameter";
+            if (allParams != null) {
+                StringJoiner sj = new StringJoiner("&");
+                allParams.forEach((key, value) -> sj.add(key + "=" + value));
+                message = sj.toString();
+            }
+            throw new SearchException(message, e);
+        }
+    }
+
+            @Override
+    public <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchKey<S, R> inSearchKey,
+            String[] facets, Pageable pageable) throws SearchException {
+        try {
+            SearchKey<?, ?> searchKey = inSearchKey;
 
             // Apply security filter
             criterion = accessRightFilter.addAccessRights(criterion);
@@ -179,14 +195,6 @@ public class CatalogSearchService implements ICatalogSearchService {
                 }
             }
             return facetPage;
-        } catch (OpenSearchParseException e) {
-            String message = "No query parameter";
-            if (allParams != null) {
-                StringJoiner sj = new StringJoiner("&");
-                allParams.forEach((key, value) -> sj.add(key + "=" + value));
-                message = sj.toString();
-            }
-            throw new SearchException(message, e);
         } catch (AccessRightFilterException e) {
             LOGGER.debug("Falling back to empty page", e);
             return new FacetPage<>(new ArrayList<>(), null);
