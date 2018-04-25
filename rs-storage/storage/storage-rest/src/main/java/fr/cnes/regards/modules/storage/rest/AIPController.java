@@ -202,12 +202,10 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "send a page of aips")
     public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState pState,
-            @RequestParam(name = "from", required = false) String from,
-            @RequestParam(name = "to", required = false) String to, final Pageable pPageable,
+            @RequestParam(name = "from", required = false) OffsetDateTime from,
+            @RequestParam(name = "to", required = false) OffsetDateTime to, final Pageable pPageable,
             final PagedResourcesAssembler<AIP> pAssembler) throws ModuleException {
-        OffsetDateTime fromDate = OffsetDateTimeAdapter.parse(from);
-        OffsetDateTime toDate = OffsetDateTimeAdapter.parse(to);
-        Page<AIP> aips = aipService.retrieveAIPs(pState, fromDate, toDate, pPageable);
+        Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, pPageable);
         return new ResponseEntity<>(toPagedResources(aips, pAssembler), HttpStatus.OK);
     }
 
