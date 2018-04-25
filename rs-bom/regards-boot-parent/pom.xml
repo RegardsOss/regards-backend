@@ -58,7 +58,8 @@
 	<properties>
 		<microservice.heap.size>128m</microservice.heap.size>
 		<!-- Default entrypoint for microservices, it should be overridden if needed -->
-		<docker.entryPoint>["./wait-for-it.sh", "rs_config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs_registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs_admin:9033", "-t", "0", "--", "java", "-Xmx${microservice.heap.size}", "-Djava.security.egd=file:/dev/./urandom", "-Dloader.path=/regards-plugins","-agentlib:jdwp=transport=dt_socket,address=10500,server=y,suspend=n", "-jar", "/${project.build.finalName}.${project.packaging}"]</docker.entryPoint>
+		<docker.jmx.properties>"-Dcom.sun.management.jmxremote", "-Dcom.sun.management.jmxremote.ssl=false", "-Dcom.sun.management.jmxremote.authenticate=false", "-Dcom.sun.management.jmxremote.port=9010", "-Dcom.sun.management.jmxremote.rmi.port=9010", "-Dcom.sun.management.jmxremote.local.only=false", "-Djava.rmi.server.hostname=${PUBLIC_HOST}"</docker.jmx.properties>
+		<docker.entryPoint>["./wait-for-it.sh", "rs_config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs_registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs_admin:9033", "-t", "0", "--", "java", "-Xmx${microservice.heap.size}", "-Djava.security.egd=file:/dev/./urandom", "-Dloader.path=/regards-plugins",${docker.jmx.properties},"-agentlib:jdwp=transport=dt_socket,address=10500,server=y,suspend=n", "-jar", "/${project.build.finalName}.${project.packaging}"]</docker.entryPoint>
 	</properties>
 
 	<build>
