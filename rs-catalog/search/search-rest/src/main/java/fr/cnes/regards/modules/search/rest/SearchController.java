@@ -591,7 +591,7 @@ public class SearchController {
         return ResponseEntity.ok(true);
     }
 
-    @RequestMapping(path = ENTITIES_HAS_ACCESS, method = RequestMethod.GET)
+    @RequestMapping(path = ENTITIES_HAS_ACCESS, method = RequestMethod.POST)
     @ResourceAccess(description = "allows to know if the user can download entities", role = DefaultRole.PUBLIC)
     public ResponseEntity<Set<UniformResourceName>> hasAccess(
             @RequestBody java.util.Collection<UniformResourceName> urns) {

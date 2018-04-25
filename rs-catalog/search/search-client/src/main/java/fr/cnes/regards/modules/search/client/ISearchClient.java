@@ -69,7 +69,7 @@ public interface ISearchClient {
     @RequestMapping(path = ENTITY_HAS_ACCESS, method = RequestMethod.GET)
     ResponseEntity<Boolean> hasAccess(@PathVariable("urn") UniformResourceName urn);
 
-    @RequestMapping(path = ENTITIES_HAS_ACCESS, method = RequestMethod.GET)
+    @RequestMapping(path = ENTITIES_HAS_ACCESS, method = RequestMethod.POST)
     ResponseEntity<Set<UniformResourceName>> hasAccess(@RequestBody java.util.Collection<UniformResourceName> urns);
 
     @RequestMapping(path = DATAOBJECTS_COMPUTE_FILES_SUMMARY, method = RequestMethod.GET)
