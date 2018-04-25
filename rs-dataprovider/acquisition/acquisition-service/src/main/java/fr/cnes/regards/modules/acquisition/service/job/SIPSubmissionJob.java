@@ -103,8 +103,8 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
 
         if (products.getNumberOfElements() > 0) {
 
-            LOGGER.debug("Ingest chain {} - session {} : processing {} products of {}", ingestChain, session,
-                         products.getNumberOfElements(), products.getTotalElements());
+            LOGGER.info("Ingest chain {} - session {} : processing {} products of {}", ingestChain, session,
+                        products.getNumberOfElements(), products.getTotalElements());
             // Create SIP collection
             SIPCollectionBuilder sipCollectionBuilder = new SIPCollectionBuilder(ingestChain, session.orElse(null));
             products.getContent().forEach(p -> sipCollectionBuilder.add(p.getSip()));
