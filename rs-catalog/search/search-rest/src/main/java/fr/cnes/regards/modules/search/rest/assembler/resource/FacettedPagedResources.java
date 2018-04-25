@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 
 /**
  * Extend the {@link PagedResources} to add a "facets" field.
- * @param <T> The type of the resoures
+ * @param <T> The type of the resources
  * @author Xavier-Alexandre Brochard
  */
 public class FacettedPagedResources<T> extends PagedResources<T> {
@@ -57,9 +57,6 @@ public class FacettedPagedResources<T> extends PagedResources<T> {
         return facets;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -68,9 +65,6 @@ public class FacettedPagedResources<T> extends PagedResources<T> {
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -96,11 +90,6 @@ public class FacettedPagedResources<T> extends PagedResources<T> {
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.springframework.hateoas.ResourceSupport#toString()
-     */
     @Override
     public String toString() {
         return String.format("FacettedPagedResources { content: %s, metadata: %s, links: %s, facets: %s }",

@@ -18,15 +18,10 @@
  */
 package fr.cnes.regards.modules.search.service.cache.accessgroup;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -37,11 +32,12 @@ import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
 
 /**
- * In this implementation, we choose to simply evict the cache for a tenant in response to "create", "delete" and "update" events.<br>
+ * In this implementation, we choose to simply evict the cache for a tenant in response to "create", "delete" and
+ * "update" events.<br>
  * Note that we might achieve more subtile, per user, eviction.
- *
  * @author Xavier-Alexandre Brochard
  * @author oroussel
+ * @author Léo Mieulet
  */
 @Service
 @MultitenantTransactional
@@ -82,11 +78,9 @@ public class AccessGroupCache implements IAccessGroupCache {
         try {
             // Enable system call as follow (thread safe action)
             FeignSecurityManager.asSystem();
-
             // Perform client call
-            Collection<Resource<AccessGroup>> content = userClient.retrieveAccessGroupsOfUser(pUserEmail, 0, 0)
-                    .getBody().getContent();
-            return HateoasUtils.unwrapCollection(content);
+            return HateoasUtils.retrieveAllPages(100, pageable -> userClient
+                    .retrieveAccessGroupsOfUser(pUserEmail, pageable.getPageNumber(), pageable.getPageSize()));
         } finally {
             FeignSecurityManager.reset();
         }
@@ -101,13 +95,8 @@ public class AccessGroupCache implements IAccessGroupCache {
     public List<AccessGroup> getPublicAccessGroups(String tenant) {
         try {
             FeignSecurityManager.asSystem();
-
-            ResponseEntity<PagedResources<Resource<AccessGroup>>> resources = groupClient
-                    .retrieveAccessGroupsList(true, 0, 0);
-            if (resources == null) {
-                return new ArrayList<>();
-            }
-            return HateoasUtils.unwrapCollection(resources.getBody().getContent());
+            return HateoasUtils.retrieveAllPages(100, pageable -> groupClient
+                    .retrieveAccessGroupsList(true, pageable.getPageNumber(), pageable.getPageSize()));
         } finally {
             FeignSecurityManager.reset();
         }

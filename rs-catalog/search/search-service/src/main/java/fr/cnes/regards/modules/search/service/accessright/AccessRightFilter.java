@@ -42,7 +42,6 @@ import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupCach
 
 /**
  * Implementation of {@link IAccessRightFilter}.
- *
  * @author Xavier-Alexandre Brochard
  */
 @Service
@@ -65,7 +64,7 @@ public class AccessRightFilter implements IAccessRightFilter {
     private final IAccessGroupCache cache;
 
     /**
-     * Get current tenant at runtime. Autworied by Spring.
+     * Get current tenant at runtime. Autowired by Spring.
      */
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -90,7 +89,7 @@ public class AccessRightFilter implements IAccessRightFilter {
         Assert.notNull(userEmail, "No user found!");
 
         try {
-            FeignSecurityManager.asSystem();
+            FeignSecurityManager.asUser(userEmail, authResolver.getRole());
             if (!projectUserClient.isAdmin(userEmail).getBody()) {
 
                 // Retrieve public groups
@@ -103,7 +102,7 @@ public class AccessRightFilter implements IAccessRightFilter {
                 // Throw an error if no access group
                 if (accessGroups.isEmpty()) {
                     String errorMessage = String.format("Cannot set access right filter because user %s does not have "
-                            + "any access group", userEmail);
+                                                                + "any access group", userEmail);
                     LOGGER.error(errorMessage);
                     throw new AccessRightFilterException(errorMessage);
                 }
@@ -115,8 +114,56 @@ public class AccessRightFilter implements IAccessRightFilter {
                 accessGroups.forEach(accessGroup -> groupCriterions.add(GROUP_TO_CRITERION.apply(accessGroup)));
                 searchCriterion.add(ICriterion.or(groupCriterions));
 
-                // Add user criterion
-                if (userCriterion != null) {
+                // Add user criterion (theorically, userCriterion should not be null at this point but...)
+                if ((userCriterion != null) && !userCriterion.equals(ICriterion.all())) {
+                    searchCriterion.add(userCriterion);
+                }
+
+                // Build the final "and" criterion
+                return ICriterion.and(searchCriterion);
+            }
+            return userCriterion;
+        } finally {
+            FeignSecurityManager.reset();
+        }
+    }
+
+    // TODO : by now, is the same as previous method
+    @Override
+    public ICriterion addDataAccessRights(ICriterion userCriterion) throws AccessRightFilterException {
+
+        // Retrieve current user from security context
+        String userEmail = authResolver.getUser();
+        Assert.notNull(userEmail, "No user found!");
+
+        try {
+            FeignSecurityManager.asUser(userEmail, authResolver.getRole());
+            if (!projectUserClient.isAdmin(userEmail).getBody()) {
+
+                // Retrieve public groups
+                Set<AccessGroup> accessGroups = new HashSet<>(
+                        cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
+
+                // Add explicitly associated group
+                accessGroups.addAll(cache.getAccessGroups(userEmail, runtimeTenantResolver.getTenant()));
+
+                // Throw an error if no access group
+                if (accessGroups.isEmpty()) {
+                    String errorMessage = String.format("Cannot set access right filter because user %s does not have "
+                                                                + "any access group", userEmail);
+                    LOGGER.error(errorMessage);
+                    throw new AccessRightFilterException(errorMessage);
+                }
+
+                List<ICriterion> searchCriterion = new ArrayList<>();
+
+                // Add security filter
+                List<ICriterion> groupCriterions = new ArrayList<>();
+                accessGroups.forEach(accessGroup -> groupCriterions.add(GROUP_TO_CRITERION.apply(accessGroup)));
+                searchCriterion.add(ICriterion.or(groupCriterions));
+
+                // Add user criterion (theorically, userCriterion should not be null at this point but...)
+                if ((userCriterion != null) && !userCriterion.equals(ICriterion.all())) {
                     searchCriterion.add(userCriterion);
                 }
 
@@ -149,7 +196,7 @@ public class AccessRightFilter implements IAccessRightFilter {
                 // Throw an error if no access group
                 if (accessGroups.isEmpty()) {
                     String errorMessage = String.format("Cannot set access right filter because user %s does not have "
-                            + "any access group", userEmail);
+                                                                + "any access group", userEmail);
                     LOGGER.error(errorMessage);
                     throw new AccessRightFilterException(errorMessage);
                 }

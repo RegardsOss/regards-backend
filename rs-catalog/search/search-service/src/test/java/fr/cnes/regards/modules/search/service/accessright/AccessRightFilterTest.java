@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.search.service.accessright;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hamcrest.Matchers;
@@ -28,6 +29,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.PagedResources.PageMetadata;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -35,9 +39,11 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dataaccess.client.IAccessGroupClient;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
+import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
@@ -105,9 +111,21 @@ public class AccessRightFilterTest {
         IAttributeModelCache attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber,
                 runtimeTenantResolver);
         IAttributeFinder finder = new AttributeFinder(runtimeTenantResolver, attributeModelCache);
-        IAccessGroupCache accessGroupCache = new AccessGroupCache(userClient, Mockito.mock(IAccessGroupClient.class));
 
         openSearchService = new OpenSearchService(finder);
+
+        IAccessGroupClient accessGroupMock = Mockito.mock(IAccessGroupClient.class);
+        IAccessGroupCache accessGroupCache = new AccessGroupCache(userClient, accessGroupMock);
+
+        // Build accessGroupMock mock
+        final PageMetadata md = new PageMetadata(0, 0, 0);
+        final PagedResources<Resource<AccessGroup>> pagedResources = new PagedResources<>(new ArrayList<>(), md,
+                new ArrayList<>());
+        final ResponseEntity<PagedResources<Resource<AccessGroup>>> pageResponseEntity = ResponseEntity
+                .ok(pagedResources);
+        Mockito.when(accessGroupMock.retrieveAccessGroupsList(Mockito.anyBoolean(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(pageResponseEntity);
+        
         accessRightFilter = new AccessRightFilter(authResolver, accessGroupCache, runtimeTenantResolver,
                 projectUsersClient);
     }
@@ -141,6 +159,7 @@ public class AccessRightFilterTest {
             throws OpenSearchParseException, UnsupportedEncodingException, AccessRightFilterException {
         // Mock authentication
         Mockito.when(authResolver.getUser()).thenReturn(SampleDataUtils.EMAIL);
+        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
 
         // Init the criterion we add groups to
         String q = "q=" + URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8");

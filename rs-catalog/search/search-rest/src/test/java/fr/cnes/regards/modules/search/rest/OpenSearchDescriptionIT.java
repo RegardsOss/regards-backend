@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.search.rest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -27,20 +28,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.models.client.IModelAttrAssocClient;
@@ -101,11 +101,12 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         Mockito.when(projectClient.retrieveProject(DEFAULT_TENANT))
                 .thenReturn(new ResponseEntity<Resource<Project>>(new Resource<Project>(project), HttpStatus.OK));
 
-        List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
-        performDefaultGet(CatalogController.PATH + CatalogController.SEARCH + CatalogController.DESCRIPTOR,
-                          expectations, "Couldn't build a proper descriptor for global searches");
+        performDefaultGet(SearchController.PATH + SearchController.DESCRIPTOR,
+                          requestBuilderCustomizer, "Couldn't build a proper descriptor for global searches");
     }
 
     @Test
@@ -130,11 +131,12 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         Mockito.when(projectClient.retrieveProject(DEFAULT_TENANT))
                 .thenReturn(new ResponseEntity<Resource<Project>>(new Resource<Project>(project), HttpStatus.OK));
 
-        List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
-        performDefaultGet(CatalogController.PATH + CatalogController.COLLECTIONS_SEARCH + CatalogController.DESCRIPTOR,
-                          expectations, "Couldn't build a proper descriptor for global searches");
+        performDefaultGet(SearchController.PATH + SearchController.COLLECTIONS_SEARCH + SearchController.DESCRIPTOR,
+                          requestBuilderCustomizer, "Couldn't build a proper descriptor for global searches");
     }
 
     @Test
@@ -155,11 +157,12 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         Mockito.when(projectClient.retrieveProject(DEFAULT_TENANT))
                 .thenReturn(new ResponseEntity<Resource<Project>>(new Resource<Project>(project), HttpStatus.OK));
 
-        List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
-        performDefaultGet(CatalogController.PATH + CatalogController.DATASETS_SEARCH + CatalogController.DESCRIPTOR,
-                          expectations, "Couldn't build a proper descriptor for global searches");
+        performDefaultGet(SearchController.PATH + SearchController.DATASETS_SEARCH + SearchController.DESCRIPTOR,
+                          requestBuilderCustomizer, "Couldn't build a proper descriptor for global searches");
     }
 
     @Test
@@ -173,18 +176,19 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         ModelAttrAssoc assocData = new ModelAttrAssoc(attrData, modData);
         assocs.add(assocData);
         Mockito.when(modelAttrAssocClient.getModelAttrAssocsFor(EntityType.DATA))
-                .thenReturn(new ResponseEntity<java.util.Collection<ModelAttrAssoc>>(assocs, HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(assocs, HttpStatus.OK));
 
         Project project = new Project("pDesc", "pIcon", true, DEFAULT_TENANT);
         project.setHost("http://test.test:120/");
         Mockito.when(projectClient.retrieveProject(DEFAULT_TENANT))
                 .thenReturn(new ResponseEntity<Resource<Project>>(new Resource<Project>(project), HttpStatus.OK));
 
-        List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
-        performDefaultGet(CatalogController.PATH + CatalogController.DATAOBJECTS_SEARCH + CatalogController.DESCRIPTOR,
-                          expectations, "Couldn't build a proper descriptor for global searches");
+        performDefaultGet(SearchController.PATH + SearchController.DATAOBJECTS_SEARCH_WITH_FACETS + SearchController.DESCRIPTOR,
+                          requestBuilderCustomizer, "Couldn't build a proper descriptor for global searches");
     }
 
     @Test
@@ -205,11 +209,12 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         Mockito.when(projectClient.retrieveProject(DEFAULT_TENANT))
                 .thenReturn(new ResponseEntity<Resource<Project>>(new Resource<Project>(project), HttpStatus.OK));
 
-        List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
-        performDefaultGet(CatalogController.PATH + CatalogController.DATAOBJECTS_DATASETS_SEARCH
-                + CatalogController.DESCRIPTOR, expectations, "Couldn't build a proper descriptor for global searches");
+        performDefaultGet(SearchController.PATH + SearchController.DATAOBJECTS_DATASETS_SEARCH
+                + SearchController.DESCRIPTOR, requestBuilderCustomizer, "Couldn't build a proper descriptor for global searches");
     }
 
     @Test
@@ -230,11 +235,12 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         Mockito.when(projectClient.retrieveProject(DEFAULT_TENANT))
                 .thenReturn(new ResponseEntity<Resource<Project>>(new Resource<Project>(project), HttpStatus.OK));
 
-        List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_XML));
 
-        performDefaultGet(CatalogController.PATH + CatalogController.DOCUMENTS_SEARCH + CatalogController.DESCRIPTOR,
-                          expectations, "Couldn't build a proper descriptor for global searches");
+        performDefaultGet(SearchController.PATH + SearchController.DOCUMENTS_SEARCH + SearchController.DESCRIPTOR,
+                          requestBuilderCustomizer, "Couldn't build a proper descriptor for global searches");
     }
 
     @Override
@@ -242,18 +248,13 @@ public class OpenSearchDescriptionIT extends AbstractRegardsIT {
         return LOG;
     }
 
-    @Override
-    protected MockHttpServletRequestBuilder getRequestBuilder(final String pAuthToken, final HttpMethod pHttpMethod,
-            final String pUrlTemplate, final Object... pUrlVars) {
 
-        final MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.request(pHttpMethod, pUrlTemplate,
-                                                                                            pUrlVars);
-        addSecurityHeader(requestBuilder, pAuthToken);
+    protected Map<String, List<String>> getHeadersToApply() {
+        Map<String, List<String>> headers = Maps.newHashMap();
+        headers.put(HttpConstants.CONTENT_TYPE, Lists.newArrayList("application/json"));
+        headers.put(HttpConstants.ACCEPT, Lists.newArrayList(MediaType.APPLICATION_XML_VALUE));
 
-        requestBuilder.header(HttpConstants.CONTENT_TYPE, "application/json");
-        requestBuilder.header(HttpConstants.ACCEPT, MediaType.APPLICATION_XML_VALUE);
-
-        return requestBuilder;
+        return headers;
     }
 
 }

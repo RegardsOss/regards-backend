@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.search.service;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
@@ -34,10 +35,11 @@ import fr.cnes.regards.modules.indexer.domain.facet.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 
 /**
- * Performs an OpenSearch request with the passed string query.
+ * Catalog search service interface. Service façade to DAM search module (directly included by catalog).
  * @author Xavier-Alexandre Brochard
+ * @author oroussel
  */
-public interface ICatalogSearchService { // NOSONAR
+public interface ICatalogSearchService {
 
     /**
      * Perform an OpenSearch request on a type.
@@ -51,16 +53,34 @@ public interface ICatalogSearchService { // NOSONAR
     <S, R extends IIndexable> FacetPage<R> search(Map<String, String> allParams, SearchKey<S, R> searchKey,
             String[] facets, final Pageable pPageable) throws SearchException;
 
+    /**
+     * Compute summary for given request
+     * @param allParams OpenSearch request
+     * @param searchKey search key
+     * @param datasetIpId dataset ipId concerned by the request
+     * @param fileTypes File types on which to compute summary
+     * @return summary
+     */
     DocFilesSummary computeDatasetsSummary(Map<String, String> allParams, SimpleSearchKey<DataObject> searchKey,
             String datasetIpId, String[] fileTypes) throws SearchException;
 
     /**
-     *
+     * Retrieve entity
      * @param urn identifier of the entity we are looking for
      * @param <E> concrete type of AbstractEntity
      * @return the entity
-     * @throws EntityOperationForbiddenException
      */
     <E extends AbstractEntity> E get(UniformResourceName urn)
             throws EntityOperationForbiddenException, EntityNotFoundException;
+
+    /**
+     * Retrieve given STRING property enumerated values (limited by maxCount, partial text contains and dataobjects
+     * openSearch request from allParams (as usual)).
+     * @param propertyPath concerned STRING property path
+     * @param allParams opensearch request
+     * @param partialText text that property should contains (can be null)
+     * @param maxCount maximum result count
+     */
+    List<String> retrieveEnumeratedPropertyValues(Map<String, String> allParams, SimpleSearchKey<DataObject> searchKey,
+            String propertyPath, int maxCount, String partialText) throws SearchException;
 }

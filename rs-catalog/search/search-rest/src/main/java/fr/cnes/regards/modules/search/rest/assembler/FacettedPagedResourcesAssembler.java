@@ -21,13 +21,13 @@ package fr.cnes.regards.modules.search.rest.assembler;
 import java.util.Collection;
 import java.util.Set;
 
-import org.springframework.data.web.HateoasPageableHandlerMethodArgumentResolver;
+import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
-import org.springframework.web.util.UriComponents;
+import org.springframework.hateoas.ResourceAssembler;
 
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetPage;
@@ -35,38 +35,45 @@ import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
 
 /**
- * Custom {@link PagedResourcesAssembler}
+ * Custom ResourcesAssembler injecting facets in the resource.
+ * Delegates all page concerns to a {@link PagedResourcesAssembler}.
  *
  * @param <T> The type wrapped by the resources
  * @author Xavier-Alexandre Brochard
  */
-public class FacettedPagedResourcesAssembler<T extends IIndexable> extends PagedResourcesAssembler<T> {
+public class FacettedPagedResourcesAssembler<T extends IIndexable>
+        implements ResourceAssembler<Page<T>, PagedResources<Resource<T>>> {
+
+    private final PagedResourcesAssembler<T> delegate;
 
     /**
      * Constructor
-     *
-     * @param pResolver
-     * @param pBaseUri
+     * @param delegate
      */
-    public FacettedPagedResourcesAssembler(HateoasPageableHandlerMethodArgumentResolver pResolver,
-            UriComponents pBaseUri) {
-        super(pResolver, pBaseUri);
+    public FacettedPagedResourcesAssembler(PagedResourcesAssembler<T> delegate) {
+        this.delegate = delegate;
     }
 
     /**
-     * Creates a new {@link FacettedPagedResources} by converting the given {@link FacetPage} into a {@link PageMetadata} instance and wrapping the contained elements into {@link Resource} instances.
+     * Creates a new {@link FacettedPagedResources} by converting the given {@link FacetPage} into a
+     * {@link PageMetadata} instance and wrapping the contained elements into {@link Resource} instances.
      * Will add pagination links based on the given the self link.
      *
-     * @param pFacetPage must not be {@literal null}.
+     * @param facetPage must not be {@literal null}.
      * @return the facetted page of resources
      */
-    public FacettedPagedResources<Resource<T>> toResource(FacetPage<T> pFacetPage) {
-        PagedResources<Resource<T>> pagedResources = super.toResource(pFacetPage);
-        Set<IFacet<?>> facets = pFacetPage.getFacets();
+    public FacettedPagedResources<Resource<T>> toResource(FacetPage<T> facetPage) {
+        PagedResources<Resource<T>> pagedResources = delegate.toResource(facetPage);
+        Set<IFacet<?>> facets = facetPage.getFacets();
         Collection<Resource<T>> content = pagedResources.getContent();
         PageMetadata metaData = pagedResources.getMetadata();
         Iterable<Link> links = pagedResources.getLinks();
         return new FacettedPagedResources<>(facets, content, metaData, links);
+    }
+
+    @Override
+    public PagedResources<Resource<T>> toResource(Page<T> entity) {
+        return delegate.toResource(entity);
     }
 
 }

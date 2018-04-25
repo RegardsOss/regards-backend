@@ -14,11 +14,21 @@ public interface IAccessRightFilter {
     /**
      * Add the current user's groups to the criterion.
      *
-     * @param criterion
-     * @return the passed criterion agremented of the current user's groups
+     * @param criterion cannot be null !!!
+     * @return the given criterion agremented with the current user's groups
      * @throws AccessRightFilterException if access rights cannot be set
      */
     ICriterion addAccessRights(ICriterion criterion) throws AccessRightFilterException;
+
+    /**
+     * Add the current user's groups that permit DATA access to the criterion.
+     *
+     * @param criterion cannot be null !!!
+     * @return the given criterion agremented with the current user's groups that permit DATA access
+     * @throws AccessRightFilterException if access rights cannot be set
+     */
+    ICriterion addDataAccessRights(ICriterion criterion) throws AccessRightFilterException;
+
 
     /**
      * Retrieve current user access groups or null if superuser
