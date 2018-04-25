@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.search.client;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.hateoas.PagedResources;
@@ -28,6 +31,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Maps;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 
 /**
@@ -45,5 +49,8 @@ public class SearchClientIT extends AbstractSearchClientIT<ISearchClient> {
         ResponseEntity<PagedResources<Resource<DataObject>>> result = client
                 .searchDataobjects(Maps.newHashMap(), 0, 10_000);
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
+
+        ResponseEntity<Set<UniformResourceName>> response = client.hasAccess(Collections.emptyList());
+        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
     }
 }
