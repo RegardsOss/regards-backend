@@ -157,6 +157,7 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
             final List<Resource<ResourcesAccess>> body = resourcesResponse.getBody();
             final List<ResourcesAccess> resources = HateoasUtils.unwrapList(body);
             return resources.stream().filter(resource -> resource.getMicroservice().equals(microserviceName))
+//                    .peek((resource) -> LOGGER.info("Building resource mapping of {}", resource.toString()))
                     .map(resource -> buildResourceMapping(resource, Collections.singleton(new Role(roleName))))
                     .collect(Collectors.toSet());
         }

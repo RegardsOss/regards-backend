@@ -62,6 +62,10 @@
 			<artifactId>accessrights-dao</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>feign-regards-starter</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-client</artifactId>
 		</dependency>
