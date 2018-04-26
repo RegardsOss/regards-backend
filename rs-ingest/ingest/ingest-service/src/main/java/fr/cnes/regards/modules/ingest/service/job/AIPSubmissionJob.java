@@ -135,6 +135,7 @@ public class AIPSubmissionJob extends AbstractJob<Void> {
                         aipService.save(aip);
                     }
                 }
+                break;
             case UNPROCESSABLE_ENTITY:
                 // All AIP rejected
                 if (rejectedAips != null) {

@@ -42,6 +42,7 @@ import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -281,7 +282,7 @@ public class SIPServiceTest extends AbstractSIPTest {
                 // 2.1 All AIP has been deleted, SIP should be in DELETED STATE
                 SIPEntity deletedSip = sipRepository.findOne(sip.getId());
                 LOGGER.debug("Deleted SIP state : {}", deletedSip.getState());
-                Assert.assertTrue("SIP should be in DELETED state", SIPState.DELETED.equals(deletedSip.getState()));
+                Assert.assertEquals("SIP should be in DELETED state", SIPState.DELETED, deletedSip.getState());
                 // 2.1 A SIPevent associated should have been sent
                 Assert.assertTrue("A SIPEvent should had been sent with delete SIP IpId", handler.getReceivedEvents()
                         .stream()

@@ -24,12 +24,8 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -40,17 +36,15 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.service.AbstractSIPTest;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
-import fr.cnes.regards.modules.ingest.service.TestConfiguration;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 
 /**
  * AIP Service tests.
  * @author Sébastien Binda
  */
-@ActiveProfiles({ "testAmqp", "disable-scheduled-ingest" })
-@TestPropertySource(locations = "classpath:test.properties")
-@ContextConfiguration(classes = { TestConfiguration.class })
 public class AIPServiceTest extends AbstractSIPTest {
+
+    private final Set<AIPEntity> aips = Sets.newHashSet();
 
     @Autowired
     private IAIPService aipService;
@@ -63,8 +57,6 @@ public class AIPServiceTest extends AbstractSIPTest {
 
     private SIPEntity sip;
 
-    private final Set<AIPEntity> aips = Sets.newHashSet();
-
     @Override
     public void doInit() throws Exception {
         // generate one SIP
@@ -72,10 +64,12 @@ public class AIPServiceTest extends AbstractSIPTest {
 
         // Create two associated AIPs
         aips.add(createAIP(UniformResourceName
-                .fromString("URN:AIP:DATA:project1:ebd5100a-b8fc-3e15-8ce1-4fdd1c98794a:V1"), sip,
+                                   .fromString("URN:AIP:DATA:project1:ebd5100a-b8fc-3e15-8ce1-4fdd1c98794a:V1"),
+                           sip,
                            SipAIPState.CREATED));
         aips.add(createAIP(UniformResourceName
-                .fromString("URN:AIP:DATA:project1:ebd5100a-b8fc-3e15-8ce1-4fdd1c98794b:V1"), sip,
+                                   .fromString("URN:AIP:DATA:project1:ebd5100a-b8fc-3e15-8ce1-4fdd1c98794b:V1"),
+                           sip,
                            SipAIPState.CREATED));
     }
 
