@@ -65,7 +65,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + toString());
 
         // Get all the plugins
-        ReflectionUtils.REFLECTIONS = new Reflections(PLUGIN_PACKAGE);
+        ReflectionUtils.setReflections(new Reflections(PLUGIN_PACKAGE));
         final Map<String, PluginMetaData> maps = PluginUtils.getPlugins(PLUGIN_PACKAGE, Arrays.asList(PLUGIN_PACKAGE));
         Assert.assertNotNull(maps);
         Assert.assertTrue(maps.size() > 1);

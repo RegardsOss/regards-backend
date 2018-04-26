@@ -60,6 +60,10 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-regards</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>feign-regards-starter</artifactId>
+		</dependency>
 		<!-- Spring boot config -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
