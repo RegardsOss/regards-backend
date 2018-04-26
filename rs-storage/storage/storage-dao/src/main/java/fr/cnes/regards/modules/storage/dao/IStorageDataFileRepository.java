@@ -42,6 +42,15 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
     Set<StorageDataFile> findAllByAipEntity(AIPEntity aipEntity);
 
     /**
+     * Find all {@link StorageDataFile}s associated to the given aip entities
+     * @param aipEntities some AipEntities
+     * @return {@link StorageDataFile}s
+     */
+    @EntityGraph(value = "graph.datafile.full")
+    Set<StorageDataFile> findAllByAipEntityIn(Collection<AIPEntity> aipEntities);
+
+
+    /**
      * Find the data file associated to the given aip entity and which type the provided one
      * @param aipEntity
      * @param dataType
