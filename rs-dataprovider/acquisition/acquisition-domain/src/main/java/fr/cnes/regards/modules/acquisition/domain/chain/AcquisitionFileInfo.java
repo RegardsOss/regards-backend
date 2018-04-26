@@ -38,7 +38,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
-import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;

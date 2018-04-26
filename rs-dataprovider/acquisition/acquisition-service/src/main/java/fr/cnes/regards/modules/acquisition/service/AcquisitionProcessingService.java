@@ -73,6 +73,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
+import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.StopChainThread;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
@@ -404,7 +405,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         return acqJobStopped && productService.isProductJobStoppedAndCleaned(processingChain);
     }
 
-    @MultitenantTransactional(propagation = Propagation.NOT_SUPPORTED)
+    @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
     public AcquisitionProcessingChain stopAndCleanChain(Long processingChainId) throws ModuleException {
 
@@ -443,6 +444,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             if ((processingChain.getLastActivationDate() != null) && processingChain.getLastActivationDate()
                     .plusSeconds(processingChain.getPeriodicity()).isAfter(OffsetDateTime.now())) {
                 LOGGER.debug("Acquisition processing chain \"{}\" will not be started due to periodicity",
+                             processingChain.getLabel());
+            } else if (processingChain.isLocked()) {
+                LOGGER.debug("Acquisition processing chain \"{}\" will not be started because still locked (i.e. working)",
                              processingChain.getLabel());
             } else {
                 // Schedule job
@@ -496,6 +500,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         LOGGER.debug("Scheduling product acquisition job for processing chain \"{}\"", processingChain.getLabel());
         JobInfo jobInfo = new JobInfo(true);
+        jobInfo.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY.getPriority());
         jobInfo.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID, processingChain.getId()));
         jobInfo.setClassName(ProductAcquisitionJob.class.getName());
         jobInfo.setOwner(authResolver.getUser());
@@ -511,6 +516,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     }
 
+    @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
     public void scanAndRegisterFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
 
@@ -520,68 +526,60 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             IScanPlugin scanPlugin = pluginService.getPlugin(fileInfo.getScanPlugin().getId());
             // Launch scanning
             List<Path> scannedFiles = scanPlugin.scan(Optional.ofNullable(fileInfo.getLastModificationDate()));
-            // Register scanned files
-            registerFiles(scannedFiles, fileInfo);
+            // Register scanned files in a transaction
+            for (Path filePath : scannedFiles) {
+                self.registerFile(filePath, fileInfo);
+            }
         }
     }
 
-    private void registerFiles(List<Path> scannedFiles, AcquisitionFileInfo info) throws ModuleException {
+    @Override
+    public void registerFile(Path filePath, AcquisitionFileInfo info) throws ModuleException {
 
-        // Register the most recent last modification date
-        OffsetDateTime reference = info.getLastModificationDate();
+        // Check if file not already registered : TODO
 
-        for (Path filePath : scannedFiles) {
-            // Check if file not already registered : TODO
+        // Initialize new file
+        AcquisitionFile scannedFile = new AcquisitionFile();
+        scannedFile.setAcqDate(OffsetDateTime.now());
+        scannedFile.setFileInfo(info);
+        scannedFile.setFilePath(filePath);
+        scannedFile.setChecksumAlgorithm(AcquisitionProcessingChain.CHECKSUM_ALGORITHM);
 
-            // Initialize new file
-            AcquisitionFile scannedFile = new AcquisitionFile();
-            scannedFile.setAcqDate(OffsetDateTime.now());
-            scannedFile.setFileInfo(info);
-            scannedFile.setFilePath(filePath);
-            scannedFile.setChecksumAlgorithm(AcquisitionProcessingChain.CHECKSUM_ALGORITHM);
+        // Compute checksum and manage last modification date
+        try {
+            // Compute and set checksum
+            scannedFile.setChecksum(computeMD5FileChecksum(filePath, AcquisitionProcessingChain.CHECKSUM_ALGORITHM));
+            scannedFile.setState(AcquisitionFileState.IN_PROGRESS);
 
-            // Compute checksum and manage last modification date
-            try {
-                // Compute last modification date
-                reference = getMostRecentDate(reference, filePath);
-                // Compute and set checksum
-                scannedFile
-                        .setChecksum(computeMD5FileChecksum(filePath, AcquisitionProcessingChain.CHECKSUM_ALGORITHM));
-                scannedFile.setState(AcquisitionFileState.IN_PROGRESS);
-            } catch (NoSuchAlgorithmException | IOException e) {
-                // Continue silently but register error in database
-                String errorMessage = String.format("Error registering file %s : %s",
-                                                    scannedFile.getFilePath().toString(), e.getMessage());
-                LOGGER.error(errorMessage, e);
-                scannedFile.setError(errorMessage);
-                scannedFile.setState(AcquisitionFileState.ERROR);
-            }
-
-            // Save file
-            acqFileRepository.save(scannedFile);
+            // Update last modification date
+            updateLastModificationDate(filePath, info);
+        } catch (NoSuchAlgorithmException | IOException e) {
+            // Continue silently but register error in database
+            String errorMessage = String.format("Error registering file %s : %s", scannedFile.getFilePath().toString(),
+                                                e.getMessage());
+            LOGGER.error(errorMessage, e);
+            scannedFile.setError(errorMessage);
+            scannedFile.setState(AcquisitionFileState.ERROR);
         }
 
-        // Update last modification date
-        info.setLastModificationDate(reference);
-        fileInfoRepository.save(info);
+        // Save file
+        acqFileRepository.save(scannedFile);
     }
 
     /**
-     * Compute most recent last modification date
-     * @param reference reference date
-     * @param filePath file to analyze
-     * @return most recent date
-     * @throws IOException if error occurs!
+     * Update file info last modification date under condition
      */
-    private OffsetDateTime getMostRecentDate(OffsetDateTime reference, Path filePath) throws IOException {
+    private void updateLastModificationDate(Path filePath, AcquisitionFileInfo info) throws IOException {
+
+        OffsetDateTime reference = info.getLastModificationDate();
 
         BasicFileAttributes attr = Files.readAttributes(filePath, BasicFileAttributes.class);
         OffsetDateTime lmd = OffsetDateTime.ofInstant(attr.lastModifiedTime().toInstant(), ZoneOffset.UTC);
-
         if ((reference == null) || lmd.isAfter(reference)) {
-            return lmd;
+            // Update last modification date
+            info.setLastModificationDate(lmd);
+            fileInfoRepository.save(info);
         }
-        return reference;
     }
 
     /**
@@ -598,6 +596,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         return ChecksumUtils.computeHexChecksum(inputStream, checksumAlgorithm);
     }
 
+    @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
     public void validateFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
 
@@ -622,6 +621,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
     }
 
+    @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
     public void buildProducts(AcquisitionProcessingChain processingChain) throws ModuleException {
 

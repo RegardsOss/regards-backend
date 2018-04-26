@@ -59,6 +59,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.PostAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
@@ -156,6 +157,7 @@ public class ProductService implements IProductService {
 
         // Schedule job
         JobInfo jobInfo = new JobInfo(true);
+        jobInfo.setPriority(AcquisitionJobPriority.SIP_GENERATION_JOB_PRIORITY.getPriority());
         jobInfo.setParameters(new JobParameter(SIPGenerationJob.CHAIN_PARAMETER_ID, chain.getId()),
                               new JobParameter(SIPGenerationJob.PRODUCT_ID, product.getId()));
         jobInfo.setClassName(SIPGenerationJob.class.getName());
@@ -330,6 +332,7 @@ public class ProductService implements IProductService {
                     jobParameters.add(new JobParameter(SIPSubmissionJob.SESSION_PARAMETER, session));
 
                     JobInfo jobInfo = new JobInfo(true);
+                    jobInfo.setPriority(AcquisitionJobPriority.SIP_SUBMISSION_JOB_PRIORITY.getPriority());
                     jobInfo.setParameters(jobParameters);
                     jobInfo.setClassName(SIPSubmissionJob.class.getName());
                     jobInfo.setOwner(authResolver.getUser());
@@ -463,6 +466,7 @@ public class ProductService implements IProductService {
             // Do post processing if SIP properly stored
             if (SIPState.STORED.equals(event.getState())) {
                 JobInfo jobInfo = new JobInfo(true);
+                jobInfo.setPriority(AcquisitionJobPriority.POST_ACQUISITION_JOB_PRIORITY.getPriority());
                 jobInfo.setParameters(new JobParameter(PostAcquisitionJob.EVENT_PARAMETER, event));
                 jobInfo.setClassName(PostAcquisitionJob.class.getName());
                 jobInfo.setOwner(authResolver.getUser());
