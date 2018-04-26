@@ -439,6 +439,18 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultGet(AIPController.AIP_PATH, requestBuilderCustomizer, "There should be some AIP to show");
     }
 
+    @Test
+    public void testRetrieveAips() {
+        testStore();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeRequestParam().param("from", OffsetDateTime.now().minusDays(40).toString())
+                .param("to", OffsetDateTime.now().toString());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath("$.content", Matchers.not(Matchers.empty())));
+        performDefaultGet(AIPController.AIP_PATH, requestBuilderCustomizer, "There should be some AIP to show");
+    }
+
     @After
     public void cleanUp() throws URISyntaxException, IOException {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);

@@ -61,7 +61,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     /**
      * Failure causes message format
      */
-    protected static String FAILURE_CAUSES = "Storage failed due to the following reasons: %s";
+    protected static String failureCauses = "Storage failed due to the following reasons: %s";
 
     /**
      * Job parameter missing message format
@@ -199,7 +199,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
         if (progressManager.isProcessError()) {
             // RuntimeException allows us to make the job fail and respect Runnable interface
             throw new StorageException(String
-                    .format(FAILURE_CAUSES,
+                    .format(failureCauses,
                             progressManager.getFailureCauses().stream().collect(Collectors.joining(", ", "[", " ]"))));
         }
     }

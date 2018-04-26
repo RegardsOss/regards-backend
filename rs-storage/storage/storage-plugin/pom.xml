@@ -24,36 +24,26 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>module-regards</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.utils</groupId>
-			<artifactId>file-utils</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-			<artifactId>jobs-domain</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>authentication-regards-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>microservice-regards</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>plugins-regards-starter</artifactId>
+			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+			<artifactId>plugins-service</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.jayway.jsonpath</groupId>
 			<artifactId>json-path</artifactId>
 		</dependency>
+
 		<!-- TEST dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-integration-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>hateoas-regards</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
