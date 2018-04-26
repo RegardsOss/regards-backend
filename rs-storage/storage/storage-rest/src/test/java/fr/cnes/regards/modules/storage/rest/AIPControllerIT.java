@@ -417,26 +417,11 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // now lets download it!
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
-        requestBuilderCustomizer.customizeHeaders()
-                .put(HttpConstants.ACCEPT, Lists.newArrayList(dataFile.getMimeType().toString()));
+        requestBuilderCustomizer.customizeHeaders().put(HttpConstants.ACCEPT,
+                                                        Lists.newArrayList(dataFile.getMimeType().toString()));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(AIPController.AIP_PATH + AIPController.DOWNLOAD_AIP_FILE,
-                          requestBuilderCustomizer,
-                          "We should be downloading the data file",
-                          aip.getId().toString(),
-                          dataFile.getChecksum());
-    }
-
-    @Test
-    public void testRetrieveAips() {
-        testStore();
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.customizeRequestParam().param("from", OffsetDateTime.now().minusDays(40).toString())
-                .param("to", OffsetDateTime.now().toString());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath("$.content", Matchers.not(Matchers.empty())));
-        performDefaultGet(AIPController.AIP_PATH, requestBuilderCustomizer, "There should be some AIP to show");
+        performDefaultGet(AIPController.AIP_PATH + AIPController.DOWNLOAD_AIP_FILE, requestBuilderCustomizer,
+                          "We should be downloading the data file", aip.getId().toString(), dataFile.getChecksum());
     }
 
     @Test
