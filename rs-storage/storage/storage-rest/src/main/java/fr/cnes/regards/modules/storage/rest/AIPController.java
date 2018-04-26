@@ -193,8 +193,8 @@ public class AIPController implements IResourceController<AIP> {
     /**
      * Retrieve a page of aip metadata according to the given parameters
      * @param pState state the aips should be in
-     * @param pFrom date after which the aip should have been added to the system
-     * @param pTo date before which the aip should have been added to the system
+     * @param from date(UTC) after which the aip should have been added to the system
+     * @param to date(UTC) before which the aip should have been added to the system
      * @return page of aip metadata respecting the constraints
      */
     @RequestMapping(method = RequestMethod.GET)
@@ -282,7 +282,7 @@ public class AIPController implements IResourceController<AIP> {
      * @return the aips that could not be prepared for storage
      */
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
-    @ResourceAccess(description = "validate and store the specified AIP")
+    @ResourceAccess(description = "validate and store the specified AIPs")
     public ResponseEntity<List<RejectedAip>> store(@RequestBody AIPCollection aips) throws ModuleException {
 
         int originalAipNb = aips.getFeatures().size();
