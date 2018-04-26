@@ -86,6 +86,7 @@ import fr.cnes.regards.modules.storage.service.IPrioritizedDataStorageService;
  */
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles("testAmqp")
+@Ignore
 public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final String ALLOCATION_CONF_LABEL = "AIPControllerIT_ALLOCATION";
