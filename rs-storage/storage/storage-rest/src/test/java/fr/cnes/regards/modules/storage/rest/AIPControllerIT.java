@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -305,7 +306,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         testStore();
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         int wait = 0;
-        // lets wait for this AIP to be stored (at most 12 sec)
+        // lets wait for this AIP to be stored
         while ((aipDao.findOneByIpId(aip.getId().toString()).get().getState() != AIPState.STORED)
                 && (wait < MAX_WAIT)) {
             Thread.sleep(1000);
@@ -314,8 +315,22 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         Assert.assertTrue("AIP was not fully stored in time", wait < MAX_WAIT);
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
+                .pathParameters(RequestDocumentation.parameterWithName("ip_id").description("IpId of the AIP")));
         performDefaultDelete(AIPController.AIP_PATH + AIPController.ID_PATH, requestBuilderCustomizer,
                              "deletion of this aip should be possible", aip.getId().toString());
+    }
+
+    @Test
+    public void testBulkDelete() {
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
+
+        Set<String> sipIpIds = new HashSet<>();
+        sipIpIds.add("SIPIPIDTEST1");
+        sipIpIds.add("SIPIPIDTEST2");
+        performDefaultPost(AIPController.AIP_PATH + AIPController.AIP_BULK_DELETE, sipIpIds, requestBuilderCustomizer,
+                           "AIPs should be deleted");
     }
 
     @Test
@@ -368,6 +383,18 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performDefaultGet(AIPController.AIP_PATH + AIPController.DOWNLOAD_AIP_FILE, requestBuilderCustomizer,
                           "We should be downloading the data file", aip.getId().toString(), dataFile.getChecksum());
+    }
+
+    @Test
+    public void testRetrieveAips() {
+        testStore();
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.customizeRequestParam().param("from", OffsetDateTime.now().minusDays(40).toString())
+                .param("to", OffsetDateTime.now().toString());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.jsonPath("$.content", Matchers.not(Matchers.empty())));
+        performDefaultGet(AIPController.AIP_PATH, requestBuilderCustomizer, "There should be some AIP to show");
     }
 
     @After
