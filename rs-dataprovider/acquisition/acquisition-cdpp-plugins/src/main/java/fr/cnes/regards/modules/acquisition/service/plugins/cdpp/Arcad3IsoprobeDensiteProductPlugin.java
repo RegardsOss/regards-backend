@@ -37,18 +37,16 @@ import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class Arcad3IsoprobeDensiteProductPlugin implements IProductPlugin {
 
-    private final String BASE_PRODUCT_NAME = "ISO_DENS_";
+    private static final String BASE_PRODUCT_NAME = "ISO_DENS_";
 
-    private final String BROWSE_PATTERN = "iso_nete_([0-9]{8}_[0-9]{4})[BC].png";
-
-    private final Pattern browsePattern = Pattern.compile(BROWSE_PATTERN);
+    private static final Pattern BROWSE_PATTERN = Pattern.compile("iso_nete_([0-9]{8}_[0-9]{4})[BC].png");
 
     @Override
     public String getProductName(Path filePath) throws ModuleException {
         String productName = filePath.getFileName().toString();
 
         // Retrieve product name
-        Matcher m = browsePattern.matcher(productName);
+        Matcher m = BROWSE_PATTERN.matcher(productName);
         if (m.matches()) {
             productName = BASE_PRODUCT_NAME + m.group(1);
         }
