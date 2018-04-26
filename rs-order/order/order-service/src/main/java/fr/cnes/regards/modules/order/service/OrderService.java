@@ -13,6 +13,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -561,11 +563,15 @@ public class OrderService implements IOrderService {
             for (Iterator<OrderDataFile> i = availableFiles.iterator(); i.hasNext(); ) {
                 OrderDataFile dataFile = i.next();
                 String aip = dataFile.getIpId().toString();
+                dataFile.setDownloadError(null);
                 Response response = null;
                 try {
                     response = aipClient.downloadFile(aip, dataFile.getChecksum());
                 } catch (RuntimeException e) {
                     LOGGER.error("Error while downloading file from Archival Storage", e);
+                    StringWriter sw = new StringWriter();
+                    e.printStackTrace(new PrintWriter(sw));
+                    dataFile.setDownloadError("Error while downloading file from Archival Storage\n" + sw.toString());
                 }
                 // Unable to download file from storage
                 if ((response == null) || (response.status() != HttpStatus.OK.value())) {
@@ -573,6 +579,9 @@ public class OrderService implements IOrderService {
                     i.remove();
                     LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})", aip,
                                 dataFile.getChecksum());
+                    dataFile.setDownloadError(
+                            "Cannot retrieve data file from storage, feign downloadFile method returns " + response
+                                    .toString());
                     continue;
                 } else { // Download ok
                     try (InputStream is = response.body().asInputStream()) {
@@ -600,6 +609,9 @@ public class OrderService implements IOrderService {
                             i.remove();
                             LOGGER.warn("Cannot completely retrieve data file from storage (aip : {}, checksum : {})",
                                         aip, dataFile.getChecksum());
+                            dataFile.setDownloadError(
+                                    "Cannot completely retrieve data file from storage, only " + copiedBytes + "/"
+                                            + dataFile.getSize() + " bytes");
                         }
                     }
                 }
