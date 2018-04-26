@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,6 +37,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
@@ -53,6 +56,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import feign.Response;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -72,6 +77,7 @@ import fr.cnes.regards.modules.entities.domain.Document;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.opensearch.service.description.OpenSearchDescriptionBuilder;
@@ -591,22 +597,27 @@ public class SearchController {
         return ResponseEntity.ok(true);
     }
 
-    @RequestMapping(path = ENTITIES_HAS_ACCESS, method = RequestMethod.GET)
+    @RequestMapping(path = ENTITIES_HAS_ACCESS, method = RequestMethod.POST)
     @ResourceAccess(description = "allows to know if the user can download entities", role = DefaultRole.PUBLIC)
     public ResponseEntity<Set<UniformResourceName>> hasAccess(
-            @RequestBody java.util.Collection<UniformResourceName> urns) {
-        Set<UniformResourceName> urnsWithAccess = Sets.newHashSet(urns);
-        for (Iterator<UniformResourceName> i = urns.iterator(); i.hasNext(); ) {
-            try {
-                AbstractEntity entity = searchService.get(i.next());
-                // Only a DataObject without downloadable property hasn't access
-                if ((entity instanceof DataObject) && !((DataObject) entity).getDownloadable()) {
-                    i.remove();
-                }
-            } catch (EntityOperationForbiddenException | EntityNotFoundException e) {
-                i.remove();
-            }
+            @RequestBody java.util.Collection<UniformResourceName> inUrns) throws SearchException {
+        if (inUrns.isEmpty()) {
+            return ResponseEntity.ok(Collections.emptySet());
         }
+        String index = inUrns.iterator().next().getTenant();
+        Set<UniformResourceName> urnsWithAccess = new HashSet<>();
+        // ElasticSearch cannot manage more than 10 000 entities at once
+        Iterable<List<UniformResourceName>> urnLists = Iterables.partition(inUrns, 10_000);
+        for (List<UniformResourceName> urns : urnLists) {
+            ICriterion criterion = ICriterion.or(urns.stream().map(urn -> ICriterion.eq("ipId", urn.toString()))
+                                                         .toArray(n -> new ICriterion[n]));
+            FacetPage<DataObject> page = searchService
+                    .search(criterion, Searches.onSingleEntity(index, EntityType.DATA), null,
+                            new PageRequest(0, urns.size()));
+            urnsWithAccess.addAll(page.getContent().parallelStream().filter(DataObject::getDownloadable)
+                                          .map(DataObject::getIpId).collect(Collectors.toSet()));
+        }
+
         return ResponseEntity.ok(urnsWithAccess);
     }
 
@@ -626,11 +637,9 @@ public class SearchController {
             return allParamsDecoded;
         } catch (UnsupportedEncodingException e) {
             String message = "Unsupported query parameters";
-            if (allParams != null) {
-                StringJoiner sj = new StringJoiner("&");
-                allParams.forEach((key, value) -> sj.add(key + "=" + value));
-                message += sj.toString();
-            }
+            StringJoiner sj = new StringJoiner("&");
+            allParams.forEach((key, value) -> sj.add(key + "=" + value));
+            message += sj.toString();
             throw new SearchException(message, e);
         }
     }
