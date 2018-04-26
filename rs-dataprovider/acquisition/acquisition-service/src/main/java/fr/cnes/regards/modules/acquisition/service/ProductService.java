@@ -90,7 +90,7 @@ public class ProductService implements IProductService {
     @Autowired
     private IAcquisitionFileRepository acqFileRepository;
 
-    @Value("${regards.acquisition.sip.bulk.request.limit:10000}")
+    @Value("${regards.acquisition.sip.bulk.request.limit:1000}")
     private Integer bulkRequestLimit;
 
     @Override
