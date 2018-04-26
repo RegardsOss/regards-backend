@@ -99,13 +99,13 @@ public class ServiceHelper implements IServiceHelper {
     public Page<DataObject> getDataObjects(String openSearchQuery, int pageIndex, int nbEntitiesByPage)
             throws OpenSearchParseException {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
-        String queryParameters = String.format("q=%s", openSearchQuery);
+        String queryParameters = openSearchQuery;
         try {
-            URLEncoder.encode(URLDecoder.decode(queryParameters, "UTF-8"), "UTF-8");
+            queryParameters = URLEncoder.encode(URLDecoder.decode(queryParameters, "UTF-8"), "UTF-8");
         } catch (UnsupportedEncodingException e) {
             LOGGER.error(e.getMessage(), e);
         }
-        ICriterion crit = openSearchService.parse(queryParameters);
+        ICriterion crit = openSearchService.parse(String.format("q=%s", queryParameters));
         PageRequest pageReq = new PageRequest(pageIndex, nbEntitiesByPage);
         return searchService.search(searchKey, pageReq, crit);
     }
