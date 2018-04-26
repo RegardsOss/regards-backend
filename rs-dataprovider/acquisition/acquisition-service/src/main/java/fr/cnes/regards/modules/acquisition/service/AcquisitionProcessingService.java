@@ -65,7 +65,6 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
-import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
@@ -674,7 +673,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 .asList(ProductSIPState.GENERATION_ERROR, ProductSIPState.SUBMISSION_ERROR)));
         summary.setNbProducts(productService.countByChain(chain));
         summary.setNbProductsInProgress(productService
-                .countByChainAndStateIn(chain, Arrays.asList(ProductState.ACQUIRING, ProductState.COMPLETED)));
+                .countByProcessingChainAndSipStateIn(chain,
+                                                     Arrays.asList(ProductSIPState.NOT_SCHEDULED,
+                                                                   ProductSIPState.SCHEDULED, ProductSIPState.GENERATED,
+                                                                   ProductSIPState.SUBMISSION_SCHEDULED)));
 
         // Handle file summary
         summary.setNbFileErrors(acqFileService.countByChainAndStateIn(chain,
