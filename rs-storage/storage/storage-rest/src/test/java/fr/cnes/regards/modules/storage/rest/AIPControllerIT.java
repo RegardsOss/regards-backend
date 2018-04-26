@@ -22,6 +22,7 @@ import org.hamcrest.core.IsCollectionContaining;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.internal.matchers.NotNull;
@@ -39,6 +40,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
