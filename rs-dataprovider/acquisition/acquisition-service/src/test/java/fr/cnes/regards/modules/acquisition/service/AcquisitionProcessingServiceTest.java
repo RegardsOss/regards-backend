@@ -97,8 +97,8 @@ public class AcquisitionProcessingServiceTest extends AbstractMultitenantService
 
         List<PluginParameter> param = PluginParametersFactory.build()
                 .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
-        PluginConfiguration scanPlugin = PluginUtils
-                .getPluginConfiguration(param, GlobDiskScanning.class, Lists.newArrayList());
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(param, GlobDiskScanning.class,
+                                                                            Lists.newArrayList());
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin");
         fileInfo.setScanPlugin(scanPlugin);
