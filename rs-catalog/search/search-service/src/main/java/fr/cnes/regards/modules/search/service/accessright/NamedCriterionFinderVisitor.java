@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.indexer.domain.IMapping;
 import fr.cnes.regards.modules.indexer.domain.criterion.AbstractMultiCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.BooleanMatchCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.CircleCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.DateMatchCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.DateRangeCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.EmptyCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.FieldExistsCriterion;
@@ -109,6 +110,11 @@ public class NamedCriterionFinderVisitor implements ICriterionVisitor<Collection
 
     @Override
     public Collection<ICriterion> visitLongMatchCriterion(LongMatchCriterion criterion) {
+        return searchedName.equals(criterion.getName()) ? Lists.newArrayList(criterion) : new ArrayList<>();
+    }
+
+    @Override
+    public Collection<ICriterion> visitDateMatchCriterion(DateMatchCriterion criterion) {
         return searchedName.equals(criterion.getName()) ? Lists.newArrayList(criterion) : new ArrayList<>();
     }
 
