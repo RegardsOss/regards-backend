@@ -22,12 +22,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -525,6 +525,15 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             IScanPlugin scanPlugin = pluginService.getPlugin(fileInfo.getScanPlugin().getId());
             // Launch scanning
             List<Path> scannedFiles = scanPlugin.scan(Optional.ofNullable(fileInfo.getLastModificationDate()));
+            // Sort list according to last modification date
+            Collections.sort(scannedFiles, (file1, file2) -> {
+                try {
+                    return Files.getLastModifiedTime(file1).compareTo(Files.getLastModifiedTime(file2));
+                } catch (IOException e) {
+                    LOGGER.warn("Cannot read last modification date");
+                    return 0;
+                }
+            });
             // Register scanned files in a transaction
             for (Path filePath : scannedFiles) {
                 self.registerFile(filePath, fileInfo);
@@ -551,7 +560,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             scannedFile.setState(AcquisitionFileState.IN_PROGRESS);
 
             // Update last modification date
-            updateLastModificationDate(filePath, info);
+            OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(),
+                                                          ZoneOffset.UTC);
+            info.setLastModificationDate(lmd);
+            fileInfoRepository.save(info);
         } catch (NoSuchAlgorithmException | IOException e) {
             // Continue silently but register error in database
             String errorMessage = String.format("Error registering file %s : %s", scannedFile.getFilePath().toString(),
@@ -563,22 +575,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         // Save file
         acqFileRepository.save(scannedFile);
-    }
-
-    /**
-     * Update file info last modification date under condition
-     */
-    private void updateLastModificationDate(Path filePath, AcquisitionFileInfo info) throws IOException {
-
-        OffsetDateTime reference = info.getLastModificationDate();
-
-        BasicFileAttributes attr = Files.readAttributes(filePath, BasicFileAttributes.class);
-        OffsetDateTime lmd = OffsetDateTime.ofInstant(attr.lastModifiedTime().toInstant(), ZoneOffset.UTC);
-        if ((reference == null) || lmd.isAfter(reference)) {
-            // Update last modification date
-            info.setLastModificationDate(lmd);
-            fileInfoRepository.save(info);
-        }
     }
 
     /**
