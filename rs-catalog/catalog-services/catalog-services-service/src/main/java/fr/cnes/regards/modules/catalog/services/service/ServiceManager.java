@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.catalog.services.service;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -103,27 +102,26 @@ public class ServiceManager implements IServiceManager {
 
     @Override
     public List<PluginConfigurationDto> retrieveServices(List<String> pDatasetIds, List<ServiceScope> pServiceScopes) {
-        if ((pDatasetIds == null) || pDatasetIds.isEmpty()) {
-            return new ArrayList<>();
-        }
-
         Set<PluginConfiguration> allServices = getServicesAssociatedToAllDatasets();
-        Set<PluginConfiguration> datasetsCommonServices = Sets.newHashSet();
-        boolean first = true;
-        // Get all services associated to each dataset given
-        for (String datasetId : pDatasetIds) {
-            final LinkPluginsDatasets datasetPlugins = linkPluginsDatasetsService.retrieveLink(datasetId);
-            final Set<PluginConfiguration> datasetServices = datasetPlugins.getServices();
-            if (first) {
-                datasetsCommonServices.addAll(datasetServices);
-                first = false;
-            } else {
-                datasetsCommonServices.retainAll(datasetServices);
+
+        if ((pDatasetIds != null) && !pDatasetIds.isEmpty()) {
+            Set<PluginConfiguration> datasetsCommonServices = Sets.newHashSet();
+            boolean first = true;
+            // Get all services associated to each dataset given
+            for (String datasetId : pDatasetIds) {
+                final LinkPluginsDatasets datasetPlugins = linkPluginsDatasetsService.retrieveLink(datasetId);
+                final Set<PluginConfiguration> datasetServices = datasetPlugins.getServices();
+                if (first) {
+                    datasetsCommonServices.addAll(datasetServices);
+                    first = false;
+                } else {
+                    datasetsCommonServices.retainAll(datasetServices);
+                }
             }
-        }
-        for (PluginConfiguration datasetService : datasetsCommonServices) {
-            if (!allServices.contains(datasetService)) {
-                allServices.add(datasetService);
+            for (PluginConfiguration datasetService : datasetsCommonServices) {
+                if (!allServices.contains(datasetService)) {
+                    allServices.add(datasetService);
+                }
             }
         }
 
