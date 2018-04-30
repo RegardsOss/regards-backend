@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.access.services.service.ui;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +35,12 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotEmptyException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginConfigurationRepository;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginDefinitionRepository;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
@@ -52,6 +56,9 @@ public class UIPluginDefinitionService
 
     @Autowired
     private IUIPluginDefinitionRepository repository;
+
+    @Autowired
+    private IUIPluginConfigurationRepository pluginConfigurationRepository;
 
     @Value("${regards.access.multitenant:true}")
     private boolean isMultitenentMicroservice;
@@ -186,11 +193,16 @@ public class UIPluginDefinitionService
     }
 
     @Override
-    public void deletePlugin(final Long pPluginId) throws EntityNotFoundException {
-        if (!repository.exists(pPluginId)) {
-            throw new EntityNotFoundException(pPluginId, UIPluginDefinition.class);
+    public void deletePlugin(Long pluginId) throws ModuleException {
+
+        UIPluginDefinition pluginDef = repository.findOne(pluginId);
+        if (pluginDef == null) {
+            throw new EntityNotFoundException(pluginId, UIPluginDefinition.class);
         }
-        repository.delete(pPluginId);
+        if (pluginConfigurationRepository.hasPluginConfigurations(pluginDef)) {
+            throw new EntityNotEmptyException(pluginId, UIPluginDefinition.class);
+        }
+        repository.delete(pluginId);
     }
 
 }

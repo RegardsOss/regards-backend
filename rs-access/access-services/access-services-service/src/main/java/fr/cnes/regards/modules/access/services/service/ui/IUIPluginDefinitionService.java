@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 
@@ -89,6 +90,5 @@ public interface IUIPluginDefinitionService {
      *
      * @since 1.0-SNAPSHOT
      */
-    void deletePlugin(Long pPluginId) throws EntityNotFoundException;
-
+    void deletePlugin(Long pPluginId) throws ModuleException;
 }
