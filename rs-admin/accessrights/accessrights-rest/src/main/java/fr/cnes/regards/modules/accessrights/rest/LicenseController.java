@@ -25,7 +25,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -58,7 +57,7 @@ public class LicenseController implements IResourceController<LicenseDTO> {
     /**
      * Controller path to reset the license
      */
-    private static final String PATH_RESET = "/reset";
+    public static final String PATH_RESET = "/reset";
 
     /**
      * {@link LicenseService} instance
@@ -84,7 +83,6 @@ public class LicenseController implements IResourceController<LicenseDTO> {
      * @return if the current user has accepted the license of the project
      * @throws EntityNotFoundException
      */
-    @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve if the current user has accepted the license of the project",
             role = DefaultRole.PUBLIC)
@@ -100,7 +98,6 @@ public class LicenseController implements IResourceController<LicenseDTO> {
      * @return the license state
      * @throws EntityException
      */
-    @ResponseBody
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "Allow current user to accept the license of the project", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<LicenseDTO>> acceptLicense(@PathVariable("projectName") String pProjectName)
@@ -113,13 +110,14 @@ public class LicenseController implements IResourceController<LicenseDTO> {
      * Reset the license for the given project, represented by its name.
      * @param projectName
      */
-    @ResponseBody
+
     @RequestMapping(method = RequestMethod.PUT, path = PATH_RESET)
     @ResourceAccess(
             description = "Allow admins to invalidate the license of the project for all the users of the project",
             role = DefaultRole.ADMIN)
     public ResponseEntity<Void> resetLicense(@PathVariable("projectName") String projectName) {
-        //this endpoint is called from the instance administration interface so we have to force a tenant for this execution
+        // this endpoint is called from the instance administration interface so we have to force a tenant for this
+        // execution
         runtimeTenantResolver.forceTenant(projectName);
         licenseService.resetLicence();
         runtimeTenantResolver.clearTenant();
@@ -138,11 +136,11 @@ public class LicenseController implements IResourceController<LicenseDTO> {
     public Resource<LicenseDTO> toResource(LicenseDTO pElement, Object... pExtras) {
         Resource<LicenseDTO> resource = resourceService.toResource(pElement);
         resourceService.addLink(resource, this.getClass(), "retrieveLicense", LinkRels.SELF,
-                                MethodParamFactory.build(String.class,(String) pExtras[0]));
+                                MethodParamFactory.build(String.class, (String) pExtras[0]));
         resourceService.addLink(resource, this.getClass(), "acceptLicense", LinkRels.UPDATE,
-                                MethodParamFactory.build(String.class,(String) pExtras[0]));
+                                MethodParamFactory.build(String.class, (String) pExtras[0]));
         resourceService.addLink(resource, this.getClass(), "resetLicense", LinkRels.DELETE,
-                                MethodParamFactory.build(String.class,(String) pExtras[0]));
+                                MethodParamFactory.build(String.class, (String) pExtras[0]));
         return resource;
     }
 
