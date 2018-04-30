@@ -161,7 +161,7 @@ public class ScheduleStorageTasks {
         }
     }
 
-    @Scheduled(fixedRateString = "${regards.storage.check.data.storage.disk.usage.rate:60000}",
+    @Scheduled(fixedRateString = "${regards.storage.check.data.storage.disk.usage.rate:3600000}",
             initialDelay = 60 * 1000)
     public void monitorDataStorages() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
