@@ -347,8 +347,14 @@ public class AIPService implements IAIPService {
                 aip.setRetry(false);
                 save(aip, true);
             }
+            long aipUpdateStateTime = System.currentTimeMillis();
+            LOGGER.debug("Updating AIP state of {} AIP(s) for {} tenant took {} ms", aips.size(),
+                         runtimeTenantResolver.getTenant(), aipUpdateStateTime - startTime);
             // Dispatch and check data files
             Multimap<Long, StorageDataFile> storageWorkingSetMap = dispatchAndCheck(dataFilesToStore);
+            long dispatchTime = System.currentTimeMillis();
+            LOGGER.debug("Dispatching {} StorageDataFile(s) for {} tenant took {} ms", dataFilesToStore.size(),
+                         runtimeTenantResolver.getTenant(), dispatchTime - startTime);
             // Schedule storage jobs
             scheduleStorage(storageWorkingSetMap, true);
 
@@ -422,8 +428,12 @@ public class AIPService implements IAIPService {
 
         Set<StorageDataFile> dataFilesWithAccess = checkLoadFilesAccessRights(dataFiles);
 
-        errors.addAll(Sets.difference(dataFiles, dataFilesWithAccess).stream().map(df -> df.getChecksum())
-                              .collect(Collectors.toSet()));
+        // Once we know to which file we have access, lets set the others in error.
+        // As a file can be associated to multiple AIP, we have to compare their checksums.
+        Set<String> checksumsWithoutAccess = Sets.difference(dataFiles.stream().map(df->df.getChecksum()).collect(Collectors.toSet()), dataFilesWithAccess.stream().map(df -> df.getChecksum())
+                .collect(Collectors.toSet()));
+        checksumsWithoutAccess.forEach(cs->LOGGER.error("User {} does not have access to file with checksum {}.", authResolver.getUser(), cs));
+        errors.addAll(checksumsWithoutAccess);
 
         Set<StorageDataFile> onlineFiles = Sets.newHashSet();
         Set<StorageDataFile> nearlineFiles = Sets.newHashSet();
