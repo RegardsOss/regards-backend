@@ -22,8 +22,10 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,7 +43,13 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
  *
  */
 @RestController
+@RequestMapping(path = SearchEngineController.TYPE_MAPPING)
 public class SearchEngineController {
+
+    /**
+     * Search main namespace
+     */
+    public static final String TYPE_MAPPING = "/search";
 
     public static final String ENGINE_MAPPING = "/engines/{engineType}";
 
@@ -52,6 +60,8 @@ public class SearchEngineController {
     // Search endpoints
 
     public static final String SEARCH_ALL_MAPPING = ENGINE_MAPPING;
+
+    public static final String SEARCH_ALL_MAPPING_EXTRA = SEARCH_ALL_MAPPING + EXTRA_MAPPING;
 
     public static final String SEARCH_COLLECTIONS_MAPPING = "/collections" + ENGINE_MAPPING;
 
@@ -66,6 +76,36 @@ public class SearchEngineController {
     public static final String SEARCH_DATASET_MAPPING = "/datasets/{datasetId}" + ENGINE_MAPPING;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngineController.class);
+
+    /**
+     * Search on all index regardless the entity type
+     */
+    @RequestMapping(method = RequestMethod.GET, value = SEARCH_ALL_MAPPING)
+    @ResourceAccess(description = "Search engines dispatcher for global search")
+    public ResponseEntity<?> searchAll(@PathVariable String engineType, @RequestHeader HttpHeaders headers,
+            @RequestParam MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException {
+        // Delegate search to related search engine
+        // To retrieve plugin configuration, use both datasetId and engineType (i.e. the search engine plugin type)
+        // So only one single conf is authorized by datasetId for an engineType
+        // TODO
+        LOGGER.info("You enter search engines hell!");
+        allParams.forEach((k, v) -> LOGGER.info("KVP : {} = {}", k, v.toString()));
+        return ResponseEntity.ok("God exists!");
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = SEARCH_ALL_MAPPING_EXTRA)
+    @ResourceAccess(description = "Search engines dispatcher for global search")
+    public ResponseEntity<?> searchAllExtra(@PathVariable String engineType, @PathVariable String extra,
+            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> allParams,
+            Pageable pageable) throws ModuleException {
+        // Delegate search to related search engine
+        // To retrieve plugin configuration, use both datasetId and engineType (i.e. the search engine plugin type)
+        // So only one single conf is authorized by datasetId for an engineType
+        // TODO
+        LOGGER.info("You enter search engines hell!");
+        allParams.forEach((k, v) -> LOGGER.info("KVP : {} = {}", k, v.toString()));
+        return ResponseEntity.ok("God exists!");
+    }
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Search engines dispatcher")

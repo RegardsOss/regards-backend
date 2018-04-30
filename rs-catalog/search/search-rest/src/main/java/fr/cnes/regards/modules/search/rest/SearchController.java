@@ -104,6 +104,7 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
  * <ol>
  * @author Xavier-Alexandre Brochard
  */
+@Deprecated
 @RestController
 @ModuleInfo(name = "search", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
         documentation = "http://test")

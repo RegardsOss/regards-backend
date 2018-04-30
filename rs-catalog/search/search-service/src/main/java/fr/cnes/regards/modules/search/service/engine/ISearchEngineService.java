@@ -16,24 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.plugin;
-
-import fr.cnes.regards.modules.indexer.dao.FacetPage;
-import fr.cnes.regards.modules.indexer.domain.IIndexable;
-import fr.cnes.regards.modules.search.domain.SearchContext;
+package fr.cnes.regards.modules.search.service.engine;
 
 /**
+ * Search engine service contract
+ *
  * @author Marc Sordi
  *
  */
-public interface ISearchEngine<S, R extends IIndexable> {
+public interface ISearchEngineService {
 
-    /**
-     * Map request context to search context
-     * @param context request context
-     * @return search context
-     */
-    SearchContext<S, R> map(SearchContext<S, R> context);
-
-    Object map(FacetPage<R> page);
 }
