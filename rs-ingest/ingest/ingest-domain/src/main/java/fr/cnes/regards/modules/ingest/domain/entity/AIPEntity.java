@@ -27,7 +27,8 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.IAipState;
 
 @Entity
-@Table(name = "t_aip", indexes = { @Index(name = "idx_aip_id", columnList = "id,ipId,sip_id") })
+@Table(name = "t_aip", indexes = { @Index(name = "idx_aip_id", columnList = "id,ipId,sip_id"),
+        @Index(name = "idx_aip_state", columnList = "state") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AIPEntity {
 

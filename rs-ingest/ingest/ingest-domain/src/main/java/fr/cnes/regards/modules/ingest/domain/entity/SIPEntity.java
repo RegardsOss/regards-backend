@@ -63,7 +63,9 @@ import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
  *
  */
 @Entity
-@Table(name = "t_sip", indexes = { @Index(name = "idx_sip_id", columnList = "sipId,ipId,checksum") },
+@Table(name = "t_sip",
+        indexes = { @Index(name = "idx_sip_id", columnList = "sipId,ipId,checksum"),
+                @Index(name = "idx_sip_processing", columnList = "processing") },
         // PostgreSQL manage both single indexes and multiple ones
         uniqueConstraints = { @UniqueConstraint(name = "uk_sip_ipId", columnNames = "ipId"),
                 @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
