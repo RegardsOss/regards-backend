@@ -606,8 +606,9 @@ public class SearchController {
         }
         String index = inUrns.iterator().next().getTenant();
         Set<UniformResourceName> urnsWithAccess = new HashSet<>();
-        // ElasticSearch cannot manage more than 10 000 entities at once
-        Iterable<List<UniformResourceName>> urnLists = Iterables.partition(inUrns, 10_000);
+        // ElasticSearch cannot manage more than 1024 criterions clauses at once. There is one clause per IP_ID plus
+        // or clauses plus some depending on user access => create partitions of 1 000
+        Iterable<List<UniformResourceName>> urnLists = Iterables.partition(inUrns, 1_000);
         for (List<UniformResourceName> urns : urnLists) {
             ICriterion criterion = ICriterion.or(urns.stream().map(urn -> ICriterion.eq("ipId", urn.toString()))
                                                          .toArray(n -> new ICriterion[n]));
