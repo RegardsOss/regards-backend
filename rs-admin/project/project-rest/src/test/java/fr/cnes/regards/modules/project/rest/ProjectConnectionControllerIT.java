@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
@@ -48,6 +49,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @since 1.0-SNAPSHOT
  */
 @InstanceTransactional
+@ContextConfiguration(classes = { LicenseConfiguration.class })
 public class ProjectConnectionControllerIT extends AbstractRegardsIT {
 
     /**
@@ -100,18 +102,14 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
      */
     @Before
     public void initialize() {
-        instanceAdmintoken = jwtService
-                .generateToken(PROJECT_TEST, "public@regards.fr", DefaultRole.INSTANCE_ADMIN.name());
+        instanceAdmintoken = jwtService.generateToken(PROJECT_TEST, "public@regards.fr",
+                                                      DefaultRole.INSTANCE_ADMIN.name());
 
         Project project = projectRepo.findOneByNameIgnoreCase(PROJECT_TEST);
         project.setLabel("project");
         project = projectRepo.save(project);
-        connection = new ProjectConnection(project,
-                                           MICROSERVICE_TEST,
-                                           "newUserName",
-                                           "newPassword",
-                                           "newDriver",
-                                           "newUrl");
+        connection = new ProjectConnection(project, MICROSERVICE_TEST, "newUserName", "newPassword", "newDriver",
+                "newUrl");
         projectConnRepo.save(connection);
     }
 
@@ -126,16 +124,12 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.size", Matchers.is(20)));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                                                        .jsonPath(JSON_PATH_ROOT + ".metadata.totalElements",
-                                                                  Matchers.is(1)));
+                .jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(1)));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages",
                                                                                Matchers.is(1)));
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.number", Matchers.is(0)));
-        performGet(ProjectConnectionController.TYPE_MAPPING,
-                   instanceAdmintoken,
-                   requestBuilderCustomizer,
-                   "error",
+        performGet(ProjectConnectionController.TYPE_MAPPING, instanceAdmintoken, requestBuilderCustomizer, "error",
                    PROJECT_TEST);
     }
 
@@ -153,11 +147,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performGet(ProjectConnectionController.TYPE_MAPPING + ProjectConnectionController.RESOURCE_ID_MAPPING,
-                   instanceAdmintoken,
-                   requestBuilderCustomizer,
-                   "error",
-                   PROJECT_TEST,
-                   connection.getId());
+                   instanceAdmintoken, requestBuilderCustomizer, "error", PROJECT_TEST, connection.getId());
     }
 
     /**
@@ -172,20 +162,12 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Test
     public void createProjectConnectionTest() {
         final Project project = projectRepo.findOneByNameIgnoreCase(PROJECT_TEST);
-        final ProjectConnection connection = new ProjectConnection(project,
-                                                                   "microservice-test-2",
-                                                                   "newUserName",
-                                                                   "newPassword",
-                                                                   "newDriver",
-                                                                   "newUrl");
+        final ProjectConnection connection = new ProjectConnection(project, "microservice-test-2", "newUserName",
+                "newPassword", "newDriver", "newUrl");
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performPost(ProjectConnectionController.TYPE_MAPPING,
-                    instanceAdmintoken,
-                    connection,
-                    requestBuilderCustomizer,
-                    "Error there must be project results",
-                    PROJECT_TEST);
+        performPost(ProjectConnectionController.TYPE_MAPPING, instanceAdmintoken, connection, requestBuilderCustomizer,
+                    "Error there must be project results", PROJECT_TEST);
     }
 
     /**
@@ -199,17 +181,13 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Purpose("Check REST Access to update a project connection and Hateoas returned links")
     @Test
     public void updateProjectConnectionTest() {
-        final ProjectConnection connection = projectConnRepo
-                .findOneByProjectNameAndMicroservice(PROJECT_TEST, MICROSERVICE_TEST);
+        final ProjectConnection connection = projectConnRepo.findOneByProjectNameAndMicroservice(PROJECT_TEST,
+                                                                                                 MICROSERVICE_TEST);
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performPut(ProjectConnectionController.TYPE_MAPPING + ProjectConnectionController.RESOURCE_ID_MAPPING,
-                   instanceAdmintoken,
-                   connection,
-                   requestBuilderCustomizer,
-                   "Error there must be project results",
-                   PROJECT_TEST,
-                   connection.getId());
+                   instanceAdmintoken, connection, requestBuilderCustomizer, "Error there must be project results",
+                   PROJECT_TEST, connection.getId());
     }
 
     /**
@@ -225,10 +203,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
         performDelete(ProjectConnectionController.TYPE_MAPPING + ProjectConnectionController.RESOURCE_ID_MAPPING,
-                      instanceAdmintoken,
-                      requestBuilderCustomizer,
-                      "Error there must be project results",
-                      PROJECT_TEST,
+                      instanceAdmintoken, requestBuilderCustomizer, "Error there must be project results", PROJECT_TEST,
                       connection.getId());
     }
 }

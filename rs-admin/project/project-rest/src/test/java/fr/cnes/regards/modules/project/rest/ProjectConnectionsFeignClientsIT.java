@@ -30,6 +30,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ContextConfiguration;
 
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
@@ -48,6 +49,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @since 1.0-SNAPSHOT
  */
 @EnableFeignClients(clients = { IProjectConnectionClient.class })
+@ContextConfiguration(classes = { LicenseConfiguration.class })
 public class ProjectConnectionsFeignClientsIT extends AbstractRegardsWebIT {
 
     /**
