@@ -45,6 +45,7 @@ import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAcco
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
+import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link Account} in status LOCKED.
@@ -103,16 +104,8 @@ public class LockedState extends AbstractDeletableState {
         emailClient = pEmailClient;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#requestUnlockAccount(fr.cnes.regards.
-     * modules.accessrights.accountunlock.OnAccountUnlockEvent)
-     */
     @Override
-    public void requestUnlockAccount(final Account pAccount, final String pOriginUrl, final String pRequestLink)
-            throws EntityOperationForbiddenException {
+    public void requestUnlockAccount(final Account pAccount, final String pOriginUrl, final String pRequestLink) {
         // Create the token
         final String token = accountUnlockTokenService.create(pAccount);
 
@@ -129,7 +122,7 @@ public class LockedState extends AbstractDeletableState {
 
         SimpleMailMessage email;
         try {
-            email = templateService.writeToEmail(ACCOUNT_UNLOCK_RESET_TEMPLATE, data, recipients);
+            email = templateService.writeToEmail(TemplateServiceConfiguration.ACCOUNT_UNLOCK_TEMPLATE_CODE, data, recipients);
         } catch (final EntityNotFoundException e) {
             LOG.warn("Could not find the template to generate a unlock account email. Falling back to default.", e);
             email = new SimpleMailMessage();
