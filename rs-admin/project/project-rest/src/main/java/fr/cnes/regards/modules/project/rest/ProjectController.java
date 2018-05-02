@@ -164,7 +164,7 @@ public class ProjectController implements IResourceController<Project> {
     @ResourceAccess(
             description = "Allow instance admin to invalidate the license of a project for all the users of the project",
             role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> resetLicense(@PathVariable("projectName") String projectName) {
+    public ResponseEntity<Void> resetLicense(@PathVariable("project_name") String projectName) {
         try {
             runtimeTenantResolver.forceTenant(projectName);
             FeignSecurityManager.asSystem();
