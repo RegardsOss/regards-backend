@@ -109,15 +109,6 @@ public class TemplateService implements ITemplateService {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private Template passwordResetTemplate;
-
-    @Autowired
-    private Template accountUnlockTemplate;
-
-    @Autowired
-    private Template accountRefusedTemplate;
-
-    @Autowired
     @Resource(name = TemplateServiceConfiguration.TEMPLATES)
     private List<Template> templates;
 
@@ -231,22 +222,8 @@ public class TemplateService implements ITemplateService {
     public SimpleMailMessage writeToEmail(String templateCode, String subject, Map<String, ? extends Object> dataModel,
             String... recipients) throws EntityNotFoundException {
         // Retrieve the template of given code
-        Template template = null;
-        if (!runtimeTenantResolver.isInstance()) {
-            template = templateRepository.findOneByCode(templateCode)
-                    .orElseThrow(() -> new EntityNotFoundException(templateCode, Template.class));
-        } else { // On instance, no access to project databases so templates are managed by hand
-            if (accountUnlockTemplate.getCode().equals(templateCode)) {
-                template = accountUnlockTemplate;
-            } else if (passwordResetTemplate.getCode().equals(templateCode)) {
-                template = passwordResetTemplate;
-            } else if (accountRefusedTemplate.getCode().equals(templateCode)) {
-                template = accountRefusedTemplate;
-            }
-            if (template == null) {
-                throw new EntityNotFoundException(templateCode, Template.class);
-            }
-        }
+        Template template = templateRepository.findOneByCode(templateCode)
+                .orElseThrow(() -> new EntityNotFoundException(templateCode, Template.class));
 
         // Add the template (regards template POJO) to the loader
         loader.putTemplate(template.getCode(), template.getContent());
