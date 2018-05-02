@@ -41,6 +41,7 @@ import fr.cnes.regards.modules.templates.domain.TemplatePathSubject;
 /**
  * @author Xavier-Alexandre Brochard
  * @author Marc Sordi
+ * @author oroussel for dismessness
  */
 @Component
 public class TemplateServiceConfiguration {
@@ -64,6 +65,11 @@ public class TemplateServiceConfiguration {
      * The account refused template code
      */
     public static final String ACCOUNT_REFUSED_TEMPLATE_CODE = "ACCOUNT_REFUSED_TEMPLATE";
+
+    /**
+     * The password refused template code
+     */
+    public static final String PASSWORD_RESET_TEMPLATE_CODE = "PASSWORD_RESET_TEMPLATE_CODE";
 
     /**
      * The project user activated template code
@@ -175,54 +181,12 @@ public class TemplateServiceConfiguration {
         templateCodePathMap.put(NOT_SUBSETTED_DATA_FILES_CODE,
                                 new TemplatePathSubject(NOT_SUBSETTED_DATA_FILES_TEMPLATE,
                                                         "Files could not be handled by their data storage"));
-    }
-
-    /**
-     * Declare the template as bean
-     * @return the template
-     */
-    @Bean
-    public Template passwordResetTemplate() throws IOException {
-        ClassPathResource resource = new ClassPathResource(PASSWORD_RESET_TEMPLATE);
-        try (InputStream is = resource.getInputStream()) {
-            final String text = inputStreamToString(is);
-            final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(MDP_RESET_TEMPLATE_CODE, text, dataStructure, "Password Reset");
-        } catch (FileNotFoundException fnfe) {
-            return null;
-        }
-    }
-
-    /**
-     * Declare the template as bean
-     * @return the template
-     */
-    @Bean
-    public Template accountUnlockTemplate() throws IOException {
-        ClassPathResource resource = new ClassPathResource(ACCOUNT_UNLOCK_TEMPLATE);
-        try (InputStream is = resource.getInputStream()) {
-            final String text = inputStreamToString(is);
-            final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(ACCOUNT_UNLOCK_TEMPLATE_CODE, text, dataStructure, "Account Unlock");
-        } catch (FileNotFoundException fnfe) {
-            return null;
-        }
-    }
-
-    /**
-     * Declare the template as bean
-     * @return the template
-     */
-    @Bean
-    public Template accountRefusedTemplate() throws IOException {
-        ClassPathResource resource = new ClassPathResource(ACCOUNT_REFUSED_TEMPLATE);
-        try (InputStream is = resource.getInputStream()) {
-            final String text = inputStreamToString(is);
-            final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(ACCOUNT_REFUSED_TEMPLATE_CODE, text, dataStructure, "Account refused");
-        } catch (FileNotFoundException fnfe) {
-            return null;
-        }
+        templateCodePathMap.put(ACCOUNT_UNLOCK_TEMPLATE_CODE,
+                                new TemplatePathSubject(ACCOUNT_UNLOCK_TEMPLATE, "Account Unlock"));
+        templateCodePathMap.put(ACCOUNT_REFUSED_TEMPLATE_CODE,
+                                new TemplatePathSubject(ACCOUNT_REFUSED_TEMPLATE, "Account refused"));
+        templateCodePathMap.put(PASSWORD_RESET_TEMPLATE_CODE,
+                                new TemplatePathSubject(PASSWORD_RESET_TEMPLATE, "Password Reset"));
     }
 
     /**
