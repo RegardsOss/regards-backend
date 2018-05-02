@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Configuration;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
  * @author Marc Sordi
@@ -46,5 +47,10 @@ public class FeignClientConfiguration {
     @Bean
     public IAccountSettingsClient accountSettingsClient() {
         return Mockito.mock(IAccountSettingsClient.class);
+    }
+
+    @Bean
+    public IProjectsClient projectsClient() {
+        return Mockito.mock(IProjectsClient.class);
     }
 }
