@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.accessrights.service.licence;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -46,36 +47,27 @@ import fr.cnes.regards.modules.project.domain.Project;
  */
 @Service
 @MultitenantTransactional
-@EnableFeignClients(clients = IProjectsClient.class)
-public class LicenseService {
+public class LicenseService implements ILicenseService {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOG = LoggerFactory.getLogger(LicenseService.class);
 
     /**
      * Project user service
      */
-    private final IProjectUserService projectUserService;
+    @Autowired
+    private IProjectUserService projectUserService;
 
     /**
      * Project client
      */
-    private final IProjectsClient projectsClient;
+    @Autowired
+    private IProjectsClient projectsClient;
 
-    /**
-     * Authentication resolver
-     */
-    private final IAuthenticationResolver authResolver;
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
-    public LicenseService(IProjectUserService pProjectUserService, IProjectsClient pProjectsClient,
-            IAuthenticationResolver authResolver) {
-        super();
-        projectUserService = pProjectUserService;
-        projectsClient = pProjectsClient;
-        this.authResolver = authResolver;
-    }
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Retrieve the license state for the given project and the current user
@@ -83,8 +75,9 @@ public class LicenseService {
      * @return the license state
      * @throws EntityNotFoundException
      */
-    public LicenseDTO retrieveLicenseState(String pProjectName) throws EntityNotFoundException {
-        Project project = retrieveProject(pProjectName);
+    @Override
+    public LicenseDTO retrieveLicenseState() throws EntityNotFoundException {
+        Project project = retrieveProject(runtimeTenantResolver.getTenant());
         if (authResolver.getRole().equals(DefaultRole.INSTANCE_ADMIN.toString())) {
             return new LicenseDTO(true, project.getLicenceLink());
         } else {
@@ -95,7 +88,6 @@ public class LicenseService {
             return new LicenseDTO(true, project.getLicenceLink());
         }
     }
-
 
     private Project retrieveProject(String pProjectName) throws EntityNotFoundException {
         FeignSecurityManager.asSystem();
@@ -114,18 +106,19 @@ public class LicenseService {
      * @return accepted license state
      * @throws EntityException
      */
-    public LicenseDTO acceptLicense(String pProjectName) throws EntityException {
+    @Override
+    public LicenseDTO acceptLicense() throws EntityException {
         ProjectUser pu = projectUserService.retrieveCurrentUser();
         pu.setLicenseAccepted(true);
         projectUserService.updateUser(pu.getId(), pu);
-        return retrieveLicenseState(pProjectName);
+        return retrieveLicenseState();
     }
 
     /**
      * Reset the license state for all users of the current project
      */
+    @Override
     public void resetLicence() {
         projectUserService.resetLicence();
     }
-
 }

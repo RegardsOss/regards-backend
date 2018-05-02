@@ -19,6 +19,10 @@
 package fr.cnes.regards.modules.accessrights.rest;
 
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -28,6 +32,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
  * Test {@link LicenseController}
@@ -37,16 +42,24 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
  */
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=license" })
+@ContextConfiguration(classes = { LicenseControllerIT.LicenseConfiguration.class })
 public class LicenseControllerIT extends AbstractRegardsTransactionalIT {
+
+    @Configuration
+    static class LicenseConfiguration {
+
+        @Bean
+        public IProjectsClient projectClient() {
+            return Mockito.mock(IProjectsClient.class);
+        }
+    }
 
     @Test
     @Purpose("Check license agreement can be reset by an ADMIN")
     public void resetLicense() {
 
-        String INSTANCE_TENANT = "instance";
-        String customToken = jwtService.generateToken(INSTANCE_TENANT, DEFAULT_USER_EMAIL,
-                                                      DefaultRole.ADMIN.toString());
-        authService.setAuthorities(INSTANCE_TENANT, LicenseController.PATH_LICENSE + LicenseController.PATH_RESET,
+        String customToken = jwtService.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DefaultRole.ADMIN.toString());
+        authService.setAuthorities(DEFAULT_TENANT, LicenseController.PATH_LICENSE + LicenseController.PATH_RESET,
                                    "osef", RequestMethod.PUT, DefaultRole.ADMIN.toString());
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();

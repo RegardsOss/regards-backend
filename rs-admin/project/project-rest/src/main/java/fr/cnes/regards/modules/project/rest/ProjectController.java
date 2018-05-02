@@ -22,6 +22,7 @@ import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -36,15 +37,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.accessrights.client.ILicenseClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.service.IProjectService;
 
@@ -58,8 +61,6 @@ import fr.cnes.regards.modules.project.service.IProjectService;
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping("/projects")
 public class ProjectController implements IResourceController<Project> {
 
@@ -71,18 +72,20 @@ public class ProjectController implements IResourceController<Project> {
     /**
      * Business service for Project entities. Autowired.
      */
-    private final IProjectService projectService;
+    @Autowired
+    private IProjectService projectService;
 
     /**
      * Resource service to manage visibles hateoas links
      */
-    private final IResourceService resourceService;
+    @Autowired
+    private IResourceService resourceService;
 
-    public ProjectController(final IProjectService pProjectService, final IResourceService pResourceService) {
-        super();
-        projectService = pProjectService;
-        resourceService = pResourceService;
-    }
+    @Autowired
+    private ILicenseClient licenseClient;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      *
@@ -155,6 +158,22 @@ public class ProjectController implements IResourceController<Project> {
 
         final Project project = projectService.retrieveProject(pProjectName);
         return ResponseEntity.ok(toResource(project));
+    }
+
+    @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}/license/reset")
+    @ResourceAccess(
+            description = "Allow instance admin to invalidate the license of a project for all the users of the project",
+            role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> resetLicense(@PathVariable("projectName") String projectName) {
+        try {
+            runtimeTenantResolver.forceTenant(projectName);
+            FeignSecurityManager.asSystem();
+            licenseClient.resetLicense();
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } finally {
+            runtimeTenantResolver.clearTenant();
+            FeignSecurityManager.reset();
+        }
     }
 
     /**
