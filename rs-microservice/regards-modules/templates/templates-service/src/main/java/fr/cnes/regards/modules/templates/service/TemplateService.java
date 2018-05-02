@@ -217,7 +217,7 @@ public class TemplateService implements ITemplateService {
      * Configure the template loader
      * @throws IOException when error occurs during template loading
      */
-    private void configureTemplateLoader() throws IOException {
+    private void configureTemplateLoader() {
         configuration = new Configuration(
                 new Version(INCOMPATIBLE_IMPROVEMENTS_VERSION_MAJOR, INCOMPATIBLE_IMPROVEMENTS_VERSION_MINOR,
                             INCOMPATIBLE_IMPROVEMENTS_VERSION_MICRO));

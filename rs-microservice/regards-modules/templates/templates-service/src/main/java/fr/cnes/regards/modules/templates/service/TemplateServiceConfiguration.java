@@ -36,7 +36,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import fr.cnes.regards.modules.templates.domain.Template;
-import fr.cnes.regards.modules.templates.domain.TemplatePathSubsject;
+import fr.cnes.regards.modules.templates.domain.TemplatePathSubject;
 
 /**
  * @author Xavier-Alexandre Brochard
@@ -151,30 +151,30 @@ public class TemplateServiceConfiguration {
      */
     private static final String NOT_SUBSETTED_DATA_FILES_TEMPLATE = "template/not_subsetted_data_files_template.html";
 
-    private static final Map<String, TemplatePathSubsject> templateCodePathMap = Maps.newHashMap();
+    private static final Map<String, TemplatePathSubject> templateCodePathMap = Maps.newHashMap();
 
     private static void addTemplate(String templateCode, String templatePath, String emailSubject) {
-        templateCodePathMap.put(templateCode, new TemplatePathSubsject(templatePath, emailSubject));
+        templateCodePathMap.put(templateCode, new TemplatePathSubject(templatePath, emailSubject));
     }
 
     @PostConstruct
     public void postConstruct() {
         templateCodePathMap.put(EMAIL_ACCOUNT_VALIDATION_TEMPLATE_CODE,
-                                new TemplatePathSubsject(EMAIL_ACCOUNT_VALIDATION_TEMPLATE, "Account Confirmation"));
+                                new TemplatePathSubject(EMAIL_ACCOUNT_VALIDATION_TEMPLATE, "Account Confirmation"));
         templateCodePathMap.put(PROJECT_USER_ACTIVATED_TEMPLATE_CODE,
-                                new TemplatePathSubsject(PROJECT_USER_ACTIVATED_TEMPLATE, "Access re-activated"));
+                                new TemplatePathSubject(PROJECT_USER_ACTIVATED_TEMPLATE, "Access re-activated"));
         templateCodePathMap.put(PROJECT_USER_INACTIVATED_TEMPLATE_CODE,
-                                new TemplatePathSubsject(PROJECT_USER_INACTIVATED_TEMPLATE, "Access deactivated"));
+                                new TemplatePathSubject(PROJECT_USER_INACTIVATED_TEMPLATE, "Access deactivated"));
         templateCodePathMap
-                .put(ORDER_CREATED_TEMPLATE_CODE, new TemplatePathSubsject(ORDER_CREATED_TEMPLATE, "Order created"));
+                .put(ORDER_CREATED_TEMPLATE_CODE, new TemplatePathSubject(ORDER_CREATED_TEMPLATE, "Order created"));
         templateCodePathMap.put(ASIDE_ORDERS_NOTIFICATION_TEMPLATE_CODE,
-                                new TemplatePathSubsject(ASIDE_ORDERS_NOTIFICATION_TEMPLATE, "Orders waiting"));
+                                new TemplatePathSubject(ASIDE_ORDERS_NOTIFICATION_TEMPLATE, "Orders waiting"));
         templateCodePathMap.put(NOT_DISPATCHED_DATA_FILES_CODE,
-                                new TemplatePathSubsject(NOT_DISPATCHED_DATA_FILES_TEMPLATE,
-                                                         "Files not associated to any data storages"));
+                                new TemplatePathSubject(NOT_DISPATCHED_DATA_FILES_TEMPLATE,
+                                                        "Files not associated to any data storages"));
         templateCodePathMap.put(NOT_SUBSETTED_DATA_FILES_CODE,
-                                new TemplatePathSubsject(NOT_SUBSETTED_DATA_FILES_TEMPLATE,
-                                                         "Files could not be handled by their data storage"));
+                                new TemplatePathSubject(NOT_SUBSETTED_DATA_FILES_TEMPLATE,
+                                                        "Files could not be handled by their data storage"));
     }
 
     /**
@@ -232,7 +232,7 @@ public class TemplateServiceConfiguration {
     @Bean(name = TEMPLATES)
     public List<Template> templates() throws IOException {
         List<Template> templates = Lists.newArrayList();
-        for (Map.Entry<String, TemplatePathSubsject> templateCodePathEntry : templateCodePathMap.entrySet()) {
+        for (Map.Entry<String, TemplatePathSubject> templateCodePathEntry : templateCodePathMap.entrySet()) {
             ClassPathResource resource = new ClassPathResource(templateCodePathEntry.getValue().getTemplatePath());
             try (InputStream is = resource.getInputStream()) {
                 final String text = inputStreamToString(is);
