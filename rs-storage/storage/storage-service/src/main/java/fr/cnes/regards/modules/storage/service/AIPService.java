@@ -542,14 +542,6 @@ public class AIPService implements IAIPService {
         }
         // now lets get the data files for each aip which are the aip metadata itself
         List<AipDataFiles> aipDataFiles = new ArrayList<>();
-        //        for (AIP aip : aips.getContent()) {
-        //            Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(aip);
-        //            // lets eliminate the metadata data file
-        //            dataFiles = dataFiles.stream().filter(dataFile -> dataFile.getDataType() != DataType.AIP)
-        //                    .collect(Collectors.toSet());
-        //            aipDataFiles.add(new AipDataFiles(aip, dataFiles.toArray(new StorageDataFile[dataFiles.size()])));
-        //        }
-
         Multimap<AIP, StorageDataFile> multimap = HashMultimap.create();
         dataFileDao.findAllByAipIn(aips.getContent()).stream().filter(sdf -> sdf.getDataType() != DataType.AIP)
                 .forEach(sdf -> multimap.put(sdf.getAip(), sdf));
@@ -1298,7 +1290,7 @@ public class AIPService implements IAIPService {
                             .filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE) && pds
                                     .getDataStorageConfiguration().isActive()).sorted().findFirst();
                     if (onlinePrioritizedDataStorageOpt.isPresent()) {
-                        @SuppressWarnings("rawtypes") InputStream dataFileIS = ((IOnlineDataStorage) pluginService
+                        InputStream dataFileIS = ((IOnlineDataStorage) pluginService
                                 .getPlugin(onlinePrioritizedDataStorageOpt.get().getId())).retrieve(dataFile);
                         return Pair.of(dataFile, dataFileIS);
                     } else {
