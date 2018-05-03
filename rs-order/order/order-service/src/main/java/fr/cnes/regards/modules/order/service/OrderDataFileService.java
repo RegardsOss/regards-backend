@@ -3,6 +3,8 @@ package fr.cnes.regards.modules.order.service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Iterator;
@@ -147,10 +149,14 @@ public class OrderDataFileService implements IOrderDataFileService {
     @Override
     public void downloadFile(OrderDataFile dataFile, OutputStream os) throws IOException {
         Response response = null;
+        dataFile.setDownloadError(null);
         try {
             response = aipClient.downloadFile(dataFile.getIpId().toString(), dataFile.getChecksum());
         } catch (RuntimeException e) {
-            LOGGER.error("Error while downloadinf file from Archival Storage", e);
+            LOGGER.error("Error while downloading file from Archival Storage", e);
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            dataFile.setDownloadError("Error while downloading file from Archival Storage\n" + sw.toString());
         }
         boolean error = (response == null) || (response.status() != HttpStatus.OK.value());
         if (!error) {
@@ -160,6 +166,9 @@ public class OrderDataFileService implements IOrderDataFileService {
                 // File has not completly been copied
                 if (copiedBytes != dataFile.getSize()) {
                     error = true;
+                    dataFile.setDownloadError(
+                            "Cannot completely retrieve data file from storage, only " + copiedBytes + "/"
+                                    + dataFile.getSize() + " bytes");
                 }
             }
         }

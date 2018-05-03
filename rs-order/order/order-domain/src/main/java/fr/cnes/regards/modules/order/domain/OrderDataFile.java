@@ -20,6 +20,7 @@ import javax.persistence.Table;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.hibernate.annotations.Type;
 import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -86,6 +87,11 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
      * DataObject IP_ID
      */
     private UniformResourceName ipId;
+
+    /**
+     * Download error reason
+     */
+    private String downloadError;
 
     public OrderDataFile() {
         super();
@@ -179,6 +185,12 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
         return orderId;
     }
 
+    @Column(name = "download_error_reason")
+    @Type(type = "text")
+    public String getDownloadError() {
+        return downloadError;
+    }
+
     public void setOrderId(Long orderId) {
         this.orderId = orderId;
     }
@@ -189,6 +201,10 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
 
     public void setIpId(UniformResourceName ipId) {
         this.ipId = ipId;
+    }
+
+    public void setDownloadError(String downloadError) {
+        this.downloadError = downloadError;
     }
 
     @Override
