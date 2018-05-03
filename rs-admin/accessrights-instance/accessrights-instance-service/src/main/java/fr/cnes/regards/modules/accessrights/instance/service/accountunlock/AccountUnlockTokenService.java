@@ -54,26 +54,12 @@ public class AccountUnlockTokenService implements IAccountUnlockTokenService {
         tokenRepository = pTokenRepository;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.accountunlock.IAccountUnlockTokenService#getAccountUnlockToken(java.lang.
-     * String)
-     */
     @Override
     public AccountUnlockToken findByToken(final String pToken) throws EntityNotFoundException {
         return tokenRepository.findByToken(pToken)
                 .orElseThrow(() -> new EntityNotFoundException(pToken, AccountUnlockToken.class));
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.accountunlock.IAccountUnlockTokenService#createAccountUnlockToken(fr.cnes.
-     * regards .modules.accessrights.domain.instance.Account, java.lang.String)
-     */
     @Override
     public String create(final Account pAccount) {
 
@@ -93,9 +79,6 @@ public class AccountUnlockTokenService implements IAccountUnlockTokenService {
         return token.getToken();
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.accessrights.service.account.accountunlock.IAccountUnlockTokenService#deleteAllByAccount(fr.cnes.regards.modules.accessrights.domain.instance.Account)
-     */
     @Override
     public void deleteAllByAccount(Account pAccount) {
         tokenRepository.deleteAllByAccount(pAccount);
