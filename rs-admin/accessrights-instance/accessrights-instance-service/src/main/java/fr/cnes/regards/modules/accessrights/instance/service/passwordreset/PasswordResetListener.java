@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
+import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
  * Listen to {@link OnPasswordResetEvent} in order to send a password reset to the user when required.
@@ -115,7 +116,7 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
 
         SimpleMailMessage email;
         try {
-            email = templateService.writeToEmail(MDP_RESET_TEMPLATE, data, recipients);
+            email = templateService.writeToEmail(TemplateServiceConfiguration.PASSWORD_RESET_TEMPLATE_CODE, data, recipients);
         } catch (final EntityNotFoundException e) {
             email = new SimpleMailMessage();
             email.setTo(recipients);

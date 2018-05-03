@@ -16,41 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.accessrights.rest;
+package fr.cnes.regards.modules.project.rest;
 
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.accessrights.client.ILicenseClient;
 
 /**
+ * Common license configuration
  * @author Marc Sordi
  *
  */
 @Configuration
-public class FeignClientConfiguration {
+public class LicenseConfiguration {
 
     @Bean
-    public IEmailClient emailClient() {
-        return Mockito.mock(IEmailClient.class);
-    }
-
-    @Bean
-    public IAccountsClient accountsClient() {
-        return Mockito.mock(IAccountsClient.class);
-    }
-
-    @Bean
-    public IAccountSettingsClient accountSettingsClient() {
-        return Mockito.mock(IAccountSettingsClient.class);
-    }
-
-    @Bean
-    public IProjectsClient projectsClient() {
-        return Mockito.mock(IProjectsClient.class);
+    public ILicenseClient licenseClient() {
+        return Mockito.mock(ILicenseClient.class);
     }
 }

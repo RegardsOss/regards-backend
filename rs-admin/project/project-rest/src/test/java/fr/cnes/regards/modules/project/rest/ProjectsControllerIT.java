@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
@@ -46,6 +47,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  * @since 1.0-SNAPSHOT
  */
 @InstanceTransactional
+@ContextConfiguration(classes = { LicenseConfiguration.class })
 public class ProjectsControllerIT extends AbstractRegardsIT {
 
     private final static Logger LOG = LoggerFactory.getLogger(ProjectsControllerIT.class);
@@ -108,16 +110,11 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.size", Matchers.is(1)));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                                                        .jsonPath(JSON_PATH_ROOT + ".metadata.totalElements",
-                                                                  Matchers.is(3)));
+                .jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(3)));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages",
                                                                                Matchers.is(3)));
-        performGet("/projects?page={page}&size={size}",
-                   instanceAdmintoken,
-                   requestBuilderCustomizer,
-                   "Error there must be project results",
-                   "0",
-                   "1");
+        performGet("/projects?page={page}&size={size}", instanceAdmintoken, requestBuilderCustomizer,
+                   "Error there must be project results", "0", "1");
     }
 
     /**
@@ -137,8 +134,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.size", Matchers.is(20)));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                                                        .jsonPath(JSON_PATH_ROOT + ".metadata.totalElements",
-                                                                  Matchers.is(3)));
+                .jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(3)));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages",
                                                                                Matchers.is(1)));
         performGet("/projects", instanceAdmintoken, requestBuilderCustomizer, "Error there must be project results");
@@ -158,9 +154,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performGet("/projects/test1",
-                   instanceAdmintoken,
-                   requestBuilderCustomizer,
+        performGet("/projects/test1", instanceAdmintoken, requestBuilderCustomizer,
                    "Error there must be project results");
     }
 
@@ -181,10 +175,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         Project project = new Project("description", "icon", true, "create-project");
         project.setLabel("create-project");
-        performPost("/projects",
-                    instanceAdmintoken,
-                    project,
-                    requestBuilderCustomizer,
+        performPost("/projects", instanceAdmintoken, project, requestBuilderCustomizer,
                     "Error there must be project results");
     }
 
@@ -196,20 +187,14 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         Project project = new Project("description", "icon", true, "create-project");
         project.setLabel("create-project");
-        performPost("/projects",
-                    instanceAdmintoken,
-                    project,
-                    requestBuilderCustomizer,
+        performPost("/projects", instanceAdmintoken, project, requestBuilderCustomizer,
                     "Error there must be project results");
 
         requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isConflict());
         project = new Project("description", "icon", true, "creAte-project");
         project.setLabel("create-project");
-        performPost("/projects",
-                    instanceAdmintoken,
-                    project,
-                    requestBuilderCustomizer,
+        performPost("/projects", instanceAdmintoken, project, requestBuilderCustomizer,
                     "Error there must be project results");
 
     }
@@ -229,10 +214,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performPut("/projects/" + project.getName(),
-                   instanceAdmintoken,
-                   project,
-                   requestBuilderCustomizer,
+        performPut("/projects/" + project.getName(), instanceAdmintoken, project, requestBuilderCustomizer,
                    "Error there must be project results");
     }
 
