@@ -1,9 +1,5 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
-import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -25,13 +21,14 @@ import javax.persistence.NamedSubgraph;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.hibernate.annotations.Type;
 import org.springframework.util.MimeType;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
@@ -49,7 +46,9 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
-@Table(name = "t_data_file", indexes = { @Index(name = "idx_data_file_checksum", columnList = "checksum") })
+@Table(name = "t_data_file", indexes = { @Index(name = "idx_data_file_checksum", columnList = "checksum"),
+        @Index(name = "idx_data_file_state", columnList = "state"),
+        @Index(name = "idx_data_file_aip", columnList = "aip_ip_id") })
 // @formatter:off
 @NamedEntityGraph(name = "graph.datafile.full", attributeNodes = { @NamedAttributeNode("aipEntity"),
         @NamedAttributeNode(value = "prioritizedDataStorages", subgraph = "graph.datafile.prioritizedDataStorages") },
@@ -69,6 +68,10 @@ public class StorageDataFile {
      * length used as the checksum column definition. Why 128? it allows to use sha-512. That should limit issues with checksum length for a few years
      */
     public static final int CHECKSUM_MAX_LENGTH = 128;
+
+    @Convert(converter = SetStringCsvConverter.class)
+    @Column(name = "failure_causes")
+    private final Set<String> failureCauses = new HashSet<>();
 
     /**
      * The id
@@ -168,10 +171,6 @@ public class StorageDataFile {
     @Min(value = 0, message = "Attribute notYetStoredBy cannot be negative. Actual value : ${validatedValue}")
     private Long notYetStoredBy = 0L;
 
-    @Convert(converter = SetStringCsvConverter.class)
-    @Column(name = "failure_causes")
-    private final Set<String> failureCauses = new HashSet<>();
-
     /**
      * Default constructor
      */
@@ -186,8 +185,15 @@ public class StorageDataFile {
      * @param aip
      */
     public StorageDataFile(OAISDataObject file, MimeType mimeType, AIP aip) {
-        this(file.getUrls(), file.getChecksum(), file.getAlgorithm(), file.getRegardsDataType(), file.getFileSize(),
-             mimeType, aip, null, null);
+        this(file.getUrls(),
+             file.getChecksum(),
+             file.getAlgorithm(),
+             file.getRegardsDataType(),
+             file.getFileSize(),
+             mimeType,
+             aip,
+             null,
+             null);
         String name = file.getFilename();
         if (Strings.isNullOrEmpty(name)) {
             String[] pathParts = file.getUrls().iterator().next().getPath().split("/");

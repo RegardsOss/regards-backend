@@ -3,7 +3,6 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
-import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -14,6 +13,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
@@ -103,6 +105,11 @@ public class AIPController implements IResourceController<AIP> {
      * Controller path for bulk aip requests
      */
     public static final String AIP_BULK = "/bulk";
+
+    /**
+     * Controller path for bulk aip requests deletion
+     */
+    public static final String AIP_BULK_DELETE = "/bulkdelete";
 
     /**
      * Controller path to ask for dataFiles
@@ -195,12 +202,10 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "send a page of aips")
     public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState pState,
-            @RequestParam(name = "from", required = false) String from,
-            @RequestParam(name = "to", required = false) String to, final Pageable pPageable,
+            @RequestParam(name = "from", required = false) OffsetDateTime from,
+            @RequestParam(name = "to", required = false) OffsetDateTime to, final Pageable pPageable,
             final PagedResourcesAssembler<AIP> pAssembler) throws ModuleException {
-        OffsetDateTime fromDate = OffsetDateTimeAdapter.parse(from);
-        OffsetDateTime toDate = OffsetDateTimeAdapter.parse(to);
-        Page<AIP> aips = aipService.retrieveAIPs(pState, fromDate, toDate, pPageable);
+        Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, pPageable);
         return new ResponseEntity<>(toPagedResources(aips, pAssembler), HttpStatus.OK);
     }
 
@@ -229,11 +234,8 @@ public class AIPController implements IResourceController<AIP> {
             }
         }
         // small hack to be used thanks to GSON which does not know how to deserialize Page or PageImpl
-        PagedResources<AipDataFiles> aipDataFiles = new PagedResources<>(content,
-                                                                         new PagedResources.PageMetadata(page.getSize(),
-                                                                                                         page.getNumber(),
-                                                                                                         page.getTotalElements(),
-                                                                                                         page.getTotalPages()));
+        PagedResources<AipDataFiles> aipDataFiles = new PagedResources<>(content, new PagedResources.PageMetadata(
+                page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages()));
         return new ResponseEntity<>(aipDataFiles, HttpStatus.OK);
     }
 
@@ -302,19 +304,17 @@ public class AIPController implements IResourceController<AIP> {
      * Delete aips that are associated to at least one of the provided sips, represented by their ip id
      * @return SIP for which the deletion could not be made
      */
-    @RequestMapping(method = RequestMethod.DELETE)
-    @ResponseBody
-    @ResourceAccess(description = "delete AIPs associated to the given SIP, given threw its ip id",
-            role = DefaultRole.ADMIN)
-    public ResponseEntity<List<RejectedSip>> deleteAipFromSips(@RequestParam("sip_ip_id") Set<String> sipIpIds)
+    @RequestMapping(value = AIP_BULK_DELETE, method = RequestMethod.POST)
+    @ResourceAccess(description = "Delete AIPs associated to the given SIP", role = DefaultRole.ADMIN)
+    public ResponseEntity<List<RejectedSip>> deleteAipFromSips(@RequestBody Set<String> sipIpIds)
             throws ModuleException {
         List<RejectedSip> notHandledSips = Lists.newArrayList();
         for (String sipIpId : sipIpIds) {
             Set<StorageDataFile> notSuppressible = aipService.deleteAipFromSip(sipIpId);
             if (!notSuppressible.isEmpty()) {
                 StringJoiner sj = new StringJoiner(", ",
-                                                   "This sip could not be deleted because at least one of its aip file has not be handle by the storage process: ",
-                                                   ".");
+                        "This sip could not be deleted because at least one of its aip file has not be handle by the storage process: ",
+                        ".");
                 notSuppressible.stream().map(sdf -> sdf.getAipEntity())
                         .forEach(aipEntity -> sj.add(aipEntity.getIpId()));
                 notHandledSips.add(new RejectedSip(sipIpId, sj.toString()));
@@ -439,8 +439,8 @@ public class AIPController implements IResourceController<AIP> {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             StringJoiner sj = new StringJoiner(", ",
-                                               "This aip could not be deleted because at least one of his files has not be handle by the storage process: ",
-                                               ".");
+                    "This aip could not be deleted because at least one of his files has not be handle by the storage process: ",
+                    ".");
             notSuppressible.stream().map(sdf -> sdf.getAipEntity()).forEach(aipEntity -> sj.add(aipEntity.getIpId()));
             return new ResponseEntity<>(sj.toString(), HttpStatus.CONFLICT);
         }
@@ -510,24 +510,14 @@ public class AIPController implements IResourceController<AIP> {
     @Override
     public Resource<AIP> toResource(AIP pElement, Object... pExtras) {
         Resource<AIP> resource = resourceService.toResource(pElement);
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "retrieveAIPs",
-                                LinkRels.LIST,
-                                MethodParamFactory.build(AIPState.class),
-                                MethodParamFactory.build(OffsetDateTime.class),
-                                MethodParamFactory.build(OffsetDateTime.class),
-                                MethodParamFactory.build(Pageable.class),
-                                MethodParamFactory.build(PagedResourcesAssembler.class));
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "retrieveAip",
-                                LinkRels.SELF,
+        resourceService
+                .addLink(resource, this.getClass(), "retrieveAIPs", LinkRels.LIST,
+                         MethodParamFactory.build(AIPState.class), MethodParamFactory.build(OffsetDateTime.class),
+                         MethodParamFactory.build(OffsetDateTime.class), MethodParamFactory.build(Pageable.class),
+                         MethodParamFactory.build(PagedResourcesAssembler.class));
+        resourceService.addLink(resource, this.getClass(), "retrieveAip", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "storeRetryUnit",
-                                "retry",
+        resourceService.addLink(resource, this.getClass(), "storeRetryUnit", "retry",
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
         return resource;
     }
@@ -553,7 +543,7 @@ public class AIPController implements IResourceController<AIP> {
         sb.append(microserviceName);
         sb.append(AIP_PATH);
         sb.append(DOWNLOAD_AIP_FILE.replaceAll("\\{ip_id\\}", owningAip.getId().toString())
-                          .replaceAll("\\{checksum\\}", dataFile.getChecksum()));
+                .replaceAll("\\{checksum\\}", dataFile.getChecksum()));
         URL downloadUrl = new URL(sb.toString());
         dataFile.setUrl(downloadUrl);
     }
