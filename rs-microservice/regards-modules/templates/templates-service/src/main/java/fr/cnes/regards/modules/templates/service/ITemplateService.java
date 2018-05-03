@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.templates.service;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.mail.SimpleMailMessage;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -33,6 +34,8 @@ import fr.cnes.regards.modules.templates.domain.Template;
  * @author Xavier-Alexandre Brochard
  */
 public interface ITemplateService {
+
+    void init(ApplicationReadyEvent event);
 
     /**
      * @return the list of templates

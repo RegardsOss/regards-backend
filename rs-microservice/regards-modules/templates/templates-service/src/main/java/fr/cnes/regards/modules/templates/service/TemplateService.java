@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.templates.service;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -31,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
@@ -123,15 +123,20 @@ public class TemplateService implements ITemplateService {
     }
 
     /**
-     * Init medthod
+     * Init method
      */
-    @PostConstruct
-    public void init() {
-        for (final String tenant : tenantResolver.getAllActiveTenants()) {
-            // Set working tenant
-            runtimeTenantResolver.forceTenant(tenant);
+    @EventListener
+    public void init(ApplicationReadyEvent event) {
+        if (runtimeTenantResolver.isInstance()) {
             // Init default templates for this tenant
             initDefaultTemplates();
+        } else {
+            for (final String tenant : tenantResolver.getAllActiveTenants()) {
+                // Set working tenant
+                runtimeTenantResolver.forceTenant(tenant);
+                // Init default templates for this tenant
+                initDefaultTemplates();
+            }
         }
     }
 
