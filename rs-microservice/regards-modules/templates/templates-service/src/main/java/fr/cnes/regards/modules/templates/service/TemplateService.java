@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.templates.service;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -31,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
@@ -81,6 +81,11 @@ public class TemplateService implements ITemplateService {
     private static final int INCOMPATIBLE_IMPROVEMENTS_VERSION_MICRO = 25;
 
     /**
+     * Instance microservice type
+     */
+    private static final String MS_INSTANCE_TYPE = "instance";
+
+    /**
      * The JPA repository managing CRUD operation on templates. Autowired by Spring.
      */
     @Autowired
@@ -109,15 +114,6 @@ public class TemplateService implements ITemplateService {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private Template passwordResetTemplate;
-
-    @Autowired
-    private Template accountUnlockTemplate;
-
-    @Autowired
-    private Template accountRefusedTemplate;
-
-    @Autowired
     @Resource(name = TemplateServiceConfiguration.TEMPLATES)
     private List<Template> templates;
 
@@ -127,20 +123,28 @@ public class TemplateService implements ITemplateService {
     @Value("${spring.application.name}")
     private String microserviceName;
 
+    @Value("${regards.microservice.type:multitenant}")
+    private String microserviceType;
+
     public TemplateService() throws IOException {
         configureTemplateLoader();
     }
 
     /**
-     * Init medthod
+     * Init method
      */
-    @PostConstruct
-    public void init() {
-        for (final String tenant : tenantResolver.getAllActiveTenants()) {
-            // Set working tenant
-            runtimeTenantResolver.forceTenant(tenant);
+    @EventListener
+    public void init(ApplicationReadyEvent event) {
+        if (microserviceType.equals(MS_INSTANCE_TYPE)) {
             // Init default templates for this tenant
             initDefaultTemplates();
+        } else {
+            for (final String tenant : tenantResolver.getAllActiveTenants()) {
+                // Set working tenant
+                runtimeTenantResolver.forceTenant(tenant);
+                // Init default templates for this tenant
+                initDefaultTemplates();
+            }
         }
     }
 
@@ -217,7 +221,7 @@ public class TemplateService implements ITemplateService {
      * Configure the template loader
      * @throws IOException when error occurs during template loading
      */
-    private void configureTemplateLoader() throws IOException {
+    private void configureTemplateLoader() {
         configuration = new Configuration(
                 new Version(INCOMPATIBLE_IMPROVEMENTS_VERSION_MAJOR, INCOMPATIBLE_IMPROVEMENTS_VERSION_MINOR,
                             INCOMPATIBLE_IMPROVEMENTS_VERSION_MICRO));
@@ -231,22 +235,8 @@ public class TemplateService implements ITemplateService {
     public SimpleMailMessage writeToEmail(String templateCode, String subject, Map<String, ? extends Object> dataModel,
             String... recipients) throws EntityNotFoundException {
         // Retrieve the template of given code
-        Template template = null;
-        if (!runtimeTenantResolver.isInstance()) {
-            template = templateRepository.findOneByCode(templateCode)
-                    .orElseThrow(() -> new EntityNotFoundException(templateCode, Template.class));
-        } else { // On instance, no access to project databases so templates are managed by hand
-            if (accountUnlockTemplate.getCode().equals(templateCode)) {
-                template = accountUnlockTemplate;
-            } else if (passwordResetTemplate.getCode().equals(templateCode)) {
-                template = passwordResetTemplate;
-            } else if (accountRefusedTemplate.getCode().equals(templateCode)) {
-                template = accountRefusedTemplate;
-            }
-            if (template == null) {
-                throw new EntityNotFoundException(templateCode, Template.class);
-            }
-        }
+        Template template = templateRepository.findOneByCode(templateCode)
+                .orElseThrow(() -> new EntityNotFoundException(templateCode, Template.class));
 
         // Add the template (regards template POJO) to the loader
         loader.putTemplate(template.getCode(), template.getContent());

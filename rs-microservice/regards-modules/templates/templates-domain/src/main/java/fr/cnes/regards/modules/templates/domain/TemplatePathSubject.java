@@ -1,9 +1,10 @@
 package fr.cnes.regards.modules.templates.domain;
 
 /**
+ * Convenient bean to store both template path and subject
  * @author Sylvain VISSIERE-GUERINET
  */
-public class TemplatePathSubsject {
+public class TemplatePathSubject {
 
     /**
      * The template path
@@ -20,7 +21,7 @@ public class TemplatePathSubsject {
      * @param templatePath
      * @param emailSubject
      */
-    public TemplatePathSubsject(String templatePath, String emailSubject) {
+    public TemplatePathSubject(String templatePath, String emailSubject) {
         this.templatePath = templatePath;
         this.emailSubject = emailSubject;
     }
