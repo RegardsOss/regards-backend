@@ -81,6 +81,11 @@ public class TemplateService implements ITemplateService {
     private static final int INCOMPATIBLE_IMPROVEMENTS_VERSION_MICRO = 25;
 
     /**
+     * Instance microservice type
+     */
+    private static final String MS_INSTANCE_TYPE = "instance";
+
+    /**
      * The JPA repository managing CRUD operation on templates. Autowired by Spring.
      */
     @Autowired
@@ -118,6 +123,9 @@ public class TemplateService implements ITemplateService {
     @Value("${spring.application.name}")
     private String microserviceName;
 
+    @Value("${regards.microservice.type:multitenant}")
+    private String microserviceType;
+
     public TemplateService() throws IOException {
         configureTemplateLoader();
     }
@@ -127,7 +135,7 @@ public class TemplateService implements ITemplateService {
      */
     @EventListener
     public void init(ApplicationReadyEvent event) {
-        if (runtimeTenantResolver.isInstance()) {
+        if (microserviceType.equals(MS_INSTANCE_TYPE)) {
             // Init default templates for this tenant
             initDefaultTemplates();
         } else {
