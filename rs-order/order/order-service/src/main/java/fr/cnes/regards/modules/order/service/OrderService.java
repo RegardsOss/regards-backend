@@ -221,6 +221,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public Order createOrder(Basket basket, String url) {
+        LOGGER.info("Creating order with owner {}", basket.getOwner());
         Order order = new Order();
         order.setCreationDate(OffsetDateTime.now());
         order.setExpirationDate(order.getCreationDate().plus(orderValidationPeriodDays, ChronoUnit.DAYS));
@@ -245,6 +246,7 @@ public class OrderService implements IOrderService {
     @Override
     public void completeOrderCreation(Basket basket, Order order, String role) {
         try {
+            LOGGER.info("Completing order (id: {}) with owner {}...", order.getId(), basket.getOwner());
             // To search objects with SearchClient
             FeignSecurityManager.asUser(basket.getOwner(), role);
             int priority = orderJobService.computePriority(order.getOwner(), role);
@@ -323,6 +325,7 @@ public class OrderService implements IOrderService {
             order.setStatus(OrderStatus.RUNNING);
         }
         order = repos.save(order);
+        LOGGER.info("Order (id: {}) saved with status {}", order.getId(), order.getStatus());
         if (order.getStatus() != OrderStatus.FAILED) {
             try {
                 sendOrderCreationEmail(order);
@@ -333,6 +336,7 @@ public class OrderService implements IOrderService {
         }
         // Remove basket only if order has been well-created
         if (order.getStatus() != OrderStatus.FAILED) {
+            LOGGER.info("Basket emptied");
             basketRepository.delete(basket.getId());
         }
     }
@@ -408,6 +412,7 @@ public class OrderService implements IOrderService {
      */
     private void createSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order,
             String role, int priority) {
+        LOGGER.info("Creating sub-order of {} files", bucketFiles.size());
         OffsetDateTime expirationDate = order.getExpirationDate();
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(order.getId());
