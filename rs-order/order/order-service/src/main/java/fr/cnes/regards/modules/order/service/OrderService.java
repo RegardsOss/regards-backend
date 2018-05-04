@@ -328,8 +328,10 @@ public class OrderService implements IOrderService {
             }
             orderJobService.manageUserOrderJobInfos(order.getOwner());
         }
-        // Remove basket
-        basketRepository.delete(basket.getId());
+        // Remove basket only if order has been well-created
+        if (order.getStatus() != OrderStatus.FAILED) {
+            basketRepository.delete(basket.getId());
+        }
     }
 
     /**
