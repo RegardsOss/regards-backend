@@ -193,7 +193,7 @@ public class OrderController implements IResourceController<OrderDto> {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
         }
         response.addHeader("Content-disposition",
-                           "attachment;filename=order_" + OffsetDateTime.now().toString() + ".zip");
+                           "attachment;filename=order_" + orderId + "_" + OffsetDateTime.now().toString() + ".zip");
         response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
         List<OrderDataFile> availableFiles = new ArrayList<>(dataFileService.findAllAvailables(orderId));
         // No file available
