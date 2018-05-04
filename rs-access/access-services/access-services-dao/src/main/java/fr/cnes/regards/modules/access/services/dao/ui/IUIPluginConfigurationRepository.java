@@ -79,16 +79,17 @@ public interface IUIPluginConfigurationRepository extends JpaRepository<UIPlugin
             Pageable pPageable);
 
     /**
-    *
-    * Find all actives {@link UIPluginConfiguration} associated to all entities througth linkedToAllEntities parameter with the given type
-    *
-    * @param pPluginType type
-    * @param pIsActive [true|false]
-    * @param pIsLinkedToAllEntities [true|false]
-    * @param pPageable
-    * @return {@link Page} of {@link UIPluginConfiguration}
-    * @since 1.0-SNAPSHOT
-    */
+     *
+     * Find all actives {@link UIPluginConfiguration} associated to all entities througth linkedToAllEntities parameter
+     * with the given type
+     *
+     * @param pPluginType type
+     * @param pIsActive [true|false]
+     * @param pIsLinkedToAllEntities [true|false]
+     * @param pPageable
+     * @return {@link Page} of {@link UIPluginConfiguration}
+     * @since 1.0-SNAPSHOT
+     */
     Page<UIPluginConfiguration> findByPluginDefinitionTypeAndActiveAndLinkedToAllEntities(UIPluginTypesEnum pPluginType,
             Boolean pIsActive, Boolean pIsLinkedToAllEntities, Pageable pPageable);
 
@@ -129,4 +130,9 @@ public interface IUIPluginConfigurationRepository extends JpaRepository<UIPlugin
 
     Page<UIPluginConfiguration> findByPluginDefinitionType(UIPluginTypesEnum pPluginType, Pageable pPageable);
 
+    long countByPluginDefinition(UIPluginDefinition pPlugin);
+
+    default boolean hasPluginConfigurations(UIPluginDefinition pPlugin) {
+        return countByPluginDefinition(pPlugin) > 0;
+    }
 }
