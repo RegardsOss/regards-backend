@@ -223,7 +223,7 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
                                     .format("Data storage(configuration id: %s, configuration label: %s) has reach its "
                                             + "disk usage critical threshold. Actual occupation: %.2f%%, critical threshold: %s%%",
                                             activeDataStorageConf.getId().toString(), activeDataStorageConf.getLabel(),
-                                            ratio, threshold);
+                                            ratio, criticalThreshold);
                             LOGGER.error(message);
                             notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
                                          message, NotificationType.ERROR);
