@@ -442,7 +442,7 @@ public class OrderServiceIT {
         order.setStatus(OrderStatus.DONE);
         orderRepos.save(order);
 
-        orderService.sendPeriodicNotifications();
+//        orderService.sendPeriodicNotifications();
 
         // F%$king test which functions when thez want
         if (mailMessage != null) {
