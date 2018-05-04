@@ -270,7 +270,6 @@ public class OrderService implements IOrderService {
                                 if ((file.getSize() != null) && (file.getSize().longValue() != 0l)) {
                                     OrderDataFile orderDataFile = new OrderDataFile(file, object.getIpId(),
                                                                                     order.getId());
-                                    dataFileService.save(orderDataFile);
                                     bucketFiles.add(orderDataFile);
                                     // Send a very useful notification if file is bigger than bucket size
                                     if (orderDataFile.getSize() > bucketSize) {
@@ -291,6 +290,8 @@ public class OrderService implements IOrderService {
                         }
                         // If sum of files size > bucketSize, add a new bucket
                         if (bucketFiles.stream().mapToLong(DataFile::getSize).sum() >= bucketSize) {
+                            // Create all bucket data files at once
+                            dataFileService.create(bucketFiles);
                             createSubOrder(basket, dsTask, bucketFiles, order, role, priority);
                             bucketFiles.clear();
                         }
@@ -300,6 +301,8 @@ public class OrderService implements IOrderService {
                 }
                 // Manage remaining files
                 if (!bucketFiles.isEmpty()) {
+                    // Create all bucket data files at once
+                    dataFileService.create(bucketFiles);
                     createSubOrder(basket, dsTask, bucketFiles, order, role, priority);
                 }
 
