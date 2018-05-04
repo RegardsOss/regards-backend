@@ -52,6 +52,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriUtils;
@@ -228,79 +229,107 @@ public class OrderService implements IOrderService {
         order.setStatus(OrderStatus.PENDING);
         // To generate orderId
         order = repos.save(order);
-        int priority = orderJobService.computePriority(order.getOwner(), authResolver.getRole());
+        // Asynchronous operation
+        self.asyncCompleteOrderCreation(basket, order, authResolver.getRole(), runtimeTenantResolver.getTenant());
+        return order;
+    }
 
-        // Dataset selections
-        for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
-            DatasetTask dsTask = createDatasetTask(dsSel);
+    @Override
+    @Async
+    @Transactional(value = Transactional.TxType.NOT_SUPPORTED)
+    public void asyncCompleteOrderCreation(Basket basket, Order order, String role, String tenant) {
+        runtimeTenantResolver.forceTenant(tenant);
+        self.completeOrderCreation(basket, order, role);
+    }
 
-            Set<OrderDataFile> bucketFiles = new HashSet<>();
+    @Override
+    public void completeOrderCreation(Basket basket, Order order, String role) {
+        try {
+            // To search objects with SearchClient
+            FeignSecurityManager.asUser(basket.getOwner(), role);
+            int priority = orderJobService.computePriority(order.getOwner(), role);
 
-            // Execute opensearch request
-            int page = 0;
-            List<DataObject> objects = searchDataObjects(dsTask.getOpenSearchRequest(), page);
-            while (!objects.isEmpty()) {
-                // For each DataObject
-                for (DataObject object : objects) {
-                    // For each asked DataTypes
-                    Multimap<DataType, DataFile> filesMultimap = object.getFiles();
-                    for (DataType dataType : DATA_TYPES) {
-                        for (DataFile file : filesMultimap.get(dataType)) {
-                            // Only DataFile with a size (and != 0) are taken into account (others are not managed by
-                            // rs-storage hence cannot be ordered)
-                            if ((file.getSize() != null) && (file.getSize().longValue() != 0l)) {
-                                OrderDataFile orderDataFile = new OrderDataFile(file, object.getIpId(), order.getId());
-                                dataFileService.save(orderDataFile);
-                                bucketFiles.add(orderDataFile);
-                                // Send a very useful notification if file is bigger than bucket size
-                                if (orderDataFile.getSize() > bucketSize) {
-                                    FeignSecurityManager.asSystem();
-                                    NotificationDTO notif = new NotificationDTO(
-                                            String.format("File \"%s\" is bigger than sub-order size",
-                                                          orderDataFile.getName()), Collections.emptySet(),
-                                            Collections.singleton(DefaultRole.PROJECT_ADMIN.name()), microserviceName,
-                                            "Order creation", NotificationType.WARNING);
-                                    notificationClient.createNotification(notif);
-                                    FeignSecurityManager.reset();
+            // Dataset selections
+            for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
+                DatasetTask dsTask = createDatasetTask(dsSel);
+
+                Set<OrderDataFile> bucketFiles = new HashSet<>();
+
+                // Execute opensearch request
+                int page = 0;
+                List<DataObject> objects = searchDataObjects(dsTask.getOpenSearchRequest(), page);
+                while (!objects.isEmpty()) {
+                    // For each DataObject
+                    for (DataObject object : objects) {
+                        // For each asked DataTypes
+                        Multimap<DataType, DataFile> filesMultimap = object.getFiles();
+                        for (DataType dataType : DATA_TYPES) {
+                            for (DataFile file : filesMultimap.get(dataType)) {
+                                // Only DataFile with a size (and != 0) are taken into account (others are not managed by
+                                // rs-storage hence cannot be ordered)
+                                if ((file.getSize() != null) && (file.getSize().longValue() != 0l)) {
+                                    OrderDataFile orderDataFile = new OrderDataFile(file, object.getIpId(),
+                                                                                    order.getId());
+                                    dataFileService.save(orderDataFile);
+                                    bucketFiles.add(orderDataFile);
+                                    // Send a very useful notification if file is bigger than bucket size
+                                    if (orderDataFile.getSize() > bucketSize) {
+                                        // To send a notification, NotificationClient needs it
+                                        FeignSecurityManager.asSystem();
+                                        NotificationDTO notif = new NotificationDTO(
+                                                String.format("File \"%s\" is bigger than sub-order size",
+                                                              orderDataFile.getName()), Collections.emptySet(),
+                                                Collections.singleton(DefaultRole.PROJECT_ADMIN.name()),
+                                                microserviceName, "Order creation", NotificationType.WARNING);
+                                        notificationClient.createNotification(notif);
+                                        FeignSecurityManager.reset();
+                                        // To search objects with SearchClient
+                                        FeignSecurityManager.asUser(basket.getOwner(), role);
+                                    }
                                 }
                             }
                         }
+                        // If sum of files size > bucketSize, add a new bucket
+                        if (bucketFiles.stream().mapToLong(DataFile::getSize).sum() >= bucketSize) {
+                            createSubOrder(basket, dsTask, bucketFiles, order, role, priority);
+                            bucketFiles.clear();
+                        }
                     }
-                    // If sum of files size > bucketSize, add a new bucket
-                    if (bucketFiles.stream().mapToLong(DataFile::getSize).sum() >= bucketSize) {
-                        createSubOrder(basket, dsTask, bucketFiles, order, priority);
-
-                        bucketFiles.clear();
-                    }
+                    page++;
+                    objects = searchDataObjects(dsSel.getOpenSearchRequest(), page);
                 }
-                page++;
-                objects = searchDataObjects(dsSel.getOpenSearchRequest(), page);
-            }
-            // Manage remaining files
-            if (!bucketFiles.isEmpty()) {
-                createSubOrder(basket, dsTask, bucketFiles, order, priority);
-            }
+                // Manage remaining files
+                if (!bucketFiles.isEmpty()) {
+                    createSubOrder(basket, dsTask, bucketFiles, order, role, priority);
+                }
 
-            // Add dsTask ONLY IF it contains at least one FilesTask
-            if (!dsTask.getReliantTasks().isEmpty()) {
-                order.addDatasetOrderTask(dsTask);
+                // Add dsTask ONLY IF it contains at least one FilesTask
+                if (!dsTask.getReliantTasks().isEmpty()) {
+                    order.addDatasetOrderTask(dsTask);
+                }
             }
-        }
-        // Create order only if it contains at least one DatasetTask
-        if (order.getDatasetTasks().isEmpty()) {
-            repos.delete(order.getId());
-            return null;
-        }
-        // Order is ready to be taken into account
-        order.setStatus(OrderStatus.RUNNING);
-        order = repos.save(order);
-        try {
-            sendOrderCreationEmail(order);
         } catch (Exception e) {
-            LOGGER.warn("Error while attempting to send order creation email (order has been created anyway)", e);
+            LOGGER.error("Error while completing order creation", e);
+            order.setStatus(OrderStatus.FAILED);
         }
-        orderJobService.manageUserOrderJobInfos(order.getOwner());
-        return order;
+        // if order doesn't contain at least one DatasetTask, set a FAILED status
+        if (order.getDatasetTasks().isEmpty()) {
+            order.setStatus(OrderStatus.FAILED);
+        } else {
+            // Order is ready to be taken into account
+            order.setStatus(OrderStatus.RUNNING);
+        }
+        order = repos.save(order);
+        if (order.getStatus() != OrderStatus.FAILED) {
+            try {
+                sendOrderCreationEmail(order);
+            } catch (Exception e) {
+                LOGGER.warn("Error while attempting to send order creation email (order has been created anyway)", e);
+            }
+            orderJobService.manageUserOrderJobInfos(order.getOwner());
+        }
+        // Remove basket
+        basketRepository.delete(basket.getId());
     }
 
     /**
@@ -373,7 +402,7 @@ public class OrderService implements IOrderService {
      * Create a sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to DatasetTask
      */
     private void createSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order,
-            int priority) {
+            String role, int priority) {
         OffsetDateTime expirationDate = order.getExpirationDate();
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(order.getId());
@@ -384,8 +413,7 @@ public class OrderService implements IOrderService {
         JobInfo storageJobInfo = new JobInfo(true);
         storageJobInfo.setParameters(new FilesJobParameter(bucketFiles.toArray(new OrderDataFile[bucketFiles.size()])),
                                      new ExpirationDateJobParameter(expirationDate),
-                                     new UserJobParameter(authResolver.getUser()),
-                                     new UserRoleJobParameter(authResolver.getRole()));
+                                     new UserJobParameter(order.getOwner()), new UserRoleJobParameter(role));
         storageJobInfo.setOwner(basket.getOwner());
         storageJobInfo.setClassName("fr.cnes.regards.modules.order.service.job.StorageFilesJob");
         storageJobInfo.setPriority(priority);

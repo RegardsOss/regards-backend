@@ -78,7 +78,7 @@ public class BasketServiceIT {
      */
     @Test
     @Requirement("REGARDS_DSL_STO_CMD_100")
-    public void test() throws EmptyBasketException, EmptySelectionException {
+    public void test() throws EmptyBasketException, EmptySelectionException, InterruptedException {
         Basket basket = basketService.findOrCreate(USER_EMAIL);
 
         Assert.assertNotNull(basketService.find(USER_EMAIL));
@@ -171,11 +171,13 @@ public class BasketServiceIT {
 
         Order order = orderService.createOrder(basket, "http://perdu.com");
 
+        Thread.sleep(15000);
+
         // Email sending test
         Assert.assertNotNull(mailMessage);
         Assert.assertEquals(order.getOwner(), mailMessage.getTo()[0]);
         // Check that email text has been interpreted before being sent
-        ////// CANNOT COMPARE DATES BECAUSE OF LOCALE DIFFERENEC
+        ////// CANNOT COMPARE DATES BECAUSE OF LOCALE DIFFERENCE
         //        SimpleDateFormat sdf = new SimpleDateFormat("d MMM yyyy HH:mm:ss z");
 //        Assert.assertTrue(mailMessage.getText().contains(sdf.format(Date.from(order.getExpirationDate().toInstant()))));
         Assert.assertFalse(mailMessage.getText().contains("${expiration_date}"));

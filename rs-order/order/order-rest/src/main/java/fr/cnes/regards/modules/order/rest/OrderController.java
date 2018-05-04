@@ -113,13 +113,6 @@ public class OrderController implements IResourceController<OrderDto> {
         Basket basket = basketService.find(user);
 
         Order order = orderService.createOrder(basket, orderRequest.getOnSuccessUrl());
-        // Order has been created OR is null (in case access groups have changed and finally it contains nothing),
-        // basket can be emptied
-        basketService.deleteIfExists(user);
-
-        if (order == null) {
-            throw new IllegalStateException("Basket data is no longer valid");
-        }
         return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
     }
 
