@@ -41,6 +41,24 @@ public interface IOrderService {
     Order createOrder(Basket basket, String url);
 
     /**
+     * Asynchronous method called by createOrder to complete order creation. This method cannot be transactional (due
+     * to proxyfication and thread-context execution) so it @see {@link IOrderService#completeOrderCreation} calls next one after forcing given tenant
+     * @param basket basket used to create order (removed at the end of the method)
+     * @param order created order to be completed
+     * @param role current user role
+     * @param tenant current tenant
+     */
+    void asyncCompleteOrderCreation(Basket basket, Order order, String role, String tenant);
+
+    /**
+     * Transactional completeOrderCreation method (must be called AFTER forcing tenant)
+     * @param basket basket used to create order (removed at the end of the method)
+     * @param order created order to be completed
+     * @param role user role
+     */
+    void completeOrderCreation(Basket basket, Order order, String role );
+
+    /**
      * Load an order.
      * Order is simple loaded
      * @param id order id
