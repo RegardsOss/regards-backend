@@ -130,8 +130,7 @@ public interface IOrderService {
      * @param inDataFiles concerned order data files
      * @throws NotYetAvailableException if no files are available yet
      */
-    void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os)
-            throws IOException;
+    void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os);
 
     /**
      * Create a metalink file with all files.

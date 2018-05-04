@@ -592,8 +592,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os)
-            throws IOException {
+    public void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os) {
         List<OrderDataFile> availableFiles = new ArrayList<>(inDataFiles);
         List<OrderDataFile> downloadErrorFiles = new ArrayList<>();
 
