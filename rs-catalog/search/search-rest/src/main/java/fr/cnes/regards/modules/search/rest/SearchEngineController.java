@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -53,8 +51,6 @@ public class SearchEngineController {
 
     public static final String ENGINE_MAPPING = "/engines/{engineType}";
 
-    // TODO gérer le path parameter optionnel soit dans RequestMapping value auquel cas, il faut revoir le starter
-    // sécurité pour gérer plusieurs path soit en doublant les méthodes
     public static final String EXTRA_MAPPING = "/{extra}";
 
     // Search endpoints
@@ -65,15 +61,28 @@ public class SearchEngineController {
 
     public static final String SEARCH_COLLECTIONS_MAPPING = "/collections" + ENGINE_MAPPING;
 
+    public static final String SEARCH_COLLECTIONS_MAPPING_EXTRA = SEARCH_COLLECTIONS_MAPPING + EXTRA_MAPPING;
+
     public static final String SEARCH_DOCUMENTS_MAPPING = "/documents" + ENGINE_MAPPING;
+
+    public static final String SEARCH_DOCUMENTS_MAPPING_EXTRA = SEARCH_DOCUMENTS_MAPPING + EXTRA_MAPPING;
 
     public static final String SEARCH_DATAOBJECTS_MAPPING = "/dataobjects" + ENGINE_MAPPING;
 
+    public static final String SEARCH_DATAOBJECTS_MAPPING_EXTRA = SEARCH_DATAOBJECTS_MAPPING + EXTRA_MAPPING;
+
     public static final String SEARCH_DATAOBJECTS_DATASETS_MAPPING = "/dataobjects/datasets" + ENGINE_MAPPING;
+
+    public static final String SEARCH_DATAOBJECTS_DATASETS_MAPPING_EXTRA = SEARCH_DATAOBJECTS_DATASETS_MAPPING
+            + EXTRA_MAPPING;
 
     public static final String SEARCH_DATASETS_MAPPING = "/datasets" + ENGINE_MAPPING;
 
+    public static final String SEARCH_DATASETS_MAPPING_EXTRA = SEARCH_DATASETS_MAPPING + EXTRA_MAPPING;
+
     public static final String SEARCH_DATASET_MAPPING = "/datasets/{datasetId}" + ENGINE_MAPPING;
+
+    public static final String SEARCH_DATASET_MAPPING_EXTRA = SEARCH_DATASET_MAPPING + EXTRA_MAPPING;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngineController.class);
 
@@ -93,8 +102,11 @@ public class SearchEngineController {
         return ResponseEntity.ok("God exists!");
     }
 
+    /**
+     * Extra mapping related to search all request
+     */
     @RequestMapping(method = RequestMethod.GET, value = SEARCH_ALL_MAPPING_EXTRA)
-    @ResourceAccess(description = "Search engines dispatcher for global search")
+    @ResourceAccess(description = "Extra mapping for global search")
     public ResponseEntity<?> searchAllExtra(@PathVariable String engineType, @PathVariable String extra,
             @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> allParams,
             Pageable pageable) throws ModuleException {
@@ -104,36 +116,6 @@ public class SearchEngineController {
         // TODO
         LOGGER.info("You enter search engines hell!");
         allParams.forEach((k, v) -> LOGGER.info("KVP : {} = {}", k, v.toString()));
-        return ResponseEntity.ok("God exists!");
-    }
-
-    @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Search engines dispatcher")
-    public ResponseEntity<?> search(@PathVariable final String datasetId, @PathVariable final String engineType,
-            @RequestParam final Map<String, String> allParams, @RequestHeader HttpHeaders headers)
-            throws ModuleException {
-        // Delegate search to related search engine
-        // To retrieve plugin configuration, use both datasetId and engineType (i.e. the search engine plugin type)
-        // So only one single conf is authorized by datasetId for an engineType
-        // TODO
-        LOGGER.info("You enter search engines hell!");
-        LOGGER.info("Dataset : {} / Engine type : {}", datasetId, engineType);
-        allParams.forEach((k, v) -> LOGGER.info("KVP : {} = {}", k, v));
-        return ResponseEntity.ok("God exists!");
-    }
-
-    @RequestMapping(method = RequestMethod.GET, path = EXTRA_MAPPING)
-    @ResourceAccess(description = "Search engines dispatcher with extra path")
-    public ResponseEntity<?> searchExtra(@PathVariable final String datasetId, @PathVariable final String engineType,
-            @PathVariable final String extra, @RequestParam final Map<String, String> allParams)
-            throws ModuleException {
-        // Delegate search to related search engine
-        // To retrieve plugin configuration, use both datasetId and engineType (i.e. the search engine plugin type)
-        // So only one single conf is authorized by datasetId for an engineType
-        // TODO
-        LOGGER.info("You enter search engines hell!");
-        LOGGER.info("Dataset : {} / Engine type : {} / Extra : {}", datasetId, engineType, extra);
-        allParams.forEach((k, v) -> LOGGER.info("KVP : {} = {}", k, v));
         return ResponseEntity.ok("God exists!");
     }
 
