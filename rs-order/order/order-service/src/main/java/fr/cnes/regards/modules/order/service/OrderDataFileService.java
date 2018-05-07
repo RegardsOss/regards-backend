@@ -66,6 +66,11 @@ public class OrderDataFileService implements IOrderDataFileService {
     private IOrderRepository orderRepository;
 
     @Override
+    public Iterable<OrderDataFile> create(Iterable<OrderDataFile> dataFiles) {
+        return repos.save(dataFiles);
+    }
+
+    @Override
     public OrderDataFile save(OrderDataFile dataFile) {
         dataFile = repos.save(dataFile);
         // Look at FilesTask if it is ended (no more file to download)...

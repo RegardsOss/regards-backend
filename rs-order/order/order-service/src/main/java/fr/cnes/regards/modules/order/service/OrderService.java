@@ -221,6 +221,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public Order createOrder(Basket basket, String url) {
+        LOGGER.info("Creating order with owner {}", basket.getOwner());
         Order order = new Order();
         order.setCreationDate(OffsetDateTime.now());
         order.setExpirationDate(order.getCreationDate().plus(orderValidationPeriodDays, ChronoUnit.DAYS));
@@ -245,6 +246,7 @@ public class OrderService implements IOrderService {
     @Override
     public void completeOrderCreation(Basket basket, Order order, String role) {
         try {
+            LOGGER.info("Completing order (id: {}) with owner {}...", order.getId(), basket.getOwner());
             // To search objects with SearchClient
             FeignSecurityManager.asUser(basket.getOwner(), role);
             int priority = orderJobService.computePriority(order.getOwner(), role);
@@ -270,7 +272,6 @@ public class OrderService implements IOrderService {
                                 if ((file.getSize() != null) && (file.getSize().longValue() != 0l)) {
                                     OrderDataFile orderDataFile = new OrderDataFile(file, object.getIpId(),
                                                                                     order.getId());
-                                    dataFileService.save(orderDataFile);
                                     bucketFiles.add(orderDataFile);
                                     // Send a very useful notification if file is bigger than bucket size
                                     if (orderDataFile.getSize() > bucketSize) {
@@ -291,6 +292,8 @@ public class OrderService implements IOrderService {
                         }
                         // If sum of files size > bucketSize, add a new bucket
                         if (bucketFiles.stream().mapToLong(DataFile::getSize).sum() >= bucketSize) {
+                            // Create all bucket data files at once
+                            dataFileService.create(bucketFiles);
                             createSubOrder(basket, dsTask, bucketFiles, order, role, priority);
                             bucketFiles.clear();
                         }
@@ -300,6 +303,8 @@ public class OrderService implements IOrderService {
                 }
                 // Manage remaining files
                 if (!bucketFiles.isEmpty()) {
+                    // Create all bucket data files at once
+                    dataFileService.create(bucketFiles);
                     createSubOrder(basket, dsTask, bucketFiles, order, role, priority);
                 }
 
@@ -320,6 +325,7 @@ public class OrderService implements IOrderService {
             order.setStatus(OrderStatus.RUNNING);
         }
         order = repos.save(order);
+        LOGGER.info("Order (id: {}) saved with status {}", order.getId(), order.getStatus());
         if (order.getStatus() != OrderStatus.FAILED) {
             try {
                 sendOrderCreationEmail(order);
@@ -330,6 +336,7 @@ public class OrderService implements IOrderService {
         }
         // Remove basket only if order has been well-created
         if (order.getStatus() != OrderStatus.FAILED) {
+            LOGGER.info("Basket emptied");
             basketRepository.delete(basket.getId());
         }
     }
@@ -405,6 +412,7 @@ public class OrderService implements IOrderService {
      */
     private void createSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order,
             String role, int priority) {
+        LOGGER.info("Creating sub-order of {} files", bucketFiles.size());
         OffsetDateTime expirationDate = order.getExpirationDate();
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(order.getId());
@@ -431,7 +439,9 @@ public class OrderService implements IOrderService {
         ResponseEntity<PagedResources<Resource<DataObject>>> pagedResourcesResponseEntity = searchClient
                 .searchDataobjects(requestMap, page, MAX_PAGE_SIZE);
         // It is mandatory to check NOW, at creation instant of order from basket, if data object files are still downloadable
-        return pagedResourcesResponseEntity.getBody().getContent().stream().map(r -> r.getContent())
+        Collection<Resource<DataObject>> objects = pagedResourcesResponseEntity.getBody().getContent();
+        // If a lot of objects, parallelisation is very useful, if not we don't really care
+        return objects.parallelStream().map(resource -> resource.getContent())
                 .filter(dataObject -> dataObject.getDownloadable()).collect(Collectors.toList());
     }
 
@@ -582,8 +592,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os)
-            throws IOException {
+    public void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os) {
         List<OrderDataFile> availableFiles = new ArrayList<>(inDataFiles);
         List<OrderDataFile> downloadErrorFiles = new ArrayList<>();
 

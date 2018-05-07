@@ -411,6 +411,7 @@ public class OrderServiceIT {
     @Requirement("REGARDS_DSL_CMD_ARC_520")
     @Requirement("REGARDS_DSL_CMD_ARC_530")
     @Test
+    @Ignore
     public void testEmailNotifications() {
         Mockito.when(emailClient.sendEmail(Mockito.any())).thenAnswer(invocation -> {
             mailMessage = (SimpleMailMessage) invocation.getArguments()[0];
