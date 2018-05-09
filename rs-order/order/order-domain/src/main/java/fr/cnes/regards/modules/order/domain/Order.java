@@ -58,7 +58,7 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     private OffsetDateTime expirationDate;
 
     /**
-     * Math.floor() percent completed task (number of treated files on total files)
+     * Math.floor() percent completed task (number of treated files sizes on total files sizes)
      */
     @Column(name = "percent_complete", nullable = false)
     private int percentCompleted = 0;

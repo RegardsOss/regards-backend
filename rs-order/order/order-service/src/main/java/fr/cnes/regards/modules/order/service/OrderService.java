@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.order.service;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.transaction.Transactional;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -17,6 +16,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
@@ -37,14 +39,12 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.http.HttpHost;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
-import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
@@ -58,6 +58,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriUtils;
 import org.xml.sax.SAXException;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
@@ -79,6 +80,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
@@ -127,6 +129,8 @@ public class OrderService implements IOrderService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
 
     private static final String METALINK_XML_SCHEMA_NAME = "metalink.xsd";
+
+    private static final int MAX_EXTERNAL_BUCKET_FILE_COUNT = 1_000;
 
     public static final int MAX_PAGE_SIZE = 10_000;
 
@@ -179,7 +183,7 @@ public class OrderService implements IOrderService {
     private INotificationClient notificationClient;
 
     @Value("${regards.order.files.bucket.size.Mb:100}")
-    private int bucketSizeMb;
+    private int storageBucketSizeMb;
 
     @Value("${regards.order.validation.period.days:3}")
     private int orderValidationPeriodDays;
@@ -196,10 +200,17 @@ public class OrderService implements IOrderService {
     @Value("${zuul.prefix}")
     private String urlPrefix;
 
+    @Value("${http.proxy.host}")
+    private String proxyHost;
+
+    @Value("${http.proxy.port}")
+    private int proxyPort;
+
     @Autowired
     private IEmailClient emailClient;
 
-    private Long bucketSize = null;
+    // Storage bucket size in bytes
+    private Long storageBucketSize = null;
 
     /**
      * Set of DataTypes to retrieve on DataObjects
@@ -212,10 +223,10 @@ public class OrderService implements IOrderService {
      */
     @PostConstruct
     public void init() {
-        // Compute bucketSize from bucketSizeMb filled by Spring
-        bucketSize = bucketSizeMb * 1024l * 1024l;
-        LOGGER.info("OrderService created/refreshed with bucketSize: {}, orderValidationPeriodDays: {}"
-                            + ", daysBeforeSendingNotifEmail: {}...", bucketSize, orderValidationPeriodDays,
+        // Compute storageBucketSize from storageBucketSizeMb filled by Spring
+        storageBucketSize = storageBucketSizeMb * 1024l * 1024l;
+        LOGGER.info("OrderService created/refreshed with storageBucketSize: {}, orderValidationPeriodDays: {}"
+                            + ", daysBeforeSendingNotifEmail: {}...", storageBucketSize, orderValidationPeriodDays,
                     daysBeforeSendingNotifEmail);
     }
 
@@ -251,11 +262,18 @@ public class OrderService implements IOrderService {
             FeignSecurityManager.asUser(basket.getOwner(), role);
             int priority = orderJobService.computePriority(order.getOwner(), role);
 
+            // Count of files managed by Storage (internal)
+            int internalFilesCount = 0;
+            // External files count
+            int externalFilesCount = 0;
             // Dataset selections
             for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
                 DatasetTask dsTask = createDatasetTask(dsSel);
 
-                Set<OrderDataFile> bucketFiles = new HashSet<>();
+                // Bucket of internal files (managed by Storage)
+                Set<OrderDataFile> storageBucketFiles = new HashSet<>();
+                // Bucket of external files (not managed by Storage, directly downloadable)
+                Set<OrderDataFile> externalBucketFiles = new HashSet<>();
 
                 // Execute opensearch request
                 int page = 0;
@@ -263,55 +281,63 @@ public class OrderService implements IOrderService {
                 while (!objects.isEmpty()) {
                     // For each DataObject
                     for (DataObject object : objects) {
-                        // For each asked DataTypes
-                        Multimap<DataType, DataFile> filesMultimap = object.getFiles();
-                        for (DataType dataType : DATA_TYPES) {
-                            for (DataFile file : filesMultimap.get(dataType)) {
-                                // Only DataFile with a size (and != 0) are taken into account (others are not managed by
-                                // rs-storage hence cannot be ordered)
-                                if ((file.getSize() != null) && (file.getSize().longValue() != 0l)) {
-                                    OrderDataFile orderDataFile = new OrderDataFile(file, object.getIpId(),
-                                                                                    order.getId());
-                                    bucketFiles.add(orderDataFile);
-                                    // Send a very useful notification if file is bigger than bucket size
-                                    if (orderDataFile.getSize() > bucketSize) {
-                                        // To send a notification, NotificationClient needs it
-                                        FeignSecurityManager.asSystem();
-                                        NotificationDTO notif = new NotificationDTO(
-                                                String.format("File \"%s\" is bigger than sub-order size",
-                                                              orderDataFile.getName()), Collections.emptySet(),
-                                                Collections.singleton(DefaultRole.PROJECT_ADMIN.name()),
-                                                microserviceName, "Order creation", NotificationType.WARNING);
-                                        notificationClient.createNotification(notif);
-                                        FeignSecurityManager.reset();
-                                        // To search objects with SearchClient
-                                        FeignSecurityManager.asUser(basket.getOwner(), role);
-                                    }
-                                }
+                        // Data object of which files are managed by Storage
+                        if (object.isInternal()) {
+                            addInternalFilesToStorageBucket(basket, order, role, storageBucketFiles, object);
+
+                            // If sum of files size > storageBucketSize, add a new bucket
+                            if (storageBucketFiles.stream().mapToLong(DataFile::getSize).sum() >= storageBucketSize) {
+                                internalFilesCount += storageBucketFiles.size();
+                                // Create all bucket data files at once
+                                dataFileService.create(storageBucketFiles);
+                                createStorageSubOrder(basket, dsTask, storageBucketFiles, order, role, priority);
+                                storageBucketFiles.clear();
                             }
-                        }
-                        // If sum of files size > bucketSize, add a new bucket
-                        if (bucketFiles.stream().mapToLong(DataFile::getSize).sum() >= bucketSize) {
-                            // Create all bucket data files at once
-                            dataFileService.create(bucketFiles);
-                            createSubOrder(basket, dsTask, bucketFiles, order, role, priority);
-                            bucketFiles.clear();
+                        } else { // Data object of which files are external
+                            addExternalFilesToExternalBucket(order, externalBucketFiles, object);
+
+                            // If external bucket files count > MAX_EXTERNAL_BUCKET_FILE_COUNT, add a new bucket
+                            if (externalBucketFiles.size() > MAX_EXTERNAL_BUCKET_FILE_COUNT) {
+                                externalFilesCount += externalBucketFiles.size();
+                                // Create all bucket data files at once
+                                dataFileService.create(externalBucketFiles);
+                                createExternalSubOrder(basket, dsTask, externalBucketFiles, order);
+                                externalBucketFiles.clear();
+                            }
+
                         }
                     }
                     page++;
                     objects = searchDataObjects(dsSel.getOpenSearchRequest(), page);
                 }
-                // Manage remaining files
-                if (!bucketFiles.isEmpty()) {
+                // Manage remaining files on each type of buckets
+                if (!storageBucketFiles.isEmpty()) {
+                    internalFilesCount += storageBucketFiles.size();
                     // Create all bucket data files at once
-                    dataFileService.create(bucketFiles);
-                    createSubOrder(basket, dsTask, bucketFiles, order, role, priority);
+                    dataFileService.create(storageBucketFiles);
+                    createStorageSubOrder(basket, dsTask, storageBucketFiles, order, role, priority);
+                }
+                if (!externalBucketFiles.isEmpty()) {
+                    externalFilesCount += externalBucketFiles.size();
+                    // Create all bucket data files at once
+                    dataFileService.create(externalBucketFiles);
+                    createStorageSubOrder(basket, dsTask, externalBucketFiles, order, role, priority);
                 }
 
                 // Add dsTask ONLY IF it contains at least one FilesTask
                 if (!dsTask.getReliantTasks().isEmpty()) {
                     order.addDatasetOrderTask(dsTask);
                 }
+            }
+            // In case order contains only external files, percent completion can be set to 100%, else completion is
+            // computed when files are available (even if some external files exist, this case will not (often) occur
+            if ((internalFilesCount == 0) && (externalFilesCount > 0)) {
+                // Because external files haven't size set (files.size isn't allowed to be mapped on DatasourcePlugins
+                // other than AipDatasourcePlugin which manage only internal files), these will not be taken into
+                // account by {@see OrderService#updateCurrentOrdersComputedValues}
+                order.setPercentCompleted(100);
+                order.setAvailableFilesCount(externalFilesCount);
+                // No need to set order as waitingForUser because these files do not block anything
             }
         } catch (Exception e) {
             LOGGER.error("Error while completing order creation", e);
@@ -338,6 +364,52 @@ public class OrderService implements IOrderService {
         if (order.getStatus() != OrderStatus.FAILED) {
             LOGGER.info("Basket emptied");
             basketRepository.delete(basket.getId());
+        }
+    }
+
+    private void addExternalFilesToExternalBucket(Order order, Set<OrderDataFile> externalBucketFiles,
+            DataObject object) {
+        // For each asked DataTypes
+        Multimap<DataType, DataFile> filesMultimap = object.getFiles();
+        for (DataType dataType : DATA_TYPES) {
+            for (DataFile file : filesMultimap.get(dataType)) {
+                // Only DataFile which can be externally donwloaded are taken into account
+                if (file.canBeExternallyDownloaded()) {
+                    OrderDataFile orderDataFile = new OrderDataFile(file, object.getIpId(), order.getId());
+                    // An external file is immediately set to AVAILABLE status because it needs
+                    // nothing more to be doswnloaded
+                    orderDataFile.setState(FileState.AVAILABLE);
+                    externalBucketFiles.add(orderDataFile);
+                }
+            }
+        }
+    }
+
+    private void addInternalFilesToStorageBucket(Basket basket, Order order, String role,
+            Set<OrderDataFile> storageBucketFiles, DataObject object) {
+        // For each asked DataTypes
+        Multimap<DataType, DataFile> filesMultimap = object.getFiles();
+        for (DataType dataType : DATA_TYPES) {
+            for (DataFile file : filesMultimap.get(dataType)) {
+                // Only DataFile physically available (ie managed by storgae) are taken into account
+                if (file.isPhysicallyAvailable()) {
+                    OrderDataFile orderDataFile = new OrderDataFile(file, object.getIpId(), order.getId());
+                    storageBucketFiles.add(orderDataFile);
+                    // Send a very useful notification if file is bigger than bucket size
+                    if (orderDataFile.getSize() > storageBucketSize) {
+                        // To send a notification, NotificationClient needs it
+                        FeignSecurityManager.asSystem();
+                        NotificationDTO notif = new NotificationDTO(
+                                String.format("File \"%s\" is bigger than sub-order size", orderDataFile.getName()),
+                                Collections.emptySet(), Collections.singleton(DefaultRole.PROJECT_ADMIN.name()),
+                                microserviceName, "Order creation", NotificationType.WARNING);
+                        notificationClient.createNotification(notif);
+                        FeignSecurityManager.reset();
+                        // To search objects with SearchClient
+                        FeignSecurityManager.asUser(basket.getOwner(), role);
+                    }
+                }
+            }
         }
     }
 
@@ -408,11 +480,11 @@ public class OrderService implements IOrderService {
     }
 
     /**
-     * Create a sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to DatasetTask
+     * Create a storage sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to DatasetTask
      */
-    private void createSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order,
+    private void createStorageSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order,
             String role, int priority) {
-        LOGGER.info("Creating sub-order of {} files", bucketFiles.size());
+        LOGGER.info("Creating storage sub-order of {} files", bucketFiles.size());
         OffsetDateTime expirationDate = order.getExpirationDate();
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(order.getId());
@@ -433,6 +505,19 @@ public class OrderService implements IOrderService {
         dsTask.addReliantTask(currentFilesTask);
     }
 
+    /**
+     * Create an external sub-order ie a FilesTask, and add it to DatasetTask
+     */
+    private void createExternalSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles,
+            Order order) {
+        LOGGER.info("Creating external sub-order of {} files", bucketFiles.size());
+        FilesTask currentFilesTask = new FilesTask();
+        currentFilesTask.setOrderId(order.getId());
+        currentFilesTask.setOwner(order.getOwner());
+        currentFilesTask.addAllFiles(bucketFiles);
+        dsTask.addReliantTask(currentFilesTask);
+    }
+
     private List<DataObject> searchDataObjects(String openSearchRequest, int page) {
         Map<String, String> requestMap = Collections.singletonMap("q", openSearchRequest);
 
@@ -442,7 +527,7 @@ public class OrderService implements IOrderService {
         Collection<Resource<DataObject>> objects = pagedResourcesResponseEntity.getBody().getContent();
         // If a lot of objects, parallelisation is very useful, if not we don't really care
         return objects.parallelStream().map(resource -> resource.getContent())
-                .filter(dataObject -> dataObject.getDownloadable()).collect(Collectors.toList());
+                .filter(dataObject -> dataObject.getAllowingDownload()).collect(Collectors.toList());
     }
 
     @Override
@@ -601,56 +686,57 @@ public class OrderService implements IOrderService {
             Multiset<String> dataFiles = HashMultiset.create();
             for (Iterator<OrderDataFile> i = availableFiles.iterator(); i.hasNext(); ) {
                 OrderDataFile dataFile = i.next();
-                String aip = dataFile.getIpId().toString();
-                dataFile.setDownloadError(null);
-                Response response = null;
-                try {
-                    response = aipClient.downloadFile(aip, dataFile.getChecksum());
-                } catch (RuntimeException e) {
-                    LOGGER.error("Error while downloading file from Archival Storage", e);
-                    StringWriter sw = new StringWriter();
-                    e.printStackTrace(new PrintWriter(sw));
-                    dataFile.setDownloadError("Error while downloading file from Archival Storage\n" + sw.toString());
-                }
-                // Unable to download file from storage
-                if ((response == null) || (response.status() != HttpStatus.OK.value())) {
-                    downloadErrorFiles.add(dataFile);
-                    i.remove();
-                    LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})", aip,
-                                dataFile.getChecksum());
-                    dataFile.setDownloadError(
-                            "Cannot retrieve data file from storage, feign downloadFile method returns " + response
-                                    .toString());
-                    continue;
-                } else { // Download ok
-                    try (InputStream is = response.body().asInputStream()) {
-                        // Add filename to multiset
-                        String filename = dataFile.getName();
-                        dataFiles.add(filename);
-                        // If same file appears several times, add "(n)" juste before extension (n is occurrence of course
-                        // you dumb ass ! What do you thing it could be ?)
-                        int filenameCount = dataFiles.count(filename);
-                        if (filenameCount > 1) {
-                            String suffix = " (" + (filenameCount - 1) + ")";
-                            int lastDotIdx = filename.lastIndexOf('.');
-                            if (lastDotIdx != -1) {
-                                filename = filename.substring(0, lastDotIdx) + suffix + filename.substring(lastDotIdx);
-                            } else { // No extension
-                                filename += suffix;
-                            }
-                        }
-                        zos.putNextEntry(new ZipEntry(filename));
-                        long copiedBytes = ByteStreams.copy(is, zos);
-                        zos.closeEntry();
-                        // Check that file has been completely been copied
-                        if (copiedBytes != dataFile.getSize()) {
-                            downloadErrorFiles.add(dataFile);
-                            i.remove();
-                            LOGGER.warn("Cannot completely retrieve data file from storage (aip : {}, checksum : {})",
-                                        aip, dataFile.getChecksum());
-                            dataFile.setDownloadError(
-                                    "Cannot completely retrieve data file from storage, only " + copiedBytes + "/"
-                                            + dataFile.getSize() + " bytes");
+                // Externally downloadable
+                if (dataFile.canBeExternallyDownloaded()) {
+                    Proxy proxy = (Strings.isNullOrEmpty(proxyHost)) ?
+                            Proxy.NO_PROXY :
+                            new Proxy(Proxy.Type.HTTP,
+                                      new InetSocketAddress(new HttpHost(proxyHost, proxyPort).getAddress(),
+                                                            proxyPort));
+                    // Connection timeout
+                    int timeout = 10_000;
+                    String dataObjectIpId = dataFile.getIpId().toString();
+                    dataFile.setDownloadError(null);
+                    try (InputStream is = DownloadUtils
+                            .getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy, timeout)) {
+                        readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, dataObjectIpId, is);
+                    } catch (IOException e) {
+                        LOGGER.error(
+                                String.format("Error while downloading external file (url : %s)", dataFile.getUrl()),
+                                e);
+                        StringWriter sw = new StringWriter();
+                        e.printStackTrace(new PrintWriter(sw));
+                        dataFile.setDownloadError("Error while downloading external file\n" + sw.toString());
+                        downloadErrorFiles.add(dataFile);
+                        i.remove();
+                        continue;
+                    }
+                } else { // Managed by Storage
+                    String aip = dataFile.getIpId().toString();
+                    dataFile.setDownloadError(null);
+                    Response response = null;
+                    try {
+                        response = aipClient.downloadFile(aip, dataFile.getChecksum());
+                    } catch (RuntimeException e) {
+                        LOGGER.error("Error while downloading file from Archival Storage", e);
+                        StringWriter sw = new StringWriter();
+                        e.printStackTrace(new PrintWriter(sw));
+                        dataFile.setDownloadError(
+                                "Error while downloading file from Archival Storage\n" + sw.toString());
+                    }
+                    // Unable to download file from storage
+                    if ((response == null) || (response.status() != HttpStatus.OK.value())) {
+                        downloadErrorFiles.add(dataFile);
+                        i.remove();
+                        LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})", aip,
+                                    dataFile.getChecksum());
+                        dataFile.setDownloadError(
+                                "Cannot retrieve data file from storage, feign downloadFile method returns " + response
+                                        .toString());
+                        continue;
+                    } else { // Download ok
+                        try (InputStream is = response.body().asInputStream()) {
+                            readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, aip, is);
                         }
                     }
                 }
@@ -670,6 +756,39 @@ public class OrderService implements IOrderService {
 
         // Don't forget to manage user order jobs (maybe order is in waitingForUser state)
         orderJobService.manageUserOrderJobInfos(orderOwner);
+    }
+
+    private void readInputStreamAndAddToZip(List<OrderDataFile> downloadErrorFiles, ZipOutputStream zos,
+            Multiset<String> dataFiles, Iterator<OrderDataFile> i, OrderDataFile dataFile, String dataObjectIpId,
+            InputStream is) throws IOException {
+        // Add filename to multiset
+        String filename = dataFile.getName();
+        dataFiles.add(filename);
+        // If same file appears several times, add "(n)" juste before extension (n is occurrence of course
+        // you dumb ass ! What do you thing it could be ?)
+        int filenameCount = dataFiles.count(filename);
+        if (filenameCount > 1) {
+            String suffix = " (" + (filenameCount - 1) + ")";
+            int lastDotIdx = filename.lastIndexOf('.');
+            if (lastDotIdx != -1) {
+                filename = filename.substring(0, lastDotIdx) + suffix + filename.substring(lastDotIdx);
+            } else { // No extension
+                filename += suffix;
+            }
+        }
+        zos.putNextEntry(new ZipEntry(filename));
+        long copiedBytes = ByteStreams.copy(is, zos);
+        zos.closeEntry();
+        // Check that file has been completely been copied
+        if (copiedBytes != dataFile.getSize()) {
+            downloadErrorFiles.add(dataFile);
+            i.remove();
+            LOGGER.warn("Cannot completely download data file (data object IP_ID: {}, file name: {})", dataObjectIpId,
+                        dataFile.getName());
+            dataFile.setDownloadError(
+                    "Cannot completely download data file (from storage or Internet), only " + copiedBytes + "/"
+                            + dataFile.getSize() + " bytes");
+        }
     }
 
     @Override
