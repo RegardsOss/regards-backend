@@ -360,6 +360,7 @@ public class SearchController {
             throws EntityOperationForbiddenException, EntityNotFoundException {
         DataObject dataobject = searchService.get(urn);
         dataobject.containsPhysicalData();
+        dataobject.canBeExternallyDownloaded();
         Resource<DataObject> resource = toResource(dataobject);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
@@ -388,7 +389,10 @@ public class SearchController {
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get(0)));
         Map<String, String> decodedParams = getDecodedParams(params);
         FacetPage<DataObject> result = searchService.search(decodedParams, searchKey, facets, pageable);
-        result.getContent().forEach(DataObject::containsPhysicalData);
+        // Both of these methods must be called on all data to compute associated property to be taken into account by
+        // frontent in order to activate or not orderable caracteristic of data
+        result.getContent().parallelStream().peek(DataObject::canBeExternallyDownloaded)
+                .forEach(DataObject::containsPhysicalData);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
     }
 
@@ -408,7 +412,8 @@ public class SearchController {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
         Map<String, String> decodedParams = getDecodedParams(allParams);
         Page<DataObject> result = searchService.search(decodedParams, searchKey, null, pageable);
-        result.getContent().forEach(DataObject::containsPhysicalData);
+        result.getContent().parallelStream().peek(DataObject::canBeExternallyDownloaded)
+                .forEach(DataObject::containsPhysicalData);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
     }
 
@@ -592,7 +597,7 @@ public class SearchController {
             throws EntityOperationForbiddenException, EntityNotFoundException {
         AbstractEntity entity = searchService.get(urn);
         if (entity instanceof DataObject) {
-            return ResponseEntity.ok(((DataObject) entity).getDownloadable());
+            return ResponseEntity.ok(((DataObject) entity).getAllowingDownload());
         }
         return ResponseEntity.ok(true);
     }
@@ -615,7 +620,7 @@ public class SearchController {
             FacetPage<DataObject> page = searchService
                     .search(criterion, Searches.onSingleEntity(index, EntityType.DATA), null,
                             new PageRequest(0, urns.size()));
-            urnsWithAccess.addAll(page.getContent().parallelStream().filter(DataObject::getDownloadable)
+            urnsWithAccess.addAll(page.getContent().parallelStream().filter(DataObject::getAllowingDownload)
                                           .map(DataObject::getIpId).collect(Collectors.toSet()));
         }
 

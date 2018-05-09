@@ -214,7 +214,7 @@ public class CatalogSearchService implements ICatalogSearchService {
         Map<String, Boolean> groupsAccessRightMap = dataObject.getMetadata().getGroupsAccessRightsMap();
 
         // Looking for ONE user group that permits access to data
-        dataObject.setDownloadable((userGroups == null)
+        dataObject.setAllowingDownload((userGroups == null)
             || userGroups.stream().anyMatch(userGroup -> (groupsAccessRightMap.containsKey(userGroup)
                                                          && groupsAccessRightMap.get(userGroup))));
     }
