@@ -396,7 +396,7 @@
                 <version>${regards.test.reporting.version}</version>
             </dependency>
 
-            <!-- Regards Administration tenant resolers -->
+            <!-- Regards Administration tenant resolvers -->
             <dependency>
                 <groupId>fr.cnes.regards.microservices.administration</groupId>
                 <artifactId>local-tenant-resolver</artifactId>
@@ -1146,6 +1146,17 @@
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
                 <version>2.8.0</version>
+            </dependency>
+            <!-- Spring REST docs -->
+            <dependency>
+                  <groupId>org.springframework.restdocs</groupId>
+                  <artifactId>spring-restdocs-core</artifactId>
+                  <version>1.2.4.RELEASE</version>
+            </dependency>
+            <dependency> 
+            	<groupId>org.springframework.restdocs</groupId>
+            	<artifactId>spring-restdocs-mockmvc</artifactId>
+            	<version>1.2.4.RELEASE</version>
             </dependency>
             <!-- Maven plugins -->
             <dependency>
