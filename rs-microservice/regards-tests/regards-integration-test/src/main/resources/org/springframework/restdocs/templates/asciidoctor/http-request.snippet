@@ -1,0 +1,30 @@
+* *URL*
+
+ {{path}}
+ 
+ * *URL template*
+ 
+ {{urlTemplate}}
+ 
+* *Method*
+
+ {{method}}
+ 
+* *Headers*
+
+ Authorization: Bearer {token}
+ {{#headers}}
+ {{name}}: {{value}}
+ {{/headers}}
+
+* *Data params*
+
+{{#requestBody}}
+[source,JSON]
+----
+ {{requestBody}}
+----
+{{/requestBody}}
+{{^requestBody}}
+ None
+{{/requestBody}}

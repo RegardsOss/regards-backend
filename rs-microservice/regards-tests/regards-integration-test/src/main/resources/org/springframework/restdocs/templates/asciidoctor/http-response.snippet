@@ -1,0 +1,19 @@
+* *Code:* HTTP/1.1 {{statusCode}} {{statusReason}}
+
+* *Headers*
+
+ {{#headers}}
+ {{name}}: {{value}}
+ {{/headers}}
+
+* *Content*
+
+{{#responseBody}}
+[source,JSON]
+----
+ {{responseBody}}
+----
+{{/responseBody}}
+{{^responseBody}}
+ None
+{{/responseBody}}

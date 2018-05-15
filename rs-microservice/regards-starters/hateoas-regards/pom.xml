@@ -52,6 +52,10 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-regards</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>gson-regards</artifactId>
+		</dependency>
 		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
