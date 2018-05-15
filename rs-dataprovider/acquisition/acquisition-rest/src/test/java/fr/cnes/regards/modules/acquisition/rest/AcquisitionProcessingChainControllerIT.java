@@ -27,6 +27,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -67,13 +68,80 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
     @Test
     @Requirement("REGARDS_DSL_ING_PRO_020")
     @Requirement("REGARDS_DSL_ING_PRO_030")
+    @Purpose("Create a manual acquisition chain")
+    public void createChain() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+
+        AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("post");
+
+        // Create the chain
+        performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
+                           "Chain should be created!");
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ING_PRO_020")
+    @Requirement("REGARDS_DSL_ING_PRO_030")
     @Purpose("Create and update a manual acquisition chain")
-    public void createAndUpdateChain() throws ModuleException {
+    public void updateChain() throws ModuleException {
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
 
-        AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("First");
+        AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("update");
+
+        // Create the chain
+        ResultActions result = performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
+                                                  "Chain should be created!");
+
+        // Update chain
+        String resultAsString = payload(result);
+        Integer chainId = JsonPath.read(resultAsString, "$.content.id");
+
+        // Load it
+        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        AcquisitionProcessingChain loadedChain = processingService.getChain(chainId.longValue());
+        Assert.assertNotNull("Chain must exist", loadedChain);
+
+        // Update scan plugin
+        List<PluginParameter> params = PluginParametersFactory.build()
+                .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(params, GlobDiskScanning.class,
+                                                                            Lists.newArrayList());
+        scanPlugin.setIsActive(true);
+        String label = "Scan plugin update";
+        scanPlugin.setLabel(label);
+        loadedChain.getFileInfos().get(0).setScanPlugin(scanPlugin);
+
+        customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+
+        // Document path parameter
+        customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+                .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)
+                .description("Acquisition chain identifier")));
+
+        performDefaultPut(AcquisitionProcessingChainController.TYPE_PATH
+                + AcquisitionProcessingChainController.CHAIN_PATH, loadedChain, customizer, "Chain should be updated",
+                          loadedChain.getId());
+
+        // Load new scan plugin configuration
+        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        loadedChain = processingService.getChain(chainId.longValue());
+        Assert.assertEquals(label, loadedChain.getFileInfos().get(0).getScanPlugin().getLabel());
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ING_PRO_020")
+    @Requirement("REGARDS_DSL_ING_PRO_030")
+    @Purpose("Delete a inactive manual acquisition chain")
+    public void deleteChain() throws ModuleException {
+
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+
+        AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("delete");
 
         // Create the chain
         ResultActions result = performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
