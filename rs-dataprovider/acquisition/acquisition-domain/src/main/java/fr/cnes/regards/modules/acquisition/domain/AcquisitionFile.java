@@ -109,6 +109,7 @@ public class AcquisitionFile {
     @Column(name = "checksumAlgorithm", length = 16)
     private String checksumAlgorithm;
 
+    @GsonIgnore
     @NotNull(message = "Acquisition file information is required")
     @ManyToOne
     @JoinColumn(name = "acq_file_info_id", foreignKey = @ForeignKey(name = "fk_acq_file_info_id"), updatable = false)

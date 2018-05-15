@@ -1,0 +1,26 @@
+= Acquisition module API
+
+[[overview]]
+== Overview
+
+ This API allows to create, launch and monitor acquisition processing chains.
+
+== Search all files
+
+Retrieves all acquired files regardless the acquisition chain.
+
+include::{snippets}/AcquisitionFileControllerIT/searchAllFiles/http-request.adoc[]
+
+include::{snippets}/AcquisitionFileControllerIT/searchFilesByState/request-parameters.adoc[]
+
+include::{snippets}/AcquisitionFileControllerIT/searchAllFiles/http-response.adoc[]
+
+== Search files by state
+
+include::{snippets}/AcquisitionFileControllerIT/searchFilesByState/http-request.adoc[]
+
+// include::{snippets}/AcquisitionFileControllerIT/searchFilesByState/path-parameters.adoc[]
+
+include::{snippets}/AcquisitionFileControllerIT/searchFilesByState/request-parameters.adoc[]
+
+include::{snippets}/AcquisitionFileControllerIT/searchFilesByState/http-response.adoc[]

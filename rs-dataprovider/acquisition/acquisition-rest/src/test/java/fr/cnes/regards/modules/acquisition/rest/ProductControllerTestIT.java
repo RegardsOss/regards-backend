@@ -59,7 +59,7 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
     public void init() throws ModuleException {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         // Init processing chain
-        AcquisitionProcessingChain processingChain = AcquisitionProcessingChainControllerIT.getNewChain("laChaine");
+        AcquisitionProcessingChain processingChain = AcquisitionTestUtils.getNewChain("laChaine");
         acqService.createChain(processingChain);
 
         // Create some products to search for
