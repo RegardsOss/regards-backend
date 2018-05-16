@@ -33,15 +33,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Table;
 import com.google.common.reflect.TypeToken;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -49,9 +44,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.dataaccess.client.IAccessRightClient;
-import fr.cnes.regards.modules.dataaccess.domain.accessright.AccessRight;
-import fr.cnes.regards.modules.dataaccess.domain.accessright.DataAccessLevel;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
@@ -214,7 +206,7 @@ public class CatalogSearchService implements ICatalogSearchService {
         Map<String, Boolean> groupsAccessRightMap = dataObject.getMetadata().getGroupsAccessRightsMap();
 
         // Looking for ONE user group that permits access to data
-        dataObject.setDownloadable((userGroups == null)
+        dataObject.setAllowingDownload((userGroups == null)
             || userGroups.stream().anyMatch(userGroup -> (groupsAccessRightMap.containsKey(userGroup)
                                                          && groupsAccessRightMap.get(userGroup))));
     }
@@ -268,55 +260,8 @@ public class CatalogSearchService implements ICatalogSearchService {
             criterion = accessRightFilter.addDataAccessRights(criterion);
             // Perform compute
             DocFilesSummary summary = searchService.computeDataFilesSummary(searchKey, criterion, "tags", fileTypes);
-            // Be careful ! "tags" is used to discriminate docFiles summaries because dataset URN is set into it BUT
-            // all tags are used.
-            // So we must remove all summaries that are not from dataset
-            for (Iterator<String> i = summary.getSubSummariesMap().keySet().iterator(); i.hasNext(); ) {
-                String tag = i.next();
-                if (!UniformResourceName.isValidUrn(tag)) {
-                    i.remove();
-                    continue;
-                }
-                UniformResourceName urn = UniformResourceName.fromString(tag);
-                if (urn.getEntityType() != EntityType.DATASET) {
-                    i.remove();
-                    continue;
-                }
-            }
+            keepOnlyDatasetsWithGrantedAccess(searchKey, datasetIpId, summary);
 
-            // It is necessary to filter sub summaries first to keep only datasets and seconds to keep only datasets
-            // on which user has right
-            final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
-            // If accessGroups is null, user is admin
-            if (accessGroups != null) {
-                // Retrieve all datasets that permit data objects retrieval (ie datasets with at least one groups with
-                // data access right)
-                // page size to max value because datasets count isn't too large...
-                ICriterion dataObjectsGrantedCrit = ICriterion.or(accessGroups.stream().map(group -> ICriterion
-                        .eq("metadata.dataObjectsGroups." + group, true)).collect(Collectors.toSet()));
-                Page<Dataset> page = searchService
-                        .search(Searches.onSingleEntity(searchKey.getSearchIndex(), EntityType.DATASET),
-                                ISearchService.MAX_PAGE_SIZE, dataObjectsGrantedCrit);
-                Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId)
-                        .map(UniformResourceName::toString).collect(Collectors.toSet());
-                // If summary is restricted to a specified datasetIpId, it must be taken into account
-                if (datasetIpId != null) {
-                    if (datasetIpids.contains(datasetIpId)) {
-                        datasetIpids = Collections.singleton(datasetIpId);
-                    } else { // no dataset => summary contains normaly only 0 values as total
-                        // we just need to clear map of sub summaries
-                        summary.getSubSummariesMap().clear();
-                    }
-                }
-                for (Iterator<Entry<String, DocFilesSubSummary>> i = summary.getSubSummariesMap().entrySet()
-                        .iterator(); i.hasNext(); ) {
-                    // Remove it if subSummary discriminant isn't a dataset or isn't a dataset on which data can be
-                    // retrieved for current user
-                    if (!datasetIpids.contains(i.next().getKey())) {
-                        i.remove();
-                    }
-                }
-            }
             return summary;
         } catch (OpenSearchParseException e) {
             String message = "No query parameter";
@@ -329,6 +274,59 @@ public class CatalogSearchService implements ICatalogSearchService {
         } catch (AccessRightFilterException e) {
             LOGGER.debug("Falling back to empty summary", e);
             return new DocFilesSummary();
+        }
+    }
+
+    private void keepOnlyDatasetsWithGrantedAccess(SimpleSearchKey<DataObject> searchKey, String datasetIpId,
+            DocFilesSummary summary) throws AccessRightFilterException {
+        // Be careful ! "tags" is used to discriminate docFiles summaries because dataset URN is set into it BUT
+        // all tags are used.
+        // So we must remove all summaries that are not from dataset
+        for (Iterator<String> i = summary.getSubSummariesMap().keySet().iterator(); i.hasNext(); ) {
+            String tag = i.next();
+            if (!UniformResourceName.isValidUrn(tag)) {
+                i.remove();
+                continue;
+            }
+            UniformResourceName urn = UniformResourceName.fromString(tag);
+            if (urn.getEntityType() != EntityType.DATASET) {
+                i.remove();
+                continue;
+            }
+        }
+
+        // It is necessary to filter sub summaries first to keep only datasets and seconds to keep only datasets
+        // on which user has right
+        final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
+        // If accessGroups is null, user is admin
+        if (accessGroups != null) {
+            // Retrieve all datasets that permit data objects retrieval (ie datasets with at least one groups with
+            // data access right)
+            // page size to max value because datasets count isn't too large...
+            ICriterion dataObjectsGrantedCrit = ICriterion.or(accessGroups.stream().map(group -> ICriterion
+                    .eq("metadata.dataObjectsGroups." + group, true)).collect(Collectors.toSet()));
+            Page<Dataset> page = searchService
+                    .search(Searches.onSingleEntity(searchKey.getSearchIndex(), EntityType.DATASET),
+                            ISearchService.MAX_PAGE_SIZE, dataObjectsGrantedCrit);
+            Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId)
+                    .map(UniformResourceName::toString).collect(Collectors.toSet());
+            // If summary is restricted to a specified datasetIpId, it must be taken into account
+            if (datasetIpId != null) {
+                if (datasetIpids.contains(datasetIpId)) {
+                    datasetIpids = Collections.singleton(datasetIpId);
+                } else { // no dataset => summary contains normaly only 0 values as total
+                    // we just need to clear map of sub summaries
+                    summary.getSubSummariesMap().clear();
+                }
+            }
+            for (Iterator<Entry<String, DocFilesSubSummary>> i = summary.getSubSummariesMap().entrySet()
+                    .iterator(); i.hasNext(); ) {
+                // Remove it if subSummary discriminant isn't a dataset or isn't a dataset on which data can be
+                // retrieved for current user
+                if (!datasetIpids.contains(i.next().getKey())) {
+                    i.remove();
+                }
+            }
         }
     }
 
