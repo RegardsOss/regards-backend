@@ -209,6 +209,8 @@ public class OrderService implements IOrderService {
     @Autowired
     private IEmailClient emailClient;
 
+    private Proxy proxy;
+
     // Storage bucket size in bytes
     private Long storageBucketSize = null;
 
@@ -228,6 +230,10 @@ public class OrderService implements IOrderService {
         LOGGER.info("OrderService created/refreshed with storageBucketSize: {}, orderValidationPeriodDays: {}"
                             + ", daysBeforeSendingNotifEmail: {}...", storageBucketSize, orderValidationPeriodDays,
                     daysBeforeSendingNotifEmail);
+        proxy = (Strings.isNullOrEmpty(proxyHost)) ?
+                Proxy.NO_PROXY :
+                new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+
     }
 
     @Override
@@ -321,7 +327,7 @@ public class OrderService implements IOrderService {
                     externalFilesCount += externalBucketFiles.size();
                     // Create all bucket data files at once
                     dataFileService.create(externalBucketFiles);
-                    createStorageSubOrder(basket, dsTask, externalBucketFiles, order, role, priority);
+                    createExternalSubOrder(basket, dsTask, externalBucketFiles, order);
                 }
 
                 // Add dsTask ONLY IF it contains at least one FilesTask
@@ -337,18 +343,24 @@ public class OrderService implements IOrderService {
                 // account by {@see OrderService#updateCurrentOrdersComputedValues}
                 order.setPercentCompleted(100);
                 order.setAvailableFilesCount(externalFilesCount);
+                order.setWaitingForUser(true);
                 // No need to set order as waitingForUser because these files do not block anything
             }
         } catch (Exception e) {
             LOGGER.error("Error while completing order creation", e);
             order.setStatus(OrderStatus.FAILED);
         }
-        // if order doesn't contain at least one DatasetTask, set a FAILED status
-        if (order.getDatasetTasks().isEmpty()) {
-            order.setStatus(OrderStatus.FAILED);
-        } else {
-            // Order is ready to be taken into account
-            order.setStatus(OrderStatus.RUNNING);
+        // Be careful to not unset FAILED status
+        if (order.getStatus() != OrderStatus.FAILED) {
+            // if order doesn't contain at least one DatasetTask, set a FAILED status
+            if (order.getDatasetTasks().isEmpty()) {
+                order.setStatus(OrderStatus.FAILED);
+            } else if (order.getPercentCompleted() == 100) { // Order contains only external files
+                order.setStatus(OrderStatus.DONE);
+            } else {
+                // Order is ready to be taken into account
+                order.setStatus(OrderStatus.RUNNING);
+            }
         }
         order = repos.save(order);
         LOGGER.info("Order (id: {}) saved with status {}", order.getId(), order.getStatus());
@@ -550,7 +562,11 @@ public class OrderService implements IOrderService {
         }
         // Ask for all jobInfos abortion
         order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream()).map(FilesTask::getJobInfo)
-                .forEach(jobInfo -> jobInfoService.stopJob(jobInfo.getId()));
+                .forEach(jobInfo -> {
+                    if (jobInfo != null) {
+                        jobInfoService.stopJob(jobInfo.getId());
+                    }
+                });
         order.setStatus(OrderStatus.PAUSED);
         repos.save(order);
     }
@@ -603,8 +619,11 @@ public class OrderService implements IOrderService {
      * Test if order is truely in pause (ie none of its jobs is running)
      */
     private boolean orderEffectivelyInPause(Order order) {
-        return order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                .map(ft -> ft.getJobInfo().getStatus().getStatus()).allMatch(JobStatus::isFinished);
+        // No associated jobInfo or all associated jobs finished
+        return (order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
+                .filter(ft -> ft.getJobInfo() != null).count() == 0) || order.getDatasetTasks().stream()
+                .flatMap(dsTask -> dsTask.getReliantTasks().stream()).map(ft -> ft.getJobInfo().getStatus().getStatus())
+                .allMatch(JobStatus::isFinished);
     }
 
     @Override
@@ -688,11 +707,6 @@ public class OrderService implements IOrderService {
                 OrderDataFile dataFile = i.next();
                 // Externally downloadable
                 if (dataFile.canBeExternallyDownloaded()) {
-                    Proxy proxy = (Strings.isNullOrEmpty(proxyHost)) ?
-                            Proxy.NO_PROXY :
-                            new Proxy(Proxy.Type.HTTP,
-                                      new InetSocketAddress(new HttpHost(proxyHost, proxyPort).getAddress(),
-                                                            proxyPort));
                     // Connection timeout
                     int timeout = 10_000;
                     String dataObjectIpId = dataFile.getIpId().toString();
@@ -731,8 +745,8 @@ public class OrderService implements IOrderService {
                         LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})", aip,
                                     dataFile.getChecksum());
                         dataFile.setDownloadError(
-                                "Cannot retrieve data file from storage, feign downloadFile method returns " + response
-                                        .toString());
+                                "Cannot retrieve data file from storage, feign downloadFile method returns " + ((
+                                        response == null) ? "null" : response.toString()));
                         continue;
                     } else { // Download ok
                         try (InputStream is = response.body().asInputStream()) {
@@ -763,6 +777,9 @@ public class OrderService implements IOrderService {
             InputStream is) throws IOException {
         // Add filename to multiset
         String filename = dataFile.getName();
+        if (filename == null) {
+            filename = dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
+        }
         dataFiles.add(filename);
         // If same file appears several times, add "(n)" juste before extension (n is occurrence of course
         // you dumb ass ! What do you thing it could be ?)
@@ -779,15 +796,18 @@ public class OrderService implements IOrderService {
         zos.putNextEntry(new ZipEntry(filename));
         long copiedBytes = ByteStreams.copy(is, zos);
         zos.closeEntry();
-        // Check that file has been completely been copied
-        if (copiedBytes != dataFile.getSize()) {
-            downloadErrorFiles.add(dataFile);
-            i.remove();
-            LOGGER.warn("Cannot completely download data file (data object IP_ID: {}, file name: {})", dataObjectIpId,
-                        dataFile.getName());
-            dataFile.setDownloadError(
-                    "Cannot completely download data file (from storage or Internet), only " + copiedBytes + "/"
-                            + dataFile.getSize() + " bytes");
+        // We can only check copied bytes if we know expected size (ie if file is internal)
+        if (dataFile.getSize() != null) {
+            // Check that file has been completely been copied
+            if (copiedBytes != dataFile.getSize()) {
+                downloadErrorFiles.add(dataFile);
+                i.remove();
+                LOGGER.warn("Cannot completely download data file (data object IP_ID: {}, file name: {})",
+                            dataObjectIpId, dataFile.getName());
+                dataFile.setDownloadError(
+                        "Cannot completely download data file from storage, only " + copiedBytes + "/" + dataFile
+                                .getSize() + " bytes");
+            }
         }
     }
 
