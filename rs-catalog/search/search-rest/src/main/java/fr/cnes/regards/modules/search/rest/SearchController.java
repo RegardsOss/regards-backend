@@ -359,8 +359,7 @@ public class SearchController {
     public ResponseEntity<Resource<DataObject>> getDataobject(@Valid @PathVariable("urn") UniformResourceName urn)
             throws EntityOperationForbiddenException, EntityNotFoundException {
         DataObject dataobject = searchService.get(urn);
-        dataobject.containsPhysicalData();
-        dataobject.canBeExternallyDownloaded();
+        dataobject.updateJsonSpecificProperties();
         Resource<DataObject> resource = toResource(dataobject);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
@@ -391,8 +390,7 @@ public class SearchController {
         FacetPage<DataObject> result = searchService.search(decodedParams, searchKey, facets, pageable);
         // Both of these methods must be called on all data to compute associated property to be taken into account by
         // frontent in order to activate or not orderable caracteristic of data
-        result.getContent().parallelStream().peek(DataObject::canBeExternallyDownloaded)
-                .forEach(DataObject::containsPhysicalData);
+        result.getContent().parallelStream().forEach(DataObject::updateJsonSpecificProperties);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
     }
 
@@ -412,8 +410,7 @@ public class SearchController {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
         Map<String, String> decodedParams = getDecodedParams(allParams);
         Page<DataObject> result = searchService.search(decodedParams, searchKey, null, pageable);
-        result.getContent().parallelStream().peek(DataObject::canBeExternallyDownloaded)
-                .forEach(DataObject::containsPhysicalData);
+        result.getContent().parallelStream().forEach(DataObject::updateJsonSpecificProperties);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
     }
 
