@@ -530,7 +530,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 try {
                     return Files.getLastModifiedTime(file1).compareTo(Files.getLastModifiedTime(file2));
                 } catch (IOException e) {
-                    LOGGER.warn("Cannot read last modification date");
+                    LOGGER.warn("Cannot read last modification date", e);
                     return 0;
                 }
             });
