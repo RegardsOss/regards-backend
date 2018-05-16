@@ -832,8 +832,13 @@ public class OrderService implements IOrderService {
         // For all data files
         for (OrderDataFile file : files) {
             FileType xmlFile = factory.createFileType();
-            xmlFile.setIdentity(file.getName());
-            xmlFile.setSize(BigInteger.valueOf(file.getSize()));
+            String filename = (file.getName() != null) ?
+                    file.getName() :
+                    file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1);
+            xmlFile.setIdentity(filename);
+            if (file.getSize() != null) {
+                xmlFile.setSize(BigInteger.valueOf(file.getSize()));
+            }
             if (file.getMimeType() != null) {
                 xmlFile.setMimetype(file.getMimeType().toString());
             }
