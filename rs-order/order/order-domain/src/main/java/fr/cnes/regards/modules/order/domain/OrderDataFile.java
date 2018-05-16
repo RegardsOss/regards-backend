@@ -51,16 +51,18 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
                 + "status in ('RUNNING', 'PAUSED')) "
                 + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "sumMapping", name = "selectSumSizesByOrderIdAndStates"),
-        @NamedNativeQuery(
+        @NamedNativeQuery( // WARNING : this request is used to count files in error (except DOWNLOAD_ERROR) so
+                // only internal files are concerned => df.size must not be null
                 query = "SELECT o.*, count(df.*) as count FROM {h-schema}t_data_file df, {h-schema}t_order o WHERE "
                 + "df.order_id = o.id AND df.size is not NULL AND "
                 + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND "
                 + "status in ('RUNNING', 'PAUSED')) "
                 + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates"),
-        @NamedNativeQuery(
+        @NamedNativeQuery( // WARNING : this request permits to count all available files EVEN  external files which
+                // haven't a size (but have an online value set to NULL)
                 query = "SELECT o.*, count(df.*) as count FROM {h-schema}t_data_file df, {h-schema}t_order o WHERE "
-                + "df.order_id = o.id AND df.size is not NULL AND "
+                + "df.order_id = o.id AND (df.size is not NULL OR (df.size is NULL AND df.online is NULL)) AND "
                 + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date) "
                 + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates4AllOrders")

@@ -98,8 +98,14 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
             HttpServletResponse response) throws NoSuchElementException {
         // Throws a NoSuchElementException if not found
         OrderDataFile dataFile = dataFileService.load(dataFileId);
-        response.addHeader("Content-disposition", "attachment;filename=" + dataFile.getName());
-        response.setContentType(dataFile.getMimeType().toString());
+        // External files haven't necessarily a file name (but they have an URL)
+        String filename = (dataFile.getName() != null) ?
+                dataFile.getName() :
+                dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
+        response.addHeader("Content-disposition", "attachment;filename=" + filename);
+        if (dataFile.getMimeType() != null) {
+            response.setContentType(dataFile.getMimeType().toString());
+        }
 
         return new ResponseEntity<>(os -> dataFileService.downloadFile(dataFile, os), HttpStatus.OK);
     }
