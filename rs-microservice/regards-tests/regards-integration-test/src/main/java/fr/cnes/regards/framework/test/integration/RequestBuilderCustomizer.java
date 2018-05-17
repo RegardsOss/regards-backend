@@ -56,9 +56,14 @@ public class RequestBuilderCustomizer {
     public static final String PARAM_CONSTRAINTS = "constraints";
 
     /**
-     * Documentation snippet constraint fields
+     * Documentation snippet field type
      */
     public static final String PARAM_TYPE = "type";
+
+    /**
+     * Documentation snippet fields doc title
+     */
+    public static final String PARAM_TITLE = "title";
 
     /**
      * Headers
@@ -379,5 +384,4 @@ public class RequestBuilderCustomizer {
             return headers;
         }
     }
-
 }
