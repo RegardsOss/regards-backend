@@ -16,9 +16,6 @@ import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 @MicroserviceInfo(name = "order", version = "2.0.0-SNAPSHOT")
 public class Application {
 
-    private Application() {
-    }
-
     /**
      * Microservice bootstrap method
      * @param args microservice bootstrap arguments
