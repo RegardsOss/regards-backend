@@ -87,6 +87,7 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
 
         ParameterDescriptor paramFilepath = RequestDocumentation
                 .parameterWithName(AcquisitionFileController.REQUEST_PARAM_FILEPATH).optional()
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getName()))
                 .description("Entire file path filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"));
 
@@ -96,24 +97,29 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
         }
         ParameterDescriptor paramState = RequestDocumentation
                 .parameterWithName(AcquisitionFileController.REQUEST_PARAM_STATE).optional()
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getName()))
                 .description("Acquisition file state filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                        .value("Optional. Allowed values : " + joiner.toString()));
+                        .value("Optional. Multiple values allowed. Allowed values : " + joiner.toString()));
 
         ParameterDescriptor paramProductId = RequestDocumentation
                 .parameterWithName(AcquisitionFileController.REQUEST_PARAM_PRODUCT_ID).optional()
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(Long.class.getName()))
                 .description("Product acquisition file(s) identifier filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"));
 
         ParameterDescriptor paramChainId = RequestDocumentation
                 .parameterWithName(AcquisitionFileController.REQUEST_PARAM_CHAIN_ID).optional()
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(Long.class.getName()))
                 .description("Acquisition chain identifier filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"));
 
         ParameterDescriptor paramFrom = RequestDocumentation
                 .parameterWithName(AcquisitionFileController.REQUEST_PARAM_FROM).optional()
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getName()))
                 .description("ISO Date time filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"));
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                        .value("Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
 
         // Add request parameters documentation
         requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation

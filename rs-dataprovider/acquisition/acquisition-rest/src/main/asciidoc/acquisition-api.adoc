@@ -7,52 +7,69 @@
  
 == Create an acquisition chain
 
-include::{snippets}/AcquisitionProcessingChainControllerIT/createChain/http-request.adoc[]
+:TestClass: AcquisitionProcessingChainControllerIT
+:TestMethod: createChain 
 
-include::{snippets}/AcquisitionProcessingChainControllerIT/createChain/request-body.adoc[]
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
 
-include::{snippets}/AcquisitionProcessingChainControllerIT/createChain/http-response.adoc[]
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
 == Update an acquisition chain
 
-include::{snippets}/AcquisitionProcessingChainControllerIT/updateChain/http-request.adoc[]
+:TestClass: AcquisitionProcessingChainControllerIT
+:TestMethod: updateChain
 
-include::{snippets}/AcquisitionProcessingChainControllerIT/updateChain/path-parameters.adoc[]
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
 
-include::{snippets}/AcquisitionProcessingChainControllerIT/createChain/request-body.adoc[]
+include::{snippets}/{TestClass}/{TestMethod}/path-parameters.adoc[]
 
-include::{snippets}/AcquisitionProcessingChainControllerIT/updateChain/http-response.adoc[]
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
 == Delete an acquisition chain
 
+:TestClass: AcquisitionProcessingChainControllerIT
+:TestMethod: deleteChain
+
 Only disabled acquisition chain can be deleted.
 
-include::{snippets}/AcquisitionProcessingChainControllerIT/deleteChain/http-request.adoc[]
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
 
-include::{snippets}/AcquisitionProcessingChainControllerIT/createChain/request-body.adoc[]
+include::{snippets}/{TestClass}/{TestMethod}/path-parameters.adoc[]
 
-include::{snippets}/AcquisitionProcessingChainControllerIT/deleteChain/http-response.adoc[]
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
 == Search all files
 
+:TestClass: AcquisitionFileControllerIT
+:TestMethod: searchAllFiles
+
 Retrieves all acquired files regardless the acquisition chain.
 
-include::{snippets}/AcquisitionFileControllerIT/searchAllFiles/http-request.adoc[]
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
 
-include::{snippets}/AcquisitionFileControllerIT/searchFilesByState/request-parameters.adoc[]
+include::{snippets}/{TestClass}/{TestMethod}/request-parameters.adoc[]
 
-include::{snippets}/AcquisitionProcessingChainControllerIT/createChain/request-body.adoc[]
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
 
-include::{snippets}/AcquisitionFileControllerIT/searchAllFiles/http-response.adoc[]
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
 == Search files by state
 
+:TestClass: AcquisitionFileControllerIT
+:TestMethod: searchFilesByState
+
 Retrieves all acquired files with the specified state.
 
-include::{snippets}/AcquisitionFileControllerIT/searchFilesByState/http-request.adoc[]
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
 
-include::{snippets}/AcquisitionFileControllerIT/searchFilesByState/request-parameters.adoc[]
+include::{snippets}/{TestClass}/{TestMethod}/request-parameters.adoc[]
 
-include::{snippets}/AcquisitionProcessingChainControllerIT/createChain/request-body.adoc[]
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
 
-include::{snippets}/AcquisitionFileControllerIT/searchFilesByState/http-response.adoc[]
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]

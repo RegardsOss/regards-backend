@@ -28,6 +28,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.restdocs.request.RequestDocumentation;
+import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -120,7 +121,8 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         // Document path parameter
         customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)
-                .description("Acquisition chain identifier")));
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(Long.class.getName()))
+                .description("Acquisition chain identifier to update")));
 
         performDefaultPut(AcquisitionProcessingChainController.TYPE_PATH
                 + AcquisitionProcessingChainController.CHAIN_PATH, loadedChain, customizer, "Chain should be updated",
@@ -187,6 +189,14 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         // Change to inactive
         customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+
+        // Document path parameter
+        customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+                .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(Long.class.getName()))
+                .description("Acquisition chain identifier to update").attributes(Attributes
+                        .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Chain must be disabled."))));
+
         loadedChain.setActive(Boolean.FALSE);
         performDefaultPut(AcquisitionProcessingChainController.TYPE_PATH
                 + AcquisitionProcessingChainController.CHAIN_PATH, loadedChain, customizer, "Chain should be updated",
