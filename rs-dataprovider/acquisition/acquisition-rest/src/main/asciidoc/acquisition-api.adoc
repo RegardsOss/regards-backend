@@ -14,7 +14,42 @@ include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
 
+include::{snippets}/{TestClass}/{TestMethod}/request-fields.adoc[]
+
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+== Get all acquisition chain
+
+:TestClass: AcquisitionProcessingChainControllerIT
+:TestMethod: getAllChains 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+== Get an acquisition chain
+
+:TestClass: AcquisitionProcessingChainControllerIT
+:TestMethod: getOneChain
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+[[chain-path-parameters, Chain URL parameters]]
+include::{snippets}/{TestClass}/{TestMethod}/path-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+== Start and stop an acquisition chain
+
+An enabled acquisition chain can be started via a `GET /chains/{chainId}/start` request, +
+
+or stopped via a `GET /chains/{chainId}/stop` request.
+
+See <<chain-path-parameters>>.
 
 == Update an acquisition chain
 

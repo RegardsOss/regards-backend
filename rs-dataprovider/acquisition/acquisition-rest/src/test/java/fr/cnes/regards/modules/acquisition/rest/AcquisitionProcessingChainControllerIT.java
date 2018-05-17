@@ -22,11 +22,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.TestPropertySource;
@@ -42,6 +44,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -76,9 +79,75 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
 
         AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("post");
 
+        // Document acquisition chain
+        ConstrainedFields fields = new ConstrainedFields(AcquisitionProcessingChain.class);
+
+        StringJoiner joiner = new StringJoiner(", ");
+        for (AcquisitionProcessingChainMode mode : AcquisitionProcessingChainMode.values()) {
+            joiner.add(mode.name());
+        }
+
+        customizer.addDocumentationSnippet(PayloadDocumentation
+                .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
+                        .value("Acquisition processing chain")), fields.withPath("label", "Label"),
+                                      fields.withPath("active", "Activation status"),
+                                      fields.withPath("mode", "mode", "Mode",
+                                                      "Allowed values : " + joiner.toString())));
+
         // Create the chain
         performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
                            "Chain should be created!");
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ING_PRO_020")
+    @Requirement("REGARDS_DSL_ING_PRO_030")
+    @Purpose("Get all acquisition chain")
+    public void getAllChains() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+
+        AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("one");
+        performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
+                           "Chain should be created!");
+
+        chain = AcquisitionTestUtils.getNewChain("two");
+        performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
+                           "Chain should be created!");
+
+        // Retrieve chains
+        customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+
+        performDefaultGet(AcquisitionProcessingChainController.TYPE_PATH, customizer, "Chains should be retrieved");
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ING_PRO_020")
+    @Requirement("REGARDS_DSL_ING_PRO_030")
+    @Purpose("Get an acquisition chain")
+    public void getOneChain() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+
+        AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("first");
+        ResultActions result = performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
+                                                  "Chain should be created!");
+
+        // Update chain
+        String resultAsString = payload(result);
+        Integer chainId = JsonPath.read(resultAsString, "$.content.id");
+
+        // Retrieve chains
+        customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        // Document path parameter
+        customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+                .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(Long.class.getName()))
+                .description("Acquisition chain identifier")));
+        performDefaultGet(AcquisitionProcessingChainController.TYPE_PATH
+                + AcquisitionProcessingChainController.CHAIN_PATH, customizer, "Chain should be retrieved", chainId);
     }
 
     @Test
@@ -117,12 +186,11 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
 
         customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-
         // Document path parameter
         customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(Long.class.getName()))
-                .description("Acquisition chain identifier to update")));
+                .description("Acquisition chain identifier")));
 
         performDefaultPut(AcquisitionProcessingChainController.TYPE_PATH
                 + AcquisitionProcessingChainController.CHAIN_PATH, loadedChain, customizer, "Chain should be updated",
