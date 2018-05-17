@@ -245,7 +245,8 @@ public class OrderController implements IResourceController<OrderDto> {
     private ResponseEntity<StreamingResponseBody> createMetalinkDownloadResponse(@PathVariable("orderId") Long orderId,
             HttpServletResponse response) {
         response.addHeader("Content-disposition",
-                           "attachment;filename=order_" + OffsetDateTime.now().toString() + ".metalink");
+                           "attachment;filename=order_" + orderId + "_" + OffsetDateTime.now().toString()
+                                   + ".metalink");
         response.setContentType("application/metalink+xml");
 
         // Stream the response
