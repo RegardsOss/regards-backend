@@ -843,19 +843,14 @@ public class OrderService implements IOrderService {
             }
             ResourcesType xmlResources = factory.createResourcesType();
             ResourcesType.Url xmlUrl = factory.createResourcesTypeUrl();
-            // If file is managed by storage, set url to storage location
-            if (file.getOnline() != null) {
-                // Build URL to publicdownloadFile
-                StringBuilder buff = new StringBuilder();
-                buff.append(host);
-                buff.append(urlPrefix).append("/").append(encode4Uri(microserviceName));
-                buff.append("/orders/aips/").append(encode4Uri(file.getIpId().toString())).append("/files/");
-                buff.append(file.getChecksum()).append("?").append(tokenRequestParam);
-                buff.append("&").append(scopeRequestParam);
-                xmlUrl.setValue(buff.toString());
-            } else { // File is external, set URL directly
-                xmlUrl.setValue(file.getUrl());
-            }
+            // Build URL to publicdownloadFile
+            StringBuilder buff = new StringBuilder();
+            buff.append(host);
+            buff.append(urlPrefix).append("/").append(encode4Uri(microserviceName));
+            buff.append("/orders/aips/").append(encode4Uri(file.getIpId().toString())).append("/files/");
+            buff.append(file.getId()).append("?").append(tokenRequestParam);
+            buff.append("&").append(scopeRequestParam);
+            xmlUrl.setValue(buff.toString());
             xmlResources.getUrl().add(xmlUrl);
             xmlFile.setResources(xmlResources);
             xmlFiles.getFile().add(xmlFile);

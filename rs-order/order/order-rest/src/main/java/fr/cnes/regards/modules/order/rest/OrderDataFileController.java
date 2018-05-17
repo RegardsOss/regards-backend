@@ -50,7 +50,7 @@ import io.jsonwebtoken.MalformedJwtException;
 @RequestMapping("")
 public class OrderDataFileController implements IResourceController<OrderDataFile> {
 
-    public static final String ORDERS_AIPS_AIP_ID_FILES_CHECKSUM = "/orders/aips/{aipId}/files/{checksum}";
+    public static final String ORDERS_AIPS_AIP_ID_FILES_ID = "/orders/aips/{aipId}/files/{id}";
 
     public static final String ORDERS_FILES_DATA_FILE_ID = "/orders/files/{dataFileId}";
 
@@ -110,9 +110,9 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
 
     @ResourceAccess(description = "Download a file that is part of an order granted by token",
             role = DefaultRole.PUBLIC)
-    @RequestMapping(method = RequestMethod.GET, path = ORDERS_AIPS_AIP_ID_FILES_CHECKSUM)
+    @RequestMapping(method = RequestMethod.GET, path = ORDERS_AIPS_AIP_ID_FILES_ID)
     public ResponseEntity<StreamingResponseBody> publicDownloadFile(@PathVariable("aipId") String aipId,
-            @PathVariable("checksum") String checksum, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
+            @PathVariable("id") Long dataFileId, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
             HttpServletResponse response) throws NoSuchElementException, IOException {
         OrderDataFile dataFile;
         String user;
@@ -123,13 +123,18 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
             user = claims.get(JWTService.CLAIM_SUBJECT).toString();
             role = claims.get(JWTService.CLAIM_ROLE).toString();
             // Throws a NoSuchElementException if not found
-            dataFile = dataFileService.find(orderId, decodeUrn(aipId), checksum);
+            dataFile = dataFileService.load(dataFileId);
         } catch (InvalidJwtException | MalformedJwtException e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        response.addHeader("Content-disposition", "attachment;filename=" + dataFile.getName());
-        response.setContentType(dataFile.getMimeType().toString());
+        String filename = (dataFile.getName() != null) ?
+                dataFile.getName() :
+                dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
+        response.addHeader("Content-disposition", "attachment;filename=" + filename);
+        if (dataFile.getMimeType() != null) {
+            response.setContentType(dataFile.getMimeType().toString());
+        }
 
         switch (dataFile.getState()) {
             case PENDING:
