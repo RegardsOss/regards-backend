@@ -2,12 +2,12 @@
 
 .{{path}}
 |===
-|Parameter|Description|Type|Constraints
+|Parameter|Type|Description|Constraints
 
 {{#parameters}}
 |{{#tableCellContent}}`+{{name}}+`{{/tableCellContent}}
-|{{#tableCellContent}}{{description}}{{/tableCellContent}}
 |{{#tableCellContent}}{{#type}}{{type}}{{/type}}{{/tableCellContent}}
+|{{#tableCellContent}}{{description}}{{/tableCellContent}}
 |{{#tableCellContent}}{{#constraints}}{{constraints}}{{/constraints}}{{/tableCellContent}}
 
 {{/parameters}}

@@ -56,6 +56,11 @@ public class RequestBuilderCustomizer {
     public static final String PARAM_CONSTRAINTS = "constraints";
 
     /**
+     * Documentation snippet constraint fields
+     */
+    public static final String PARAM_TYPE = "type";
+
+    /**
      * Headers
      */
     private final HttpHeaders headers = new HttpHeaders();
