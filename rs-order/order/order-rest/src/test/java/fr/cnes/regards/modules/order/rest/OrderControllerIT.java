@@ -58,7 +58,6 @@ import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.metalink.schema.FileType;
 import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
 import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;

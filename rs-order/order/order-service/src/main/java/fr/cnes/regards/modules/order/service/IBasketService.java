@@ -1,12 +1,7 @@
 package fr.cnes.regards.modules.order.service;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.time.OffsetDateTime;
 
-import com.google.common.base.Strings;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;

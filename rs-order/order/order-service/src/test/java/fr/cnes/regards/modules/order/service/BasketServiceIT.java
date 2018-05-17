@@ -1,8 +1,5 @@
 package fr.cnes.regards.modules.order.service;
 
-import java.sql.Date;
-import java.text.SimpleDateFormat;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

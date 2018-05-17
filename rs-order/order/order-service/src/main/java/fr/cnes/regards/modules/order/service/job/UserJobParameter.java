@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.order.service.job;
 
-import java.time.OffsetDateTime;
-
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 
 /**
