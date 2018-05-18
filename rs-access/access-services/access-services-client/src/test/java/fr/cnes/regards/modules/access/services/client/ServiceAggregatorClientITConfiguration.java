@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -28,14 +28,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
-import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
 
 /**
  * Module-wide configuration for Integration Tests
@@ -52,7 +50,7 @@ public class ServiceAggregatorClientITConfiguration {
         ResponseEntity<List<Resource<PluginConfigurationDto>>> result = new ResponseEntity<List<Resource<PluginConfigurationDto>>>(
                 HateoasUtils.wrapList(Lists.newArrayList(dummyPluginConfigurationDto())), HttpStatus.OK);
 
-        Mockito.when(client.retrieveServices(Mockito.anyString(), Mockito.any())).thenReturn(result);
+        Mockito.when(client.retrieveServices(Mockito.anyListOf(String.class), Mockito.any())).thenReturn(result);
 
         return client;
     }

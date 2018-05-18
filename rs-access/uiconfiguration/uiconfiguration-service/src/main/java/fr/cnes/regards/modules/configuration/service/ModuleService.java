@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -37,8 +37,10 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.dao.IModuleRepository;
+import fr.cnes.regards.modules.configuration.dao.ModuleSpecifications;
 import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
 import fr.cnes.regards.modules.configuration.domain.Module;
+import fr.cnes.regards.modules.configuration.domain.UIPage;
 import fr.cnes.regards.modules.configuration.service.exception.InitUIException;
 
 /**
@@ -90,8 +92,9 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
     }
 
     @Override
-    public Page<Module> retrieveModules(final String pApplicationId, final Pageable pPageable) {
-        return repository.findByApplicationId(pApplicationId, pPageable);
+    public Page<Module> retrieveModules(final String applicationId, Boolean active, String type,
+            final Pageable pPageable) {
+        return repository.findAll(ModuleSpecifications.search(applicationId, active, type), pPageable);
     }
 
     @Override
@@ -105,12 +108,13 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
         final Gson gson = new Gson();
         try {
             gson.fromJson(pModule.getConf(), Object.class);
-        } catch (final Exception e) {
+        } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
-            throw new EntityInvalidException("Layout is not a valid json format.");
+            throw new EntityInvalidException("Layout is not a valid json format.", e);
         }
-        if (pModule.isDefaultDynamicModule()) {
-            disableDefaultForAllApplicationModules(pModule.getApplicationId());
+        UIPage page = pModule.getPage();
+        if ((page != null) && page.isHome()) {
+            disableHomeForAllApplicationModules(pModule.getApplicationId());
         }
         return repository.save(pModule);
     }
@@ -121,15 +125,16 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
         final Gson gson = new Gson();
         try {
             gson.fromJson(pModule.getConf(), Object.class);
-        } catch (final Exception e) {
+        } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
-            throw new EntityInvalidException("Layout is not a valid json format.");
+            throw new EntityInvalidException("Layout is not a valid json format.", e);
         }
         if (!repository.exists(pModule.getId())) {
             throw new EntityNotFoundException(pModule.getId(), Module.class);
         }
-        if (pModule.isDefaultDynamicModule()) {
-            disableDefaultForAllApplicationModules(pModule.getApplicationId());
+        UIPage page = pModule.getPage();
+        if ((page != null) && page.isHome()) {
+            disableHomeForAllApplicationModules(pModule.getApplicationId());
         }
         return repository.save(pModule);
     }
@@ -150,10 +155,12 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
      * @param pApplicationId
      * @since 1.0-SNAPSHOT
      */
-    private void disableDefaultForAllApplicationModules(final String pApplicationId) {
-        final List<Module> modules = repository.findByApplicationIdAndDefaultDynamicModuleTrue(pApplicationId);
+    private void disableHomeForAllApplicationModules(final String pApplicationId) {
+        final List<Module> modules = repository.findByApplicationIdAndPageHomeTrue(pApplicationId);
         for (final Module module : modules) {
-            module.setDefaultDynamicModule(false);
+            if ((module.getPage() != null) && module.getPage().isHome()) {
+                module.getPage().setHome(false);
+            }
             repository.save(module);
         }
     }
@@ -166,7 +173,6 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             menu.setActive(true);
             menu.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
             menu.setContainer("page-top-header");
-            menu.setDefaultDynamicModule(false);
             menu.setDescription(String.format("%s menu", pTenant));
             menu.setType("menu");
             try {
@@ -181,9 +187,9 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             catalog.setActive(true);
             catalog.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
             catalog.setContainer("page-content-module");
-            catalog.setDefaultDynamicModule(true);
             catalog.setDescription("Catalog");
             catalog.setType("search-results");
+            catalog.setPage(new UIPage(false, "DEFAULT", null, "{\"en\":\"Catalog\",\"fr\":\"Catalogue\"}"));
             try {
                 catalog.setConf(readDefaultFileResource(defaultUserCatalogModuleResource));
             } catch (final IOException e) {
@@ -202,9 +208,9 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             menu.setActive(true);
             menu.setApplicationId(LayoutDefaultApplicationIds.PORTAL.toString());
             menu.setContainer("header");
-            menu.setDefaultDynamicModule(false);
             menu.setDescription(String.format("Portal menu"));
             menu.setType("menu");
+
             try {
                 menu.setConf(readDefaultFileResource(defaultPortalMenuResource));
             } catch (final IOException e) {
@@ -217,7 +223,6 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             projectList.setActive(true);
             projectList.setApplicationId(LayoutDefaultApplicationIds.PORTAL.toString());
             projectList.setContainer("content");
-            projectList.setDefaultDynamicModule(false);
             projectList.setDescription("List of projects");
             projectList.setType("projects-list");
             projectList.setConf("{}");

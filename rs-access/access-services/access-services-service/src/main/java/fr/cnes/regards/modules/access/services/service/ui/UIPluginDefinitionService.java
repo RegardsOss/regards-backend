@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -28,18 +28,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotEmptyException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginConfigurationRepository;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginDefinitionRepository;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
@@ -56,6 +57,9 @@ public class UIPluginDefinitionService
     @Autowired
     private IUIPluginDefinitionRepository repository;
 
+    @Autowired
+    private IUIPluginConfigurationRepository pluginConfigurationRepository;
+
     @Value("${regards.access.multitenant:true}")
     private boolean isMultitenentMicroservice;
 
@@ -64,12 +68,6 @@ public class UIPluginDefinitionService
      */
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
-
-    /**
-     * AMQP Message subscriber
-     */
-    @Autowired
-    private IInstanceSubscriber instanceSubscriber;
 
     /**
      * Tenant resolver to access all configured tenant
@@ -83,21 +81,19 @@ public class UIPluginDefinitionService
     @Override
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
         LOG.info("UIPluginDefinitionService subscribing to new TenantConnectionReady events.");
-        // Initialize subscriber for new tenant connection and initialize database if not already done
-        instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
     }
 
-    private class TenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
-
-        @Override
-        public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
-            LOG.info("New tenant ready, initializing default plugins for tenant {}.",
-                     pWrapper.getContent().getTenant());
-            runtimeTenantResolver.forceTenant(pWrapper.getContent().getTenant());
+    @EventListener
+    public void processEvent(TenantConnectionReady event) {
+        LOG.info("New tenant ready, initializing default plugins for tenant {}.", event.getTenant());
+        try {
+            runtimeTenantResolver.forceTenant(event.getTenant());
             initDefault();
+        } finally {
             runtimeTenantResolver.clearTenant();
-            LOG.info("New tenant ready, default plugins initialized successfully.");
         }
+
+        LOG.info("New tenant ready, default plugins initialized successfully.");
     }
 
     /**
@@ -155,6 +151,12 @@ public class UIPluginDefinitionService
             plugin.setSourcePath("/plugins/criterion/two-temporal/plugin.js");
             plugin.setType(UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
+
+            plugin = new UIPluginDefinition();
+            plugin.setName("enumerated-criteria");
+            plugin.setSourcePath("/plugins/criterion/enumerated/plugin.js");
+            plugin.setType(UIPluginTypesEnum.CRITERIA);
+            repository.save(plugin);
         }
     }
 
@@ -191,11 +193,16 @@ public class UIPluginDefinitionService
     }
 
     @Override
-    public void deletePlugin(final Long pPluginId) throws EntityNotFoundException {
-        if (!repository.exists(pPluginId)) {
-            throw new EntityNotFoundException(pPluginId, UIPluginDefinition.class);
+    public void deletePlugin(Long pluginId) throws ModuleException {
+
+        UIPluginDefinition pluginDef = repository.findOne(pluginId);
+        if (pluginDef == null) {
+            throw new EntityNotFoundException(pluginId, UIPluginDefinition.class);
         }
-        repository.delete(pPluginId);
+        if (pluginConfigurationRepository.hasPluginConfigurations(pluginDef)) {
+            throw new EntityNotEmptyException(pluginId, UIPluginDefinition.class);
+        }
+        repository.delete(pluginId);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -23,12 +23,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
@@ -53,47 +51,30 @@ public class UiConfigurationServiceEventHandler implements ApplicationListener<A
     @Autowired
     private IModuleService moduleService;
 
-    /**
-     * AMQP Message subscriber
-     */
-    @Autowired
-    private IInstanceSubscriber instanceSubscriber;
-
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
         LOG.info("UiConfigurationServiceEventHandler subscribing to new TenantConnectionReady events.");
-        instanceSubscriber.subscribeTo(TenantConnectionReady.class,
-                                       new UIConfigurationTenantConnectionReadyEventHandler());
     }
 
-    /**
-     * Handle {@link LinkUiPluginsDatasetsEvent} event to clear "servicesAggregated" cache
-     *
-     * @author Xavier-Alexandre Brochard
-     */
-    private class UIConfigurationTenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
-
-        @Override
-        public void handle(TenantWrapper<TenantConnectionReady> wrapper) {
-            try {
-                LOG.info("New tenant ready, initializing default layout, themes and modules for tenant {}.",
-                         wrapper.getContent().getTenant());
-                String tenant = wrapper.getContent().getTenant();
-                runtimeTenantResolver.forceTenant(tenant);
-                AbstractUiConfigurationService layoutServiceAsAbstract = (AbstractUiConfigurationService) layoutService;
-                AbstractUiConfigurationService themeServiceAsAbstract = (AbstractUiConfigurationService) themeService;
-                AbstractUiConfigurationService moduleServiceAsAbstract = (AbstractUiConfigurationService) moduleService;
-                layoutServiceAsAbstract.initProjectUI(tenant);
-                themeServiceAsAbstract.initProjectUI(tenant);
-                moduleServiceAsAbstract.initProjectUI(tenant);
-                LOG.info("New tenant ready, default layout, themes and modules initialized successfully");
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
+    @EventListener
+    public void processEvent(TenantConnectionReady event) {
+        try {
+            LOG.info("New tenant ready, initializing default layout, themes and modules for tenant {}.",
+                     event.getTenant());
+            String tenant = event.getTenant();
+            runtimeTenantResolver.forceTenant(tenant);
+            AbstractUiConfigurationService layoutServiceAsAbstract = (AbstractUiConfigurationService) layoutService;
+            AbstractUiConfigurationService themeServiceAsAbstract = (AbstractUiConfigurationService) themeService;
+            AbstractUiConfigurationService moduleServiceAsAbstract = (AbstractUiConfigurationService) moduleService;
+            layoutServiceAsAbstract.initProjectUI(tenant);
+            themeServiceAsAbstract.initProjectUI(tenant);
+            moduleServiceAsAbstract.initProjectUI(tenant);
+            LOG.info("New tenant ready, default layout, themes and modules initialized successfully");
+        } finally {
+            runtimeTenantResolver.clearTenant();
         }
     }
-
 }

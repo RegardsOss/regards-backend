@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.backendforfrontend.rest;
 
+import java.util.Arrays;
+
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,13 +27,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
 import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
-import fr.cnes.regards.modules.search.client.ISearchAllClient;
-import fr.cnes.regards.modules.search.client.ISearchAllWithFacetsClient;
-import fr.cnes.regards.modules.search.client.ISearchCollectionsClient;
-import fr.cnes.regards.modules.search.client.ISearchDataobjectsClient;
-import fr.cnes.regards.modules.search.client.ISearchDataobjectsReturnDatasetsClient;
-import fr.cnes.regards.modules.search.client.ISearchDatasetsClient;
-import fr.cnes.regards.modules.search.client.ISearchDocumentsClient;
+import fr.cnes.regards.modules.search.client.IJsonSearchClient;
 
 /**
  * Module-wide configuration for integration tests.
@@ -46,72 +42,31 @@ public class BackendForFrontendTestConfiguration {
     @Primary
     public IServiceAggregatorClient serviceAggregatorClient() {
         IServiceAggregatorClient mock = Mockito.mock(IServiceAggregatorClient.class);
-        Mockito.when(mock.retrieveServices(BackendForFrontendTestUtils.DATASET_0.getIpId().toString(), null))
+        Mockito.when(mock.retrieveServices(Arrays.asList(BackendForFrontendTestUtils.DATASET_0.getIpId().toString()),
+                                           null))
                 .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_0);
-        Mockito.when(mock.retrieveServices(BackendForFrontendTestUtils.DATASET_1.getIpId().toString(), null))
+        Mockito.when(mock.retrieveServices(Arrays.asList(BackendForFrontendTestUtils.DATASET_1.getIpId().toString()),
+                                           null))
                 .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_1);
         return mock;
     }
 
     @Bean
-    @Primary
-    public ISearchAllClient searchAllClient() {
-        ISearchAllClient mock = Mockito.mock(ISearchAllClient.class);
+    public IJsonSearchClient searchClient() {
+        IJsonSearchClient mock = Mockito.mock(IJsonSearchClient.class);
         Mockito.when(mock.searchAll(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
-        return mock;
-    }
-
-    @Bean
-    @Primary
-    public ISearchAllWithFacetsClient searchAllWithFacetsClient() {
-        ISearchAllWithFacetsClient mock = Mockito.mock(ISearchAllWithFacetsClient.class);
         Mockito.when(mock.searchAll(Mockito.any(), Mockito.any()))
                 .thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
-        return mock;
-    }
-
-    @Bean
-    @Primary
-    public ISearchCollectionsClient searchCollectionsClient() {
-        ISearchCollectionsClient mock = Mockito.mock(ISearchCollectionsClient.class);
         Mockito.when(mock.searchCollections(Mockito.any()))
                 .thenReturn(BackendForFrontendTestUtils.SEARCH_COLLECTIONS_RESULT);
-        return mock;
-    }
-
-    @Bean
-    @Primary
-    public ISearchDatasetsClient searchDatasetsClient() {
-        ISearchDatasetsClient mock = Mockito.mock(ISearchDatasetsClient.class);
         Mockito.when(mock.searchDatasets(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
-        return mock;
-    }
-
-    @Bean
-    @Primary
-    public ISearchDataobjectsClient searchDataobjectsClient() {
-        ISearchDataobjectsClient mock = Mockito.mock(ISearchDataobjectsClient.class);
         Mockito.when(mock.searchDataobjects(Mockito.any(), Mockito.any()))
                 .thenReturn(BackendForFrontendTestUtils.SEARCH_DATAOBJECTS_RESULT);
-        return mock;
-    }
-
-    @Bean
-    @Primary
-    public ISearchDataobjectsReturnDatasetsClient searchDataobjectsReturnDatasetsClient() {
-        ISearchDataobjectsReturnDatasetsClient mock = Mockito.mock(ISearchDataobjectsReturnDatasetsClient.class);
         Mockito.when(mock.searchDataobjectsReturnDatasets(Mockito.any(), Mockito.any()))
                 .thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
-        return mock;
-    }
-
-    @Bean
-    @Primary
-    public ISearchDocumentsClient searchDocumentsClient() {
-        ISearchDocumentsClient mock = Mockito.mock(ISearchDocumentsClient.class);
         Mockito.when(mock.searchDocuments(Mockito.any()))
                 .thenReturn(BackendForFrontendTestUtils.SEARCH_DOCUMENTS_RESULT);
+
         return mock;
     }
-
 }

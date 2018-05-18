@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -28,7 +28,8 @@ package fr.cnes.regards.modules.configuration.domain;
  * @since 1.0-SNAPSHOT
  */
 public enum LayoutDefaultApplicationIds {
-    USER("user"), PORTAL("portal");
+    USER("user"),
+    PORTAL("portal");
 
     private String value;
 
@@ -40,5 +41,4 @@ public enum LayoutDefaultApplicationIds {
     public String toString() {
         return this.value;
     }
-
 }

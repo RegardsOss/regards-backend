@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -23,6 +23,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import fr.cnes.regards.modules.configuration.domain.Module;
 
@@ -35,7 +36,7 @@ import fr.cnes.regards.modules.configuration.domain.Module;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-public interface IModuleRepository extends JpaRepository<Module, Long> {
+public interface IModuleRepository extends JpaRepository<Module, Long>, JpaSpecificationExecutor<Module> {
 
     /**
      *
@@ -64,7 +65,7 @@ public interface IModuleRepository extends JpaRepository<Module, Long> {
      * @return
      * @since 1.0-SNAPSHOT
      */
-    List<Module> findByApplicationIdAndDefaultDynamicModuleTrue(String pApplicationId);
+    List<Module> findByApplicationIdAndPageHomeTrue(String pApplicationId);
 
     /**
      *

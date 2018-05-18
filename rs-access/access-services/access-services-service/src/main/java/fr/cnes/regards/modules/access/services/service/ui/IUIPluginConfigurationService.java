@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -120,10 +120,21 @@ public interface IUIPluginConfigurationService {
      * Return all {@link UIPluginConfiguration} for plugins type service and associated to the given dataset id if any given.
      *
      * @param pDatasetId Can be <code>null</code>.
+     * @param pApplicationModes Can be <code>null</code>.
+     * @return list of {@link UIPluginConfiguration}
+     * @since 1.0-SNAPSHOT
+     */
+    List<UIPluginConfiguration> retrieveActivePluginServices(String pDatasetId, List<ServiceScope> pApplicationModes);
+
+    /**
+     * Return all {@link UIPluginConfiguration} for plugins type service and associated to the given dataset id if any given.
+     *
+     * @param pDatasetIds Can be <code>null</code>.
      * @param pApplicationMode Can be <code>null</code>.
      * @return list of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
      */
-    List<UIPluginConfiguration> retrieveActivePluginServices(String pDatasetId, ServiceScope pApplicationMode);
+    List<UIPluginConfiguration> retrieveActivePluginServices(List<String> pDatasetIds,
+            List<ServiceScope> pApplicationModes);
 
 }

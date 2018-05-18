@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.access.services.service.ui;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -29,6 +29,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -47,11 +49,9 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 
 /**
- *
  * Class PluginConfigurationService
  *
  * Business service to manage {@link UIPluginConfiguration} entities.
- *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
@@ -64,8 +64,8 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
      * Builds a pedicate telling if the passed {@link UIPluginConfiguration} is applicable on passed {@link ServiceScope}.
      * Returns <code>true</code> if passed <code>pApplicationMode</code> is <code>null</code>.
      */
-    private static final Function<ServiceScope, Predicate<UIPluginConfiguration>> IS_APPLICABLE_ON = pApplicationMode -> pConfiguration -> (pApplicationMode == null)
-            || pConfiguration.getPluginDefinition().getApplicationModes().contains(pApplicationMode);
+    private static final Function<List<ServiceScope>, Predicate<UIPluginConfiguration>> IS_APPLICABLE_ON = pApplicationModes -> pConfiguration -> (pApplicationModes == null)
+            || pConfiguration.getPluginDefinition().getApplicationModes().containsAll(pApplicationModes);
 
     private final IUIPluginDefinitionRepository pluginRepository;
 
@@ -157,8 +157,8 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
         final Gson gson = new Gson();
         try {
             gson.fromJson(pPluginConfiguration.getConf(), Object.class);
-        } catch (final Exception e) {
-            throw new EntityInvalidException("Configuration is not a valid json format.");
+        } catch (RuntimeException e) {
+            throw new EntityInvalidException("Configuration is not a valid json format.", e);
         }
 
         UIPluginConfiguration updated = repository.save(pPluginConfiguration);
@@ -177,8 +177,8 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
         final Gson gson = new Gson();
         try {
             gson.fromJson(pPluginConfiguration.getConf(), Object.class);
-        } catch (final Exception e) {
-            throw new EntityInvalidException("Configuration is not a valid json format.");
+        } catch (final RuntimeException e) {
+            throw new EntityInvalidException("Configuration is not a valid json format.", e);
         }
 
         UIPluginConfiguration created = repository.save(pPluginConfiguration);
@@ -199,17 +199,13 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
         // Remove the config from the links
         try (Stream<LinkUIPluginsDatasets> links = linkedUiPluginRespository
                 .findAllByServicesContaining(pPluginConfiguration)) {
-            // @formatter:off
-            links
-                .peek(link -> link.getServices().remove(pPluginConfiguration))
-                .forEach(link -> {
-                    if(link.getServices().isEmpty()) {
-                        linkedUiPluginRespository.delete(link);
-                    } else {
-                        linkedUiPluginRespository.save(link);
-                    }}
-                );
-            // @formatter:on
+            links.peek(link -> link.getServices().remove(pPluginConfiguration)).forEach(link -> {
+                if (link.getServices().isEmpty()) {
+                    linkedUiPluginRespository.delete(link);
+                } else {
+                    linkedUiPluginRespository.save(link);
+                }
+            });
         }
 
         repository.delete(pPluginConfiguration);
@@ -219,15 +215,17 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
 
     @Override
     public List<UIPluginConfiguration> retrieveActivePluginServices(final String pDatasetId,
-            ServiceScope pApplicationMode) {
-        final List<UIPluginConfiguration> activePluginsConfigurations = new ArrayList<>();
-        final LinkUIPluginsDatasets link = linkedUiPluginRespository.findOneByDatasetId(pDatasetId);
-        if (link != null) {
-            link.getServices().forEach(pluginConf -> {
-                if (pluginConf.getActive()) {
-                    activePluginsConfigurations.add(pluginConf);
-                }
-            });
+            List<ServiceScope> pApplicationModes) {
+        return retrieveActivePluginServices(Lists.newArrayList(pDatasetId), pApplicationModes);
+    }
+
+    @Override
+    public List<UIPluginConfiguration> retrieveActivePluginServices(List<String> pDatasetIds,
+            List<ServiceScope> pApplicationModes) {
+        final Set<UIPluginConfiguration> activePluginsConfigurations = Sets.newHashSet();
+        if ((pDatasetIds != null) && !pDatasetIds.isEmpty()) {
+            final List<LinkUIPluginsDatasets> links = linkedUiPluginRespository.findByDatasetIdIn(pDatasetIds);
+            activePluginsConfigurations.addAll(getCommonServicesFromLinks(links));
         }
 
         // Retrieve plugins linked to all dataset
@@ -242,8 +240,29 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
         }
 
         try (Stream<UIPluginConfiguration> stream = activePluginsConfigurations.stream()) {
-            return stream.filter(IS_APPLICABLE_ON.apply(pApplicationMode)).collect(Collectors.toList());
+            return stream.filter(IS_APPLICABLE_ON.apply(pApplicationModes)).collect(Collectors.toList());
         }
+    }
+
+    /**
+     * Retrieve unqi services from given {@link LinkUIPluginsDatasets}s
+     * @param links
+     * @return {@link UIPluginConfiguration}s
+     */
+    private Set<UIPluginConfiguration> getCommonServicesFromLinks(List<LinkUIPluginsDatasets> links) {
+        final Set<UIPluginConfiguration> services = Sets.newHashSet();
+        boolean first = true;
+        // Create a set with common service between all links (dataset/plugins)
+        for (LinkUIPluginsDatasets link : links) {
+            if (first) {
+                services.addAll(link.getServices());
+                first = false;
+            } else {
+                services.retainAll(link.getServices());
+            }
+        }
+        // Return only the active ones.
+        return services.stream().filter(s -> s.getActive()).collect(Collectors.toSet());
     }
 
 }

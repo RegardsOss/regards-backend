@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +35,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.configuration.dao.IThemeRepository;
 import fr.cnes.regards.modules.configuration.domain.Theme;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  *
@@ -94,9 +93,9 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
     public void testGetAllThemes() {
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(6)));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(7)));
         performDefaultGet(ThemeController.ROOT_MAPPING, expectations,
-                          "Error getting all themes. There should 5 themes. The 3 default ones and the 3 created in this test.");
+                          "Error getting all themes. There should 7 themes. The 4 default ones and the 3 created in this test.");
     }
 
     /**
@@ -144,9 +143,9 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
 
         expectations.clear();
         expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(7)));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(8)));
         performDefaultGet(ThemeController.ROOT_MAPPING, expectations,
-                          "There should be the 6 initial themes and the new created one.");
+                          "There should be the 7 initial themes and the new created one.");
     }
 
     /**

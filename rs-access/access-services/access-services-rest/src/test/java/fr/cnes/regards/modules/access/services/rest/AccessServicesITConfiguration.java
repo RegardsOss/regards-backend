@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -35,13 +35,12 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
-import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
-import fr.cnes.regards.modules.models.domain.EntityType;
 
 /**
  * Module-wide configuration for tests.
@@ -55,17 +54,18 @@ public class AccessServicesITConfiguration {
 
     private static final String LABEL = "the label";
 
-    private static URL ICON_URL;
-
     private static final Set<ServiceScope> APPLICATION_MODES = Sets.newHashSet(ServiceScope.MANY);
 
     private static final Set<EntityType> ENTITY_TYPES = Sets.newHashSet(EntityType.COLLECTION);
+
+    private static URL ICON_URL;
 
     @Bean
     public ICatalogServicesClient catalogServicesClient() {
         ICatalogServicesClient client = Mockito.mock(ICatalogServicesClient.class);
 
-        Mockito.when(client.retrieveServices("datasetFromConfigClass", ServiceScope.MANY))
+        Mockito.when(client.retrieveServices(Lists.newArrayList("datasetFromConfigClass"),
+                                             Lists.newArrayList(ServiceScope.MANY)))
                 .thenReturn(new ResponseEntity<List<Resource<PluginConfigurationDto>>>(
                         HateoasUtils.wrapList(Lists.newArrayList(dummyPluginConfigurationDto())), HttpStatus.OK));
 

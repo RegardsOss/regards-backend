@@ -1,5 +1,20 @@
 /*
- * LICENSE_PLACEHOLDER
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.cnes.regards.modules.access.services.rest.aggregator;
 
@@ -57,14 +72,15 @@ public class ServicesAggregatorControllerTest {
         // Mock Catalog Services
         catalogServicesClient = Mockito.mock(ICatalogServicesClient.class);
         PluginConfigurationDto dto = new AccessServicesITConfiguration().dummyPluginConfigurationDto();
-        Mockito.when(catalogServicesClient.retrieveServices(Mockito.anyString(), Mockito.any()))
+        Mockito.when(catalogServicesClient.retrieveServices(Mockito.anyListOf(String.class), Mockito.any()))
                 .thenReturn(new ResponseEntity<List<Resource<PluginConfigurationDto>>>(
                         HateoasUtils.wrapList(Lists.newArrayList(dto)), HttpStatus.OK));
 
         // Mock Ui Services
         uiPluginConfigurationService = Mockito.mock(IUIPluginConfigurationService.class);
         UIPluginConfiguration uiPluginConfiguration = new AccessServicesITConfiguration().dummyUiPluginConfiguration();
-        Mockito.when(uiPluginConfigurationService.retrieveActivePluginServices(Mockito.anyString(), Mockito.any()))
+        Mockito.when(uiPluginConfigurationService.retrieveActivePluginServices(Mockito.anyListOf(String.class),
+                                                                               Mockito.any()))
                 .thenReturn(Lists.newArrayList(uiPluginConfiguration));
 
         // Mock the resource assembler
@@ -81,8 +97,8 @@ public class ServicesAggregatorControllerTest {
      */
     @Test
     public final void testRetrieveServices() {
-        ResponseEntity<List<Resource<PluginServiceDto>>> result = controller.retrieveServices("coucou",
-                                                                                              ServiceScope.MANY);
+        ResponseEntity<List<Resource<PluginServiceDto>>> result = controller
+                .retrieveServices(Lists.newArrayList("coucou"), Lists.newArrayList(ServiceScope.MANY));
         Assert.assertNotNull(result);
         Assert.assertThat(result.getBody(), Matchers.hasSize(2));
     }

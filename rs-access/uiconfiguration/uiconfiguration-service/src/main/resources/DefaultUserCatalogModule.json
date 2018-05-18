@@ -1,19 +1,40 @@
 {
-"resultType":"dataobjects",
-"attributes": 
-  [
-   {
-    "attributeFullQualifiedName":"ipId",
-    "visibility":false,
-    "facetable":false,
-    "order":1
-   },
-   {
-    "attributeFullQualifiedName":"label",
-    "visibility":true,
-    "facetable":false,
-    "order":2
-   }
- ],
-"enableFacettes":false
+	"primaryPane":"ALWAYS_EXPANDED",
+	"facettesInitiallySelected":false,
+	"enableFacettes":false,
+	"enableQuicklooks":false,
+	"enableDownload":true,
+	"initialViewMode":"list",
+	"displayMode":"data",
+	"displayConf":{
+		"quicklookColumnWidth":400,
+		"quicklookColumnSpacing":20
+	},
+	"attributes":[
+		{
+			"attributeFullQualifiedName":"ipId",
+			"visibility":true,
+			"facetable":false,
+			"initialSort":false,
+			"order":2
+		}, {
+			"attributeFullQualifiedName":"label",
+			"visibility":true,
+			"facetable":false,
+			"initialSort":false,
+			"order":3
+		}, {
+			"attributeFullQualifiedName":"creationDate",
+			"visibility":true,
+			"facetable":false,
+			"initialSort":false,
+			"order":4
+		}, {
+			"attributeFullQualifiedName":"thumbnail",
+			"visibility":true,
+			"facetable":false,
+			"initialSort":false,
+			"order":1
+		}
+	]
 }

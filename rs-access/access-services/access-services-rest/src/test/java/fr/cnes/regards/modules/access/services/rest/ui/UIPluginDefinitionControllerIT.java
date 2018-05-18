@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -36,14 +36,13 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginDefinitionRepository;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
-import fr.cnes.regards.modules.access.services.rest.ui.UIPluginDefinitionController;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
-import fr.cnes.regards.modules.models.domain.EntityType;
 
 /**
  *
@@ -106,7 +105,7 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         // 6 default plugins + 3 created during this test
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(9)));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(10)));
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT, expectations, "Error getting all plugins");
     }
 
@@ -121,7 +120,7 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         // 6 default plugins + 2 created during this test
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(8)));
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(9)));
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT, expectations,
                           "Error getting all criteria plugins",
                           RequestParamBuilder.build().param("type", UIPluginTypesEnum.CRITERIA.toString()));
@@ -183,8 +182,8 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
 
         expectations.clear();
         expectations.add(status().isOk());
-        // 6 default plugins + 4 created during this test
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(10)));
+        // 7 default plugins + 4 created during this test
+        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(11)));
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT, expectations, "Error getting all plugins");
     }
 

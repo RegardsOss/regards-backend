@@ -1,6 +1,19 @@
 {
-"title":"Regards user interface",
-"displayAuthentication":true,
-"displayLocaleSelector":true,
-"displayThemeSelector":true
+	"home":{
+		"title":{
+			"en":"Home page",
+			"fr":"Page d'accueil"
+		},
+		"icon":{
+			"type":"DEFAULT_HOME_ICON"
+		}
+	},
+	"displayAuthentication":true,
+	"displayCartSelector":true,
+	"displayNotificationsSelector":true,
+	"displayLocaleSelector":true,
+	"displayThemeSelector":true,
+	"navigation":[],
+	"contacts":"regards@no-reply.com",
+	"projectAboutPage":"https://github.com/RegardsOss"
 }

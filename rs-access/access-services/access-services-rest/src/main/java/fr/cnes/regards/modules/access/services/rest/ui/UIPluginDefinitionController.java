@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -46,6 +46,7 @@ import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
@@ -168,7 +169,7 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
     @ResponseBody
     @ResourceAccess(description = "Endpoint to delete a plugin", role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<Resource<Void>> deletePlugin(@PathVariable("pluginId") final Long pPluginId)
-            throws EntityNotFoundException {
+            throws ModuleException {
         service.deletePlugin(pPluginId);
         return new ResponseEntity<>(HttpStatus.OK);
     }

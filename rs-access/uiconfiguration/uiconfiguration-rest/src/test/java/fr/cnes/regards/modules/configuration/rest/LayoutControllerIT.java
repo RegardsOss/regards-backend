@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +31,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.configuration.domain.Layout;
 import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  *
@@ -66,7 +65,7 @@ public class LayoutControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(status().isUnprocessableEntity());
         final Layout layout = new Layout();
         layout.setId(1L);
-        layout.setApplicationId("USER");
+        layout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
         layout.setLayout("{}}");
         performDefaultPut("/layouts/{applicationId}", layout, expectations, "Plop",
                           LayoutDefaultApplicationIds.USER.toString());
@@ -78,7 +77,7 @@ public class LayoutControllerIT extends AbstractRegardsTransactionalIT {
         expectations.add(status().isOk());
         final Layout layout = new Layout();
         layout.setId(1L);
-        layout.setApplicationId("USER");
+        layout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
         layout.setLayout("{\"test\":\"ok\"}");
         performDefaultPut("/layouts/{applicationId}", layout, expectations, "Plop",
                           LayoutDefaultApplicationIds.USER.toString());

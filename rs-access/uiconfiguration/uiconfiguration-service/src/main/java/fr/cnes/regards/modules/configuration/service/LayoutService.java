@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -28,7 +28,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -117,9 +116,9 @@ public class LayoutService extends AbstractUiConfigurationService implements ILa
         final Gson gson = new Gson();
         try {
             gson.fromJson(pLayout.getLayout(), Object.class);
-        } catch (final Exception e) {
+        } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
-            throw new EntityInvalidException("Layout is not a valid json format.");
+            throw new EntityInvalidException("Layout is not a valid json format.", e);
         }
         return repository.save(pLayout);
     }
@@ -127,15 +126,15 @@ public class LayoutService extends AbstractUiConfigurationService implements ILa
     @Override
     public Layout updateLayout(final Layout pLayout) throws EntityException {
 
-        // Check layut json format
+        // Check layout json format
         final Gson gson = new Gson();
         try {
             gson.fromJson(pLayout.getLayout(), Object.class);
-        } catch (final Exception e) {
+        } catch (final RuntimeException e) {
             LOG.error(e.getMessage(), e);
-            throw new EntityInvalidException("Layout is not a valid json format.");
+            throw new EntityInvalidException("Layout is not a valid json format.", e);
         }
-        if (!repository.exists(pLayout.getId())) {
+        if (!repository.findByApplicationId(pLayout.getApplicationId()).isPresent()) {
             throw new EntityNotFoundException(pLayout.getId(), Layout.class);
         }
         return repository.save(pLayout);
