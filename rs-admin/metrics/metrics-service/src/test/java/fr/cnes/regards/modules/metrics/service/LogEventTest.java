@@ -40,7 +40,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.metrics.dao.ILogEventRepository;
 
-@Ignore("Break randomly according to RabbitMQ response time. Test & fix later!")
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
 @PropertySource("classpath:amqp-rabbit.properties")
