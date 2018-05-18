@@ -28,7 +28,6 @@
 	<packaging>jar</packaging>
 
 	<name>Authentication Starter</name>
-	<description>Provides autoconfiguration for authentication features like OAuth as a Spring Boot like starter</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
 	<licenses>

@@ -28,7 +28,6 @@
 	<packaging>jar</packaging>
 
 	<name>Bootstrap Config</name>
-	<description>Boots the Config microservice</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
 	<licenses>
