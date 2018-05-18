@@ -80,39 +80,39 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     /**
      * LDAP Host access
      */
-    @PluginParameter(name = PARAM_LDAP_HOST, description = "LDAP Server address")
+    @PluginParameter(name = PARAM_LDAP_HOST, label = "LDAP Server address")
     private String ldapHost;
 
     /**
      * LDAP Port
      */
-    @PluginParameter(name = PARAM_LDAP_PORT, description = "LDAP Server port (default 389)")
+    @PluginParameter(name = PARAM_LDAP_PORT, label = "LDAP Server port (default 389)")
     private String ldapPort;
 
     /**
      * LDAP DN
      */
-    @PluginParameter(name = PARAM_LDAP_CN, description = "LDAP Root CN")
+    @PluginParameter(name = PARAM_LDAP_CN, label = "LDAP Root CN")
     private String ldapDN;
 
     /**
      * LDAP User login attribute.
      */
-    @PluginParameter(name = PARAM_LDAP_USER_LOGIN_ATTTRIBUTE,
-            description = "LDAP User parameter containing user login (default=sAMAccountLogin)")
+    @PluginParameter(name = PARAM_LDAP_USER_LOGIN_ATTTRIBUTE, label = "LDAP login attribute",
+            description = "LDAP User parameter containing user login (default=sAMAccountLogin)", optional = true)
     private String ldapUserLoginAttribute;
 
     /**
      * LDAP Filter to find the User object
      */
-    @PluginParameter(name = PARAM_LDAP_USER_FILTER_ATTTRIBUTE,
-            description = "LDAP Filter to find the user object (default = (ObjectClass=user)")
+    @PluginParameter(name = PARAM_LDAP_USER_FILTER_ATTTRIBUTE, label = "LDAP Filter",
+            description = "LDAP Filter to find the user object (default = (ObjectClass=user)", optional = true)
     private String ldapSearchUserFilter;
 
     /**
      * LDAP email attribute label
      */
-    @PluginParameter(name = PARAM_LDAP_USER_EMAIL_ATTTRIBUTE,
+    @PluginParameter(name = PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, label = "LDAP email attribute",
             description = "LDAP parameter for user email (default=mail)")
     private String ldapEmailAttribute;
 

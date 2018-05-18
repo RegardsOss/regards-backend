@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -69,53 +69,54 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
     /**
      * REGARDS ticket service
      */
-    @PluginParameter(name = KerberosSPParameters.PRINCIPAL_PARAMETER, description = "REGARDS ticket service")
+    @PluginParameter(name = KerberosSPParameters.PRINCIPAL_PARAMETER, label = "Principal",
+            description = "REGARDS ticket service")
     private String principal;
 
     /**
      * Kerberos domain name
      */
-    @PluginParameter(name = KerberosSPParameters.REALM_PARAMETER, description = "Kerberos domain name")
+    @PluginParameter(name = KerberosSPParameters.REALM_PARAMETER, label = "Realm", description = "Kerberos domain name")
     private String realm;
 
     /**
      * Adress to connect to Active Directory LDAP
      */
-    @PluginParameter(name = KerberosSPParameters.LDAP_ADRESS_PARAMETER,
+    @PluginParameter(name = KerberosSPParameters.LDAP_ADRESS_PARAMETER, label = "LDAP Adress",
             description = "Adress to connect to Active Directory LDAP")
     private String ldapAdress;
 
     /**
      * Port to connect to Active Directory LDAP
      */
-    @PluginParameter(name = KerberosSPParameters.LDAP_PORT_PARAMETER,
+    @PluginParameter(name = KerberosSPParameters.LDAP_PORT_PARAMETER, label = "LDAP Port",
             description = "Port to connect to Active Directory LDAP (default=389)")
     private String ldapPort;
 
     /**
      * LDAP Root CN
      */
-    @PluginParameter(name = KerberosSPParameters.PARAM_LDAP_CN, description = "LDAP Root CN")
+    @PluginParameter(name = KerberosSPParameters.PARAM_LDAP_CN, label = "LDAP Root CN")
     private String ldapCN;
 
     /**
      * LDAP Filter to find the User object
      */
-    @PluginParameter(name = KerberosSPParameters.PARAM_LDAP_USER_FILTER_ATTTRIBUTE,
+    @PluginParameter(name = KerberosSPParameters.PARAM_LDAP_USER_FILTER_ATTTRIBUTE, label = "LDAP filter",
             description = "LDAP Filter to find the user object (default = (ObjectClass=user))")
     private String ldapSearchUserFilter;
 
     /**
      * LDAP User login attribute.
      */
-    @PluginParameter(name = KerberosSPParameters.PARAM_LDAP_USER_LOGIN_ATTTRIBUTE,
+    @PluginParameter(name = KerberosSPParameters.PARAM_LDAP_USER_LOGIN_ATTTRIBUTE, label = "LDAP login attribute",
             description = "LDAP User parameter containing user login (default=sAMAccountName)")
     private String ldapUserLoginAttribute;
 
     /**
      * LDAP parameter for user email (default=mail)
      */
-    @PluginParameter(name = KerberosSPParameters.PARAM_LDAP_EMAIL_ATTTRIBUTE,
+    @PluginParameter(name = KerberosSPParameters.PARAM_LDAP_EMAIL_ATTTRIBUTE, label = "LDAP email attribute",
             description = "LDAP parameter for user email (default=mail)")
     private String ldapEmailAttribute;
 
@@ -123,13 +124,13 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
      * Kerberos configuration file (krb5.conf)
      */
     @PluginParameter(name = KerberosSPParameters.KRB5_FILEPATH_PARAMETER,
-            description = "Kerberos configuration file (krb5.conf)")
+            label = "Kerberos configuration file (krb5.conf)")
     private String krb5FilePath;
 
     /**
      * Kerberos Keytab file
      */
-    @PluginParameter(name = KerberosSPParameters.KEYTAB_FILEPATH_PARAMETER, description = "Kerberos Keytab file")
+    @PluginParameter(name = KerberosSPParameters.KEYTAB_FILEPATH_PARAMETER, label = "Kerberos Keytab file")
     private String keytabFilePath;
 
     /**

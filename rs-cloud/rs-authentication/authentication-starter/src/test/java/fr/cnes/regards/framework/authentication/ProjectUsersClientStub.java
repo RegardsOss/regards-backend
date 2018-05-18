@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -101,6 +101,12 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     @Override
     public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(final Long pRoleId,
             final int pPage, final int pSize) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUsersList(String pRole, int pPage,
+            int pSize) {
         return null;
     }
 

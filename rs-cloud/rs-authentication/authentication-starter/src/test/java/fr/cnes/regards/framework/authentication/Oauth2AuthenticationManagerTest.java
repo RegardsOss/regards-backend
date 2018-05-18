@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -35,25 +35,22 @@ import org.springframework.security.authentication.BadCredentialsException;
 import fr.cnes.regards.framework.authentication.exception.AuthenticationException;
 import fr.cnes.regards.framework.authentication.internal.AuthenticationStatus;
 import fr.cnes.regards.framework.authentication.internal.Oauth2AuthenticationManager;
-import fr.cnes.regards.framework.module.rest.exception.AlreadyExistingException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidEntityException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleAlreadyExistsException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessrights.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -176,7 +173,7 @@ public class Oauth2AuthenticationManagerTest {
         projectUsersClientMock = Mockito.mock(IProjectUsersClient.class);
         final Resource<ProjectUser> resourceUser = new Resource<>(validUser);
         final ResponseEntity<Resource<ProjectUser>> resp = new ResponseEntity<Resource<ProjectUser>>(resourceUser,
-                HttpStatus.OK);
+                                                                                                     HttpStatus.OK);
         Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(resp);
         Mockito.when(beanFactoryMock.getBean(IProjectUsersClient.class)).thenReturn(projectUsersClientMock);
 
@@ -251,7 +248,7 @@ public class Oauth2AuthenticationManagerTest {
         // Mock a valid project user
         final Resource<ProjectUser> resourceUser = new Resource<>(validUser);
         final ResponseEntity<Resource<ProjectUser>> resp = new ResponseEntity<Resource<ProjectUser>>(resourceUser,
-                HttpStatus.OK);
+                                                                                                     HttpStatus.OK);
         Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(resp);
 
         // Mock a valid account

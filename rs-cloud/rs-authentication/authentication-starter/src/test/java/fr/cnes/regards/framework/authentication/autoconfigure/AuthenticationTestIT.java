@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -47,7 +47,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  */
 @SpringBootTest(classes = AuthenticationTestConfiguration.class)
 @AutoConfigureMockMvc
-@TestPropertySource(locations = "classpath:authentication-test.properties")
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=auth_it" })
 public class AuthenticationTestIT extends AbstractRegardsIT {
 
     /**
@@ -206,9 +206,7 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
                     .param(SCOPE, "PROJECT").param(USER_NAME, "test@regards.fr")
                     .param(PASSWORD, AuthenticationTestConfiguration.VALID_PASSWORD))
                     .andExpect(MockMvcResultMatchers.status().isOk());
-            // CHECKSTYLE:OFF
-        } catch (final Exception e) {
-            // CHECKSTYLE:ON
+        } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
         }

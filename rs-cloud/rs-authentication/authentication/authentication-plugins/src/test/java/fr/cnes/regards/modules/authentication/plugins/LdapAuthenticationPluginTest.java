@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -37,12 +37,12 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.modules.authentication.plugins.impl.ldap.LdapAuthenticationPlugin;
-import fr.cnes.regards.plugins.utils.PluginUtils;
-import fr.cnes.regards.plugins.utils.PluginUtilsRuntimeException;
 
 /**
  *
@@ -84,9 +84,8 @@ public class LdapAuthenticationPluginTest {
                 .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, "email").getParameters();
         try {
             // instantiate plugin
-            plugin = PluginUtils
-                    .getPlugin(parameters, LdapAuthenticationPlugin.class,
-                               Arrays.asList("fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"), new HashMap<>());
+            plugin = PluginUtils.getPlugin(parameters, LdapAuthenticationPlugin.class, Arrays
+                    .asList("fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"), new HashMap<>());
             Assert.assertNotNull(plugin);
         } catch (final PluginUtilsRuntimeException e) {
             Assert.fail();

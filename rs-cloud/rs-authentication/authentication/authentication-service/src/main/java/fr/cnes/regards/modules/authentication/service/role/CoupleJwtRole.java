@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.authentication.service.role;
 
 /**
+ * POJO holding a role and a jwt generated for this role
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public class CoupleJwtRole {
 
@@ -34,23 +34,42 @@ public class CoupleJwtRole {
      */
     private String access_token; // NOSONAR: has this structure so we don't need a DTO or adapter for serialization
 
+    /**
+     * Constructor setting the parameters as attributes
+     * @param pJwt
+     * @param pRoleName
+     */
     public CoupleJwtRole(String pJwt, String pRoleName) {
         access_token = pJwt;
         role = pRoleName;
     }
 
+    /**
+     * @return the role
+     */
     public String getRole() {
         return role;
     }
 
+    /**
+     * Set the role
+     * @param pRole
+     */
     public void setRole(String pRole) {
         role = pRole;
     }
 
+    /**
+     * @return the access token
+     */
     public String getAccessToken() {
         return access_token;
     }
 
+    /**
+     * Set the access token
+     * @param pAccessToken
+     */
     public void setAccessToken(String pAccessToken) {
         access_token = pAccessToken;
     }

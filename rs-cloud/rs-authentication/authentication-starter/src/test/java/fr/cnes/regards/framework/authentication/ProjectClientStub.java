@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -46,6 +46,11 @@ public class ProjectClientStub implements IProjectsClient {
         final PagedResources<Resource<Project>> page = new PagedResources<>(HateoasUtils.wrapList(projects),
                 new PageMetadata(pSize, pPage, 1), new ArrayList<>());
         return new ResponseEntity<>(page, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(int page, int size) {
+        return null;
     }
 
     @Override
