@@ -1,0 +1,65 @@
+{
+    "type": "FeatureCollection",
+    "metadata": {
+        "processing": "DefaultProcessingChain",
+        "session": "sampleSession"
+    },
+    "features": [
+        {
+            "type": "Feature",
+            "id": "sipId1",
+            "ipType": "DATA",
+            "geometry": null,
+            "properties": {
+                "contentInformations": [
+                    {
+                        "dataObject": {
+                            "regardsDataType": "RAWDATA",
+                            "urls": ["file:/home/test.xml"],
+                            "checksum": "sdfsd455sdfdsgdfg4dgdfg",
+                            "algorithm": "MD5"
+                        },
+                        "representationInformation": {
+                            "syntax": {
+                                "name": "XML",
+                                "mimeType": "application/xml",
+                                "description": "https://en.wikipedia.org/wiki/XML"
+                            }
+                        }
+                    }
+                ],
+                "pdi": {
+                    "provenanceInformation": {
+                        "history": []
+                    },
+                    "accessRightInformation": {}
+                },
+                "descriptiveInformation": {}
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "sipId1",
+            "geometry": null,
+            "properties": {
+                "contentInformations": [
+                    {
+                        "dataObject": {
+                            "regardsDataType": "RAWDATA",
+                            "urls": ["file:/home/test.xml"],
+                            "checksum": "sdfsd455sdfdsgdfg4dgdfg",
+                            "algorithm": "PLOUF"
+                        }
+                    }
+                ],
+                "pdi": {
+                    "provenanceInformation": {
+                        "history": []
+                    },
+                    "accessRightInformation": {}
+                },
+                "descriptiveInformation": {}
+            }
+        }
+    ]
+}
