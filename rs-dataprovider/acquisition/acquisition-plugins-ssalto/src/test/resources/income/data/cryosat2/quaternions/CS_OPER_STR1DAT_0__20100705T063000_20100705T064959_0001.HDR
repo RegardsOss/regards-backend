@@ -1,0 +1,108 @@
+<?xml version ="1.0" encoding="UTF-8"?>
+<Earth_Explorer_Header Schema_Server_Url="http://earth.esa.int/Earth.Explorer/CRYOSAT/xml">
+	<Fixed_Header>
+		<File_Name>CS_OPER_STR1DAT_0__20100705T063000_20100705T064959_0001</File_Name>
+		<File_Description>Level-0 Star Tracker</File_Description>
+		<Notes></Notes>
+		<Mission>CryoSat</Mission>
+		<File_Class>Routine Operations</File_Class>
+		<File_Type>STR1DAT_0_</File_Type>
+		<Validity_Period>
+			<Validity_Start>UTC=2010-07-05T06:30:00</Validity_Start>
+			<Validity_Stop>UTC=2010-07-05T06:49:59</Validity_Stop>
+		</Validity_Period>
+		<File_Version>0001</File_Version>
+		<Source>
+			<System>PDS</System>
+			<Creator>L0_Processor</Creator>
+			<Creator_Version>3.00</Creator_Version>
+			<Creation_Date>UTC=2009-05-27T08:08:04</Creation_Date>
+		</Source>
+	</Fixed_Header>
+	<Variable_Header>
+		<MPH>
+			<Product>CS_OPER_STR1DAT_0__20100705T063000_20100705T064959_0001</Product>
+			<Proc_Stage_Code>OPER</Proc_Stage_Code>
+			<Ref_Doc>CS-ID-ACS-GS-0119 03.02</Ref_Doc>
+			<Proc_Time>UTC=2009-05-27T08:07:28.316504</Proc_Time>
+			<Software_Version>ACSL0Pro/03.00</Software_Version>
+			<Phase>1</Phase>
+			<Cycle>001</Cycle>
+			<Rel_Orbit>04154</Rel_Orbit>
+			<Abs_Orbit>000057</Abs_Orbit>
+			<State_Vector_Time>UTC=2010-07-05T06:05:52.476453</State_Vector_Time>
+			<Delta_UT1  unit="s">+.000000</Delta_UT1>
+			<X_Position  unit="m">+0539047.188</X_Position>
+			<Y_Position  unit="m">+7079421.500</Y_Position>
+			<Z_Position  unit="m">-0000002.584</Z_Position>
+			<X_Velocity  unit="m/s">+0773.995239</X_Velocity>
+			<Y_Velocity  unit="m/s">-0068.544579</Y_Velocity>
+			<Z_Velocity  unit="m/s">+7489.823730</Z_Velocity>
+			<State_Vector_Source>FP</State_Vector_Source>
+			<Product_Err>0</Product_Err>
+			<Tot_Size  unit="bytes">000000000000000092000</Tot_Size>
+		</MPH>
+		<SPH>
+			<SPH_Descriptor>STR1DAT_0_ SPECIFIC HEADER</SPH_Descriptor>
+			<Orbit_Information>
+				<Sensing_Start>TAI=2010-07-05T06:30:33.821000</Sensing_Start>
+				<ABS_Orbit_Start>000057</ABS_Orbit_Start>
+				<Rel_Time_ASC_Node_Start  unit="s">1447.000000</Rel_Time_ASC_Node_Start>
+				<Sensing_Stop>TAI=2010-07-05T06:50:32.821000</Sensing_Stop>
+				<ABS_Orbit_Stop>000057</ABS_Orbit_Stop>
+				<Rel_Time_ASC_Node_Stop  unit="s">2646.000000</Rel_Time_ASC_Node_Stop>
+				<Equator_Cross_Time>UTC=2010-07-05T06:05:52.476453</Equator_Cross_Time>
+				<Equator_Cross_Long  unit="10-6 deg">+0085645739</Equator_Cross_Long>
+				<Ascending_Flag>A</Ascending_Flag>
+			</Orbit_Information>
+			<Product_Location>
+				<Start_Lat  unit="10-6 deg">+0086947140</Start_Lat>
+				<Start_Long  unit="10-6 deg">+0039370418</Start_Long>
+				<Stop_Lat  unit="10-6 deg">+0019802642</Stop_Lat>
+				<Stop_Long  unit="10-6 deg">-0104692572</Stop_Long>
+			</Product_Location>
+			<Product_Confidence_Data>
+				<Num_ISPs>0001200</Num_ISPs>
+				<Num_Missing_ISPs>0000000</Num_Missing_ISPs>
+				<Num_Error_ISPs>0000000</Num_Error_ISPs>
+				<Num_Discarded_ISPs>0000000</Num_Discarded_ISPs>
+				<Num_RS_ISPs>0000000</Num_RS_ISPs>
+				<Num_RS_Corrections>0000000</Num_RS_Corrections>
+			</Product_Confidence_Data>
+			<DSDs>
+				<List_of_DSDs count="3">
+					<Data_Set_Descriptor>
+						<Data_Set_Name>STR1DAT_0_</Data_Set_Name>
+						<Data_Set_Type>M</Data_Set_Type>
+						<File_Name></File_Name>
+						<Data_Set_Offset  unit="bytes">+00000000000000003200</Data_Set_Offset>
+						<Data_Set_Size  unit="bytes">+00000000000000088800</Data_Set_Size>
+						<Num_of_Records>+0000001200</Num_of_Records>
+						<Record_Size  unit="bytes">+0000000074</Record_Size>
+						<Byte_Order>3210</Byte_Order>
+					</Data_Set_Descriptor>
+					<Data_Set_Descriptor>
+						<Data_Set_Name>LEVEL_0_CONFIGURATION_FILE</Data_Set_Name>
+						<Data_Set_Type>R</Data_Set_Type>
+						<File_Name>CryosatL0Processor_3.0.xml</File_Name>
+						<Data_Set_Offset  unit="bytes">+00000000000000000000</Data_Set_Offset>
+						<Data_Set_Size  unit="bytes">+00000000000000000000</Data_Set_Size>
+						<Num_of_Records>+0000000000</Num_of_Records>
+						<Record_Size  unit="bytes">+0000000000</Record_Size>
+						<Byte_Order>3210</Byte_Order>
+					</Data_Set_Descriptor>
+					<Data_Set_Descriptor>
+						<Data_Set_Name>ORBIT_STATE_VECTOR_FILE</Data_Set_Name>
+						<Data_Set_Type>R</Data_Set_Type>
+						<File_Name>CS_OPER_MPL_ORBPRE_20100704T090000_20100803T090000_0001</File_Name>
+						<Data_Set_Offset  unit="bytes">+00000000000000000000</Data_Set_Offset>
+						<Data_Set_Size  unit="bytes">+00000000000000000000</Data_Set_Size>
+						<Num_of_Records>+0000000000</Num_of_Records>
+						<Record_Size  unit="bytes">+0000000000</Record_Size>
+						<Byte_Order>3210</Byte_Order>
+					</Data_Set_Descriptor>
+				</List_of_DSDs>
+			</DSDs>
+		</SPH>
+	</Variable_Header>
+</Earth_Explorer_Header>

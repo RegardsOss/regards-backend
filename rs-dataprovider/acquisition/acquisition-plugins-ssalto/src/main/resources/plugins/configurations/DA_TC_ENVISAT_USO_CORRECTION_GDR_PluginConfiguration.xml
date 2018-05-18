@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+    <fileNamePattern>(RA2_USO_clock_C-GDR-)([0-9]{3})(.txt.gz)</fileNamePattern>
+    
+    <compositeAttribute>
+        <name>TIME_PERIOD</name>
+        <order>2</order>
+        <translatedAttributeFromCycleFile>
+            <otherAttributeName>CYCLE_MIN</otherAttributeName>
+            <specification>
+                <name>START_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>DD-MM-yyyy</formatRead>
+            </specification>
+        </translatedAttributeFromCycleFile>
+        <translatedAttributeFromCycleFile>
+            <otherAttributeName>CYCLE_MAX</otherAttributeName>
+            <specification>
+                <name>STOP_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>DD-MM-yyyy</formatRead>
+            </specification>
+        </translatedAttributeFromCycleFile>
+    </compositeAttribute>
+    
+
+    <compositeAttribute>
+        <name>CYCLE_RANGE</name>
+        <order>1</order>
+        <attributeFromName>
+            <groupNumber>2</groupNumber>
+            <specification>
+                <name>CYCLE_MIN</name>
+                <valueType>INTEGER</valueType>
+            </specification>
+        </attributeFromName>
+        <attributeFromOther>
+            <otherAttributeName>CYCLE_MIN</otherAttributeName>
+            <specification>
+                <name>CYCLE_MAX</name>
+                <valueType>INTEGER</valueType>
+            </specification>
+        </attributeFromOther>
+    </compositeAttribute>
+
+    <fileInfoAttribute>
+        <fileInformation>LAST_MODIFICATION_DATE</fileInformation>
+        <specification>
+            <name>FILE_CREATION_DATE</name>
+            <valueType>DATE_TIME</valueType>
+            <order>3</order>
+        </specification>
+    </fileInfoAttribute>
+</PLUGIN_CONFIGURATION>

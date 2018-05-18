@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+
+    <fileNamePattern>h2adata([0-9]{3}).dat.Z</fileNamePattern>
+    <compositeAttribute>
+        <name>TIME_PERIOD</name>
+        <order>3</order>
+        <attributeFromAsciiFile>
+            <linePattern>(\s|\w){16}((\s|\d){16}).*</linePattern>
+            <lineNumber>1</lineNumber>
+            <groupNumber>2</groupNumber>
+            <specification>
+                <name>START_DATE</name>
+                <valueType>STRING</valueType>
+        	<order>1</order>
+                <calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetCryosat2Doris1bPoeCddisDate</calculationClass>
+                <unzipBefore>true</unzipBefore>
+                <compressionType>Z</compressionType>
+            </specification>
+        </attributeFromAsciiFile>
+        <attributeFromAsciiFile>
+            <linePattern>(\s|\w){16}((\s|\d){16}).*</linePattern>
+            <lineNumber>-2</lineNumber>
+            <groupNumber>2</groupNumber>
+            <specification>
+                <name>STOP_DATE</name>
+                <valueType>STRING</valueType>
+        	<order>2</order>
+                <calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetCryosat2Doris1bPoeCddisDate</calculationClass>
+                <unzipBefore>true</unzipBefore>
+                <compressionType>Z</compressionType>
+            </specification>
+        </attributeFromAsciiFile>
+    </compositeAttribute>
+
+    <compositeAttribute>
+        <name>CYCLE_RANGE</name>
+                <order>5</order>
+                <attributeFromAsciiFile>
+                        <linePattern>(\s|\w){16}((\s|\d){16}).*</linePattern>
+                        <lineNumber>1</lineNumber>
+                        <groupNumber>2</groupNumber>
+                        <specification>
+                                <name>CYCLE_MIN</name>
+                                <valueType>STRING</valueType>
+                                <calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetCryosat2Doris1bPoeCddisCycle</calculationClass>
+                                <unzipBefore>true</unzipBefore>
+                                <compressionType>Z</compressionType>
+                        </specification>
+                </attributeFromAsciiFile>
+                <attributeFromAsciiFile>
+                        <linePattern>(\s|\w){16}((\s|\d){16}).*</linePattern>
+                        <lineNumber>-2</lineNumber>
+                        <groupNumber>2</groupNumber>
+                        <specification>
+                                <name>CYCLE_MAX</name>
+                                <valueType>STRING</valueType>
+                                <calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetCryosat2Doris1bPoeCddisCycle</calculationClass>
+                                <unzipBefore>true</unzipBefore>
+                                <compressionType>Z</compressionType>
+                        </specification>
+                </attributeFromAsciiFile>
+    </compositeAttribute>
+
+
+    <fileInfoAttribute>
+        <fileInformation>LAST_MODIFICATION_DATE</fileInformation>
+        <specification>
+            <name>FILE_CREATION_DATE</name>
+            <valueType>DATE_TIME</valueType>
+            <order>7</order>
+        </specification>
+    </fileInfoAttribute>
+</PLUGIN_CONFIGURATION>

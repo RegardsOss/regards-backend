@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+	<fileNamePattern>ALK__([1-2]{1})_PAR_DORIS_([0-9]{8}_[0-9]{6}).REF</fileNamePattern>
+	<compositeAttribute>
+		<name>TIME_PERIOD</name>
+		<order>1</order>
+		<attributeFromName>
+			<groupNumber>2</groupNumber>
+			<specification>
+				<name>START_DATE</name>
+				<valueType>DATE_TIME</valueType>
+				<formatRead>yyyyMMdd_HHmmss</formatRead>
+			</specification>
+		</attributeFromName>
+		<attributeFromName>
+			<groupNumber>2</groupNumber>
+			<specification>
+				<name>STOP_DATE</name>
+				<valueType>DATE_TIME</valueType>
+				<formatRead>yyyyMMdd_HHmmss</formatRead>
+			</specification>
+		</attributeFromName>
+	</compositeAttribute>
+	<fileInfoAttribute>
+		<fileInformation>LAST_MODIFICATION_DATE</fileInformation>
+		<specification>
+			<name>FILE_CREATION_DATE</name>
+			<valueType>DATE_TIME</valueType>
+			<order>2</order>
+		</specification>
+	</fileInfoAttribute>
+	<translatedAttributeFromName>
+		<groupNumber>1</groupNumber>
+		<translationFilePath>/HISTOTranslationFile.properties</translationFilePath>
+		<specification>
+			<name>PRODUCT_OPTION</name>
+			<valueType>STRING</valueType>
+			<order>3</order>
+		</specification>
+	</translatedAttributeFromName>
+</PLUGIN_CONFIGURATION>

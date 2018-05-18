@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+  <fileNamePattern>(SP5_VOR_AXVCNE)(_){0,1}([0-9]{8}_[0-9]{6})(_){0,1}([0-9]{8}_[0-9]{6})(_){0,1}([0-9]{8}_[0-9]{6})</fileNamePattern>
+  <compositeAttribute>
+    <name>TIME_PERIOD</name>
+    <order>0</order>
+    <attributeFromName>
+		<groupNumber>5</groupNumber>
+			<specification>
+				<name>START_DATE</name>
+				<valueType>DATE_TIME</valueType>
+				<formatRead>yyyyMMdd_HHmmss</formatRead>
+			</specification>
+	</attributeFromName>
+    <attributeFromName>
+		<groupNumber>7</groupNumber>
+			<specification>
+				<name>STOP_DATE</name>
+				<valueType>DATE_TIME</valueType>
+				<formatRead>yyyyMMdd_HHmmss</formatRead>
+			</specification>
+	</attributeFromName>
+  </compositeAttribute>
+	<attributeFromName>
+		<groupNumber>1</groupNumber>
+		<groupNumber>4</groupNumber>
+		<groupNumber>5</groupNumber>
+		<groupNumber>6</groupNumber>
+		<groupNumber>7</groupNumber>
+		<specification>
+			<name>RADICAL</name>
+			<valueType>STRING</valueType>
+			<order>2</order>
+		</specification>
+	</attributeFromName>
+	<attributeFromName>
+		<groupNumber>3</groupNumber>
+		<specification>
+			<name>FILE_CREATION_DATE</name>
+			<valueType>DATE_TIME</valueType>
+			<order>3</order>
+			<formatRead>yyyyMMdd_HHmmss</formatRead>
+		</specification>
+	</attributeFromName>
+</PLUGIN_CONFIGURATION>

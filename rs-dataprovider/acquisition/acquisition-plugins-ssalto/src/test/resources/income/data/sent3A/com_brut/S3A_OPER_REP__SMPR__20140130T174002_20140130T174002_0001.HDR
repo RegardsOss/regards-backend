@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<Earth_Explorer_Header>
+  <Fixed_Header>
+    <File_Name>S3A_OPER_REP__SMPR__20140130T174002_20140130T174002_0001</File_Name>
+    <File_Description>Satellite Mass Properties Report File</File_Description>
+    <Notes></Notes>
+    <Mission>Sentinel 3A</Mission>
+    <File_Class>OPER</File_Class>
+    <File_Type>REP__SMPR_</File_Type>
+    <Validity_Period>
+      <Validity_Start>UTC=2014-01-30T17:40:02</Validity_Start>
+      <Validity_Stop>UTC=2014-01-30T17:40:02</Validity_Stop>
+    </Validity_Period>
+    <File_Version>0001</File_Version>
+    <Source>
+      <System>FOS</System>
+      <Creator>FD</Creator>
+      <Creator_Version>1.0</Creator_Version>
+      <Creation_Date>UTC=2014-01-30T17:40:02</Creation_Date>
+    </Source>
+  </Fixed_Header>
+  <Variable_Header>
+  </Variable_Header>
+</Earth_Explorer_Header>
+

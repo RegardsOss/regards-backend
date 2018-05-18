@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<Earth_Explorer_Header>
+    <Fixed_Header>
+        <File_Name>S3A_OPER_CRF_SAL001_2015289T134347_2015289T134347_0001</File_Name>
+        <File_Description>DORIS Command Request File</File_Description>
+        <Notes></Notes>
+        <Mission>Sentinel-3A</Mission>
+        <File_Class>OPER</File_Class>
+        <File_Type>CRF_SAL001</File_Type>
+        <Validity_Period>
+            <Validity_Start>UTC=2015-10-16T13:43:47</Validity_Start>
+            <Validity_Stop>UTC=2015-10-16T13:43:47</Validity_Stop>
+        </Validity_Period>
+        <File_Version>0001</File_Version>
+        <Source>
+            <System>SALP</System>
+            <Creator>GENTC</Creator>
+            <Creator_Version>5.6.1</Creator_Version>
+            <Creation_Date>UTC=2015-10-16T13:43:47</Creation_Date>
+        </Source>
+    </Fixed_Header>
+    <Variable_Header></Variable_Header>
+</Earth_Explorer_Header>

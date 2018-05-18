@@ -1,0 +1,177 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package fr.cnes.regards.modules.acquisition.service;
+
+import java.nio.file.Path;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
+
+/**
+ * Acquisition processing service interface
+ *
+ * @author Marc Sordi
+ *
+ */
+public interface IAcquisitionProcessingService {
+
+    /**
+     * List all acquisition chains
+     * @param pageable pagination filter
+     * @return list of all acquisition chains
+     * @throws ModuleException if error occurs!
+     */
+    Page<AcquisitionProcessingChain> getAllChains(Pageable pageable) throws ModuleException;
+
+    /**
+     * Retrieve a processing chain according to its identifier.
+     * @param id {@link AcquisitionProcessingChain} identifier
+     * @return {@link AcquisitionProcessingChain}
+     * @throws ModuleException if error occurs.
+     */
+    AcquisitionProcessingChain getChain(Long id) throws ModuleException;
+
+    /**
+     * Retrieve all processing chains
+     * @return all chains fully loaded
+     */
+    List<AcquisitionProcessingChain> getFullChains() throws ModuleException;
+
+    /**
+     * Create a new acquisition processing chain
+     * @param processingChain the processing chain
+     * @return registered processing chain
+     * @throws ModuleException if error occurs!
+     */
+    AcquisitionProcessingChain createChain(AcquisitionProcessingChain processingChain) throws ModuleException;
+
+    /**
+     * Update an existing processing chain
+     * @param processingChain the updated processing chain
+     * @return updated processing chain
+     * @throws ModuleException if error occurs!
+     */
+    AcquisitionProcessingChain updateChain(AcquisitionProcessingChain processingChain) throws ModuleException;
+
+    /**
+     * Delete an inactive processing chain according to its identifier
+     * @param id {@link AcquisitionProcessingChain} identifier
+     * @throws ModuleException if error occurs.
+     */
+    void deleteChain(Long id) throws ModuleException;
+
+    /**
+     * Lock processing chain
+     * @param id {@link AcquisitionProcessingChain} identifier
+     * @throws ModuleException if error occurs!
+     */
+    void lockChain(Long id);
+
+    /**
+     * Unlock processing chain
+     * @param id {@link AcquisitionProcessingChain} identifier
+     * @throws ModuleException if error occurs!
+     */
+    void unlockChain(Long id);
+
+    /**
+     * Start all automatic chains according to several conditions
+     * @throws ModuleException if error occurs!
+     */
+    void startAutomaticChains();
+
+    /**
+     * Start a chain manually
+     * @param processingChainId identifier of the chain to start
+     * @return started processing chain
+     * @throws ModuleException if error occurs!
+     */
+    AcquisitionProcessingChain startManualChain(Long processingChainId) throws ModuleException;
+
+    /**
+     * Stop a chain regardless of its mode.
+     * @param processingChainId identifier of the chain to stop
+     * @throws ModuleException if error occurs!
+     */
+    void stopChainJobs(Long processingChainId) throws ModuleException;
+
+    /**
+     * Check if a chain is stopped and cleaned
+     * @param processingChainId identifier of the stopping chain
+     * @return true if all jobs are stopped and related products are cleaned
+     * @throws ModuleException if error occurs!
+     */
+    boolean isChainJobStoppedAndCleaned(Long processingChainId) throws ModuleException;
+
+    /**
+     * Stop a chain and clean all inconsistencies after all jobs are aborted
+     * @param processingChainId identifier of the chain to stop
+     * @return processing chain
+     * @throws ModuleException if error occurs!
+     */
+    AcquisitionProcessingChain stopAndCleanChain(Long processingChainId) throws ModuleException;
+
+    /**
+     * Scan and register detected files for specified {@link AcquisitionProcessingChain}
+     * @param processingChain processing chain
+     * @throws ModuleException if error occurs!
+     */
+    void scanAndRegisterFiles(AcquisitionProcessingChain processingChain) throws ModuleException;
+
+    /**
+     * Register a new file
+     * @param filePath path of the file to register
+     * @param info related file info
+     * @throws ModuleException
+     */
+    void registerFile(Path filePath, AcquisitionFileInfo info) throws ModuleException;
+
+    /**
+     * Validate {@link AcquisitionFileState#IN_PROGRESS} files for specified {@link AcquisitionProcessingChain}
+     * @param processingChain processing chain
+     * @throws ModuleException if error occurs!
+     */
+    void validateFiles(AcquisitionProcessingChain processingChain) throws ModuleException;
+
+    /**
+     * Build products according to {@link AcquisitionFileState#VALID} files for specified
+     * {@link AcquisitionProcessingChain}
+     * @param processingChain processing chain
+     * @throws ModuleException if error occurs!
+     */
+    void buildProducts(AcquisitionProcessingChain processingChain) throws ModuleException;
+
+    /**
+     * Build summaries list of {@link AcquisitionProcessingChain}s.
+     * Each summary allow to monitor chain progress.
+     * @param label {@link String} optional search parameter on {@link AcquisitionProcessingChain}s label
+     * @param running {@link Boolean} optional search parameter on {@link AcquisitionProcessingChain}s running
+     * @throws ModuleException
+     */
+    Page<AcquisitionProcessingChainMonitor> buildAcquisitionProcessingChainSummaries(String label, Boolean running,
+            AcquisitionProcessingChainMode mode, Pageable pageable) throws ModuleException;
+}

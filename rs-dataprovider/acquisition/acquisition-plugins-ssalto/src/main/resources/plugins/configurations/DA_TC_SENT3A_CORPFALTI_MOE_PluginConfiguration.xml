@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ $Id: DA_TC_SENT3A_CORPFALTI_MOE_PluginConfiguration.xml,v 1.4 2011/07/21 15:57:42 kating Exp $
+
+ HISTORIQUE
+ 
+ VERSION : 5.5.2 : DM : SIPNG-DM-168-CN : 19/11/2015 : creation
+
+ FIN-HISTORIQUE
+-->
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+    <fileNamePattern>(S3A_PPF_AX)([VP]{1})(CNE)([0-9]{8})_([0-9]{6})(_([0-9]{8})_([0-9]{6})_([0-9]{8})_([0-9]{6}))</fileNamePattern>
+    <compositeAttribute>
+        <name>TIME_PERIOD</name>
+        <order>1</order>
+        <attributeFromName>
+            <groupNumber>7</groupNumber>
+            <groupNumber>8</groupNumber>
+            <specification>
+                <name>START_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>yyyyMMddHHmmss</formatRead>
+            </specification>
+        </attributeFromName>
+        <attributeFromName>
+            <groupNumber>9</groupNumber>
+            <groupNumber>10</groupNumber>
+            <specification>
+                <name>STOP_DATE</name>
+                <valueType>DATE_TIME</valueType>
+                <formatRead>yyyyMMddHHmmss</formatRead>
+            </specification>
+        </attributeFromName>
+    </compositeAttribute>
+    <compositeAttribute>
+        <name>CYCLE_RANGE</name>
+        <order>5</order>
+        <translatedAttributeFromCycleFile>
+            <otherAttributeName>START_DATE</otherAttributeName>
+            <specification>
+                <name>CYCLE_MIN</name>
+                <valueType>INTEGER</valueType>
+            </specification>
+        </translatedAttributeFromCycleFile>
+        <translatedAttributeFromCycleFile>
+            <otherAttributeName>STOP_DATE</otherAttributeName>
+            <specification>
+                <name>CYCLE_MAX</name>
+                <valueType>INTEGER</valueType>
+            </specification>
+        </translatedAttributeFromCycleFile>
+    </compositeAttribute>
+
+ <translatedAttributeFromName>
+      <groupNumber>2</groupNumber>
+      <translationFilePath>/MOE_TranslationFile.properties</translationFilePath>
+      <specification>
+      <name>PRODUCT_OPTION</name>
+      <valueType>STRING</valueType>
+      <order>7</order>
+      </specification>
+</translatedAttributeFromName>
+
+<attributeFromName>
+        <groupNumber>1</groupNumber>
+        <groupNumber>2</groupNumber>
+        <groupNumber>3</groupNumber>
+        <groupNumber>6</groupNumber>
+        <specification>
+            <name>RADICAL</name>
+            <valueType>STRING</valueType>
+            <order>3</order>
+        </specification>
+    </attributeFromName>
+    <attributeFromName>
+        <groupNumber>4</groupNumber>
+        <groupNumber>5</groupNumber>
+        <specification>
+            <name>FILE_CREATION_DATE</name>
+            <valueType>DATE_TIME</valueType>
+            <order>2</order>
+            <formatRead>yyyyMMddHHmmss</formatRead>
+        </specification>
+    </attributeFromName>
+</PLUGIN_CONFIGURATION>

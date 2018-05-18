@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+  <fileNamePattern>sp2data([0-9]{3}).dat.Z</fileNamePattern>
+  <compositeAttribute>
+    <name>TIME_PERIOD</name>
+    <order>0</order>
+    <translatedAttributeFromArcFile>
+		<groupNumber>1</groupNumber>
+		<specification>
+			<name>START_DATE</name>
+			<valueType>INTEGER</valueType>
+		</specification>
+	</translatedAttributeFromArcFile>
+	<translatedAttributeFromArcFile>
+		<groupNumber>1</groupNumber>
+		<specification>
+			<name>STOP_DATE</name>
+			<valueType>INTEGER</valueType>
+		</specification>
+	</translatedAttributeFromArcFile>
+  </compositeAttribute>  
+  <fileInfoAttribute>
+		<fileInformation>LAST_MODIFICATION_DATE</fileInformation>
+			<specification>
+				<name>FILE_CREATION_DATE</name>
+				<valueType>DATE_TIME</valueType>
+				<order>1</order>
+		</specification>
+	</fileInfoAttribute>
+</PLUGIN_CONFIGURATION>

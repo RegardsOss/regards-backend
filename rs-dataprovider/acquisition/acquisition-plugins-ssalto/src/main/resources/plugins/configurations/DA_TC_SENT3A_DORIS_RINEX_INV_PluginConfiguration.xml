@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ $Id: DA_TC_SENT3A_DORIS_RINEX_INV_PluginConfiguration.xml,v 1.5.2.1 2011/11/30 15:20:49 chrismng Exp $
+
+ HISTORIQUE
+ 
+ VERSION : 5.5.2 : DM : SIPNG-DM-168-CN : 19/11/2015 : creation
+
+ FIN-HISTORIQUE
+-->
+<PLUGIN_CONFIGURATION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas_plugins.xsd">
+	<fileNamePattern>DS3A_FLA_1P([a-z]{1})(D|S)((_){0,1}[0-9]{8}_[0-9]{6}){1,3}</fileNamePattern>
+    <compositeAttribute>
+		<name>CYCLE_RANGE</name>
+		<order>1</order>
+		<translatedAttributeFromCycleFile>
+			<otherAttributeName>START_DATE</otherAttributeName>
+			<specification>
+				<name>CYCLE_MIN</name>
+				<valueType>INTEGER</valueType>
+			</specification>
+		</translatedAttributeFromCycleFile>
+		<translatedAttributeFromCycleFile>
+			<otherAttributeName>STOP_DATE</otherAttributeName>
+			<specification>
+				<name>CYCLE_MAX</name>
+				<valueType>INTEGER</valueType>
+			</specification>
+		</translatedAttributeFromCycleFile>
+	</compositeAttribute>
+
+    <attributeFromName>
+        <groupNumber>0</groupNumber>
+        <specification>
+               <name>RADICAL</name>        
+               <valueType>STRING</valueType>
+               <order>2</order>
+               <calculationClass>fr.cnes.regards.modules.acquisition.plugins.ssalto.calc.SetDorisRadicalFromName</calculationClass>
+        </specification>
+    </attributeFromName>
+
+    <attributeFromName>
+            <groupNumber>1</groupNumber>
+            <specification>
+                <name>OBJECT_VERSION</name>
+                <valueType>STRING</valueType>
+                <order>3</order>
+            </specification>
+	</attributeFromName>
+	
+	<translatedAttributeFromName>
+		<groupNumber>2</groupNumber>
+		<translationFilePath>/CRYOSAT2_DORIS10_TranslationFile.properties</translationFilePath>
+		<specification>
+			<name>PRODUCT_OPTION</name>
+			<valueType>STRING</valueType>
+		</specification>
+	</translatedAttributeFromName>
+
+
+</PLUGIN_CONFIGURATION>
