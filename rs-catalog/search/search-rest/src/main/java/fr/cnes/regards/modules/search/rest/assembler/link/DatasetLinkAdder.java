@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,19 +18,23 @@
  */
 package fr.cnes.regards.modules.search.rest.assembler.link;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.entities.domain.Dataset;
-import fr.cnes.regards.modules.entities.urn.UniformResourceName;
-import fr.cnes.regards.modules.search.rest.CatalogController;
+import fr.cnes.regards.modules.search.rest.SearchController;
 import fr.cnes.regards.modules.search.rest.assembler.DatasetResourcesAssembler;
 import fr.cnes.regards.modules.search.rest.assembler.FacettedPagedResourcesAssembler;
 
@@ -60,21 +64,18 @@ public class DatasetLinkAdder implements ILinksAdder {
         resourceService = pResourceService;
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.search.rest.assembler.ILinksAdder#addLinks(org.springframework.hateoas.Resource)
-     */
     @Override
     public Resource<Dataset> addLinks(Resource<Dataset> pResource) {
         UniformResourceName ipId = pResource.getContent().getIpId();
 
-        resourceService.addLink(pResource, CatalogController.class, "getDataset", LinkRels.SELF,
+        resourceService.addLink(pResource, SearchController.class, "getDataset", LinkRels.SELF,
                                 MethodParamFactory.build(UniformResourceName.class, pResource.getContent().getIpId()),
                                 MethodParamFactory.build(DatasetResourcesAssembler.class));
 
-        Map<String, String> q = new HashMap<>();
-        q.put("q", "tags:" + ipId.toString());
-        resourceService.addLinkWithParams(pResource, CatalogController.class, "searchDataobjects", LINK_TO_DATAOBJECTS,
-                                          MethodParamFactory.build(Map.class, q),
+        MultiValueMap<String, String> q = new LinkedMultiValueMap<>();
+        q.put("q", Collections.singletonList("tags:" + ipId.toString()));
+        resourceService.addLinkWithParams(pResource, SearchController.class, "searchDataobjects", LINK_TO_DATAOBJECTS,
+                                          MethodParamFactory.build(MultiValueMap.class, q),
                                           MethodParamFactory.build(String[].class),
                                           MethodParamFactory.build(Pageable.class),
                                           MethodParamFactory.build(FacettedPagedResourcesAssembler.class));

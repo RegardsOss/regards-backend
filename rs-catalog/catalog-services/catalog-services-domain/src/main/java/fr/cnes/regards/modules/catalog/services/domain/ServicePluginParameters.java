@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.catalog.services.domain;
 import java.util.List;
 import java.util.Map;
 
-import fr.cnes.regards.modules.models.domain.EntityType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 
 /**
  * Catalog service plugin parameters used to execute the plugin.

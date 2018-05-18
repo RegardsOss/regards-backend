@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  
  This file is part of REGARDS.
  
@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.microservices.catalog</groupId>
 	<artifactId>bootstrap-catalog</artifactId>
-	<version>1.1.0</version>
+	<version>2.0.0-RELEASE</version>
 	<packaging>jar</packaging>
 	
 	<name>Boostrap Catalog</name>
@@ -52,19 +52,19 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>
-		<version>1.1.0</version>
+		<version>2.0.0-RELEASE</version>
 		<relativePath></relativePath>
 	</parent>
 
 	<properties>
 		<fr.cnes.regards.docker.image.name>rs-catalog</fr.cnes.regards.docker.image.name>
+		<docker.entryPoint>["./wait-for-it.sh", "rs_config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs_registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs_admin:9033", "-t", "0", "--","./wait-for-it.sh", "rs_dam:9035", "-t", "0", "--", "./start.sh","${project.build.finalName}.${project.packaging}","-Xmx1g"]</docker.entryPoint>
 	</properties>
 
 	<dependencies>
-		<!-- Core dependencies -->
 		<dependency>
-			<groupId>fr.cnes.regards.microservices</groupId>
-			<artifactId>microservice-core</artifactId>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>microservice-core-starter</artifactId>
 		</dependency>
 		<!-- Module dependencies -->
 		<dependency>
@@ -76,9 +76,12 @@
 			<artifactId>remote-tenant-resolver</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.microservices.administration</groupId>
+			<artifactId>remote-authorities-provider</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.modules</groupId>
 			<artifactId>catalog-services-rest</artifactId>
-			<version>1.1.0</version>
 		</dependency>
 	</dependencies>
 
@@ -126,25 +129,4 @@
 			<id>delivery</id>
 		</profile>
 	</profiles>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>com.spotify</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-				<configuration>
-					<forceTags>true</forceTags>
-					<imageName>${docker.registry.host}/${fr.cnes.regards.docker.image.name}</imageName>
-					<baseImage>${docker.registry.host}/rs-alpine-oraclejdk8</baseImage>
-					<entryPoint>["./wait-for-it.sh", "rs_config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs_registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs_admin:9033", "-t", "0", "--","./wait-for-it.sh", "rs_dam:9035", "-t", "0", "--", "java", "-Xmx1000m", "-Djava.security.egd=file:/dev/./urandom", "-agentlib:jdwp=transport=dt_socket,address=10500,server=y,suspend=n", "-jar", "/${project.build.finalName}.${project.packaging}"]</entryPoint>
-					<resources>
-						<resource>
-							<targetPath>/</targetPath>
-							<directory>${project.build.directory}</directory>
-							<include>${project.build.finalName}.${project.packaging}</include>
-						</resource>
-					</resources>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>

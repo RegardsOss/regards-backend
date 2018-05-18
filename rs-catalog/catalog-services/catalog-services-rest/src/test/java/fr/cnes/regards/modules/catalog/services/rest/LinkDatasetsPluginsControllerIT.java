@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -33,13 +33,13 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
-import fr.cnes.regards.modules.entities.urn.OAISIdentifier;
-import fr.cnes.regards.modules.entities.urn.UniformResourceName;
-import fr.cnes.regards.modules.models.domain.EntityType;
 
 /**
  * @author Sylvain Vissiere-Guerinet

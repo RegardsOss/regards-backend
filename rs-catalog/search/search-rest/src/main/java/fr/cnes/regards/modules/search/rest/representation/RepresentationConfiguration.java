@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -37,7 +37,8 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.plugins.utils.PluginUtils;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 
 /**
  * Configuration class used to initialiaze and set our custom http message converter using the different IRepresentation
@@ -46,28 +47,56 @@ import fr.cnes.regards.plugins.utils.PluginUtils;
  * @author Sylvain Vissiere-Guerinet
  */
 @Component
-public class RepresentationConfiguration /*extends WebMvcConfigurerAdapter*/ implements BeanFactoryAware,
-        ApplicationListener<ApplicationReadyEvent> {
+public class RepresentationConfiguration implements BeanFactoryAware, ApplicationListener<ApplicationReadyEvent> {
 
+    /**
+     * Default geo json representation plugin configuration label
+     */
     protected static final String DEFAULT_GEO_JSON_CONFIGURATION_LABEL = "Default GeoJSON representation plugin configuration";
 
+    /**
+     * Class logger
+     */
     private static final Logger LOG = LoggerFactory.getLogger(RepresentationConfiguration.class);
 
+    /**
+     * Bean factory
+     */
     private BeanFactory beanFactory;
 
+    /**
+     * Plugin service
+     */
     @Autowired
     private IPluginService pluginService;
 
+    /**
+     * Runtime tenant resolver
+     */
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
+    /**
+     * Tenant resolver
+     */
     @Autowired
     private ITenantResolver tenantsResolver;
 
+    /**
+     * AMQP subscriber
+     */
     @Autowired
     private ISubscriber subscriber;
 
-    public void configureRepresentationMessageConverter(RepresentationHttpMessageConverter representationHttpMessageConverter)
+    /**
+     * Allows to configure the representation http message converter
+     * @param representationHttpMessageConverter
+     * @throws IllegalAccessException
+     * @throws ClassNotFoundException
+     * @throws InstantiationException
+     */
+    public void configureRepresentationMessageConverter(
+            RepresentationHttpMessageConverter representationHttpMessageConverter)
             throws IllegalAccessException, ClassNotFoundException, InstantiationException {
         LOG.info("starting to configure http message converters");
         for (String tenant : tenantsResolver.getAllActiveTenants()) {
@@ -88,28 +117,32 @@ public class RepresentationConfiguration /*extends WebMvcConfigurerAdapter*/ imp
             // that's ok it just means that the configuration is not there, so we have to create it
         }
         // create a pluginConfiguration for GeoJson
-        PluginMetaData geoJsonMeta = PluginUtils
-                .createPluginMetaData(GeoJsonRepresentation.class,
-                                      Lists.newArrayList(IRepresentation.class.getPackage().getName(),
-                                                         GeoJsonRepresentation.class.getPackage().getName()));
+        PluginMetaData geoJsonMeta = PluginUtils.createPluginMetaData(GeoJsonRepresentation.class,
+                                                                      Lists.newArrayList(IRepresentation.class
+                                                                                                 .getPackage()
+                                                                                                 .getName(),
+                                                                                         GeoJsonRepresentation.class
+                                                                                                 .getPackage()
+                                                                                                 .getName()));
 
         PluginConfiguration geoJsonConf = new PluginConfiguration(geoJsonMeta, DEFAULT_GEO_JSON_CONFIGURATION_LABEL);
 
         try {
             pluginService.savePluginConfiguration(geoJsonConf);
         } catch (ModuleException e) {
-            throw new RuntimeException(e);// NOSONAR: developpment exception, should not be thrown!
+            throw new RsRuntimeException(e);
         }
     }
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        this.beanFactory=beanFactory;
+        this.beanFactory = beanFactory;
     }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        RepresentationHttpMessageConverter representationHttpMessageConverter=(RepresentationHttpMessageConverter) beanFactory.getBean(RepresentationHttpMessageConverter.class);
+        RepresentationHttpMessageConverter representationHttpMessageConverter = beanFactory
+                .getBean(RepresentationHttpMessageConverter.class);
         try {
             configureRepresentationMessageConverter(representationHttpMessageConverter);
         } catch (IllegalAccessException | ClassNotFoundException | InstantiationException e) {

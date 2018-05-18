@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -122,7 +122,7 @@ public class FacettedPagedResourcesTest {
 
     private final FacettedPagedResources<Pojo> buildDummyWithFacets() {
         Set<IFacet<?>> facets = new HashSet<>();
-        facets.add(new StringFacet("toto", null));
+        facets.add(new StringFacet("toto", null, 10));
         Collection<Pojo> pContent = new ArrayList<>();
         PageMetadata metadata = new PageMetadata(0, 0, 0);
         Iterable<Link> links = new ArrayList<>();

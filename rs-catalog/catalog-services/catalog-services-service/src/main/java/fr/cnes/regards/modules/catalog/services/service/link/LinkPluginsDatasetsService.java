@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -32,12 +31,12 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.catalog.services.dao.ILinkPluginsDatasetsRepository;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.event.LinkPluginsDatasetsEvent;
 import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.entities.domain.event.EventType;
-import fr.cnes.regards.modules.entities.urn.UniformResourceName;
 
 /**
  * Service handling properly how the mapping of plugin configurations to datasets is done.
@@ -93,32 +92,6 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
         subscriber.subscribeTo(BroadcastEntityEvent.class, new DeleteEntityEventHandler());
     }
 
-    /**
-     *
-     * Class DeleteEntityEventHandler
-     *
-     * Handler to delete {@link LinkPluginsDatasets} for deleted datasets.
-     *
-     * @author Sébastien Binda
-     * @since 1.0-SNAPSHOT
-     */
-    private class DeleteEntityEventHandler implements IHandler<BroadcastEntityEvent> {
-
-        @Override
-        public void handle(final TenantWrapper<BroadcastEntityEvent> pWrapper) {
-            if ((pWrapper.getContent() != null) && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
-                runtimeTenantResolver.forceTenant(pWrapper.getTenant());
-                for (final UniformResourceName ipId : pWrapper.getContent().getIpIds()) {
-                    final LinkPluginsDatasets link = linkRepo.findOneByDatasetId(ipId.toString());
-                    if (link != null) {
-                        deleteLink(link);
-                    }
-                }
-            }
-        }
-
-    }
-
     @Override
     public LinkPluginsDatasets retrieveLink(final String pDatasetId) {
         Assert.notNull(pDatasetId);
@@ -138,13 +111,13 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
 
         // If exists retrieve previous link associated to the same datasetid
         final LinkPluginsDatasets existingOne = linkRepo.findOneByDatasetId(pDatasetId);
-        if (existingOne != null) {
+        if (existingOne == null) {
+            return createLink(pUpdatedLink);
+        } else {
             existingOne.setServices(pUpdatedLink.getServices());
             LinkPluginsDatasets saved = linkRepo.save(existingOne);
             publisher.publish(new LinkPluginsDatasetsEvent(saved));
             return saved;
-        } else {
-            return createLink(pUpdatedLink);
         }
     }
 
@@ -181,6 +154,32 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
     private void deleteLink(final LinkPluginsDatasets pLink) { // NOSONAR
         publisher.publish(new LinkPluginsDatasetsEvent(pLink));
         linkRepo.delete(pLink);
+    }
+
+    /**
+     *
+     * Class DeleteEntityEventHandler
+     *
+     * Handler to delete {@link LinkPluginsDatasets} for deleted datasets.
+     *
+     * @author Sébastien Binda
+     * @since 1.0-SNAPSHOT
+     */
+    private class DeleteEntityEventHandler implements IHandler<BroadcastEntityEvent> {
+
+        @Override
+        public void handle(final TenantWrapper<BroadcastEntityEvent> pWrapper) {
+            if ((pWrapper.getContent() != null) && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
+                runtimeTenantResolver.forceTenant(pWrapper.getTenant());
+                for (final UniformResourceName ipId : pWrapper.getContent().getIpIds()) {
+                    final LinkPluginsDatasets link = linkRepo.findOneByDatasetId(ipId.toString());
+                    if (link != null) {
+                        deleteLink(link);
+                    }
+                }
+            }
+        }
+
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -28,8 +28,7 @@ import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
  * @author Marc Sordi
  *
  */
-@FunctionalInterface
 public interface IFacetConverter {
 
-    public Map<String, FacetType> convert(String[] propertyNames);
+    Map<String, FacetType> convert(String[] propertyNames);
 }

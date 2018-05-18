@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.search.client;
 
+import java.util.Map;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -30,26 +32,21 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 
 /**
- * Integration Test for {@link ISearchDatasetsClient}.
+ * Integration Test for {@link IJsonSearchClient#searchDatasets(Map)}.
  *
  * @author Xavier-Alexandre Brochard
  */
 @TestPropertySource("classpath:test.properties")
 @DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
-public class ISearchDatasetsClientIT extends AbstractSearchClientIT<ISearchDatasetsClient> {
+public class ISearchDatasetsClientIT extends AbstractSearchClientIT<IJsonSearchClient> {
 
     /**
      * Check that the Feign Client responds with a 200
      */
     @Test
-    public void searchCollections() {
+    public void searchDatasets() {
         ResponseEntity<JsonObject> result = client.searchDatasets(Maps.newHashMap());
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
-    }
-
-    @Override
-    protected Class<ISearchDatasetsClient> getClazz() {
-        return ISearchDatasetsClient.class;
     }
 
 }

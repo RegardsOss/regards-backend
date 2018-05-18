@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -22,8 +22,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
@@ -50,7 +50,7 @@ public interface IServiceManager {
      * @return PluginConfigurations in the system for plugins of type {@link IService} linked to a dataset for a given
      *         scope. Returns an empty list if <code>pDatasetId</code> is <code>null</code>
      */
-    List<PluginConfigurationDto> retrieveServices(String pDatasetId, ServiceScope pServiceScope);
+    List<PluginConfigurationDto> retrieveServices(List<String> pDatasetIds, List<ServiceScope> pServiceScopes);
 
     /**
      * Apply the service
@@ -60,7 +60,7 @@ public interface IServiceManager {
      * @return the result of the service call wrapped in a resonse entity
      * @throws ModuleException
      */
-    ResponseEntity<InputStreamResource> apply(final Long pPluginConfigurationId,
+    ResponseEntity<StreamingResponseBody> apply(final Long pPluginConfigurationId,
             final ServicePluginParameters pServicePluginParameters, HttpServletResponse response)
             throws ModuleException;
 

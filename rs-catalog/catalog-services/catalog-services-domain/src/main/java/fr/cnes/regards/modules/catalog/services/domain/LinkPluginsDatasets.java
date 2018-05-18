@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -104,6 +104,9 @@ public class LinkPluginsDatasets {
         datasetId = pDatasetId;
     }
 
+    /**
+     * @return the services plugin configurations
+     */
     public Set<PluginConfiguration> getServices() {
         return services;
     }

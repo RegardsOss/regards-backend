@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -29,11 +29,13 @@ import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dataaccess.client.IAccessGroupClient;
+import fr.cnes.regards.modules.dataaccess.client.IAccessRightClient;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.models.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
  * Module-wide configuration for integration tests.
@@ -68,8 +70,18 @@ public class CatalogServicesITConfiguration {
     }
 
     @Bean
+    IAccessRightClient accessRightClient() {
+        return Mockito.mock(IAccessRightClient.class);
+    }
+
+    @Bean
     public IProjectUsersClient projectUsersClient() {
         return Mockito.mock(IProjectUsersClient.class);
+    }
+
+    @Bean
+    public IProjectsClient projectsClient() {
+        return Mockito.mock(IProjectsClient.class);
     }
 
     @Bean

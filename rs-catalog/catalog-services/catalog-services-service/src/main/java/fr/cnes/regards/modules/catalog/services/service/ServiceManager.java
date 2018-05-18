@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.catalog.services.service;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -29,17 +28,19 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParametersFactory;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
@@ -47,6 +48,7 @@ import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServic
 import fr.cnes.regards.modules.catalog.services.domain.annotations.GetCatalogServicePluginAnnotation;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
+import fr.cnes.regards.modules.catalog.services.plugins.AbstractCatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
 
@@ -78,9 +80,9 @@ public class ServiceManager implements IServiceManager {
      * Builds a pedicate telling if the passed {@link PluginConfiguration} is applicable on passed {@link ServiceScope}.
      * Returns <code>true</code> if passed <code>pServiceScope</code> is <code>null</code>.
      */
-    private static final Function<ServiceScope, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = pServiceScope -> configuration -> (pServiceScope == null)
+    private static final Function<List<ServiceScope>, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = pServiceScope -> configuration -> (pServiceScope == null)
             || Arrays.asList(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(configuration).applicationModes())
-                    .contains(pServiceScope);
+                    .containsAll(pServiceScope);
 
     /**
      * Constructor
@@ -99,21 +101,38 @@ public class ServiceManager implements IServiceManager {
     }
 
     @Override
-    public List<PluginConfigurationDto> retrieveServices(String pDatasetId, final ServiceScope pServiceScope) {
-        if (pDatasetId == null) {
-            return new ArrayList<>();
-        }
-        final LinkPluginsDatasets datasetPlugins = linkPluginsDatasetsService.retrieveLink(pDatasetId);
-        final Set<PluginConfiguration> services = datasetPlugins.getServices();
+    public List<PluginConfigurationDto> retrieveServices(List<String> pDatasetIds, List<ServiceScope> pServiceScopes) {
+        Set<PluginConfiguration> allServices = getServicesAssociatedToAllDatasets();
 
-        try (Stream<PluginConfiguration> stream = services.stream()) {
-            return stream.filter(IS_APPLICABLE_ON.apply(pServiceScope)).map(PluginConfigurationDto::new)
+        if ((pDatasetIds != null) && !pDatasetIds.isEmpty()) {
+            Set<PluginConfiguration> datasetsCommonServices = Sets.newHashSet();
+            boolean first = true;
+            // Get all services associated to each dataset given
+            for (String datasetId : pDatasetIds) {
+                final LinkPluginsDatasets datasetPlugins = linkPluginsDatasetsService.retrieveLink(datasetId);
+                final Set<PluginConfiguration> datasetServices = datasetPlugins.getServices();
+                if (first) {
+                    datasetsCommonServices.addAll(datasetServices);
+                    first = false;
+                } else {
+                    datasetsCommonServices.retainAll(datasetServices);
+                }
+            }
+            for (PluginConfiguration datasetService : datasetsCommonServices) {
+                if (!allServices.contains(datasetService)) {
+                    allServices.add(datasetService);
+                }
+            }
+        }
+
+        try (Stream<PluginConfiguration> stream = allServices.stream()) {
+            return stream.filter(IS_APPLICABLE_ON.apply(pServiceScopes)).map(PluginConfigurationDto::new)
                     .collect(Collectors.toList());
         }
     }
 
     @Override
-    public ResponseEntity<InputStreamResource> apply(final Long pPluginConfigurationId,
+    public ResponseEntity<StreamingResponseBody> apply(final Long pPluginConfigurationId,
             final ServicePluginParameters pServicePluginParameters, HttpServletResponse response)
             throws ModuleException {
         final PluginConfiguration conf = pluginService.getPluginConfiguration(pPluginConfigurationId);
@@ -128,7 +147,7 @@ public class ServiceManager implements IServiceManager {
         // Build dynamic parameters
         PluginParametersFactory factory = PluginParametersFactory.build();
         if (pServicePluginParameters.getDynamicParameters() != null) {
-            pServicePluginParameters.getDynamicParameters().forEach(factory::addParameterDynamic);
+            pServicePluginParameters.getDynamicParameters().forEach(factory::addDynamicParameter);
         }
 
         IService toExecute = (IService) pluginService
@@ -136,6 +155,21 @@ public class ServiceManager implements IServiceManager {
                            factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
         return toExecute.apply(pServicePluginParameters, response);
 
+    }
+
+    private Set<PluginConfiguration> getServicesAssociatedToAllDatasets() {
+        Set<PluginConfiguration> allServices = Sets.newHashSet();
+        // 1. Retrieve all services configuration
+        List<PluginConfiguration> confs = pluginService.getPluginConfigurationsByType(IService.class);
+
+        // 2. Get all plugin conf with the applyToAllDataset parameter set to true.
+        for (PluginConfiguration conf : confs) {
+            PluginParameter param = conf.getParameter(AbstractCatalogServicePlugin.APPLY_TO_ALL_DATASETS_PARAM);
+            if ((param != null) && Boolean.parseBoolean(param.getValue())) {
+                allServices.add(conf);
+            }
+        }
+        return allServices;
     }
 
 }

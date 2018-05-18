@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -46,7 +46,7 @@ public interface IRepresentation {
     MediaType getHandledMediaType();
 
     /**
-     * This method is used to set the body of the response and so should transform an AbstractIndexedEntity in the
+     * This method is used to set the body of the response and so should transform an AbstractEntity in the
      * format the plugin is handling
      *
      * @param pToBeTransformed AbstractIndexedEntity to be sent in the Http Response
@@ -55,12 +55,44 @@ public interface IRepresentation {
      */
     byte[] transform(AbstractEntity pToBeTransformed, Charset pTargetCharset);
 
-    byte[] transform(Collection<AbstractEntity> pEntity, Charset pCharset);
+    /**
+     * This method is used to set the body of the response and so should transform an AbstractEntity in the
+     * format the plugin is handling
+     *
+     * @param entities Collection<AbstractEntity>> to be sent in the Http Response
+     * @param pCharset charset to use for encoding (might be null)
+     * @return Byte array to include in the response
+     */
+    byte[] transform(Collection<AbstractEntity> entities, Charset pCharset);
 
+    /**
+     * This method is used to set the body of the response and so should transform an AbstractEntity in the
+     * format the plugin is handling
+     *
+     * @param pEntity page of AbstractEntity, wrapped into hateoas pojos, to be sent in the Http Response
+     * @param pCharset charset to use for encoding (might be null)
+     * @return Byte array to include in the response
+     */
     byte[] transform(PagedResources<Resource<AbstractEntity>> pEntity, Charset pCharset);
 
+    /**
+     * This method is used to set the body of the response and so should transform an AbstractEntity in the
+     * format the plugin is handling
+     *
+     * @param pEntity facetted page of AbstractEntity, wrapped into hateoas pojo, to be sent in the Http Response
+     * @param pCharset charset to use for encoding (might be null)
+     * @return Byte array to include in the response
+     */
     byte[] transform(FacettedPagedResources<Resource<AbstractEntity>> pEntity, Charset pCharset);
 
+    /**
+     * This method is used to set the body of the response and so should transform an AbstractEntity in the
+     * format the plugin is handling
+     *
+     * @param pEntity AbstractEntity, wrapped into hateoas pojo, to be sent in the Http Response
+     * @param pCharset charset to use for encoding (might be null)
+     * @return Byte array to include in the response
+     */
     byte[] transform(Resource<AbstractEntity> pEntity, Charset pCharset);
 
 }

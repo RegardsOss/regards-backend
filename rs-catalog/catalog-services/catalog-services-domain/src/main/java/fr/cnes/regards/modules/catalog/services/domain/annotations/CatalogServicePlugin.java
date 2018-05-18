@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,8 +24,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
-import fr.cnes.regards.modules.models.domain.EntityType;
 
 /**
  * Indicates that an annotated class is a "CatalogServicePlugin", that it is to say a Plugin from rs-catalog which is applied to entities.

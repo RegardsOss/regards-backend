@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,28 +18,27 @@
  */
 package fr.cnes.regards.modules.catalog.services.rest;
 
-import java.io.ByteArrayInputStream;
 import java.util.LinkedHashSet;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.assertj.core.util.Sets;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-
-import com.google.gson.GsonBuilder;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
+import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory;
+import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
 import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.models.domain.EntityType;
 import fr.cnes.regards.modules.models.domain.Model;
 
 /**
@@ -52,34 +51,30 @@ public class TestService implements IService {
 
     public static final String EXPECTED_VALUE = "skydiving";
 
-    @PluginParameter(name = "para")
+    @PluginParameter(name = "para", label = "para label")
     private String para;
 
     @Override
-    public ResponseEntity<InputStreamResource> apply(ServicePluginParameters pParameters,
+    public ResponseEntity<StreamingResponseBody> apply(ServicePluginParameters pParameters,
             HttpServletResponse pResponse) {
 
         LinkedHashSet<DataObject> responseList;
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        pResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
         if (!para.equals(EXPECTED_VALUE)) {
             responseList = Sets.newLinkedHashSet();
         } else {
             Model model = Model.build("pName", "pDescription", EntityType.DATA);
             DataObject do1 = new DataObject(model, "pTenant", "pLabel1");
+            do1.setIpId(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "pTenant",
+                    UUID.fromString("924d1f0d-37ba-4da1-9be3-d94aac629897"), 1));
             DataObject do2 = new DataObject(model, "pTenant", "pLabel2");
+            do2.setIpId(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "pTenant",
+                    UUID.fromString("74f2c965-0136-47f0-93e1-4fd098db701c"), 1));
             responseList = Sets.newLinkedHashSet(do1, do2);
         }
 
-        // Format to json format
-        GsonBuilder builder = new GsonBuilder();
-
-        InputStreamResource response = new InputStreamResource(
-                new ByteArrayInputStream(builder.create().toJson(responseList).getBytes()));
-
-        return new ResponseEntity<>(response, headers, HttpStatus.OK);
+        return CatalogPluginResponseFactory.createSuccessResponse(pResponse, CatalogPluginResponseType.JSON,
+                                                                  responseList);
     }
 
 }

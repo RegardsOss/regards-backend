@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -44,11 +44,22 @@ import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResou
         licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss", version = "0.0.1")
 public class GeoJsonRepresentation implements IRepresentation {
 
+    /**
+     * Geon json media type
+     */
     public static final MediaType MEDIA_TYPE = new MediaType("application", "geo+json", StandardCharsets.UTF_8);
 
+    /**
+     * The geo json format base
+     */
+    public static final String GEO_JSON_BASE = "{\"type\":\"FeatureCollection\",\"features\":[";
+
+    /**
+     * {@link Gson} instance
+     */
     @Autowired
     private Gson gson;
-
+    
     @Override
     public MediaType getHandledMediaType() {
         return MEDIA_TYPE;
@@ -66,7 +77,7 @@ public class GeoJsonRepresentation implements IRepresentation {
         for (AbstractEntity entity : entities) {
             sj.add(gson.toJson(entity));
         }
-        String json = "{\"type\":\"FeatureCollection\",\"features\":[" + sj.toString() + "]}";
+        String json = GEO_JSON_BASE + sj.toString() + "]}";
         return json.getBytes(pCharset);
     }
 
@@ -74,13 +85,13 @@ public class GeoJsonRepresentation implements IRepresentation {
     public byte[] transform(PagedResources<Resource<AbstractEntity>> pEntity, Charset pCharset) {
         // PagedResources are composed of 3 parts: metadata, links, content
         // lets handle metadata part
-        String json = "{\"metadata\":";
-        json += gson.toJson(pEntity.getMetadata());
+        StringBuilder jsonBuilder = new StringBuilder("{\"metadata\":");
+        jsonBuilder.append(gson.toJson(pEntity.getMetadata()));
         // lets handle links
-        json += ",\"links\":";
-        json += gson.toJson(pEntity.getLinks());
+        jsonBuilder.append(",\"links\":");
+        jsonBuilder.append(gson.toJson(pEntity.getLinks()));
         // lets handle content
-        json += ",\"content\":";
+        jsonBuilder.append(",\"content\":");
         Collection<Resource<AbstractEntity>> entities = pEntity.getContent();
         // lets serialize each entity to json
         StringJoiner sj = new StringJoiner(",");
@@ -88,10 +99,10 @@ public class GeoJsonRepresentation implements IRepresentation {
             sj.add(gson.toJson(entity));
         }
         // lets set the content now that each entity has been added
-        json += "{\"type\":\"FeatureCollection\",\"features\":[" + sj.toString() + "]}";
+        jsonBuilder.append(GEO_JSON_BASE + sj.toString() + "]}");
         // lets close the json so it is a correct one
-        json += "}";
-        return json.getBytes(pCharset);
+        jsonBuilder.append("}");
+        return jsonBuilder.toString().getBytes(pCharset);
     }
 
     @Override
@@ -104,16 +115,16 @@ public class GeoJsonRepresentation implements IRepresentation {
     public byte[] transform(FacettedPagedResources<Resource<AbstractEntity>> pEntity, Charset pCharset) {
         // FacettedPagedResources are composed of 4 parts: metadata, links, facets, content
         // lets handle metadata part
-        String json = "{\"metadata\":";
-        json += gson.toJson(pEntity.getMetadata());
+        StringBuilder jsonBuilder = new StringBuilder("{\"metadata\":");
+        jsonBuilder.append(gson.toJson(pEntity.getMetadata()));
         // lets handle links
-        json += ",\"links\":";
-        json += gson.toJson(pEntity.getLinks());
+        jsonBuilder.append(",\"links\":");
+        jsonBuilder.append(gson.toJson(pEntity.getLinks()));
         // lets handle facets
-        json += ",\"facets\":";
-        json += gson.toJson(pEntity.getFacets());
+        jsonBuilder.append(",\"facets\":");
+        jsonBuilder.append(gson.toJson(pEntity.getFacets()));
         // lets handle content
-        json += ",\"content\":";
+        jsonBuilder.append(",\"content\":");
         Collection<Resource<AbstractEntity>> entities = pEntity.getContent();
         // lets serialize each entity to json
         StringJoiner sj = new StringJoiner(",");
@@ -121,10 +132,10 @@ public class GeoJsonRepresentation implements IRepresentation {
             sj.add(gson.toJson(entity));
         }
         // lets set the content now that each entity has been added
-        json += "{\"type\":\"FeatureCollection\",\"features\":[" + sj.toString() + "]}";
+        jsonBuilder.append(GEO_JSON_BASE + sj.toString() + "]}");
         // lets close the json so it is a correct one
-        json += "}";
-        return json.getBytes(pCharset);
+        jsonBuilder.append("}");
+        return jsonBuilder.toString().getBytes(pCharset);
     }
 
 }

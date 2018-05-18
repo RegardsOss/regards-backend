@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -23,32 +23,27 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dataaccess.client.IAccessGroupClient;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
+import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
@@ -75,7 +70,8 @@ public class AccessRightFilterTest {
     private AccessRightFilter accessRightFilter;
 
     /**
-     * The OpenSearch service building {@link ICriterion} from a request string.  Easier to build criterion then doing it manually.
+     * The OpenSearch service building {@link ICriterion} from a request string. Easier to build criterion then doing it
+     * manually.
      */
     private OpenSearchService openSearchService;
 
@@ -90,30 +86,32 @@ public class AccessRightFilterTest {
     private static final String TENANT = "tenant";
 
     /**
+     * Authentication resolver
+     */
+    private IAuthenticationResolver authResolver;
+
+    /**
      * @throws java.lang.Exception
      */
     @Before
     public void setUp() throws Exception {
+        authResolver = Mockito.mock(IAuthenticationResolver.class);
         ISubscriber subscriber = Mockito.mock(ISubscriber.class);
         IUserClient userClient = Mockito.mock(IUserClient.class);
         Mockito.when(userClient.retrieveAccessGroupsOfUser(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(SampleDataUtils.USER_CLIENT_RESPONSE);
-
         IProjectUsersClient projectUsersClient = Mockito.mock(IProjectUsersClient.class);
         Mockito.when(projectUsersClient.isAdmin(Mockito.anyString()))
                 .thenReturn(SampleDataUtils.PROJECT_USERS_CLIENT_RESPONSE);
-
+        IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(TENANT);
         IAttributeModelClient attributeModelClient = Mockito.mock(IAttributeModelClient.class);
         Mockito.when(attributeModelClient.getAttributes(null, null))
                 .thenReturn(new ResponseEntity<>(HateoasUtils.wrapList(SampleDataUtils.LIST), HttpStatus.OK));
-
-
-        IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
-        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(TENANT);
         IAttributeModelCache attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber,
                 runtimeTenantResolver);
-
         IAttributeFinder finder = new AttributeFinder(runtimeTenantResolver, attributeModelCache);
+
         openSearchService = new OpenSearchService(finder);
 
         IAccessGroupClient accessGroupMock = Mockito.mock(IAccessGroupClient.class);
@@ -127,8 +125,9 @@ public class AccessRightFilterTest {
                 .ok(pagedResources);
         Mockito.when(accessGroupMock.retrieveAccessGroupsList(Mockito.anyBoolean(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(pageResponseEntity);
-
-        accessRightFilter = new AccessRightFilter(accessGroupCache, runtimeTenantResolver, projectUsersClient);
+        
+        accessRightFilter = new AccessRightFilter(authResolver, accessGroupCache, runtimeTenantResolver,
+                projectUsersClient);
     }
 
     @After
@@ -149,7 +148,8 @@ public class AccessRightFilterTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.search.service.accessright.AccessRightFilter#addAccessRights(fr.cnes.regards.modules.indexer.domain.criterion.ICriterion)}.
+     * Test method for
+     * {@link fr.cnes.regards.modules.search.service.accessright.AccessRightFilter#addAccessRights(fr.cnes.regards.modules.indexer.domain.criterion.ICriterion)}.
      * @throws OpenSearchParseException
      * @throws UnsupportedEncodingException
      * @throws AccessRightFilterException
@@ -158,11 +158,8 @@ public class AccessRightFilterTest {
     public final void testAddUserGroups()
             throws OpenSearchParseException, UnsupportedEncodingException, AccessRightFilterException {
         // Mock authentication
-        final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
-        final UserDetails details = new UserDetails();
-        details.setName(SampleDataUtils.EMAIL);
-        jwtAuth.setUser(details);
-        SecurityContextHolder.getContext().setAuthentication(jwtAuth);
+        Mockito.when(authResolver.getUser()).thenReturn(SampleDataUtils.EMAIL);
+        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
 
         // Init the criterion we add groups to
         String q = "q=" + URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8");

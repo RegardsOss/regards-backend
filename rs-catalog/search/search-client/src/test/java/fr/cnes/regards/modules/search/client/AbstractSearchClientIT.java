@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.search.client;
 
+import java.lang.reflect.ParameterizedType;
+
+import org.elasticsearch.index.IndexNotFoundException;
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -28,6 +31,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.reflect.TypeToken;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -76,17 +80,22 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
 
         // Init required index in the ElasticSearch repository
-        if (esRepository.indexExists(DEFAULT_TENANT)) {
-            esRepository.deleteIndex(DEFAULT_TENANT);
+        if (!esRepository.indexExists(DEFAULT_TENANT)) {
+            esRepository.createIndex(DEFAULT_TENANT);
+        } else {
+            esRepository.deleteAll(DEFAULT_TENANT);
         }
-        esRepository.createIndex(DEFAULT_TENANT);
 
         FeignSecurityManager.asSystem();
     }
 
     @After
     public void tearDown() {
-        esRepository.deleteIndex(DEFAULT_TENANT);
+        try {
+            esRepository.deleteIndex(DEFAULT_TENANT);
+        } catch (IndexNotFoundException e) {
+            // Who cares ?
+        }
     }
 
     @Override
@@ -94,5 +103,7 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
         return LOG;
     }
 
-    protected abstract Class<T> getClazz();
+    protected Class<T> getClazz() {
+        return (Class<T>)((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+    }
 }

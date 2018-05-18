@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -28,8 +28,10 @@ import fr.cnes.regards.modules.indexer.domain.IMapping;
 import fr.cnes.regards.modules.indexer.domain.criterion.AbstractMultiCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.BooleanMatchCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.CircleCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.DateMatchCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.DateRangeCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.EmptyCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.FieldExistsCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterionVisitor;
 import fr.cnes.regards.modules.indexer.domain.criterion.IntMatchCriterion;
@@ -62,14 +64,14 @@ public class NamedCriterionFinderVisitor implements ICriterionVisitor<Collection
     }
 
     @Override
-    public Collection<ICriterion> visitEmptyCriterion(EmptyCriterion pCriterion) {
+    public Collection<ICriterion> visitEmptyCriterion(EmptyCriterion criterion) {
         return new ArrayList<>();
     }
 
     @Override
-    public Collection<ICriterion> visitAndCriterion(AbstractMultiCriterion pCriterion) {
+    public Collection<ICriterion> visitAndCriterion(AbstractMultiCriterion criterion) {
         Collection<ICriterion> result = new ArrayList<>();
-        Iterator<ICriterion> criterionIterator = pCriterion.getCriterions().iterator();
+        Iterator<ICriterion> criterionIterator = criterion.getCriterions().iterator();
         while (criterionIterator.hasNext()) {
             result.addAll(criterionIterator.next().accept(this));
         }
@@ -77,9 +79,9 @@ public class NamedCriterionFinderVisitor implements ICriterionVisitor<Collection
     }
 
     @Override
-    public Collection<ICriterion> visitOrCriterion(AbstractMultiCriterion pCriterion) {
+    public Collection<ICriterion> visitOrCriterion(AbstractMultiCriterion criterion) {
         Collection<ICriterion> result = new ArrayList<>();
-        Iterator<ICriterion> criterionIterator = pCriterion.getCriterions().iterator();
+        Iterator<ICriterion> criterionIterator = criterion.getCriterions().iterator();
         while (criterionIterator.hasNext()) {
             result.addAll(criterionIterator.next().accept(this));
         }
@@ -87,53 +89,63 @@ public class NamedCriterionFinderVisitor implements ICriterionVisitor<Collection
     }
 
     @Override
-    public Collection<ICriterion> visitNotCriterion(NotCriterion pCriterion) {
-        return pCriterion.getCriterion().accept(this);
+    public Collection<ICriterion> visitNotCriterion(NotCriterion criterion) {
+        return criterion.getCriterion().accept(this);
     }
 
     @Override
-    public Collection<ICriterion> visitStringMatchCriterion(StringMatchCriterion pCriterion) {
-        return searchedName.equals(pCriterion.getName()) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
+    public Collection<ICriterion> visitStringMatchCriterion(StringMatchCriterion criterion) {
+        return searchedName.equals(criterion.getName()) ? Lists.newArrayList(criterion) : new ArrayList<>();
     }
 
     @Override
-    public Collection<ICriterion> visitStringMatchAnyCriterion(StringMatchAnyCriterion pCriterion) {
-        return searchedName.equals(pCriterion.getName()) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
+    public Collection<ICriterion> visitStringMatchAnyCriterion(StringMatchAnyCriterion criterion) {
+        return searchedName.equals(criterion.getName()) ? Lists.newArrayList(criterion) : new ArrayList<>();
     }
 
     @Override
-    public Collection<ICriterion> visitIntMatchCriterion(IntMatchCriterion pCriterion) {
-        return searchedName.equals(pCriterion.getName()) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
+    public Collection<ICriterion> visitIntMatchCriterion(IntMatchCriterion criterion) {
+        return searchedName.equals(criterion.getName()) ? Lists.newArrayList(criterion) : new ArrayList<>();
     }
 
     @Override
-    public Collection<ICriterion> visitLongMatchCriterion(LongMatchCriterion pCriterion) {
-        return searchedName.equals(pCriterion.getName()) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
+    public Collection<ICriterion> visitLongMatchCriterion(LongMatchCriterion criterion) {
+        return searchedName.equals(criterion.getName()) ? Lists.newArrayList(criterion) : new ArrayList<>();
     }
 
     @Override
-    public <U extends Comparable<? super U>> Collection<ICriterion> visitRangeCriterion(RangeCriterion<U> pCriterion) {
-        return searchedName.equals(pCriterion.getName()) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
+    public Collection<ICriterion> visitDateMatchCriterion(DateMatchCriterion criterion) {
+        return searchedName.equals(criterion.getName()) ? Lists.newArrayList(criterion) : new ArrayList<>();
     }
 
     @Override
-    public Collection<ICriterion> visitDateRangeCriterion(DateRangeCriterion pCriterion) {
-        return searchedName.equals(pCriterion.getName()) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
+    public <U extends Comparable<? super U>> Collection<ICriterion> visitRangeCriterion(RangeCriterion<U> criterion) {
+        return searchedName.equals(criterion.getName()) ? Lists.newArrayList(criterion) : new ArrayList<>();
     }
 
     @Override
-    public Collection<ICriterion> visitBooleanMatchCriterion(BooleanMatchCriterion pCriterion) {
-        return searchedName.equals(pCriterion.getName()) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
+    public Collection<ICriterion> visitDateRangeCriterion(DateRangeCriterion criterion) {
+        return searchedName.equals(criterion.getName()) ? Lists.newArrayList(criterion) : new ArrayList<>();
     }
 
     @Override
-    public Collection<ICriterion> visitPolygonCriterion(PolygonCriterion pCriterion) {
-        return searchedName.equals(IMapping.GEOMETRY) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
+    public Collection<ICriterion> visitBooleanMatchCriterion(BooleanMatchCriterion criterion) {
+        return searchedName.equals(criterion.getName()) ? Lists.newArrayList(criterion) : new ArrayList<>();
     }
 
     @Override
-    public Collection<ICriterion> visitCircleCriterion(CircleCriterion pCriterion) {
-        return searchedName.equals(IMapping.GEOMETRY) ? Lists.newArrayList(pCriterion) : new ArrayList<>();
+    public Collection<ICriterion> visitPolygonCriterion(PolygonCriterion criterion) {
+        return searchedName.equals(IMapping.GEOMETRY) ? Lists.newArrayList(criterion) : new ArrayList<>();
+    }
+
+    @Override
+    public Collection<ICriterion> visitCircleCriterion(CircleCriterion criterion) {
+        return searchedName.equals(IMapping.GEOMETRY) ? Lists.newArrayList(criterion) : new ArrayList<>();
+    }
+
+    @Override
+    public Collection<ICriterion> visitFieldExistsCriterion(FieldExistsCriterion criterion) {
+        return searchedName.equals(criterion.getName()) ? Lists.newArrayList(criterion) : new ArrayList<>();
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -23,7 +23,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -60,6 +60,13 @@ public class CatalogServicesController {
 
     public static final String PATH_SERVICE_NAME = "/{pluginConfigurationId}/apply";
 
+    public static final String DATASET_IDS_QUERY_PARAM = "datasetIpIds";
+
+    public static final String SCOPES_QUERY_PARAM = "applicationModes";
+
+    /**
+     * {@link IServiceManager} instance
+     */
     @Autowired
     private IServiceManager serviceManager;
 
@@ -79,9 +86,9 @@ public class CatalogServicesController {
     @ResourceAccess(description = "Retrieve all services applied to given dataset, augmented with meta information",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<List<Resource<PluginConfigurationDto>>> retrieveServices(
-            @RequestParam(value = "dataset_id", required = false) final String pDatasetId,
-            @RequestParam(value = "service_scope", required = false) final ServiceScope pServiceScope) {
-        final List<PluginConfigurationDto> services = serviceManager.retrieveServices(pDatasetId, pServiceScope);
+            @RequestParam(value = DATASET_IDS_QUERY_PARAM, required = false) final List<String> pDatasetIds,
+            @RequestParam(value = SCOPES_QUERY_PARAM, required = false) final List<ServiceScope> pServiceScopes) {
+        final List<PluginConfigurationDto> services = serviceManager.retrieveServices(pDatasetIds, pServiceScopes);
         return new ResponseEntity<>(HateoasUtils.wrapList(services), HttpStatus.OK);
     }
 
@@ -95,7 +102,7 @@ public class CatalogServicesController {
      */
     @RequestMapping(method = RequestMethod.POST, path = PATH_SERVICE_NAME, produces = MediaType.TEXT_PLAIN_VALUE)
     @ResourceAccess(description = "Apply a given plugin service", role = DefaultRole.PUBLIC)
-    public ResponseEntity<InputStreamResource> applyService(
+    public ResponseEntity<StreamingResponseBody> applyService(
             @PathVariable("pluginConfigurationId") final Long pPluginConfigurationId,
             @RequestBody ServicePluginParameters pServiceParameters, HttpServletResponse response)
             throws ModuleException {

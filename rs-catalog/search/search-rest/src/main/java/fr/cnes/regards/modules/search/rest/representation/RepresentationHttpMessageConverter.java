@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -49,6 +49,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginCon
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
 
@@ -102,11 +103,10 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
      */
     private IPluginService pluginService;
 
+    /**
+     * {@link IRuntimeTenantResolver} instance
+     */
     private IRuntimeTenantResolver tenantResolver;
-
-    private ITenantResolver tenantsResolver;
-
-    private ISubscriber subscriber;
 
     /**
      * Map of pluginConfiguration to be used for a specific MediaType
@@ -128,10 +128,8 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
             ITenantResolver tenantsResolver, ISubscriber subscriber)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         this.tenantResolver = tenantResolver;
-        this.tenantsResolver = tenantsResolver;
         pluginService = pPluginService;
         pluginService.addPluginPackage(IRepresentation.class.getPackage().getName());
-        this.subscriber = subscriber;
         enabledRepresentationPluginMapByTenant = Collections.synchronizedMap(new HashMap<>());
         for (String tenant : tenantsResolver.getAllActiveTenants()) {
             HashMap<MediaType, Long> enabledRepresentationPluginMap = new HashMap<>();
@@ -316,7 +314,7 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             LOG.error("Couldn't add the newly defined Representation plugin for tenant: {}, configuration id: {}",
                       tenantOfEvent, event.getPluginConfId());
-            throw new RuntimeException(e);// NOSONAR
+            throw new RsRuntimeException(e);
         } catch (ModuleException e) {
             // if the event represent a creation and the configuration has already been removed then
             // lets do nothing
@@ -333,7 +331,7 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             LOG.error("Couldn't add the newly activated Representation plugin for tenant: {}, configuration id: {}",
                       tenantOfEvent, event.getPluginConfId());
-            throw new RuntimeException(e);// NOSONAR
+            throw new RsRuntimeException(e);
         } catch (ModuleException e) {
             // if the event represents an activation and the configuration has already been removed then
             // we do not have anything to do because the plugin was previously desactivated

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
 
 /**
- * Custom {@link ResourcesAssembler} injecting facets in the resource.
+ * Custom ResourcesAssembler injecting facets in the resource.
  * Delegates all page concerns to a {@link PagedResourcesAssembler}.
  *
  * @param <T> The type wrapped by the resources
@@ -55,27 +55,25 @@ public class FacettedPagedResourcesAssembler<T extends IIndexable>
     }
 
     /**
-     * Creates a new {@link FacettedPagedResources} by converting the given {@link FacetPage} into a {@link PageMetadata} instance and wrapping the contained elements into {@link Resource} instances.
+     * Creates a new {@link FacettedPagedResources} by converting the given {@link FacetPage} into a
+     * {@link PageMetadata} instance and wrapping the contained elements into {@link Resource} instances.
      * Will add pagination links based on the given the self link.
      *
-     * @param pFacetPage must not be {@literal null}.
+     * @param facetPage must not be {@literal null}.
      * @return the facetted page of resources
      */
-    public FacettedPagedResources<Resource<T>> toResource(FacetPage<T> pFacetPage) {
-        PagedResources<Resource<T>> pagedResources = delegate.toResource(pFacetPage);
-        Set<IFacet<?>> facets = pFacetPage.getFacets();
+    public FacettedPagedResources<Resource<T>> toResource(FacetPage<T> facetPage) {
+        PagedResources<Resource<T>> pagedResources = delegate.toResource(facetPage);
+        Set<IFacet<?>> facets = facetPage.getFacets();
         Collection<Resource<T>> content = pagedResources.getContent();
         PageMetadata metaData = pagedResources.getMetadata();
         Iterable<Link> links = pagedResources.getLinks();
         return new FacettedPagedResources<>(facets, content, metaData, links);
     }
 
-    /* (non-Javadoc)
-     * @see org.springframework.hateoas.ResourceAssembler#toResource(java.lang.Object)
-     */
     @Override
-    public PagedResources<Resource<T>> toResource(Page<T> pEntity) {
-        return delegate.toResource(pEntity);
+    public PagedResources<Resource<T>> toResource(Page<T> entity) {
+        return delegate.toResource(entity);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.catalog.services.domain.plugins;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 /**
  * Interface to define a Catalog service plugin. This plugins applies on a single entity provided by is identifier.
@@ -36,6 +36,6 @@ public interface ISingleEntityServicePlugin extends IService {
      * Apply the current service for the given entity identifier.
      * @param pEntityId entity identifier
      */
-    ResponseEntity<InputStreamResource> applyOnEntity(String pEntityId, HttpServletResponse response);
+    ResponseEntity<StreamingResponseBody> applyOnEntity(String pEntityId, HttpServletResponse response);
 
 }

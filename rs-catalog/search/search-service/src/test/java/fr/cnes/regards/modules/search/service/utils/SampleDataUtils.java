@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import org.mockito.Mockito;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -36,17 +37,11 @@ import org.springframework.http.ResponseEntity;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.entities.domain.Collection;
-import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.entities.domain.Dataset;
-import fr.cnes.regards.modules.entities.domain.Document;
-import fr.cnes.regards.modules.entities.domain.StaticProperties;
-import fr.cnes.regards.modules.entities.urn.UniformResourceName;
+import fr.cnes.regards.modules.entities.domain.*;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
@@ -207,8 +202,9 @@ public class SampleDataUtils {
     /**
      * Dummy OpenSearch request
      */
-    public static final String QUERY = INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES)
-            + ":(2 AND 3) OR " + STRING_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES) + ":hello";
+    public static final String QUERY =
+            INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES) + ":(2 AND 3) OR "
+                    + STRING_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES) + ":hello";
 
     /**
      * A query with no "groups" term
@@ -218,8 +214,9 @@ public class SampleDataUtils {
     /**
      * A query with a term "groups"
      */
-    public static final String QUERY_WITH_GROUPS = INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES)
-            + ":(2 AND 3) OR " + Terms.GROUPS + ":admin";
+    public static final String QUERY_WITH_GROUPS =
+            INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES) + ":(2 AND 3) OR " + Terms.GROUPS
+                    + ":admin";
 
     /**
      * A dummy assembler for collections
@@ -291,7 +288,7 @@ public class SampleDataUtils {
      * A dummy page of dataobjects
      */
     public static final FacetPage<DataObject> FACET_PAGE_DATAOBJECT = new FacetPage<>(Lists.newArrayList(DATAOBJECT),
-            Sets.newHashSet());
+                                                                                      Sets.newHashSet());
 
     /**
      * A dummy page of dataobjects
@@ -323,11 +320,8 @@ public class SampleDataUtils {
     /**
      * Define a criterion with a nested criterion of name "target" (this must be detected and properly handled)
      */
-    public static final ICriterion CRITERION_WITH_NESTED_TARGET_FIELD = ICriterion.or(
-                                                                                      ICriterion.eq("target",
-                                                                                                    SearchType.DATASET
-                                                                                                            .toString()),
-                                                                                      ICriterion.eq("field", "value"));
+    public static final ICriterion CRITERION_WITH_NESTED_TARGET_FIELD = ICriterion
+            .or(ICriterion.eq("target", SearchType.DATASET.toString()), ICriterion.eq("field", "value"));
 
     /**
      * Define a criterion with a nested criterion of name "dataset" (this must be detected and properly handled)
