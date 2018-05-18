@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -27,7 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -69,6 +73,8 @@ public class RoleController implements IResourceController<Role> {
      */
     public static final String ROLE_MAPPING = "/{role_name}";
 
+    public static final String ROLE_DESCENDANTS = ROLE_MAPPING + "/descendants";
+
     /**
      * Mapping for retrieving borrowable role of the current user
      */
@@ -85,6 +91,9 @@ public class RoleController implements IResourceController<Role> {
     @Autowired
     private IRoleService roleService;
 
+    /**
+     * {@link IProjectUserService} instance
+     */
     @Autowired
     private IProjectUserService projectUserService;
 
@@ -165,6 +174,19 @@ public class RoleController implements IResourceController<Role> {
             throws EntityNotFoundException {
         final Role role = roleService.retrieveRole(pRoleName);
         return new ResponseEntity<>(toResource(role), HttpStatus.OK);
+    }
+
+    /**
+     * Define the endpoint for retrieving the descendnats {@link Role}s of passed role through its name
+     * @return the ascendants wrapped into a {@link ResponseEntity}
+     * @throws EntityNotFoundException if given role does not exists
+     */
+    @ResourceAccess(description = "Retrieve a role descendants")
+    @RequestMapping(method = RequestMethod.GET, path = ROLE_DESCENDANTS)
+    public ResponseEntity<Set<Role>> retrieveRoleDescendants(@PathVariable("role_name") String roleName)
+            throws EntityNotFoundException {
+        Role role = roleService.retrieveRole(roleName);
+        return new ResponseEntity<>(roleService.getDescendants(role), HttpStatus.OK);
     }
 
     /**

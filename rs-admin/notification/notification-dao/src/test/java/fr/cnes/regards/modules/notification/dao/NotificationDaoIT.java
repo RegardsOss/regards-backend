@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.notification.dao;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -28,14 +27,12 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
-import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
 
 /**
  * @author Christophe Mertz
@@ -48,32 +45,21 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
     @Autowired
     private INotificationRepository notificationRepository;
 
-    @Autowired
-    private IProjectUserRepository projectUserRepository;
-
-    @Autowired
-    private IRoleRepository roleRepository;
-
     @Test
     public void createNotification() {
         Assert.assertTrue(notificationRepository.count() == 0);
-        Assert.assertTrue(projectUserRepository.count() == 0);
-        Assert.assertTrue(roleRepository.count() == 0);
 
         // create a new Notification
         final Notification notif = getNotification("Hello world!", "Bob", NotificationStatus.UNREAD);
 
         // Set Recipients
-        final List<ProjectUser> pUsers = new ArrayList<>();
-        pUsers.add(getProjectUser("bob-regards@c-s.fr"));
-        pUsers.add(getProjectUser("jo-regards@c-s.fr"));
+        final Set<String> pUsers = new HashSet<>();
+        pUsers.add("bob-regards@c-s.fr");
+        pUsers.add("jo-regards@c-s.fr");
         notif.setProjectUserRecipients(pUsers);
-        Assert.assertTrue(projectUserRepository.count() == 2);
 
         // Set Roles
-        final Role publicRole = getRole("PUBLIC");
-        notif.setRoleRecipients(Arrays.asList(publicRole));
-        Assert.assertTrue(roleRepository.count() == 1);
+        notif.setRoleRecipients(Sets.newHashSet(DefaultRole.PUBLIC.name()));
 
         // Save the notification
         final Notification notifSaved = notificationRepository.save(notif);
@@ -88,10 +74,10 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
         final Notification secondNotif = getNotification("Hello Paris!", "jack", NotificationStatus.UNREAD);
 
         // Set recipient
-        secondNotif.setProjectUserRecipients(Arrays.asList(getProjectUser("jack-regards@c-s.fr")));
+        secondNotif.setProjectUserRecipients(Sets.newHashSet("jack-regards@c-s.fr"));
 
         // Set Role
-        secondNotif.setRoleRecipients(Arrays.asList(publicRole));
+        secondNotif.setRoleRecipients(Sets.newHashSet(DefaultRole.PUBLIC.name()));
 
         // Save the notification
         notificationRepository.save(secondNotif);
@@ -104,19 +90,8 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
         notif.setMessage(pMessage);
         notif.setSender(pSender);
         notif.setStatus(pStatus);
+        notif.setType(NotificationType.INFO);
         return notif;
-    }
-
-    private ProjectUser getProjectUser(String pEmail) {
-        final ProjectUser projectUser = new ProjectUser();
-        projectUser.setEmail(pEmail);
-        projectUser.setStatus(UserStatus.WAITING_ACCESS);
-        return projectUserRepository.save(projectUser);
-    }
-
-    private Role getRole(String pName) {
-        final Role role = new Role(pName, null);
-        return roleRepository.save(role);
     }
 
 }

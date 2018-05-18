@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -34,28 +34,50 @@ public class LicenseDTO {
      */
     private String licenseLink;
 
+    /**
+     * Default constructor
+     */
     protected LicenseDTO() {
         // for (de)serialization
     }
 
+    /**
+     * Constructor setting the parameters as attributes
+     * @param pAccepted
+     * @param pLicenceLink
+     */
     public LicenseDTO(boolean pAccepted, String pLicenceLink) {
         super();
         accepted = pAccepted;
         licenseLink = pLicenceLink == null ? "" : pLicenceLink;
     }
 
+    /**
+     * @return whether the license is accepted or not
+     */
     public boolean isAccepted() {
         return accepted;
     }
 
+    /**
+     * Set whether the license is accepted or not
+     * @param pAccepted
+     */
     public void setAccepted(boolean pAccepted) {
         accepted = pAccepted;
     }
 
+    /**
+     * @return the link to the license
+     */
     public String getLicenceLink() {
         return licenseLink;
     }
 
+    /**
+     * Set the link to the license
+     * @param pLicenceLink
+     */
     public void setLicenceLink(String pLicenceLink) {
         licenseLink = pLicenceLink == null ? "" : pLicenceLink;
     }

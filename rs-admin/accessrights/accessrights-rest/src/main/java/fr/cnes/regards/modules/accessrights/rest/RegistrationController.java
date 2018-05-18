@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -37,12 +37,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbidden
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
-import fr.cnes.regards.modules.accessrights.service.account.workflow.state.AccountWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
@@ -65,16 +61,6 @@ public class RegistrationController {
      * Root mapping for requests of this rest controller
      */
     public static final String REQUEST_MAPPING_ROOT = "/accesses";
-
-    /**
-     * Relative path to the endpoint accepting accounts
-     */
-    public static final String ACCEPT_ACCOUNT_RELATIVE_PATH = "/acceptAccount/{account_email}";
-
-    /**
-     * Relative path to the endpoint refusing an account
-     */
-    public static final String REFUSE_ACCOUNT_RELATIVE_PATH = "/refuseAccount/{account_email}";
 
     /**
      * Relative path to the endpoint accepting accesses (project users)
@@ -102,12 +88,6 @@ public class RegistrationController {
     public static final String INACTIVE_ACCESS_RELATIVE_PATH = "/{access_id}/inactive";
 
     /**
-     * Service handling CRUD operation on accounts. Autowired by Spring. Must no be <code>null</code>.
-     */
-    @Autowired
-    private IAccountService accountService;
-
-    /**
      * Service handling CRUD operation on access requests. Autowired by Spring. Must no be <code>null</code>.
      */
     @Autowired
@@ -120,13 +100,7 @@ public class RegistrationController {
     private ProjectUserWorkflowManager projectUserWorkflowManager;
 
     /**
-     * Workflow manager of account. Autowired by Spring. Must not be <code>null</code>.
-     */
-    @Autowired
-    private AccountWorkflowManager accountWorkflowManager;
-
-    /**
-     * Service handling CRUD operation on {@link AccountSettings}. Autowired by Spring. Must no be <code>null</code>.
+     * {@link IRegistrationService} instance
      */
     @Autowired
     private IRegistrationService registrationService;
@@ -154,48 +128,7 @@ public class RegistrationController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    /**
-     * Grants access to the project user
-     *
-     * @param pAccountEmail
-     *            account email
-     * @return <code>void</code> wrapped in a {@link ResponseEntity}
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityTransitionForbiddenException} if no project user could be found<br>
-     *             {@link EntityNotFoundException} if project user is in illegal status for denial<br>
-     */
-    @RequestMapping(value = ACCEPT_ACCOUNT_RELATIVE_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Accepts the access request", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> acceptAccount(@PathVariable("account_email") final String pAccountEmail)
-            throws EntityException {
-        // Retrieve the account
-        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
 
-        // Accept it
-        accountWorkflowManager.acceptAccount(account);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /**
-     * Refuse the account request
-     *
-     * @param pAccountEmail
-     *            account email
-     * @return <code>void</code> wrapped in a {@link ResponseEntity}
-     * @throws EntityException
-     */
-    @RequestMapping(value = REFUSE_ACCOUNT_RELATIVE_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Accepts the access request", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> refuseAccount(@PathVariable("account_email") final String pAccountEmail)
-            throws EntityException {
-        // Retrieve the account
-        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
-
-        // Accept it
-        accountWorkflowManager.refuseAccount(account);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
 
     /**
      * Confirm the registration by email.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -33,14 +33,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
-
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -77,22 +76,29 @@ public class ResourcesService implements IResourcesService {
     private final IRoleService roleService;
 
     /**
+     * Authentication resolver
+     */
+    private final IAuthenticationResolver authResolver;
+
+    /**
      * Constructor
      *
      * @param pResourceAccessRepo
      * @param pRoleService
      */
-    public ResourcesService(final IResourcesAccessRepository pResourceAccessRepo, final IRoleService pRoleService) {
+    public ResourcesService(final IResourcesAccessRepository pResourceAccessRepo, final IRoleService pRoleService,
+            IAuthenticationResolver authResolver) {
         super();
         resourceAccessRepo = pResourceAccessRepo;
         roleService = pRoleService;
+        this.authResolver = authResolver;
     }
 
     @Override
     public Page<ResourcesAccess> retrieveRessources(final String pMicroserviceName, final Pageable pPageable)
             throws ModuleException {
         Page<ResourcesAccess> results;
-        final String roleName = SecurityUtils.getActualRole();
+        final String roleName = authResolver.getRole();
         // If role is System role or InstanceAdminRole retrieve all resources
         if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
             if (pMicroserviceName == null) {

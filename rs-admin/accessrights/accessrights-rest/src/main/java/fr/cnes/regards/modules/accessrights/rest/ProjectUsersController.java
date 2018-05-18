@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.List;
-
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -38,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -50,7 +50,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -108,23 +107,25 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     private IRoleService roleService;
 
     /**
+     * Retrieve authentication information
+     */
+    @Autowired
+    private IAuthenticationResolver authResolver;
+
+    /**
      * Retrieve the {@link List} of all {@link ProjectUser}s.
      *
      * @return a {@link List} of {@link ProjectUser}
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "retrieve the list of users of the project", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "retrieve the list of users of the project", role = DefaultRole.ADMIN)
     public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveProjectUserList(
-            @RequestParam(name = "status", required = false) final String pStatus, final Pageable pPageable,
-            final PagedResourcesAssembler<ProjectUser> pPagedResourcesAssembler) {
+            @RequestParam(name = "status", required = false) final String status, @RequestParam(name = "partialEmail", required = false) String emailStart, final Pageable pageable,
+            final PagedResourcesAssembler<ProjectUser> pagedResourcesAssembler) {
         Page<ProjectUser> users;
-        if (pStatus == null) {
-            users = projectUserService.retrieveUserList(pPageable);
-        } else {
-            users = projectUserService.retrieveUserList(UserStatus.valueOf(pStatus), pPageable);
-        }
-        return new ResponseEntity<>(toPagedResources(users, pPagedResourcesAssembler), HttpStatus.OK);
+        users = projectUserService.retrieveUserList(status, emailStart, pageable);
+        return new ResponseEntity<>(toPagedResources(users, pagedResourcesAssembler), HttpStatus.OK);
     }
 
     /**
@@ -142,10 +143,10 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     }
 
     /**
-     * Retrieve the {@link ProjectUser} of passed <code>email</code>.
+     * Retrieve the {@link ProjectUser} of passed <code>id</code>.
      *
-     * @param pUserEmail
-     *            The {@link ProjectUser}'s <code>email</code>
+     * @param pUserId
+     *            The {@link ProjectUser}'s <code>id</code>
      * @return a {@link ProjectUser}
      * @throws EntityNotFoundException
      */
@@ -172,7 +173,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
             role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Resource<ProjectUser>> retrieveCurrentProjectUser()
             throws EntityNotFoundException, EntityOperationForbiddenException {
-        final String curentUserEmail = SecurityUtils.getActualUser();
+        final String curentUserEmail = authResolver.getUser();
         if ((curentUserEmail == null) || curentUserEmail.isEmpty()) {
             throw new EntityOperationForbiddenException("Unable to retrieve current authenticated user.");
 
@@ -201,7 +202,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
 
     @ResponseBody
     @RequestMapping(value = "/email/{user_email}/admin", method = RequestMethod.GET)
-    @ResourceAccess(description = "tell if user has role admin", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "tell if user has role admin", role = DefaultRole.PUBLIC)
     public ResponseEntity<Boolean> isAdmin(@PathVariable("user_email") final String userEmail)
             throws EntityNotFoundException {
         final ProjectUser user = projectUserService.retrieveOneByEmail(userEmail);
@@ -333,6 +334,28 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
         return new ResponseEntity<>(toPagedResources(projectUserList, pPagedResourcesAssembler), HttpStatus.OK);
     }
 
+
+    /**
+     * Define the endpoint for retrieving the {@link List} of {@link ProjectUser} for the {@link Role} of passed
+     * <code>name</code> by crawling through parents' hierarachy.
+     *
+     * @param pRole
+     *            The {@link Role}'s <code>name</code>
+     * @return The {@link List} of {@link ProjectUser} wrapped in an {@link ResponseEntity}
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Role} with passed <code>id</code> could be found
+     */
+    @ResponseBody
+    @ResourceAccess(
+            description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_name",
+            role = DefaultRole.PROJECT_ADMIN)
+    @RequestMapping(value = "/roles", method = RequestMethod.GET)
+    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUsersList(@RequestParam("role_name")String pRole, final Pageable pPageable,
+            final PagedResourcesAssembler<ProjectUser> pPagedResourcesAssembler) throws EntityNotFoundException {
+        final Page<ProjectUser> projectUserList = roleService.retrieveRoleProjectUserList(pRole, pPageable);
+        return new ResponseEntity<>(toPagedResources(projectUserList, pPagedResourcesAssembler), HttpStatus.OK);
+    }
+
     @Override
     public Resource<ProjectUser> toResource(final ProjectUser pElement, final Object... pExtras) {
         Resource<ProjectUser> resource = resourceService.toResource(pElement);
@@ -347,6 +370,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
                                     MethodParamFactory.build(Long.class, pElement.getId()));
             resourceService.addLink(resource, this.getClass(), "retrieveProjectUserList", LinkRels.LIST,
                                     MethodParamFactory.build(String.class, pElement.getStatus().toString()),
+                                    MethodParamFactory.build(String.class),
                                     MethodParamFactory.build(Pageable.class),
                                     MethodParamFactory.build(PagedResourcesAssembler.class));
             // Specific links to add in WAITING_ACCESS state

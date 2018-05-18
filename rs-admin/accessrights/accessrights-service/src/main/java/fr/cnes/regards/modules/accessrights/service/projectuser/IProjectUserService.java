@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -30,7 +30,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentif
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -46,26 +45,16 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
 public interface IProjectUserService {
 
     /**
-     * Retrieve the {@link List} of all {@link ProjectUser}s.
+     * Retrieve the paged {@link List} of all {@link ProjectUser}s filtered by given properties.
      *
+     *
+     * @param status
+     * @param emailStart
      * @param pPageable
      *            the paging information
-     *
-     * @return The list of project users
+     *  @return The list of project users
      */
-    Page<ProjectUser> retrieveUserList(Pageable pPageable);
-
-    /**
-     * Retrieve the {@link List} of all {@link ProjectUser}s with the given status.
-     *
-     * @param pStatus
-     *            the {@link UserStatus} to retrieve
-     * @param pPageable
-     *            the paging information
-     *
-     * @return The list of project users
-     */
-    Page<ProjectUser> retrieveUserList(UserStatus pStatus, Pageable pPageable);
+    Page<ProjectUser> retrieveUserList(String status, String emailStart, Pageable pPageable);
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>id</code>.
@@ -249,6 +238,10 @@ public interface IProjectUserService {
      */
     void resetLicence();
 
+    /**
+     * @param role
+     * @return users which role is the given one
+     */
     Collection<ProjectUser> retrieveUserByRole(Role role);
 
     /**

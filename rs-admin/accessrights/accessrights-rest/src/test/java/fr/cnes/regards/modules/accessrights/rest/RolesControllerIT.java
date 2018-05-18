@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -44,6 +42,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
@@ -51,6 +50,8 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests for Roles REST Controller.
@@ -61,6 +62,7 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
  * @since 1.0-SNAPSHOT
  */
 @MultitenantTransactional
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
@@ -213,19 +215,19 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the allows to retrieve roles.")
     public void retrieveRoleList() throws JwtException {
         Assert.assertEquals(roleRepository.count(), 6);
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.id", hasSize(5)));
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.*.content.id", hasSize(5)));
         // 6 = 5 roles and the added role TEST_ROLE has two permissions
         // Updated : Permissions are ignore in roles results requests to avoid lazy load.
         // expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.permissions", hasSize(6)));
         // 3 = 3 roles has a parent (public, project_admin, instance_admin has no parent)
-        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(3)));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(3)));
 
         // Use PROJECT ADMIN
         String projectAdminJwt = manageSecurity(RoleController.TYPE_MAPPING, RequestMethod.GET, DEFAULT_USER_EMAIL,
                                                 DefaultRole.PROJECT_ADMIN.name());
-        performGet(RoleController.TYPE_MAPPING, projectAdminJwt, expectations, "TODO Error message");
+        performGet(RoleController.TYPE_MAPPING, projectAdminJwt, requestBuilderCustomizer, "TODO Error message");
     }
 
     @Test

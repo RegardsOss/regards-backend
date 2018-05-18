@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.notification.domain.dto;
 
-import java.util.List;
+import java.util.Set;
 
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.notification.domain.Notification;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
 
 /**
  * DTO representing a {@link Notification}.
@@ -36,18 +36,18 @@ public class NotificationDTO {
     private String message;
 
     /**
-     * The recipients as project user's logins
+     * The recipients as project user's emails
      */
-    private List<String> projectUserRecipients;
+    private Set<String> projectUserRecipients;
 
     /**
      * The recipients as role names
      */
-    private List<String> roleRecipients;
+    private Set<String> roleRecipients;
 
     /**
      * The notification sender<br>
-     * {@link ProjectUser} <code>login</code> or microservice name as a permissive String
+     * project user <code>email</code> or microservice name as a permissive String
      */
     private String sender;
 
@@ -57,38 +57,40 @@ public class NotificationDTO {
     private String title;
 
     /**
+     * The notification type
+     */
+    private NotificationType type;
+
+    /**
+     * Default constructor
+     */
+    public NotificationDTO() {
+    }
+
+    /**
+     * Constructor setting the parameters as attributes
+     * @param message notification message
+     * @param projectUserRecipients users recieving the notification
+     * @param roleRecipients roles recieving the notification
+     * @param sender notification sender
+     * @param title notification title
+     * @param type notification type
+     */
+    public NotificationDTO(String message, Set<String> projectUserRecipients, Set<String> roleRecipients,
+            String sender, String title, NotificationType type) {
+        this.message = message;
+        this.projectUserRecipients = projectUserRecipients;
+        this.roleRecipients = roleRecipients;
+        this.sender = sender;
+        this.title = title;
+        this.type = type;
+    }
+
+    /**
      * @return the message
      */
     public String getMessage() {
         return message;
-    }
-
-    /**
-     * @return the projectUserRecipients
-     */
-    public List<String> getProjectUserRecipients() {
-        return projectUserRecipients;
-    }
-
-    /**
-     * @return the roleRecipients
-     */
-    public List<String> getRoleRecipients() {
-        return roleRecipients;
-    }
-
-    /**
-     * @return the sender
-     */
-    public String getSender() {
-        return sender;
-    }
-
-    /**
-     * @return the title
-     */
-    public String getTitle() {
-        return title;
     }
 
     /**
@@ -100,19 +102,40 @@ public class NotificationDTO {
     }
 
     /**
+     * @return the projectUserRecipients
+     */
+    public Set<String> getProjectUserRecipients() {
+        return projectUserRecipients;
+    }
+
+    /**
      * @param pProjectUserRecipients
      *            the projectUserRecipients to set
      */
-    public void setProjectUserRecipients(final List<String> pProjectUserRecipients) {
+    public void setProjectUserRecipients(final Set<String> pProjectUserRecipients) {
         projectUserRecipients = pProjectUserRecipients;
+    }
+
+    /**
+     * @return the roleRecipients
+     */
+    public Set<String> getRoleRecipients() {
+        return roleRecipients;
     }
 
     /**
      * @param pRoleRecipients
      *            the roleRecipients to set
      */
-    public void setRoleRecipients(final List<String> pRoleRecipients) {
+    public void setRoleRecipients(final Set<String> pRoleRecipients) {
         roleRecipients = pRoleRecipients;
+    }
+
+    /**
+     * @return the sender
+     */
+    public String getSender() {
+        return sender;
     }
 
     /**
@@ -124,6 +147,13 @@ public class NotificationDTO {
     }
 
     /**
+     * @return the title
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
      * @param pTitle
      *            the title to set
      */
@@ -131,4 +161,18 @@ public class NotificationDTO {
         title = pTitle;
     }
 
+    /**
+     * @return the notification type
+     */
+    public NotificationType getType() {
+        return type;
+    }
+
+    /**
+     * Set the notification type
+     * @param type
+     */
+    public void setType(NotificationType type) {
+        this.type = type;
+    }
 }

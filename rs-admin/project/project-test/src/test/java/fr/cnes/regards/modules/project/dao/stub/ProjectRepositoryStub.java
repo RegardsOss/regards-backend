@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -29,7 +29,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.framework.test.repository.JpaRepositoryStub;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 
@@ -70,6 +69,11 @@ public class ProjectRepositoryStub extends JpaRepositoryStub<Project> implements
 
     @Override
     public List<Project> findByIsDeletedFalse() {
-        return entities.stream().filter(e->!e.isDeleted()).collect(Collectors.toList());
+        return entities.stream().filter(e -> !e.isDeleted()).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean isActiveProject(Long id) {
+        return true;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -92,7 +92,8 @@ public class EmailSendingStrategyTest {
     public void send() {
         // Define expected mail
         final SimpleMailMessage expected = new SimpleMailMessage();
-        expected.setFrom(SENDER);
+        expected.setFrom("regards@noreply.com");
+        expected.setSubject("["+SENDER+"]"+notification.getTitle());
         expected.setText(MESSAGE);
         expected.setTo(RECIPIENTS);
 

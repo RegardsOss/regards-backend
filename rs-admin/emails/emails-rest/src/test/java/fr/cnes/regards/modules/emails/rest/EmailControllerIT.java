@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.modules.emails.rest;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -41,6 +38,9 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
 import fr.cnes.regards.modules.emails.domain.Email;
 import fr.cnes.regards.modules.emails.service.IEmailService;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests for the email module
@@ -50,6 +50,7 @@ import fr.cnes.regards.modules.emails.service.IEmailService;
  */
 @MultitenantTransactional
 @ContextConfiguration(classes = EmailConfiguration.class)
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=email_it" })
 public class EmailControllerIT extends AbstractRegardsTransactionalIT {
 
     /**

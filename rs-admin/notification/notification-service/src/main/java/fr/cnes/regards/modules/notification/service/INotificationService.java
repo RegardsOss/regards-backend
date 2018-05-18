@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
@@ -101,6 +100,17 @@ public interface INotificationService {
      *            The notification
      * @return The stream of project users
      */
-    Stream<ProjectUser> findRecipients(Notification pNotification);
+    Stream<String> findRecipients(Notification pNotification);
 
+    /**
+     * Remove a user, represented by its email, from all the notification receiver
+     * @param email
+     */
+    void removeReceiver(String email);
+
+    /**
+     * Remove a role, represented by its name, from all the notification receiver
+     * @param role
+     */
+    void removeRoleReceiver(String role);
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.project.domain;
 
-import java.util.Set;
-
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;

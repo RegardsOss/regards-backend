@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
@@ -43,22 +44,63 @@ public interface IProjectConnectionRepository extends JpaRepository<ProjectConne
 
     /**
      * Retrieve all tenant connections for a specified microservice
-     * 
-     * @param microservice
-     *            microservice name
-     * @return all tenant connections
+     *
+     * @param microservice microservice name
+     * @return all microservice connections
      */
-    List<ProjectConnection> findByMicroservice(String microservice);
+    List<ProjectConnection> findByMicroserviceAndProjectIsDeletedFalse(String microservice);
 
-    ProjectConnection findOneByProjectNameAndMicroservice(final String pProjectName, final String pMicroService);
+    /**
+     * Retrieve all enabled tenant connections for a specified microservice
+     * @param microservice microservice name
+     * @return all enabled microservice connections
+     */
+    List<ProjectConnection> findByMicroserviceAndStateAndProjectIsDeletedFalse(String microservice,
+            TenantConnectionState state);
+
+    /**
+     * Retrieve all connections with same parameters as below
+     * @param username database connection user name
+     * @param password database connection password
+     * @param url database connection url
+     * @return list of connections
+     */
+    List<ProjectConnection> findByUserNameAndPasswordAndUrl(String username, String password, String url);
+
+    /**
+     * Retrieve connection for project and microservice
+     * @param projectName project name
+     * @param microservice microservice
+     * @return {@link ProjectConnection}
+     */
+    ProjectConnection findOneByProjectNameAndMicroservice(final String projectName, final String microservice);
 
     /**
      * Find all {@link ProjectConnection}s whose project has given <code>name</code>.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
-     * @param pProjectName
+     * @param projectName
      *            The {@link ProjectConnection}'s {@link Projects}'s <code>name</code>
      * @return A {@link Page} of found {@link ProjectConnection}s
      */
-    Page<ProjectConnection> findByProjectName(String pProjectName, Pageable pPageable);
+    Page<ProjectConnection> findByProjectName(String projectName, Pageable pageable);
+
+    /**
+     * List all active connections for specified microservice. Connections from deleted projects are rejected.
+     * @param microservice microservice
+     * @return list of {@link ProjectConnection}
+     */
+    default List<ProjectConnection> getMicroserviceConnections(String microservice) {
+        return findByMicroserviceAndStateAndProjectIsDeletedFalse(microservice, TenantConnectionState.ENABLED);
+    }
+
+    /**
+     * Check if project connection exists
+     * @param projectName project name
+     * @param microservice microservice
+     * @return true if connection exists
+     */
+    default boolean existsProjectConnection(String projectName, String microservice) {
+        return findOneByProjectNameAndMicroservice(projectName, microservice) != null;
+    }
 }

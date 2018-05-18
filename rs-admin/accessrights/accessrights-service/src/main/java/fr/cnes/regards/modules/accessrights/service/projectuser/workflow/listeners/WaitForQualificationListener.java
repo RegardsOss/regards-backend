@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -22,32 +22,47 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.service.account.workflow.events.OnAcceptAccountEvent;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountAcceptedEvent;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
-import fr.cnes.regards.modules.accessrights.service.registration.RegistrationRuntimeException;
 
 /**
- * Listen to {@link OnAcceptAccountEvent} in order to pass a {@link ProjectUser} from WAITING_ACCOUNT_ACTIVE to WAITING_ACCESS.
+ * Listen to {@link AccountAcceptedEvent} in order to pass {@link ProjectUser}s from WAITING_ACCOUNT_ACTIVE to WAITING_ACCESS.
  *
  * @author Xavier-Alexandre Brochard
  */
 @Component
-public class WaitForQualificationListener implements ApplicationListener<OnAcceptAccountEvent> {
+public class WaitForQualificationListener
+        implements ApplicationListener<ApplicationReadyEvent>, IHandler<AccountAcceptedEvent> {
 
     /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(WaitForQualificationListener.class);
+
+    @Autowired
+    private ITenantResolver tenantResolver;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private IInstanceSubscriber instanceSubscriber;
 
     /**
      * CRUD repository handling {@link ProjectUser}s. Autowired by Spring.
@@ -60,7 +75,7 @@ public class WaitForQualificationListener implements ApplicationListener<OnAccep
     private final ProjectUserWorkflowManager projectUserWorkflowManager;
 
     /**
-     * CRUD repository handling {@link AccountSettingst}s. Autowired by Spring.
+     * {@link IAccessSettingsService} instance
      */
     private final IAccessSettingsService accessSettingsService;
 
@@ -78,40 +93,51 @@ public class WaitForQualificationListener implements ApplicationListener<OnAccep
     }
 
     @Override
-    public void onApplicationEvent(final OnAcceptAccountEvent pEvent) {
-        try {
-            makeProjectUserWaitForQualification(pEvent);
-        } catch (EntityException e) {
-            LOG.info("Could not change status of project user " + pEvent.getEmail() + " from "
-                    + UserStatus.WAITING_ACCOUNT_ACTIVE + " to " + UserStatus.WAITING_ACCESS, e);
-            throw new RegistrationRuntimeException();
-        }
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        instanceSubscriber.subscribeTo(AccountAcceptedEvent.class, this);
     }
 
     /**
      * Pass a {@link ProjectUser} from WAITING_ACCOUNT_ACTIVATION to WAITING_ACCESS
-     * @param pEvent the event
+     * @param wrapper the event
      * @throws EntityException if not project user with given email (in event) could be found
      */
-    private void makeProjectUserWaitForQualification(OnAcceptAccountEvent pEvent) throws EntityException {
-        // Retrieve the account's/project user email
-        String email = pEvent.getEmail();
-
-        // Retrieve the project user
-        Optional<ProjectUser> optional = projectUserRepository.findOneByEmail(pEvent.getEmail());
-        ProjectUser projectUser = optional.orElseThrow(() -> new EntityNotFoundException(email, ProjectUser.class));
-
-        // Change state
-        projectUserWorkflowManager.makeWaitForQualification(projectUser);
-
-        // Auto-accept if configured so
-        final AccessSettings settings = accessSettingsService.retrieve();
-        if (AccessSettings.AUTO_ACCEPT_MODE.equals(settings.getMode())) {
-            projectUserWorkflowManager.grantAccess(projectUser);
+    @Override
+    public void handle(TenantWrapper<AccountAcceptedEvent> wrapper) {
+        // Retrieve the account/project user email
+        String email = wrapper.getContent().getAccountEmail();
+        LOG.info("Account accepted event received for user {}.", email);
+        // Now for each tenant, lets handle this account activation
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            onAccountActivation(email);
+            runtimeTenantResolver.clearTenant();
         }
+    }
 
-        // Save
-        projectUserRepository.save(projectUser);
+    public void onAccountActivation(String email) {
+        // Retrieve the project user
+        Optional<ProjectUser> optional = projectUserRepository.findOneByEmail(email);
+        ProjectUser projectUser = optional.isPresent() ? optional.get() : null;
+        if (projectUser != null) {
+            // Change state
+            try {
+                projectUserWorkflowManager.makeWaitForQualification(projectUser);
+
+                // Auto-accept if configured so
+                final AccessSettings settings = accessSettingsService.retrieve();
+                if (AccessSettings.AUTO_ACCEPT_MODE.equals(settings.getMode())) {
+                    projectUserWorkflowManager.grantAccess(projectUser);
+                }
+
+                // Save
+                projectUserRepository.save(projectUser);
+            } catch (EntityException e) {
+                LOG.warn(String.format("The system tried to set the project user %s state to %s from %s but failed",
+                                       email, UserStatus.WAITING_ACCESS, UserStatus.WAITING_ACCOUNT_ACTIVE),
+                         e);
+            }
+        }
     }
 
 }

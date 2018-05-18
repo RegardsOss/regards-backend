@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  
  This file is part of REGARDS.
  
@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.microservices.administration</groupId>
 	<artifactId>remote-tenant-resolver</artifactId>
-	<version>1.1.0</version>
+	<version>2.0.0-RELEASE</version>
 	<packaging>jar</packaging>
 
 	<name>Remote Tenant Resolver</name>
@@ -52,11 +52,15 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-parent</artifactId>
-		<version>1.1.0</version>
+		<version>2.0.0-RELEASE</version>
 		<relativePath></relativePath>
 	</parent>
 
 	<dependencies>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>feign-regards-starter</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-client</artifactId>
@@ -71,7 +75,11 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-regards</artifactId>
+			<artifactId>cloud-regards-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
 		</dependency>
 		<!-- Tests -->
 		<dependency>
@@ -83,14 +91,6 @@
 			<groupId>hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>cloud-regards-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
 		</dependency>
 	</dependencies>
 

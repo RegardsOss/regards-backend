@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -60,6 +60,16 @@ public interface IRoleService {
      * @since 1.0-SNAPSHOT
      */
     Role retrieveRole(String pRoleName) throws EntityNotFoundException;
+
+    /**
+     *
+     * retrieve a role by its Id
+     *
+     * @param pRoleId
+     * @return required role
+     * @throws EntityNotFoundException
+     */
+    Role retrieveRole(Long pRoleId) throws EntityNotFoundException;
 
     /**
      * Return the single <code>default</code> {@link Role}.
@@ -166,6 +176,19 @@ public interface IRoleService {
     Page<ProjectUser> retrieveRoleProjectUserList(Long pRoleId, Pageable pPageable) throws EntityNotFoundException;
 
     /**
+     * Retrieve the {@link List} of {@link ProjectUser} for the {@link Role} of passed <code>name</code>.
+     *
+     * @param roleName
+     *            The {@link Role}'s <code>id</code>
+     * @param pPageable
+     *            the paging information
+     * @return The {@link List} of {@link ProjectUser} for the {@link Role}
+     * @throws EntityNotFoundException
+     *             Thrown when no {@link Role} with passed <code>id</code> could be found
+     */
+    Page<ProjectUser> retrieveRoleProjectUserList(String roleName, Pageable pPageable) throws EntityNotFoundException;
+
+    /**
      * Return true when {@link Role} of passed <code>id</code> exists in db.
      *
      * @param pRoleId
@@ -217,16 +240,6 @@ public interface IRoleService {
     Set<Role> retrieveInheritedRoles(Role pRole);
 
     /**
-     *
-     * retrieve a role by its Id
-     *
-     * @param pRoleId
-     * @return required role
-     * @throws EntityNotFoundException
-     */
-    Role retrieveRole(Long pRoleId) throws EntityNotFoundException;
-
-    /**
      * Remove given resources accesses from the given role and its descendancy
      *
      * @param pRoleName the role name
@@ -254,6 +267,21 @@ public interface IRoleService {
     Set<Role> retrieveBorrowableRoles();
 
     /**
+     * Retrieve descendants of a role.
+     * @param role
+     * @return all descendants of "role" and "role" itself
+     */
+    Set<Role> getDescendants(Role role);
+
+    /**
+     * Retrieve ascendants(parent and uncles) and brotherhood of the given role
+     *
+     * @param pRole
+     * @return All ascendants of the given role
+     */
+    Set<Role> getAscendants(Role pRole);
+
+    /**
      *
      * Retrieve roles associated to ginve resource id
      *
@@ -262,4 +290,9 @@ public interface IRoleService {
      * @since 1.0-SNAPSHOT
      */
     Set<Role> retrieveRolesWithResource(Long pResourceId);
+
+    /**
+     * Init all default roles for the current tenant
+     */
+    void initDefaultRoles();
 }

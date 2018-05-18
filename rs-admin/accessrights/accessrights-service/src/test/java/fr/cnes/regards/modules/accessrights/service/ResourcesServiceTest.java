@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -32,12 +32,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Sets;
-
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
@@ -78,6 +77,8 @@ public class ResourcesServiceTest {
      * Mock to manage projects resolver
      */
     private ITenantResolver tenantResolverMock;
+
+    private IAuthenticationResolver authResolver;
 
     /**
      * Stub for JPA Repository
@@ -141,9 +142,10 @@ public class ResourcesServiceTest {
         tenants.add("tenant1");
         Mockito.when(tenantResolverMock.getAllTenants()).thenReturn(tenants);
 
-        SecurityUtils.mockActualRole("ADMIN");
+        authResolver = Mockito.mock(IAuthenticationResolver.class);
+        Mockito.when(authResolver.getRole()).thenReturn("ADMIN");
 
-        resourcesService = Mockito.spy(new ResourcesService(resourcesRepo, roleServiceMock));
+        resourcesService = Mockito.spy(new ResourcesService(resourcesRepo, roleServiceMock, authResolver));
     }
 
     @Purpose("Check that the collect resources functionnality is well done when no resources are collected")

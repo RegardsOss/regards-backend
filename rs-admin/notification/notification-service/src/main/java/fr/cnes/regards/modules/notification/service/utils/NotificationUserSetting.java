@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -43,7 +43,7 @@ public class NotificationUserSetting {
     /**
      * One of the notification's recipients
      */
-    private final ProjectUser projectUser;
+    private final String projectUser;
 
     /**
      * The recipient's settings
@@ -60,7 +60,7 @@ public class NotificationUserSetting {
      * @param pSettings
      *            The recipient's settings
      */
-    public NotificationUserSetting(final Notification pNotification, final ProjectUser pProjectUser,
+    public NotificationUserSetting(final Notification pNotification, final String pProjectUser,
             final NotificationSettings pSettings) {
         notification = pNotification;
         projectUser = pProjectUser;
@@ -77,7 +77,7 @@ public class NotificationUserSetting {
     /**
      * @return the projectUser
      */
-    public ProjectUser getProjectUser() {
+    public String getProjectUser() {
         return projectUser;
     }
 

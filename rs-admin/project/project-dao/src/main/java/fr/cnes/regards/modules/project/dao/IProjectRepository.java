@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -39,6 +39,11 @@ import fr.cnes.regards.modules.project.domain.Project;
 @InstanceEntity
 public interface IProjectRepository extends JpaRepository<Project, Long> {
 
+    /**
+     * Find a project in the database by its name without taking care of the case
+     * @param pName
+     * @return the project or null if none found
+     */
     Project findOneByNameIgnoreCase(String pName);
 
     Page<Project> findByIsPublicTrue(Pageable pPageable);
@@ -51,4 +56,14 @@ public interface IProjectRepository extends JpaRepository<Project, Long> {
      * @since 1.0-SNAPSHOT
      */
     List<Project> findByIsDeletedFalse();
+
+    /**
+     * Check if a project exists and is not deleted
+     * @param id project identifier
+     * @return true if it's active
+     */
+    default boolean isActiveProject(Long id) {
+        Project one = findOne(id);
+        return (one != null) && !one.isDeleted();
+    }
 }

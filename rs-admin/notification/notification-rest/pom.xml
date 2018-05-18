@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  
  This file is part of REGARDS.
  
@@ -51,27 +51,28 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>notification</artifactId>
-		<version>1.1.0</version>
+		<version>2.0.0-RELEASE</version>
 	</parent>
 
 	<dependencies>
-		<!-- Microservice internal dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.microservices</groupId>
-			<artifactId>microservice-core</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.notification</groupId>
 			<artifactId>notification-service</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-utils</artifactId>
-		</dependency>
 		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
+			<artifactId>regards-integration-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.accessrights</groupId>
+			<artifactId>accessrights-dao</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-multitenant-regards-starter</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

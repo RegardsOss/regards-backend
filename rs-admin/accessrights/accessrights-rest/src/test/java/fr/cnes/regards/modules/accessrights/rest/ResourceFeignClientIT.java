@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -32,6 +32,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
@@ -51,6 +52,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class ResourceFeignClientIT extends AbstractRegardsWebIT {
 
     /**

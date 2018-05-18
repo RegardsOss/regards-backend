@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -27,7 +27,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.framework.test.repository.JpaRepositoryStub;
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
@@ -69,9 +69,24 @@ public class ProjectConnectionRepositoryStub extends JpaRepositoryStub<ProjectCo
     }
 
     @Override
-    public List<ProjectConnection> findByMicroservice(String pMicroservice) {
-        List<ProjectConnection> list = entities.stream().filter(e -> e.getMicroservice().equals(pMicroservice))
+    public List<ProjectConnection> findByMicroserviceAndProjectIsDeletedFalse(String microservice) {
+        List<ProjectConnection> list = entities.stream().filter(e -> e.getMicroservice().equals(microservice))
                 .collect(Collectors.toList());
+        return list;
+    }
+
+    @Override
+    public List<ProjectConnection> findByMicroserviceAndStateAndProjectIsDeletedFalse(String microservice,
+            TenantConnectionState state) {
+        List<ProjectConnection> list = entities.stream().filter(e -> e.getMicroservice().equals(microservice))
+                .collect(Collectors.toList());
+        return list;
+    }
+
+    @Override
+    public List<ProjectConnection> findByUserNameAndPasswordAndUrl(String username, String password, String url) {
+        List<ProjectConnection> list = entities.stream().filter(e -> (e.getUserName().equals(username)
+                && e.getPassword().equals(password) && e.getUrl().equals(url))).collect(Collectors.toList());
         return list;
     }
 

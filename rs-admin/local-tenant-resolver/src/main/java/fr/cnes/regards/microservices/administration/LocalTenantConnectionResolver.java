@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,12 +20,14 @@ package fr.cnes.regards.microservices.administration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -79,26 +81,18 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
     }
 
     @Override
-    public List<TenantConnection> getTenantConnections(String microserviceName) throws JpaMultitenantException {
-        final List<TenantConnection> tenants = new ArrayList<>();
-        final Iterable<Project> projects = projectService.retrieveProjectList();
+    public List<TenantConnection> getTenantConnections(String microservice) throws JpaMultitenantException {
 
-        for (final Project project : projects) {
-            try {
-                final ProjectConnection projectConnection = projectConnectionService
-                        .retrieveProjectConnection(project.getName(), microserviceName);
-                if ((projectConnection != null) && projectConnection.isEnabled()) {
-                    tenants.add(new TenantConnection(projectConnection.getProject().getName(),
-                            projectConnection.getUrl(), projectConnection.getUserName(),
-                            projectConnection.getPassword(), projectConnection.getDriverClassName()));
-                }
-            } catch (final EntityNotFoundException e) {
-                LOG.debug(e.getMessage(), e);
-                LOG.error(String.format("No database connection found for project %s", project.getName()));
+        List<TenantConnection> tenantConnections = new ArrayList<>();
+
+        List<ProjectConnection> projectConnections = projectConnectionService.retrieveProjectConnections(microservice);
+        // Transform to tenant connection
+        if (projectConnections != null) {
+            for (ProjectConnection projectConnection : projectConnections) {
+                tenantConnections.add(projectConnection.toTenantConnection());
             }
         }
-
-        return tenants;
+        return tenantConnections;
     }
 
     @Override
@@ -107,13 +101,14 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
         try {
             final Project project = projectService.retrieveProject(pTenantConnection.getTenant());
 
-            final ProjectConnection projectConnection = new ProjectConnection(project, microserviceName,
-                    pTenantConnection.getUserName(), pTenantConnection.getPassword(),
-                    pTenantConnection.getDriverClassName(), pTenantConnection.getUrl());
+            final ProjectConnection projectConnection = new ProjectConnection(project,
+                                                                              microserviceName,
+                                                                              pTenantConnection.getUserName(),
+                                                                              pTenantConnection.getPassword(),
+                                                                              pTenantConnection.getDriverClassName(),
+                                                                              pTenantConnection.getUrl());
 
-            projectConnectionService.createProjectConnection(projectConnection, true);
-            // Automatically enable internal connection
-            projectConnectionService.enableProjectConnection(microserviceName, project.getName());
+            projectConnectionService.createStaticProjectConnection(projectConnection);
         } catch (final ModuleException e) {
             LOG.error("Error adding new tenant. Cause : {}", e.getMessage());
             LOG.debug(e.getMessage(), e);
@@ -122,20 +117,13 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
     }
 
     @Override
-    public void enableTenantConnection(String pMicroserviceName, String pTenant) throws JpaMultitenantException {
+    public void updateState(String microservice, String tenant, TenantConnectionState state,
+            Optional<String> errorCause) throws JpaMultitenantException {
         try {
-            projectConnectionService.enableProjectConnection(pMicroserviceName, pTenant);
+            projectConnectionService.updateState(microservice, tenant, state, errorCause);
         } catch (EntityNotFoundException e) {
             throw new JpaMultitenantException(e);
         }
-    }
 
-    @Override
-    public void disableTenantConnection(String pMicroserviceName, String pTenant) throws JpaMultitenantException {
-        try {
-            projectConnectionService.disableProjectConnection(pMicroserviceName, pTenant);
-        } catch (EntityNotFoundException e) {
-            throw new JpaMultitenantException(e);
-        }
     }
 }

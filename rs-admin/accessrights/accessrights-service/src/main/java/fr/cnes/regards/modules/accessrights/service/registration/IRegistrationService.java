@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.accessrights.service.registration;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 
@@ -36,9 +35,7 @@ public interface IRegistrationService { //NOSONAR
      * Creates a new account if needed and creates a new project user.
      *
      * @param pDto
-     *            The DTO containing all information to create the new {@link Account} and {@link ProjectUser}
-     * @param pValidationUrl
-     *            The validation url for the account confirmation email
+     *            The DTO containing all information to create the new account and {@link ProjectUser}
      * @throws EntityException
      *             <br>
      *             {@link EntityAlreadyExistsException} Thrown when an account with same <code>email</code> already

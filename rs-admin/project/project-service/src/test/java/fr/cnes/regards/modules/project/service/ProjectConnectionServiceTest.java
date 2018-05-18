@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,11 +18,20 @@
  */
 package fr.cnes.regards.modules.project.service;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
-import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
@@ -31,13 +40,6 @@ import fr.cnes.regards.modules.project.dao.stub.ProjectConnectionRepositoryStub;
 import fr.cnes.regards.modules.project.dao.stub.ProjectRepositoryStub;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 /**
  *
@@ -101,10 +103,9 @@ public class ProjectConnectionServiceTest {
      */
     private static final String COMMON_PROJECT_DRIVER = "driver";
 
-    /**
-     * Common string value for project creation.
-     */
-    private static final String COMMON_PROJECT_URL = "url";
+    private static final String PROJECT1_URL = "url1";
+
+    private static final String PROJECT2_URL = "url2";
 
     /**
      * Project service to test.
@@ -130,57 +131,59 @@ public class ProjectConnectionServiceTest {
     @Before
     public void init() {
         // use a stub repository, to be able to only test the service
-        final IProjectRepository projectRepoStub = new ProjectRepositoryStub();
-        projectService = new ProjectService(projectRepoStub, new MultitenantDaoProperties(),
-                Mockito.mock(IInstancePublisher.class));
+        IProjectRepository projectRepoStub = new ProjectRepositoryStub();
+        projectService = new ProjectService(projectRepoStub, Mockito.mock(ITenantResolver.class),
+                Mockito.mock(IInstancePublisher.class), "default-project-test");
 
         projectConnectionRepoStub = new ProjectConnectionRepositoryStub();
         projectConnectionService = new ProjectConnectionService(projectRepoStub, projectConnectionRepoStub,
                 Mockito.mock(IInstancePublisher.class));
 
-        final Project project1 = projectRepoStub
+        Project project1 = projectRepoStub
                 .save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));
-        final Project project2 = projectRepoStub
+        Project project2 = projectRepoStub
                 .save(new Project(1L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_2));
 
         projectConnectionRepoStub.save(new ProjectConnection(0L, project1, MS_TEST_1, COMMON_PROJECT_USER_NAME,
-                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL));
+                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL));
         projectConnectionRepoStub.save(new ProjectConnection(1L, project2, MS_TEST_2, COMMON_PROJECT_USER_NAME,
-                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL));
+                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT2_URL));
     }
 
     /**
      *
      * Test creation of a new database connection for a given project and a given microservice
+     * @throws ModuleException if error occurs!
      *
      * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test creation of a new database connection for a given project and a given microservice.")
     @Test
-    public void createProjectConnection() {
+    public void createProjectConnection() throws ModuleException {
 
-        Project project = null;
-        try {
-            project = projectService.retrieveProject(PROJECT_TEST_1);
-        } catch (final ModuleException e) {
-            Assert.fail(e.getMessage());
-        }
-        final ProjectConnection connection = new ProjectConnection(600L, project, "microservice-test",
-                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL);
+        Project project1 = projectService.retrieveProject(PROJECT_TEST_1);
+
+        // Test database parameter conflict detection : project 1 connection = project 2 connection
+        ProjectConnection connection = new ProjectConnection(600L, project1, "microservice-test",
+                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT2_URL);
         try {
             projectConnectionService.createProjectConnection(connection, true);
-        } catch (final ModuleException e) {
-            Assert.fail(e.getMessage());
+            Assert.fail("Conflicting connection should not be created");
+        } catch (EntityInvalidException e) {
+            // Nothing to do
         }
+
+        // Test database parameter conflict detection : project 1 connection on MS_TEST_1 = project 1 connection on
+        // microservice-test
+        connection.setUrl(PROJECT1_URL);
+        projectConnectionService.createProjectConnection(connection, true);
 
         try {
             projectConnectionService.createProjectConnection(connection, true);
             Assert.fail("Impossible to add two project connection for same project and microservice");
         } catch (final EntityAlreadyExistsException e) {
             // Noting to do
-        } catch (final ModuleException e) {
-            Assert.fail(e.getMessage());
         }
     }
 
@@ -246,18 +249,18 @@ public class ProjectConnectionServiceTest {
         try {
             connection = projectConnectionService.updateProjectConnection(connection.getId(), connection);
             Assert.assertTrue("Error updating project connection.", connection.getUserName().equals(updateUserName));
-        } catch (final EntityNotFoundException e1) {
+        } catch (ModuleException e1) {
             Assert.fail(e1.getMessage());
         }
 
         // Updating with an non existing project
         connection = new ProjectConnection(0L,
                 new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_3), MS_TEST_1,
-                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL);
+                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL);
         try {
             connection = projectConnectionService.updateProjectConnection(0L, connection);
             Assert.fail(errorUpdate);
-        } catch (final EntityNotFoundException e) {
+        } catch (ModuleException e) {
             // Nothing to do
         }
 
@@ -265,11 +268,11 @@ public class ProjectConnectionServiceTest {
         final long id = 56L;
         connection = new ProjectConnection(id,
                 new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_3), MS_TEST_1,
-                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL);
+                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL);
         try {
             connection = projectConnectionService.updateProjectConnection(id, connection);
             Assert.fail(errorUpdate);
-        } catch (final EntityNotFoundException e) {
+        } catch (ModuleException e) {
             // Nothing to do
         }
     }

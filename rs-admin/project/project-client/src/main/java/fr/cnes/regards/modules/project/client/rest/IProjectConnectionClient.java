@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @author sbinda
  * @since 1.0-SNAPSHOT
  */
-@RestClient(name = "rs-admin")
+@RestClient(name = "rs-admin-instance")
 @RequestMapping(value = "/projects/{projectName}/connections", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IProjectConnectionClient {
 

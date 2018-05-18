@@ -31,13 +31,14 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>emails</artifactId>
-		<version>1.1.0</version>
+		<version>2.0.0-RELEASE</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>feign-regards-starter</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<!-- Microservice internal dependencies -->
 		<dependency>

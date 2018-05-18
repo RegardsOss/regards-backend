@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -38,6 +38,11 @@ public interface INotificationSettingsService {
      *             thrown when no current user could be found
      */
     NotificationSettings retrieveNotificationSettings() throws EntityNotFoundException;
+
+    /**
+     * Retrieve {@link NotificationSettings} for the given user if any. Create it otherwise.
+     */
+    NotificationSettings retrieveNotificationSettings(String userEmail);
 
     /**
      * Define the endpoint for updating the {@link Notification#status}

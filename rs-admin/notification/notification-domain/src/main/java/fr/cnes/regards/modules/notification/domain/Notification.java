@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,37 +18,36 @@
  */
 package fr.cnes.regards.modules.notification.domain;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
+import java.util.Set;
 
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
  * Models a notification.<br>
- *
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  */
-@Entity(name = "t_notification")
+@Entity
+@Table(name = "t_notification")
 @SequenceGenerator(name = "notificationSequence", initialValue = 1, sequenceName = "seq_notification")
 public class Notification implements IIdentifiable<Long> {
 
@@ -75,33 +74,28 @@ public class Notification implements IIdentifiable<Long> {
     private String message;
 
     /**
-     * The {@link ProjectUser} recipients
+     * The project user recipients represented by their email
      */
     @NotNull
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "ta_notification_projectuser",
-            joinColumns = @JoinColumn(name = "notification_id", referencedColumnName = "id",
-                    foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_projectuser")),
-            inverseJoinColumns = @JoinColumn(name = "projectuser_id", referencedColumnName = "id",
-                    foreignKey = @javax.persistence.ForeignKey(name = "fk_projectuser_notification")))
-    private List<ProjectUser> projectUserRecipients;
+    @ElementCollection
+    @CollectionTable(name = "ta_notification_projectuser_email", joinColumns = @JoinColumn(name = "notification_id"),
+            foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_projectuser_email_notification_id"))
+    @Column(name = "projectuser_email", length = 200)
+    private Set<String> projectUserRecipients;
 
     /**
-     * The {@link Role} recipients
+     * The role recipients represented by their name
      */
     @NotNull
-    @Valid
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "ta_notification_role",
-            joinColumns = @JoinColumn(name = "notification_id", referencedColumnName = "id",
-                    foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_role")),
-            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id",
-                    foreignKey = @javax.persistence.ForeignKey(name = "fk_role_notification")))
-    private List<Role> roleRecipients;
+    @ElementCollection
+    @CollectionTable(name = "ta_notification_role_name", joinColumns = @JoinColumn(name = "notification_id"),
+            foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_role_name_notification_id"))
+    @Column(name = "role_name", length = 200)
+    private Set<String> roleRecipients;
 
     /**
      * The notification sender<br>
-     * {@link ProjectUser} <code>login</code> or microservice name as a permissive String
+     * project user <code>email</code> or microservice name as a permissive String
      */
     @NotBlank
     @Column(name = "sender")
@@ -111,8 +105,17 @@ public class Notification implements IIdentifiable<Long> {
      * The status read or unread
      */
     @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private NotificationStatus status;
+
+    /**
+     * The notification type
+     */
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private NotificationType type;
 
     /**
      * The title
@@ -127,9 +130,23 @@ public class Notification implements IIdentifiable<Long> {
         return date;
     }
 
+    /**
+     * @param pDate the date to set
+     */
+    public void setDate(final OffsetDateTime pDate) {
+        date = pDate;
+    }
+
     @Override
     public Long getId() {
         return id;
+    }
+
+    /**
+     * @param pId the id to set
+     */
+    public void setId(final Long pId) {
+        id = pId;
     }
 
     /**
@@ -140,17 +157,38 @@ public class Notification implements IIdentifiable<Long> {
     }
 
     /**
+     * @param pMessage the message to set
+     */
+    public void setMessage(final String pMessage) {
+        message = pMessage;
+    }
+
+    /**
      * @return the projectUserRecipients
      */
-    public List<ProjectUser> getProjectUserRecipients() {
+    public Set<String> getProjectUserRecipients() {
         return projectUserRecipients;
+    }
+
+    /**
+     * @param pProjectUserRecipients the projectUserRecipients to set
+     */
+    public void setProjectUserRecipients(final Set<String> pProjectUserRecipients) {
+        projectUserRecipients = pProjectUserRecipients;
     }
 
     /**
      * @return the roleRecipients
      */
-    public List<Role> getRoleRecipients() {
+    public Set<String> getRoleRecipients() {
         return roleRecipients;
+    }
+
+    /**
+     * @param pRoleRecipients the roleRecipients to set
+     */
+    public void setRoleRecipients(final Set<String> pRoleRecipients) {
+        roleRecipients = pRoleRecipients;
     }
 
     /**
@@ -161,10 +199,24 @@ public class Notification implements IIdentifiable<Long> {
     }
 
     /**
+     * @param pSender the sender to set
+     */
+    public void setSender(final String pSender) {
+        sender = pSender;
+    }
+
+    /**
      * @return the status
      */
     public NotificationStatus getStatus() {
         return status;
+    }
+
+    /**
+     * @param pStatus the status to set
+     */
+    public void setStatus(final NotificationStatus pStatus) {
+        status = pStatus;
     }
 
     /**
@@ -175,67 +227,23 @@ public class Notification implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pDate
-     *            the date to set
-     */
-    public void setDate(final OffsetDateTime pDate) {
-        date = pDate;
-    }
-
-    /**
-     * @param pId
-     *            the id to set
-     */
-    public void setId(final Long pId) {
-        id = pId;
-    }
-
-    /**
-     * @param pMessage
-     *            the message to set
-     */
-    public void setMessage(final String pMessage) {
-        message = pMessage;
-    }
-
-    /**
-     * @param pProjectUserRecipients
-     *            the projectUserRecipients to set
-     */
-    public void setProjectUserRecipients(final List<ProjectUser> pProjectUserRecipients) {
-        projectUserRecipients = pProjectUserRecipients;
-    }
-
-    /**
-     * @param pRoleRecipients
-     *            the roleRecipients to set
-     */
-    public void setRoleRecipients(final List<Role> pRoleRecipients) {
-        roleRecipients = pRoleRecipients;
-    }
-
-    /**
-     * @param pSender
-     *            the sender to set
-     */
-    public void setSender(final String pSender) {
-        sender = pSender;
-    }
-
-    /**
-     * @param pStatus
-     *            the status to set
-     */
-    public void setStatus(final NotificationStatus pStatus) {
-        status = pStatus;
-    }
-
-    /**
-     * @param pTitle
-     *            the title to set
+     * @param pTitle the title to set
      */
     public void setTitle(final String pTitle) {
         title = pTitle;
     }
 
+    /**
+     * @return the notification type
+     */
+    public NotificationType getType() {
+        return type;
+    }
+
+    /**
+     * Set the notification type
+     */
+    public void setType(NotificationType type) {
+        this.type = type;
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -25,6 +25,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.BeforeTransaction;
@@ -34,6 +36,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecification;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
@@ -95,6 +99,34 @@ public class ProjectUserDaoTest {
         // Check the value was updated
         Assert.assertNotEquals(saved.getLastUpdate(), initial);
         Assert.assertTrue(saved.getLastUpdate().isAfter(initial));
+    }
+
+    @Test
+    public void testStartsWithSpec() {
+        Assert.assertEquals("repository should be empty", 0, projectUserRepository.findAll().size());
+        RoleFactory factory = new RoleFactory();
+        Role role = roleRepository.save(factory.createPublic());
+        ProjectUser user = new ProjectUser("user@test.com", role, new ArrayList<>(), new ArrayList<>());
+        ProjectUser user2 = new ProjectUser("user2@test.com", role, new ArrayList<>(), new ArrayList<>());
+        ProjectUser user3 = new ProjectUser("user3@test.com", role, new ArrayList<>(), new ArrayList<>());
+        ProjectUser user4 = new ProjectUser("user4@test.com", role, new ArrayList<>(), new ArrayList<>());
+
+        projectUserRepository.save(user);
+        projectUserRepository.save(user2);
+        projectUserRepository.save(user3);
+        projectUserRepository.save(user4);
+
+        Page<ProjectUser> result = projectUserRepository.findAll(ProjectUserSpecification.search(null, "user"), new PageRequest(0, 4));
+        Assert.assertEquals("search of users which email starts with \"user\" should return 4 user", 4, result.getContent().size());
+
+        result = projectUserRepository.findAll(ProjectUserSpecification.search(null, "user4"), new PageRequest(0, 4));
+        Assert.assertEquals("search of users which email starts with \"user4\" should return 1 user", 1, result.getContent().size());
+
+        result = projectUserRepository.findAll(ProjectUserSpecification.search(null, null), new PageRequest(0, 4));
+        Assert.assertEquals("search of users which email starts with NOTHING should return ALL user", projectUserRepository.findAll().size(), result.getContent().size());
+
+        result = projectUserRepository.findAll(ProjectUserSpecification.search(UserStatus.WAITING_ACCOUNT_ACTIVE.toString(), null), new PageRequest(0, 4));
+        Assert.assertEquals("search of users which email starts with NOTHING should return ALL user", projectUserRepository.findAll().size(), result.getContent().size());
     }
 
 }

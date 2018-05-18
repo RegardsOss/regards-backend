@@ -1,0 +1,1 @@
+alter table t_resources_access ALTER COLUMN controller_name TYPE varchar(256);

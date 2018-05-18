@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.emails.service;
 
 import java.util.List;
 
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.SimpleMailMessage;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -27,61 +28,53 @@ import fr.cnes.regards.modules.emails.domain.Email;
 
 /**
  * Strategy interface to handle CRUD operations on EmailDTO entities and mailing tasks
- *
  * @author Xavier-Alexandre Brochard
  */
 public interface IEmailService {
 
     /**
-     * Retrieves the list of emails
-     *
+     * Retrieve the list of emails
      * @return A {@code List} of {@code Email}s
      */
     List<Email> retrieveEmails();
 
     /**
-     * Sends the passed email to the passed recipients and save a representation in DB.
-     *
-     * @param pEmail
-     *            The ready-to-send email. Must not be <code>null</code>.
+     * Send given email to given recipients and save a representation in DB.
+     * @param pEmail The ready-to-send email. Must not be <code>null</code>.
      * @return The sent email
      */
-    SimpleMailMessage sendEmail(SimpleMailMessage pEmail);
+    Email sendEmail(SimpleMailMessage pEmail);
 
     /**
-     * Retrieves the email of passed id
-     *
-     * @param pId
-     *            The email id
+     * Send given email with given attachment and save a representation in DataBase.
+     * <b>Attachment is zipped</b>
+     */
+    Email sendEmail(SimpleMailMessage email, String attName, InputStreamSource attSource);
+
+    /**
+     * Retrieve email
+     * @param id The email id
      * @return The email as {@link Email}
      */
-    Email retrieveEmail(Long pId) throws ModuleException;
+    Email retrieveEmail(Long id) throws ModuleException;
 
     /**
-     * Re-sends the email of passed id
-     *
-     * @param pId
-     *            The email id
-     * @return
+     * Re-send email
+     * @param id The email id
      */
-    void resendEmail(Long pId) throws ModuleException;
+    void resendEmail(Long id) throws ModuleException;
 
     /**
-     * Deletes the email of passed id
-     *
-     * @param pId
-     *            The email id
-     * @return
+     * Delete email
+     * @param id The email id
      */
-    void deleteEmail(Long pId);
+    void deleteEmail(Long id);
 
     /**
-     * Checks if an email of passed id exists
-     *
-     * @param pId
-     *            The email id
+     * Check if an email exist
+     * @param id The email id
      * @return <code>true</code> if exists, else <code>false</code>
      */
-    boolean exists(Long pId);
+    boolean exists(Long id);
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -59,7 +59,7 @@ public class AccessSettingsService implements IAccessSettingsService {
      * @see fr.cnes.regards.modules.accessrights.service.role.IAccessSettingsService#retrieve()
      */
     @Override
-    public AccessSettings retrieve() throws EntityNotFoundException {
+    public AccessSettings retrieve() {
         final List<AccessSettings> list = accessSettingsRepository.findAll();
         AccessSettings result;
         if (list.isEmpty()) {

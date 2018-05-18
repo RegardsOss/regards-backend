@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,22 +20,20 @@ package fr.cnes.regards.modules.notification.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 /**
- * Wraps the different project projectUser's settings available for notifications configuration.
+ * Wraps the different project projectUserEmail's settings available for notifications configuration.
  *
  * @author Xavier-Alexandre Brochard
  */
@@ -46,7 +44,7 @@ public class NotificationSettings implements IIdentifiable<Long> {
     /**
      * Self expl
      */
-    private static final long HOURS_IN_A_DAY = 24L;
+    private static final int HOURS_IN_A_DAY = 24;
 
     /**
      * The days frequency of notification<br>
@@ -59,6 +57,7 @@ public class NotificationSettings implements IIdentifiable<Long> {
     /**
      * The frequency of the notification
      */
+    @Enumerated(EnumType.STRING)
     @Column(name = "frequency")
     private NotificationFrequency frequency;
 
@@ -80,12 +79,11 @@ public class NotificationSettings implements IIdentifiable<Long> {
     private Long id;
 
     /**
-     * The settings are specific to a {@link ProjectUser}
+     * The settings are specific to a project user represented by its email
      */
     @NotNull
-    @OneToOne
-    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_notification_settings_user"))
-    private ProjectUser projectUser;
+    @Column(name = "user_email")
+    private String projectUserEmail;
 
     /**
      * @return the days
@@ -119,10 +117,10 @@ public class NotificationSettings implements IIdentifiable<Long> {
     }
 
     /**
-     * @return the projectUser
+     * @return the projectUserEmail
      */
-    public ProjectUser getProjectUser() {
-        return projectUser;
+    public String getProjectUserEmail() {
+        return projectUserEmail;
     }
 
     /**
@@ -159,9 +157,9 @@ public class NotificationSettings implements IIdentifiable<Long> {
 
     /**
      * @param pUser
-     *            the projectUser to set
+     *            the projectUserEmail to set
      */
-    public void setProjectUser(final ProjectUser pUser) {
-        projectUser = pUser;
+    public void setProjectUserEmail(final String pUser) {
+        projectUserEmail = pUser;
     }
 }

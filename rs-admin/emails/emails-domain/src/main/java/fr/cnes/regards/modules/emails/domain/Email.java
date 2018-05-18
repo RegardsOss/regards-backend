@@ -1,53 +1,37 @@
 package fr.cnes.regards.modules.emails.domain;
 
-import java.time.LocalDateTime;
-
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
+import java.time.LocalDateTime;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.util.ObjectUtils;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.converters.StringArrayConverter;
 
 /**
  * Models a simple mail message, including data such as the from, to, cc, subject, and text fields.
  * <p>
  * This is a just a simplified representation of SimpleMailMessage for data base storage.
- *
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
- *
  */
 @Entity(name = "t_email")
 @SequenceGenerator(name = "emailSequence", initialValue = 1, sequenceName = "seq_email")
 public class Email implements IIdentifiable<Long> {
+    private static final int MAX_EMAIL_ADDRESS_SIZE = 320;
 
-    /**
-     * Array of bcc recipients' email address
-     */
-    @Column(name = "bcc")
-    private String[] bcc;
+    private static final int MAX_SUBJECT_SIZE = 78;
 
-    /**
-     * Array of cc recipients' email address
-     */
-    @Column(name = "cc")
-    private String[] cc;
-
-    /**
-     * Sender's email address<br>
-     * "_" prefix is required because "from" is a reserved keyword in SQL
-     */
-    @org.hibernate.validator.constraints.Email
-    @Column(name = "_from")
-    private String from;
-
+    // completely arbitrary but @Type("text") cannot be used conjointly with @Convert
+    private static final int MAX_ARRAY_STRING_SIZE = 1000;
     /**
      * Id of the email
      */
@@ -56,22 +40,45 @@ public class Email implements IIdentifiable<Long> {
     @Column(name = "id")
     private Long id;
 
+
+    /**
+     * Array of bcc recipients' email address
+     */
+    @Column(name = "bcc_addrs", length = MAX_ARRAY_STRING_SIZE)
+    @Convert(converter = StringArrayConverter.class)
+    private String[] bcc;
+
+    /**
+     * Array of cc recipients' email address
+     */
+    @Column(name = "cc_addrs", length = MAX_ARRAY_STRING_SIZE)
+    @Convert(converter = StringArrayConverter.class)
+    private String[] cc;
+
+    /**
+     * Sender's email address<br>
+     * "_" prefix is required because "from" is a reserved keyword in SQL
+     */
+    @org.hibernate.validator.constraints.Email
+    @Column(name = "from_addr", length = MAX_EMAIL_ADDRESS_SIZE)
+    private String from;
+
     /**
      * Email address of the replyTo recipient
      */
-    @Column(name = "replyTo")
+    @Column(name = "reply_to_addr", length = MAX_EMAIL_ADDRESS_SIZE)
     private String replyTo;
 
     /**
      * Date when the email was sent
      */
-    @Column(name = "sentDate")
+    @Column(name = "sent_date")
     private LocalDateTime sentDate;
 
     /**
      * Subject of the email
      */
-    @Column(name = "subject")
+    @Column(name = "subject", length = MAX_SUBJECT_SIZE)
     private String subject;
 
     /**
@@ -81,12 +88,17 @@ public class Email implements IIdentifiable<Long> {
     @Type(type = "text")
     private String text;
 
-    /**
-     * Array of recipients' email address "_" prefix is required because "to" is a reserved keyword in SQL
-     */
     @NotEmpty
-    @Column(name = "_to")
+    @Column(name = "to_addrs", length = MAX_ARRAY_STRING_SIZE)
+    @Convert(converter = StringArrayConverter.class)
     private String[] to;
+
+    @Column(name = "att_name", length = 100) // reasonable size for a filename
+    private String attName;
+
+//    @Lob
+    @Column(name = "attachment")
+    private byte[] attachment;
 
     /**
      * Create a new {@code Email}.
@@ -97,7 +109,6 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Get <code>bcc</code>
-     *
      * @return The array of bcc recipients' email address
      */
     public String[] getBcc() {
@@ -106,7 +117,6 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Get <code>cc</code>
-     *
      * @return The array of cc recipients' email address
      */
     public String[] getCc() {
@@ -115,7 +125,6 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Get <code>from</code>
-     *
      * @return The sender's email address
      */
     public String getFrom() {
@@ -129,7 +138,6 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Get <code>replyTo</code>
-     *
      * @return The email address of the replyTo recipient
      */
     public String getReplyTo() {
@@ -138,7 +146,6 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Get <code>sentDate</code>
-     *
      * @return The date when the email was sent
      */
     public LocalDateTime getSentDate() {
@@ -147,7 +154,6 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Get <code>subject</code>
-     *
      * @return The email's subject
      */
     public String getSubject() {
@@ -156,7 +162,6 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Get <code>text</code>
-     *
      * @return The email's body
      */
     public String getText() {
@@ -165,7 +170,6 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Get <code>to</code>
-     *
      * @return The array of recipients' email address
      */
     public String[] getTo() {
@@ -174,9 +178,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>bcc</code>
-     *
-     * @param pBcc
-     *            The array of bcc recipients' email address
+     * @param pBcc The array of bcc recipients' email address
      */
     public void setBcc(final String[] pBcc) {
         bcc = pBcc;
@@ -184,9 +186,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>cc</code>
-     *
-     * @param pCc
-     *            The array of cc recipients' email address
+     * @param pCc The array of cc recipients' email address
      */
     public void setCc(final String[] pCc) {
         cc = pCc;
@@ -194,9 +194,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>from</code>
-     *
-     * @param pFrom
-     *            The sender's email address
+     * @param pFrom The sender's email address
      */
     public void setFrom(final String pFrom) {
         from = pFrom;
@@ -204,9 +202,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>id</code>
-     *
-     * @param pId
-     *            The email id
+     * @param pId The email id
      */
     public void setId(final Long pId) {
         id = pId;
@@ -214,9 +210,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>replyTo</code>
-     *
-     * @param pReplyTo
-     *            The email address of the replyTo recipient
+     * @param pReplyTo The email address of the replyTo recipient
      */
     public void setReplyTo(final String pReplyTo) {
         replyTo = pReplyTo;
@@ -224,9 +218,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>sentDate</code>
-     *
-     * @param pSentDate
-     *            The date when the email was sent
+     * @param pSentDate The date when the email was sent
      */
     public void setSentDate(final LocalDateTime pSentDate) {
         sentDate = pSentDate;
@@ -234,9 +226,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>subject</code>
-     *
-     * @param pSubject
-     *            The email's subject
+     * @param pSubject The email's subject
      */
     public void setSubject(final String pSubject) {
         subject = pSubject;
@@ -244,9 +234,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>text</code>
-     *
-     * @param pText
-     *            The email's body
+     * @param pText The email's body
      */
     public void setText(final String pText) {
         text = pText;
@@ -254,12 +242,26 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>to</code>
-     *
-     * @param pTo
-     *            The array of recipients' email address
+     * @param pTo The array of recipients' email address
      */
     public void setTo(final String[] pTo) {
         to = pTo;
+    }
+
+    public String getAttName() {
+        return attName;
+    }
+
+    public void setAttName(String attName) {
+        this.attName = attName;
+    }
+
+    public byte[] getAttachment() {
+        return attachment;
+    }
+
+    public void setAttachment(byte[] attachment) {
+        this.attachment = attachment;
     }
 
     @Override
@@ -271,14 +273,12 @@ public class Email implements IIdentifiable<Long> {
             return false;
         }
         final Email otherMessage = (Email) pOther;
-        return (ObjectUtils.nullSafeEquals(this.from, otherMessage.from)
-                && ObjectUtils.nullSafeEquals(this.replyTo, otherMessage.replyTo)
-                && java.util.Arrays.equals(this.to, otherMessage.to)
-                && java.util.Arrays.equals(this.cc, otherMessage.cc)
-                && java.util.Arrays.equals(this.bcc, otherMessage.bcc)
-                && ObjectUtils.nullSafeEquals(this.sentDate, otherMessage.sentDate)
-                && ObjectUtils.nullSafeEquals(this.subject, otherMessage.subject)
-                && ObjectUtils.nullSafeEquals(this.text, otherMessage.text));
+        return (ObjectUtils.nullSafeEquals(this.from, otherMessage.from) && ObjectUtils
+                .nullSafeEquals(this.replyTo, otherMessage.replyTo) && java.util.Arrays.equals(this.to, otherMessage.to)
+                && java.util.Arrays.equals(this.cc, otherMessage.cc) && java.util.Arrays
+                .equals(this.bcc, otherMessage.bcc) && ObjectUtils.nullSafeEquals(this.sentDate, otherMessage.sentDate)
+                && ObjectUtils.nullSafeEquals(this.subject, otherMessage.subject) && ObjectUtils
+                .nullSafeEquals(this.text, otherMessage.text));
     }
 
     @Override
@@ -297,21 +297,15 @@ public class Email implements IIdentifiable<Long> {
         }
         for (int i = 0; (this.to != null) && (i < this.to.length); i++) {
             hashCode = multiplier * hashCode;
-            if (this.to != null) {
-                hashCode += this.to[i].hashCode();
-            }
+            hashCode += this.to[i].hashCode();
         }
         for (int i = 0; (this.cc != null) && (i < this.cc.length); i++) {
             hashCode = multiplier * hashCode;
-            if (this.cc != null) {
-                hashCode += this.cc[i].hashCode();
-            }
+            hashCode += this.cc[i].hashCode();
         }
         for (int i = 0; (this.bcc != null) && (i < this.bcc.length); i++) {
             hashCode = multiplier * hashCode;
-            if (this.bcc != null) {
-                hashCode += this.bcc[i].hashCode();
-            }
+            hashCode += this.bcc[i].hashCode();
         }
         hashCode = multiplier * hashCode;
         if (this.sentDate != null) {

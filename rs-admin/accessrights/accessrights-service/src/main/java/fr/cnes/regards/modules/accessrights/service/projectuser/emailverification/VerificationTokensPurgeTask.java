@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.modules.accessrights.dao.registration.IVerificationTokenRepository;
 
 /**
@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.accessrights.dao.registration.IVerificationTokenR
  * @author Christophe Mertz
  */
 @Service
-@InstanceTransactional
+@RegardsTransactional
 public class VerificationTokensPurgeTask {
 
     /**

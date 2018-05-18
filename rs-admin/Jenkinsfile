@@ -9,11 +9,20 @@
  * Contains the definition of a Jenkins Pipeline, is checked into source control
  * and is expected to be the reference.
  * To fully support multibranch builds without issues, we are using docker-compose to setup cots for each build.
- *
+ * admin <- microservice
  * @author Sylvain VISSIERE-GUERINET
  * @author Marc SORDI
  * @see https://jenkins.io/doc/book/pipeline/jenkinsfile/
  */
 @Library('regards/standardPipeline') _
-standardPipeline {
-}
+
+properties([
+  pipelineTriggers([
+    upstream(
+      threshold: hudson.model.Result.SUCCESS,
+      upstreamProjects: 'rs-microservice-multi-branch/release%2FV2.0.0'
+    )
+  ])
+])
+
+standardPipeline {}

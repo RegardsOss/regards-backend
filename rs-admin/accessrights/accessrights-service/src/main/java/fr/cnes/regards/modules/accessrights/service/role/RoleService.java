@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -31,8 +31,6 @@ import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.listener.exception.ListenerExecutionFailedException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -42,13 +40,8 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.amqp.IInstancePublisher;
-import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionFailed;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -58,11 +51,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.event.ResourceAccessEvent;
-import fr.cnes.regards.framework.security.event.ResourceAccessInit;
 import fr.cnes.regards.framework.security.event.RoleEvent;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -94,11 +85,6 @@ public class RoleService implements IRoleService {
     private static final String NATIVE_ROLE_NOT_REMOVABLE = "Modifications on native roles are forbidden";
 
     /**
-     * Current microservice name
-     */
-    private final String microserviceName;
-
-    /**
      * CRUD repository managing {@link Role}s. Autowired by Spring.
      */
     private final IRoleRepository roleRepository;
@@ -119,46 +105,25 @@ public class RoleService implements IRoleService {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     * AMQP instance message subscriber
-     */
-    private final IInstanceSubscriber instanceSubscriber;
-
-    /**
-     * AMQP instance message publisher
-     */
-    private final IInstancePublisher instancePublisher;
-
-    /**
      * AMQP tenant publisher
      */
     private final IPublisher publisher;
 
     /**
-     * Constructor
-     *
-     * @param pMicroserviceName
-     * @param pRoleRepository
-     * @param pProjectUserRepository
-     * @param pTenantResolver
-     * @param pRuntimeTenantResolver
-     * @param pInstanceSubscriber
-     * @param instancePublisher
-     * @param pPublisher
+     * Authentication resolver
      */
-    public RoleService(@Value("${spring.application.name}") final String pMicroserviceName,
-            final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository,
+    private final IAuthenticationResolver authResolver;
+
+    public RoleService(final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository,
             final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
-            final IInstanceSubscriber pInstanceSubscriber, final IInstancePublisher instancePublisher,
-            final IPublisher pPublisher) {
+            final IPublisher pPublisher, final IAuthenticationResolver authResolver) {
         super();
         roleRepository = pRoleRepository;
         projectUserRepository = pProjectUserRepository;
         tenantResolver = pTenantResolver;
         runtimeTenantResolver = pRuntimeTenantResolver;
-        microserviceName = pMicroserviceName;
-        instanceSubscriber = pInstanceSubscriber;
-        this.instancePublisher = instancePublisher;
         publisher = pPublisher;
+        this.authResolver = authResolver;
     }
 
     /**
@@ -168,40 +133,12 @@ public class RoleService implements IRoleService {
     public void init() {
         // Ensure the existence of default roles.
         for (final String tenant : tenantResolver.getAllActiveTenants()) {
-            initDefaultRoles(tenant);
-        }
-        instanceSubscriber.subscribeTo(TenantConnectionReady.class, new TenantConnectionReadyEventHandler());
-    }
-
-    /**
-     * Handle a new tenant connection to initialize default roles
-     *
-     * @author Marc Sordi
-     *
-     */
-    private class TenantConnectionReadyEventHandler implements IHandler<TenantConnectionReady> {
-
-        /**
-         * Initialize default roles in the new project connection
-         *
-         * @see fr.cnes.regards.framework.amqp.domain.IHandler#handle(fr.cnes.regards.framework.amqp.domain.TenantWrapper)
-         * @since 1.0-SNAPSHOT
-         */
-        @Override
-        public void handle(final TenantWrapper<TenantConnectionReady> pWrapper) {
-            if (microserviceName.equals(pWrapper.getContent().getMicroserviceName())) {
-
-                // Retrieve new tenant to manage
-                final String tenant = pWrapper.getContent().getTenant();
-                try {
-                    // Init default role for this tenant
-                    initDefaultRoles(tenant);
-                    // Populate default roles with resources informing security starter to process
-                    publisher.publish(new ResourceAccessInit());
-                } catch (final ListenerExecutionFailedException e) {
-                    LOGGER.error("Cannot initialize connection  for tenant " + tenant, e);
-                    instancePublisher.publish(new TenantConnectionFailed(tenant, microserviceName));
-                }
+            // Set working tenant
+            try {
+                runtimeTenantResolver.forceTenant(tenant);
+                initDefaultRoles();
+            } finally {
+                runtimeTenantResolver.clearTenant();
             }
         }
     }
@@ -211,13 +148,10 @@ public class RoleService implements IRoleService {
      *
      * @param tenant tenant
      */
-    private void initDefaultRoles(final String tenant) {
-
+    @Override
+    public void initDefaultRoles() {
         // Init factory to create missing roles
         final RoleFactory roleFactory = new RoleFactory().doNotAutoCreateParents();
-
-        // Set working tenant
-        runtimeTenantResolver.forceTenant(tenant);
         // Manage public
         final Role publicRole = createOrLoadDefaultRole(roleFactory.createPublic(), null);
         // Manage registered user
@@ -328,6 +262,18 @@ public class RoleService implements IRoleService {
                 .orElseThrow(() -> new EntityNotFoundException(pRoleName, Role.class));
     }
 
+    /**
+     * Retrieve a role
+     */
+    @Override
+    public Role retrieveRole(final Long pRoleId) throws EntityNotFoundException {
+        final Role role = roleRepository.findOne(pRoleId);
+        if (role == null) {
+            throw new EntityNotFoundException(pRoleId, Role.class);
+        }
+        return role;
+    }
+
     @Override
     public Role updateRole(final String pRoleName, final Role pUpdatedRole) throws EntityException {
         if (!pRoleName.equals(pUpdatedRole.getName())) {
@@ -342,8 +288,9 @@ public class RoleService implements IRoleService {
         }
         Role updated = pUpdatedRole;
         if (!beforeUpdate.isNative() && !beforeUpdate.getParentRole().equals(pUpdatedRole.getParentRole())) {
-            //if this is a custom role and and the parent has changed: we set the resources of the custom role to the one of its new parent
-            //so lets get its parent with its permissions
+            // if this is a custom role and and the parent has changed: we set the resources of the custom role to the
+            // one of its new parent
+            // so lets get its parent with its permissions
             Role newParent = roleRepository.findOneById(pUpdatedRole.getParentRole().getId());
             updated = updateRoleResourcesAccess(beforeUpdate.getId(), newParent.getPermissions());
         }
@@ -384,8 +331,11 @@ public class RoleService implements IRoleService {
         if (!existRole(pRoleId)) {
             throw new EntityNotFoundException(pRoleId.toString(), Role.class);
         }
-        final Role role = roleRepository.findOneById(pRoleId);
-        return role.getPermissions();
+        Role role = roleRepository.findOneById(pRoleId);
+        LOGGER.debug("Retrieving resource accesses for role \"{}\"", role.getName());
+        Set<ResourcesAccess> accesses = role.getPermissions();
+        LOGGER.debug("{} resource accesses found for role \"{}\"", accesses.size(), role.getName());
+        return accesses;
     }
 
     @Override
@@ -429,7 +379,7 @@ public class RoleService implements IRoleService {
      */
     private void canManageRole(Role pRole) throws EntityOperationForbiddenException {
 
-        String securityRole = SecurityUtils.getActualRole();
+        String securityRole = authResolver.getRole();
 
         if (securityRole == null) {
             LOGGER.debug("No security role set. Internal call granted");
@@ -474,7 +424,7 @@ public class RoleService implements IRoleService {
      * @throws EntityOperationForbiddenException
      */
     private void canAddResourceAccesses(ResourcesAccess... pNewOnes) throws EntityOperationForbiddenException {
-        String securityRole = SecurityUtils.getActualRole();
+        String securityRole = authResolver.getRole();
 
         if (securityRole == null) {
             LOGGER.debug("No security role set. Internal call granted");
@@ -510,12 +460,12 @@ public class RoleService implements IRoleService {
     }
 
     /**
-    * Add a set of accesses to a role and its descendants(according to PM003)
-    *
-    * @param pRole role on which the modification has been made
-    * @param pNewOnes accesses to add
-    * @throws EntityOperationForbiddenException if error occurs!
-    */
+     * Add a set of accesses to a role and its descendants(according to PM003)
+     *
+     * @param pRole role on which the modification has been made
+     * @param pNewOnes accesses to add
+     * @throws EntityOperationForbiddenException if error occurs!
+     */
     private void addResourceAccesses(final Role pRole, final ResourcesAccess... pNewOnes)
             throws EntityOperationForbiddenException {
 
@@ -615,6 +565,19 @@ public class RoleService implements IRoleService {
     }
 
     @Override
+    public Page<ProjectUser> retrieveRoleProjectUserList(final String roleName, final Pageable pPageable)
+            throws EntityNotFoundException {
+        final Optional<Role> role = roleRepository.findOneByName(roleName);
+        if (!role.isPresent()) {
+            throw new EntityNotFoundException(roleName.toString(), Role.class);
+        }
+        final Set<Role> roles = retrieveInheritedRoles(role.get());
+        roles.add(role.get());
+        final Set<String> roleNames = roles.stream().map(r -> r.getName()).collect(Collectors.toSet());
+        return projectUserRepository.findByRoleNameIn(roleNames, pPageable);
+    }
+
+    @Override
     public boolean existRole(final Long pRoleId) {
         return roleRepository.exists(pRoleId);
     }
@@ -638,39 +601,45 @@ public class RoleService implements IRoleService {
      * Determines if first role is inferior to second role.
      * @param first role that should be inferior to second
      * @param second role that should not be inferior to first
-     * @return FALSE if: <br/><ul><li>second is null</li><li>first is project admin</li><li>first equals second</li><li>first has less privilege than second</li></ul>
+     * @return FALSE if: <br/>
+     *         <ul>
+     *         <li>second is null</li>
+     *         <li>first is project admin</li>
+     *         <li>first equals second</li>
+     *         <li>first has less privilege than second</li>
+     *         </ul>
      */
     @Override
     public boolean isHierarchicallyInferior(final Role first, final Role second) {
-        //we consider that null is hierarchically inferior to anyone
-        if(first==null) {
+        // we consider that null is hierarchically inferior to anyone
+        if (first == null) {
             return true;
         }
-        if(second==null) {
+        if (second == null) {
             return false;
         }
         // we treat project admin by hand as it doesn't really have a hierarchy
-        if(RoleAuthority.isProjectAdminRole(first.getName())) {
+        if (RoleAuthority.isProjectAdminRole(first.getName())) {
             return false;
         }
-        if(RoleAuthority.isProjectAdminRole(second.getName())) {
+        if (RoleAuthority.isProjectAdminRole(second.getName())) {
             return true;
         }
-        //case of myself: we are not strictly inferior to ourselves
-        if(Objects.equal(second, first)) {
+        // case of myself: we are not strictly inferior to ourselves
+        if (Objects.equal(second, first)) {
             return false;
         }
-        //now lets treat common cases
+        // now lets treat common cases
         final RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
         final List<Role> ancestors = roleLineageAssembler.of(second).get();
         try (Stream<Role> stream = ancestors.stream()) {
-            if(first.isNative()) {
-                //if the role is native, then it is into the lineage so we can look for it
-                String roleName=first.getName();
+            if (first.isNative()) {
+                // if the role is native, then it is into the lineage so we can look for it
+                String roleName = first.getName();
                 return stream.anyMatch(r -> r.getName().equals(roleName));
             } else {
                 // if the role is not a native one, then we need to look for its parent(which is native).
-                String parent=first.getParentRole().getName();
+                String parent = first.getParentRole().getName();
                 return stream.anyMatch(r -> r.getName().equals(parent));
             }
         }
@@ -698,18 +667,6 @@ public class RoleService implements IRoleService {
             }
         }
         return results;
-    }
-
-    /**
-     * Retrieve a role
-     */
-    @Override
-    public Role retrieveRole(final Long pRoleId) throws EntityNotFoundException {
-        final Role role = roleRepository.findOne(pRoleId);
-        if (role == null) {
-            throw new EntityNotFoundException(pRoleId, Role.class);
-        }
-        return role;
     }
 
     /**
@@ -812,7 +769,8 @@ public class RoleService implements IRoleService {
     }
 
     /**
-     * Found a consistent parent for the current role starting with {@link DefaultRole#ADMIN}, highest available inherited parent.
+     * Found a consistent parent for the current role starting with {@link DefaultRole#ADMIN}, highest available
+     * inherited parent.
      *
      * @param role role to consider
      * @throws EntityOperationForbiddenException if no parent role matches
@@ -835,15 +793,15 @@ public class RoleService implements IRoleService {
     private void manageParent(final Role role, final Role parentRole) throws EntityOperationForbiddenException {
 
         // role must not be null
-        Assert.notNull(role);
+        Assert.notNull(role, "Role cannot be null");
 
         // if parent role is null, even public role cannot be the parent of the role
         // throw exception
         // a role must have a parent and cannot have less accesses than public
         if (parentRole == null) {
-            final String message = String.format(
-                                                 "Role %s cannot have less accesses than public role. Accesses removal cancelled.",
-                                                 role.getName());
+            final String message = String
+                    .format("Role %s cannot have less accesses than public role. Accesses removal cancelled.",
+                            role.getName());
             LOGGER.error(message);
             throw new EntityOperationForbiddenException(message);
         }
@@ -868,7 +826,7 @@ public class RoleService implements IRoleService {
 
         final Set<Role> borrowablesRoles = new TreeSet<>(new RoleComparator(this));
 
-        final String email = SecurityUtils.getActualUser();
+        final String email = authResolver.getUser();
         final Optional<ProjectUser> optionnalUser = projectUserRepository.findOneByEmail(email);
         if (!optionnalUser.isPresent()) {
             return borrowablesRoles;
@@ -900,13 +858,26 @@ public class RoleService implements IRoleService {
         return borrowablesRoles;
     }
 
-    /**
-     * Retrieve ascendants(parent and uncles) and brotherhood of the given role
-     *
-     * @param pRole
-     * @return All ascendants of the given role
-     */
-    private Set<Role> getAscendants(final Role pRole) {
+    @Override
+    public Set<Role> getDescendants(final Role role) {
+        // Role entity hierarchy being inverted, parent of ADMIN is REGISTERED_USER
+        // so if we want the descendants of REGISTERED_USER, we need to seek for role which parent is REGISTERED_USER and so on.
+        Set<Role> children = roleRepository.findByParentRoleName(role.getName());
+        Set<Role> descendants = Sets.newHashSet(children);
+        for(Role child: children) {
+            descendants.addAll(getDescendants(child));
+        }
+        if (children.isEmpty()) {
+            // More over, PROJECT_ADMIN is the descendant of all role, but is not connected to them in a conventional way so lets add him.
+            descendants.add(roleRepository.findOneByName(DefaultRole.PROJECT_ADMIN.toString()).get());
+        }
+        // lets add the role for which we are looking its descendants too
+        descendants.add(role);
+        return descendants;
+    }
+
+    @Override
+    public Set<Role> getAscendants(final Role pRole) {
         final Set<Role> ascendants = Sets.newHashSet(pRole);
         // if pRole doesn't have parent then it's finished
         Role parent = pRole.getParentRole();

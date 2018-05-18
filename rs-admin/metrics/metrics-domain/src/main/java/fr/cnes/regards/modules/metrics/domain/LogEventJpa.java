@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -84,65 +84,79 @@ public class LogEventJpa extends LogEvent {
         this.id = pId;
     }
 
+    @Override
     @Column(nullable = false, updatable = false, length = MAX_STRING_LENGTH)
     public String getMsg() {
         return msg;
     }
 
+    @Override
     public void setMsg(String pMsg) {
         this.msg = pMsg;
     }
 
+    @Override
     @Column(nullable = false, updatable = false, length = SMALL_STRING_LENGTH)
-    public String getMicroService() {
+    public String getMicroservice() {
         return microservice;
     }
 
-    public void setMicroService(String pMicroService) {
+    @Override
+    public void setMicroservice(String pMicroService) {
         this.microservice = pMicroService;
     }
 
+    @Override
     @Column(nullable = false, updatable = false, length = MEDIUM_STRING_LENGTH)
     public String getCaller() {
         return caller;
     }
 
+    @Override
     public void setCaller(String pCaller) {
         this.caller = pCaller;
     }
 
+    @Override
     @Column(nullable = false, updatable = false, length = MEDIUM_STRING_LENGTH)
     public String getMethod() {
         return method;
     }
 
+    @Override
     public void setMethod(String pMethod) {
         this.method = pMethod;
     }
 
+    @Override
     @Column(nullable = false, updatable = false, length = SMALL_STRING_LENGTH)
     public String getDate() {
         return date;
     }
 
+    @Override
     public void setDate(String pDate) {
         this.date = pDate;
     }
 
+    @Override
     @Column(nullable = false, updatable = false, length = SMALL_STRING_LENGTH)
     public String getLevel() {
         return level;
     }
 
+    @Override
     public void setLevel(String pLevel) {
         this.level = pLevel;
     }
 
+    @Override
     @Column(nullable = false, updatable = false, length = MEDIUM_STRING_LENGTH)
     public String getUserName() {
         return userName;
     }
 
+    @Override
     public void setUserName(String pUsername) {
         this.userName = pUsername;
     }
@@ -178,11 +192,11 @@ public class LogEventJpa extends LogEvent {
         } else if (!getMethod().equals(other.getMsg())) {
             return false;
         }
-        if (getMicroService() == null) {
+        if (getMicroservice() == null) {
             if (other.getMicroservice() != null) {
                 return false;
             }
-        } else if (!getMicroService().equals(other.getMicroservice())) {
+        } else if (!getMicroservice().equals(other.getMicroservice())) {
             return false;
         }
         if (getCaller() == null) {

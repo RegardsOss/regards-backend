@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -17,10 +17,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -43,10 +39,12 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.hibernate.validator.constraints.NotBlank;
 
-import com.google.gson.annotations.JsonAdapter;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasValidParent;
@@ -152,6 +150,10 @@ public class Role implements IIdentifiable<Long> {
         permissions = new HashSet<>();
     }
 
+    /**
+     * Contructor setting the parameter as attribute
+     * @param name
+     */
     public Role(String name) {
         this();
         this.name=name;

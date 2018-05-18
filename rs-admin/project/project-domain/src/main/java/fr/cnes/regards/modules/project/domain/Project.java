@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -94,7 +94,7 @@ public class Project implements IIdentifiable<Long> {
     private Boolean isPublic;
 
     /**
-     * IS the project accessible from portal ?
+     * Is the project accessible from portal ?
      */
     @Column(name = "accessible")
     @NotNull
@@ -120,6 +120,9 @@ public class Project implements IIdentifiable<Long> {
     @Column
     private String host;
 
+    /**
+     * Default constructor
+     */
     public Project() {
         super();
         name = "undefined";
@@ -158,6 +161,9 @@ public class Project implements IIdentifiable<Long> {
         id = pId;
     }
 
+    /**
+     * @return the name
+     */
     public String getName() {
         return name;
     }
@@ -190,6 +196,9 @@ public class Project implements IIdentifiable<Long> {
         isPublic = pIsPublic;
     }
 
+    /**
+     * @return the licence link
+     */
     public String getLicenceLink() {
         return licenceLink;
     }
@@ -218,41 +227,69 @@ public class Project implements IIdentifiable<Long> {
 
     @Override
     public int hashCode() {
-        if (id != null) {
-            return id.hashCode();
-        } else {
+        if (id == null) {
             return 0;
+        } else {
+            return id.hashCode();
         }
     }
 
+    /**
+     * @return whether the project is deleted or not
+     */
     public boolean isDeleted() {
         return isDeleted;
     }
 
+    /**
+     * Set whether the project is deleted or not
+     * @param pIsDeleted
+     */
     public void setDeleted(final boolean pIsDeleted) {
         isDeleted = pIsDeleted;
     }
 
+    /**
+     * @return the host
+     */
     public String getHost() {
         return host;
     }
 
+    /**
+     * Set the host
+     * @param pHost
+     */
     public void setHost(String pHost) {
         host = pHost;
     }
 
+    /**
+     * @return the label
+     */
     public String getLabel() {
         return label;
     }
 
+    /**
+     * Set the label
+     * @param label
+     */
     public void setLabel(String label) {
         this.label = label;
     }
 
+    /**
+     * @return whether the project is accessible or not
+     */
     public Boolean getAccessible() {
         return isAccessible;
     }
 
+    /**
+     * Set whether the project is accessible or not
+     * @param accessible
+     */
     public void setAccessible(Boolean accessible) {
         isAccessible = accessible;
     }

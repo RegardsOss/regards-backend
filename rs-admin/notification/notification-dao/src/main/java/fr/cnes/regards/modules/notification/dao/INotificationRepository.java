@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,14 +19,13 @@
 package fr.cnes.regards.modules.notification.dao;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 
@@ -42,14 +41,12 @@ public interface INotificationRepository extends JpaRepository<Notification, Lon
     /**
      * Find all notifications having the passed project user or the passed role as recipient.
      *
-     * @param pProjectUser
-     *            The required project user recipient
-     * @param pRole
-     *            The required role recipient
+     * @param projectUser The required project user recipient
+     * @param role The required role recipient
      * @return The list of found notifications
      */
-    @Query("select distinct n from t_notification n where ?1 in n.projectUserRecipients or ?2 in n.roleRecipients")
-    List<Notification> findByRecipientsContaining(ProjectUser pProjectUser, Role pRole);
+    @Query("select distinct n from Notification n left join n.projectUserRecipients p left join n.roleRecipients r where p = ?1 or r = ?2")
+    List<Notification> findByRecipientsContaining(String projectUser, String role);
 
     /**
      * Find all notifications with passed <code>status</code>
@@ -60,4 +57,17 @@ public interface INotificationRepository extends JpaRepository<Notification, Lon
      */
     List<Notification> findByStatus(NotificationStatus pStatus);
 
+    /**
+     * Find all notifications which recipients contains the given user, represented by its email
+     * @param email
+     * @return all notifications which recipients contains the given user, represented by its email
+     */
+    Set<Notification> findAllByProjectUserRecipientsContaining(String email);
+
+    /**
+     * Find all notifications which recipients contains the given role, represented by its name
+     * @param role
+     * @return all notifications which recipients contains the given role, represented by its name
+     */
+    Set<Notification> findAllByRoleRecipientsContaining(String role);
 }

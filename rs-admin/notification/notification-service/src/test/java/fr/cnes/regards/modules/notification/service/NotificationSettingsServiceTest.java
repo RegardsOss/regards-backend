@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,18 +24,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
 import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
 
 /**
- * Test class for {@link notificationSettingsService}.
+ * Test class for {@link NotificationSettingsService}.
  *
  * @author Xavier-Alexandre Brochard
  */
@@ -49,7 +49,7 @@ public class NotificationSettingsServiceTest {
     /**
      * Service handling CRUD operations on project users. Autowired by Spring.
      */
-    private IProjectUserService projectUserService;
+    private IAuthenticationResolver authenticationResolver;
 
     /**
      * CRUD repository managing notification settings. Autowired by Spring.
@@ -62,12 +62,12 @@ public class NotificationSettingsServiceTest {
     @Before
     public void setUp() {
         // Mock services
-        projectUserService = Mockito.mock(IProjectUserService.class);
+        authenticationResolver = Mockito.mock(IAuthenticationResolver.class);
         notificationSettingsRepository = Mockito.mock(INotificationSettingsRepository.class);
 
         // Instanciate the tested service
-        notificationSettingsService = new NotificationSettingsService(projectUserService,
-                notificationSettingsRepository);
+        notificationSettingsService = new NotificationSettingsService(authenticationResolver,
+                                                                      notificationSettingsRepository);
     }
 
     /**
@@ -83,12 +83,9 @@ public class NotificationSettingsServiceTest {
         // Define expected
         final NotificationSettings expected = new NotificationSettings();
 
-        // Define logged user
-        final ProjectUser loggedUser = new ProjectUser();
-
         // Mock methods
-        Mockito.when(projectUserService.retrieveCurrentUser()).thenReturn(loggedUser);
-        Mockito.when(notificationSettingsRepository.findOneByProjectUser(loggedUser)).thenReturn(expected);
+        Mockito.when(authenticationResolver.getUser()).thenReturn("");
+        Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail("")).thenReturn(expected);
 
         // Call tested method
         final NotificationSettings actual = notificationSettingsService.retrieveNotificationSettings();
@@ -97,7 +94,7 @@ public class NotificationSettingsServiceTest {
         Assert.assertThat(actual, CoreMatchers.is(CoreMatchers.equalTo(expected)));
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(notificationSettingsRepository).findOneByProjectUser(loggedUser);
+        Mockito.verify(notificationSettingsRepository).findOneByProjectUserEmail("");
     }
 
     /**
@@ -113,12 +110,9 @@ public class NotificationSettingsServiceTest {
         // Defined expected
         final NotificationSettings expected = new NotificationSettings();
 
-        // Define logged user
-        final ProjectUser loggedUser = new ProjectUser();
-
         // Mock methods
-        Mockito.when(projectUserService.retrieveCurrentUser()).thenReturn(loggedUser);
-        Mockito.when(notificationSettingsRepository.findOneByProjectUser(loggedUser)).thenReturn(null);
+        Mockito.when(authenticationResolver.getUser()).thenReturn("");
+        Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail("")).thenReturn(null);
         Mockito.when(notificationSettingsRepository.save(Mockito.any(NotificationSettings.class))).thenReturn(expected);
 
         // Call tested method
@@ -128,7 +122,7 @@ public class NotificationSettingsServiceTest {
         Assert.assertThat(actual, CoreMatchers.is(CoreMatchers.equalTo(expected)));
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(notificationSettingsRepository).findOneByProjectUser(loggedUser);
+        Mockito.verify(notificationSettingsRepository).findOneByProjectUserEmail("");
     }
 
     /**
@@ -141,8 +135,6 @@ public class NotificationSettingsServiceTest {
     @Requirement("REGARDS_DSL_DAM_CQA_040")
     @Purpose("Check that the system allows to update notification settings.")
     public void updateNotificationSettings() throws EntityNotFoundException {
-        // Define logged user
-        final ProjectUser loggedUser = new ProjectUser();
 
         // Define initial
         final Long id = 0L;
@@ -166,8 +158,8 @@ public class NotificationSettingsServiceTest {
         // Mock the repository returned value
         Mockito.when(notificationSettingsRepository.exists(id)).thenReturn(true);
         Mockito.when(notificationSettingsRepository.findOne(id)).thenReturn(initial);
-        Mockito.when(notificationSettingsRepository.findOneByProjectUser(loggedUser)).thenReturn(expected);
-        Mockito.when(projectUserService.retrieveCurrentUser()).thenReturn(loggedUser);
+        Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail("")).thenReturn(expected);
+        Mockito.when(authenticationResolver.getUser()).thenReturn("");
 
         // Perform the update
         notificationSettingsService.updateNotificationSettings(dto);
@@ -186,8 +178,6 @@ public class NotificationSettingsServiceTest {
     @Requirement("REGARDS_DSL_DAM_CQA_040")
     @Purpose("Check that the system allows to update notification settings.")
     public void updateNotificationSettingsNullDays() throws EntityNotFoundException {
-        // Define logged user
-        final ProjectUser loggedUser = new ProjectUser();
 
         // Define initial
         final Long id = 0L;
@@ -211,8 +201,8 @@ public class NotificationSettingsServiceTest {
         // Mock the repository returned value
         Mockito.when(notificationSettingsRepository.exists(id)).thenReturn(true);
         Mockito.when(notificationSettingsRepository.findOne(id)).thenReturn(initial);
-        Mockito.when(notificationSettingsRepository.findOneByProjectUser(loggedUser)).thenReturn(expected);
-        Mockito.when(projectUserService.retrieveCurrentUser()).thenReturn(loggedUser);
+        Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail("")).thenReturn(expected);
+        Mockito.when(authenticationResolver.getUser()).thenReturn("");
 
         // Perform the update
         notificationSettingsService.updateNotificationSettings(dto);
@@ -231,8 +221,6 @@ public class NotificationSettingsServiceTest {
     @Requirement("REGARDS_DSL_DAM_CQA_040")
     @Purpose("Check that the system allows to update notification settings.")
     public void updateNotificationSettingsNullHours() throws EntityNotFoundException {
-        // Define logged user
-        final ProjectUser loggedUser = new ProjectUser();
 
         // Define initial
         final Long id = 0L;
@@ -256,8 +244,8 @@ public class NotificationSettingsServiceTest {
         // Mock the repository returned value
         Mockito.when(notificationSettingsRepository.exists(id)).thenReturn(true);
         Mockito.when(notificationSettingsRepository.findOne(id)).thenReturn(initial);
-        Mockito.when(notificationSettingsRepository.findOneByProjectUser(loggedUser)).thenReturn(expected);
-        Mockito.when(projectUserService.retrieveCurrentUser()).thenReturn(loggedUser);
+        Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail("")).thenReturn(expected);
+        Mockito.when(authenticationResolver.getUser()).thenReturn("");
 
         // Perform the update
         notificationSettingsService.updateNotificationSettings(dto);
@@ -276,8 +264,6 @@ public class NotificationSettingsServiceTest {
     @Requirement("REGARDS_DSL_DAM_CQA_040")
     @Purpose("Check that the system allows to update notification settings.")
     public void updateNotificationSettingsNullFrequency() throws EntityNotFoundException {
-        // Define logged user
-        final ProjectUser loggedUser = new ProjectUser();
 
         // Define initial
         final Long id = 0L;
@@ -301,8 +287,8 @@ public class NotificationSettingsServiceTest {
         // Mock the repository returned value
         Mockito.when(notificationSettingsRepository.exists(id)).thenReturn(true);
         Mockito.when(notificationSettingsRepository.findOne(id)).thenReturn(initial);
-        Mockito.when(notificationSettingsRepository.findOneByProjectUser(loggedUser)).thenReturn(expected);
-        Mockito.when(projectUserService.retrieveCurrentUser()).thenReturn(loggedUser);
+        Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail("")).thenReturn(expected);
+        Mockito.when(authenticationResolver.getUser()).thenReturn("");
 
         // Perform the update
         notificationSettingsService.updateNotificationSettings(dto);

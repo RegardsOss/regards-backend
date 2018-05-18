@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -71,26 +71,6 @@ public class RemoteTenantAutoConfiguration {
     ITenantConnectionResolver multitenantResolver(final DiscoveryClient discoveryClient,
             final ITenantConnectionClient tenantConnectionClient) {
         return new RemoteTenantConnectionResolver(discoveryClient, tenantConnectionClient);
-    }
-
-    /**
-     *
-     * Authorities provider by accessing administration microservice with Feign rest clients
-     *
-     * @param pRoleClient
-     *            Feign client to query administration service for roles
-     * @param pResourcesClient
-     *            Feign client to query administration service for resources
-     * @return IAuthoritiesProvider
-     * @since 1.0-SNAPSHOT
-     */
-    @Bean
-    @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
-    IAuthoritiesProvider authoritiesProvider(final DiscoveryClient discoveryClient,
-            final IMicroserviceResourceClient resourcesClient, final IRolesClient rolesClient,
-            final IRuntimeTenantResolver runtimeTenantResolver, final IRoleResourceClient pRoleResourceClient) {
-        return new RemoteAuthoritiesProvider(discoveryClient, resourcesClient, rolesClient, runtimeTenantResolver,
-                pRoleResourceClient);
     }
 
     /**

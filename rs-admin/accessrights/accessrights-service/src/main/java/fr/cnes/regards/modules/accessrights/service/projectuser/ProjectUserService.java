@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -32,8 +32,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -41,19 +45,20 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentif
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.SecurityUtils;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecification;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.RegardsStreamUtils;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
@@ -84,7 +89,12 @@ public class ProjectUserService implements IProjectUserService {
     /**
      * Account service used to manage accounts.
      */
-    private final IAccountService accountService;
+    private final IAccountsClient accountsClient;
+
+    /**
+     * Authentication resolver
+     */
+    private final IAuthenticationResolver authResolver;
 
     /**
      * A filter on meta data to keep visible ones only
@@ -97,22 +107,15 @@ public class ProjectUserService implements IProjectUserService {
      */
     private final String instanceAdminUserEmail;
 
-    /**
-     * Constructor
-     *
-     * @param pProjectUserRepository
-     * @param pRoleService
-     * @param pAccountService
-     * @param pInstanceAdminUserEmail
-     */
-    public ProjectUserService(final IProjectUserRepository pProjectUserRepository, final IRoleService pRoleService,
-            final IAccountService pAccountService,
+    public ProjectUserService(IAuthenticationResolver authResolver, final IProjectUserRepository pProjectUserRepository,
+            final IRoleService pRoleService, final IAccountsClient accountsClient,
             @Value("${regards.accounts.root.user.login}") final String pInstanceAdminUserEmail) {
         super();
+        this.authResolver = authResolver;
         projectUserRepository = pProjectUserRepository;
         roleService = pRoleService;
         instanceAdminUserEmail = pInstanceAdminUserEmail;
-        accountService = pAccountService;
+        this.accountsClient = accountsClient;
     }
 
     /*
@@ -121,18 +124,8 @@ public class ProjectUserService implements IProjectUserService {
      * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveUserList()
      */
     @Override
-    public Page<ProjectUser> retrieveUserList(final Pageable pPageable) {
-        return projectUserRepository.findAll(pPageable);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveUserList(UserStatus)
-     */
-    @Override
-    public Page<ProjectUser> retrieveUserList(final UserStatus pStatus, final Pageable pPageable) {
-        return projectUserRepository.findByStatus(pStatus, pPageable);
+    public Page<ProjectUser> retrieveUserList(String status, String emailStart, final Pageable pageable) {
+        return projectUserRepository.findAll(ProjectUserSpecification.search(status, emailStart), pageable);
     }
 
     /*
@@ -183,7 +176,7 @@ public class ProjectUserService implements IProjectUserService {
      */
     @Override
     public ProjectUser retrieveCurrentUser() throws EntityNotFoundException {
-        final String email = SecurityUtils.getActualUser();
+        final String email = authResolver.getUser();
         return projectUserRepository.findOneByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Current user", ProjectUser.class));
     }
@@ -370,11 +363,13 @@ public class ProjectUserService implements IProjectUserService {
     @Override
     public ProjectUser createProjectUser(final AccessRequestDto pDto) throws EntityAlreadyExistsException {
 
-        if (!accountService.existAccount(pDto.getEmail())) {
+        ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(pDto.getEmail());
+        if(accountResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
             final Account newAccount = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(),
-                    pDto.getPassword());
+                                                   pDto.getPassword());
             newAccount.setStatus(AccountStatus.ACTIVE);
-            accountService.createAccount(newAccount);
+            AccountNPassword newAccountWithPassword = new AccountNPassword(newAccount, newAccount.getPassword());
+            accountsClient.createAccount(newAccountWithPassword);
         }
 
         if (!existUser(pDto.getEmail())) {
@@ -450,8 +445,11 @@ public class ProjectUserService implements IProjectUserService {
         return projectUserRepository.findByRoleName(role.getName());
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#delete(fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser)
+    /*
+     * (non-Javadoc)
+     *
+     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#delete(fr.cnes.regards.modules.
+     * accessrights.domain.projects.ProjectUser)
      */
     @Override
     public void deleteByEmail(String pEmail) throws EntityNotFoundException {

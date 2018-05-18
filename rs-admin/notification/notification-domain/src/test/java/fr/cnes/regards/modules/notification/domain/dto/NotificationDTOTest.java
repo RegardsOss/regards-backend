@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,7 +19,9 @@
 package fr.cnes.regards.modules.notification.domain.dto;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -63,7 +65,7 @@ public class NotificationDTOTest {
     /**
      * Role recipients
      */
-    private static List<String> roleRecipients;
+    private static Set<String> roleRecipients;
 
     /**
      * A user email
@@ -78,7 +80,7 @@ public class NotificationDTOTest {
     /**
      * User recipients
      */
-    private static List<String> projectUserRecipients;
+    private static Set<String> projectUserRecipients;
 
     /**
      * Tested pojo
@@ -95,12 +97,12 @@ public class NotificationDTOTest {
         dto.setTitle(TITLE);
         dto.setMessage(MESSAGE);
 
-        roleRecipients = new ArrayList<>();
+        roleRecipients = new HashSet<>();
         roleRecipients.add(ROLE_0);
         roleRecipients.add(ROLE_1);
         dto.setRoleRecipients(roleRecipients);
 
-        projectUserRecipients = new ArrayList<>();
+        projectUserRecipients = new HashSet<>();
         projectUserRecipients.add(USER_0);
         projectUserRecipients.add(USER_1);
         dto.setProjectUserRecipients(projectUserRecipients);

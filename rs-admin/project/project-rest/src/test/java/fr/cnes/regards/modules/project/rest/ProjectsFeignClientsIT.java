@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -30,6 +30,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ContextConfiguration;
 
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
@@ -48,6 +49,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  * @since 1.0-SNAPSHOT
  */
 @EnableFeignClients(clients = { IProjectsClient.class })
+@ContextConfiguration(classes = { LicenseConfiguration.class })
 public class ProjectsFeignClientsIT extends AbstractRegardsWebIT {
 
     /**

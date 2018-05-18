@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import java.util.List;
-
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
@@ -34,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -56,10 +54,10 @@ public interface IUserResourceClient {
     public static final String TYPE_MAPPING = "/users/{user_email}/resources";
 
     /**
-     * Retrieve the {@link List} of {@link ResourcesAccess} for the {@link Account} of passed <code>id</code>.
+     * Retrieve the {@link List} of {@link ResourcesAccess} for the account of passed <code>email</code>.
      *
      * @param pUserLogin
-     *            The {@link Account}'s <code>id</code>
+     *            The account <code>email</code>
      * @param pBorrowedRoleName
      *            The borrowed {@link Role} <code>name</code> if the user is connected with a borrowed role. Optional.
      * @return the {@link List} list of resources access

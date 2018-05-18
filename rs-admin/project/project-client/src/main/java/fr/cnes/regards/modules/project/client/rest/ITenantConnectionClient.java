@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.project.client.rest;
 
-import java.util.List;
-
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,28 +33,41 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 
 /**
  *
- * Tenant connection client
+ * Tenant connection <b>SYSTEM</b> client
  *
  * @author Marc Sordi
  *
  */
-@RestClient(name = "rs-admin")
+@RestClient(name = "rs-admin-instance")
 @RequestMapping(value = "/connections/{microservice}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface ITenantConnectionClient {
 
+    /**
+     * Allows the system to register a tenant connection
+     * @param microservice target microservice
+     * @param tenantConnection connection to register
+     * @return registered connection
+     */
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<TenantConnection> addTenantConnection(@PathVariable("microservice") String microservice,
             @Valid @RequestBody TenantConnection tenantConnection);
 
-    @RequestMapping(method = RequestMethod.PUT, value = "/{tenant}/enable")
-    public ResponseEntity<TenantConnection> enableTenantConnection(@PathVariable("microservice") String microservice,
-            @PathVariable("tenant") String tenant);
+    /**
+     * Allows the system to update connection state. Only tenant, state and errorCause are useful.
+     * @param microservice target microservice
+     * @param tenantConnection connection to update
+     * @return updated connection
+     */
+    @RequestMapping(method = RequestMethod.PUT)
+    public ResponseEntity<TenantConnection> updateState(@PathVariable("microservice") String microservice,
+            @Valid @RequestBody TenantConnection tenantConnection);
 
-    @RequestMapping(method = RequestMethod.PUT, value = "/{tenant}/disable")
-    public ResponseEntity<TenantConnection> disableTenantConnection(@PathVariable("microservice") String microservice,
-            @PathVariable("tenant") String tenant);
-
+    /**
+     * Retrieve all tenant connections
+     * @param microservice target microservice
+     * @return list of connections
+     */
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<TenantConnection>> getTenantConnections(
             @PathVariable("microservice") String microservice);

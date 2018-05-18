@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  
  This file is part of REGARDS.
  
@@ -51,13 +51,18 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>project</artifactId>
-		<version>1.1.0</version>
+		<version>2.0.0-RELEASE</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
+			<!-- dependency added so we can easily handle link between ProjectConnection and TenantConnection -->
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>regards-core-jpa-common</artifactId>
+			<artifactId>jpa-multitenant-regards</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-commons-regards</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -26,8 +26,10 @@ import java.util.Set;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -41,7 +43,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  */
-public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long> {
+public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>,
+        JpaSpecificationExecutor<ProjectUser> {
 
     /**
      * Find the single {@link ProjectUser} with passed <code>email</code>.<br>
@@ -113,4 +116,15 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
     @EntityGraph(value = "graph.user.metadata")
     Page<ProjectUser> findAll(Pageable pPageable);
 
+    /**
+     * Find all project users respecting the given specification
+     *
+     * @param spec project user specification
+     * @param pageable
+     *            the pagination information
+     * @return all project users with this role
+     */
+    @Override
+    @EntityGraph(value = "graph.user.metadata")
+    Page<ProjectUser> findAll(Specification<ProjectUser> spec, Pageable pageable);
 }

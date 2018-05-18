@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,41 +19,41 @@
 package fr.cnes.regards.modules.accessrights.service.registration;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.accessrights.dao.instance.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountSettingsService;
-import fr.cnes.regards.modules.accessrights.service.account.workflow.events.OnAcceptAccountEvent;
-import fr.cnes.regards.modules.accessrights.service.account.workflow.state.AccountWorkflowManager;
-import fr.cnes.regards.modules.accessrights.service.encryption.EncryptionUtils;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners.WaitForQualificationListener;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
  * {@link IRegistrationService} implementation.
- *
  * @author Xavier-Alexandre Brochard
  */
 @Service
-@InstanceTransactional
+@RegardsTransactional
 public class RegistrationService implements IRegistrationService {
 
     /**
@@ -62,9 +62,14 @@ public class RegistrationService implements IRegistrationService {
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationService.class);
 
     /**
-     * CRUD repository handling {@link Account}s. Autowired by Spring.
+     * {@link IAccountsClient} instance
      */
-    private final IAccountRepository accountRepository;
+    private final IAccountsClient accountsClient;
+
+    /**
+     * {@link IAccountSettingsClient} instance
+     */
+    private final IAccountSettingsClient accountSettingsClient;
 
     /**
      * CRUD repository handling {@link ProjectUser}s. Autowired by Spring.
@@ -81,51 +86,20 @@ public class RegistrationService implements IRegistrationService {
      */
     private final IEmailVerificationTokenService tokenService;
 
-    /**
-     * CRUD repository handling {@link AccountSettingst}s. Autowired by Spring.
-     */
-    private final IAccountSettingsService accountSettingsService;
+    private final WaitForQualificationListener listener;
 
-    /**
-     * Account workflow manager. Autowired by Spring.
-     */
-    private final AccountWorkflowManager accountWorkflowManager;
-
-    /**
-     * Use this to publish Spring application events
-     */
-    private final ApplicationEventPublisher eventPublisher;
-
-    /**
-     * @param pAccountRepository
-     * @param pProjectUserRepository
-     * @param pRoleService
-     * @param pTokenService
-     * @param pAccountSettingsService
-     * @param pAccountWorkflowManager
-     * @param pEventPublisher
-     */
-    public RegistrationService(IAccountRepository pAccountRepository, IProjectUserRepository pProjectUserRepository,
-            IRoleService pRoleService, IEmailVerificationTokenService pTokenService,
-            IAccountSettingsService pAccountSettingsService, AccountWorkflowManager pAccountWorkflowManager,
-            ApplicationEventPublisher pEventPublisher) {
+    public RegistrationService(IProjectUserRepository pProjectUserRepository, IRoleService pRoleService,
+            IEmailVerificationTokenService pTokenService, IAccountSettingsClient accountSettingsClient,
+            IAccountsClient accountsClient, WaitForQualificationListener listener) {
         super();
-        accountRepository = pAccountRepository;
         projectUserRepository = pProjectUserRepository;
         roleService = pRoleService;
         tokenService = pTokenService;
-        accountSettingsService = pAccountSettingsService;
-        accountWorkflowManager = pAccountWorkflowManager;
-        eventPublisher = pEventPublisher;
+        this.accountsClient = accountsClient;
+        this.accountSettingsClient = accountSettingsClient;
+        this.listener = listener;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.service.account.IAccountTransitions#requestAccount(fr.cnes.regards.modules.
-     * accessrights.domain.AccessRequestDTO)
-     */
     @Override
     public void requestAccess(final AccessRequestDto pDto) throws EntityException {
         // Create the account if needed
@@ -137,69 +111,87 @@ public class RegistrationService implements IRegistrationService {
 
     /**
      * Create the account if necessary
-     *
-     * @param pDto
-     * @return
-     * @throws EntityException
      */
     private void requestAccountIfNecessary(final AccessRequestDto pDto) throws EntityException {
         // Check existence
-        if (accountRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
-            LOG.info("Requesting access with an existing account. Ok, no account created");
-            return;
+        try {
+            FeignSecurityManager.asSystem();
+            ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(pDto.getEmail());
+            if (accountResponse.getStatusCode() != HttpStatus.NOT_FOUND) {
+                LOG.info("Requesting access with an existing account. Ok, no account created");
+                return;
+            } else {
+                // Check that all information are provided to create account
+                if ((pDto.getEmail() == null) || (pDto.getFirstName() == null) || (pDto.getLastName() == null)
+                        || (pDto.getPassword() == null)) {
+                    LOG.error("Account does not exists for user {} and there not enought information to create a new one.",
+                              pDto.getEmail());
+                    throw new EntityNotFoundException(pDto.getEmail(), Account.class);
+                }
+            }
+
+            // Create the new account
+            Account account = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(), pDto.getPassword());
+
+            // Check status
+            Assert.isTrue(AccountStatus.PENDING.equals(account.getStatus()),
+                          "Trying to create an Account with other status than PENDING.");
+
+            AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
+            // Create
+            account = accountsClient.createAccount(accountNPassword).getBody().getContent();
+
+            // Auto-accept if configured so
+            ResponseEntity<Resource<AccountSettings>> accountSettingsResponse = accountSettingsClient
+                    .retrieveAccountSettings();
+            if (accountSettingsResponse.getStatusCode().is2xxSuccessful() && accountSettingsResponse.getBody()
+                    .getContent().getMode().equals(AccountSettings.AUTO_ACCEPT_MODE)) {
+                // in case the microservice does not answer properly to us, lets decide its manual
+                accountsClient.acceptAccount(account.getEmail());
+            }
+        } finally {
+            FeignSecurityManager.reset();
         }
-
-        // Create the new account
-        final Account account = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(),
-                EncryptionUtils.encryptPassword(pDto.getPassword()));
-
-        // Check status
-        Assert.isTrue(AccountStatus.PENDING.equals(account.getStatus()),
-                      "Trying to create an Account with other status than PENDING.");
-
-        // Auto-accept if configured so
-        final AccountSettings settings = accountSettingsService.retrieve();
-        if (AccountSettings.AUTO_ACCEPT_MODE.equals(settings.getMode())) {
-            accountWorkflowManager.acceptAccount(account);
-        }
-
-        // Create
-        accountRepository.save(account);
     }
 
     /**
      * Create the project user
-     *
-     * @param pDto
-     * @throws EntityException
      */
     private void requestProjectUser(final AccessRequestDto pDto) throws EntityException {
-        // Check that an associated account exists
-        Optional<Account> optionalAccount = accountRepository.findOneByEmail(pDto.getEmail());
-        if (!optionalAccount.isPresent()) {
-            throw new EntityNotFoundException(pDto.getEmail(), Account.class);
-        }
+        try {
+            FeignSecurityManager.asSystem();
+            // Check that an associated account exists
+            ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(pDto.getEmail());
+            if (accountResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
+                throw new EntityNotFoundException(pDto.getEmail(), Account.class);
+            }
+            Account account = accountResponse.getBody().getContent();
 
-        // Check that no project user with same email exists
-        if (projectUserRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
-            throw new EntityAlreadyExistsException("The email " + pDto.getEmail() + "is already in use.");
-        }
+            // Check that no project user with same email exists
+            if (projectUserRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
+                throw new EntityAlreadyExistsException("The email " + pDto.getEmail() + "is already in use.");
+            }
 
-        // Init with default role
-        final Role role = roleService.getDefaultRole();
+            // Init with default role
+            final Role role = roleService.getDefaultRole();
 
-        // Create a new project user
-        final ProjectUser projectUser = new ProjectUser(pDto.getEmail(), role, new ArrayList<>(), pDto.getMetadata());
+            // Create a new project user
+            ProjectUser projectUser = new ProjectUser(pDto.getEmail(), role, new ArrayList<>(), pDto.getMetadata());
 
-        // Create
-        projectUserRepository.save(projectUser);
+            // Create
+            projectUser = projectUserRepository.save(projectUser);
 
-        // Init the email verification token
-        tokenService.create(projectUser, pDto.getOriginUrl(), pDto.getRequestLink());
+            // Init the email verification token
+            tokenService.create(projectUser, pDto.getOriginUrl(), pDto.getRequestLink());
 
-        // Check the status
-        if (AccountStatus.ACTIVE.equals(optionalAccount.get().getStatus())) {
-            eventPublisher.publishEvent(new OnAcceptAccountEvent(pDto.getEmail()));
+            // Check the status
+            if (AccountStatus.ACTIVE.equals(account.getStatus())) {
+                LOG.info("Account is already active for new user {}. Sending AccountAcceptedEvent to handle ProjectUser status.",
+                         account.getEmail());
+                listener.onAccountActivation(account.getEmail());
+            }
+        } finally {
+            FeignSecurityManager.reset();
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import java.util.List;
-
 import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
@@ -35,7 +34,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
@@ -106,19 +104,19 @@ public interface IRegistrationClient {
     ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId);
 
     /**
-     * Retrieve the {@link AccountSettings}.
+     * Retrieve the {@link AccessSettings}.
      *
-     * @return The {@link AccountSettings}
+     * @return The {@link AccessSettings}
      */
     @ResponseBody
     @RequestMapping(value = "/settings", method = RequestMethod.GET)
     ResponseEntity<Resource<AccessSettings>> getAccessSettings();
 
     /**
-     * Update the {@link AccountSettings}.
+     * Update the {@link AccessSettings}.
      *
      * @param pAccessSettings
-     *            The {@link AccountSettings}
+     *            The {@link AccessSettings}
      * @return The updated access settings
      */
     @ResponseBody

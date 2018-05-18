@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -64,7 +64,7 @@ public class LogEventHandler implements ILogEventHandler {
             runtimeTenantResolver.forceTenant(pWrapper.getTenant());
             LogEventJpa logEventToSave = new LogEventJpa(pWrapper.getContent());
             logEventRepository.save(logEventToSave);
-        } catch (Exception ex) {
+        } catch (RuntimeException ex) {
             LOGGER.error(ex.getMessage(), ex);
         }
     }

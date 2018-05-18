@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,12 +18,17 @@
  */
 package fr.cnes.regards.modules.project.service;
 
-import java.util.List;
-
 import javax.annotation.PostConstruct;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,12 +37,11 @@ import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.event.tenant.TenantCreatedEvent;
 import fr.cnes.regards.framework.amqp.event.tenant.TenantDeletedEvent;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
-import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
-import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 
@@ -65,10 +69,7 @@ public class ProjectService implements IProjectService {
      */
     private final IProjectRepository projectRepository;
 
-    /**
-     * JPA Multitenants default configuration from properties file.
-     */
-    private final MultitenantDaoProperties defaultProperties;
+    private final ITenantResolver tenantResolver;
 
     /**
      * AMQP message publisher
@@ -76,32 +77,41 @@ public class ProjectService implements IProjectService {
     private final IInstancePublisher instancePublisher;
 
     /**
+     * Default tenants which are to be initialized at system installation
+     */
+    private Set<String> defaultTenants;
+
+    /**
      * The constructor.
      *
      * @param pProjectRepository
      *            The JPA repository.
      */
-    public ProjectService(final IProjectRepository pProjectRepository,
-            final MultitenantDaoProperties pDefaultProperties, IInstancePublisher instancePublisher) {
+    public ProjectService(final IProjectRepository pProjectRepository, final ITenantResolver tenantResolver,
+            IInstancePublisher instancePublisher, @Value("${regards.default.tenants}") String defaultTenants) {
         super();
         projectRepository = pProjectRepository;
-        defaultProperties = pDefaultProperties;
+        this.tenantResolver = tenantResolver;
         this.instancePublisher = instancePublisher;
+        this.defaultTenants = Arrays.stream(defaultTenants.split(",")).map(tenant -> tenant.trim())
+                .collect(Collectors.toSet());
     }
 
-    @PostConstruct
-    public void projectsInitialization() throws ModuleException {
-
-        // Create project from properties files it does not exists yet
-        for (final TenantConnection tenant : defaultProperties.getTenants()) {
-            if (projectRepository.findOneByNameIgnoreCase(tenant.getTenant()) == null) {
-                LOG.info(String.format("Creating new project %s from static properties configuration",
-                                       tenant.getTenant()));
-                Project project=new Project("", "", true, tenant.getTenant());
-                project.setLabel(tenant.getTenant());
+    @EventListener
+    public void projectsInitialization(ApplicationReadyEvent applicationReadyEvent) throws ModuleException {
+        LOG.info("Initializing projects");
+        // Before creating projects, lets see if we need to initialize them by checking if any project already exists
+        List<Project> projects = projectRepository.findAll();
+        if (projects.isEmpty()) {
+            for (String tenant : defaultTenants) {
+                LOG.info(String.format("Creating new project %s from static properties configuration", tenant));
+                Project project = new Project("", "", true, tenant);
+                project.setLabel(tenant);
                 project.setAccessible(true);
                 createProject(project);
             }
+        } else {
+            LOG.info("Projects are already initialized, skipping project initialization");
         }
     }
 
@@ -159,7 +169,7 @@ public class ProjectService implements IProjectService {
     public Project createProject(final Project pNewProject) throws ModuleException {
         final Project theProject = projectRepository.findOneByNameIgnoreCase(pNewProject.getName());
         if (theProject != null) {
-            throw new EntityAlreadyExistsException("A Project with name "+pNewProject.getName()+" already exists");
+            throw new EntityAlreadyExistsException("A Project with name " + pNewProject.getName() + " already exists");
         }
 
         Project project = projectRepository.save(pNewProject);

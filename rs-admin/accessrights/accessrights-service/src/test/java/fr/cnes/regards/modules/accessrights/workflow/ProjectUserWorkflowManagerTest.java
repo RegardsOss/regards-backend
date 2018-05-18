@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -34,13 +34,10 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
-import fr.cnes.regards.modules.accessrights.domain.instance.Account;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.service.account.AccountService;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.EmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.AccessDeniedState;
@@ -100,11 +97,6 @@ public class ProjectUserWorkflowManagerTest {
      */
     private WaitingAccessState waitingAccessState;
 
-    /**
-     * Mocked account service
-     */
-    private IAccountService accountService;
-
     private EmailVerificationTokenService tokenService;
 
     private ApplicationEventPublisher eventPublisher;
@@ -117,7 +109,6 @@ public class ProjectUserWorkflowManagerTest {
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
         projectUserStateProvider = Mockito.mock(ProjectUserStateProvider.class);
         tokenService = Mockito.mock(EmailVerificationTokenService.class);
-        accountService = Mockito.mock(AccountService.class);
         eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
         waitingAccessState = new WaitingAccessState(projectUserRepository, tokenService, eventPublisher,
                 Mockito.mock(IPublisher.class));
@@ -210,12 +201,12 @@ public class ProjectUserWorkflowManagerTest {
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that we send the verification email when granting access")
     public void grantAccess_shouldSendEmailIfProjectUserIsWaitingAccess() throws EntityException {
-        Account account = new Account(EMAIL, "First-Name", "Lastname", "password");
+//        Account account = new Account(EMAIL, "First-Name", "Lastname", "password");
         EmailVerificationToken token = new EmailVerificationToken(projectUser, "originUrl", "requestLink");
         // Mock repository's content by making sure the request exists
         Mockito.when(projectUserStateProvider.createState(projectUser)).thenReturn(waitingAccessState);
         Mockito.when(tokenService.findByProjectUser(Mockito.any())).thenReturn(token);
-        Mockito.when(accountService.retrieveAccountByEmail(EMAIL)).thenReturn(account);
+//        Mockito.when(accountService.retrieveAccountByEmail(EMAIL)).thenReturn(account);
 
         // Call the tested method
         projectUserWorkflowManager.grantAccess(projectUser);

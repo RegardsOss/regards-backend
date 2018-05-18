@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -28,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -36,6 +33,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
@@ -48,6 +46,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  *
  */
 @MultitenantTransactional
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoleResourceControllerIT.class);
@@ -78,7 +77,8 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     * Removing {@link DefaultRole#ADMIN} access from role inheriting ADMIN changes its parent to {@link DefaultRole#REGISTERED_USER}
+     * Removing {@link DefaultRole#ADMIN} access from role inheriting ADMIN changes its parent to
+     * {@link DefaultRole#REGISTERED_USER}
      * @throws EntityException if error occurs
      */
     @Test
@@ -87,7 +87,8 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     * Removing {@link DefaultRole#REGISTERED_USER} access from role inheriting ADMIN changes its parent to {@link DefaultRole#PUBLIC}
+     * Removing {@link DefaultRole#REGISTERED_USER} access from role inheriting ADMIN changes its parent to
+     * {@link DefaultRole#PUBLIC}
      * @throws EntityException if error occurs
      */
     @Test
@@ -137,14 +138,19 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         Assert.assertNotNull("Cannot find an ADMIN resources", resourceToRemove);
 
         // Remove resource access
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().is(expectedStatus.value()));
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().is(expectedStatus.value()));
         // Delete resource with PROJECT ADMIN
-        String projectAdminJwt = manageSecurity(RoleResourceController.TYPE_MAPPING
-                + RoleResourceController.SINGLE_RESOURCE_MAPPING, RequestMethod.DELETE, DEFAULT_USER_EMAIL,
-                                                DefaultRole.PROJECT_ADMIN.name());
+        String projectAdminJwt = manageSecurity(
+                RoleResourceController.TYPE_MAPPING + RoleResourceController.SINGLE_RESOURCE_MAPPING,
+                RequestMethod.DELETE,
+                DEFAULT_USER_EMAIL,
+                DefaultRole.PROJECT_ADMIN.name());
         performDelete(RoleResourceController.TYPE_MAPPING + RoleResourceController.SINGLE_RESOURCE_MAPPING,
-                      projectAdminJwt, expectations, "Error retrieving resourcesAccess for user.", newRole.getName(),
+                      projectAdminJwt,
+                      requestBuilderCustomizer,
+                      "Error retrieving resourcesAccess for user.",
+                      newRole.getName(),
                       resourceToRemove.getId());
 
         // Check new role associated to expected one
@@ -167,6 +173,7 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         Role newRole = roleService.createRole(new Role(NEW_ROLE_NAME, adminRole));
 
         Assert.assertNotNull(newRole.getPermissions());
+        Assert.assertFalse("newRole has no permissions", newRole.getPermissions().isEmpty());
 
         // Remove first admin inherited permission from new role
         ResourcesAccess resourceToRemove = null;
@@ -181,27 +188,38 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         Assert.assertNotNull("Cannot find an ADMIN resources", resourceToRemove);
 
         // Remove resource access
-        List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isNoContent());
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
         // Delete resource with PROJECT ADMIN
-        String projectAdminJwt = manageSecurity(RoleResourceController.TYPE_MAPPING
-                + RoleResourceController.SINGLE_RESOURCE_MAPPING, RequestMethod.DELETE, DEFAULT_USER_EMAIL,
-                                                DefaultRole.PROJECT_ADMIN.name());
+        String projectAdminJwt = manageSecurity(
+                RoleResourceController.TYPE_MAPPING + RoleResourceController.SINGLE_RESOURCE_MAPPING,
+                RequestMethod.DELETE,
+                DEFAULT_USER_EMAIL,
+                DefaultRole.PROJECT_ADMIN.name());
         performDelete(RoleResourceController.TYPE_MAPPING + RoleResourceController.SINGLE_RESOURCE_MAPPING,
-                      projectAdminJwt, expectations, "Error retrieving resourcesAccess for user.", newRole.getName(),
+                      projectAdminJwt,
+                      requestBuilderCustomizer,
+                      "Error retrieving resourcesAccess for user.",
+                      newRole.getName(),
                       resourceToRemove.getId());
 
         // Check new role associated to REGISTERED USER instead of ADMIN
         Assert.assertTrue(DefaultRole.REGISTERED_USER.name().equals(newRole.getParentRole().getName()));
 
         // Add resource to admin group
-        expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isCreated());
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
         // Add resource with ADMIN
-        String adminJwt = manageSecurity(RoleResourceController.TYPE_MAPPING, RequestMethod.POST, DEFAULT_USER_EMAIL,
+        String adminJwt = manageSecurity(RoleResourceController.TYPE_MAPPING,
+                                         RequestMethod.POST,
+                                         DEFAULT_USER_EMAIL,
                                          DefaultRole.ADMIN.name());
-        performPost(RoleResourceController.TYPE_MAPPING, adminJwt, resourceToRemove, expectations,
-                    "Access should be added to ADMIN role", newRole.getName());
+        performPost(RoleResourceController.TYPE_MAPPING,
+                    adminJwt,
+                    resourceToRemove,
+                    requestBuilderCustomizer,
+                    "Access should be added to ADMIN role",
+                    newRole.getName());
 
         // Check new role associated to REGISTERED USER instead of ADMIN
         Assert.assertTrue(DefaultRole.ADMIN.name().equals(newRole.getParentRole().getName()));
@@ -215,8 +233,12 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
     public void deleteRoleResourceTest() {
 
         // Create a new resource
-        ResourcesAccess resource = new ResourcesAccess(null, "microservice", "/to/delete", "delController",
-                RequestMethod.GET, DefaultRole.ADMIN);
+        ResourcesAccess resource = new ResourcesAccess(null,
+                                                       "microservice",
+                                                       "/to/delete",
+                                                       "delController",
+                                                       RequestMethod.GET,
+                                                       DefaultRole.ADMIN);
         resourcesAccessRepository.save(resource);
 
         // Add to admin group
@@ -225,14 +247,19 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         roleRepository.save(adminRole);
 
         // Remove resource access
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isNoContent());
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
         // Delete resource with PROJECT ADMIN
-        String projectAdminJwt = manageSecurity(RoleResourceController.TYPE_MAPPING
-                + RoleResourceController.SINGLE_RESOURCE_MAPPING, RequestMethod.DELETE, DEFAULT_USER_EMAIL,
-                                                DefaultRole.PROJECT_ADMIN.name());
+        String projectAdminJwt = manageSecurity(
+                RoleResourceController.TYPE_MAPPING + RoleResourceController.SINGLE_RESOURCE_MAPPING,
+                RequestMethod.DELETE,
+                DEFAULT_USER_EMAIL,
+                DefaultRole.PROJECT_ADMIN.name());
         performDelete(RoleResourceController.TYPE_MAPPING + RoleResourceController.SINGLE_RESOURCE_MAPPING,
-                      projectAdminJwt, expectations, "Error retrieving resourcesAccess for user.", adminRole.getName(),
+                      projectAdminJwt,
+                      requestBuilderCustomizer,
+                      "Error retrieving resourcesAccess for user.",
+                      adminRole.getName(),
                       resource.getId());
     }
 

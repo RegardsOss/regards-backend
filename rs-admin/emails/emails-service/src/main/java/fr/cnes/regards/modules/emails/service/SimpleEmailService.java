@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,7 @@ import fr.cnes.regards.modules.emails.domain.Email;
  *
  * Class SimpleEmailService
  *
- * Simple mail service don't persist mail entities in database. To persist entities use EmailService.
+ * Simple mail service doesn't persist mail entities in database. To persist entities use EmailService.
  *
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
@@ -73,28 +74,37 @@ public class SimpleEmailService extends AbstractEmailService {
     }
 
     @Override
-    public SimpleMailMessage sendEmail(final SimpleMailMessage pEmail) {
-        return sendMailWithSender(pEmail);
+    public Email sendEmail(final SimpleMailMessage pEmail) {
+        sendMailWithSender(pEmail);
+        // no Email entity
+        return null;
     }
 
     @Override
-    public Email retrieveEmail(final Long pId) throws ModuleException {
+    public Email sendEmail(SimpleMailMessage email, String attName, InputStreamSource attSource) {
+        sendMailWithSender(email, attName, attSource);
+        // no Email entity
+        return null;
+    }
+
+    @Override
+    public Email retrieveEmail(final Long id) throws ModuleException {
         // Mail are not saved
         return null;
     }
 
     @Override
-    public void resendEmail(final Long pId) throws ModuleException {
+    public void resendEmail(final Long id) throws ModuleException {
         // Mail are not saved
     }
 
     @Override
-    public void deleteEmail(final Long pId) {
+    public void deleteEmail(final Long id) {
         // Mail are not saved
     }
 
     @Override
-    public boolean exists(final Long pId) {
+    public boolean exists(final Long id) {
         // Mail are not saved
         return false;
     }

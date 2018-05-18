@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.emails.rest;
 
-import java.util.List;
-
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -98,13 +97,13 @@ public class EmailController {
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Send an email to recipients")
-    public ResponseEntity<SimpleMailMessage> sendEmail(@Valid @RequestBody final SimpleMailMessage pMessage) {
+    public ResponseEntity<Void> sendEmail(@Valid @RequestBody final SimpleMailMessage pMessage) {
         IEmailService service = emailService;
         if (runtimeTenantResolver.isInstance()) {
             service = simpleEmailService;
         }
-        final SimpleMailMessage created = service.sendEmail(pMessage);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+        service.sendEmail(pMessage);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     /**

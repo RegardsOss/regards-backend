@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,21 +24,24 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
+import feign.FeignException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.service.account.IAccountService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnDenyEvent;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnInactiveEvent;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
- * Listen to {@link OnDenyEvent} in order to warn the user its account request was refused.
+ * Listen to {@link OnInactiveEvent} in order to warn the user its account request was refused.
  *
  * @author Xavier-Alexandre Brochard
  */
@@ -53,7 +56,7 @@ public class SendProjectUserInactivatedEmailListener implements ApplicationListe
     /**
      * The email template
      */
-    private static final String TEMPLATE = TemplateServiceConfiguration.PROJECT_USER_INACTIVATED_TEMPLATE;
+    private static final String TEMPLATE = TemplateServiceConfiguration.PROJECT_USER_INACTIVATED_TEMPLATE_CODE;
 
     /**
      * Service handling CRUD operations on email templates
@@ -68,19 +71,19 @@ public class SendProjectUserInactivatedEmailListener implements ApplicationListe
     /**
      * Account service
      */
-    private final IAccountService accountService;
+    private final IAccountsClient accountsClient;
 
     /**
      * @param pTemplateService
      * @param pEmailClient
-     * @param pAccountService
+     * @param accountsClient
      */
     public SendProjectUserInactivatedEmailListener(ITemplateService pTemplateService, IEmailClient pEmailClient,
-            IAccountService pAccountService) {
+            IAccountsClient accountsClient) {
         super();
         templateService = pTemplateService;
         emailClient = pEmailClient;
-        accountService = pAccountService;
+        this.accountsClient = accountsClient;
     }
 
     /**
@@ -99,9 +102,17 @@ public class SendProjectUserInactivatedEmailListener implements ApplicationListe
 
         // Create a hash map in order to store the data to inject in the mail
         Map<String, String> data = new HashMap<>();
+        // lets retrive the account
         try {
-            data.put("name", accountService.retrieveAccountByEmail(projectUser.getEmail()).getFirstName());
-        } catch (EntityNotFoundException e) {
+            ResponseEntity<Resource<Account>> accountResponse = accountsClient
+                    .retrieveAccounByEmail(projectUser.getEmail());
+            if (accountResponse.getStatusCode().is2xxSuccessful()) {
+                data.put("name", accountResponse.getBody().getContent().getFirstName());
+            } else {
+                LOGGER.error("Could not find the associated Account for templating the email content.");
+                data.put("name", "");
+            }
+        } catch (FeignException e) {
             LOGGER.error("Could not find the associated Account for templating the email content.", e);
             data.put("name", "");
         }

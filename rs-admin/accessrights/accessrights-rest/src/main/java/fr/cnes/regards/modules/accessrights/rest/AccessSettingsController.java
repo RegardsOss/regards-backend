@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -38,7 +38,6 @@ import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.domain.instance.AccountSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 
@@ -75,11 +74,11 @@ public class AccessSettingsController implements IResourceController<AccessSetti
     private IResourceService resourceService;
 
     /**
-     * Retrieve the {@link AccountSettings}.
+     * Retrieve the {@link AccessSettings}.
      *
-     * @return The {@link AccountSettings}
+     * @return The {@link AccessSettings}
      * @throws EntityNotFoundException
-     *             Thrown when an {@link AccountSettings} with passed id could not be found
+     *             Thrown when an {@link AccessSettings} with passed id could not be found
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
@@ -91,10 +90,10 @@ public class AccessSettingsController implements IResourceController<AccessSetti
     }
 
     /**
-     * Update the {@link AccountSettings}.
+     * Update the {@link AccessSettings}.
      *
      * @param pAccessSettings
-     *            The {@link AccountSettings}
+     *            The {@link AccessSettings}
      * @return The updated access settings
      * @throws EntityNotFoundException
      *             if no entity found!

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import java.util.List;
-
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -150,4 +149,15 @@ public interface IProjectUsersClient {
             @PathVariable("role_id") final Long pRoleId, @RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
+    /**
+     * Retrieve pages of project user which role, represented by its name, is the one provided
+     *
+     * @param pRole role name
+     * @param pPage
+     * @param pSize
+     * @return page of project user which role, represented by its name, is the one provided
+     */
+    @RequestMapping(value = "/roles", method = RequestMethod.GET)
+    ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUsersList(@RequestParam("role_name") String pRole, @RequestParam("page") int pPage,
+            @RequestParam("size") int pSize);
 }

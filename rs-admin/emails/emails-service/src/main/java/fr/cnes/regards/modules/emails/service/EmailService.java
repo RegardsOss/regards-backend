@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,30 +18,36 @@
  */
 package fr.cnes.regards.modules.emails.service;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import com.google.common.io.ByteStreams;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
 import fr.cnes.regards.modules.emails.domain.Email;
 
 /**
  * An implementation of {@link IEmailService}
- *
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
- *
  */
 @Service
 @MultitenantTransactional
@@ -64,11 +70,8 @@ public class EmailService extends AbstractEmailService {
 
     /**
      * Creates an {@link EmailService} wired to the given {@link IEmailRepository}.
-     *
-     * @param pEmailRepository
-     *            Autowired by Spring. Must not be {@literal null}.
-     * @param pMailSender
-     *            Autowired by Spring. Must not be {@literal null}.
+     * @param pEmailRepository Autowired by Spring. Must not be {@literal null}.
+     * @param pMailSender Autowired by Spring. Must not be {@literal null}.
      */
     public EmailService(final IEmailRepository pEmailRepository, final JavaMailSender pMailSender) {
         super();
@@ -86,52 +89,52 @@ public class EmailService extends AbstractEmailService {
         return emails;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.emails.service.IEmailService#sendEmail(org.springframework.mail.SimpleMailMessage)
-     */
     @Override
-    public SimpleMailMessage sendEmail(final SimpleMailMessage pMessage) {
-        // Create the savable DTO
-
-        final Email email = createEmailFromSimpleMailMessage(pMessage);
-        emailRepository.save(email);
-        sendMailWithSender(pMessage);
-        return pMessage;
+    public Email sendEmail(final SimpleMailMessage msg) {
+        // Create the saveable DTO
+        Email email = createEmailFromSimpleMailMessage(msg);
+        email = emailRepository.save(email);
+        sendMailWithSender(msg);
+        return email;
     }
 
     @Override
-    public Email retrieveEmail(final Long pId) throws ModuleException {
-        final Email email = emailRepository.findOne(pId);
+    public Email sendEmail(SimpleMailMessage msg, String attName, InputStreamSource attSource) {
+        Email email = createEmailFromSimpleMailMessage(msg, attName, attSource);
+        email = emailRepository.save(email);
+        sendMailWithSender(msg, attName, attSource);
+        return email;
+    }
+
+    @Override
+    public Email retrieveEmail(final Long id) throws ModuleException {
+        final Email email = emailRepository.findOne(id);
         if (email == null) {
-            throw new EntityNotFoundException(pId, Email.class);
+            throw new EntityNotFoundException(id, Email.class);
         }
         return email;
     }
 
     @Override
-    public void resendEmail(final Long pId) throws ModuleException {
-        final Email email = retrieveEmail(pId);
+    public void resendEmail(final Long id) throws ModuleException {
+        final Email email = retrieveEmail(id);
         final SimpleMailMessage message = createSimpleMailMessageFromEmail(email);
         mailSender.send(message);
     }
 
     @Override
-    public void deleteEmail(final Long pId) {
-        emailRepository.delete(pId);
+    public void deleteEmail(final Long id) {
+        emailRepository.delete(id);
     }
 
     @Override
-    public boolean exists(final Long pId) {
-        return emailRepository.exists(pId);
+    public boolean exists(final Long id) {
+        return emailRepository.exists(id);
     }
 
     /**
      * Create a {@link SimpleMailMessage} with same content as the passed {@link Email}.
-     *
-     * @param pEmail
-     *            The {@link Email}
+     * @param pEmail The {@link Email}
      * @return The {@link SimpleMailMessage}
      */
     private SimpleMailMessage createSimpleMailMessageFromEmail(final Email pEmail) {
@@ -152,12 +155,21 @@ public class EmailService extends AbstractEmailService {
     /**
      * Create a domain {@link Email} with same content as the passed {@link SimpleMailMessage} in order to save it in
      * db.
-     *
-     * @param pMessage
-     *            The message
+     * @param msg The message
      * @return The savable email
      */
-    private Email createEmailFromSimpleMailMessage(final SimpleMailMessage pMessage) {
+    private Email createEmailFromSimpleMailMessage(final SimpleMailMessage msg) {
+        return createEmailFromSimpleMailMessage(msg, null, null);
+    }
+
+    /**
+     * Create a domain {@link Email} with same content as the passed {@link SimpleMailMessage} in order to save it in
+     * db.
+     * @param pMessage The message
+     * @return The savable email
+     */
+    private Email createEmailFromSimpleMailMessage(final SimpleMailMessage pMessage, String attName,
+            InputStreamSource source) {
         final Email email = new Email();
         email.setBcc(pMessage.getBcc());
         email.setCc(pMessage.getCc());
@@ -169,6 +181,31 @@ public class EmailService extends AbstractEmailService {
         email.setSubject(pMessage.getSubject());
         email.setText(pMessage.getText());
         email.setTo(pMessage.getTo());
+
+        if ((attName != null) && (source != null)) {
+            try {
+                InputStream is = source.getInputStream();
+                // Use atachment name to know if it is a zipped file (simplest method)
+                if (attName.toLowerCase().endsWith("zip")) {
+                    email.setAttName(attName);
+                    // already a zip
+                    email.setAttachment(ByteStreams.toByteArray(is));
+                } else { // else zip the file
+                    email.setAttName(attName + ".zip");
+                    // Write zip file into a byte array
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ZipOutputStream zos = new ZipOutputStream(baos);
+                    zos.putNextEntry(new ZipEntry(attName));
+                    ByteStreams.copy(is, zos);
+                    zos.closeEntry();
+                    zos.flush();
+                    zos.finish();
+                    email.setAttachment(baos.toByteArray());
+                }
+            } catch (IOException e) {
+                throw new RsRuntimeException(e);
+            }
+        }
         return email;
     }
 

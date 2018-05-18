@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -74,8 +74,11 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     @Column(name = "microservice", length = 32)
     private String microservice;
 
+    /**
+     * The controller simple name
+     */
     @NotBlank
-    @Column(name = "controller_name", length = 32)
+    @Column(name = "controller_name", length = 256)
     private String controllerSimpleName;
 
     /**
@@ -236,6 +239,9 @@ public class ResourcesAccess implements IIdentifiable<Long> {
         verb = pVerb;
     }
 
+    /**
+     * @return the controller simple name
+     */
     public String getControllerSimpleName() {
         return controllerSimpleName;
     }
@@ -252,4 +258,10 @@ public class ResourcesAccess implements IIdentifiable<Long> {
         defaultRole = pDefaultRole;
     }
 
+    @Override
+    public String toString() {
+        return "ResourcesAccess{" + "id=" + id + ", description='" + description + '\'' + ", microservice='"
+                + microservice + '\'' + ", controllerSimpleName='" + controllerSimpleName + '\'' + ", resource='"
+                + resource + '\'' + ", verb=" + verb + ", defaultRole=" + defaultRole + '}';
+    }
 }
