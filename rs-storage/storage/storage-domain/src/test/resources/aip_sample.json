@@ -1,177 +1,235 @@
 {
-	"sipId": "JA1_GDR_2PcP243_249",
-	"ipId": "URN:AIP:COLLECTION:PROJECT:67db4ba0-0ba5-40f7-ac6d-fe2fdbf42664:V1",
-	"type": "DATA",
-	"tags": ["NASA", "regards:facilities:HST", "regards:instruments:ACS", "regards:proposals:857", "regards:filters:H", "regards:detectors:WFC"],
-	"informationObjects": [{
-		"contentInformation": {
-			"dataObject": {
-				"type": "RAWDATA",
-				"url": "file:///tmp/example.fits"
-			},
-			"representationInformation": {
-				"syntax": {
-					"name": "FITS(FlexibleImageTransport)",
-					"description": "http://www.iana.org/assignments/media-types/application/fits",
-					"mimeType": "application/fits"
-				},
-				"semantic": {
-					"description": "|Bytes|Format|Units|Label|Explanations|\n|------|-----------|-----|---------|----------------------------------------|\n|1-9|I9|---|Corot|CoRoTnumber|\n|11|I1|h|RAh|Rightascension(J2000)|\n|13-14|I2|min|RAm|Rightascension(J2000)|\n|16-20|F5.2|s|RAs|Rightascension(J2000)|\n|22|A1|---|DE-|Declinationsign(J2000)|\n|23|I1|deg|DEd|Declination(J2000)|\n|25-26|I2|arcmin|DEm|Declination(J2000)|\n|28-32|F5.2|arcsec|DEs|Declination(J2000)|"
-				}
-			}
-		},
-		"pdi": {
-			"contextInformation": {
-				"name": "HST_ACS_23:05:02+05:12:34.fits",
-				"target": "M31",
-				"characterisation": {
-					"spatialAxis": {
-						"coverage": {
-							"geometry": {
-								"type": "Polygon",
-								"coordinates": [
-									[
-										[-10.0, -10.0],
-										[10.0, -10.0],
-										[10.0, 10.0],
-										[-10.0, 10.0]
-									]
-								]
-							},
-							"crs": {
-								"type": "name",
-								"properties": {
-									"name": "urn:iau:def:crs:IAU:ICRS"
-								}
-							}
-						},
-						"resolution": [0.00001, 0.00001],
-						"sampling": [200, 300],
-						"accuracy": [0.1, 0.1]
-					},
-					"timeAxis": {
-						"coverage": {
-							"value": [
-								["2014-01-01T10:23:00", "2014-01-01T10:25:00"],
-								["2014-01-01T11:23:00", "2014-01-01T11:25:00"]
-							],
-							"trs": {
-								"type": "name",
-								"properties": {
-									"name": "urn:iau:def:trs:IAU:GregoryCalendar"
-								}
-							}
-						},
-						"accuracy": 0.000001
-					},
-					"frequencyAxis": {
-						"coverage": {
-							"value": [
-								[400, 600],
-								[650, 800]
-							],
-							"frs": {
-								"type": "name",
-								"properties": {
-									"name": "urn:iau:def:frs:IAU:Wavelength"
-								}
-							}
-						}
-					},
-					"observableAxis": [{
-						"name": "electronCount",
-						"coverage": "....",
-						"resolution": "....",
-						"sampling": "....",
-						"accuracy": "...."
-					}],
-					"options": {}
-				}
-			},
-			"provenanceInformation": {
-				"additional": {
-					"instrument": "ACS",
-					"detector": "WFC",
-					"filter": "H",
-					"proposal": 857
-				},
-				"facility": "HST",
-				"history": [{
-					"eventDate": "2014-01-01T23:10:05",
-					"comment": "acquisitionoftheobservation"
-				}, {
-					"eventDate": "2014-01-02T23:10:05",
-					"comment": "astrometrycalibration"
-				}, {
-					"eventDate": "2014-02-01T23:10:05",
-					"comment": "receivedinformationfromtheproducertothearchive"
-				}, {
-					"eventDate": "2014-02-01T23:30:05",
-					"comment": "AIPiscreated"
-				}, {
-					"eventDate": "2014-02-02T23:10:05",
-					"comment": "AIPisstored"
-				}, {
-					"eventDate": "2014-02-03T23:10:05",
-					"comment": "AIPisarchived"
-				}, {
-					"eventDate": "2014-02-08T23:10:05",
-					"comment": "HSTMissionislinkedtoAIP"
-				}, {
-					"eventDate": "2014-02-08T23:10:05",
-					"comment": "HSTProposalislinkedtoAIP"
-				}, {
-					"eventDate": "2014-02-18T23:10:05",
-					"comment": "Informationaddedaboutfilter"
-				}]
-			},
-			"fixityInformation": {
-				"checksum": "d6aa97d33d459ea3670056e737c99a3d",
-				"algorithm": "md5",
-				"fileSize": 1024
-			},
-			"accessRightInformation": {
-				"publisherDID": "<regards_id>",
-				"publisherID": "<sip_id>",
-				"publicReleaseDate": "2017-01-01T01:00:00",
-				"dataRights": "secure"
-			}
-		}
-	}, {
-		"contentInformation": {
-			"dataObject": {
-				"type": "QUICKLOOK",
-				"url": "file:///tmp/example.png"
-			},
-			"representationInformation": {
-				"syntax": {
-					"name": "PNG",
-					"description": "http://www.iana.org/assignments/media-types/image/png",
-					"mimeType": "image/png"
-				}
-			}
-		},
-		"pdi": {
-			"provenanceInformation": {
-				"facility": "CNESarchive",
-				"history": [{
-					"eventDate": "2014-02-01T23:30:05",
-					"comment": "thequicklookiscreated"
-				}, {
-					"eventDate": "2014-01-02T23:10:05",
-					"comment": "thequicklookisstored"
-				}]
-			},
-			"fixityInformation": {
-				"checksum": "d6bbbbd33d459ea3670056e737c99a3d",
-				"algorithm": "md5"
-			},
-			"accessRightInformation": {
-				"publisherDID": "<regards_id>",
-				"publisherID": "<regards_id>",
-				"publicReleaseDate": "2014-01-02T23:10:05",
-				"dataRights": "public"
-			}
-		}
-	}]
+    "sipId": "JA1_GDR_2PcP243_249",
+    "ipId": "URN:AIP:COLLECTION:PROJECT:67db4ba0-0ba5-40f7-ac6d-fe2fdbf42664:V1",
+    "type": "DATA",
+    "tags": [
+        "NASA",
+        "regards:facilities:HST",
+        "regards:instruments:ACS",
+        "regards:proposals:857",
+        "regards:filters:H",
+        "regards:detectors:WFC"
+    ],
+    "informationObjects": [
+        {
+            "contentInformation": {
+                "dataObject": {
+                    "dataType": "RAWDATA",
+                    "url": "file:///tmp/example.fits"
+                },
+                "representationInformation": {
+                    "semantic": {
+                        "description": "|Bytes|Format|Units|Label|Explanations|\n|------|-----------|-----|---------|----------------------------------------|\n|1-9|I9|---|Corot|CoRoTnumber|\n|11|I1|h|RAh|Rightascension(J2000)|\n|13-14|I2|min|RAm|Rightascension(J2000)|\n|16-20|F5.2|s|RAs|Rightascension(J2000)|\n|22|A1|---|DE-|Declinationsign(J2000)|\n|23|I1|deg|DEd|Declination(J2000)|\n|25-26|I2|arcmin|DEm|Declination(J2000)|\n|28-32|F5.2|arcsec|DEs|Declination(J2000)|"
+                    },
+                    "syntax": {
+                        "description": "http://www.iana.org/assignments/media-types/application/fits",
+                        "mimeType": "application/fits",
+                        "name": "FITS(FlexibleImageTransport)"
+                    }
+                }
+            },
+            "pdi": {
+                "contextInformation": {
+                    "name": "HST_ACS_23:05:02+05:12:34.fits",
+                    "target": "M31",
+                    "characterisation": {
+                        "spatialAxis": {
+                            "coverage": {
+                                "geometry": {
+                                    "type": "Polygon",
+                                    "coordinates": [
+                                        [
+                                            [
+                                                -10.0,
+                                                -10.0
+                                            ],
+                                            [
+                                                10.0,
+                                                -10.0
+                                            ],
+                                            [
+                                                10.0,
+                                                10.0
+                                            ],
+                                            [
+                                                -10.0,
+                                                10.0
+                                            ]
+                                        ]
+                                    ]
+                                },
+                                "crs": {
+                                    "type": "name",
+                                    "properties": {
+                                        "name": "urn:iau:def:crs:IAU:ICRS"
+                                    }
+                                }
+                            },
+                            "resolution": [
+                                0.00001,
+                                0.00001
+                            ],
+                            "sampling": [
+                                200,
+                                300
+                            ],
+                            "accuracy": [
+                                0.1,
+                                0.1
+                            ]
+                        },
+                        "timeAxis": {
+                            "coverage": {
+                                "value": [
+                                    [
+                                        "2014-01-01T10:23:00Z",
+                                        "2014-01-01T10:25:00Z"
+                                    ],
+                                    [
+                                        "2014-01-01T11:23:00Z",
+                                        "2014-01-01T11:25:00Z"
+                                    ]
+                                ],
+                                "trs": {
+                                    "type": "name",
+                                    "properties": {
+                                        "name": "urn:iau:def:trs:IAU:GregoryCalendar"
+                                    }
+                                }
+                            },
+                            "accuracy": 0.000001
+                        },
+                        "frequencyAxis": {
+                            "coverage": {
+                                "value": [
+                                    [
+                                        400,
+                                        600
+                                    ],
+                                    [
+                                        650,
+                                        800
+                                    ]
+                                ],
+                                "frs": {
+                                    "type": "name",
+                                    "properties": {
+                                        "name": "urn:iau:def:frs:IAU:Wavelength"
+                                    }
+                                }
+                            }
+                        },
+                        "observableAxis": [
+                            {
+                                "name": "electronCount",
+                                "coverage": "....",
+                                "resolution": "....",
+                                "sampling": "....",
+                                "accuracy": "...."
+                            }
+                        ],
+                        "options": {}
+                    }
+                },
+                "provenanceInformation": {
+                    "additional": {
+                        "instrument": "ACS",
+                        "detector": "WFC",
+                        "filter": "H",
+                        "proposal": 857
+                    },
+                    "facility": "HST",
+                    "history": [
+                        {
+                            "eventDate": "2014-01-01T23:10:05Z",
+                            "comment": "acquisitionoftheobservation"
+                        },
+                        {
+                            "eventDate": "2014-01-02T23:10:05Z",
+                            "comment": "astrometrycalibration"
+                        },
+                        {
+                            "eventDate": "2014-02-01T23:10:05Z",
+                            "comment": "receivedinformationfromtheproducertothearchive"
+                        },
+                        {
+                            "eventDate": "2014-02-01T23:30:05Z",
+                            "comment": "AIPiscreated"
+                        },
+                        {
+                            "eventDate": "2014-02-02T23:10:05Z",
+                            "comment": "AIPisstored"
+                        },
+                        {
+                            "eventDate": "2014-02-03T23:10:05Z",
+                            "comment": "AIPisarchived"
+                        },
+                        {
+                            "eventDate": "2014-02-08T23:10:05Z",
+                            "comment": "HSTMissionislinkedtoAIP"
+                        },
+                        {
+                            "eventDate": "2014-02-08T23:10:05Z",
+                            "comment": "HSTProposalislinkedtoAIP"
+                        },
+                        {
+                            "eventDate": "2014-02-18T23:10:05Z",
+                            "comment": "Informationaddedaboutfilter"
+                        }
+                    ]
+                },
+                "fixityInformation": {
+                    "checksum": "d6aa97d33d459ea3670056e737c99a3d",
+                    "algorithm": "md5",
+                    "fileSize": 1024
+                },
+                "accessRightInformation": {
+                    "publisherDID": "<regards_id>",
+                    "publisherID": "<sip_id>",
+                    "publicReleaseDate": "2017-01-01T01:00:00Z",
+                    "dataRights": "secure"
+                }
+            }
+        },
+        {
+            "contentInformation": {
+                "dataObject": {
+                    "dataType": "QUICKLOOK",
+                    "url": "file:///tmp/example.png"
+                },
+                "representationInformation": {
+                    "syntax": {
+                        "name": "PNG",
+                        "description": "http://www.iana.org/assignments/media-types/image/png",
+                        "mimeType": "image/png"
+                    }
+                }
+            },
+            "pdi": {
+                "provenanceInformation": {
+                    "facility": "CNESarchive",
+                    "history": [
+                        {
+                            "eventDate": "2014-02-01T23:30:05Z",
+                            "comment": "thequicklookiscreated"
+                        },
+                        {
+                            "eventDate": "2014-01-02T23:10:05Z",
+                            "comment": "thequicklookisstored"
+                        }
+                    ]
+                },
+                "fixityInformation": {
+                    "checksum": "d6bbbbd33d459ea3670056e737c99a3d",
+                    "algorithm": "md5"
+                },
+                "accessRightInformation": {
+                    "publisherDID": "<regards_id>",
+                    "publisherID": "<regards_id>",
+                    "publicReleaseDate": "2014-01-02T23:10:05Z",
+                    "dataRights": "public"
+                }
+            }
+        }
+    ]
 }
