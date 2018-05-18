@@ -15,6 +15,9 @@ import com.google.common.net.HttpHeaders;
  */
 public class XFrameOptionsHeaderWriterDefault implements HeaderWriter {
 
+    /**
+     * Default value
+     */
     private static final String DEFAULT_VALUE="DENY";
 
     @Override

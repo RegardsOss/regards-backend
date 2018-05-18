@@ -33,7 +33,7 @@ public class ServiceImpl1 implements Service {
     public void process(boolean crash) {
         Object o = template.receiveAndConvert();
         if (crash) {
-            throw new RuntimeException("crash");
+            throw new RuntimeException("crash"); // NOSONAR
         }
         if (o != null) {
             System.out.println(o);

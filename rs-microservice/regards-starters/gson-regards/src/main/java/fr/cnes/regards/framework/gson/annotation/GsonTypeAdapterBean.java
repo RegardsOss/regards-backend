@@ -20,5 +20,5 @@ import com.google.gson.TypeAdapter;
 @Component
 public @interface GsonTypeAdapterBean {
 
-    Class<?> type();
+    Class<?> adapted();
 }

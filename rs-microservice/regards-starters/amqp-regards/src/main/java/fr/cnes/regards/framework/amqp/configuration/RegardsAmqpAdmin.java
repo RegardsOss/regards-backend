@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.framework.amqp.configuration;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,6 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -47,12 +47,24 @@ import fr.cnes.regards.framework.amqp.event.WorkerMode;
  * @author Marc Sordi
  *
  */
-public class RegardsAmqpAdmin {
+public class RegardsAmqpAdmin implements IAmqpAdmin {
+
+    private static final String DOT = ".";
+
+    public static final String REGARDS_NAMESPACE = "regards";
+
+    public static final String UNICAST_BASE_EXCHANGE_NAME = "unicast";
+
+    public static final String BROADCAST_BASE_EXCHANGE_NAME = "broadcast";
+
+    public static final String UNICAST_NAMESPACE = REGARDS_NAMESPACE + DOT + UNICAST_BASE_EXCHANGE_NAME;
+
+    public static final String BROADCAST_NAMESPACE = REGARDS_NAMESPACE + DOT + BROADCAST_BASE_EXCHANGE_NAME;
 
     /**
-     * Default exchange name
+     * Default routing key
      */
-    public static final String DEFAULT_EXCHANGE_NAME = "regards";
+    private static final String DEFAULT_ROUTING_KEY = "";
 
     /**
      * This constant allows to defined a message to send with a high priority
@@ -62,12 +74,8 @@ public class RegardsAmqpAdmin {
     /**
      * Class logger
      */
+    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(RegardsAmqpAdmin.class);
-
-    /**
-     * _
-     */
-    private static final String UNDERSCORE = "_";
 
     /**
      * Bean allowing us to declare queue, exchange, binding
@@ -78,48 +86,31 @@ public class RegardsAmqpAdmin {
     /**
      * Microservice type identifier
      */
-    private final String microserviceTypeId;
+    private String microserviceTypeId;
 
     /**
      * Microservice instance identifier
      */
-    private final String microserviceInstanceId;
+    private String microserviceInstanceId;
 
-    public RegardsAmqpAdmin(String pMicroserviceTypeId, String pMicroserviceInstanceId) {
-        super();
-        microserviceTypeId = pMicroserviceTypeId;
-        microserviceInstanceId = pMicroserviceInstanceId;
+    public RegardsAmqpAdmin(String microserviceTypeId, String microserviceInstanceId) {
+        this.microserviceTypeId = microserviceTypeId;
+        this.microserviceInstanceId = microserviceInstanceId;
     }
 
-    /**
-     * Declare an exchange for each event so we use its name to instantiate it.
-     *
-     *
-     * @param pTenant
-     *            tenant
-     * @param pEventType
-     *            event type
-     * @param pWorkerMode
-     *            {@link WorkerMode}
-     * @param pTarget
-     *            {@link Target}
-     * @return a new {@link Exchange} related to current tenant and event
-     */
-    public Exchange declareExchange(String pTenant, Class<?> pEventType, WorkerMode pWorkerMode, Target pTarget) {
-
-        LOGGER.debug("Declaring exchange for : tenant {} / event {} / target {} / mode {}", pTenant,
-                     pEventType.getName(), pTarget, pWorkerMode);
+    @Override
+    public Exchange declareExchange(Class<?> eventType, WorkerMode workerMode, Target target) {
 
         Exchange exchange;
-        switch (pWorkerMode) {
-            case SINGLE:
-                exchange = new DirectExchange(getExchangeName(DEFAULT_EXCHANGE_NAME, pTarget), true, false);
+        switch (workerMode) {
+            case UNICAST:
+                exchange = new DirectExchange(getUnicastExchangeName(), true, false);
                 break;
-            case ALL:
-                exchange = new FanoutExchange(getExchangeName(pEventType.getName(), pTarget), true, false);
+            case BROADCAST:
+                exchange = new FanoutExchange(getBroadcastExchangeName(eventType.getName(), target), true, false);
                 break;
             default:
-                throw new EnumConstantNotPresentException(WorkerMode.class, pWorkerMode.name());
+                throw new EnumConstantNotPresentException(WorkerMode.class, workerMode.name());
         }
 
         rabbitAdmin.declareExchange(exchange);
@@ -127,276 +118,184 @@ public class RegardsAmqpAdmin {
     }
 
     /**
+     * Unicast exchange name
      *
-     * Build exchange name
-     *
-     * @param pName
-     *            base name
-     * @param pTarget
-     *            {@link Target}
-     * @return prefixed name according to communication target
+     * @return exchange name
      */
-    public String getExchangeName(String pName, Target pTarget) {
-        StringBuilder builder = new StringBuilder();
-
-        // Prefix exchange with microservice id to create a dedicated exchange
-        switch (pTarget) {
-            case ALL:
-                // No prefix cause no target restriction
-                break;
-            case MICROSERVICE:
-                builder.append(microserviceTypeId).append(UNDERSCORE);
-                break;
-            case INSTANCE:
-                builder.append(microserviceTypeId).append(UNDERSCORE).append(microserviceInstanceId);
-                break;
-            default:
-                throw new EnumConstantNotPresentException(Target.class, pTarget.name());
-        }
-
-        builder.append(pName);
-        return builder.toString();
+    private String getUnicastExchangeName() {
+        return UNICAST_NAMESPACE;
     }
 
     /**
+     * Broadcast exchange name by event
      *
-     * Declare a queue that can handle priority {@link RegardsAmqpAdmin}{@link #MAX_PRIORITY}
-     *
-     * @param pTenant
-     *            tenant for which the queue is created
-     * @param pEventType
-     *            class token corresponding to the message types the queue will receive, used for naming convention
-     * @param pWorkerMode
-     *            {@link WorkerMode} used for naming convention
-     * @param pTarget
-     *            {@link Target} used for naming convention
-     * @return instance of queue
+     * @return exchange name
      */
-    public Queue declareQueue(String pTenant, Class<?> pEventType, WorkerMode pWorkerMode, Target pTarget) {
+    private String getBroadcastExchangeName(String eventType, Target target) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(BROADCAST_NAMESPACE);
+        if (Target.MICROSERVICE.equals(target)) {
+            // Restrict exchange to microservice type
+            builder.append(DOT);
+            builder.append(microserviceTypeId);
+        }
+        builder.append(DOT);
+        builder.append(eventType);
+        return builder.toString();
+    }
 
-        LOGGER.debug("Declaring queue for : tenant {} / event {} / target {} / mode {}", pTenant, pEventType.getName(),
-                     pTarget, pWorkerMode);
+    @Override
+    public Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
+            Optional<Class<? extends IHandler<?>>> handlerType) {
 
-        // Create queue
-        final Map<String, Object> args = new HashMap<>();
+        Map<String, Object> args = new ConcurrentHashMap<>();
         args.put("x-max-priority", MAX_PRIORITY);
-        Queue queue = new Queue(getQueueName(pEventType, pWorkerMode, pTarget), true, false, false, args);
+
+        Queue queue;
+        switch (workerMode) {
+            case UNICAST:
+                // Useful for publishing unicast event and subscribe to a unicast exchange
+                queue = new Queue(getUnicastQueueName(tenant, eventType, target), true, false, false, args);
+                break;
+            case BROADCAST:
+                // Allows to subscribe to a broadcast exchange
+                if (handlerType.isPresent()) {
+                    queue = new Queue(getSubscriptionQueueName(handlerType.get(), target), true, false, false, args);
+                } else {
+                    throw new IllegalArgumentException("Missing event handler for broadcasted event");
+                }
+                break;
+            default:
+                throw new EnumConstantNotPresentException(WorkerMode.class, workerMode.name());
+        }
 
         rabbitAdmin.declareQueue(queue);
-
         return queue;
     }
 
     /**
-     * Declare a queue by event handler. Only useful for publish/subscribe mode.
+     * Unicast publish queue name build for {@link IPollable} or {@link ISubscribable} event according to its
+     * {@link Target} restriction.<br/>
+     * Tenant is used for working queues naming to prevent starvation of a project. Otherwise, some projects may
+     * monopolize a single multitenant queue!
      *
-     * @param pTenant
-     *            tenant
-     * @param pEventHandler
-     *            event handler
-     * @param pWorkerMode
-     *            {@link WorkerMode} used for naming convention
-     * @param pTarget
-     *            {@link Target} used for naming convention
-     * @return instance of queue
+     * @param tenant tenant (useful for queue naming in single virtual host and compatible with multiple virtual hosts)
+     * @param eventType event type
+     * @param target {@link Target}
+     * @return queue name
      */
-    public Queue declareSubscribeQueue(String pTenant, Class<?> pEventHandler, WorkerMode pWorkerMode, Target pTarget) {
+    @Override
+    public String getUnicastQueueName(String tenant, Class<?> eventType, Target target) {
+        if (Target.ONE_PER_MICROSERVICE_TYPE.equals(target)) {
+            throw new IllegalArgumentException(String.format("Target %s not supported", target.toString()));
+        }
 
-        LOGGER.debug("Declaring queue for : tenant {} / handler {} / target {} / mode {}", pTenant,
-                     pEventHandler.getName(), pTarget, pWorkerMode);
-
-        // Create queue
-        final Map<String, Object> args = new HashMap<>();
-        args.put("x-max-priority", MAX_PRIORITY);
-        Queue queue = new Queue(getQueueName(pEventHandler, pWorkerMode, pTarget), true, false, false, args);
-
-        rabbitAdmin.declareQueue(queue);
-
-        return queue;
-    }
-
-    /**
-     * Purge the queue that manages the specified event
-     *
-     * @param <E>
-     *            event type to purge
-     * @param pEventType
-     *            event type
-     * @param noWait
-     *            true to not await completion of the purge
-     */
-    public <E extends IPollable> void purgeQueue(Class<E> pEventType, boolean noWait) {
-        rabbitAdmin
-                .purgeQueue(getQueueName(pEventType, WorkerMode.SINGLE, EventUtils.getCommunicationTarget(pEventType)),
-                            noWait);
-    }
-
-    /**
-     * Purge the queue that manages the specified event
-     *
-     * @param <E>
-     *            event type to purge
-     * @param <H>
-     *            handler that manages events
-     * @param pEventType
-     *            event type
-     * @param pHandlerType
-     *            handler type for subscribable events
-     * @param noWait
-     *            true to not await completion of the purge
-     */
-    public <E extends ISubscribable, H extends IHandler<E>> void purgeQueue(Class<E> pEventType, Class<H> pHandlerType,
-            boolean noWait) {
-        rabbitAdmin
-                .purgeQueue(getQueueName(pHandlerType, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEventType)),
-                            noWait);
-    }
-
-    public <E extends IPollable> Properties getQueueProperties(Class<E> pEventType) {
-        return rabbitAdmin.getQueueProperties(getQueueName(pEventType, WorkerMode.SINGLE,
-                                                           EventUtils.getCommunicationTarget(pEventType)));
-    }
-
-    public <E extends ISubscribable, H extends IHandler<E>> Properties getQueueProperties(Class<E> pEventType,
-            Class<H> pHandlerType) {
-        return rabbitAdmin.getQueueProperties(getQueueName(pHandlerType, WorkerMode.ALL,
-                                                           EventUtils.getCommunicationTarget(pEventType)));
-    }
-
-    public <E extends IPollable> void deleteQueue(Class<E> pEventType) {
-        rabbitAdmin.deleteQueue(getQueueName(pEventType, WorkerMode.SINGLE,
-                                             EventUtils.getCommunicationTarget(pEventType)));
-    }
-
-    public <E extends ISubscribable, H extends IHandler<E>> void deleteQueue(Class<E> pEventType,
-            Class<H> pHandlerType) {
-        rabbitAdmin
-                .deleteQueue(getQueueName(pHandlerType, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEventType)));
-    }
-
-    public <E extends IPollable> void deleteQueue(Class<E> pEventType, final boolean unused, final boolean empty) {
-        rabbitAdmin
-                .deleteQueue(getQueueName(pEventType, WorkerMode.SINGLE, EventUtils.getCommunicationTarget(pEventType)),
-                             unused, empty);
-    }
-
-    public <E extends ISubscribable, H extends IHandler<E>> void deleteQueue(Class<E> pEventType, Class<H> pHandlerType,
-            final boolean unused, final boolean empty) {
-        rabbitAdmin
-                .deleteQueue(getQueueName(pHandlerType, WorkerMode.ALL, EventUtils.getCommunicationTarget(pEventType)),
-                             unused, empty);
-    }
-
-    /**
-     * Computing queue name according to {@link WorkerMode}, {@link Target} and a discrimator type.
-     *
-     * @param pType
-     *            type
-     * @param pWorkerMode
-     *            {@link WorkerMode}
-     * @param pTarget
-     *            {@link Target}
-     * @return queue name according to {@link WorkerMode} and {@link Target}
-     */
-    public String getQueueName(Class<?> pType, WorkerMode pWorkerMode, Target pTarget) {
         StringBuilder builder = new StringBuilder();
-
-        // Prefix queue with microservice id if target restricted to microservice
-        switch (pTarget) {
-            case ALL:
-                // No prefix cause no target restriction
-                break;
-            case MICROSERVICE:
-                builder.append(microserviceTypeId).append(UNDERSCORE);
-                break;
-            case INSTANCE:
-                builder.append(microserviceTypeId).append(UNDERSCORE).append(microserviceInstanceId);
-                break;
-            default:
-                throw new EnumConstantNotPresentException(Target.class, pTarget.name());
+        builder.append(UNICAST_NAMESPACE);
+        builder.append(DOT);
+        builder.append(tenant);
+        if (Target.MICROSERVICE.equals(target)) {
+            builder.append(DOT);
+            builder.append(microserviceTypeId);
         }
-
-        switch (pWorkerMode) {
-            case SINGLE:
-                builder.append(pType.getName());
-                break;
-            case ALL:
-                builder.append(pType.getName());
-                builder.append(UNDERSCORE);
-                builder.append(microserviceInstanceId);
-                break;
-            default:
-                throw new EnumConstantNotPresentException(WorkerMode.class, pWorkerMode.name());
-        }
-
+        builder.append(DOT);
+        builder.append(eventType.getName());
         return builder.toString();
     }
 
     /**
-     *
-     * Declare binding to link {@link Queue} and {@link Exchange}
-     *
-     * @param pTenant
-     *            tenant
-     * @param pQueue
-     *            {@link Queue} to bind
-     * @param pExchange
-     *            {@link Exchange} to bind
-     * @param pWorkerMode
-     *            {@link WorkerMode}
-     * @return {@link Binding} between {@link Queue} and {@link Exchange}
+     * Subscription queue name based on event {@link IHandler} type name and {@link Target} restriction. The uniqueness
+     * of the queue is guaranteed by the combination of microservice type, id and handler for {@link Target#ALL}
+     * type.
+     * @param handlerType event handler
+     * @return queue name
      */
-    public Binding declareBinding(String pTenant, Queue pQueue, Exchange pExchange, WorkerMode pWorkerMode) {
+    @Override
+    public String getSubscriptionQueueName(Class<? extends IHandler<?>> handlerType, Target target) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(BROADCAST_NAMESPACE);
+        builder.append(DOT);
+        builder.append(microserviceTypeId);
+        if (Target.ALL.equals(target) || Target.MICROSERVICE.equals(target)) {
+            builder.append(DOT);
+            builder.append(microserviceInstanceId);
+        }
+        builder.append(DOT);
+        builder.append(handlerType.getName());
+        return builder.toString();
+    }
 
-        LOGGER.debug("Declaring binding for : tenant {} / queue {} / exchange {} / mode {}", pTenant, pQueue.getName(),
-                     pExchange.getName(), pWorkerMode);
+    @Override
+    public Binding declareBinding(Queue queue, Exchange exchange, WorkerMode workerMode) {
 
         Binding binding;
-        switch (pWorkerMode) {
-            case SINGLE:
-                binding = BindingBuilder.bind(pQueue).to((DirectExchange) pExchange)
-                        .with(getRoutingKey(pQueue.getName(), WorkerMode.SINGLE));
+        switch (workerMode) {
+            case UNICAST:
+                binding = BindingBuilder.bind(queue).to((DirectExchange) exchange)
+                        .with(getRoutingKey(Optional.of(queue), WorkerMode.UNICAST));
                 break;
-            case ALL:
-                binding = BindingBuilder.bind(pQueue).to((FanoutExchange) pExchange);
+            case BROADCAST:
+                binding = BindingBuilder.bind(queue).to((FanoutExchange) exchange);
                 break;
             default:
-                throw new EnumConstantNotPresentException(WorkerMode.class, pWorkerMode.name());
+                throw new EnumConstantNotPresentException(WorkerMode.class, workerMode.name());
         }
 
         rabbitAdmin.declareBinding(binding);
         return binding;
     }
 
-    /**
-     *
-     * @param pQueueName
-     *            queue name
-     * @param pWorkerMode
-     *            communication target
-     * @return routing key
-     */
-    public String getRoutingKey(String pQueueName, WorkerMode pWorkerMode) {
+    @Override
+    public String getRoutingKey(Optional<Queue> queue, WorkerMode workerMode) {
         final String routingKey;
-        switch (pWorkerMode) {
-            case SINGLE:
-                routingKey = pQueueName;
+        switch (workerMode) {
+            case UNICAST:
+                if (queue.isPresent()) {
+                    routingKey = queue.get().getName();
+                } else {
+                    throw new IllegalArgumentException("Queue is required");
+                }
                 break;
-            case ALL:
-                routingKey = "";
+            case BROADCAST:
+                routingKey = DEFAULT_ROUTING_KEY;
                 break;
             default:
-                throw new EnumConstantNotPresentException(WorkerMode.class, pWorkerMode.name());
+                throw new EnumConstantNotPresentException(WorkerMode.class, workerMode.name());
         }
         return routingKey;
     }
 
-    public String getMicroserviceTypeId() {
-        return microserviceTypeId;
+    @Override
+    public void purgeQueue(String queueName, boolean noWait) {
+        rabbitAdmin.purgeQueue(queueName, noWait);
     }
 
-    public String getMicroserviceInstanceId() {
-        return microserviceInstanceId;
+    @Override
+    public Properties getQueueProperties(String queueName) {
+        return rabbitAdmin.getQueueProperties(queueName);
     }
 
+    @Override
+    public boolean deleteQueue(String queueName) {
+        return rabbitAdmin.deleteQueue(queueName);
+    }
+
+    @Override
+    public void deleteQueue(String queueName, boolean unused, boolean empty) {
+        rabbitAdmin.deleteQueue(queueName, unused, empty);
+    }
+
+    /**
+     * Only used for test purpose
+     */
+    public void setMicroserviceTypeId(String microserviceTypeId) {
+        this.microserviceTypeId = microserviceTypeId;
+    }
+
+    /**
+     * Only used for test purpose
+     */
+    public void setMicroserviceInstanceId(String microserviceInstanceId) {
+        this.microserviceInstanceId = microserviceInstanceId;
+    }
 }

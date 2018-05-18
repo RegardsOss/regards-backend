@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,36 +19,21 @@
 package fr.cnes.regards.framework.module.rest.exception;
 
 /**
+ * Exception indicating that an entity is not found according to the given identifier
  *
- * Class EntityNotFoundException
- *
- * Exception to indicates that the required entity is not found.
- *
- * @author CS
- * @since 1.0-SNAPSHOT
- *
+ * @author Marc Sordi
  */
 public class EntityNotFoundException extends EntityException {
 
-    public EntityNotFoundException(final String pEntityIdentifier, final Class<?> pEntityClass) {
-        super(String.format("Entity %s with id : %s doesn't exists", pEntityClass.getName(), pEntityIdentifier));
+    public EntityNotFoundException(final String entityIdentifier, final Class<?> entityClass) {
+        super(String.format("Entity %s with id : %s doesn't exist", entityClass.getName(), entityIdentifier));
     }
 
-    public EntityNotFoundException(final Long pEntityIdentifier, final Class<?> pEntityClass) {
-        this(String.valueOf(pEntityIdentifier), pEntityClass);
+    public EntityNotFoundException(final Long entityIdentifier, final Class<?> entityClass) {
+        this(String.valueOf(entityIdentifier), entityClass);
     }
 
-    /**
-     * @param pEntityId
-     */
-    public EntityNotFoundException(Long pEntityIdentifier) {
-        this(String.valueOf(pEntityIdentifier));
-    }
-
-    /**
-     * @param pEntityIpId
-     */
-    public EntityNotFoundException(String pEntityIpId) {
-        super(String.format("Entity with ipId : %s doesn't exists", pEntityIpId));
+    public EntityNotFoundException(String message) {
+        super(message);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,27 +20,27 @@ package fr.cnes.regards.framework.amqp.domain;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.client.support.InterceptingHttpAccessor;
 
 /**
- * @param <T>
- *            Type of Event you are handling
+ * @param <T> Type of Event you are handling
  *
- *            Interface identifying classes that can handle message from the broker
- *
+ * Interface identifying classes that can handle message from the broker
  * @author svissier
- *
  */
 public interface IHandler<T> {
 
-    static final Logger LOGGER= LoggerFactory.getLogger(IHandler.class);
+    /**
+     * Logger instance
+     */
+    static final Logger LOGGER = LoggerFactory.getLogger(IHandler.class);
 
-    public default void handleAndLog(TenantWrapper<T> pWrapper) {
-        LOGGER.info("Received {}, From {}", pWrapper.getContent().getClass().getSimpleName(), pWrapper.getTenant());
-        handle(pWrapper);
+    public default void handleAndLog(TenantWrapper<T> wrapper) {
+        LOGGER.info("Received {}, From {}", wrapper.getContent().getClass().getSimpleName(), wrapper.getTenant());
+        LOGGER.trace("Event received: {}", wrapper.getContent().toString());
+        handle(wrapper);
     }
 
-    public void handle(TenantWrapper<T> pWrapper);
+    public void handle(TenantWrapper<T> wrapper);
 
     @SuppressWarnings("unchecked")
     public default Class<? extends IHandler<T>> getType() {

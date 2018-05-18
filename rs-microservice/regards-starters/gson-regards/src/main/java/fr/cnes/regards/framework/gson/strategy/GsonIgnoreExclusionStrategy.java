@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -37,10 +37,7 @@ import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
  */
 public class GsonIgnoreExclusionStrategy implements ExclusionStrategy {
 
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(GsonIgnoreExclusionStrategy.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GsonIgnoreExclusionStrategy.class);
 
     /**
      * Type to skip
@@ -64,8 +61,8 @@ public class GsonIgnoreExclusionStrategy implements ExclusionStrategy {
     public boolean shouldSkipField(FieldAttributes pFieldAttributes) {
         final boolean isSkipped = pFieldAttributes.getAnnotation(GsonIgnore.class) != null;
         if (isSkipped) {
-            LOG.debug(String.format("Skipping field %s in class %s.", pFieldAttributes.getName(),
-                                    pFieldAttributes.getClass()));
+            LOGGER.debug(String.format("Skipping field %s in class %s.", pFieldAttributes.getName(),
+                                       pFieldAttributes.getClass()));
         }
         return isSkipped;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -54,6 +54,16 @@ public class TenantConnection {
      * Tenant datasource driverClassName
      */
     private String driverClassName = "org.postgresql.Driver";
+
+    /**
+     * Tenant connection state
+     */
+    private TenantConnectionState state;
+
+    /**
+     * If {@link TenantConnectionState#ERROR}, explains the error cause
+     */
+    private String errorCause;
 
     /**
      *
@@ -129,6 +139,22 @@ public class TenantConnection {
 
     public void setDriverClassName(final String pDriverClassName) {
         driverClassName = pDriverClassName;
+    }
+
+    public TenantConnectionState getState() {
+        return state;
+    }
+
+    public void setState(TenantConnectionState state) {
+        this.state = state;
+    }
+
+    public String getErrorCause() {
+        return errorCause;
+    }
+
+    public void setErrorCause(String errorCause) {
+        this.errorCause = errorCause;
     }
 
 }

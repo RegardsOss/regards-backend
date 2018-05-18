@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -36,9 +36,9 @@ public interface IPollerContract {
      *
      * @param <T>
      *            {@link IPollable} event
-     * @param pEvent
+     * @param event
      *            {@link IPollable} event
      * @return {@link IPollable} event in a tenant wrapper
      */
-    <T extends IPollable> TenantWrapper<T> poll(Class<T> pEvent);
+    <T extends IPollable> TenantWrapper<T> poll(Class<T> event);
 }

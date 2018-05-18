@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -26,6 +26,7 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,16 +160,19 @@ public class JWTAuthenticationFilterTest {
     public void jwtFilterPublicAccessWithHeader() throws JwtException {
 
         // the public filter should generate this token:
-        JWTAuthentication token=jwtService.parseToken(new JWTAuthentication(jwtService.generateToken("project-test", "public@regards.com", DefaultRole.PUBLIC.name())));
+        String tenant = "project-test";
+        String jwt = jwtService.generateToken(tenant, "public@regards.com", DefaultRole.PUBLIC.name());
+        JWTAuthentication token=jwtService.parseToken(new JWTAuthentication(jwt));
 
         final MockHttpServletRequest mockedRequest = new MockHttpServletRequest();
-        mockedRequest.addHeader(HttpConstants.SCOPE, "project-test");
+        mockedRequest.addHeader(HttpConstants.SCOPE, tenant);
 
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
 
         PublicAuthenticationFilter publicFilter = new PublicAuthenticationFilter(jwtService);
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
-        Mockito.when(mockedManager.authenticate(token)).thenReturn(token);
+        // As generateToken seems to have some random added into computation, we cannot specify what is expected
+        Mockito.when(mockedManager.authenticate(Matchers.any())).thenReturn(token);
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
                                                                            Mockito.mock(IRuntimeTenantResolver.class));
 

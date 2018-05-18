@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -37,13 +37,13 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  */
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { DefaultTestConfiguration.class })
+@ContextConfiguration(classes = { DefaultDaoTestConfiguration.class, MockAmqpConfiguration.class })
 public abstract class AbstractDaoTest {
 
     /**
      * Default tenant configured in dao.properties
      */
-    private static final String DEFAULT_TENANT = "PROJECT";
+    public static final String DEFAULT_TENANT = "PROJECT";
 
     /**
      * JPA entity manager : use it to flush context to prevent false positive
@@ -53,7 +53,7 @@ public abstract class AbstractDaoTest {
     protected EntityManager entityManager;
 
     @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    protected IRuntimeTenantResolver runtimeTenantResolver;
 
     protected void injectDefaultToken() {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -23,13 +23,10 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.stereotype.Component;
 
 /**
- *
  * Class SpringBeanHelper
  *
  * Static Helper to get a Spring Bean from anywhere
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @Component
 public class SpringBeanHelper implements BeanFactoryAware {
@@ -37,51 +34,34 @@ public class SpringBeanHelper implements BeanFactoryAware {
     /**
      * Static instance
      */
-    private static SpringBeanHelper instance;
+    private static final SpringBeanHelper INSTANCE = new SpringBeanHelper();
 
     /**
      * Spring Bean factory
      */
     private BeanFactory beanFactory;
 
-    public SpringBeanHelper() {
-        super();
-        instance = this;
-    }
-
     /**
-     *
      * Get bean factory
-     *
      * @return {@link BeanFactory}
-     * @since 1.0-SNAPSHOT
      */
     public BeanFactory getBeanFactory() {
         return beanFactory;
     }
 
     @Override
-    public void setBeanFactory(final BeanFactory pBeanFactory) {
-        beanFactory = pBeanFactory;
+    public void setBeanFactory(final BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
     }
 
     /**
-     *
      * Get a Bean referenced in the Spring context
-     *
-     * @param <T>
-     *            bean for class
-     * @param pBeanClass
-     *            Bean class to obtain
+     * @param <T> bean for class
+     * @param beanClass Bean class to obtain
      * @return Bean
-     * @since 1.0-SNAPSHOT
      */
-    public static <T> T getBean(final Class<T> pBeanClass) {
-        if (instance != null) {
-            return instance.getBeanFactory().getBean(pBeanClass);
-        } else {
-            return null;
-        }
+    public static <T> T getBean(final Class<T> beanClass) {
+        return INSTANCE.getBeanFactory().getBean(beanClass);
     }
 
 }

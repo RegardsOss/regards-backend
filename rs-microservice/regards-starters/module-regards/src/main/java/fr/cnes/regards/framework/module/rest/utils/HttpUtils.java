@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -22,16 +22,26 @@ import org.springframework.http.HttpStatus;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public final class HttpUtils {
 
+    /**
+     * Http code class multiplier
+     */
     private static final int HTTP_CODE_CLASS_MULTIPLIER = 100;
+
+    /**
+     * Not standard HTTP usual code
+     */
+    public static final int UNKNOWN_ERROR = 520;
 
     private HttpUtils() {
         // private constructor of a util class
     }
 
+    /**
+     * check {https://tools.ietf.org/html/rfc7231#section-6} for information
+     */
     public static boolean isSuccess(HttpStatus pHttpStatus) {
         return (pHttpStatus.value() / HTTP_CODE_CLASS_MULTIPLIER) == 2;
     }

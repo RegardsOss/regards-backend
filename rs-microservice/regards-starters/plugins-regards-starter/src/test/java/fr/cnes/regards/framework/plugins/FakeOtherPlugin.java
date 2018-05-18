@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.plugins;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * SamplePlugin
@@ -28,6 +29,10 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 @Plugin(description = "Sample plugin test", id = "aOtherFakePlugin", version = "12345-6789-11", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class FakeOtherPlugin implements IComplexInterfacePlugin {
+
+    @PluginParameter(label = "test", defaultValue = "String")
+    private String string;
+
 
     @Override
     public int mult(int pFirst, int pSecond) {

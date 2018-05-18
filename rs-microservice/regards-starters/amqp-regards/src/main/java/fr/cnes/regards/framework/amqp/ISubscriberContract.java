@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -36,22 +36,35 @@ public interface ISubscriberContract {
     /**
      * Subscribe to this {@link ISubscribable} event
      *
-     * @param <T>
-     *            {@link ISubscribable} event
-     * @param pEvent
-     *            {@link ISubscribable} event
-     * @param pReceiver
-     *            event {@link IHandler}
+     * @param <E> {@link ISubscribable} event
+     * @param eventType {@link ISubscribable} event
+     * @param receiver event {@link IHandler}
      */
-    <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver);
+    <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver);
+
+    /**
+     * Subscribe to this {@link ISubscribable} event
+     *
+     * @param <E> @link ISubscribable} event
+     * @param eventType {@link ISubscribable} event
+     * @param receiver event {@link IHandler}
+     * @param purgeQueue true to purge queue if already exists. Useful in tests.
+     */
+    <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue);
 
     /**
      * Unsubscribe from this {@link ISubscribable} event.
      *
-     * @param <T>
-     *            {@link ISubscribable} event
-     * @param pEvent
-     *            {@link ISubscribable} event
+     * @param <T> {@link ISubscribable} event
+     * @param eventType {@link ISubscribable} event
      */
-    <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent);
+    <T extends ISubscribable> void unsubscribeFrom(Class<T> eventType);
+
+    /**
+     * Purge related queues (for all tenant virtual hosts). Useful for testing purpose before publishing events. Purge
+     * can be done as well using {@link #subscribeTo(Class, IHandler, boolean)}
+     * @param eventType {@link ISubscribable} event type
+     * @param handlerType {@link IHandler} type
+     */
+    <E extends ISubscribable> void purgeQueue(Class<E> eventType, Class<? extends IHandler<E>> handlerType);
 }

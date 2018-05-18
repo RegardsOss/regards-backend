@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,6 +20,8 @@ package fr.cnes.regards.framework.amqp.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
+
 /**
  * class regrouping the properties about managment of the broker
  *
@@ -39,19 +41,43 @@ public class AmqpManagementProperties {
      */
     private Integer port = 15672;
 
+    private VirtualHostMode mode = VirtualHostMode.SINGLE;
+
+    /**
+     * @return the management host
+     */
     public String getHost() {
         return host;
     }
 
+    /**
+     * Set the management host
+     * @param pAmqpManagementHost
+     */
     public void setHost(String pAmqpManagementHost) {
         host = pAmqpManagementHost;
     }
 
+    /**
+     * @return the management port
+     */
     public Integer getPort() {
         return port;
     }
 
+    /**
+     * Set the management port
+     * @param pAmqpManagementPort
+     */
     public void setPort(Integer pAmqpManagementPort) {
         port = pAmqpManagementPort;
+    }
+
+    public VirtualHostMode getMode() {
+        return mode;
+    }
+
+    public void setMode(VirtualHostMode mode) {
+        this.mode = mode;
     }
 }

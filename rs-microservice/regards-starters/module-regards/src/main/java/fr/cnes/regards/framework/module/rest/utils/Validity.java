@@ -15,14 +15,25 @@ public final class Validity {
     private Validity() {
     }
 
+    /**
+     * Constructor setting the validity
+     * @param pValidity
+     */
     public Validity(final Boolean pValidity) {
         validity = pValidity;
     }
 
+    /**
+     * @return the validity
+     */
     public Boolean getValidity() {
         return validity;
     }
 
+    /**
+     * Set the validity
+     * @param pValidity
+     */
     public void setValidity(final Boolean pValidity) {
         validity = pValidity;
     }

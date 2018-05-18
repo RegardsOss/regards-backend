@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.framework.hateoas;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.validation.Valid;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -227,10 +226,10 @@ public class DefaultResourceServiceTest {
         }
 
         @Override
-        public Resource<Pojo> toResource(Pojo pElement, Object... pExtras) {
-            final Resource<Pojo> resource = resourceService.toResource(pElement);
+        public Resource<Pojo> toResource(Pojo element, Object... extras) {
+            final Resource<Pojo> resource = resourceService.toResource(element);
             resourceService.addLink(resource, PojoController.class, GET_METHOD_NAME, LinkRels.SELF,
-                                    MethodParamFactory.build(Long.class, pElement.getId()));
+                                    MethodParamFactory.build(Long.class, element.getId()));
             resourceService.addLink(resource, PojoController.class, UPDATE_METHOD_NAME, LinkRels.UPDATE,
                                     MethodParamFactory.build(Pojo.class));
             return resource;

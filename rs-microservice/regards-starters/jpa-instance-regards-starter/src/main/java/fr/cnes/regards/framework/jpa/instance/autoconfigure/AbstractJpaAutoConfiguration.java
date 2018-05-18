@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,13 +18,12 @@
  */
 package fr.cnes.regards.framework.jpa.instance.autoconfigure;
 
+import javax.sql.DataSource;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.sql.DataSource;
 
 import org.flywaydb.core.Flyway;
 import org.hibernate.MultiTenancyStrategy;
@@ -47,7 +46,6 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.jpa.exception.JpaException;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
@@ -161,7 +159,6 @@ public abstract class AbstractJpaAutoConfiguration {
         } else {
             FlywayDatasourceSchemaHelper helper = new FlywayDatasourceSchemaHelper(hibernateProperties);
             helper.setDataSource(instanceDataSource);
-            helper.setScriptLocationPath("instancescripts");
             return helper;
         }
     }

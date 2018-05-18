@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.rest;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
-
-import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +35,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mchange.v2.c3p0.PooledDataSource;
-
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration;
 import fr.cnes.regards.framework.module.rest.representation.GenericResponseBody;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -67,7 +65,7 @@ public class JpaMultitenantController {
     private Map<String, DataSource> dataSources;
 
     @RequestMapping(method = RequestMethod.GET, value = "/test")
-    @ResourceAccess(description = "Test the tenant connection", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Test the tenant connection", role = DefaultRole.ADMIN)
     public ResponseEntity<GenericResponseBody> testTenantConnection(@PathVariable String tenant) {
 
         DataSource dataSource = dataSources.get(tenant);

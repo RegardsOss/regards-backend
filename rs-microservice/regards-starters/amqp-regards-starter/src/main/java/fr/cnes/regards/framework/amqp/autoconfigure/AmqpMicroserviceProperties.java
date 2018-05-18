@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -43,10 +43,17 @@ public class AmqpMicroserviceProperties {
     @NotNull
     private String instanceIdentifier;
 
+    /**
+     * @return the microservice type identifier
+     */
     public String getTypeIdentifier() {
         return typeIdentifier;
     }
 
+    /**
+     * Set the microservice type identifier
+     * @param pTypeIdentifier
+     */
     public void setTypeIdentifier(String pTypeIdentifier) {
         typeIdentifier = pTypeIdentifier;
     }

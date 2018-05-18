@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -26,58 +26,47 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.util.Assert;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Single resource interface
- *
- * @param <T>
- *            data transfer object (whatever object)
+ * @param <T> data transfer object (whatever object)
  * @author msordi
- *
  */
 @FunctionalInterface
 public interface IResourceController<T> {
 
     /**
      * Convert an element to a {@link Resource}
-     *
-     * @param pElement
-     *            element to convert
-     * @param pExtras
-     *            Extra URL path parameters for links
+     * @param element element to convert
+     * @param extras Extra URL path parameters for links
      * @return a {@link Resource}
      */
-    Resource<T> toResource(T pElement, Object... pExtras);
+    Resource<T> toResource(T element, Object... extras);
 
     /**
      * Convert a list of elements to a list of {@link Resource}
-     *
-     * @param pElements
-     *            list of elements to convert
-     * @param pExtras
-     *            Extra URL path parameters for links
+     * @param elements list of elements to convert
+     * @param extras Extra URL path parameters for links
      * @return a list of {@link Resource}
      */
-    default List<Resource<T>> toResources(final Collection<T> pElements, final Object... pExtras) {
-        Assert.notNull(pElements);
-        return pElements.stream().map(resource -> toResource(resource, pExtras)).collect(Collectors.toList());
+    default List<Resource<T>> toResources(final Collection<T> elements, final Object... extras) {
+        Preconditions.checkNotNull(elements);
+        return elements.stream().map(resource -> toResource(resource, extras)).collect(Collectors.toList());
     }
 
     /**
      * Convert a list of elements to a list of {@link Resource}
-     *
-     * @param pElements
-     *            list of elements to convert
-     * @param pExtras
-     *            Extra URL path parameters for links
+     * @param elements list of elements to convert
+     * @param extras Extra URL path parameters for links
      * @return a list of {@link Resource}
      */
-    default PagedResources<Resource<T>> toPagedResources(final Page<T> pElements,
-            final PagedResourcesAssembler<T> pAssembler, final Object... pExtras) {
-        Assert.notNull(pElements);
-        final PagedResources<Resource<T>> pageResources = pAssembler.toResource(pElements);
-        pageResources.forEach(resource -> resource.add(toResource(resource.getContent(), pExtras).getLinks()));
+    default PagedResources<Resource<T>> toPagedResources(final Page<T> elements,
+            final PagedResourcesAssembler<T> assembler, final Object... extras) {
+        Preconditions.checkNotNull(elements);
+        final PagedResources<Resource<T>> pageResources = assembler.toResource(elements);
+        pageResources.forEach(resource -> resource.add(toResource(resource.getContent(), extras).getLinks()));
         return pageResources;
     }
 }

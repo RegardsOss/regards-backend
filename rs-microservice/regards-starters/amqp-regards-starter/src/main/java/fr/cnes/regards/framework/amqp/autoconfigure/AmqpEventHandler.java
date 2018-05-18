@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -23,6 +23,7 @@ import javax.annotation.PostConstruct;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.tenant.TenantCreatedEvent;
@@ -80,7 +81,7 @@ public class AmqpEventHandler {
         @Override
         public void handle(TenantWrapper<TenantCreatedEvent> pWrapper) {
             TenantCreatedEvent tce = pWrapper.getContent();
-            virtualHostAdmin.addVhost(tce.getTenant());
+            virtualHostAdmin.addVhost(RabbitVirtualHostAdmin.getVhostName(tce.getTenant()));
             subscriber.addTenant(tce.getTenant());
         }
     }
@@ -96,8 +97,8 @@ public class AmqpEventHandler {
         @Override
         public void handle(TenantWrapper<TenantDeletedEvent> pWrapper) {
             TenantDeletedEvent tde = pWrapper.getContent();
-            virtualHostAdmin.removeVhost(tde.getTenant());
             subscriber.removeTenant(tde.getTenant());
+            virtualHostAdmin.removeVhost(tde.getTenant());
         }
     }
 }

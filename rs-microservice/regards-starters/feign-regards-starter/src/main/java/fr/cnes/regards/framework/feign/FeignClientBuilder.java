@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.framework.feign;
 
+import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
 
+import com.google.gson.Gson;
 import feign.Feign;
 import feign.Target;
 import feign.gson.GsonDecoder;
@@ -32,6 +35,8 @@ import feign.gson.GsonEncoder;
  *
  */
 public final class FeignClientBuilder {
+
+    private static ObjectFactory<HttpMessageConverters> messageConverters;
 
     private FeignClientBuilder() {
     }
@@ -47,7 +52,26 @@ public final class FeignClientBuilder {
     public static <T> T build(final Target<T> pTarget) {
         return Feign.builder() // Feign customization
                 .encoder(new GsonEncoder()).decoder(new ResponseEntityDecoder(new GsonDecoder()))
-                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get()).target(pTarget);
+                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
+                .target(pTarget);
     }
 
+    /**
+    *
+    * Generate client
+    *
+    * @param pTarget
+    *            Target to add informations in header like Autorization.
+    * @return IResourcesClient a client instance
+    */
+    public static <T> T build(final Target<T> pTarget, Gson gson) {
+        return Feign.builder() // Feign customization
+                .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
+                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
+                .target(pTarget);
+    }
+
+    public static void setMessageConverters(ObjectFactory<HttpMessageConverters> messageConverters) {
+        FeignClientBuilder.messageConverters = messageConverters;
+    }
 }

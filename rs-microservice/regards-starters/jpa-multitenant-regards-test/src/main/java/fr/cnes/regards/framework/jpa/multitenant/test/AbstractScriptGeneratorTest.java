@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -23,15 +23,17 @@ import org.springframework.test.context.TestPropertySource;
 
 /**
  * Generate SQL script using hbm2ddl tool.<br/>
- * Extends this test class in dao layer, remove and recreate public schema from the target database and run the test.<br/>
+ * Extends this test class in dao layer, <b>remove ALL SCHEMAS and recreate only public one</b> from the target database
+ * and run the
+ * test.<br/>
  * A SQL script should be created in target.
  *
  * @author Marc Sordi
  *
  */
-@TestPropertySource(properties = { "regards.jpa.multitenant.embedded=false",
-        "regards.jpa.multitenant.outputFile=target/project_script.sql" })
-public class AbstractScriptGeneratorTest extends AbstractDaoTest {
+@TestPropertySource(properties = { "regards.jpa.multitenant.migrationTool=HBM2DDL",
+        "regards.jpa.multitenant.embedded=false", "regards.jpa.multitenant.outputFile=target/project_script.sql" })
+public abstract class AbstractScriptGeneratorTest extends AbstractDaoTest {
 
     @Test
     public void generate() {

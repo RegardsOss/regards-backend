@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -68,12 +68,12 @@ public class MultitenantDaoProperties {
     /**
      * For pooled data source, min available connections
      */
-    private Integer minPoolSize = 5;
+    private Integer minPoolSize = 3;
 
     /**
      * For pooled data source, max available connections
      */
-    private Integer maxPoolSize = 20;
+    private Integer maxPoolSize = 15;
 
     /**
      * Default test query
@@ -83,7 +83,7 @@ public class MultitenantDaoProperties {
     /**
      * Migration tool. Default to hbm2ddl.
      */
-    private MigrationTool migrationTool = MigrationTool.HBM2DDL;
+    private MigrationTool migrationTool = MigrationTool.FLYWAYDB;
 
     /**
      * Optional script output file for {@link MigrationTool#HBM2DDL}

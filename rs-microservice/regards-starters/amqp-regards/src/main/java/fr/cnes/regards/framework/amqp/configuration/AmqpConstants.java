@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -29,7 +29,11 @@ public final class AmqpConstants {
     /**
      * Base name for the AMQP manager virtual host.
      */
-    public static final String AMQP_MANAGER = "instance.manager";
+    public static final String AMQP_INSTANCE_MANAGER = "regards.instance.manager";
+
+    public static final String AMQP_MULTITENANT_MANAGER = "regards.multitenant.manager";
+
+    public static final String INSTANCE_TENANT = "instance";
 
     private AmqpConstants() {
     }

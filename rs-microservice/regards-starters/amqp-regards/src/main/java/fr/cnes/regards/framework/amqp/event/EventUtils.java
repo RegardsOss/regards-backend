@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -36,25 +36,32 @@ public final class EventUtils {
     /**
      * Retrieve annotation {@link Event} from class. This annotation must exist!
      *
-     * @param pClass
+     * @param eventType
      *            {@link Event} annotated class
      * @return {@link Event}
      */
-    public static Event getEventProperties(Class<?> pClass) {
-        Assert.notNull(pClass);
-        Event ppt = AnnotationUtils.findAnnotation(pClass, Event.class);
-        Assert.notNull(ppt);
+    public static Event getEventProperties(Class<?> eventType) {
+        Assert.notNull(eventType, "Event type required");
+        Event ppt = AnnotationUtils.findAnnotation(eventType, Event.class);
+        Assert.notNull(ppt, "No event annotation found");
         return ppt;
     }
 
     /**
-     *
-     * @param pClass
+     * @param eventType
      *            {@link Event} annotated class
+     * @return {@link Target}
+     */
+    public static Target getTargetRestriction(Class<?> eventType) {
+        return EventUtils.getEventProperties(eventType).target();
+    }
+
+    /**
+     * @param eventType {@link Event} annotated class
      * @return {@link WorkerMode}
      */
-    public static Target getCommunicationTarget(Class<?> pClass) {
-        return EventUtils.getEventProperties(pClass).target();
+    public static WorkerMode getWorkerMode(Class<?> eventType) {
+        return EventUtils.getEventProperties(eventType).mode();
     }
 
 }

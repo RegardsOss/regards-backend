@@ -13,21 +13,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Objects;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 
 public final class Beans {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Beans.class);
 
+    private Beans() {
+    }
+
     /**
-     * Compare two objects first with equals then by their properties readers, recursively follow inner objects using
+     * Compare two objects first with areEqual then by their properties readers, recursively follow inner objects using
      * same comparison mechanism.
-     * <b>Beware of collections or arrays, in this case, native equals is used.</b>
+     * <b>Beware of collections or arrays, in this case, native areEqual is used.</b>
      * @param pO1 first object to compare
      * @param pO2 second object to compare
      * @return true when objects equal, false otherwise
      */
     @SuppressWarnings("rawtypes")
-    public static boolean equals(final Object pO1, final Object pO2, String... gettersToForget) {
+    public static boolean areEqual(final Object pO1, final Object pO2, String... gettersToForget) {
         Object o1 = pO1;
         Object o2 = pO2;
         if ((o1 == null) && (o2 == null)) {
@@ -71,14 +75,14 @@ public final class Beans {
                     Object v2 = method.invoke(o2, new Object[0]);
                     if (v1 != null) {
                         if (v1.getClass().getName().startsWith("fr.cnes")) {
-                            if (!Beans.equals(v1, v2, gettersToForget)) {
+                            if (!Beans.areEqual(v1, v2, gettersToForget)) {
                                 LOGGER.warn("Objects differ : {}.{} : {} vs {}.{} : {}", o1, method.getName(), v1, o2,
                                             method.getName(), v2);
                                 return false;
                             }
                         } else if (v1 instanceof Collection) { // For Hb9n PersistentBag type which seems to not be compatible with collections
-                            if (!Beans.equals(((Collection) v1).toArray(), ((Collection) v2).toArray(),
-                                              gettersToForget)) {
+                            if (!Beans.areEqual(((Collection) v1).toArray(), ((Collection) v2).toArray(),
+                                                gettersToForget)) {
                                 LOGGER.warn("Object collections differ : {} vs {}",
                                             Arrays.toString(((Collection) v1).toArray()), ((Collection) v2).toArray());
                                 return false;
@@ -95,7 +99,7 @@ public final class Beans {
             }
             return true;
         } catch (IntrospectionException | IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e); // NOSONAR
+            throw new RsRuntimeException(e);
         }
     }
 

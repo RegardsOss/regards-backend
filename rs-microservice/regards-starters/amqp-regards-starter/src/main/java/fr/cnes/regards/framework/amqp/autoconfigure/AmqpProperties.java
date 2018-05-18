@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -58,30 +58,51 @@ public class AmqpProperties {
         amqpMicroserviceProperties = pAmqpMicroserviceProperties;
     }
 
+    /**
+     * @return the rabbitmq user password
+     */
     public String getRabbitmqPassword() {
         return rabbitProperties.getPassword();
     }
 
+    /**
+     * @return the rabbitmq user's name
+     */
     public String getRabbitmqUserName() {
         return rabbitProperties.getUsername();
     }
 
+    /**
+     * @return the rabbitmq adress
+     */
     public String getRabbitmqAddresses() {
         return rabbitProperties.determineAddresses();
     }
 
+    /**
+     * @return the microservice type identifier
+     */
     public String getTypeIdentifier() {
         return amqpMicroserviceProperties.getTypeIdentifier();
     }
 
+    /**
+     * @return the microservice instance identifier
+     */
     public String getInstanceIdentifier() {
         return amqpMicroserviceProperties.getInstanceIdentifier();
     }
 
+    /**
+     * @return the amqp management host
+     */
     public String getAmqpManagementHost() {
         return amqpManagementProperties.getHost();
     }
 
+    /**
+     * @return the amqp management port
+     */
     public Integer getAmqpManagementPort() {
         return amqpManagementProperties.getPort();
     }

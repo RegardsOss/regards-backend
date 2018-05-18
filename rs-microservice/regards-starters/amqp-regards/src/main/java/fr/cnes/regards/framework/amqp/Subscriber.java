@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,14 +18,17 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
@@ -50,9 +53,9 @@ public class Subscriber extends AbstractSubscriber implements ISubscriber {
      */
     private final ITenantResolver tenantResolver;
 
-    public Subscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin, RegardsAmqpAdmin pRegardsAmqpAdmin,
+    public Subscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin, IAmqpAdmin amqpAdmin,
             Jackson2JsonMessageConverter pJackson2JsonMessageConverter, ITenantResolver pTenantResolver) {
-        super(pVirtualHostAdmin, pRegardsAmqpAdmin, pJackson2JsonMessageConverter);
+        super(pVirtualHostAdmin, amqpAdmin, pJackson2JsonMessageConverter);
         tenantResolver = pTenantResolver;
     }
 
@@ -62,13 +65,24 @@ public class Subscriber extends AbstractSubscriber implements ISubscriber {
     }
 
     @Override
-    public void addTenant(String pTenant) {
-        addTenantListeners(pTenant);
+    protected String resolveVirtualHost(String tenant) {
+        return RabbitVirtualHostAdmin.getVhostName(tenant);
     }
 
     @Override
-    public void removeTenant(String pTenant) {
-        removeTenantListeners(pTenant);
+    public void addTenant(String tenant) {
+        addTenantListeners(tenant);
     }
 
+    @Override
+    public void removeTenant(String tenant) {
+        if (listeners != null) {
+            for (Map.Entry<Class<?>, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
+                SimpleMessageListenerContainer container = entry.getValue().remove(tenant);
+                if (container != null) {
+                    container.stop();
+                }
+            }
+        }
+    }
 }

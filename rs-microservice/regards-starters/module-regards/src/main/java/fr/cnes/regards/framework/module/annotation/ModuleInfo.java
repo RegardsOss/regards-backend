@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -23,6 +23,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import fr.cnes.regards.framework.module.manager.AbstractModuleConfigurationManager;
+import fr.cnes.regards.framework.module.manager.IModuleConfigurationManager;
+
+/**
+ * This annotation is deprecated. You have to create a file "module.properties" in association with your
+ * {@link IModuleConfigurationManager}. You can see {@link AbstractModuleConfigurationManager} for required content.
+ *
+ * @author Marc Sordi
+ *
+ */
+@Deprecated
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ModuleInfo {

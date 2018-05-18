@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.utils;
 
-import java.beans.PropertyVetoException;
-
 import javax.sql.DataSource;
+import java.beans.PropertyVetoException;
+import java.sql.SQLException;
 
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
@@ -48,9 +48,10 @@ public final class TenantDataSourceHelper {
      * @return a {@link DataSource}
      * @throws PropertyVetoException
      *             if paramater not supported
+     * @throws SQLException if connection fails
      */
     public static DataSource initDataSource(MultitenantDaoProperties pDaoProperties, TenantConnection pTenantConnection)
-            throws PropertyVetoException {
+            throws PropertyVetoException, SQLException {
         DataSource dataSource;
         // Bypass configuration if embedded enabled
         if (pDaoProperties.getEmbedded()) {
@@ -64,6 +65,9 @@ public final class TenantDataSourceHelper {
                                             pTenantConnection.getDriverClassName(), pTenantConnection.getUserName(),
                                             pTenantConnection.getPassword(), pDaoProperties.getMinPoolSize(),
                                             pDaoProperties.getMaxPoolSize(), pDaoProperties.getPreferredTestQuery());
+
+            // Test connection for pooled datasource
+            DataSourceHelper.testConnection(dataSource, true);
         }
         return dataSource;
     }

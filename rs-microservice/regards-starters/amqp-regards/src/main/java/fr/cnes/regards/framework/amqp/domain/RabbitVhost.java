@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -32,19 +32,34 @@ public class RabbitVhost {
      */
     private String name;
 
+    /**
+     * @return the virtual host name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Set the virtual host name
+     * @param pName
+     */
     public void setName(String pName) {
         name = pName;
     }
 
+    /**
+     * Equals method
+     * @param pOther
+     * @return whether pOther is equals to this
+     */
     @Override
     public boolean equals(Object pOther) {
         return (pOther instanceof RabbitVhost) && ((RabbitVhost) pOther).name.equals(name);
     }
 
+    /**
+     * @return this hashcode
+     */
     @Override
     public int hashCode() {
         return name.hashCode();
