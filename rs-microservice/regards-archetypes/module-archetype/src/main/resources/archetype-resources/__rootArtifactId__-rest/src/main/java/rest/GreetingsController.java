@@ -18,7 +18,7 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
         #set($symbol_dollar='$')
         #set($symbol_escape='\' )
         /*
-         * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+         * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
          *
          * This file is part of REGARDS.
          *
