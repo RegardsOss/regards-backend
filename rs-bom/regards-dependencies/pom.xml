@@ -50,6 +50,7 @@
         <cloud.starter.version>2.0.0-SNAPSHOT</cloud.starter.version>
         <feign.starter.version>2.0.0-SNAPSHOT</feign.starter.version>
         <geojson.starter.version>2.0.0-SNAPSHOT</geojson.starter.version>
+        <geojson.docs.version>2.1.0-SNAPSHOT</geojson.docs.version>
         <gson.starter.version>2.0.0-SNAPSHOT</gson.starter.version>
         <hateoas.starter.version>2.0.0-SNAPSHOT</hateoas.starter.version>
         <jpa.data.version>2.0.0-SNAPSHOT</jpa.data.version>
@@ -65,6 +66,7 @@
         <websocket.starter.version>2.0.0-SNAPSHOT</websocket.starter.version>
         <plugins.starter.version>2.0.0-SNAPSHOT</plugins.starter.version>
         <oais.starter.version>2.0.0-SNAPSHOT</oais.starter.version>
+        <oais.docs.version>2.1.0-SNAPSHOT</oais.docs.version>
 
         <!-- Bootstrap -->
         <config.bootstrap.version>2.0.0-SNAPSHOT</config.bootstrap.version>
@@ -244,6 +246,11 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework</groupId>
+                <artifactId>geojson-docs</artifactId>
+                <version>${geojson.docs.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework</groupId>
                 <artifactId>geojson-regards</artifactId>
                 <version>${geojson.starter.version}</version>
             </dependency>
@@ -347,6 +354,11 @@
                 <groupId>fr.cnes.regards.framework</groupId>
                 <artifactId>oais-regards</artifactId>
                 <version>${oais.starter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework</groupId>
+                <artifactId>oais-docs</artifactId>
+                <version>${oais.docs.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework</groupId>
