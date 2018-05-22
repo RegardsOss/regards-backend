@@ -73,7 +73,7 @@
         <!-- Tells Sonar where the Jacoco coverage result file is located for IT -->
         <sonar.jacoco.itReportPath>${jacoco.outputDir}/${jacoco.out.it.file}</sonar.jacoco.itReportPath>
         <spring.hibernate.version>5.0.9.Final</spring.hibernate.version>
-        <regards.bom.version>2.0.1-SNAPSHOT</regards.bom.version>
+        <regards.bom.version>2.1.0-SNAPSHOT</regards.bom.version>
     </properties>
 
     <dependencies>
