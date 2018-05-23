@@ -7,7 +7,7 @@
     "features": [
         {
             "type": "Feature",
-            "id": "sipId1",
+            "id": "sipId41",
             "ipType": "DATA",
             "geometry": null,
             "properties": {
@@ -31,7 +31,7 @@
         },
         {
             "type": "Feature",
-            "id": "sipId1",
+            "id": "sipId42",
             "geometry": null,
             "properties": {
                 "contentInformations": [
@@ -40,7 +40,7 @@
                             "regardsDataType": "RAWDATA",
                             "urls": ["file:/home/test.xml"],
                             "checksum": "sdfsd455sdfdsgdfg4dgdfg",
-                            "algorithm": "PLOUF"
+                            "algorithm": "FAKE"
                         }
                     }
                 ],

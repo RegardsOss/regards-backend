@@ -1,0 +1,60 @@
+= Ingest module API
+
+[[overview]]
+== Overview
+
+ This API allows to submit and search SIP (Submission Information Package).
+
+== Ingestion of a SIP collection
+
+Submit a SIP collection as a bulk POST request.
+
+:TestClass: SIPControllerIT
+:TestMethod: ingestSips 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-fields.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+
+== Import of a SIP collection
+
+Submit SIP collection to REGARDS by upload a file containing the SIP collection in GeoJson format to REGARDS.
+
+:TestClass: SIPControllerIT
+:TestMethod: importValidSips 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+include::{snippets}/{TestClass}/importPartialInvalidSips/http-response.adoc[]
+
+include::{snippets}/{TestClass}/importAllInvalidSips/http-response.adoc[]
+
+
+== Search SIP
+
+:TestClass: SIPControllerIT
+:TestMethod: getSips 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+== Get ingestion session
+
+:TestClass: SIPControllerIT
+:TestMethod: getSips 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]

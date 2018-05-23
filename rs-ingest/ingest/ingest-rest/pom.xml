@@ -54,5 +54,23 @@
 			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>geojson-docs</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>oais-docs</artifactId>
+		</dependency>
 	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin> 
+				<groupId>org.asciidoctor</groupId>
+				<artifactId>asciidoctor-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+	
 </project>
