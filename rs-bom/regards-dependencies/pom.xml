@@ -151,8 +151,8 @@
         <com.netflix.feign.version>8.18.0</com.netflix.feign.version>
         <!-- Take a version that retrieve a version of Hibernate that correctly
             manage uk naming while inheriting classes with JOINED strategy -->
-        <org.springframework.boot.spring-boot-dependencies.version>1.5.7.RELEASE</org.springframework.boot.spring-boot-dependencies.version>
-        <org.springframework.spring-core.version>4.3.10.RELEASE</org.springframework.spring-core.version>
+        <org.springframework.boot.spring-boot-dependencies.version>1.5.13.RELEASE</org.springframework.boot.spring-boot-dependencies.version>
+        <org.springframework.spring-core.version>4.3.11.RELEASE</org.springframework.spring-core.version>
         <org.apache.poi.poi-ooxml.version>3.15</org.apache.poi.poi-ooxml.version>
         <org.apache.maven.maven-plugin-api.version>3.0</org.apache.maven.maven-plugin-api.version>
         <org.apache.maven.plugin-tools.maven-plugin-annotations.version>3.4</org.apache.maven.plugin-tools.maven-plugin-annotations.version>
