@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.springframework.restdocs.payload.FieldDescriptor;
 
-import com.netflix.servo.util.Strings;
+import com.google.common.base.Strings;
 
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 
@@ -61,7 +61,7 @@ public class GeoJsonFieldDescriptors {
                                        "GeoJson type representation - RFC 7946 -August 2016", null));
         lfd.add(fieldsFeature.withPath(addPrefix("geometry"),
                                        "GeoJson base feature representation - RFC 7946 -August 2016"));
-        lfd.add(fieldsFeature.withPath(addPrefix("bbox"), "A optional bounding box"));
+        lfd.add(fieldsFeature.withPath(addPrefix("bbox"), "An optional bounding box"));
         lfd.add(fieldsFeature.withPath(addPrefix("properties"), "properties"));
 
         return lfd;

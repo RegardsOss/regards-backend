@@ -24,7 +24,7 @@ import java.util.StringJoiner;
 
 import org.springframework.restdocs.payload.FieldDescriptor;
 
-import com.netflix.servo.util.Strings;
+import com.google.common.base.Strings;
 
 import fr.cnes.regards.framework.oais.AccessRightInformation;
 import fr.cnes.regards.framework.oais.ContentInformation;
@@ -66,15 +66,17 @@ public class OaisFieldDescriptors {
          */
         ConstrainedFields contentInformationField = new ConstrainedFields(ContentInformation.class);
 
-        lfd.add(contentInformationField.withPath(addPrefix("properties.contentInformations[]"),
-                                                 "this include the data objects and its representation information"));
+        lfd.add(contentInformationField
+                .withPath(addPrefix("properties.contentInformations[]"),
+                          "A set of information that is the original target of preservation or that includes part or all of that information. It is an information object composed of its content data object and its representation information."));
 
         /**
          * Representation information
          */
         lfd.add(contentInformationField
                 .withPath(addPrefix("properties.contentInformations[].representationInformation"),
-                          "representationInformation", "the data objet representation information"));
+                          "representationInformation",
+                          "The information that maps a data object into more meaningful concepts."));
 
         lfd.addAll(buildRepresentationInformationDescription());
 
@@ -82,7 +84,7 @@ public class OaisFieldDescriptors {
          * Data object
          */
         lfd.add(contentInformationField.withPath(addPrefix("properties.contentInformations[].dataObject"), "dataObject",
-                                                 "the data object"));
+                                                 "A data object"));
 
         lfd.addAll(buildDataObjectDescription(addPrefix("properties.contentInformations[].dataObject.")));
 
@@ -90,8 +92,9 @@ public class OaisFieldDescriptors {
          * Preservation description information
          */
         ConstrainedFields informationPackageField = new ConstrainedFields(InformationPackageProperties.class);
-        lfd.add(informationPackageField.withPath(addPrefix("properties.pdi"), "pdi",
-                                                 "preservation description information"));
+        lfd.add(informationPackageField
+                .withPath(addPrefix("properties.pdi"), "pdi",
+                          "The information which is necessary for adequate preservation of the Content Information"));
 
         lfd.addAll(buildPdiDescription(addPrefix("properties.pdi.")));
 
@@ -105,7 +108,7 @@ public class OaisFieldDescriptors {
 
         ConstrainedFields representationInformationField = new ConstrainedFields(RepresentationInformation.class);
 
-        lfd.add(representationInformationField.withPath(addPrefix(path, "syntax"), "syntax", "the data objet syntax"));
+        lfd.add(representationInformationField.withPath(addPrefix(path, "syntax"), "syntax", "A data objet syntax"));
 
         lfd.addAll(buildSyntaxDescription(addPrefix(path, "syntax.")));
 
@@ -117,10 +120,10 @@ public class OaisFieldDescriptors {
 
         ConstrainedFields syntaxField = new ConstrainedFields(Syntax.class);
 
-        lfd.add(syntaxField.withPath(addPrefix(prefix, "name"), "name"));
-        lfd.add(syntaxField.withPath(addPrefix(prefix, "description"), "description"));
+        lfd.add(syntaxField.withPath(addPrefix(prefix, "name"), "A syntax name"));
+        lfd.add(syntaxField.withPath(addPrefix(prefix, "description"), "A description"));
         lfd.add(syntaxField.withPath(addPrefix(prefix, "mimeType"), "mimetype",
-                                     "two-part identifier for file formats and format contents"));
+                                     "A two-part identifier for file formats and format contents"));
 
         return lfd;
     }
@@ -134,13 +137,14 @@ public class OaisFieldDescriptors {
         for (DataType state : DataType.values()) {
             joiner.add(state.name());
         }
+
         lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "regardsDataType"), "regardsDataType",
-                                             "REGARDS data object type", "Allowed values : " + joiner.toString()));
-        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "filename"), "the data object file name"));
-        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "urls"), "urls", "a set of URL"));
-        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "algorithm"), "the checksum algorithm"));
-        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "checksum"), "the calculated data object checksum"));
-        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "fileSize"), "the data object size in bytes"));
+                                             "REGARDS data object type", ". Allowed values : " + joiner.toString()));
+        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "filename"), "The data object file name"));
+        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "urls"), "urls", "A set of URL"));
+        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "algorithm"), "The checksum algorithm"));
+        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "checksum"), "The calculated data object checksum"));
+        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "fileSize"), "The data object size in bytes"));
 
         return lfd;
     }
@@ -150,21 +154,22 @@ public class OaisFieldDescriptors {
 
         ConstrainedFields preservationField = new ConstrainedFields(PreservationDescriptionInformation.class);
 
-        lfd.add(preservationField.withPath(addPrefix(prefix, "contextInformation.tags[]"), "tags", "a set of tags"));
-        lfd.add(preservationField.withPath(addPrefix(prefix, "referenceInformation"), "referenceInformation",
+        lfd.add(preservationField.withPath(addPrefix(prefix, "contextInformation.tags[]"), "tags", "A set of tags"));
+        lfd.add(preservationField.withPath(addPrefix(prefix, "referenceInformation"),
+                                           "The information that is used as an identifier for the content information.",
                                            "additional identifier"));
-        lfd.add(preservationField.withPath(addPrefix(prefix, "fixityInformation"), "fixityInformation",
-                                           "fixity information"));
+        lfd.add(preservationField
+                .withPath(addPrefix(prefix, "fixityInformation"), "fixityInformation",
+                          "The information which documents the mechanisms that ensure that the content information object has not been altered in an undocumented manner. An example is a Cyclical Redundancy Check (CRC) code for a file. "));
 
         lfd.add(preservationField.withPath(addPrefix(prefix, "provenanceInformation"), "provenanceInformation",
-                                           "provenance information"));
+                                           "The information that documents the history of the content information"));
         lfd.addAll(buildProvenanceDescription(addPrefix(prefix, "provenanceInformation.")));
 
-        lfd.add(preservationField.withPath(addPrefix(prefix, "accessRightInformation"), "accessRightInformation",
-                                           "access right information"));
+        lfd.add(preservationField
+                .withPath(addPrefix(prefix, "accessRightInformation"), "accessRightInformation",
+                          "The information that identifies the access restrictions pertaining to the content information, including the legal framework, licensing terms, and access control."));
         lfd.addAll(buildAccessRightDescription(addPrefix(prefix, "accessRightInformation.")));
-
-        
 
         return lfd;
     }
@@ -174,14 +179,14 @@ public class OaisFieldDescriptors {
 
         ConstrainedFields provenanceField = new ConstrainedFields(ProvenanceInformation.class);
 
-        lfd.add(provenanceField.withPath(addPrefix(prefix, "history[]"), "history", "list of events"));
+        lfd.add(provenanceField.withPath(addPrefix(prefix, "history[]"), "history", "A list of events"));
         lfd.addAll(buildEventDescription(addPrefix(prefix, "history[].")));
-        lfd.add(provenanceField.withPath(addPrefix(prefix, "facility"), "facility"));
-        lfd.add(provenanceField.withPath(addPrefix(prefix, "instrument"), "instrument"));
-        lfd.add(provenanceField.withPath(addPrefix(prefix, "filter"), "filter"));
-        lfd.add(provenanceField.withPath(addPrefix(prefix, "detector"), "detector"));
-        lfd.add(provenanceField.withPath(addPrefix(prefix, "proposal"), "proposal"));
-        lfd.add(provenanceField.withPath(addPrefix(prefix, "additional"), "additional"));
+        lfd.add(provenanceField.withPath(addPrefix(prefix, "facility"), "A facility"));
+        lfd.add(provenanceField.withPath(addPrefix(prefix, "instrument"), "An instrument"));
+        lfd.add(provenanceField.withPath(addPrefix(prefix, "filter"), "A filter"));
+        lfd.add(provenanceField.withPath(addPrefix(prefix, "detector"), "A detector"));
+        lfd.add(provenanceField.withPath(addPrefix(prefix, "proposal"), "A proposal"));
+        lfd.add(provenanceField.withPath(addPrefix(prefix, "additional"), "An additional information"));
 
         return lfd;
     }
@@ -191,9 +196,10 @@ public class OaisFieldDescriptors {
 
         ConstrainedFields eventField = new ConstrainedFields(Event.class);
 
-        lfd.add(eventField.withPath(addPrefix(prefix, "type"), "type"));
-        lfd.add(eventField.withPath(addPrefix(prefix, "comment"), "comment"));
-        lfd.add(eventField.withPath(addPrefix(prefix, "date"), "date", "UTC format"));
+        lfd.add(eventField.withPath(addPrefix(prefix, "type"), "The event's type"));
+        lfd.add(eventField.withPath(addPrefix(prefix, "comment"), "The event's comment"));
+        lfd.add(eventField.withPath(addPrefix(prefix, "date"), "date", "ISO Date time",
+                                    ". Required format : yyyy-MM-dd’T’HH:mm:ss.SSSZ"));
 
         return lfd;
     }
@@ -203,9 +209,10 @@ public class OaisFieldDescriptors {
 
         ConstrainedFields accessRightField = new ConstrainedFields(AccessRightInformation.class);
 
-        lfd.add(accessRightField.withPath(addPrefix(prefix, "licence"), "licence"));
-        lfd.add(accessRightField.withPath(addPrefix(prefix, "dataRights"), "dataRights", "data access rights"));
-        lfd.add(accessRightField.withPath(addPrefix(prefix, "publicReleaseDate"), "publicReleaseDate", "UTC format"));
+        lfd.add(accessRightField.withPath(addPrefix(prefix, "licence"), "The licence"));
+        lfd.add(accessRightField.withPath(addPrefix(prefix, "dataRights"), "dataRights", "A data access rights"));
+        lfd.add(accessRightField.withPath(addPrefix(prefix, "publicReleaseDate"), "publicReleaseDate", "ISO Date time",
+                                          "Required format : yyyy-MM-dd’T’HH:mm:ss.SSSZ"));
 
         return lfd;
     }
