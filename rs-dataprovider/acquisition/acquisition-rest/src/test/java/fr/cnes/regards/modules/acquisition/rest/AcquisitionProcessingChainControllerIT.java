@@ -91,8 +91,15 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
                 .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
                         .value("Acquisition processing chain")), fields.withPath("label", "Label"),
                                       fields.withPath("active", "Activation status"),
-                                      fields.withPath("mode", "mode", "Mode",
-                                                      "Allowed values : " + joiner.toString())));
+                                      fields.withPath("mode", "mode", "Mode", "Allowed values : " + joiner.toString()),
+                                      fields.withPath("session", "Ingest session name for SIP submission").optional()
+                                              .type("String"),
+                                      fields.withPath("ingestChain", "Ingest chain name for SIP submission"),
+                                      fields.withPath("locked", "locked", "Internal chain processing lock", "NA")
+                                              .optional().type("Boolean"),
+                                      fields.withPath("periodicity", "Automatic chain activation periodicity in second")
+                                              .optional().type("Long"),
+                                      fields.withPath("fileInfos[]", "Arrays of file information")));
 
         // Create the chain
         performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
