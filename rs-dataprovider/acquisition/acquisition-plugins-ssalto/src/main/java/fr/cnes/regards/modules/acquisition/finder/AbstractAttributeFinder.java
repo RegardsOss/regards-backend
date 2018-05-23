@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -366,7 +366,7 @@ public abstract class AbstractAttributeFinder {
         }
 
         Collection<File> unzippedFileList = new HashSet<>();
-        Files.fileTreeTraverser().children(temporaryDir).forEach(a -> unzippedFileList.add(a));
+        Files.fileTraverser().breadthFirst(temporaryDir).forEach(a -> unzippedFileList.add(a));
 
         return unzippedFileList;
     }

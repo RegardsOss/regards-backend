@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
@@ -139,6 +141,14 @@ public interface IAcquisitionProcessingService {
      * @throws ModuleException if error occurs!
      */
     void scanAndRegisterFiles(AcquisitionProcessingChain processingChain) throws ModuleException;
+
+    /**
+     * Register a new file
+     * @param filePath path of the file to register
+     * @param info related file info
+     * @throws ModuleException
+     */
+    void registerFile(Path filePath, AcquisitionFileInfo info) throws ModuleException;
 
     /**
      * Validate {@link AcquisitionFileState#IN_PROGRESS} files for specified {@link AcquisitionProcessingChain}

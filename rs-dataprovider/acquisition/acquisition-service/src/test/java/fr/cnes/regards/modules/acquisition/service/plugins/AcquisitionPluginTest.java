@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
  */
 public class AcquisitionPluginTest {
 
+    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionPluginTest.class);
 
     private static final String MODULE_PACKAGE = "fr.cnes.regards.modules.acquisition";

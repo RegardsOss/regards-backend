@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -32,6 +32,7 @@ import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
@@ -54,7 +55,8 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
  *
  */
 @Entity
-@Table(name = "t_acquisition_file")
+@Table(name = "t_acquisition_file", indexes = { @Index(name = "idx_acq_file_state", columnList = "state"),
+        @Index(name = "idx_acq_file_info", columnList = "acq_file_info_id") })
 public class AcquisitionFile {
 
     @Id
