@@ -58,7 +58,6 @@ import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.metalink.schema.FileType;
 import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
 import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
@@ -312,6 +311,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // 12 files from AVAILABLE to DOWNLOADED + the one already at this state
         List<OrderDataFile> dataFiles = dataFileRepository.findByOrderIdAndStateIn(order.getId(), FileState.DOWNLOADED);
         Assert.assertEquals(13, dataFiles.size());
+        long fileText3TxtId = dataFiles.stream().filter(f -> f.getName().equals("file3.txt")).findFirst().get().getId();
 
         //////////////////////////////////////////////////////
         // Check that URL from metalink file are correct    //
@@ -331,23 +331,23 @@ public class OrderControllerIT extends AbstractRegardsIT {
             // extract aipId and checksum
             String[] urlParts = url.split("/");
             String aipId = urlParts[3];
-            String checksum = urlParts[5].substring(0, urlParts[5].indexOf('?'));
+            long dataFileId = Long.parseLong(urlParts[5].substring(0, urlParts[5].indexOf('?')));
             // Stop at "scope=PROJECT"
             String token = urlParts[5].substring(urlParts[5].indexOf('=') + 1, urlParts[5].indexOf('&'));
 
             List<ResultMatcher> expects;
             // File file3.txt has a status PENDING...
-            if (!checksum.contains("file3.txt")) {
+            if (dataFileId != fileText3TxtId) {
                 expects = okExpectations();
             } else { // ...so its HttpStatus is 202 (ACCEPTED)
                 expects = expectations(MockMvcResultMatchers.status().isAccepted());
             }
 
             // Try downloading file as if, with token given into public file url
-            ResultActions results = performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_CHECKSUM,
+            ResultActions results = performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_ID,
                                                       expects, "Should return result",
                                                       RequestParamBuilder.build().param("orderToken", token), aipId,
-                                                      checksum, token);
+                                                      dataFileId, token);
 
             assertMediaType(results, MediaType.TEXT_PLAIN);
             fileCount++;

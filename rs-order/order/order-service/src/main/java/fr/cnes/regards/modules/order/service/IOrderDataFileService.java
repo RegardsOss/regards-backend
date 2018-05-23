@@ -16,8 +16,22 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
  */
 public interface IOrderDataFileService {
 
+    /**
+     * Simply save OrderDataFile in database, no more action is done. This method is to be used at sub-orders creation.
+     */
+    Iterable<OrderDataFile> create(Iterable<OrderDataFile> dataFiles);
+
+    /**
+     * Save given OrderDataFile, search for associated files task, update its end state then update associated order
+     * waiting for user flag
+     */
     OrderDataFile save(OrderDataFile dataFile);
 
+
+    /**
+     * Save given OrderDataFiles, search for associated files task, update them end state then update associated order
+     * waiting for user flag
+     */
     Iterable<OrderDataFile> save(Iterable<OrderDataFile> dataFiles);
 
     OrderDataFile load(Long dataFileId) throws NoSuchElementException;

@@ -113,13 +113,6 @@ public class OrderController implements IResourceController<OrderDto> {
         Basket basket = basketService.find(user);
 
         Order order = orderService.createOrder(basket, orderRequest.getOnSuccessUrl());
-        // Order has been created OR is null (in case access groups have changed and finally it contains nothing),
-        // basket can be emptied
-        basketService.deleteIfExists(user);
-
-        if (order == null) {
-            throw new IllegalStateException("Basket data is no longer valid");
-        }
         return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
     }
 
@@ -200,7 +193,7 @@ public class OrderController implements IResourceController<OrderDto> {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
         }
         response.addHeader("Content-disposition",
-                           "attachment;filename=order_" + OffsetDateTime.now().toString() + ".zip");
+                           "attachment;filename=order_" + orderId + "_" + OffsetDateTime.now().toString() + ".zip");
         response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
         List<OrderDataFile> availableFiles = new ArrayList<>(dataFileService.findAllAvailables(orderId));
         // No file available
@@ -252,7 +245,8 @@ public class OrderController implements IResourceController<OrderDto> {
     private ResponseEntity<StreamingResponseBody> createMetalinkDownloadResponse(@PathVariable("orderId") Long orderId,
             HttpServletResponse response) {
         response.addHeader("Content-disposition",
-                           "attachment;filename=order_" + OffsetDateTime.now().toString() + ".metalink");
+                           "attachment;filename=order_" + orderId + "_" + OffsetDateTime.now().toString()
+                                   + ".metalink");
         response.setContentType("application/metalink+xml");
 
         // Stream the response
