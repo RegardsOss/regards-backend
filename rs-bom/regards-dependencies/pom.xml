@@ -166,7 +166,7 @@
         <io.netty.version>4.1.6.Final</io.netty.version>
         <com.vividsolutions.jts.version>1.14.0</com.vividsolutions.jts.version>
         <org.locationtech.spatial4j.version>0.6</org.locationtech.spatial4j.version>
-        <com.google.guava.version>21.0</com.google.guava.version>
+        <com.google.guava.version>25.0-jre</com.google.guava.version>
         <com.mchange.c3p0.version>0.9.5.2</com.mchange.c3p0.version>
         <!-- Permit to use same Hibernate version as which spring use -->
         <spring.hibernate.version>${hibernate.version}</spring.hibernate.version>
