@@ -146,7 +146,7 @@
         <org.hibernate.javax.persistence.version>1.0.0.Final</org.hibernate.javax.persistence.version>
         <hsqldb.hsqldb.version>1.8.0.7</hsqldb.hsqldb.version>
         <!-- ClassNotFOundException : FilterRegistrationBean with Brixton version -->
-        <org.springframework.cloud.spring-cloud-dependencies.version>Dalston.SR3</org.springframework.cloud.spring-cloud-dependencies.version>
+        <org.springframework.cloud.spring-cloud-dependencies.version>Edgware.SR3</org.springframework.cloud.spring-cloud-dependencies.version>
         <!-- Last version of feign : https://mvnrepository.com/artifact/com.netflix.feign/feign-core -->
         <com.netflix.feign.version>8.18.0</com.netflix.feign.version>
         <!-- Take a version that retrieve a version of Hibernate that correctly
