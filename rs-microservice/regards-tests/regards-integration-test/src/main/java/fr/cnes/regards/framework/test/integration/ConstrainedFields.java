@@ -69,7 +69,9 @@ public class ConstrainedFields {
         StringBuffer constraints = new StringBuffer(StringUtils
                 .collectionToDelimitedString(constraintDescriptions.descriptionsForProperty(propertyPath), ", "));
         if (extraConstraints != null) {
-            constraints.append(" +\n"); // AsciiDoc line break
+            if (constraints.length() > 0) {
+                constraints.append(" +\n"); // AsciiDoc line break
+            }
             constraints.append(extraConstraints);
         }
 
