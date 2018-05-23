@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
@@ -48,6 +49,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @since 1.0-SNAPSHOT
  */
 @InstanceTransactional
+@ContextConfiguration(classes = { LicenseConfiguration.class })
 public class TenantControllerIT extends AbstractRegardsIT {
 
     private final static Logger LOG = LoggerFactory.getLogger(TenantControllerIT.class);

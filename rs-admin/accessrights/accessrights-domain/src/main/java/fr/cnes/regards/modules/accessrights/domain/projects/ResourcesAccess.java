@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -258,4 +258,10 @@ public class ResourcesAccess implements IIdentifiable<Long> {
         defaultRole = pDefaultRole;
     }
 
+    @Override
+    public String toString() {
+        return "ResourcesAccess{" + "id=" + id + ", description='" + description + '\'' + ", microservice='"
+                + microservice + '\'' + ", controllerSimpleName='" + controllerSimpleName + '\'' + ", resource='"
+                + resource + '\'' + ", verb=" + verb + ", defaultRole=" + defaultRole + '}';
+    }
 }

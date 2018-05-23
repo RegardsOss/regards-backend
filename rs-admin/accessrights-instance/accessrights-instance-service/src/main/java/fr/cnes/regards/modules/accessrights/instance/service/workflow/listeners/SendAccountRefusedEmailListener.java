@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.events.OnRefuseAccountEvent;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
+import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
  * Listen to {@link OnRefuseAccountEvent} in order to warn the user its account request was refused.
@@ -96,7 +97,7 @@ public class SendAccountRefusedEmailListener implements ApplicationListener<OnRe
 
         SimpleMailMessage email;
         try {
-            email = templateService.writeToEmail(ACCOUNT_REFUSED_TEMPLATE, data, recipients);
+            email = templateService.writeToEmail(TemplateServiceConfiguration.ACCOUNT_REFUSED_TEMPLATE_CODE, data, recipients);
         } catch (final EntityNotFoundException e) {
             LOG.error("Could not find the template to generate the email notifying the account refusal. Falling back to default.",
                       e);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -38,10 +38,10 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnDenyEvent;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
+import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
  * Listen to {@link OnDenyEvent} in order to warn the user its account request was refused.
- *
  * @author Xavier-Alexandre Brochard
  */
 @Component
@@ -51,12 +51,6 @@ public class SendProjectUserDeniedEmailListener implements ApplicationListener<O
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SendProjectUserDeniedEmailListener.class);
-
-    /**
-     * The email template for refused account.
-     * Note that we re-use the same template as when we deny at account level because we are lazy
-     */
-    private static final String ACCOUNT_REFUSED_TEMPLATE = "accountRefusedTemplate";
 
     /**
      * Service handling CRUD operations on email templates
@@ -88,9 +82,7 @@ public class SendProjectUserDeniedEmailListener implements ApplicationListener<O
 
     /**
      * Send a password reset email based on information stored in the passed event
-     *
-     * @param pEvent
-     *            the init event
+     * @param pEvent the init event
      */
     @Override
     public void onApplicationEvent(final OnDenyEvent pEvent) {
@@ -119,7 +111,8 @@ public class SendProjectUserDeniedEmailListener implements ApplicationListener<O
 
         SimpleMailMessage email;
         try {
-            email = templateService.writeToEmail(ACCOUNT_REFUSED_TEMPLATE, data, recipients);
+            email = templateService
+                    .writeToEmail(TemplateServiceConfiguration.ACCOUNT_REFUSED_TEMPLATE_CODE, data, recipients);
         } catch (final EntityNotFoundException e) {
             LOGGER.error(
                     "Could not find the template to generate the email notifying the account refusal. Falling back to default.",
