@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -523,8 +524,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         long fileText3TxtId = dataFiles.get(0).getId();
 
         //////////////////////////////////////////////////////
-        // Check that URL from metalink file are correct    //
-        // ie download all files with public url and token  //
+        // Check that URL from metalink file are correct //
+        // ie download all files with public url and token //
         //////////////////////////////////////////////////////
         JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
         Unmarshaller u = jaxbContext.createUnmarshaller();
@@ -574,7 +575,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
             // Try downloading file as if, with token given into public file url
             ResultActions results = performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_ID, customizer,
-                                                      "Should return result", aipId, dataFileId);
+                                                      "Should return result", URLDecoder.decode(aipId, "UTF-8"),
+                                                      dataFileId);
 
             File tmpFile = File.createTempFile("ORDER", "tmp", new File("/tmp"));
             tmpFile.deleteOnExit();
@@ -627,7 +629,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         long fileText3TxtId = dataFiles.get(0).getId();
 
         //////////////////////////////////////////////////////
-        // Check that URL from metalink file are correct    //
+        // Check that URL from metalink file are correct //
         //////////////////////////////////////////////////////
         JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
         Unmarshaller u = jaxbContext.createUnmarshaller();
@@ -654,7 +656,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
             // File file3.txt has a status PENDING...
             if (dataFileId == fileText3TxtId) {
                 lastDataFileId = dataFileId;
-                lastDataFileAipId = aipId;
+                lastDataFileAipId = URLDecoder.decode(aipId, "UTF-8");
                 lastDataFileToken = token;
                 break;
             }

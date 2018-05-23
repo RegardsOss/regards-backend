@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.order.rest;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -280,8 +279,8 @@ public class BasketControllerIT extends AbstractRegardsIT {
 
         performDefaultDelete(BasketController.ORDER_BASKET
                 + BasketController.DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE, customizer, "error",
-                             basket.getDatasetSelections().first().getId(), URLEncoder
-                                     .encode(OffsetDateTimeAdapter.format(date), Charset.defaultCharset().toString()));
+                             basket.getDatasetSelections().first().getId(), OffsetDateTimeAdapter.format(date),
+                             Charset.defaultCharset().toString());
     }
 
     @Test
