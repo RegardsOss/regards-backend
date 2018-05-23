@@ -366,7 +366,7 @@ public abstract class AbstractAttributeFinder {
         }
 
         Collection<File> unzippedFileList = new HashSet<>();
-        Files.fileTreeTraverser().children(temporaryDir).forEach(a -> unzippedFileList.add(a));
+        Files.fileTraverser().breadthFirst(temporaryDir).forEach(a -> unzippedFileList.add(a));
 
         return unzippedFileList;
     }
