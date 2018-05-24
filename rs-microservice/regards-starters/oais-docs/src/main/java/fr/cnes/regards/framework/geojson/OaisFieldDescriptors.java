@@ -121,8 +121,9 @@ public class OaisFieldDescriptors {
 
         ConstrainedFields syntaxField = new ConstrainedFields(Syntax.class);
 
-        lfd.add(syntaxField.withPath(addPrefix(prefix, "name"), "A syntax name").optional().type("String"));
-        lfd.add(syntaxField.withPath(addPrefix(prefix, "description"), "A description").optional().type("String"));
+        lfd.add(syntaxField.withPath(addPrefix(prefix, "name"), "name", "A syntax name").optional().type("String"));
+        lfd.add(syntaxField.withPath(addPrefix(prefix, "description"), "description", "A description").optional()
+                .type("String"));
         lfd.add(syntaxField.withPath(addPrefix(prefix, "mimeType"), "mimetype",
                                      "A two-part identifier for file formats and format contents"));
 
@@ -141,13 +142,14 @@ public class OaisFieldDescriptors {
 
         lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "regardsDataType"), "regardsDataType",
                                              "REGARDS data object type", ". Allowed values : " + joiner.toString()));
-        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "filename"), "The data object file name").optional()
-                .type("String"));
+        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "filename"), "filename", "The data object file name")
+                .optional().type("String"));
         lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "urls"), "urls", "A set of URL"));
-        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "algorithm"), "The checksum algorithm"));
-        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "checksum"), "The calculated data object checksum"));
-        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "fileSize"), "The data object size in bytes").optional()
-                .type("Long"));
+        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "algorithm"), "algorithm", "The checksum algorithm"));
+        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "checksum"), "checksum",
+                                             "The calculated data object checksum"));
+        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "fileSize"), "fileSize", "The data object size in bytes")
+                .optional().type("Long"));
 
         return lfd;
     }
@@ -185,13 +187,17 @@ public class OaisFieldDescriptors {
         lfd.add(provenanceField.withPath(addPrefix(prefix, "history[]"), "history", "A list of events").optional()
                 .type("String"));
         lfd.addAll(buildEventDescription(addPrefix(prefix, "history[].")));
-        lfd.add(provenanceField.withPath(addPrefix(prefix, "facility"), "A facility").optional().type("String"));
-        lfd.add(provenanceField.withPath(addPrefix(prefix, "instrument"), "An instrument").optional().type("String"));
-        lfd.add(provenanceField.withPath(addPrefix(prefix, "filter"), "A filter").optional().type("String"));
-        lfd.add(provenanceField.withPath(addPrefix(prefix, "detector"), "A detector").optional().type("String"));
-        lfd.add(provenanceField.withPath(addPrefix(prefix, "proposal"), "A proposal").optional().type("String"));
-        lfd.add(provenanceField.withPath(addPrefix(prefix, "additional"), "An additional information").optional()
+        lfd.add(provenanceField.withPath(addPrefix(prefix, "facility"), "facility", "A facility").optional()
                 .type("String"));
+        lfd.add(provenanceField.withPath(addPrefix(prefix, "instrument"), "instrument", "An instrument").optional()
+                .type("String"));
+        lfd.add(provenanceField.withPath(addPrefix(prefix, "filter"), "filter", "A filter").optional().type("String"));
+        lfd.add(provenanceField.withPath(addPrefix(prefix, "detector"), "detector", "A detector").optional()
+                .type("String"));
+        lfd.add(provenanceField.withPath(addPrefix(prefix, "proposal"), "proposal", "A proposal").optional()
+                .type("String"));
+        lfd.add(provenanceField.withPath(addPrefix(prefix, "additional"), "additional", "An additional information")
+                .optional().type("String"));
 
         return lfd;
     }
