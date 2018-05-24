@@ -28,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Attributes;
@@ -43,6 +44,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
@@ -50,6 +52,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
@@ -79,31 +82,73 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
 
         AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("post");
 
-        // Document acquisition chain
-        ConstrainedFields fields = new ConstrainedFields(AcquisitionProcessingChain.class);
+        customizer.addDocumentationSnippet(PayloadDocumentation
+                .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
+                        .value("Acquisition processing chain")), documentAcquisitionProcessingChain()));
+
+        // Create the chain
+        performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
+                           "Chain should be created!");
+    }
+
+    private List<FieldDescriptor> documentAcquisitionProcessingChain() {
+
+        ConstrainedFields constrainedFields = new ConstrainedFields(AcquisitionProcessingChain.class);
+        List<FieldDescriptor> fields = new ArrayList<>();
+
+        fields.add(constrainedFields.withPath("label", "Label"));
+        fields.add(constrainedFields.withPath("active", "Activation status"));
 
         StringJoiner joiner = new StringJoiner(", ");
         for (AcquisitionProcessingChainMode mode : AcquisitionProcessingChainMode.values()) {
             joiner.add(mode.name());
         }
+        fields.add(constrainedFields.withPath("mode", "mode", "Mode", "Allowed values : " + joiner.toString()));
 
-        customizer.addDocumentationSnippet(PayloadDocumentation
-                .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
-                        .value("Acquisition processing chain")), fields.withPath("label", "Label"),
-                                      fields.withPath("active", "Activation status"),
-                                      fields.withPath("mode", "mode", "Mode", "Allowed values : " + joiner.toString()),
-                                      fields.withPath("session", "Ingest session name for SIP submission").optional()
-                                              .type("String"),
-                                      fields.withPath("ingestChain", "Ingest chain name for SIP submission"),
-                                      fields.withPath("locked", "locked", "Internal chain processing lock", "NA")
-                                              .optional().type("Boolean"),
-                                      fields.withPath("periodicity", "Automatic chain activation periodicity in second")
-                                              .optional().type("Long"),
-                                      fields.withPath("fileInfos[]", "Arrays of file information")));
+        fields.add(constrainedFields.withPath("session", "Ingest session name for SIP submission").optional()
+                .type("String"));
+        fields.add(constrainedFields.withPath("ingestChain", "Ingest chain name for SIP submission"));
+        fields.add(constrainedFields.withPath("locked", "locked", "Internal chain processing lock", "NA").optional()
+                .type("Boolean"));
+        fields.add(constrainedFields.withPath("periodicity", "Automatic chain activation periodicity in second")
+                .optional().type("Long"));
 
-        // Create the chain
-        performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
-                           "Chain should be created!");
+        fields.add(constrainedFields.withPath("fileInfos[]", "Arrays of file information / TODO"));
+        fields.addAll(documentFileInfo("fileInfos[]"));
+
+        fields.add(constrainedFields.withPath("validationPluginConf", "Validation plugin configuration / TODO"));
+        fields.add(constrainedFields.withPath("productPluginConf", "Product plugin configuration / TODO"));
+        fields.add(constrainedFields.withPath("generateSipPluginConf", "Generate SIP plugin configuration / TODO"));
+        fields.add(constrainedFields
+                .withPath("postProcessSipPluginConf", "Optional SIP post processing plugin configuration / TODO")
+                .optional().type("Object"));
+        return fields;
+    }
+
+    private List<FieldDescriptor> documentFileInfo(String basePath) {
+        ConstrainedFields constrainedFields = new ConstrainedFields(AcquisitionFileInfo.class);
+        List<FieldDescriptor> fields = new ArrayList<>();
+
+        String prefix = basePath == null ? "" : basePath + ".";
+        fields.add(constrainedFields.withPath(prefix + "mandatory", "mandatory",
+                                              "True if the product must contain this file"));
+        fields.add(constrainedFields.withPath(prefix + "scanPlugin", "scanPlugin", "Scan plugin configuration / TODO"));
+        fields.add(constrainedFields
+                .withPath(prefix + "lastModificationDate", "lastModificationDate",
+                          "Most recent last modification ISO 8601 date of all scanned files")
+                .optional().type("String"));
+        fields.add(constrainedFields.withPath(prefix + "mimeType", "mimeType", "File MIME type"));
+
+        StringJoiner joiner = new StringJoiner(", ");
+        for (DataType mode : DataType.values()) {
+            joiner.add(mode.name());
+        }
+        fields.add(constrainedFields.withPath(prefix + "dataType", "dataType", "REGARDS data type",
+                                              "Allowed values : " + joiner.toString()));
+
+        fields.add(constrainedFields.withPath(prefix + "comment", "comment", "REGARDS data type").optional()
+                .type("String"));
+        return fields;
     }
 
     @Test
