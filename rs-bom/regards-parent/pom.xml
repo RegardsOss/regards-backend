@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  
  This file is part of REGARDS.
  
@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards</groupId>
 	<artifactId>regards-parent</artifactId>
-	<version>2.0.1-SNAPSHOT</version>
+	<version>2.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Regards Parent</name>
@@ -73,7 +73,7 @@
         <!-- Tells Sonar where the Jacoco coverage result file is located for IT -->
         <sonar.jacoco.itReportPath>${jacoco.outputDir}/${jacoco.out.it.file}</sonar.jacoco.itReportPath>
         <spring.hibernate.version>5.0.9.Final</spring.hibernate.version>
-        <regards.bom.version>2.0.1-SNAPSHOT</regards.bom.version>
+        <regards.bom.version>2.1.0-SNAPSHOT</regards.bom.version>
     </properties>
 
     <dependencies>
