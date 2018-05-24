@@ -21,7 +21,7 @@ include::{snippets}/{TestClass}/{TestMethod}/request-fields.adoc[]
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
 
-== Import of a SIP collection
+== Import a SIP collection
 
 Submit SIP collection to REGARDS by upload a file containing the SIP collection in GeoJson format to REGARDS.
 
@@ -50,10 +50,43 @@ include::{snippets}/{TestClass}/{TestMethod}/request-parameters.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
-== Get ingestion session
+== Get an ingestion's session
 
 :TestClass: SIPControllerIT
-:TestMethod: getSips 
+:TestMethod: getOneSession 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+== Search ingestion's sessions
+
+:TestClass: SIPControllerIT
+:TestMethod: getSession 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+== Import an Ingestion processing chain
+
+:TestClass: IngestProcessingChainControllerIT
+:TestMethod: importProcessingChain 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+== Export an Ingestion processing chain
+
+:TestClass: IngestProcessingChainControllerIT
+:TestMethod: exportProcessingChain 
 
 include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
 

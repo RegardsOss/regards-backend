@@ -52,6 +52,12 @@ public class SIPSessionController implements IResourceController<SIPSession> {
 
     public static final String ID_PATH = "/{id}";
 
+    public static final String REQUEST_PARAM_ID = "id";
+
+    public static final String REQUEST_PARAM_FROM = "from";
+
+    public static final String REQUEST_PARAM_TO = "to";
+
     @Autowired
     private ISIPSessionService sipSessionService;
 
@@ -64,10 +70,10 @@ public class SIPSessionController implements IResourceController<SIPSession> {
     @ResourceAccess(description = "Search for SIPSession with optional criterion.")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<SIPSession>>> search(
-            @RequestParam(name = "id", required = false) String id,
-            @RequestParam(name = "from",
+            @RequestParam(name = REQUEST_PARAM_ID, required = false) String id,
+            @RequestParam(name = REQUEST_PARAM_FROM,
                     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            @RequestParam(name = "to",
+            @RequestParam(name = REQUEST_PARAM_TO,
                     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
             Pageable pageable, PagedResourcesAssembler<SIPSession> pAssembler) {
         Page<SIPSession> sipSessions = sipSessionService.search(id, from, to, pageable);
@@ -82,7 +88,7 @@ public class SIPSessionController implements IResourceController<SIPSession> {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Delete one SIP by is ipId.")
+    @ResourceAccess(description = "Get one SIP by is ipId.")
     @RequestMapping(value = ID_PATH, method = RequestMethod.GET)
     public ResponseEntity<Resource<SIPSession>> getSipSession(@PathVariable(name = "id") String id) {
         SIPSession session = sipSessionService.getSession(id, false);

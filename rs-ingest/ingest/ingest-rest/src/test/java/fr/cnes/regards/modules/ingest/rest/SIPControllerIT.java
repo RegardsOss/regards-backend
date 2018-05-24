@@ -166,6 +166,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(2)));
+
         documentSearchSipParameters(requestBuilderCustomizer);
 
         performDefaultGet(SIPController.TYPE_MAPPING, requestBuilderCustomizer, "Error retrieving SIPs");
@@ -210,10 +211,10 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     public void getSession() {
 
         SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
-                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "sessionId");
+                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "session-id");
 
         collectionBuilder.add(buildSipOne("SIP_001", "data1.fits").build());
-        collectionBuilder.add(buildSipOne("SIP_002", "data2.fits").build());
+        collectionBuilder.add(buildSipTwo("SIP_002", "data2.fits").build());
 
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
@@ -228,7 +229,58 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(1)));
+
+        documentSearchSessionParameters(requestBuilderCustomizer);
+
         performDefaultGet(SIPSessionController.TYPE_MAPPING, requestBuilderCustomizer, "Error retrieving SIP sessions");
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ING_PRO_110")
+    @Purpose("Get one ingest session")
+    public void getOneSession() {
+        String sessionId = "sessions-id";
+
+        SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(
+                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, sessionId);
+
+        collectionBuilder.add(buildSipOne("SIP_001", "data1.fits").build());
+        collectionBuilder.add(buildSipTwo("SIP_002", "data2.fits").build());
+
+        // Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE,
+                                                        GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        performDefaultPost(SIPController.TYPE_MAPPING, collectionBuilder.build(), requestBuilderCustomizer,
+                           "SIP collection should be submitted.");
+
+        // Retrieve sessions
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+
+        performDefaultGet(SIPSessionController.TYPE_MAPPING + SIPSessionController.ID_PATH, requestBuilderCustomizer,
+                          "Error retrieving SIP sessions", sessionId);
+    }
+
+    private void documentSearchSessionParameters(RequestBuilderCustomizer requestBuilderCustomizer) {
+        List<ParameterDescriptor> paramDescrList = new ArrayList<ParameterDescriptor>();
+
+        paramDescrList.add(RequestDocumentation.parameterWithName(SIPSessionController.REQUEST_PARAM_ID).optional()
+                .description("Ingestion's session identifier filter")
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
+        paramDescrList.add(RequestDocumentation.parameterWithName(SIPSessionController.REQUEST_PARAM_FROM).optional()
+                .description("ISO Date time starting filter")
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
+        paramDescrList.add(RequestDocumentation.parameterWithName(SIPSessionController.REQUEST_PARAM_TO).optional()
+                .description("ISO Date time ending filter")
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
+
+        // Add request parameters documentation
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.requestParameters(paramDescrList));
     }
 
     @Test
@@ -277,6 +329,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        
         documentFileRequestParameters(requestBuilderCustomizer);
 
         performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH, filePath,

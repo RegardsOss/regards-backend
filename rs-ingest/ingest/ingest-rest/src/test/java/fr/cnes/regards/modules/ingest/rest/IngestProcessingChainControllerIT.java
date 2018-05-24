@@ -23,9 +23,10 @@ import java.nio.file.Paths;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.request.ParameterDescriptor;
+import org.springframework.restdocs.request.RequestDocumentation;
+import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -47,8 +48,6 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_it" })
 public class IngestProcessingChainControllerIT extends AbstractRegardsTransactionalIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestProcessingChainControllerIT.class);
-
     @Test
     public void exportProcessingChain() {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
@@ -60,7 +59,6 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
         assertMediaType(resultActions, MediaType.APPLICATION_JSON_UTF8);
         String chain = payload(resultActions);
-        LOGGER.debug(chain);
         Assert.assertNotNull(chain);
     }
 
@@ -72,9 +70,20 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
 
+        documentFileRequestParameters(requestBuilderCustomizer);
+
         performDefaultFileUpload(IngestProcessingChainController.TYPE_MAPPING
                 + IngestProcessingChainController.IMPORT_PATH, filePath, requestBuilderCustomizer,
                                  "Should be able to import valid test processing chain");
+    }
+
+    private void documentFileRequestParameters(RequestBuilderCustomizer requestBuilderCustomizer) {
+        ParameterDescriptor paramFile = RequestDocumentation
+                .parameterWithName(IngestProcessingChainController.IMPORT_PATH).optional()
+                .description("A file containing an ingestion processing chainn in GeoJson format")
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"));
+        // Add request parameters documentation
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.requestParameters(paramFile));
     }
 
     @Test
