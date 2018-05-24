@@ -66,6 +66,19 @@ public class ConstrainedFields {
      */
     public FieldDescriptor withPath(String payloadPath, String propertyPath, String description,
             String extraConstraints) {
+        return withPath(null, payloadPath, propertyPath, description, extraConstraints);
+    }
+
+    /**
+     * Field doc tool
+     * @param payloadPrefixPath payload path prefix
+     * @param payloadPath payload path
+     * @param propertyPath property path (in POJO)
+     * @param description description
+     * @param extraConstraints extra doc for constraints
+     */
+    public FieldDescriptor withPath(String payloadPrefixPath, String payloadPath, String propertyPath,
+            String description, String extraConstraints) {
         StringBuffer constraints = new StringBuffer(StringUtils
                 .collectionToDelimitedString(constraintDescriptions.descriptionsForProperty(propertyPath), ", "));
         if (extraConstraints != null) {
@@ -75,7 +88,14 @@ public class ConstrainedFields {
             constraints.append(extraConstraints);
         }
 
-        return PayloadDocumentation.fieldWithPath(payloadPath).description(description)
+        String fullPayloadPath;
+        if (payloadPrefixPath != null) {
+            fullPayloadPath = payloadPrefixPath + "." + payloadPath;
+        } else {
+            fullPayloadPath = payloadPath;
+        }
+
+        return PayloadDocumentation.fieldWithPath(fullPayloadPath).description(description)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value(constraints));
     }
 }
