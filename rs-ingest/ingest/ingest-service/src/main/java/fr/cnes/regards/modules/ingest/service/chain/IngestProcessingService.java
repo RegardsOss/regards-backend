@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -75,6 +75,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
+import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSingleAIPGeneration;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSipValidation;
@@ -203,8 +204,8 @@ public class IngestProcessingService implements IIngestProcessingService {
         Set<JobParameter> jobParameters = Sets.newHashSet();
         jobParameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, sipIdToProcess));
         jobParameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, processingChain));
-        JobInfo jobInfo = new JobInfo(false, 1, jobParameters, authResolver.getUser(),
-                IngestProcessingJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
+                jobParameters, authResolver.getUser(), IngestProcessingJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         sipRepository.updateSIPEntityState(SIPState.QUEUED, sipIdToProcess);
     }

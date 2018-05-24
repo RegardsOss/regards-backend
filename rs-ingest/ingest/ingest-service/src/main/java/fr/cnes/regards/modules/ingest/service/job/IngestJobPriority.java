@@ -16,11 +16,35 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.cnes.regards.modules.ingest.service.job;
+
 /**
- *
- * This package manages ingest processing chain
- *
+ * Ingest jobs priority management
  * @author Marc Sordi
  *
  */
-package fr.cnes.regards.modules.ingest.service.chain;
+public enum IngestJobPriority {
+
+    /**
+     * Only one job per ingest chain can be available at a time
+     */
+    AIP_SUBMISSION_JOB_PRIORITY {
+
+        @Override
+        public int getPriority() {
+            return 10;
+        }
+    },
+    /**
+     * One SIP, one job!
+     */
+    INGEST_PROCESSING_JOB_PRIORITY {
+
+        @Override
+        public int getPriority() {
+            return 0;
+        }
+    };
+
+    public abstract int getPriority();
+}

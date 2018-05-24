@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -56,6 +56,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
 import fr.cnes.regards.modules.ingest.service.job.AIPSubmissionJob;
+import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.storage.client.IAipEntityClient;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.IAipState;
@@ -211,6 +212,7 @@ public class AIPService implements IAIPService {
                     jobParameters.add(new JobParameter(AIPSubmissionJob.INGEST_CHAIN_PARAMETER, ipc.getName()));
 
                     JobInfo jobInfo = new JobInfo(false);
+                    jobInfo.setPriority(IngestJobPriority.AIP_SUBMISSION_JOB_PRIORITY.getPriority());
                     jobInfo.setParameters(jobParameters);
                     jobInfo.setClassName(AIPSubmissionJob.class.getName());
                     jobInfoService.createAsQueued(jobInfo);

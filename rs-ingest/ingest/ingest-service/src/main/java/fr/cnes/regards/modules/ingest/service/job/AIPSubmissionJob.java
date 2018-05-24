@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,8 +53,6 @@ import fr.cnes.regards.modules.storage.domain.RejectedAip;
  *
  */
 public class AIPSubmissionJob extends AbstractJob<Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPSubmissionJob.class);
 
     public static final String INGEST_CHAIN_PARAMETER = "chain";
 
@@ -146,13 +142,13 @@ public class AIPSubmissionJob extends AbstractJob<Void> {
                 break;
             default:
                 String message = String.format("AIP submission failure for ingest chain \"%s\"", ingestProcessingChain);
-                LOGGER.error(message);
+                logger.error(message);
                 throw new JobRuntimeException(message);
         }
     }
 
     private void rejectAip(String aipId, List<String> rejectionCauses) {
-        LOGGER.warn("AIP {} has been rejected by archival storage microservice for store action", aipId);
+        logger.warn("AIP {} has been rejected by archival storage microservice for store action", aipId);
         StringJoiner errorMessage = new StringJoiner(", ");
         rejectionCauses.forEach(cause -> errorMessage.add(cause));
         aipService.setAipInError(aipId, SipAIPState.REJECTED, errorMessage.toString());

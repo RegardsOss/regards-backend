@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -63,7 +63,9 @@ import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
  *
  */
 @Entity
-@Table(name = "t_sip", indexes = { @Index(name = "idx_sip_id", columnList = "sipId,ipId,checksum") },
+@Table(name = "t_sip",
+        indexes = { @Index(name = "idx_sip_id", columnList = "sipId,ipId,checksum"),
+                @Index(name = "idx_sip_processing", columnList = "processing") },
         // PostgreSQL manage both single indexes and multiple ones
         uniqueConstraints = { @UniqueConstraint(name = "uk_sip_ipId", columnNames = "ipId"),
                 @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
