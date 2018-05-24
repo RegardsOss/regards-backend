@@ -30,13 +30,6 @@
  */
 @Library('regards/standardPipeline') _
 
-properties([
-  pipelineTriggers([
-    upstream(
-      threshold: hudson.model.Result.SUCCESS,
-      upstreamProjects: 'rs-admin-multi-branch/release%2FV2.0.0'
-    )
-  ])
-])
-
-standardPipeline {}
+standardPipeline {
+    upstreamProjects = 'rs-admin-multi-branch'
+}
