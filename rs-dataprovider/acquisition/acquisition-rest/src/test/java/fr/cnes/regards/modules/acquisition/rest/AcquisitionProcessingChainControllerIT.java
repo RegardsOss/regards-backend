@@ -196,7 +196,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         // Document path parameter
         customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(Long.class.getName()))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description("Acquisition chain identifier")));
         performDefaultGet(AcquisitionProcessingChainController.TYPE_PATH
                 + AcquisitionProcessingChainController.CHAIN_PATH, customizer, "Chain should be retrieved", chainId);
