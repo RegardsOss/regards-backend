@@ -141,15 +141,21 @@ public class OaisFieldDescriptors {
         }
 
         lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "regardsDataType"), "regardsDataType",
-                                             "REGARDS data object type", ". Allowed values : " + joiner.toString()));
+                                             "REGARDS data object type", "Allowed values : " + joiner.toString()));
         lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "filename"), "filename", "The data object file name")
                 .optional().type("String"));
         lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "urls"), "urls", "A set of URL"));
-        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "algorithm"), "algorithm", "The checksum algorithm"));
-        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "checksum"), "checksum",
-                                             "The calculated data object checksum"));
         lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "fileSize"), "fileSize", "The data object size in bytes")
                 .optional().type("Long"));
+
+        lfd.add(oaisDataObjectField.withPath(addPrefix(prefix, "checksum"), "checksum",
+                "The calculated data object checksum"));
+        // the property path "algorithm-fake" is unknown, if we set "algorithm"
+        // the doc generation does not work :
+        // java.util.MissingResourceException: Can't find resource for bundle java.util.PropertyResourceBundle, key fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm.description
+        lfd.add(oaisDataObjectField
+                .withPath(addPrefix(prefix, "algorithm"), "algorithm-fake", "The checksum algorithm used",
+                          "see https://docs.oracle.com/javase/8/docs/api/java/security/MessageDigest.html[java.security.MessageDigest]"));
 
         return lfd;
     }
