@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -282,8 +283,11 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                         .description("the AIP identifier")
                                                                         .attributes(Attributes
                                                                                             .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                            .value(UniformResourceName.class
-                                                                                                           .getName()))));
+                                                                                            .value(String.class
+                                                                                                           .getSimpleName()),
+                                                                                    Attributes
+                                                                                            .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                            .value("Should respect UniformResourceName pattern"))));
         performDefaultGet(AIPController.AIP_PATH + AIPController.ID_PATH,
                           requestBuilderCustomizer,
                           "we should have the aip",
@@ -339,13 +343,16 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                         .attributes(Attributes
                                                                                             .key(RequestBuilderCustomizer.PARAM_TYPE)
                                                                                             .value(String.class
-                                                                                                           .getName())),
+                                                                                                           .getSimpleName())),
                                                                 RequestDocumentation.parameterWithName("ip_id")
                                                                         .description("the AIP identifier")
                                                                         .attributes(Attributes
                                                                                             .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                            .value(UniformResourceName.class
-                                                                                                           .getName()))));
+                                                                                            .value(String.class
+                                                                                                           .getSimpleName()),
+                                                                                    Attributes
+                                                                                            .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                            .value("Should respect UniformResourceName pattern"))));
 
         performDefaultGet(AIPController.AIP_PATH + AIPController.TAG,
                           requestBuilderCustomizer,
@@ -374,8 +381,11 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                         .description("the AIP identifier")
                                                                         .attributes(Attributes
                                                                                             .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                            .value(UniformResourceName.class
-                                                                                                           .getName()))));
+                                                                                            .value(String.class
+                                                                                                           .getSimpleName()),
+                                                                                    Attributes
+                                                                                            .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                            .value("Should respect UniformResourceName pattern"))));
         performDefaultDelete(AIPController.AIP_PATH + AIPController.ID_PATH,
                              requestBuilderCustomizer,
                              "deletion of this aip should be possible",
@@ -408,8 +418,11 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                         .description("the AIP identifier")
                                                                         .attributes(Attributes
                                                                                             .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                            .value(UniformResourceName.class
-                                                                                                           .getName()))));
+                                                                                            .value(String.class
+                                                                                                           .getSimpleName()),
+                                                                                    Attributes
+                                                                                            .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                            .value("Should respect UniformResourceName pattern"))));
         performDefaultGet(AIPController.AIP_PATH + AIPController.OBJECT_LINK_PATH,
                           requestBuilderCustomizer,
                           "we should have the metadata of the files of the aip",
@@ -428,8 +441,11 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                         .description("the AIP identifier")
                                                                         .attributes(Attributes
                                                                                             .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                            .value(UniformResourceName.class
-                                                                                                           .getName()))));
+                                                                                            .value(String.class
+                                                                                                           .getSimpleName()),
+                                                                                    Attributes
+                                                                                            .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                            .value("Should respect UniformResourceName pattern"))));
         performDefaultGet(AIPController.AIP_PATH + AIPController.VERSION_PATH,
                           requestBuilderCustomizer,
                           "we should have the different versions of an aip",
@@ -448,8 +464,11 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                         .description("the AIP identifier")
                                                                         .attributes(Attributes
                                                                                             .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                            .value(UniformResourceName.class
-                                                                                                           .getName()))));
+                                                                                            .value(String.class
+                                                                                                           .getSimpleName()),
+                                                                                    Attributes
+                                                                                            .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                            .value("Should respect UniformResourceName pattern"))));
         performDefaultGet(AIPController.AIP_PATH + AIPController.HISTORY_PATH,
                           requestBuilderCustomizer,
                           "we should have the history of an aip",
@@ -480,14 +499,17 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                         .description("the AIP identifier")
                                                                         .attributes(Attributes
                                                                                             .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                            .value(UniformResourceName.class
-                                                                                                           .getName())),
+                                                                                            .value(String.class
+                                                                                                           .getSimpleName()),
+                                                                                    Attributes
+                                                                                            .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                            .value("Should respect UniformResourceName pattern")),
                                                                 RequestDocumentation.parameterWithName("checksum")
                                                                         .description("the file to download checksum.")
                                                                         .attributes(Attributes
                                                                                             .key(RequestBuilderCustomizer.PARAM_TYPE)
                                                                                             .value(String.class
-                                                                                                           .getName()))));
+                                                                                                           .getSimpleName()))));
         performDefaultGet(AIPController.AIP_PATH + AIPController.DOWNLOAD_AIP_FILE,
                           requestBuilderCustomizer,
                           "We should be downloading the data file",
@@ -511,24 +533,42 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                            .description("state the aips should be in")
                                                                            .attributes(Attributes
                                                                                                .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                               .value(AIPState.class
-                                                                                                              .getName()))
+                                                                                               .value(String.class
+                                                                                                              .getSimpleName()),
+                                                                                       Attributes
+                                                                                               .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                               .value("Available values: "
+                                                                                                              + Arrays
+                                                                                                       .stream(AIPState.values())
+                                                                                                       .map(aipState -> aipState
+                                                                                                               .getName())
+                                                                                                       .reduce((first, second) ->
+                                                                                                                       first
+                                                                                                                               + ", "
+                                                                                                                               + second)
+                                                                                                       .get()))
                                                                            .optional(),
                                                                    RequestDocumentation.parameterWithName("from")
                                                                            .description(
-                                                                                   "date(UTC) after which the aip should have been added to the system")
+                                                                                   "date after which the aip should have been added to the system")
                                                                            .attributes(Attributes
                                                                                                .key(RequestBuilderCustomizer.PARAM_TYPE)
                                                                                                .value(String.class
-                                                                                                              .getName()))
+                                                                                                              .getSimpleName()),
+                                                                                       Attributes
+                                                                                               .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                               .value("Should respect UTC format"))
                                                                            .optional(),
                                                                    RequestDocumentation.parameterWithName("to")
                                                                            .description(
-                                                                                   "date(UTC) before which the aip should have been added to the system")
+                                                                                   "date before which the aip should have been added to the system")
                                                                            .attributes(Attributes
                                                                                                .key(RequestBuilderCustomizer.PARAM_TYPE)
                                                                                                .value(String.class
-                                                                                                              .getName()))
+                                                                                                              .getSimpleName()),
+                                                                                       Attributes
+                                                                                               .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                               .value("Should respect UTC format"))
                                                                            .optional()));
         performDefaultGet(AIPController.AIP_PATH, requestBuilderCustomizer, "There should be some AIP to show");
     }
