@@ -80,7 +80,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     private void documentFileRequestParameters(RequestBuilderCustomizer requestBuilderCustomizer) {
         ParameterDescriptor paramFile = RequestDocumentation
                 .parameterWithName(IngestProcessingChainController.IMPORT_PATH).optional()
-                .description("A file containing an ingestion processing chainn in GeoJson format")
+                .description("A file containing an ingestion processing chain in GeoJson format")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"));
         // Add request parameters documentation
         requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.requestParameters(paramFile));
