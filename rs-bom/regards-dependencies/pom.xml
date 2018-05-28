@@ -65,6 +65,7 @@
         <swagger.starter.version>2.1.0-SNAPSHOT</swagger.starter.version>
         <websocket.starter.version>2.1.0-SNAPSHOT</websocket.starter.version>
         <plugins.starter.version>2.1.0-SNAPSHOT</plugins.starter.version>
+        <plugins.docs.version>2.1.0-SNAPSHOT</plugins.docs.version>
         <oais.starter.version>2.1.0-SNAPSHOT</oais.starter.version>
         <oais.docs.version>2.1.0-SNAPSHOT</oais.docs.version>
 
@@ -515,6 +516,11 @@
                 <groupId>fr.cnes.regards.framework</groupId>
                 <artifactId>plugins-regards-starter</artifactId>
                 <version>${plugins.starter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework</groupId>
+                <artifactId>plugins-docs</artifactId>
+                <version>${plugins.docs.version}</version>
             </dependency>
             <!-- Regards Plugin Feign Client -->
             <dependency>
