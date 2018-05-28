@@ -541,7 +541,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                                                               + Arrays
                                                                                                        .stream(AIPState.values())
                                                                                                        .map(aipState -> aipState
-                                                                                                               .getName())
+                                                                                                               .name())
                                                                                                        .reduce((first, second) ->
                                                                                                                        first
                                                                                                                                + ", "
