@@ -4,8 +4,10 @@
 == Overview
 
  This API allows to submit REGARDS's plugins.
+ 
+== Plugin management
 
-== Get all plugin configuration's type
+=== Get all plugin's type
 
 :TestClass: PluginControllerIT
 :TestMethod: getAllPluginTypes 
@@ -16,7 +18,7 @@ include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
-== Get all plugins configuration
+=== Get all plugins
 
 :TestClass: PluginControllerIT
 :TestMethod: getAllPlugins 
@@ -27,7 +29,7 @@ include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
-== Get all known plugins configuration for a specific type
+=== Get all known plugins for a specific interface
 
 :TestClass: PluginControllerIT
 :TestMethod: getPluginOneType 
@@ -40,7 +42,20 @@ include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
 include::{snippets}/{TestClass}/getPluginOneUnknownType/http-response.adoc[]
 
-== Plugin configuration creation
+=== Get one plugin
+
+:TestClass: PluginControllerIT
+:TestMethod: getOnePlugin 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+== Plugin configuration management
+
+=== Plugin configuration creation
 
 Submits a REGARDS plugin configuration as a POST request.
 
@@ -57,8 +72,54 @@ include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
 include::{snippets}/{TestClass}/savePluginConfigurationErrorConfNull/http-response.adoc[]
 
+=== Get all plugins configuration
 
-== Plugin configuration update
+:TestClass: PluginControllerIT
+:TestMethod: getAllPluginConfiguration 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Get all plugins configuration for a specific plugin
+
+:TestClass: PluginControllerIT
+:TestMethod: getPluginConfigurationsForOnePluginId 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+include::{snippets}/{TestClass}/getAllPluginConfigurationByTypeError/http-response.adoc[]
+
+
+=== Get a plugin configuration
+
+:TestClass: PluginControllerIT
+:TestMethod: getPluginConfiguration 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Get all plugins configuration for a specific interface
+
+:TestClass: PluginControllerIT
+:TestMethod: getAllPluginConfigurationForOneSpecificType 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Plugin configuration update
 
 Submits a REGARDS plugin configuration as a PUT request.
 
@@ -72,3 +133,16 @@ include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
 include::{snippets}/{TestClass}/{TestMethod}/request-fields.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Plugin configuration delete
+
+:TestClass: PluginControllerIT
+:TestMethod: deletePluginConfiguration 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+
