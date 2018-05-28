@@ -241,7 +241,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         // Document path parameter
         customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(Long.class.getName()))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE))
                 .description("Acquisition chain identifier")));
 
         performDefaultPut(AcquisitionProcessingChainController.TYPE_PATH
@@ -313,7 +313,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         // Document path parameter
         customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(Long.class.getName()))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE))
                 .description("Acquisition chain identifier to update").attributes(Attributes
                         .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Chain must be disabled."))));
 

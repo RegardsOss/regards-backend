@@ -52,6 +52,7 @@ import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 import org.hibernate.validator.constraints.NotBlank;
 
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -123,6 +124,7 @@ public class Product {
     @Column(name = "session", length = 128)
     private String session;
 
+    @GsonIgnore
     @NotNull
     @ManyToOne
     @JoinColumn(name = "processing_chain_id", foreignKey = @ForeignKey(name = "fk_processing_chain_id"),

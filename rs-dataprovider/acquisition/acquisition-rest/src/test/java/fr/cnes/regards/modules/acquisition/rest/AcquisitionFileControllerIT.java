@@ -20,11 +20,15 @@ package fr.cnes.regards.modules.acquisition.rest;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringJoiner;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Attributes;
@@ -34,6 +38,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
@@ -70,6 +75,12 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         documentRequestParameters(requestBuilderCustomizer);
+
+        requestBuilderCustomizer
+                .addDocumentationSnippet(PayloadDocumentation.relaxedResponseFields(Attributes
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE).value("Acquisition file")),
+                                                                                    documentAcquisitionFile()));
+
         performDefaultGet(AcquisitionFileController.TYPE_PATH, requestBuilderCustomizer, "Should retrieve files");
     }
 
@@ -87,7 +98,7 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
 
         ParameterDescriptor paramFilepath = RequestDocumentation
                 .parameterWithName(AcquisitionFileController.REQUEST_PARAM_FILEPATH).optional()
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getName()))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description("Entire file path filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"));
 
@@ -97,26 +108,26 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
         }
         ParameterDescriptor paramState = RequestDocumentation
                 .parameterWithName(AcquisitionFileController.REQUEST_PARAM_STATE).optional()
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getName()))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description("Acquisition file state filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                         .value("Optional. Multiple values allowed. Allowed values : " + joiner.toString()));
 
         ParameterDescriptor paramProductId = RequestDocumentation
                 .parameterWithName(AcquisitionFileController.REQUEST_PARAM_PRODUCT_ID).optional()
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(Long.class.getName()))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE))
                 .description("Product acquisition file(s) identifier filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"));
 
         ParameterDescriptor paramChainId = RequestDocumentation
                 .parameterWithName(AcquisitionFileController.REQUEST_PARAM_CHAIN_ID).optional()
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(Long.class.getName()))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE))
                 .description("Acquisition chain identifier filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"));
 
         ParameterDescriptor paramFrom = RequestDocumentation
                 .parameterWithName(AcquisitionFileController.REQUEST_PARAM_FROM).optional()
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getName()))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description("ISO Date time filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                         .value("Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
@@ -124,5 +135,33 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
         // Add request parameters documentation
         requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
                 .requestParameters(paramFilepath, paramState, paramProductId, paramChainId, paramFrom));
+    }
+
+    private List<FieldDescriptor> documentAcquisitionFile() {
+
+        ConstrainedFields constrainedFields = new ConstrainedFields(AcquisitionFile.class);
+        List<FieldDescriptor> fields = new ArrayList<>();
+
+        String prefix = "content[].content.";
+
+        fields.add(constrainedFields.withPath(prefix + "filePath", "filePath", "Local file path"));
+
+        StringJoiner joiner = new StringJoiner(", ");
+        for (AcquisitionFileState mode : AcquisitionFileState.values()) {
+            joiner.add(mode.name());
+        }
+        fields.add(constrainedFields.withPath(prefix + "state", "state", "State",
+                                              "Allowed values : " + joiner.toString()));
+
+        fields.add(constrainedFields
+                .withPath(prefix + "error", "error", "Error details when acquisition file state is in ERROR").optional()
+                .type(JSON_STRING_TYPE));
+
+        fields.add(constrainedFields.withPath(prefix + "acqDate", "acqDate", "ISO 8601 acquisition date"));
+
+        fields.add(constrainedFields.withPath(prefix + "checksum", "checksum", "File checksum"));
+        fields.add(constrainedFields.withPath(prefix + "checksumAlgorithm", "checksumAlgorithm", "Checksum algorithm"));
+
+        return fields;
     }
 }

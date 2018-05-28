@@ -5,7 +5,9 @@
 
  This API allows to create, launch and monitor acquisition processing chains.
  
-== Create an acquisition chain
+== Acquisition chain management API
+
+=== Create an acquisition chain
 
 :TestClass: AcquisitionProcessingChainControllerIT
 :TestMethod: createChain 
@@ -18,7 +20,7 @@ include::{snippets}/{TestClass}/{TestMethod}/request-fields.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
-== Get all acquisition chain
+=== Get all acquisition chain
 
 :TestClass: AcquisitionProcessingChainControllerIT
 :TestMethod: getAllChains 
@@ -29,7 +31,7 @@ include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
-== Get an acquisition chain
+=== Get an acquisition chain
 
 :TestClass: AcquisitionProcessingChainControllerIT
 :TestMethod: getOneChain
@@ -43,7 +45,7 @@ include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
-== Start and stop an acquisition chain
+=== Start and stop an acquisition chain
 
 An enabled acquisition chain can be started via a `GET /chains/{chainId}/start` request, +
 
@@ -51,7 +53,7 @@ or stopped via a `GET /chains/{chainId}/stop` request.
 
 See <<chain-path-parameters>>.
 
-== Update an acquisition chain
+=== Update an acquisition chain
 
 :TestClass: AcquisitionProcessingChainControllerIT
 :TestMethod: updateChain
@@ -64,7 +66,7 @@ include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
-== Delete an acquisition chain
+=== Delete an acquisition chain
 
 :TestClass: AcquisitionProcessingChainControllerIT
 :TestMethod: deleteChain
@@ -79,7 +81,9 @@ include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
-== Search all files
+== Search files API
+
+=== Search all files
 
 :TestClass: AcquisitionFileControllerIT
 :TestMethod: searchAllFiles
@@ -94,7 +98,9 @@ include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
-== Search files by state
+include::{snippets}/{TestClass}/{TestMethod}/response-fields.adoc[]
+
+=== Search files by state
 
 :TestClass: AcquisitionFileControllerIT
 :TestMethod: searchFilesByState
@@ -108,3 +114,24 @@ include::{snippets}/{TestClass}/{TestMethod}/request-parameters.adoc[]
 include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+== Search product API
+
+=== Search all files
+
+:TestClass: ProductControllerTestIT
+:TestMethod: searchForProductsTest
+
+Retrieves all acquired files regardless the acquisition chain.
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/response-fields.adoc[]
+
+
