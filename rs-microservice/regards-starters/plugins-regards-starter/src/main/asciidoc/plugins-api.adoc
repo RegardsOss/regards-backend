@@ -1,0 +1,74 @@
+= Plugins module API
+
+[[overview]]
+== Overview
+
+ This API allows to submit REGARDS's plugins.
+
+== Get all plugin configuration's type
+
+:TestClass: PluginControllerIT
+:TestMethod: getAllPluginTypes 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+== Get all plugins configuration
+
+:TestClass: PluginControllerIT
+:TestMethod: getAllPlugins 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+== Get all known plugins configuration for a specific type
+
+:TestClass: PluginControllerIT
+:TestMethod: getPluginOneType 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+include::{snippets}/{TestClass}/getPluginOneUnknownType/http-response.adoc[]
+
+== Plugin configuration creation
+
+Submits a REGARDS plugin configuration as a POST request.
+
+:TestClass: PluginControllerIT
+:TestMethod: savePluginConfiguration 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-fields.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+include::{snippets}/{TestClass}/savePluginConfigurationErrorConfNull/http-response.adoc[]
+
+
+== Plugin configuration update
+
+Submits a REGARDS plugin configuration as a PUT request.
+
+:TestClass: PluginControllerIT
+:TestMethod: updatePluginConfiguration 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-fields.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]

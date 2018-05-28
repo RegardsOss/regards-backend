@@ -129,7 +129,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     @Column(columnDefinition = "text")
     @Convert(converter = SetStringCsvConverter.class)
-    private Set<String> interfaceNames = Sets.newHashSet();;
+    private Set<String> interfaceNames = Sets.newHashSet();
 
     /**
      * Configuration parameters of the plugin
@@ -183,6 +183,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         this.parameters = parameters;
         priorityOrder = order;
         this.label = label;
+        
         active = Boolean.TRUE;
     }
 

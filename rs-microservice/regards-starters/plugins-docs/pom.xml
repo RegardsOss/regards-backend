@@ -12,9 +12,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>geojson-docs</artifactId>
+	<artifactId>plugins-docs</artifactId>
 	<version>2.1.0-SNAPSHOT</version>
-	<description>GeoJson docs</description>
+	<description>REGARDS Plugins docs</description>
 
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
@@ -53,8 +53,8 @@
 			<artifactId>regards-integration-test</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>geojson-regards</artifactId>
+			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+			<artifactId>plugins-domain</artifactId>
 		</dependency>
 	</dependencies>
 </project>

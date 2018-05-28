@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -60,8 +60,6 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  * @author Sébastien Binda
  */
 @RestController
-@ModuleInfo(name = "plugins", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 public class PluginController implements IResourceController<PluginConfiguration> {
 
     /**
@@ -152,7 +150,7 @@ public class PluginController implements IResourceController<PluginConfiguration
                 metadaData = pluginService.getPluginsByType(Class.forName(pluginType));
             } catch (final ClassNotFoundException e) {
                 LOGGER.error(e.getMessage(), e);
-                throw new EntityInvalidException(e.getMessage());
+                throw new EntityInvalidException("Class not found : " + e.getMessage());
             }
         }
 
@@ -245,7 +243,7 @@ public class PluginController implements IResourceController<PluginConfiguration
             @Valid @RequestBody PluginConfiguration pluginConf) throws ModuleException {
         try {
             return new ResponseEntity<>(toResource(pluginService.savePluginConfiguration(pluginConf)),
-                                        HttpStatus.CREATED);
+                    HttpStatus.CREATED);
         } catch (final ModuleException e) {
             LOGGER.error("Cannot create the plugin configuration : <" + pluginConf.getPluginId() + ">", e);
             throw e;
@@ -298,7 +296,7 @@ public class PluginController implements IResourceController<PluginConfiguration
 
         if (!pluginId.equals(pluginConf.getPluginId())) {
             LOGGER.error("The plugin configuration is incoherent with the requests param : plugin id= <" + pluginId
-                                 + ">- config id= <" + configId + ">");
+                    + ">- config id= <" + configId + ">");
             throw new EntityNotFoundException(pluginId, PluginConfiguration.class);
         }
 
