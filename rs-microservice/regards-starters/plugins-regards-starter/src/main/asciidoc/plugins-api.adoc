@@ -5,9 +5,11 @@
 
  This API allows to submit REGARDS's plugins.
  
-== Plugin management
+== Plugins management
 
-=== Get all plugin's type
+=== Get all plugins type
+
+Get in the classpath all the interfaces identified with the Java annotation @PluginInterface.
 
 :TestClass: PluginControllerIT
 :TestMethod: getAllPluginTypes 
@@ -18,7 +20,9 @@ include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
-=== Get all plugins
+=== Get all plugins metadata
+
+Get in the classpath all the classes identified with the Java annotation @Plugin.
 
 :TestClass: PluginControllerIT
 :TestMethod: getAllPlugins 
@@ -29,7 +33,7 @@ include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
-=== Get all known plugins for a specific interface
+=== Get all the plugins metadata for a plugin's interface
 
 :TestClass: PluginControllerIT
 :TestMethod: getPluginOneType 
@@ -42,7 +46,7 @@ include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
 include::{snippets}/{TestClass}/getPluginOneUnknownType/http-response.adoc[]
 
-=== Get one plugin
+=== Get a plugin metadata
 
 :TestClass: PluginControllerIT
 :TestMethod: getOnePlugin 
@@ -145,4 +149,14 @@ include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
+=== Empty the runtime cache plugin
+
+:TestClass: PluginControllerIT
+:TestMethod: emptyPluginsCahe 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 

@@ -121,6 +121,8 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
         manageDefaultSecurity(PluginController.PLUGINS_CONFIGID, RequestMethod.GET);
         manageDefaultSecurity(PluginController.PLUGINS_CONFIGS, RequestMethod.GET);
+        
+        manageDefaultSecurity(PluginController.PLUGINS_CACHE, RequestMethod.DELETE);
 
         token = generateToken(DEFAULT_USER_EMAIL, DEFAULT_ROLE);
     }
@@ -447,6 +449,18 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         performDelete(PluginController.PLUGINS_PLUGINID_CONFIGID, token, requestBuilderCustomizer,
                       "unable to delete a plugin configuration", aPluginConfiguration.getPluginId(),
                       aPluginConfiguration.getId());
+    }
+    
+    @Test
+    @Purpose("When a HTTP request DELETE is successed, the HTTP return code is 204")
+    public void emptyPluginsCahe() throws ModuleException, MalformedURLException {
+        PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
+
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(status().isNoContent());
+
+        performDelete(PluginController.PLUGINS_CACHE, token, requestBuilderCustomizer,
+                      "unable to empty a cache plugin");
     }
 
     private PluginMetaData getPluginMetaData() {
