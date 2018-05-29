@@ -40,7 +40,7 @@ public interface ISearchClient {
     String DOCUMENTS_URN = "/documents/{urn}";
 
     String DATASET_URN_PATH = "/datasets/{urn}";
-    
+
     String ENTITY_HAS_ACCESS = "/entities/{urn}/access";
 
     String ENTITIES_HAS_ACCESS = "/entities/access";
@@ -69,7 +69,8 @@ public interface ISearchClient {
     @RequestMapping(path = ENTITY_HAS_ACCESS, method = RequestMethod.GET)
     ResponseEntity<Boolean> hasAccess(@PathVariable("urn") UniformResourceName urn);
 
-    @RequestMapping(path = ENTITIES_HAS_ACCESS, method = RequestMethod.POST)
+    @RequestMapping(path = ENTITIES_HAS_ACCESS, method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     ResponseEntity<Set<UniformResourceName>> hasAccess(@RequestBody java.util.Collection<UniformResourceName> urns);
 
     @RequestMapping(path = DATAOBJECTS_COMPUTE_FILES_SUMMARY, method = RequestMethod.GET)

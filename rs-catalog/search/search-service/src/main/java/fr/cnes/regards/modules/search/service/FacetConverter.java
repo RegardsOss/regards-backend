@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -45,6 +45,7 @@ public class FacetConverter implements IFacetConverter {
     private static final Map<AttributeType, FacetType> MAP = new ImmutableMap.Builder<AttributeType, FacetType>()
             .put(AttributeType.STRING, FacetType.STRING)
             .put(AttributeType.STRING_ARRAY, FacetType.STRING)
+            .put(AttributeType.BOOLEAN, FacetType.BOOLEAN)
             .put(AttributeType.INTEGER, FacetType.NUMERIC)
             .put(AttributeType.INTEGER_ARRAY, FacetType.NUMERIC)
             .put(AttributeType.DOUBLE, FacetType.NUMERIC)

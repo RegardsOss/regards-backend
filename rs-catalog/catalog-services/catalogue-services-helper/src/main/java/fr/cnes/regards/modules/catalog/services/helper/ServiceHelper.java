@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,8 +18,13 @@
  */
 package fr.cnes.regards.modules.catalog.services.helper;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -42,6 +47,11 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseExcep
 @Service
 @MultitenantTransactional
 public class ServiceHelper implements IServiceHelper {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceHelper.class);
 
     /**
      * Service to search datas from the catalog.
@@ -89,7 +99,13 @@ public class ServiceHelper implements IServiceHelper {
     public Page<DataObject> getDataObjects(String openSearchQuery, int pageIndex, int nbEntitiesByPage)
             throws OpenSearchParseException {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
-        ICriterion crit = openSearchService.parse(openSearchQuery);
+        String queryParameters = openSearchQuery;
+        try {
+            queryParameters = URLEncoder.encode(URLDecoder.decode(queryParameters, "UTF-8"), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        ICriterion crit = openSearchService.parse(String.format("q=%s", queryParameters));
         PageRequest pageReq = new PageRequest(pageIndex, nbEntitiesByPage);
         return searchService.search(searchKey, pageReq, crit);
     }
