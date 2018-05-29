@@ -50,9 +50,9 @@ public class SIPSessionController implements IResourceController<SIPSession> {
 
     public static final String TYPE_MAPPING = "/sessions";
 
-    public static final String ID_PATH = "/{id}";
-
     public static final String REQUEST_PARAM_ID = "id";
+
+    public static final String ID_PATH = "/{" + REQUEST_PARAM_ID + "}";
 
     public static final String REQUEST_PARAM_FROM = "from";
 

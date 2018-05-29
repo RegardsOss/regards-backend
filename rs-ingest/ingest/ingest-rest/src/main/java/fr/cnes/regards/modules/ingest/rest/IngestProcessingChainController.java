@@ -63,7 +63,9 @@ public class IngestProcessingChainController implements IResourceController<Inge
 
     public static final String TYPE_MAPPING = "/processingchains";
 
-    public static final String NAME_PATH = "/{name}";
+    public static final String REQUEST_PARAM_NAME = "name";
+
+    public static final String NAME_PATH = "/{" + REQUEST_PARAM_NAME + "}";
 
     public static final String IMPORT_PATH = "/import";
 
@@ -145,9 +147,9 @@ public class IngestProcessingChainController implements IResourceController<Inge
             // FIXME maybe already done!
             pResponse.getOutputStream().flush();
         } catch (IOException e) {
-            String message = String
-                    .format("Error with servlet output stream while exporting ingest processing chain %s.",
-                            chain.getName());
+            String message = String.format(
+                                           "Error with servlet output stream while exporting ingest processing chain %s.",
+                                           chain.getName());
             LOGGER.error(message, e);
             throw new ModuleException(e);
         }

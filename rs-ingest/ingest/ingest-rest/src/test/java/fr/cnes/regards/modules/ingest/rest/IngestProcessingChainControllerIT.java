@@ -52,6 +52,11 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     public void exportProcessingChain() {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
+                .pathParameters(RequestDocumentation.parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+                        .description("Ingestion processing name")));
+        
 
         ResultActions resultActions = performDefaultGet(IngestProcessingChainController.TYPE_MAPPING
                 + IngestProcessingChainController.EXPORT_PATH, requestBuilderCustomizer,

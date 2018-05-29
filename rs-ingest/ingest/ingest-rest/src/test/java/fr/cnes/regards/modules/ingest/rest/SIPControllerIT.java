@@ -258,6 +258,10 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         // Retrieve sessions
         requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
+                .pathParameters(RequestDocumentation.parameterWithName(SIPSessionController.REQUEST_PARAM_ID)
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+                        .description("Ingestion session identifier")));
 
         performDefaultGet(SIPSessionController.TYPE_MAPPING + SIPSessionController.ID_PATH, requestBuilderCustomizer,
                           "Error retrieving SIP sessions", sessionId);
@@ -329,7 +333,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
-        
+
         documentFileRequestParameters(requestBuilderCustomizer);
 
         performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH, filePath,
