@@ -350,13 +350,13 @@ public class RequestBuilderCustomizer {
      * @param httpMethod
      */
     protected void checkCustomizationCoherence(HttpMethod httpMethod) {
-        // constaints are only on DELETE, PUT and POST, for now, as they cannot have request parameters
+        // constraints are only on DELETE, PUT and POST, for now, as they cannot have request parameters
         switch (httpMethod) {
             case DELETE:
             case PUT:
             case POST:
                 if (!requestParamBuilder.getParameters().isEmpty()) {
-                    throw new IllegalStateException(String.format("Method %s cannot have request parameters"));
+                    throw new IllegalStateException(String.format("Method %s cannot have request parameters", httpMethod));
                 }
                 break;
             default:
