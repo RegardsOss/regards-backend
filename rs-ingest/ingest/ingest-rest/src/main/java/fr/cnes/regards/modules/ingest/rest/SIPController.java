@@ -73,8 +73,10 @@ public class SIPController implements IResourceController<SIPEntity> {
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPController.class);
 
     public static final String TYPE_MAPPING = "/sips";
+    
+    public static final String REQUEST_PARAM_IP_ID = "ipId";
 
-    public static final String IPID_PATH = "/{ipId}";
+    public static final String IPID_PATH = "/{" + REQUEST_PARAM_IP_ID + "}";
 
     public static final String RETRY_PATH = "/retry";
 
@@ -175,7 +177,7 @@ public class SIPController implements IResourceController<SIPEntity> {
         return new ResponseEntity<>(sipService.deleteSIPEntitiesForSipId(sipId), HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Delete one SIP by is sipId.")
+    @ResourceAccess(description = "Delete one SIP by is ipId.")
     @RequestMapping(value = IPID_PATH, method = RequestMethod.DELETE)
     public ResponseEntity<Collection<RejectedSip>> deleteSipEntity(@PathVariable("ipId") String sipId)
             throws ModuleException {
