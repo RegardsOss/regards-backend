@@ -18,22 +18,32 @@
  */
 package fr.cnes.regards.modules.search.domain.plugin;
 
-import fr.cnes.regards.modules.indexer.dao.FacetPage;
-import fr.cnes.regards.modules.indexer.domain.IIndexable;
-import fr.cnes.regards.modules.search.domain.SearchContext;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
+
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
+ * TODO
+ *
  * @author Marc Sordi
  *
  */
-public interface ISearchEngine<S, R extends IIndexable> {
+@PluginInterface(description = "Search engine plugin interface")
+public interface ISearchEngine {
 
-    /**
-     * Map request context to search context
-     * @param context request context
-     * @return search context
-     */
-    SearchContext<S, R> map(SearchContext<S, R> context);
+    // /**
+    // * Map request context to search context
+    // * @param context request context
+    // * @return search context
+    // */
+    // SearchContext<S, R> map(SearchContext<S, R> context);
+    //
+    // Object map(FacetPage<R> page);
 
-    Object map(FacetPage<R> page);
+    // TODO
+    ResponseEntity<?> handleRequest(String engineType, String extra, HttpHeaders headers,
+            MultiValueMap<String, String> allParams, Pageable pageable);
 }

@@ -19,16 +19,20 @@
 package fr.cnes.regards.modules.search.rest.engines;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.search.rest.SearchEngineController;
 
 /**
  * TODO
@@ -50,8 +54,18 @@ public class SearchEngineControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void basicSearch() {
+
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+
+        // customizer.customizeHeaders().setContentType(MediaType.APPLICATION_ATOM_XML);
+        // customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
+        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
+
         List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
+        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_ALL_MAPPING, customizer,
+                          "Search all error", ENGINE_TYPE);
 
         // RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
         // performDefaultGet(SearchEngineController.TYPE_MAPPING, expectations, "Error searching", DATASET_ID,

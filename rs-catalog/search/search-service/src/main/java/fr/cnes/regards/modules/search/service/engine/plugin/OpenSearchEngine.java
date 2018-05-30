@@ -16,29 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.service.engine;
+package fr.cnes.regards.modules.search.service.engine.plugin;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 
-import fr.cnes.regards.modules.indexer.domain.IIndexable;
-import fr.cnes.regards.modules.indexer.domain.SearchKey;
+import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 
 /**
- * Search engine service contract
- *
+ * TODO
  * @author Marc Sordi
  *
  */
-public interface ISearchEngineService {
+public class OpenSearchEngine implements ISearchEngine {
 
-    // TODO document
-    <S, R extends IIndexable> ResponseEntity<?> handleRequest(SearchKey<S, R> searchKey, String engineType,
-            HttpHeaders headers, MultiValueMap<String, String> allParams, Pageable pageable);
+    @Override
+    public ResponseEntity<?> handleRequest(String engineType, String extra, HttpHeaders headers,
+            MultiValueMap<String, String> allParams, Pageable pageable) {
+        // TODO Auto-generated method stub
+        HelloWorld world = new HelloWorld();
+        world.setMessage("Yes! We did it!");
+        return ResponseEntity.ok(world);
+    }
 
-    // TODO document
-    <S, R extends IIndexable> ResponseEntity<?> handleRequest(SearchKey<S, R> searchKey, String engineType,
-            String extra, HttpHeaders headers, MultiValueMap<String, String> allParams, Pageable pageable);
 }
