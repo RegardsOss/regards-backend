@@ -1031,13 +1031,24 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.storages.staf</groupId>
+                <artifactId>staf-plugins</artifactId>
+                <version>${fr.cnes.regards.storages.staf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.storages.staf</groupId>
                 <artifactId>staf-standalone</artifactId>
                 <version>${fr.cnes.regards.storages.staf.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.storages.staf</groupId>
-                <artifactId>staf-storage-plugins</artifactId>
+                <artifactId>staf-url-protocol-handler</artifactId>
                 <version>${fr.cnes.regards.storages.staf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.storages.staf</groupId>
+                <artifactId>staf-url-protocol-handler</artifactId>
+                <version>${fr.cnes.regards.storages.staf.version}</version>
+                <classifier>shaded</classifier>
             </dependency>
             <!-- COTS -->
             <dependency>
