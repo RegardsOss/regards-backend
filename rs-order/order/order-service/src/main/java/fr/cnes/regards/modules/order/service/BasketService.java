@@ -226,8 +226,15 @@ public class BasketService implements IBasketService {
         // Take into account only asked datasetIpId (sub-)summary
         DocFilesSubSummary curDsSelectionSubSummary = curDsSelectionSummary.getSubSummariesMap()
                 .get(datasetSelection.getDatasetIpid());
-        datasetSelection.setObjectsCount((int) curDsSelectionSubSummary.getDocumentsCount());
-        datasetSelection.setFilesCount((int) curDsSelectionSubSummary.getFilesCount());
-        datasetSelection.setFilesSize(curDsSelectionSubSummary.getFilesSize());
+        // Occurs only in tests
+        if (curDsSelectionSubSummary == null) {
+            datasetSelection.setObjectsCount(0);
+            datasetSelection.setFilesCount(0);
+            datasetSelection.setFilesSize(0);
+        } else {
+            datasetSelection.setObjectsCount((int) curDsSelectionSubSummary.getDocumentsCount());
+            datasetSelection.setFilesCount((int) curDsSelectionSubSummary.getFilesCount());
+            datasetSelection.setFilesSize(curDsSelectionSubSummary.getFilesSize());
+        }
     }
 }

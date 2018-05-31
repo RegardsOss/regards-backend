@@ -262,6 +262,13 @@ public class OrderController implements IResourceController<OrderDto> {
 
         private String onSuccessUrl;
 
+        public OrderRequest() {
+        }
+
+        public OrderRequest(String onSuccessUrl) {
+            this.onSuccessUrl = onSuccessUrl;
+        }
+
         public String getOnSuccessUrl() {
             return onSuccessUrl;
         }

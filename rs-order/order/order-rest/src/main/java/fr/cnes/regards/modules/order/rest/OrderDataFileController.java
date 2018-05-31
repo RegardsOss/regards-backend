@@ -113,7 +113,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_AIPS_AIP_ID_FILES_ID)
     public ResponseEntity<StreamingResponseBody> publicDownloadFile(@PathVariable("aipId") String aipId,
             @PathVariable("id") Long dataFileId, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
-            HttpServletResponse response) throws NoSuchElementException, IOException {
+            HttpServletResponse response) throws NoSuchElementException {
         OrderDataFile dataFile;
         String user;
         String role;
