@@ -123,9 +123,9 @@ See <<sip-collection-response>>.
 
 include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
 
-include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
-
 include::{snippets}/{TestClass}/{TestMethod}/path-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
@@ -140,7 +140,68 @@ include::{snippets}/{TestClass}/{TestMethod}/request-parameters.adoc[]
 
 include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
+=== Delete all SIP for a session id
+
+All the SIP of a session can be deleted via a `DELETE /sessions/{id}` request. +
+
+* *URL params*
+
+|===
+|Parameter|Type|Description|Constraints
+
+|`+id+`
+|String
+|The session id
+|
+|===
+
 == Ingestion processing chain management
+
+=== Create an Ingestion processing chain
+
+:TestClass: IngestProcessingChainControllerIT
+:TestMethod: createIngestProcessingChain
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Update an Ingestion processing chain
+
+:TestClass: IngestProcessingChainControllerIT
+:TestMethod: updateIngestProcessingChain
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/path-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Get an Ingestion processing chain
+
+:TestClass: IngestProcessingChainControllerIT
+:TestMethod: getOneIngestProcessingChain
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/path-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Delete an Ingestion processing chain
+
+:TestClass: IngestProcessingChainControllerIT
+:TestMethod: deleteIngestProcessingChain
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/path-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
 
 === Import an Ingestion processing chain
 

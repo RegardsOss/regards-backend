@@ -261,7 +261,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
                 .pathParameters(RequestDocumentation.parameterWithName(SIPSessionController.REQUEST_PARAM_ID)
                         .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                        .description("Ingestion session identifier")));
+                        .description("The session identifier")));
 
         performDefaultGet(SIPSessionController.TYPE_MAPPING + SIPSessionController.ID_PATH, requestBuilderCustomizer,
                           "Error retrieving SIP sessions", sessionId);
