@@ -133,10 +133,9 @@
 
         <custom.deployment.version>2.1.0-SNAPSHOT</custom.deployment.version>
         
-        <!-- STAF -->
-        <fr.cnes.regards.staf.version>1.0.0</fr.cnes.regards.staf.version>
-        <fr.cnes.regards.data-storage-staf.plugin.version>1.0.0</fr.cnes.regards.data-storage-staf.plugin.version>
-        <fr.cnes.regards.allocation-storage-staf.plugin.version>1.0.0</fr.cnes.regards.allocation-storage-staf.plugin.version>
+        <!-- CNES remote storages -->
+        <fr.cnes.regards.storages.version>1.0.0</fr.cnes.regards.storages.version>
+        <fr.cnes.regards.storages.staf.version>1.0.0</fr.cnes.regards.storages.staf.version>
 
         <!-- COTS -->
         <flyway.version>4.2.0</flyway.version>
@@ -1019,26 +1018,37 @@
                 <artifactId>ingest-domain</artifactId>
                 <version>${fr.cnes.regards.modules.ingest.version}</version>
             </dependency>
-            <!-- STAF -->
+            <!-- CNES REMOTE STORAGES -->
             <dependency>
-                <groupId>fr.cnes.regards.staf</groupId>
-                <artifactId>staf-controller</artifactId>
-                <version>${fr.cnes.regards.staf.version}</version>
+                <groupId>fr.cnes.regards.storages</groupId>
+                <artifactId>common-storages</artifactId>
+                <version>${fr.cnes.regards.storages.version}</version>
             </dependency>
         	<dependency>
-                <groupId>fr.cnes.regards.staf</groupId>
+                <groupId>fr.cnes.regards.storages.staf</groupId>
+                <artifactId>staf</artifactId>
+                <version>${fr.cnes.regards.storages.staf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.storages.staf</groupId>
+                <artifactId>staf-plugins</artifactId>
+                <version>${fr.cnes.regards.storages.staf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.storages.staf</groupId>
+                <artifactId>staf-standalone</artifactId>
+                <version>${fr.cnes.regards.storages.staf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.storages.staf</groupId>
                 <artifactId>staf-url-protocol-handler</artifactId>
-                <version>${fr.cnes.regards.staf.version}</version>
+                <version>${fr.cnes.regards.storages.staf.version}</version>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.staf</groupId>
-                <artifactId>staf-starter</artifactId>
-                <version>${fr.cnes.regards.staf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.staf.plugins</groupId>
-                <artifactId>storage-staf-plugins</artifactId>
-                <version>${fr.cnes.regards.data-storage-staf.plugin.version}</version>
+                <groupId>fr.cnes.regards.storages.staf</groupId>
+                <artifactId>staf-url-protocol-handler</artifactId>
+                <version>${fr.cnes.regards.storages.staf.version}</version>
+                <classifier>shaded</classifier>
             </dependency>
             <!-- COTS -->
             <dependency>
