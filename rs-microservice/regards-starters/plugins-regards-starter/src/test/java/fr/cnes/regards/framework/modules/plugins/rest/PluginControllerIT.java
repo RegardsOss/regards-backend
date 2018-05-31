@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.PayloadDocumentation;
+import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -121,7 +122,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
         manageDefaultSecurity(PluginController.PLUGINS_CONFIGID, RequestMethod.GET);
         manageDefaultSecurity(PluginController.PLUGINS_CONFIGS, RequestMethod.GET);
-        
+
         manageDefaultSecurity(PluginController.PLUGINS_CACHE, RequestMethod.DELETE);
 
         token = generateToken(DEFAULT_USER_EMAIL, DEFAULT_ROLE);
@@ -334,6 +335,13 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
                                                                                Matchers.hasToString(TRUE)));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.parameters[1].dynamic",
                                                                                Matchers.hasToString(FALSE)));
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
+                .pathParameters(RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_PLUGIN_ID)
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+                        .description("Plugin identifier"), RequestDocumentation
+                                .parameterWithName(PluginController.REQUEST_PARAM_CONFIG_ID)
+                                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE))
+                                .description("Plugin configuration identifier")));
 
         documentPluginConfRequestBody(requestBuilderCustomizer, true);
 
@@ -446,15 +454,23 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isNoContent());
 
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
+                .pathParameters(RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_PLUGIN_ID)
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+                        .description("Plugin identifier"), RequestDocumentation
+                                .parameterWithName(PluginController.REQUEST_PARAM_CONFIG_ID)
+                                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE))
+                                .description("Plugin configuration identifier")));
+
         performDelete(PluginController.PLUGINS_PLUGINID_CONFIGID, token, requestBuilderCustomizer,
                       "unable to delete a plugin configuration", aPluginConfiguration.getPluginId(),
                       aPluginConfiguration.getId());
     }
-    
+
     @Test
     @Purpose("When a HTTP request DELETE is successed, the HTTP return code is 204")
     public void emptyPluginsCahe() throws ModuleException, MalformedURLException {
-        PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
+        createPluginConfiguration(LABEL);
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isNoContent());
