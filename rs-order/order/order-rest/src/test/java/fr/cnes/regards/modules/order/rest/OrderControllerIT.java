@@ -418,6 +418,40 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Assert.assertEquals(1816l, resultFile.length());
     }
 
+    @Test
+    public void testFindAllOrderFiles() throws URISyntaxException {
+        Order order = createOrderAsPending();
+        orderRepository.save(order);
+
+        order = orderRepository.findCompleteById(order.getId());
+
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.customizeRequestParam().param("page", "0");
+        customizer.customizeRequestParam().param("size", "20");
+        // request parameters
+        customizer.addDocumentationSnippet(RequestDocumentation.relaxedRequestParameters(
+                RequestDocumentation.parameterWithName("page").optional().description("page number (from 0)")
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer")),
+                RequestDocumentation.parameterWithName("size").optional().description("page size")
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))));
+        customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(
+                RequestDocumentation.parameterWithName("datasetId").description("dataset task id (from order)")
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Long")),
+                RequestDocumentation.parameterWithName("orderId").description("order id")
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Long"))));
+
+        ConstrainedFields constrainedFields = new ConstrainedFields(OrderDataFile.class);
+        List<FieldDescriptor> fields = new ArrayList<>();
+        fields.add(constrainedFields.withPath("content", "files").optional().type(JSON_ARRAY_TYPE));
+        customizer.addDocumentationSnippet(PayloadDocumentation.relaxedResponseFields(fields));
+
+
+        performDefaultGet(OrderDataFileController.ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES, customizer, "error",
+                          order.getId(), order.getDatasetTasks().first().getId());
+
+    }
+
     @Requirement("REGARDS_DSL_STO_CMD_010")
     @Requirement("REGARDS_DSL_STO_CMD_040")
     @Requirement("REGARDS_DSL_STO_CMD_120")
@@ -429,8 +463,6 @@ public class OrderControllerIT extends AbstractRegardsIT {
             throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,
             ParserConfigurationException {
         Order order = createOrderAsRunning();
-        DatasetTask ds1Task;
-        ds1Task = order.getDatasetTasks().first();
 
         List<ResultMatcher> expectations = okExpectations();
 
@@ -491,11 +523,109 @@ public class OrderControllerIT extends AbstractRegardsIT {
         JAXBElement<MetalinkType> rootElt = (JAXBElement<MetalinkType>) u.unmarshal(resultFileMl);
         MetalinkType metalink = rootElt.getValue();
         int fileCount = 0;
+        int i = 0;
+        for (FileType fileType : metalink.getFiles().getFile()) {
+            ResourcesType.Url urlO = fileType.getResources().getUrl().iterator().next();
+            String completeUrl = urlO.getValue();
+            // Only /orders/... part is interesting us
+            String url = completeUrl.substring(completeUrl.indexOf("/orders/"));
+            // extract aipId and checksum
+            String[] urlParts = url.split("/");
+            String aipId = urlParts[3];
+            long dataFileId = Long.parseLong(urlParts[5].substring(0, urlParts[5].indexOf('?')));
+            // Stop at "scope=PROJECT"
+            String token = urlParts[5].substring(urlParts[5].indexOf('=') + 1, urlParts[5].indexOf('&'));
+
+            List<ResultMatcher> expects;
+            // File file3.txt has a status PENDING...
+            if (dataFileId == fileText3TxtId) {
+                continue;
+            }
+            i++;
+            RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+            customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+            customizer.customizeRequestParam().param("orderToken", token);
+
+            customizer.addDocumentationSnippet(RequestDocumentation.relaxedRequestParameters(
+                    RequestDocumentation.parameterWithName("orderToken").optional()
+                            .description("token generated at order creation and sent by email to user.")
+                            .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"))));
+
+            customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(
+                    RequestDocumentation.parameterWithName("aipId").description("IP_ID of data object of which file belongs to")
+                            .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")),
+                    RequestDocumentation.parameterWithName("dataFileId").description("file id ")
+                            .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Long"))));
+
+
+
+
+            // Try downloading file as if, with token given into public file url
+            ResultActions results = performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_ID, customizer,
+                                                      "Should return result", aipId, dataFileId);
+
+            File tmpFile = File.createTempFile("ORDER", "tmp", new File("/tmp"));
+            tmpFile.deleteOnExit();
+            try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
+                resultActions.andReturn().getAsyncResult();
+                InputStream is = new ByteArrayInputStream(
+                        resultActions.andReturn().getResponse().getContentAsByteArray());
+                ByteStreams.copy(is, fos);
+                is.close();
+            }
+
+            assertMediaType(results, MediaType.TEXT_PLAIN);
+            fileCount++;
+        }
+        Assert.assertEquals(13, fileCount);
+
+    }
+
+    @Test
+    public void testDownloadNotYetAvailableFile()
+            throws URISyntaxException, IOException, JAXBException {
+        Order order = createOrderAsRunning();
+
+        List<ResultMatcher> expectations = okExpectations();
+
+        ////////////////////////////////////////
+        // First Download metalink order file //
+        ////////////////////////////////////////
+        ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH, expectations,
+                                                        "Should return result", order.getId());
+        Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
+        File resultFileMl = File.createTempFile("ORDER_", ".metalink");
+        resultFileMl.deleteOnExit();
+
+        try (FileOutputStream fos = new FileOutputStream(resultFileMl)) {
+            // WAit for availability
+            resultActions.andReturn().getAsyncResult();
+            InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
+            ByteStreams.copy(is, fos);
+            is.close();
+        }
+        Assert.assertTrue(resultFileMl.length() > 8000l); // 14 files listed into metalink file (size is
+        // slightely different into jenkins)
+
+        tenantResolver.forceTenant(DEFAULT_TENANT); // ?
+
+        // 1 file at state PENDING
+        List<OrderDataFile> dataFiles = dataFileRepository.findByOrderIdAndStateIn(order.getId(), FileState.PENDING);
+        Assert.assertEquals(1, dataFiles.size());
+        long fileText3TxtId = dataFiles.get(0).getId();
+
+        //////////////////////////////////////////////////////
+        // Check that URL from metalink file are correct    //
+        //////////////////////////////////////////////////////
+        JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
+        Unmarshaller u = jaxbContext.createUnmarshaller();
+
+        JAXBElement<MetalinkType> rootElt = (JAXBElement<MetalinkType>) u.unmarshal(resultFileMl);
+        MetalinkType metalink = rootElt.getValue();
         // Some variable to make data file not yet available download as last action (for Doc with a 202 expectation)
         long lastDataFileId = -1l;
         String lastDataFileAipId = null;
         String lastDataFileToken = null;
-        int i = 0;
         for (FileType fileType : metalink.getFiles().getFile()) {
             ResourcesType.Url urlO = fileType.getResources().getUrl().iterator().next();
             String completeUrl = urlO.getValue();
@@ -514,35 +644,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
                 lastDataFileId = dataFileId;
                 lastDataFileAipId = aipId;
                 lastDataFileToken = token;
-                continue;
+                break;
             }
-            i++;
-            // Download only 5 files because something is weird about asynchronous streaming body, transactions
-            // and connection pool
-            if (i > 5) {
-                continue;
-            }
-            RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-            customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-            customizer.customizeRequestParam().param("orderToken", token);
-            System.out.println("DOWNLOADING " + url);
-            // Try downloading file as if, with token given into public file url
-            ResultActions results = performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_ID, customizer,
-                                                      "Should return result", aipId, dataFileId);
-
-            File tmpFile = File.createTempFile("ORDER", "tmp", new File("/tmp"));
-            try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
-                Object o = resultActions.andReturn().getAsyncResult();
-                System.out.println(o);
-                InputStream is = new ByteArrayInputStream(
-                        resultActions.andReturn().getResponse().getContentAsByteArray());
-                ByteStreams.copy(is, fos);
-                is.close();
-            }
-            Thread.sleep(2000);
-
-            assertMediaType(results, MediaType.TEXT_PLAIN);
-            fileCount++;
         }
         // Attempt to download not yet available data file
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
@@ -551,10 +654,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         customizer.customizeRequestParam().param("orderToken", lastDataFileToken);
         ResultActions results = performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_ID, customizer,
                                                   "Should return result", lastDataFileAipId, lastDataFileId);
-
-        Assert.assertEquals(5, fileCount);
-
     }
+
 
     private Order createOrderAsRunning() throws URISyntaxException {
         Order order = createOrderAsPending();

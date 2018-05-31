@@ -164,3 +164,54 @@ include::{snippets}/{TestClass}/testPublicDownloadMetalinkFile/http-request.adoc
 include::{snippets}/{TestClass}/testPublicDownloadMetalinkFile/request-parameters.adoc[]
 
 include::{snippets}/{TestClass}/testPublicDownloadMetalinkFile/http-response.adoc[]
+
+== Find all order files associated to a dataset
+
+Allows to find all files from an order for a specified dataset.
+
+=== API endpoint description
+
+include::{snippets}/{TestClass}/testFindAllOrderFiles/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testFindAllOrderFiles/path-parameters.adoc[]
+
+include::{snippets}/{TestClass}/testFindAllOrderFiles/request-parameters.adoc[]
+
+==== Response
+
+include::{snippets}/{TestClass}/testFindAllOrderFiles/response-fields.adoc[]
+
+include::{snippets}/{TestClass}/testFindAllOrderFiles/http-response.adoc[]
+
+== Download an order file
+
+Allows to download a file that is part of an order.
+
+=== API endpoint description
+
+:TestClass: OrderDataFileControllerIT
+
+include::{snippets}/{TestClass}/testDownloadFile/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testDownloadFile/http-response.adoc[]
+
+include::{snippets}/{TestClass}/testDownloadFileFailed/http-response.adoc[]
+
+=== Download an order file with public token
+
+Allows to download a file that is part of an order with a public token (from metalink file).
+If file is not yet available, result HTTP code is 202 (Accepted).
+
+=== API endpoint description
+
+:TestClass: OrderControllerIT
+
+include::{snippets}/{TestClass}/testDownloadFile/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testDownloadFile/path-parameters.adoc[]
+
+include::{snippets}/{TestClass}/testDownloadFile/request-parameters.adoc[]
+
+include::{snippets}/{TestClass}/testDownloadFile/http-response.adoc[]
+
+include::{snippets}/{TestClass}/testDownloadNotYetAvailableFile/http-response.adoc[]
