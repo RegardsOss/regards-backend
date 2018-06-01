@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.cloud.gateway.cors;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import com.google.common.collect.Maps;
 
 /**
  *
@@ -35,7 +36,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "regards.gateway.cors")
 public class CorsConfigurationProperties {
 
-    private Map<String, CorsProperties> mappings = new HashMap<>();
+    private Map<String, CorsProperties> mappings = Maps.newHashMap();
+
+    public Map<String, CorsProperties> getMappings() {
+        return mappings;
+    }
+
+    public void setMappings(Map<String, CorsProperties> pMappings) {
+        mappings = pMappings;
+    }
 
     public static class CorsProperties {
 
@@ -91,33 +100,4 @@ public class CorsConfigurationProperties {
         }
     }
 
-    public Map<String, CorsProperties> getMappings() {
-        return mappings;
-    }
-
-    public void setMappings(Map<String, CorsProperties> pMappings) {
-        mappings = pMappings;
-    }
-
 }
-
-// @Bean
-// public CorsFilter corsFilter() {
-// final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-// final CorsConfiguration config = new CorsConfiguration();
-// config.setAllowCredentials(true);
-// config.addAllowedOrigin("*");
-// config.addAllowedHeader("authorization");
-// config.addAllowedHeader("content-type");
-// config.addAllowedHeader("scope");
-// config.addAllowedMethod("OPTIONS");
-// config.addAllowedMethod("HEAD");
-// config.addAllowedMethod("GET");
-// config.addAllowedMethod("PUT");
-// config.addAllowedMethod("POST");
-// config.addAllowedMethod("DELETE");
-// config.addAllowedMethod("PATCH");
-// config.setMaxAge(3600L);
-// source.registerCorsConfiguration("/api/**", config);
-// return new CorsFilter(source);
-// }
