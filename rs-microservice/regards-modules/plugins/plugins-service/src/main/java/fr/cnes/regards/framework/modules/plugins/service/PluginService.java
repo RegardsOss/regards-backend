@@ -38,6 +38,7 @@ import org.springframework.util.Assert;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -75,6 +76,11 @@ public class PluginService implements IPluginService {
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginService.class);
+
+    /**
+     * Error message when a plugin configuration identifier is missing
+     */
+    private static final String PLUGIN_CONF_ID_REQUIRED_MSG = "Plugin configuration identifier is required";
 
     /**
      * {@link IRuntimeTenantResolver}
@@ -146,8 +152,8 @@ public class PluginService implements IPluginService {
 
         getLoadedPlugins().forEach((pluginId, metaData) -> {
             try {
-                if ((interfacePluginType == null) || interfacePluginType
-                        .isAssignableFrom(Class.forName(metaData.getPluginClassName()))) {
+                if ((interfacePluginType == null)
+                        || interfacePluginType.isAssignableFrom(Class.forName(metaData.getPluginClassName()))) {
                     availablePlugins.add(metaData);
                 }
             } catch (final ClassNotFoundException e) {
@@ -168,10 +174,10 @@ public class PluginService implements IPluginService {
 
         StringBuilder msg = new StringBuilder("Cannot save plugin configuration");
         PluginConfiguration pluginConfInDb = repos.findOneByLabel(plgConf.getLabel());
-        if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), plgConf.getId()) && pluginConfInDb
-                .getLabel().equals(plgConf.getLabel())) {
-            msg.append(
-                    String.format(". A plugin configuration with same label (%s) already exists.", plgConf.getLabel()));
+        if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), plgConf.getId())
+                && pluginConfInDb.getLabel().equals(plgConf.getLabel())) {
+            msg.append(String.format(". A plugin configuration with same label (%s) already exists.",
+                                     plgConf.getLabel()));
             throw new EntityInvalidException(msg.toString());
         }
 
@@ -184,9 +190,9 @@ public class PluginService implements IPluginService {
         PluginConfiguration newConf = repos.save(plgConf);
         if (shouldPublishCreation) {
             publisher.publish(new BroadcastPluginConfEvent(newConf.getId(), PluginServiceAction.CREATE,
-                                                           newConf.getInterfaceNames()));
-            publisher.publish(
-                    new PluginConfEvent(newConf.getId(), PluginServiceAction.CREATE, newConf.getInterfaceNames()));
+                    newConf.getInterfaceNames()));
+            publisher.publish(new PluginConfEvent(newConf.getId(), PluginServiceAction.CREATE,
+                    newConf.getInterfaceNames()));
 
         }
         return newConf;
@@ -229,13 +235,13 @@ public class PluginService implements IPluginService {
 
         if (oldConfActive != newConf.isActive()) {
             // For CATALOG
-            publisher.publish(new BroadcastPluginConfEvent(pluginConf.getId(), newConf.isActive() ?
-                    PluginServiceAction.ACTIVATE :
-                    PluginServiceAction.DISABLE, newConf.getInterfaceNames()));
+            publisher.publish(new BroadcastPluginConfEvent(pluginConf.getId(),
+                    newConf.isActive() ? PluginServiceAction.ACTIVATE : PluginServiceAction.DISABLE,
+                    newConf.getInterfaceNames()));
             // For DAM
-            publisher.publish(new PluginConfEvent(pluginConf.getId(), newConf.isActive() ?
-                    PluginServiceAction.ACTIVATE :
-                    PluginServiceAction.DISABLE, newConf.getInterfaceNames()));
+            publisher.publish(new PluginConfEvent(pluginConf.getId(),
+                    newConf.isActive() ? PluginServiceAction.ACTIVATE : PluginServiceAction.DISABLE,
+                    newConf.getInterfaceNames()));
         }
         // Remove the plugin configuration from cache
         cleanRecursively(pluginConf);
@@ -263,8 +269,8 @@ public class PluginService implements IPluginService {
         if (!repos.findByParametersPluginConfiguration(toDelete).isEmpty()) {
             throw new EntityOperationForbiddenException("Operation cancelled: dependent plugin configurations exist.");
         }
-        publisher.publish(
-                new BroadcastPluginConfEvent(pConfId, PluginServiceAction.DELETE, toDelete.getInterfaceNames()));
+        publisher.publish(new BroadcastPluginConfEvent(pConfId, PluginServiceAction.DELETE,
+                toDelete.getInterfaceNames()));
         repos.delete(pConfId);
 
         // Remove the PluginConfiguration from the map
@@ -409,8 +415,8 @@ public class PluginService implements IPluginService {
             }
         }
 
-        T resultPlugin = PluginUtils
-                .getPlugin(pluginConf, pluginMetadata, getPluginPackages(), getPluginCache(), dynamicPluginParameters);
+        T resultPlugin = PluginUtils.getPlugin(pluginConf, pluginMetadata, getPluginPackages(), getPluginCache(),
+                                               dynamicPluginParameters);
 
         // Put in the map, only if there is no dynamic parameters
         if (dynamicPluginParameters.length == 0) {
@@ -457,9 +463,9 @@ public class PluginService implements IPluginService {
     private List<String> getPluginPackages() {
         // Manage scan packages
         if (pluginPackages == null) {
-            pluginPackages = ((packagesToScan != null) && (packagesToScan.length > 0)) ?
-                    Lists.newArrayList(packagesToScan) :
-                    new ArrayList<>();
+            pluginPackages = ((packagesToScan != null) && (packagesToScan.length > 0))
+                    ? Lists.newArrayList(packagesToScan)
+                    : new ArrayList<>();
         }
         return pluginPackages;
     }
@@ -511,7 +517,7 @@ public class PluginService implements IPluginService {
 
     @Override
     public void addPluginToCache(Long confId, Object plugin) {
-        Assert.notNull(confId, "Plugin configuration identifier is required");
+        Assert.notNull(confId, PLUGIN_CONF_ID_REQUIRED_MSG);
         Assert.notNull(plugin, "Plugin instance is required");
 
         Map<Long, Object> tenantCache = getPluginCache();
@@ -525,7 +531,7 @@ public class PluginService implements IPluginService {
 
     @Override
     public boolean isPluginCached(Long confId) {
-        Assert.notNull(confId, "Plugin configuration identifier is required");
+        Assert.notNull(confId, PLUGIN_CONF_ID_REQUIRED_MSG);
 
         Map<Long, Object> tenantCache = getPluginCache();
         if (tenantCache != null) {
@@ -536,7 +542,7 @@ public class PluginService implements IPluginService {
 
     @Override
     public void cleanPluginCache(Long confId) {
-        Assert.notNull(confId, "Plugin configuration identifier is required");
+        Assert.notNull(confId, PLUGIN_CONF_ID_REQUIRED_MSG);
 
         Map<Long, Object> tenantCache = getPluginCache();
         if (tenantCache != null) {
@@ -554,7 +560,7 @@ public class PluginService implements IPluginService {
         Map<Long, Object> tenantCache = getPluginCache();
         if (tenantCache != null) {
             // Remove plugin from cache
-            for (Iterator<Entry<Long, Object>> i = tenantCache.entrySet().iterator(); i.hasNext(); ) {
+            for (Iterator<Entry<Long, Object>> i = tenantCache.entrySet().iterator(); i.hasNext();) {
                 Object plugin = i.next().getValue();
                 i.remove();
                 if (plugin != null) {
@@ -576,7 +582,7 @@ public class PluginService implements IPluginService {
 
     @Override
     public Object getCachedPlugin(Long confId) {
-        Assert.notNull(confId, "Plugin configuration identifier is required");
+        Assert.notNull(confId, PLUGIN_CONF_ID_REQUIRED_MSG);
 
         Map<Long, Object> tenantCache = getPluginCache();
         if (tenantCache != null) {
@@ -615,8 +621,7 @@ public class PluginService implements IPluginService {
         if (optPlgMetaData.isPresent()) {
             PluginMetaData metaData = optPlgMetaData.get();
             PluginConfiguration plgConf = new PluginConfiguration(metaData,
-                                                                  "Automatic plugin configuration for plugin id : "
-                                                                          + pluginId);
+                    "Automatic plugin configuration for plugin id : " + pluginId);
             plgConf.setPluginId(pluginId);
 
             PluginParametersFactory ppFactory = PluginParametersFactory.build();

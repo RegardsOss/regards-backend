@@ -19,6 +19,11 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
+import java.net.URL;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -35,10 +40,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
-import java.net.URL;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
@@ -46,6 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
@@ -94,7 +96,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Label to identify the configuration.
      */
-    @NotBlank(message="the label cannot be blank")
+    @NotBlank(message = "the label cannot be blank")
     @Column(name = "label", length = MAX_STRING_LENGTH)
     private String label;
 
@@ -110,7 +112,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Priority order of the plugin.
      */
-    @NotNull(message ="the priorityOrder cannot be null")
+    @NotNull(message = "the priorityOrder cannot be null")
     @Column(nullable = false, updatable = true)
     private Integer priorityOrder = 0;
 
@@ -129,7 +131,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     @Column(columnDefinition = "text")
     @Convert(converter = SetStringCsvConverter.class)
-    private Set<String> interfaceNames = Sets.newHashSet();;
+    private Set<String> interfaceNames = Sets.newHashSet();
 
     /**
      * Configuration parameters of the plugin
