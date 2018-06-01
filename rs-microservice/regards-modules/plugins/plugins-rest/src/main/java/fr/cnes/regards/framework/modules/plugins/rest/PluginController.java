@@ -72,10 +72,12 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     public static final String PLUGIN_TYPES = "/plugintypes";
 
+    public static final String REQUEST_PARAM_PLUGIN_ID = "pluginId";
+    
     /**
      * REST mapping resource : /plugins/{pluginId}
      */
-    public static final String PLUGINS_PLUGINID = PLUGINS + "/{pluginId}";
+    public static final String PLUGINS_PLUGINID = PLUGINS + "/{" + REQUEST_PARAM_PLUGIN_ID + "}";
 
     /**
      * REST mapping resource : /plugins/{pluginId}/config
@@ -87,15 +89,18 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     public static final String PLUGINS_CONFIGS = PLUGINS + "/configs";
 
+    
+    public static final String REQUEST_PARAM_CONFIG_ID = "configId";
+    
     /**
      * REST mapping resource : /plugins/{pluginId}/config/{configId}
      */
-    public static final String PLUGINS_PLUGINID_CONFIGID = PLUGINS_PLUGINID_CONFIGS + "/{configId}";
+    public static final String PLUGINS_PLUGINID_CONFIGID = PLUGINS_PLUGINID_CONFIGS + "/{" + REQUEST_PARAM_CONFIG_ID + "}";
 
     /**
      * REST mapping resource : /plugins/configs/{configId}
      */
-    public static final String PLUGINS_CONFIGID = PLUGINS_CONFIGS + "/{configId}";
+    public static final String PLUGINS_CONFIGID = PLUGINS_CONFIGS + "/{" + REQUEST_PARAM_CONFIG_ID + "}";
 
     /**
      * REST mapping resource : /plugins/cache
