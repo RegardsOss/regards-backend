@@ -21,6 +21,7 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.notification.RunListener;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -209,13 +210,15 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
     @Requirement("REGARDS_DSL_STO_CMD_450")
     @Test
-    public void testDelete() throws URISyntaxException {
+    public void testDelete() throws URISyntaxException, InterruptedException {
         Order order = createOrderAsPending();
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         // Pause Order
         performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer, "error", order.getId());
+
+        Thread.sleep(1000);
 
         // Delete Order
         performDefaultDelete(OrderController.DELETE_ORDER_PATH, customizer, "error", order.getId());
