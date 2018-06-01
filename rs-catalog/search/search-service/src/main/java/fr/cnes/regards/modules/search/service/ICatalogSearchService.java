@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.search.service;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -50,14 +50,15 @@ public interface ICatalogSearchService {
      * @return the page of elements matching the query
      * @throws SearchException when an error occurs while parsing the query
      */
-    <S, R extends IIndexable> FacetPage<R> search(Map<String, String> allParams, SearchKey<S, R> searchKey,
-            String[] facets, Pageable pageable) throws SearchException;
+    @Deprecated
+    <S, R extends IIndexable> FacetPage<R> search(MultiValueMap<String, String> allParams, SearchKey<S, R> searchKey,
+            List<String> facets, Pageable pageable) throws SearchException;
 
     /**
      * Same as previous but giving directly criterions
      */
-    <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchKey<S, R> searchKey,
-            String[] facets, Pageable pageable) throws SearchException;
+    <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchKey<S, R> searchKey, List<String> facets,
+            Pageable pageable) throws SearchException;
 
     /**
      * Compute summary for given request
@@ -67,8 +68,8 @@ public interface ICatalogSearchService {
      * @param fileTypes File types on which to compute summary
      * @return summary
      */
-    DocFilesSummary computeDatasetsSummary(Map<String, String> allParams, SimpleSearchKey<DataObject> searchKey,
-            String datasetIpId, String[] fileTypes) throws SearchException;
+    DocFilesSummary computeDatasetsSummary(MultiValueMap<String, String> allParams,
+            SimpleSearchKey<DataObject> searchKey, String datasetIpId, String[] fileTypes) throws SearchException;
 
     /**
      * Retrieve entity
@@ -87,6 +88,7 @@ public interface ICatalogSearchService {
      * @param partialText text that property should contains (can be null)
      * @param maxCount maximum result count
      */
-    List<String> retrieveEnumeratedPropertyValues(Map<String, String> allParams, SimpleSearchKey<DataObject> searchKey,
-            String propertyPath, int maxCount, String partialText) throws SearchException;
+    List<String> retrieveEnumeratedPropertyValues(MultiValueMap<String, String> allParams,
+            SimpleSearchKey<DataObject> searchKey, String propertyPath, int maxCount, String partialText)
+            throws SearchException;
 }

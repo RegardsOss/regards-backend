@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.search.service.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -280,7 +281,7 @@ public class SampleDataUtils {
     /**
      * A dummy list of facets
      */
-    public static final String[] QUERY_FACETS = { "integer", "string" };
+    public static final List<String> QUERY_FACETS = Arrays.asList("integer", "string");
 
     /**
      * A dummy page of dataobjects

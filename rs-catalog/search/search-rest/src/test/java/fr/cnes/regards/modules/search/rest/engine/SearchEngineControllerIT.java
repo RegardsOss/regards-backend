@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest.engines;
+package fr.cnes.regards.modules.search.rest.engine;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,7 +53,7 @@ public class SearchEngineControllerIT extends AbstractRegardsTransactionalIT {
     private static final String ENGINE_TYPE = "opensearch";
 
     @Test
-    public void basicSearch() {
+    public void searchAll() {
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
@@ -64,8 +64,8 @@ public class SearchEngineControllerIT extends AbstractRegardsTransactionalIT {
 
         List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_ALL_MAPPING, customizer,
-                          "Search all error", ENGINE_TYPE);
+        customizer.customizeRequestParam().param("facets", "toto", "titi");
+        performDefaultGet(SearchEngineController.TYPE_MAPPING, customizer, "Search all error", ENGINE_TYPE);
 
         // RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
         // performDefaultGet(SearchEngineController.TYPE_MAPPING, expectations, "Error searching", DATASET_ID,

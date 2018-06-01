@@ -19,13 +19,10 @@
 package fr.cnes.regards.modules.search.rest.assembler.link;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 

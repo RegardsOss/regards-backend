@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
@@ -109,19 +110,13 @@ public class CatalogSearchService implements ICatalogSearchService {
         this.facetConverter = facetConverter;
     }
 
-    @SuppressWarnings("unchecked")
+    @Deprecated // Only use method with ICriterion
     @Override
-    public <S, R extends IIndexable> FacetPage<R> search(Map<String, String> allParams, SearchKey<S, R> inSearchKey,
-            String[] facets, Pageable pageable) throws SearchException {
+    public <S, R extends IIndexable> FacetPage<R> search(MultiValueMap<String, String> allParams,
+            SearchKey<S, R> inSearchKey, List<String> facets, Pageable pageable) throws SearchException {
         try {
             // Build criterion from query
             ICriterion criterion = openSearchService.parse(allParams);
-
-            if (LOGGER.isDebugEnabled() && (allParams != null)) {
-                for (Entry<String, String> osEntry : allParams.entrySet()) {
-                    LOGGER.debug("Query param \"{}\" mapped to value \"{}\"", osEntry.getKey(), osEntry.getValue());
-                }
-            }
             return this.search(criterion, inSearchKey, facets, pageable);
         } catch (OpenSearchParseException e) {
             String message = "No query parameter";
@@ -134,9 +129,9 @@ public class CatalogSearchService implements ICatalogSearchService {
         }
     }
 
-            @Override
+    @Override
     public <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchKey<S, R> inSearchKey,
-            String[] facets, Pageable pageable) throws SearchException {
+            List<String> facets, Pageable pageable) throws SearchException {
         try {
             SearchKey<?, ?> searchKey = inSearchKey;
 
@@ -208,8 +203,8 @@ public class CatalogSearchService implements ICatalogSearchService {
 
         // Looking for ONE user group that permits access to data
         dataObject.setAllowingDownload((userGroups == null)
-            || userGroups.stream().anyMatch(userGroup -> (groupsAccessRightMap.containsKey(userGroup)
-                                                         && groupsAccessRightMap.get(userGroup))));
+                || userGroups.stream().anyMatch(userGroup -> (groupsAccessRightMap.containsKey(userGroup)
+                        && groupsAccessRightMap.get(userGroup))));
     }
 
     @Override
@@ -245,16 +240,11 @@ public class CatalogSearchService implements ICatalogSearchService {
     }
 
     @Override
-    public DocFilesSummary computeDatasetsSummary(Map<String, String> allParams, SimpleSearchKey<DataObject> searchKey,
-            String datasetIpId, String[] fileTypes) throws SearchException {
+    public DocFilesSummary computeDatasetsSummary(MultiValueMap<String, String> allParams,
+            SimpleSearchKey<DataObject> searchKey, String datasetIpId, String[] fileTypes) throws SearchException {
         try {
             // Build criterion from query
             ICriterion criterion = openSearchService.parse(allParams);
-            if (LOGGER.isDebugEnabled() && (allParams != null)) {
-                for (Entry<String, String> osEntry : allParams.entrySet()) {
-                    LOGGER.debug("Query param \"{}\" mapped to value \"{}\"", osEntry.getKey(), osEntry.getValue());
-                }
-            }
             // Apply security filter (ie user groups)
             criterion = accessRightFilter.addDataAccessRights(criterion);
             // Perform compute
@@ -281,7 +271,7 @@ public class CatalogSearchService implements ICatalogSearchService {
         // Be careful ! "tags" is used to discriminate docFiles summaries because dataset URN is set into it BUT
         // all tags are used.
         // So we must remove all summaries that are not from dataset
-        for (Iterator<String> i = summary.getSubSummariesMap().keySet().iterator(); i.hasNext(); ) {
+        for (Iterator<String> i = summary.getSubSummariesMap().keySet().iterator(); i.hasNext();) {
             String tag = i.next();
             if (!UniformResourceName.isValidUrn(tag)) {
                 i.remove();
@@ -302,8 +292,9 @@ public class CatalogSearchService implements ICatalogSearchService {
             // Retrieve all datasets that permit data objects retrieval (ie datasets with at least one groups with
             // data access right)
             // page size to max value because datasets count isn't too large...
-            ICriterion dataObjectsGrantedCrit = ICriterion.or(accessGroups.stream().map(group -> ICriterion
-                    .eq("metadata.dataObjectsGroups." + group, true)).collect(Collectors.toSet()));
+            ICriterion dataObjectsGrantedCrit = ICriterion
+                    .or(accessGroups.stream().map(group -> ICriterion.eq("metadata.dataObjectsGroups." + group, true))
+                            .collect(Collectors.toSet()));
             Page<Dataset> page = searchService
                     .search(Searches.onSingleEntity(searchKey.getSearchIndex(), EntityType.DATASET),
                             ISearchService.MAX_PAGE_SIZE, dataObjectsGrantedCrit);
@@ -318,8 +309,8 @@ public class CatalogSearchService implements ICatalogSearchService {
                     summary.getSubSummariesMap().clear();
                 }
             }
-            for (Iterator<Entry<String, DocFilesSubSummary>> i = summary.getSubSummariesMap().entrySet()
-                    .iterator(); i.hasNext(); ) {
+            for (Iterator<Entry<String, DocFilesSubSummary>> i = summary.getSubSummariesMap().entrySet().iterator(); i
+                    .hasNext();) {
                 // Remove it if subSummary discriminant isn't a dataset or isn't a dataset on which data can be
                 // retrieved for current user
                 if (!datasetIpids.contains(i.next().getKey())) {
@@ -330,17 +321,12 @@ public class CatalogSearchService implements ICatalogSearchService {
     }
 
     @Override
-    public List<String> retrieveEnumeratedPropertyValues(Map<String, String> allParams,
+    public List<String> retrieveEnumeratedPropertyValues(MultiValueMap<String, String> allParams,
             SimpleSearchKey<DataObject> searchKey, String propertyPath, int maxCount, String partialText)
             throws SearchException {
         try {
             // Build criterion from query
             ICriterion criterion = openSearchService.parse(allParams);
-            if (LOGGER.isDebugEnabled() && (allParams != null)) {
-                for (Entry<String, String> osEntry : allParams.entrySet()) {
-                    LOGGER.debug("Query param \"{}\" mapped to value \"{}\"", osEntry.getKey(), osEntry.getValue());
-                }
-            }
             // Apply security filter (ie user groups)
             criterion = accessRightFilter.addAccessRights(criterion);
             // Add partialText contains criterion if not empty

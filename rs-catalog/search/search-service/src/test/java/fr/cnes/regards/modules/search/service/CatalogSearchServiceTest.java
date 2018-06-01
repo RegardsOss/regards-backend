@@ -30,6 +30,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -129,8 +131,8 @@ public class CatalogSearchServiceTest {
             throws SearchException, OpenSearchParseException, UnsupportedEncodingException {
         // Prepare test
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(SampleDataUtils.TENANT, EntityType.DATA);
-        Map<String, String> q = new HashMap<>();
-        q.put("q=", URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8"));
+        MultiValueMap<String, String> q = new LinkedMultiValueMap<>();
+        q.add("q=", URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8"));
         PagedResourcesAssembler<DataObject> assembler = SampleDataUtils.ASSEMBLER_DATAOBJECT;
         Pageable pageable = SampleDataUtils.PAGEABLE;
 
@@ -166,8 +168,8 @@ public class CatalogSearchServiceTest {
     public void doSearch_withNoFacet() throws SearchException, OpenSearchParseException {
         // Prepare test
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(SampleDataUtils.TENANT, EntityType.DATA);
-        Map<String, String> q = new HashMap<>();
-        q.put("q=", "whatever");
+        MultiValueMap<String, String> q = new LinkedMultiValueMap<>();
+        q.add("q=", "whatever");
         Map<String, FacetType> facets = new HashMap<>();
         PagedResourcesAssembler<DataObject> assembler = SampleDataUtils.ASSEMBLER_DATAOBJECT;
         Pageable pageable = SampleDataUtils.PAGEABLE;

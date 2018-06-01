@@ -22,13 +22,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
@@ -46,6 +45,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -195,10 +195,10 @@ public class SearchController {
                     + "returned objects can be any mix of collection, dataset, dataobject and document.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<AbstractEntity>>> searchAll(
-            @RequestParam Map<String, String> allParams, Pageable pageable,
+            @RequestParam MultiValueMap<String, String> allParams, Pageable pageable,
             FacettedPagedResourcesAssembler<AbstractEntity> assembler) throws SearchException {
         SimpleSearchKey<AbstractEntity> searchKey = Searches.onAllEntities(tenantResolver.getTenant());
-        Map<String, String> decodedParams = getDecodedParams(allParams);
+        MultiValueMap<String, String> decodedParams = getDecodedParams(allParams);
         FacetPage<AbstractEntity> result = searchService.search(decodedParams, searchKey, null, pageable);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
     }
@@ -224,12 +224,13 @@ public class SearchController {
     @ResourceAccess(role = DefaultRole.PUBLIC,
             description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of collection, dataset, dataobject and document.")
     public ResponseEntity<FacettedPagedResources<Resource<AbstractEntity>>> searchAll(
-            @RequestParam Map<String, String> allParams,
+            @RequestParam MultiValueMap<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] pFacets, Pageable pageable,
             FacettedPagedResourcesAssembler<AbstractEntity> pAssembler) throws SearchException {
         SimpleSearchKey<AbstractEntity> searchKey = Searches.onAllEntities(tenantResolver.getTenant());
-        Map<String, String> decodedParams = getDecodedParams(allParams);
-        FacetPage<AbstractEntity> result = searchService.search(decodedParams, searchKey, pFacets, pageable);
+        MultiValueMap<String, String> decodedParams = getDecodedParams(allParams);
+        FacetPage<AbstractEntity> result = searchService
+                .search(decodedParams, searchKey, pFacets == null ? null : Arrays.asList(pFacets), pageable);
         return new ResponseEntity<>(pAssembler.toResource(result), HttpStatus.OK);
     }
 
@@ -260,11 +261,11 @@ public class SearchController {
     @RequestMapping(path = COLLECTIONS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on collection.", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<Collection>>> searchCollections(
-            @RequestParam final Map<String, String> allParams, Pageable pageable,
+            @RequestParam final MultiValueMap<String, String> allParams, Pageable pageable,
             PagedResourcesAssembler<Collection> assembler) throws SearchException {
         SimpleSearchKey<Collection> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(),
                                                                         EntityType.COLLECTION);
-        Map<String, String> decodedParams = getDecodedParams(allParams);
+        MultiValueMap<String, String> decodedParams = getDecodedParams(allParams);
         FacetPage<Collection> result = searchService.search(decodedParams, searchKey, null, pageable);
         return new ResponseEntity<>(toPagedResources(result, assembler), HttpStatus.OK);
     }
@@ -331,10 +332,11 @@ public class SearchController {
      */
     @RequestMapping(path = DATASETS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on dataset.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<PagedResources<Resource<Dataset>>> searchDatasets(@RequestParam Map<String, String> allParams,
-            Pageable pageable, PagedDatasetResourcesAssembler assembler) throws SearchException {
+    public ResponseEntity<PagedResources<Resource<Dataset>>> searchDatasets(
+            @RequestParam MultiValueMap<String, String> allParams, Pageable pageable,
+            PagedDatasetResourcesAssembler assembler) throws SearchException {
         SimpleSearchKey<Dataset> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATASET);
-        Map<String, String> decodedParams = getDecodedParams(allParams);
+        MultiValueMap<String, String> decodedParams = getDecodedParams(allParams);
         FacetPage<Dataset> result = searchService.search(decodedParams, searchKey, null, pageable);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
     }
@@ -384,10 +386,9 @@ public class SearchController {
         // to be taken into account, allParams MUST BE of type MultiValueMap, not Map.
         // It is the only parameter that can be multi-occured so we only take its first value it from MultiValueMap and
         // we "transform" MultiValueMap into Map (which is expected by searchService)
-        Map<String, String> params = allParams.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get(0)));
-        Map<String, String> decodedParams = getDecodedParams(params);
-        FacetPage<DataObject> result = searchService.search(decodedParams, searchKey, facets, pageable);
+        MultiValueMap<String, String> decodedParams = getDecodedParams(allParams);
+        FacetPage<DataObject> result = searchService.search(decodedParams, searchKey,
+                                                            facets == null ? null : Arrays.asList(facets), pageable);
         // Both of these methods must be called on all data to compute associated property to be taken into account by
         // frontent in order to activate or not orderable caracteristic of data
         result.getContent().parallelStream().forEach(DataObject::updateJsonSpecificProperties);
@@ -405,10 +406,10 @@ public class SearchController {
     @ResourceAccess(description = "Perform an OpenSearch request on dataobject without facets",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(
-            @RequestParam Map<String, String> allParams, Pageable pageable,
+            @RequestParam MultiValueMap<String, String> allParams, Pageable pageable,
             FacettedPagedResourcesAssembler<DataObject> assembler) throws SearchException {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
-        Map<String, String> decodedParams = getDecodedParams(allParams);
+        MultiValueMap<String, String> decodedParams = getDecodedParams(allParams);
         Page<DataObject> result = searchService.search(decodedParams, searchKey, null, pageable);
         result.getContent().parallelStream().forEach(DataObject::updateJsonSpecificProperties);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
@@ -439,13 +440,14 @@ public class SearchController {
                     + "but will return the associated datasets.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDataobjectsReturnDatasets(
-            @RequestParam Map<String, String> allParams,
+            @RequestParam MultiValueMap<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] facets, Pageable pageable,
             PagedResourcesAssembler<Dataset> assembler) throws SearchException {
         JoinEntitySearchKey<DataObject, Dataset> searchKey = Searches
                 .onSingleEntityReturningJoinEntity(tenantResolver.getTenant(), EntityType.DATA, EntityType.DATASET);
-        Map<String, String> decodedParams = getDecodedParams(allParams);
-        FacetPage<Dataset> result = searchService.search(decodedParams, searchKey, facets, pageable);
+        MultiValueMap<String, String> decodedParams = getDecodedParams(allParams);
+        FacetPage<Dataset> result = searchService.search(decodedParams, searchKey,
+                                                         facets == null ? null : Arrays.asList(facets), pageable);
         return new ResponseEntity<>(toPagedResources(result, assembler), HttpStatus.OK);
     }
 
@@ -513,10 +515,10 @@ public class SearchController {
     @RequestMapping(path = DOCUMENTS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on document.", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<Document>>> searchDocuments(
-            @RequestParam Map<String, String> allParams, Pageable pageable,
+            @RequestParam MultiValueMap<String, String> allParams, Pageable pageable,
             PagedResourcesAssembler<Document> pAssembler) throws SearchException {
         SimpleSearchKey<Document> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DOCUMENT);
-        Map<String, String> decodedParams = getDecodedParams(allParams);
+        MultiValueMap<String, String> decodedParams = getDecodedParams(allParams);
         FacetPage<Document> result = searchService.search(decodedParams, searchKey, null, pageable);
         return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
     }
@@ -533,13 +535,14 @@ public class SearchController {
     @ResourceAccess(description = "Perform an OpenSearch request on documents. Only return required facets.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<FacettedPagedResources<Resource<Document>>> searchDocuments(
-            @RequestParam final Map<String, String> allParams,
+            @RequestParam final MultiValueMap<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] facets, final Pageable pageable,
             FacettedPagedResourcesAssembler<Document> assembler) throws SearchException {
         final SimpleSearchKey<Document> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(),
                                                                             EntityType.DOCUMENT);
-        Map<String, String> decodedParams = getDecodedParams(allParams);
-        final FacetPage<Document> result = searchService.search(decodedParams, searchKey, facets, pageable);
+        MultiValueMap<String, String> decodedParams = getDecodedParams(allParams);
+        final FacetPage<Document> result = searchService
+                .search(decodedParams, searchKey, facets == null ? null : Arrays.asList(facets), pageable);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
     }
 
@@ -563,7 +566,7 @@ public class SearchController {
      */
     @RequestMapping(path = DATAOBJECTS_COMPUTE_FILES_SUMMARY, method = RequestMethod.GET)
     @ResourceAccess(description = "compute dataset(s) summary", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestParam Map<String, String> allParams,
+    public ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestParam MultiValueMap<String, String> allParams,
             @RequestParam(value = "datasetIpId", required = false) String datasetIpId,
             @RequestParam(value = "fileTypes") String[] fileTypes) throws SearchException {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
@@ -582,7 +585,7 @@ public class SearchController {
     @RequestMapping(path = DATAOBJECT_PROPERTIES_VALUES, method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve enumerated property values", role = DefaultRole.PUBLIC)
     public ResponseEntity<List<String>> retrieveEnumeratedPropertyValues(@PathVariable("name") String propertyPath,
-            @RequestParam Map<String, String> allParams, @RequestParam(value = "maxCount") int maxCount,
+            @RequestParam MultiValueMap<String, String> allParams, @RequestParam(value = "maxCount") int maxCount,
             @RequestParam(value = "partialText", required = false) String partialText) throws SearchException {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
         return ResponseEntity.ok(searchService.retrieveEnumeratedPropertyValues(allParams, searchKey, propertyPath,
@@ -625,27 +628,23 @@ public class SearchController {
         return ResponseEntity.ok(urnsWithAccess);
     }
 
-    /**
-     * Decode params
-     * @param allParams params received by the endpoint
-     * @return params decoded
-     */
-    private Map<String, String> getDecodedParams(Map<String, String> allParams) throws SearchException {
-        try {
-            // Store decoded params
-            Map<String, String> allParamsDecoded = new HashMap(allParams.size());
-            // Parse params to build the params map decoded
-            for (Map.Entry<String, String> entry : allParams.entrySet()) {
-                allParamsDecoded.put(entry.getKey(), URLDecoder.decode(entry.getValue(), "UTF-8"));
+    // FIXME : fix issue in frontend to avoid double decoding
+    private MultiValueMap<String, String> getDecodedParams(MultiValueMap<String, String> allParams)
+            throws SearchException {
+
+        MultiValueMap<String, String> allDecodedParams = new LinkedMultiValueMap<>();
+        for (Entry<String, List<String>> kvp : allParams.entrySet()) {
+            for (String value : kvp.getValue()) {
+                try {
+                    allDecodedParams.add(kvp.getKey(), URLDecoder.decode(value, "UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    String message = String.format("Unsupported query parameters \"%s\" with value \"%s\"",
+                                                   kvp.getKey(), value);
+                    throw new SearchException(message, e);
+                }
             }
-            return allParamsDecoded;
-        } catch (UnsupportedEncodingException e) {
-            String message = "Unsupported query parameters";
-            StringJoiner sj = new StringJoiner("&");
-            allParams.forEach((key, value) -> sj.add(key + "=" + value));
-            message += sj.toString();
-            throw new SearchException(message, e);
         }
+        return allDecodedParams;
     }
 
     /**
