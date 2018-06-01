@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -54,8 +52,6 @@ import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
  *
  */
 public class SIPSubmissionJob extends AbstractJob<Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SIPSubmissionJob.class);
 
     public static final String INGEST_CHAIN_PARAMETER = "chain";
 
@@ -87,7 +83,7 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.debug("Processing SIP submission for ingest chain \"{}\" and session \"{}\"", ingestChain, session);
+        logger.debug("Processing SIP submission for ingest chain \"{}\" and session \"{}\"", ingestChain, session);
         runByPage();
     }
 
@@ -103,7 +99,7 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
 
         if (products.getNumberOfElements() > 0) {
 
-            LOGGER.info("Ingest chain {} - session {} : processing {} products of {}", ingestChain, session,
+            logger.info("Ingest chain {} - session {} : processing {} products of {}", ingestChain, session,
                         products.getNumberOfElements(), products.getTotalElements());
             // Create SIP collection
             SIPCollectionBuilder sipCollectionBuilder = new SIPCollectionBuilder(ingestChain, session.orElse(null));
@@ -174,7 +170,7 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
             default:
                 String message = String.format("SIP submission failure for ingest chain \"%s\" and session \"%s\"",
                                                ingestChain, session);
-                LOGGER.error(message);
+                logger.error(message);
                 throw new JobRuntimeException(message);
         }
     }

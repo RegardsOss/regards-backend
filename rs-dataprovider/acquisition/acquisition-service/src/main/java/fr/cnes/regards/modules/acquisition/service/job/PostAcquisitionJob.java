@@ -22,8 +22,6 @@ package fr.cnes.regards.modules.acquisition.service.job;
 import java.util.Map;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -51,8 +49,6 @@ import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
  */
 public class PostAcquisitionJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PostAcquisitionJob.class);
-
     public static final String EVENT_PARAMETER = "event";
 
     @Autowired
@@ -71,7 +67,7 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.info("Start POST acquisition SIP job for the product <{}>", sipEvent.getIpId());
+        logger.info("Start POST acquisition SIP job for the product <{}>", sipEvent.getIpId());
 
         try {
             // Load product
@@ -94,10 +90,10 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
                     postProcessPlugin.postProcess(product);
                 }
             } else {
-                LOGGER.debug("No product associated to SIP id\"{}\"", sipEvent.getIpId());
+                logger.debug("No product associated to SIP id\"{}\"", sipEvent.getIpId());
             }
         } catch (ModuleException pse) {
-            LOGGER.error("Business error", pse);
+            logger.error("Business error", pse);
             throw new JobRuntimeException(pse);
         }
     }

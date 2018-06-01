@@ -21,8 +21,6 @@ package fr.cnes.regards.modules.acquisition.service.job;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -48,8 +46,6 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
  *
  */
 public class SIPGenerationJob extends AbstractJob<Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SIPGenerationJob.class);
 
     public static final String CHAIN_PARAMETER_ID = "chain_id";
 
@@ -95,7 +91,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.info("[{}] : starting SIP generation job for the product <{}>", processingChain.getLabel(),
+        logger.info("[{}] : starting SIP generation job for the product <{}>", processingChain.getLabel(),
                     product.getProductName());
 
         try {
@@ -111,7 +107,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
             productService.save(product);
 
         } catch (ModuleException e) {
-            LOGGER.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             // Update product
             product.setSipState(ProductSIPState.GENERATION_ERROR);
             product.setError(e.getMessage());

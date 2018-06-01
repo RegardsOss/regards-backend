@@ -22,8 +22,6 @@ package fr.cnes.regards.modules.acquisition.service.job;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -54,8 +52,6 @@ import fr.cnes.regards.modules.acquisition.service.IProductService;
  *
  */
 public class ProductAcquisitionJob extends AbstractJob<Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProductAcquisitionJob.class);
 
     public static final String CHAIN_PARAMETER_ID = "chain";
 
@@ -99,7 +95,7 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
             }
 
         } catch (ModuleException e) {
-            LOGGER.error("Business error", e);
+            logger.error("Business error", e);
             throw new JobRuntimeException(e);
         } finally {
             // Job is terminated ... release processing chain
