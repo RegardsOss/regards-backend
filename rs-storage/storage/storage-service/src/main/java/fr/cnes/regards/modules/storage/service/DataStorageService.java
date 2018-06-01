@@ -16,8 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
@@ -62,7 +60,7 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.PluginStorageInfo;
  */
 @Service
 @RegardsTransactional
-public class DataStorageService implements IDataStorageService, ApplicationListener<ApplicationReadyEvent> {
+public class DataStorageService implements IDataStorageService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataStorageInfo.class);
 
