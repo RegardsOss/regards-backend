@@ -134,7 +134,7 @@ public class CatalogSearchService implements ICatalogSearchService {
         }
     }
 
-            @Override
+    @Override
     public <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchKey<S, R> inSearchKey,
             String[] facets, Pageable pageable) throws SearchException {
         try {
@@ -151,8 +151,7 @@ public class CatalogSearchService implements ICatalogSearchService {
             // This is correct because all
             if ((criterion == null) && (searchKey instanceof JoinEntitySearchKey) && (
                     TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)) {
-                searchKey = Searches
-                        .onSingleEntity(searchKey.getSearchIndex(), Searches.fromClass(searchKey.getResultClass()));
+                searchKey = Searches.onSingleEntity(Searches.fromClass(searchKey.getResultClass()));
             }
 
             // Perform search
@@ -206,9 +205,8 @@ public class CatalogSearchService implements ICatalogSearchService {
         Map<String, Boolean> groupsAccessRightMap = dataObject.getMetadata().getGroupsAccessRightsMap();
 
         // Looking for ONE user group that permits access to data
-        dataObject.setAllowingDownload((userGroups == null)
-            || userGroups.stream().anyMatch(userGroup -> (groupsAccessRightMap.containsKey(userGroup)
-                                                         && groupsAccessRightMap.get(userGroup))));
+        dataObject.setAllowingDownload((userGroups == null) || userGroups.stream().anyMatch(
+                userGroup -> (groupsAccessRightMap.containsKey(userGroup) && groupsAccessRightMap.get(userGroup))));
     }
 
     @Override
@@ -303,11 +301,12 @@ public class CatalogSearchService implements ICatalogSearchService {
             // Retrieve all datasets that permit data objects retrieval (ie datasets with at least one groups with
             // data access right)
             // page size to max value because datasets count isn't too large...
-            ICriterion dataObjectsGrantedCrit = ICriterion.or(accessGroups.stream().map(group -> ICriterion
-                    .eq("metadata.dataObjectsGroups." + group, true)).collect(Collectors.toSet()));
+            ICriterion dataObjectsGrantedCrit = ICriterion
+                    .or(accessGroups.stream().map(group -> ICriterion.eq("metadata.dataObjectsGroups." + group, true))
+                                .collect(Collectors.toSet()));
             Page<Dataset> page = searchService
-                    .search(Searches.onSingleEntity(searchKey.getSearchIndex(), EntityType.DATASET),
-                            ISearchService.MAX_PAGE_SIZE, dataObjectsGrantedCrit);
+                    .search(Searches.onSingleEntity(EntityType.DATASET), ISearchService.MAX_PAGE_SIZE,
+                            dataObjectsGrantedCrit);
             Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId)
                     .map(UniformResourceName::toString).collect(Collectors.toSet());
             // If summary is restricted to a specified datasetIpId, it must be taken into account
@@ -319,8 +318,8 @@ public class CatalogSearchService implements ICatalogSearchService {
                     summary.getSubSummariesMap().clear();
                 }
             }
-            for (Iterator<Entry<String, DocFilesSubSummary>> i = summary.getSubSummariesMap().entrySet()
-                    .iterator(); i.hasNext(); ) {
+            for (Iterator<Entry<String, DocFilesSubSummary>> i = summary.getSubSummariesMap().entrySet().iterator(); i
+                    .hasNext(); ) {
                 // Remove it if subSummary discriminant isn't a dataset or isn't a dataset on which data can be
                 // retrieved for current user
                 if (!datasetIpids.contains(i.next().getKey())) {

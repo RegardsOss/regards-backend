@@ -52,7 +52,6 @@ import fr.cnes.regards.modules.search.service.utils.SampleDataUtils;
 
 /**
  * Unit test for {@link CatalogSearchService}.
- *
  * @author Xavier-Alexandre Brochard
  */
 public class CatalogSearchServiceTest {
@@ -113,23 +112,20 @@ public class CatalogSearchServiceTest {
 
         // Instanciate the tested class
         catalogSearchService = new CatalogSearchService(searchService, openSearchService, accessRightFilter,
-                facetConverter);
+                                                        facetConverter);
     }
 
     /**
      * Test the main search method
-     *
-     * @throws SearchException
-     * @throws OpenSearchParseException
-     * @throws UnsupportedEncodingException
      */
     @SuppressWarnings("unchecked")
     @Test
     @Requirement("REGARDS_DSL_DAM_ARC_810")
-    public void doSearch_shouldPerformASimpleSearch()
+    public void doSearchShouldPerformASimpleSearch()
             throws SearchException, OpenSearchParseException, UnsupportedEncodingException {
         // Prepare test
-        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(SampleDataUtils.TENANT, EntityType.DATA);
+        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
+        searchKey.setSearchIndex(SampleDataUtils.TENANT);
         Map<String, String> q = new HashMap<>();
         q.put("q=", URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8"));
         PagedResourcesAssembler<DataObject> assembler = SampleDataUtils.ASSEMBLER_DATAOBJECT;
@@ -156,17 +152,15 @@ public class CatalogSearchServiceTest {
 
     /**
      * Le système doit permettre de désactiver la gestion des facettes pour des questions de performance.
-     *
-     * @throws SearchException
-     * @throws OpenSearchParseException
      */
     @SuppressWarnings("unchecked")
     @Test
     @Purpose("Le système doit permettre de désactiver la gestion des facettes pour des questions de performance.")
     @Requirement("REGARDS_DSL_DAM_CAT_620")
-    public void doSearch_withNoFacet() throws SearchException, OpenSearchParseException {
+    public void doSearchWithNoFacet() throws SearchException, OpenSearchParseException {
         // Prepare test
-        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(SampleDataUtils.TENANT, EntityType.DATA);
+        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
+        searchKey.setSearchIndex(SampleDataUtils.TENANT);
         Map<String, String> q = new HashMap<>();
         q.put("q=", "whatever");
         Map<String, FacetType> facets = new HashMap<>();

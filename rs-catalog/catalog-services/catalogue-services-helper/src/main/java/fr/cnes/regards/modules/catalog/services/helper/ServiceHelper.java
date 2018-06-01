@@ -84,7 +84,7 @@ public class ServiceHelper implements IServiceHelper {
 
     @Override
     public Page<DataObject> getDataObjects(List<String> entityIds, int pageIndex, int nbEntitiesByPage) {
-        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
+        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         ICriterion[] idCrits = new ICriterion[entityIds.size()];
         int count = 0;
         for (String id : entityIds) {
@@ -98,7 +98,7 @@ public class ServiceHelper implements IServiceHelper {
     @Override
     public Page<DataObject> getDataObjects(String openSearchQuery, int pageIndex, int nbEntitiesByPage)
             throws OpenSearchParseException {
-        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
+        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         String queryParameters = openSearchQuery;
         try {
             queryParameters = URLEncoder.encode(URLDecoder.decode(queryParameters, "UTF-8"), "UTF-8");

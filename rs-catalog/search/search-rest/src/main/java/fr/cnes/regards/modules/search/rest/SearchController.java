@@ -27,7 +27,6 @@ import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +36,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -56,9 +54,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 import feign.Response;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
@@ -173,12 +169,6 @@ public class SearchController {
     @Autowired
     private IResourceService resourceService;
 
-    /**
-     * Get current tenant at runtime and allows tenant forcing. Autowired.
-     */
-    @Autowired
-    private IRuntimeTenantResolver tenantResolver;
-
     @Autowired
     private OpenSearchDescriptionBuilder osDescBuilder;
 
@@ -197,7 +187,7 @@ public class SearchController {
     public ResponseEntity<PagedResources<Resource<AbstractEntity>>> searchAll(
             @RequestParam Map<String, String> allParams, Pageable pageable,
             FacettedPagedResourcesAssembler<AbstractEntity> assembler) throws SearchException {
-        SimpleSearchKey<AbstractEntity> searchKey = Searches.onAllEntities(tenantResolver.getTenant());
+        SimpleSearchKey<AbstractEntity> searchKey = Searches.onAllEntities();
         Map<String, String> decodedParams = getDecodedParams(allParams);
         FacetPage<AbstractEntity> result = searchService.search(decodedParams, searchKey, null, pageable);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
@@ -227,7 +217,7 @@ public class SearchController {
             @RequestParam Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] pFacets, Pageable pageable,
             FacettedPagedResourcesAssembler<AbstractEntity> pAssembler) throws SearchException {
-        SimpleSearchKey<AbstractEntity> searchKey = Searches.onAllEntities(tenantResolver.getTenant());
+        SimpleSearchKey<AbstractEntity> searchKey = Searches.onAllEntities();
         Map<String, String> decodedParams = getDecodedParams(allParams);
         FacetPage<AbstractEntity> result = searchService.search(decodedParams, searchKey, pFacets, pageable);
         return new ResponseEntity<>(pAssembler.toResource(result), HttpStatus.OK);
@@ -262,8 +252,7 @@ public class SearchController {
     public ResponseEntity<PagedResources<Resource<Collection>>> searchCollections(
             @RequestParam final Map<String, String> allParams, Pageable pageable,
             PagedResourcesAssembler<Collection> assembler) throws SearchException {
-        SimpleSearchKey<Collection> searchKey = Searches
-                .onSingleEntity(tenantResolver.getTenant(), EntityType.COLLECTION);
+        SimpleSearchKey<Collection> searchKey = Searches.onSingleEntity(EntityType.COLLECTION);
         Map<String, String> decodedParams = getDecodedParams(allParams);
         FacetPage<Collection> result = searchService.search(decodedParams, searchKey, null, pageable);
         return new ResponseEntity<>(toPagedResources(result, assembler), HttpStatus.OK);
@@ -333,7 +322,7 @@ public class SearchController {
     @ResourceAccess(description = "Perform an OpenSearch request on dataset.", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<Dataset>>> searchDatasets(@RequestParam Map<String, String> allParams,
             Pageable pageable, PagedDatasetResourcesAssembler assembler) throws SearchException {
-        SimpleSearchKey<Dataset> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATASET);
+        SimpleSearchKey<Dataset> searchKey = Searches.onSingleEntity(EntityType.DATASET);
         Map<String, String> decodedParams = getDecodedParams(allParams);
         FacetPage<Dataset> result = searchService.search(decodedParams, searchKey, null, pageable);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
@@ -379,7 +368,7 @@ public class SearchController {
             @RequestParam MultiValueMap<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] facets, Pageable pageable,
             FacettedPagedResourcesAssembler<DataObject> assembler) throws SearchException {
-        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
+        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         // There are several "sort=<name>,<ASC|DESC>" request parameters that are directly mapped into Pageable BUT
         // to be taken into account, allParams MUST BE of type MultiValueMap, not Map.
         // It is the only parameter that can be multi-occured so we only take its first value it from MultiValueMap and
@@ -407,7 +396,7 @@ public class SearchController {
     public ResponseEntity<PagedResources<Resource<DataObject>>> searchDataobjects(
             @RequestParam Map<String, String> allParams, Pageable pageable,
             FacettedPagedResourcesAssembler<DataObject> assembler) throws SearchException {
-        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
+        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         Map<String, String> decodedParams = getDecodedParams(allParams);
         Page<DataObject> result = searchService.search(decodedParams, searchKey, null, pageable);
         result.getContent().parallelStream().forEach(DataObject::updateJsonSpecificProperties);
@@ -442,7 +431,7 @@ public class SearchController {
             @RequestParam(value = "facets", required = false) String[] facets, Pageable pageable,
             PagedResourcesAssembler<Dataset> assembler) throws SearchException {
         JoinEntitySearchKey<DataObject, Dataset> searchKey = Searches
-                .onSingleEntityReturningJoinEntity(tenantResolver.getTenant(), EntityType.DATA, EntityType.DATASET);
+                .onSingleEntityReturningJoinEntity(EntityType.DATA, EntityType.DATASET);
         Map<String, String> decodedParams = getDecodedParams(allParams);
         FacetPage<Dataset> result = searchService.search(decodedParams, searchKey, facets, pageable);
         return new ResponseEntity<>(toPagedResources(result, assembler), HttpStatus.OK);
@@ -513,7 +502,7 @@ public class SearchController {
     public ResponseEntity<PagedResources<Resource<Document>>> searchDocuments(
             @RequestParam Map<String, String> allParams, Pageable pageable,
             PagedResourcesAssembler<Document> pAssembler) throws SearchException {
-        SimpleSearchKey<Document> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DOCUMENT);
+        SimpleSearchKey<Document> searchKey = Searches.onSingleEntity(EntityType.DOCUMENT);
         Map<String, String> decodedParams = getDecodedParams(allParams);
         FacetPage<Document> result = searchService.search(decodedParams, searchKey, null, pageable);
         return new ResponseEntity<>(toPagedResources(result, pAssembler), HttpStatus.OK);
@@ -534,8 +523,7 @@ public class SearchController {
             @RequestParam final Map<String, String> allParams,
             @RequestParam(value = "facets", required = false) String[] facets, final Pageable pageable,
             FacettedPagedResourcesAssembler<Document> assembler) throws SearchException {
-        final SimpleSearchKey<Document> searchKey = Searches
-                .onSingleEntity(tenantResolver.getTenant(), EntityType.DOCUMENT);
+        final SimpleSearchKey<Document> searchKey = Searches.onSingleEntity(EntityType.DOCUMENT);
         Map<String, String> decodedParams = getDecodedParams(allParams);
         final FacetPage<Document> result = searchService.search(decodedParams, searchKey, facets, pageable);
         return new ResponseEntity<>(assembler.toResource(result), HttpStatus.OK);
@@ -564,7 +552,7 @@ public class SearchController {
     public ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestParam Map<String, String> allParams,
             @RequestParam(value = "datasetIpId", required = false) String datasetIpId,
             @RequestParam(value = "fileTypes") String[] fileTypes) throws SearchException {
-        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
+        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         DocFilesSummary summary = searchService.computeDatasetsSummary(allParams, searchKey, datasetIpId, fileTypes);
         return new ResponseEntity<>(summary, HttpStatus.OK);
     }
@@ -582,7 +570,7 @@ public class SearchController {
     public ResponseEntity<List<String>> retrieveEnumeratedPropertyValues(@PathVariable("name") String propertyPath,
             @RequestParam Map<String, String> allParams, @RequestParam(value = "maxCount") int maxCount,
             @RequestParam(value = "partialText", required = false) String partialText) throws SearchException {
-        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
+        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         return ResponseEntity.ok(searchService
                                          .retrieveEnumeratedPropertyValues(allParams, searchKey, propertyPath, maxCount,
                                                                            partialText));
@@ -606,7 +594,6 @@ public class SearchController {
         if (inUrns.isEmpty()) {
             return ResponseEntity.ok(Collections.emptySet());
         }
-        String index = inUrns.iterator().next().getTenant();
         Set<UniformResourceName> urnsWithAccess = new HashSet<>();
         // ElasticSearch cannot manage more than 1024 criterions clauses at once. There is one clause per IP_ID plus
         // or clauses plus some depending on user access => create partitions of 1 000
@@ -615,8 +602,7 @@ public class SearchController {
             ICriterion criterion = ICriterion.or(urns.stream().map(urn -> ICriterion.eq("ipId", urn.toString()))
                                                          .toArray(n -> new ICriterion[n]));
             FacetPage<DataObject> page = searchService
-                    .search(criterion, Searches.onSingleEntity(index, EntityType.DATA), null,
-                            new PageRequest(0, urns.size()));
+                    .search(criterion, Searches.onSingleEntity(EntityType.DATA), null, new PageRequest(0, urns.size()));
             urnsWithAccess.addAll(page.getContent().parallelStream().filter(DataObject::getAllowingDownload)
                                           .map(DataObject::getIpId).collect(Collectors.toSet()));
         }
