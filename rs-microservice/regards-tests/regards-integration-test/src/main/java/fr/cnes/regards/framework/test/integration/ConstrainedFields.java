@@ -83,7 +83,13 @@ public class ConstrainedFields {
                 .collectionToDelimitedString(constraintDescriptions.descriptionsForProperty(propertyPath), ", "));
         if (extraConstraints != null) {
             if (constraints.length() > 0) {
-                constraints.append(" +\n"); // AsciiDoc line break
+                if (!constraints.toString().endsWith(". ")) {
+                    if (constraints.charAt(constraints.length() - 1) == '.') {
+                        constraints.append(" ");
+                    } else {
+                        constraints.append(". ");
+                    }
+                }
             }
             constraints.append(extraConstraints);
         }
