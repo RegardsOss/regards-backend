@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.indexer.domain.SearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 
 /**
  * Catalog search service interface. Service façade to DAM search module (directly included by catalog).
@@ -55,9 +56,20 @@ public interface ICatalogSearchService {
             List<String> facets, Pageable pageable) throws SearchException;
 
     /**
-     * Same as previous but giving directly criterions
+     * Perform a business request on specified entity type
+     * @param criterion business criterions
+     * @param searchKey the search key containing the search type and the result type
+     * @param facets applicable facets, may be <code>null</code>
+     * @param pageable pagination properties
+     * @return the page of elements matching the criterions
      */
     <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchKey<S, R> searchKey, List<String> facets,
+            Pageable pageable) throws SearchException;
+
+    /**
+     * Same as below but using {@link SearchType}
+     */
+    <R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchType searchType, List<String> facets,
             Pageable pageable) throws SearchException;
 
     /**

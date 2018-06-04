@@ -56,7 +56,6 @@ import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
 import fr.cnes.regards.modules.models.domain.attributes.Fragment;
-import fr.cnes.regards.modules.search.domain.SearchType;
 import fr.cnes.regards.modules.search.domain.Terms;
 
 /**
@@ -325,7 +324,7 @@ public class SampleDataUtils {
      * Define a criterion with a nested criterion of name "target" (this must be detected and properly handled)
      */
     public static final ICriterion CRITERION_WITH_NESTED_TARGET_FIELD = ICriterion
-            .or(ICriterion.eq("target", SearchType.DATASET.toString()), ICriterion.eq("field", "value"));
+            .or(ICriterion.eq("target", "DATASET"), ICriterion.eq("field", "value"));
 
     /**
      * Define a criterion with a nested criterion of name "dataset" (this must be detected and properly handled)

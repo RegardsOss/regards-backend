@@ -18,52 +18,44 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.indexer.dao.FacetPage;
-import fr.cnes.regards.modules.indexer.domain.IIndexable;
-import fr.cnes.regards.modules.indexer.domain.SearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.search.rest.engine.plugin.common.AbstractSearchEngine;
+import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
+import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
+import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.engine.plugin.common.HelloWorld;
 
 /**
  * OpenSearch engine plugin
  * @author Marc Sordi
  */
-@Plugin(id = "opensearch", author = "REGARDS Team", contact = "regards@c-s.fr", description = "Native search engine",
-        licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss", version = "1.0.0")
-public class OpenSearchEngine extends AbstractSearchEngine {
-
-    @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(OpenSearchEngine.class);
+@Plugin(id = "OpenSearchEngine", author = "REGARDS Team", contact = "regards@c-s.fr",
+        description = "Native search engine", licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
+        version = "1.0.0")
+public class OpenSearchEngine implements ISearchEngine<HelloWorld, Void> {
 
     @Override
-    public ICriterion parse(MultiValueMap<String, String> allParams) throws ModuleException {
+    public boolean supports(SearchType searchType) {
         // TODO Auto-generated method stub
-        return null;
+        return false;
     }
 
     @Override
-    public <T, R extends IIndexable> T transform(FacetPage<R> page) {
+    public ResponseEntity<HelloWorld> search(SearchContext context) throws ModuleException {
         // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<?> searchAll(SearchKey<AbstractEntity, AbstractEntity> searchKey, HttpHeaders headers,
-            MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException {
-        // TODO
         HelloWorld world = new HelloWorld();
         world.setMessage("Yes! We did it!");
         return ResponseEntity.ok(world);
     }
+
+    @Override
+    public ICriterion parse(MultiValueMap<String, String> queryParams) throws ModuleException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

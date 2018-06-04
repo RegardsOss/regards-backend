@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,7 @@ import com.google.common.reflect.TypeToken;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
@@ -61,6 +63,7 @@ import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 
@@ -73,6 +76,9 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 public class CatalogSearchService implements ICatalogSearchService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CatalogSearchService.class);
+
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
 
     /**
      * Service perfoming the ElasticSearch search from criterions. Autowired.
@@ -129,6 +135,7 @@ public class CatalogSearchService implements ICatalogSearchService {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchKey<S, R> inSearchKey,
             List<String> facets, Pageable pageable) throws SearchException {
@@ -186,6 +193,42 @@ public class CatalogSearchService implements ICatalogSearchService {
         } catch (AccessRightFilterException e) {
             LOGGER.debug("Falling back to empty page", e);
             return new FacetPage<>(new ArrayList<>(), null);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchType searchType, List<String> facets,
+            Pageable pageable) throws SearchException {
+        switch (searchType) {
+            case ALL:
+                return (FacetPage<R>) search(criterion, Searches.onAllEntities(tenantResolver.getTenant()), facets,
+                                             pageable);
+            case COLLECTIONS:
+                return (FacetPage<R>) search(criterion,
+                                             Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.COLLECTION),
+                                             facets, pageable);
+            case DATAOBJECTS:
+                return (FacetPage<R>) search(criterion,
+                                             Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA),
+                                             facets, pageable);
+            case DATASETS:
+                return (FacetPage<R>) search(criterion,
+                                             Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATASET),
+                                             facets, pageable);
+            case DOCUMENTS:
+                return (FacetPage<R>) search(criterion,
+                                             Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DOCUMENT),
+                                             facets, pageable);
+
+            case DATAOBJECTS_RETURN_DATASETS:
+                return (FacetPage<R>) search(criterion,
+                                             Searches.onSingleEntityReturningJoinEntity(tenantResolver.getTenant(),
+                                                                                        EntityType.DATA,
+                                                                                        EntityType.DATASET),
+                                             facets, pageable);
+            default:
+                throw new UnsupportedOperationException("Unsupported search type : " + searchType);
         }
     }
 

@@ -16,33 +16,38 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.domain;
-
-import java.util.Map;
-
-import org.springframework.data.domain.Pageable;
-
-import fr.cnes.regards.modules.indexer.domain.IIndexable;
-import fr.cnes.regards.modules.indexer.domain.SearchKey;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+package fr.cnes.regards.modules.search.domain.plugin;
 
 /**
  *
- * TODO
+ * All supported search type
  * @author Marc Sordi
  *
  */
-public class SearchContext<S, R extends IIndexable> {
+public enum SearchType {
 
-    private SearchKey<S, R> pSearchKey;
-
-    private Map<String, String> allParams;
-
-    private String[] facets;
-
-    private Pageable pageable;
-
-    private ICriterion criterion;
-
-    private String extra;
+    /**
+     * Cross entity search
+     */
+    ALL,
+    /**
+     * Collection search
+     */
+    COLLECTIONS,
+    /**
+     * Document search
+     */
+    DOCUMENTS,
+    /**
+     * Dataset search
+     */
+    DATASETS,
+    /**
+     * DataObject search
+     */
+    DATAOBJECTS,
+    /**
+     * DataObject search returning Datasets
+     */
+    DATAOBJECTS_RETURN_DATASETS;
 }

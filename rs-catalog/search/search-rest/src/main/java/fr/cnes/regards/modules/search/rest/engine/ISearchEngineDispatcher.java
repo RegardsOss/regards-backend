@@ -18,12 +18,10 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 
 /**
  * Search engine service contract<br/>
@@ -33,6 +31,11 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  *
  */
 public interface ISearchEngineDispatcher {
+
+    /**
+     * Dispatch request to the right search engine according to specified search context
+     */
+    <T> ResponseEntity<T> dispatchRequest(SearchContext context) throws ModuleException;
 
     // /**
     // * Dispatch request to right search engine
@@ -68,42 +71,44 @@ public interface ISearchEngineDispatcher {
     // return dispatchRequest(searchType, returnType, engineType, null, extra, headers, allParams, pageable);
     // }
 
-    ResponseEntity<?> searchAll(String engineType, HttpHeaders headers, MultiValueMap<String, String> allParams,
-            Pageable pageable) throws ModuleException;
-
-    ResponseEntity<?> searchAllExtra(String engineType, String extra, HttpHeaders headers,
-            MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
-
-    ResponseEntity<?> searchAllCollections(String engineType, HttpHeaders headers,
-            MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
-
-    ResponseEntity<?> searchAllCollectionsExtra(String engineType, String extra, HttpHeaders headers,
-            MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
-
-    ResponseEntity<?> searchAllDocuments(String engineType, HttpHeaders headers,
-            MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
-
-    ResponseEntity<?> searchAllDocumentsExtra(String engineType, String extra, HttpHeaders headers,
-            MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
-
-    ResponseEntity<?> searchAllDatasets(String engineType, HttpHeaders headers, MultiValueMap<String, String> allParams,
-            Pageable pageable) throws ModuleException;
-
-    ResponseEntity<?> searchAllDatasetsExtra(String engineType, String extra, HttpHeaders headers,
-            MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
-
-    ResponseEntity<?> searchAllDataobjects(String engineType, HttpHeaders headers,
-            MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
-
-    ResponseEntity<?> searchAllDataobjectsExtra(String engineType, String extra, HttpHeaders headers,
-            MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
-
-    ResponseEntity<?> searchSingleDataset(String engineType, String datasetId, HttpHeaders headers,
-            MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
-
-    ResponseEntity<?> searchSingleDatasetExtra(String engineType, String datasetId, String extra, HttpHeaders headers,
-            MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
-
-    ResponseEntity<?> searchDataobjectsReturnDatasets(String engineType, HttpHeaders headers,
-            MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
+    // ResponseEntity<?> searchAll(String engineType, HttpHeaders headers, MultiValueMap<String, String> allParams,
+    // Pageable pageable) throws ModuleException;
+    //
+    // ResponseEntity<?> searchAllExtra(String engineType, String extra, HttpHeaders headers,
+    // MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
+    //
+    // ResponseEntity<?> searchAllCollections(String engineType, HttpHeaders headers,
+    // MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
+    //
+    // ResponseEntity<?> searchAllCollectionsExtra(String engineType, String extra, HttpHeaders headers,
+    // MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
+    //
+    // ResponseEntity<?> searchAllDocuments(String engineType, HttpHeaders headers,
+    // MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
+    //
+    // ResponseEntity<?> searchAllDocumentsExtra(String engineType, String extra, HttpHeaders headers,
+    // MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
+    //
+    // ResponseEntity<?> searchAllDatasets(String engineType, HttpHeaders headers, MultiValueMap<String, String>
+    // allParams,
+    // Pageable pageable) throws ModuleException;
+    //
+    // ResponseEntity<?> searchAllDatasetsExtra(String engineType, String extra, HttpHeaders headers,
+    // MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
+    //
+    // ResponseEntity<?> searchAllDataobjects(String engineType, HttpHeaders headers,
+    // MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
+    //
+    // ResponseEntity<?> searchAllDataobjectsExtra(String engineType, String extra, HttpHeaders headers,
+    // MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
+    //
+    // ResponseEntity<?> searchSingleDataset(String engineType, String datasetId, HttpHeaders headers,
+    // MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
+    //
+    // ResponseEntity<?> searchSingleDatasetExtra(String engineType, String datasetId, String extra, HttpHeaders
+    // headers,
+    // MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
+    //
+    // ResponseEntity<?> searchDataobjectsReturnDatasets(String engineType, HttpHeaders headers,
+    // MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException;
 }

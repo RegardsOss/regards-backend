@@ -41,6 +41,8 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
+import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.engine.ISearchEngineDispatcher;
 import fr.cnes.regards.modules.search.service.SearchException;
 
@@ -97,7 +99,7 @@ public class SearchEngineController {
     public static final String SEARCH_DATAOBJECTS_DATASETS_MAPPING = "/dataobjects/datasets";
 
     @Autowired
-    private ISearchEngineDispatcher searchEngineService;
+    private ISearchEngineDispatcher dispatcher;
 
     /**
      * Search on all index regardless the entity type
@@ -105,9 +107,10 @@ public class SearchEngineController {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Search engines dispatcher for global search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAll(@PathVariable String engineType, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException {
+            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all entities delegated to engine \"{}\"", engineType);
-        return searchEngineService.searchAll(engineType, headers, getDecodedParams(allParams), pageable);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.ALL, engineType, headers,
+                                                              getDecodedParams(queryParams), pageable));
     }
 
     /**
@@ -116,10 +119,11 @@ public class SearchEngineController {
     @RequestMapping(method = RequestMethod.GET, value = SEARCH_ALL_MAPPING_EXTRA)
     @ResourceAccess(description = "Extra mapping for global search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllExtra(@PathVariable String engineType, @PathVariable String extra,
-            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> allParams,
+            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
             Pageable pageable) throws ModuleException {
         LOGGER.debug("Extra mapping \"{}\" handling delegated to engine \"{}\"", extra, engineType);
-        return searchEngineService.searchAllExtra(engineType, extra, headers, getDecodedParams(allParams), pageable);
+        return dispatcher.dispatchRequest(SearchContext
+                .build(SearchType.ALL, engineType, headers, getDecodedParams(queryParams), pageable).withExtra(extra));
     }
 
     /**
@@ -128,9 +132,10 @@ public class SearchEngineController {
     @RequestMapping(method = RequestMethod.GET, value = SEARCH_COLLECTIONS_MAPPING)
     @ResourceAccess(description = "Search engines dispatcher for collection search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllCollections(@PathVariable String engineType, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException {
+            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all collections delegated to engine \"{}\"", engineType);
-        return searchEngineService.searchAllCollections(engineType, headers, getDecodedParams(allParams), pageable);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.COLLECTIONS, engineType, headers,
+                                                              getDecodedParams(queryParams), pageable));
     }
 
     /**
@@ -139,12 +144,13 @@ public class SearchEngineController {
     @RequestMapping(method = RequestMethod.GET, value = SEARCH_COLLECTIONS_MAPPING_EXTRA)
     @ResourceAccess(description = "Extra mapping for collection search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllCollectionsExtra(@PathVariable String engineType, @PathVariable String extra,
-            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> allParams,
+            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
             Pageable pageable) throws ModuleException {
         LOGGER.debug("Search all collections extra mapping \"{}\" handling delegated to engine \"{}\"", extra,
                      engineType);
-        return searchEngineService.searchAllCollectionsExtra(engineType, extra, headers, getDecodedParams(allParams),
-                                                             pageable);
+        return dispatcher.dispatchRequest(SearchContext
+                .build(SearchType.COLLECTIONS, engineType, headers, getDecodedParams(queryParams), pageable)
+                .withExtra(extra));
     }
 
     /**
@@ -153,9 +159,10 @@ public class SearchEngineController {
     @RequestMapping(method = RequestMethod.GET, value = SEARCH_DOCUMENTS_MAPPING)
     @ResourceAccess(description = "Search engines dispatcher for document search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllDocuments(@PathVariable String engineType, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException {
+            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all documents delegated to engine \"{}\"", engineType);
-        return searchEngineService.searchAllDocuments(engineType, headers, getDecodedParams(allParams), pageable);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DOCUMENTS, engineType, headers,
+                                                              getDecodedParams(queryParams), pageable));
     }
 
     /**
@@ -164,12 +171,13 @@ public class SearchEngineController {
     @RequestMapping(method = RequestMethod.GET, value = SEARCH_DOCUMENTS_MAPPING_EXTRA)
     @ResourceAccess(description = "Extra mapping for document search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllDocumentsExtra(@PathVariable String engineType, @PathVariable String extra,
-            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> allParams,
+            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
             Pageable pageable) throws ModuleException {
         LOGGER.debug("Search all documents extra mapping \"{}\" handling delegated to engine \"{}\"", extra,
                      engineType);
-        return searchEngineService.searchAllDocumentsExtra(engineType, extra, headers, getDecodedParams(allParams),
-                                                           pageable);
+        return dispatcher.dispatchRequest(SearchContext
+                .build(SearchType.DOCUMENTS, engineType, headers, getDecodedParams(queryParams), pageable)
+                .withExtra(extra));
     }
 
     /**
@@ -178,9 +186,10 @@ public class SearchEngineController {
     @RequestMapping(method = RequestMethod.GET, value = SEARCH_DATASETS_MAPPING)
     @ResourceAccess(description = "Search engines dispatcher for dataset search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllDatasets(@PathVariable String engineType, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException {
+            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all datasets delegated to engine \"{}\"", engineType);
-        return searchEngineService.searchAllDatasets(engineType, headers, getDecodedParams(allParams), pageable);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATASETS, engineType, headers,
+                                                              getDecodedParams(queryParams), pageable));
     }
 
     /**
@@ -189,11 +198,12 @@ public class SearchEngineController {
     @RequestMapping(method = RequestMethod.GET, value = SEARCH_DATASETS_MAPPING_EXTRA)
     @ResourceAccess(description = "Extra mapping for dataset search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllDatasetsExtra(@PathVariable String engineType, @PathVariable String extra,
-            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> allParams,
+            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
             Pageable pageable) throws ModuleException {
         LOGGER.debug("Search all datasets extra mapping \"{}\" handling delegated to engine \"{}\"", extra, engineType);
-        return searchEngineService.searchAllDatasetsExtra(engineType, extra, headers, getDecodedParams(allParams),
-                                                          pageable);
+        return dispatcher.dispatchRequest(SearchContext
+                .build(SearchType.DATASETS, engineType, headers, getDecodedParams(queryParams), pageable)
+                .withExtra(extra));
     }
 
     /**
@@ -202,9 +212,10 @@ public class SearchEngineController {
     @RequestMapping(method = RequestMethod.GET, value = SEARCH_DATAOBJECTS_MAPPING)
     @ResourceAccess(description = "Search engines dispatcher for dataobject search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllDataobjects(@PathVariable String engineType, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException {
+            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all dataobjects delegated to engine \"{}\"", engineType);
-        return searchEngineService.searchAllDataobjects(engineType, headers, getDecodedParams(allParams), pageable);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers,
+                                                              getDecodedParams(queryParams), pageable));
     }
 
     /**
@@ -213,12 +224,13 @@ public class SearchEngineController {
     @RequestMapping(method = RequestMethod.GET, value = SEARCH_DATAOBJECTS_MAPPING_EXTRA)
     @ResourceAccess(description = "Extra mapping for dataobject search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllDataobjectsExtra(@PathVariable String engineType, @PathVariable String extra,
-            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> allParams,
+            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
             Pageable pageable) throws ModuleException {
         LOGGER.debug("Search all dataobjects extra mapping \"{}\" handling delegated to engine \"{}\"", extra,
                      engineType);
-        return searchEngineService.searchAllDataobjectsExtra(engineType, extra, headers, getDecodedParams(allParams),
-                                                             pageable);
+        return dispatcher.dispatchRequest(SearchContext
+                .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), pageable)
+                .withExtra(extra));
     }
 
     /**
@@ -227,11 +239,12 @@ public class SearchEngineController {
     @RequestMapping(method = RequestMethod.GET, value = SEARCH_DATASET_DATAOBJECTS_MAPPING)
     @ResourceAccess(description = "Search engines dispatcher for single dataset search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchSingleDataset(@PathVariable String engineType, @PathVariable String datasetId,
-            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> allParams,
+            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
             Pageable pageable) throws ModuleException {
         LOGGER.debug("Search dataobjects on dataset \"{}\" delegated to engine \"{}\"", datasetId, engineType);
-        return searchEngineService.searchSingleDataset(engineType, datasetId, headers, getDecodedParams(allParams),
-                                                       pageable);
+        return dispatcher.dispatchRequest(SearchContext
+                .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), pageable)
+                .withDatasetId(datasetId));
     }
 
     /**
@@ -241,11 +254,12 @@ public class SearchEngineController {
     @ResourceAccess(description = "Extra mapping for single dataset search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchSingleDatasetExtra(@PathVariable String engineType, @PathVariable String datasetId,
             @PathVariable String extra, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> allParams, Pageable pageable) throws ModuleException {
+            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
         LOGGER.debug("Search dataobjects on dataset \"{}\" extra mapping \"{}\" handling delegated to engine \"{}\"",
                      datasetId, extra, engineType);
-        return searchEngineService.searchSingleDatasetExtra(engineType, datasetId, extra, headers,
-                                                            getDecodedParams(allParams), pageable);
+        return dispatcher.dispatchRequest(SearchContext
+                .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), pageable)
+                .withDatasetId(datasetId).withExtra(extra));
     }
 
     /**
@@ -255,19 +269,19 @@ public class SearchEngineController {
     @ResourceAccess(description = "Search engines dispatcher for dataset search with dataobject criterions",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchDataobjectsReturnDatasets(@PathVariable String engineType,
-            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> allParams,
+            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
             Pageable pageable) throws ModuleException {
         LOGGER.debug("Search datasets with dataobject criterions delegated to engine \"{}\"", engineType);
-        return searchEngineService.searchDataobjectsReturnDatasets(engineType, headers, getDecodedParams(allParams),
-                                                                   pageable);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS_RETURN_DATASETS, engineType,
+                                                              headers, getDecodedParams(queryParams), pageable));
     }
 
     // FIXME : fix issue in frontend to avoid double decoding
-    private MultiValueMap<String, String> getDecodedParams(MultiValueMap<String, String> allParams)
+    private MultiValueMap<String, String> getDecodedParams(MultiValueMap<String, String> queryParams)
             throws SearchException {
 
         MultiValueMap<String, String> allDecodedParams = new LinkedMultiValueMap<>();
-        for (Entry<String, List<String>> kvp : allParams.entrySet()) {
+        for (Entry<String, List<String>> kvp : queryParams.entrySet()) {
             for (String value : kvp.getValue()) {
                 try {
                     allDecodedParams.add(kvp.getKey(), URLDecoder.decode(value, "UTF-8"));
