@@ -312,8 +312,7 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
                                .withPath("id", "id", "PrioritizedDataStorage identifier", "Should be a whole number"));
             fields.add(constrainedFields.withPath("priority",
                                                   "priority",
-                                                  "PrioritizedDataStorage priority. 0 being the highest priority",
-                                                  "Must be positive"));
+                                                  "PrioritizedDataStorage priority. 0 being the highest priority"));
         }
         fields.add(constrainedFields.withPath("dataStorageType",
                                               "dataStorageType",
@@ -338,8 +337,7 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
                                               "Should be a whole number"));
         fields.add(constrainedFields.withPath("content.priority",
                                               "priority",
-                                              "PrioritizedDataStorage priority. 0 being the highest priority",
-                                              "Must be positive"));
+                                              "PrioritizedDataStorage priority. 0 being the highest priority"));
         fields.add(constrainedFields.withPath("content.dataStorageType",
                                               "dataStorageType",
                                               "PrioritizedDataStorage type",
