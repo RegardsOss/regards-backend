@@ -22,6 +22,7 @@ package fr.cnes.regards.framework.modules.plugins.service;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -41,11 +42,18 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 public interface IPluginService {
 
     /**
-     * Return all plugin types available.
+     * Return all plugin types detected.
      *
      * @return List<String>
      */
     List<String> getPluginTypes();
+
+    /**
+     * Return available plugin types i.e. all plugin types which at least one implementation is detected.
+     *
+     * @return available plugin types i.e. all plugin types which at least one implementation is detected.
+     */
+    Set<String> getAvailablePluginTypes();
 
     /**
      * Return all {@link PluginMetaData} available
