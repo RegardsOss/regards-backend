@@ -41,6 +41,16 @@ public abstract class AbstractLegacySearch<T, E> implements ISearchEngine<T, E> 
     protected static final String FACETS = "facets";
 
     /**
+     * Pagination property
+     */
+    protected static final String PAGE_NUMBER = "page";
+
+    /**
+     * Pagination property
+     */
+    protected static final String PAGE_SIZE = "size";
+
+    /**
      * Query parser
      */
     @Autowired

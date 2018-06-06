@@ -79,14 +79,6 @@
 			<groupId>fr.cnes.regards.modules.search</groupId>
 			<artifactId>search-service</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>multitenant-regards-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>amqp-regards-starter</artifactId>
-		</dependency>
 		<!-- Module dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
@@ -113,6 +105,11 @@
 		<dependency> <!-- FIXME: waiting for olivier BS -->
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>plugins-dao</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.models</groupId>
+			<artifactId>models-service</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

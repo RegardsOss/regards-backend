@@ -24,6 +24,7 @@ import java.util.StringJoiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
@@ -35,7 +36,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
+import fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchAllEngine;
 
 /**
  * Search engine service dispatcher.<br/>
@@ -60,6 +61,10 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
 
     @Autowired
     private IPluginService pluginService;
+
+    // FIXME remove replace with plugin service init
+    @Autowired
+    private AutowireCapableBeanFactory beanFactory;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -102,7 +107,10 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
 
     private ISearchEngine<?, ?> getSearchEngine(SearchContext context) throws ModuleException {
         // TODO Retrieve search engine plugin from search context
-        return new OpenSearchEngine();
+        // return new OpenSearchEngine();
+        ISearchEngine<?, ?> engine = new LegacySearchAllEngine();
+        beanFactory.autowireBean(engine);
+        return engine;
     }
 
     // @Override

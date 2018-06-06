@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="model_V1.0.xsd">
+	<name>planet</name>
+	<type>DATA</type>
+	<attribute>
+		<label>Planet name</label>
+		<name>planet</name>
+		<type>STRING</type>
+	</attribute>
+	<attribute>
+		<label>Planet type</label>
+		<name>planet_type</name>
+		<type>STRING</type>
+		<restriction>
+			<enumeration>
+				<value>Gas giant</value>
+				<value>Ice giant</value>
+				<value>Telluric</value>
+			</enumeration>
+		</restriction>
+	</attribute>
+</model>

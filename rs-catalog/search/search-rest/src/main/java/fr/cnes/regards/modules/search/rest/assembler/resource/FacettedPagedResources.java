@@ -18,11 +18,15 @@
  */
 package fr.cnes.regards.modules.search.rest.assembler.resource;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
+import org.springframework.util.Assert;
 
 import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 
@@ -38,23 +42,31 @@ public class FacettedPagedResources<T> extends PagedResources<T> {
      */
     private final Set<IFacet<?>> facets;
 
-    /**
-     * @param pFacets
-     * @param pContent
-     * @param pMetadata
-     * @param pLinks
-     */
-    public FacettedPagedResources(Set<IFacet<?>> pFacets, Collection<T> pContent, PageMetadata pMetadata,
-            Iterable<Link> pLinks) {
-        super(pContent, pMetadata, pLinks);
-        facets = pFacets;
+    public FacettedPagedResources(Set<IFacet<?>> facets, Collection<T> content, PageMetadata metadata, Link... links) {
+        this(facets, content, metadata, Arrays.asList(links));
     }
 
-    /**
-     * @return the facets
-     */
+    public FacettedPagedResources(Set<IFacet<?>> facets, Collection<T> content, PageMetadata metadata,
+            Iterable<Link> pLinks) {
+        super(content, metadata, pLinks);
+        this.facets = facets;
+    }
+
     public Set<IFacet<?>> getFacets() {
         return facets;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Resource<S>, S> FacettedPagedResources<T> wrap(Iterable<S> content, PageMetadata metadata,
+            Set<IFacet<?>> facets) {
+        Assert.notNull(content, "Content must not be null");
+        ArrayList<T> resources = new ArrayList<T>();
+
+        for (S element : content) {
+            resources.add((T) new Resource<S>(element));
+        }
+
+        return new FacettedPagedResources<T>(facets, resources, metadata);
     }
 
     @Override

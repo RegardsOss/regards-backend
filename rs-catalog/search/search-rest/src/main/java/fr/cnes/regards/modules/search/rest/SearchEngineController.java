@@ -98,6 +98,18 @@ public class SearchEngineController {
 
     public static final String SEARCH_DATAOBJECTS_DATASETS_MAPPING = "/dataobjects/datasets";
 
+    // Controller method names for HATEAOAS
+
+    public static final String SEARCH_ALL_METHOD = "searchAll";
+
+    public static final String SEARCH_ALL_COLLECTIONS_METHOD = "searchAllCollections";
+
+    public static final String SEARCH_ALL_DOCUMENTS_METHOD = "searchAllDocuments";
+
+    public static final String SEARCH_ALL_DATASETS_METHOD = "searchAllDatasets";
+
+    public static final String SEARCH_ALL_DATAOBJECTS_METHOD = "searchAllDataobjects";
+
     @Autowired
     private ISearchEngineDispatcher dispatcher;
 
