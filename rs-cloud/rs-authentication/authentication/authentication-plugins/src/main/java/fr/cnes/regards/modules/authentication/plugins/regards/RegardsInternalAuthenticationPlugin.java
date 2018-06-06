@@ -54,27 +54,28 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
         Boolean accessGranted = false;
         String errorMessage = null;
 
+        ResponseEntity<Boolean> validateResponse;
         // Validate password as system
         try {
             FeignSecurityManager.asSystem();
-            final ResponseEntity<Boolean> validateResponse = accountsClient.validatePassword(pEmail, pPassword);
+            validateResponse = accountsClient.validatePassword(pEmail, pPassword);
+        } finally {
+            FeignSecurityManager.reset();
+        }
 
-            if (validateResponse.getStatusCode().equals(HttpStatus.OK)) {
-                if (validateResponse.getBody()) {
-                    accessGranted = validateResponse.getBody();
-                } else {
-                    errorMessage = String
-                            .format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists", pEmail);
-                }
+        if (validateResponse.getStatusCode().equals(HttpStatus.OK)) {
+            if (validateResponse.getBody()) {
+                accessGranted = validateResponse.getBody();
             } else {
                 errorMessage = String
                         .format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists", pEmail);
             }
-
-            return new AuthenticationPluginResponse(accessGranted, pEmail, errorMessage);
-        } finally {
-            FeignSecurityManager.reset();
+        } else {
+            errorMessage = String
+                    .format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists", pEmail);
         }
+
+        return new AuthenticationPluginResponse(accessGranted, pEmail, errorMessage);
 
     }
 
