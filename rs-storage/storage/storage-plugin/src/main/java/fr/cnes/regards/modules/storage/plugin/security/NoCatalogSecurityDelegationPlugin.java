@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.domain.plugin;
+package fr.cnes.regards.modules.storage.plugin.security;
 
 import java.util.Collection;
 import java.util.Set;
@@ -25,6 +25,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 
 /**
  * {@link ISecurityDelegation} implementation that always return <code>true</code>.
