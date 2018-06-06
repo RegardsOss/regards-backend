@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cglib.core.Converter;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDeniedException;
@@ -72,10 +72,10 @@ public class DefaultResourceService implements IResourceService {
     }
 
     @Override
-    public <T> void addLink(final Resource<T> pResource, final Class<?> pController, final String pMethodName,
+    public void addLink(ResourceSupport resource, final Class<?> pController, final String pMethodName,
             final String pRel, final MethodParam<?>... pMethodParams) {
 
-        Assert.notNull(pResource, "Resource should not be null");
+        Assert.notNull(resource, "Resource should not be null");
         Assert.notNull(pController, "Controller should not be null");
         Assert.notNull(pMethodName, "Method name should not be null");
         Assert.notNull(pRel, "Relation should not be null");
@@ -102,7 +102,7 @@ public class DefaultResourceService implements IResourceService {
             } else {
                 link = buildLink(method, pRel);
             }
-            pResource.add(link);
+            resource.add(link);
         } catch (final MethodException e) {
             // Do not insert link
             LOGGER.trace("HATEOAS link skipped silently due to introspection error or access denied", e);
@@ -131,10 +131,10 @@ public class DefaultResourceService implements IResourceService {
      * even if you defined in your classpath a converter implementing Converter<ComplexEntity, String>
      */
     @Override
-    public <T, C> void addLinkWithParams(final Resource<T> pResource, final Class<C> pController,
-            final String pMethodName, final String pRel, final MethodParam<?>... pMethodParams) {
+    public <C> void addLinkWithParams(ResourceSupport resource, final Class<C> pController, final String pMethodName,
+            final String pRel, final MethodParam<?>... pMethodParams) {
 
-        Assert.notNull(pResource, "Resource should not be null");
+        Assert.notNull(resource, "Resource should not be null");
         Assert.notNull(pController, "Controller should not be null");
         Assert.notNull(pMethodName, "Method name should not be null");
         Assert.notNull(pRel, "Relation should not be null");
@@ -161,7 +161,7 @@ public class DefaultResourceService implements IResourceService {
                 invoke = method.invoke(proxyControllerInstance);
             }
             Link link = ControllerLinkBuilder.linkTo(invoke).withRel(pRel);
-            pResource.add(link);
+            resource.add(link);
         } catch (MethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             // Do not insert link
             LOGGER.trace("HATEOAS link skipped silently due to introspection error or access denied", e);

@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.hateoas;
 
 import org.springframework.cglib.core.Converter;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.util.Assert;
 
 /**
@@ -48,8 +49,6 @@ public interface IResourceService {
     /**
      * Add a link to a resource for a single method
      *
-     * @param <T>
-     *            resource content type
      * @param resource
      *            resource to manage
      * @param controller
@@ -61,7 +60,7 @@ public interface IResourceService {
      * @param methodParams
      *            method parameters
      */
-    <T> void addLink(Resource<T> resource, Class<?> controller, String methodName, String rel,
+    void addLink(ResourceSupport resource, Class<?> controller, String methodName, String rel,
             MethodParam<?>... methodParams);
 
     /**
@@ -77,8 +76,6 @@ public interface IResourceService {
      * generate a conversion error, telling that it could not find the appropriate converter, even if you defined in
      * your classpath a converter implementing Converter<ComplexEntity, String>
      *
-     * @param <T>
-     *            resource content type
      * @param <C>
      *            controller type
      * @param resource
@@ -92,6 +89,6 @@ public interface IResourceService {
      * @param methodParams
      *            method parameters
      */
-    <T, C> void addLinkWithParams(Resource<T> resource, Class<C> controller, String methodName, String rel,
+    <C> void addLinkWithParams(ResourceSupport resource, Class<C> controller, String methodName, String rel,
             MethodParam<?>... methodParams);
 }
