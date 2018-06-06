@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.storage.domain;
 
 import java.net.URL;
-import java.util.Objects;
 
 import org.springframework.util.MimeType;
 
@@ -62,12 +61,6 @@ public class DataFileDto {
     private Integer width;
 
     /**
-     * Default constructor
-     */
-    public DataFileDto() {
-    }
-
-    /**
      * Transform a {@link StorageDataFile} to a {@link DataFileDto}.
      * @param dataFile origin data file
      * @return dto
@@ -88,8 +81,8 @@ public class DataFileDto {
         dto.width = dataFile.getWidth();
         // lets compute the online attribute
         if (dataFile.getPrioritizedDataStorages().stream()
-                .filter(dataStorage -> dataStorage.getDataStorageType().equals(DataStorageType.ONLINE))
-                .findFirst().isPresent()) {
+                .filter(dataStorage -> dataStorage.getDataStorageType().equals(DataStorageType.ONLINE)).findFirst()
+                .isPresent()) {
             dto.setOnline(true);
         }
         return dto;
@@ -236,7 +229,7 @@ public class DataFileDto {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 
@@ -254,8 +247,8 @@ public class DataFileDto {
     @Override
     public int hashCode() {
         int result = checksum != null ? checksum.hashCode() : 0;
-        result = 31 * result + (algorithm != null ? algorithm.hashCode() : 0);
-        result = 31 * result + (dataType != null ? dataType.hashCode() : 0);
+        result = (31 * result) + (algorithm != null ? algorithm.hashCode() : 0);
+        result = (31 * result) + (dataType != null ? dataType.hashCode() : 0);
         return result;
     }
 }
