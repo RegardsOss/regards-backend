@@ -18,12 +18,14 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -35,6 +37,7 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.attribute.builder.AttributeBuilder;
 import fr.cnes.regards.modules.entities.gson.MultitenantFlattenedAttributeAdapterFactory;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
+import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.models.domain.Model;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.service.IAttributeModelService;
@@ -51,46 +54,47 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
      */
 
     // Common properties
-    private static final String ABSTRACT = "abstract";
+    protected static final String ABSTRACT = "abstract";
 
     // Galaxy properties
-    private static final String GALAXY = "galaxy";
+    protected static final String GALAXY = "galaxy";
 
     // Star properties
-    private static final String STAR = "star";
+    protected static final String STAR = "star";
 
     // Star system properties
-    private static final String STAR_SYSTEM = "startSystem";
+    protected static final String STAR_SYSTEM = "startSystem";
 
     // Planet properties
-    private static final String PLANET = "planet";
+    protected static final String PLANET = "planet";
 
-    private static final String PLANET_TYPE = "planet_type";
+    protected static final String PLANET_TYPE = "planet_type";
 
-    @SuppressWarnings("unused")
-    private static final String PLANET_TYPE_GAS_GIANT = "Gas giant";
+    protected static final String PLANET_TYPE_GAS_GIANT = "Gas giant";
 
-    @SuppressWarnings("unused")
-    private static final String PLANET_TYPE_ICE_GIANT = "Ice giant";
+    protected static final String PLANET_TYPE_ICE_GIANT = "Ice giant";
 
-    private static final String PLANET_TYPE_TELLURIC = "Telluric";
+    protected static final String PLANET_TYPE_TELLURIC = "Telluric";
 
     @Autowired
-    private ModelService modelService;
+    protected ModelService modelService;
 
     @Autowired
-    private IEsRepository esRepository;
+    protected IEsRepository esRepository;
 
     @Autowired
-    private IAttributeModelService attributeModelService;
+    protected IAttributeModelService attributeModelService;
 
     @Autowired
-    private IProjectUsersClient projectUserClient;
+    protected IProjectUsersClient projectUserClientMock;
 
     @Autowired
-    private MultitenantFlattenedAttributeAdapterFactory gsonAttributeFactory;
+    protected IAttributeModelClient attributeModelClientMock;
 
-    private void initIndex(String index) {
+    @Autowired
+    protected MultitenantFlattenedAttributeAdapterFactory gsonAttributeFactory;
+
+    protected void initIndex(String index) {
         if (esRepository.indexExists(index)) {
             esRepository.deleteIndex(index);
         }
@@ -101,7 +105,7 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     public void prepareData() throws ModuleException {
 
         // Bypass access rights
-        Mockito.when(projectUserClient.isAdmin(Mockito.anyString())).thenReturn(ResponseEntity.ok(Boolean.TRUE));
+        Mockito.when(projectUserClientMock.isAdmin(Mockito.anyString())).thenReturn(ResponseEntity.ok(Boolean.TRUE));
 
         initIndex(getDefaultTenant());
 
@@ -119,6 +123,11 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         // - Refresh attribute factory
         List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
         gsonAttributeFactory.refresh(getDefaultTenant(), atts);
+
+        // - Manage attribute cache
+        List<Resource<AttributeModel>> resAtts = new ArrayList<>();
+        atts.forEach(att -> resAtts.add(new Resource<AttributeModel>(att)));
+        Mockito.when(attributeModelClientMock.getAttributes(null, null)).thenReturn(ResponseEntity.ok(resAtts));
 
         // Create data
         esRepository.saveBulk(getDefaultTenant(), createGalaxies(galaxyModel));

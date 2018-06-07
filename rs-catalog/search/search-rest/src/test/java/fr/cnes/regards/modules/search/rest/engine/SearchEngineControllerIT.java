@@ -18,14 +18,10 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -57,17 +53,20 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         // customizer.customizeHeaders().setContentType(MediaType.APPLICATION_ATOM_XML);
         // customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
         // customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
-
-        List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
         // customizer.customizeRequestParam().param("facets", "toto", "titi");
+
         customizer.customizeRequestParam().param("page", "0");
         customizer.customizeRequestParam().param("size", "2");
         performDefaultGet(SearchEngineController.TYPE_MAPPING, customizer, "Search all error", ENGINE_TYPE);
+    }
 
-        // RequestParamBuilder builder = RequestParamBuilder.build().param("q", CatalogControllerTestUtils.Q);
-        // performDefaultGet(SearchEngineController.TYPE_MAPPING, expectations, "Error searching", DATASET_ID,
-        // ENGINE_TYPE);
+    @Test
+    public void searchCollections() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.customizeRequestParam().param("q", "properties." + STAR + ":Sun");
+        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_COLLECTIONS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
     }
 
 }

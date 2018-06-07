@@ -22,43 +22,80 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
+import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
 import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
+import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 
 /**
- * Native search engine used for compatibility with legacy system
+ * Legacy search engine for compatibility with legacy system
+ *
  * @author Marc Sordi
+ *
  */
-@Plugin(id = "LegacySearchAllEngine", author = "REGARDS Team", contact = "regards@c-s.fr",
-        description = "Cross entity search for legacy search engine", licence = "GPLv3", owner = "CSSI",
-        url = "https://github.com/RegardsOss", version = "1.0.0")
-public class LegacySearchAllEngine
-        extends AbstractLegacySearch<FacettedPagedResources<Resource<AbstractEntity>>, Void> {
+@Plugin(id = "legacy", author = "REGARDS Team", contact = "regards@c-s.fr", description = "Legacy search engine",
+        licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss", version = "1.0.0")
+public class LegacySearchEngine implements ISearchEngine<FacettedPagedResources<Resource<AbstractEntity>>, Void> {
 
+    /**
+     * Query parameter for facets
+     */
+    protected static final String FACETS = "facets";
+
+    /**
+     * Pagination property
+     */
+    protected static final String PAGE_NUMBER = "page";
+
+    /**
+     * Pagination property
+     */
+    protected static final String PAGE_SIZE = "size";
+
+    /**
+     * Query parser
+     */
+    @Autowired
+    protected IOpenSearchService openSearchService;
+
+    /**
+     * Business search service
+     */
+    @Autowired
+    protected ICatalogSearchService searchService;
+
+    /**
+     * To build resource links
+     */
     @Autowired
     private IResourceService resourceService;
 
     @Override
     public boolean supports(SearchType searchType) {
-        return SearchType.ALL.equals(searchType);
+        // Support all search types
+        return true;
+    }
+
+    @Override
+    public ICriterion parse(MultiValueMap<String, String> queryParams) throws ModuleException {
+        return openSearchService.parse(queryParams);
     }
 
     @Override
@@ -116,11 +153,9 @@ public class LegacySearchAllEngine
         context.getQueryParams().put(PAGE_SIZE, Arrays.asList(String.valueOf(context.getPageable().getPageSize())));
 
         // Create link
-        resourceService.addLinkWithParams(resource, SearchEngineController.class,
-                                          SearchEngineController.SEARCH_ALL_METHOD, rel,
-                                          MethodParamFactory.build(String.class, context.getEngineType()),
-                                          MethodParamFactory.build(HttpHeaders.class),
-                                          MethodParamFactory.build(MultiValueMap.class, context.getQueryParams()),
-                                          MethodParamFactory.build(Pageable.class));
+        Link link = SearchEngineController.buildPaginationLink(resourceService, context, rel);
+        if (link != null) {
+            resource.add(link);
+        }
     }
 }

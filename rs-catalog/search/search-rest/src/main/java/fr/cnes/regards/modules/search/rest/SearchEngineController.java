@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -38,6 +39,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -109,6 +112,10 @@ public class SearchEngineController {
     public static final String SEARCH_ALL_DATASETS_METHOD = "searchAllDatasets";
 
     public static final String SEARCH_ALL_DATAOBJECTS_METHOD = "searchAllDataobjects";
+
+    public static final String SEARCH_ALL_DATAOBJECTS_BY_DATASET = "searchSingleDataset";
+
+    public static final String SEARCH_DATAOBJECTS_DATASETS = "searchDataobjectsReturnDatasets";
 
     @Autowired
     private ISearchEngineDispatcher dispatcher;
@@ -306,4 +313,94 @@ public class SearchEngineController {
         }
         return allDecodedParams;
     }
+
+    /**
+     * Return a contextual link
+     * @return {@link Link}, may be null.
+     */
+    public static Link buildPaginationLink(IResourceService resourceService, SearchContext context, String rel) {
+        Link link;
+
+        switch (context.getSearchType()) {
+            case ALL:
+                link = resourceService
+                        .buildLinkWithParams(SearchEngineController.class, SearchEngineController.SEARCH_ALL_METHOD,
+                                             rel, MethodParamFactory.build(String.class, context.getEngineType()),
+                                             MethodParamFactory.build(HttpHeaders.class),
+                                             MethodParamFactory.build(MultiValueMap.class, context.getQueryParams()),
+                                             MethodParamFactory.build(Pageable.class));
+                break;
+
+            case COLLECTIONS:
+                link = resourceService.buildLinkWithParams(SearchEngineController.class,
+                                                           SearchEngineController.SEARCH_ALL_COLLECTIONS_METHOD, rel,
+                                                           MethodParamFactory.build(String.class,
+                                                                                    context.getEngineType()),
+                                                           MethodParamFactory.build(HttpHeaders.class),
+                                                           MethodParamFactory.build(MultiValueMap.class,
+                                                                                    context.getQueryParams()),
+                                                           MethodParamFactory.build(Pageable.class));
+                break;
+            case DATAOBJECTS:
+                if (context.getDatasetId().isPresent()) {
+                    // Search on single dataset
+                    link = resourceService
+                            .buildLinkWithParams(SearchEngineController.class,
+                                                 SearchEngineController.SEARCH_ALL_DATAOBJECTS_BY_DATASET, rel,
+                                                 MethodParamFactory.build(String.class, context.getEngineType()),
+                                                 MethodParamFactory.build(String.class, context.getDatasetId().get()),
+                                                 MethodParamFactory.build(HttpHeaders.class),
+                                                 MethodParamFactory.build(MultiValueMap.class,
+                                                                          context.getQueryParams()),
+                                                 MethodParamFactory.build(Pageable.class));
+                } else {
+
+                    link = resourceService
+                            .buildLinkWithParams(SearchEngineController.class,
+                                                 SearchEngineController.SEARCH_ALL_DATAOBJECTS_METHOD, rel,
+                                                 MethodParamFactory.build(String.class, context.getEngineType()),
+                                                 MethodParamFactory.build(HttpHeaders.class),
+                                                 MethodParamFactory.build(MultiValueMap.class,
+                                                                          context.getQueryParams()),
+                                                 MethodParamFactory.build(Pageable.class));
+                }
+                break;
+            case DATASETS:
+                link = resourceService.buildLinkWithParams(SearchEngineController.class,
+                                                           SearchEngineController.SEARCH_ALL_DATASETS_METHOD, rel,
+                                                           MethodParamFactory.build(String.class,
+                                                                                    context.getEngineType()),
+                                                           MethodParamFactory.build(HttpHeaders.class),
+                                                           MethodParamFactory.build(MultiValueMap.class,
+                                                                                    context.getQueryParams()),
+                                                           MethodParamFactory.build(Pageable.class));
+                break;
+            case DOCUMENTS:
+                link = resourceService.buildLinkWithParams(SearchEngineController.class,
+                                                           SearchEngineController.SEARCH_ALL_DOCUMENTS_METHOD, rel,
+                                                           MethodParamFactory.build(String.class,
+                                                                                    context.getEngineType()),
+                                                           MethodParamFactory.build(HttpHeaders.class),
+                                                           MethodParamFactory.build(MultiValueMap.class,
+                                                                                    context.getQueryParams()),
+                                                           MethodParamFactory.build(Pageable.class));
+                break;
+
+            case DATAOBJECTS_RETURN_DATASETS:
+                link = resourceService.buildLinkWithParams(SearchEngineController.class,
+                                                           SearchEngineController.SEARCH_DATAOBJECTS_DATASETS, rel,
+                                                           MethodParamFactory.build(String.class,
+                                                                                    context.getEngineType()),
+                                                           MethodParamFactory.build(HttpHeaders.class),
+                                                           MethodParamFactory.build(MultiValueMap.class,
+                                                                                    context.getQueryParams()),
+                                                           MethodParamFactory.build(Pageable.class));
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported search type : " + context.getSearchType());
+        }
+
+        return link;
+    }
+
 }
