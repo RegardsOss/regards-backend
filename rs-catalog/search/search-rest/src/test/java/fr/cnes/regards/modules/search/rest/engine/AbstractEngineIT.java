@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -149,6 +150,7 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         sun.addProperty(AttributeBuilder.buildString(STAR, "Sun"));
         sun.addProperty(AttributeBuilder.buildString(ABSTRACT,
                                                      "The Sun is the star at the center of the Solar System."));
+        sun.setGeometry(IGeometry.point(IGeometry.position(50.0, 30.0)));
         return Arrays.asList(sun);
     }
 
