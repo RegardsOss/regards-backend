@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import com.google.common.net.HttpHeaders;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
@@ -37,28 +38,24 @@ import fr.cnes.regards.modules.search.rest.SearchEngineController;
  *
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
-        properties = { "regards.tenant=legacy", "spring.jpa.properties.hibernate.default_schema=legacy" })
+        properties = { "regards.tenant=opensearch", "spring.jpa.properties.hibernate.default_schema=opensearch" })
 @MultitenantTransactional
-public class SearchEngineControllerIT extends AbstractEngineIT {
+public class OpenSearchEngineControllerIT extends AbstractEngineIT {
 
     @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngineControllerIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenSearchEngineControllerIT.class);
 
-    private static final String ENGINE_TYPE = "legacy";
-
-    private void addCommontMatchers(RequestBuilderCustomizer customizer) {
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.links", Matchers.not(Matchers.emptyArray())));
-    }
+    private static final String ENGINE_TYPE = "opensearch";
 
     @Test
     public void searchAll() {
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        addCommontMatchers(customizer);
+
         // customizer.customizeHeaders().setContentType(MediaType.APPLICATION_ATOM_XML);
         // customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
-        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
+        // customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
         // customizer.customizeRequestParam().param("facets", "toto", "titi");
 
         customizer.customizeRequestParam().param("page", "0");
@@ -69,30 +66,11 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchCollections() {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        addCommontMatchers(customizer);
         customizer.customizeRequestParam().param("q", "properties." + STAR + ":Sun");
         performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_COLLECTIONS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
-    @Test
-    public void searchDatasets() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        addCommontMatchers(customizer);
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATASETS_MAPPING,
-                          customizer, "Search all error", ENGINE_TYPE);
-    }
-
-    @Test
-    public void searchDataobjects() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        addCommontMatchers(customizer);
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
-                          customizer, "Search all error", ENGINE_TYPE);
-    }
-
-    // TODO search document, dataobjects in dataset, dataobjects returning datasets
 }

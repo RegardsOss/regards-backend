@@ -1,0 +1,279 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch;
+
+import java.util.List;
+
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.modules.entities.domain.StaticProperties;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+
+/**
+ * Builder class to create {@link ICriterion} for catalog searches.
+ * @author Sébastien Binda
+ */
+public class AttributeCriterionBuilder {
+
+    private AttributeCriterionBuilder() {
+    }
+
+    /**
+     * Build a {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a list of search values.
+     * One criterion is created for each search value. The returned criterion is a composed criterion of all values with AND operator between each.
+     * @param openSearchParameter
+     * @param values
+     * @param finder
+     * @return {@link ICriterion} composed criterion of all values with AND operator between each.
+     * @throws OpenSearchUnknownParameter
+     */
+    public static ICriterion build(OpenSearchParameterConfiguration openSearchParameter, List<String> values,
+            IAttributeFinder finder) throws OpenSearchUnknownParameter {
+        ICriterion criterion = null;
+        AttributeModel attributeModel = finder.findByName(openSearchParameter.getName());
+        String attributeJsonPath = attributeModel.buildJsonPath(StaticProperties.PROPERTIES);
+        for (String value : values) {
+            ICriterion valueCriterion = null;
+            switch (attributeModel.getType()) {
+                case INTEGER:
+                case INTEGER_ARRAY:
+                    valueCriterion = buildIngetegerCrit(attributeJsonPath, value, openSearchParameter.getOperator());
+                    break;
+                case DOUBLE:
+                case DOUBLE_ARRAY:
+                    valueCriterion = buildDoubleCrit(attributeJsonPath, value, openSearchParameter.getOperator());
+                    break;
+                case LONG:
+                case LONG_ARRAY:
+                    valueCriterion = buildLongCrit(attributeJsonPath, value, openSearchParameter.getOperator());
+                    break;
+                case STRING:
+                    valueCriterion = buildStringCrit(attributeJsonPath, value, openSearchParameter.getOperator());
+                    break;
+                case STRING_ARRAY:
+                    valueCriterion = buildStringArrayCrit(attributeJsonPath, value, openSearchParameter.getOperator());
+                    break;
+                case DATE_ISO8601:
+                    valueCriterion = buildDateCrit(attributeJsonPath, value, openSearchParameter.getOperator());
+                    break;
+                case BOOLEAN:
+                    valueCriterion = buildSBooleanCrit(attributeJsonPath, value, openSearchParameter.getOperator());
+                    break;
+                default:
+                    throw new OpenSearchUnknownParameter("Unknown parameter");
+            }
+            if ((criterion == null) && (valueCriterion != null)) {
+                criterion = valueCriterion;
+            } else if (valueCriterion != null) {
+                criterion = ICriterion.and(criterion, valueCriterion);
+            }
+        }
+        return criterion;
+    }
+
+    /**
+     * Build an Boolean {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
+     * @param attribute {@link AttributeModel} to search for
+     * @param value String representation of boolean parameter value
+     * @param operator Operator for search
+     * @return {@link ICriterion}
+     * @throws OpenSearchUnknownParameter
+     */
+    private static ICriterion buildSBooleanCrit(String attribute, String value, ParameterOperator operator)
+            throws OpenSearchUnknownParameter {
+        switch (operator) {
+            case GE:
+            case GT:
+            case LE:
+            case LT:
+                throw new OpenSearchUnknownParameter(
+                        String.format("Invalid operator %s for string parameter %s", operator.toString(), attribute));
+            case EQ:
+            default:
+                return ICriterion.eq(attribute, Boolean.valueOf(value));
+        }
+    }
+
+    /**
+     * Build an Date {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
+     * @param attribute {@link AttributeModel} to search for
+     * @param value String representation of date parameter value
+     * @param operator Operator for search
+     * @return {@link ICriterion}
+     * @throws OpenSearchUnknownParameter
+     */
+    private static ICriterion buildDateCrit(String attribute, String value, ParameterOperator operator) {
+        switch (operator) {
+            case GE:
+                return ICriterion.ge(attribute, OffsetDateTimeAdapter.parse(value));
+            case GT:
+                return ICriterion.gt(attribute, OffsetDateTimeAdapter.parse(value));
+            case LE:
+                return ICriterion.le(attribute, OffsetDateTimeAdapter.parse(value));
+            case LT:
+                return ICriterion.lt(attribute, OffsetDateTimeAdapter.parse(value));
+            case EQ:
+            default:
+                return ICriterion.eq(attribute, OffsetDateTimeAdapter.parse(value));
+        }
+    }
+
+    /**
+     * Build an Integer {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
+     * @param attribute {@link AttributeModel} to search for
+     * @param value String representation of integer parameter value
+     * @param operator Operator for search
+     * @return {@link ICriterion}
+     * @throws OpenSearchUnknownParameter
+     */
+    private static ICriterion buildIngetegerCrit(String attribute, String value, ParameterOperator operator) {
+        // Important :
+        // We have to do it because the value of the criterion returned by Elasticsearch is always a double value,
+        // even if the value is an integer value.
+        // For example, it did not work, then the open search criterion was : "property:26.0"
+        int val;
+        try {
+            val = Integer.parseInt(value);
+        } catch (NumberFormatException ex) {
+            Double doubleValue = Double.parseDouble(value);
+            val = doubleValue.intValue();
+        }
+        switch (operator) {
+            case GE:
+                return ICriterion.ge(attribute, val);
+            case GT:
+                return ICriterion.gt(attribute, val);
+            case LE:
+                return ICriterion.le(attribute, val);
+            case LT:
+                return ICriterion.lt(attribute, val);
+            case EQ:
+            default:
+                return ICriterion.eq(attribute, val);
+        }
+    }
+
+    /**
+     * Build an Double {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
+     * @param attribute {@link AttributeModel} to search for
+     * @param value String representation of double parameter value
+     * @param operator Operator for search
+     * @return {@link ICriterion}
+     * @throws OpenSearchUnknownParameter
+     */
+    private static ICriterion buildDoubleCrit(String attribute, String value, ParameterOperator operator) {
+        Double asDouble = Double.parseDouble(value);
+        switch (operator) {
+            case GE:
+                return ICriterion.ge(attribute, asDouble);
+            case GT:
+                return ICriterion.gt(attribute, asDouble);
+            case LE:
+                return ICriterion.le(attribute, asDouble);
+            case LT:
+                return ICriterion.lt(attribute, asDouble);
+            case EQ:
+            default:
+                return ICriterion.eq(attribute, asDouble, asDouble - Math.nextDown(asDouble));
+        }
+    }
+
+    /**
+     * Build an Long {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
+     * @param attribute {@link AttributeModel} to search for
+     * @param value String representation of long parameter value
+     * @param operator Operator for search
+     * @return {@link ICriterion}
+     * @throws OpenSearchUnknownParameter
+     */
+    private static ICriterion buildLongCrit(String attribute, String value, ParameterOperator operator) {
+        // Important :
+        // We have to do it because the value of the criterion returned by Elasticsearch is always a double value,
+        // even if the value is a long value.
+        // For example, it did not work, then the open search criterion was : "property:26.0"
+        long valL;
+        try {
+            valL = Long.parseLong(value);
+        } catch (NumberFormatException ex) {
+            Double doubleValue = Double.parseDouble(value);
+            valL = doubleValue.longValue();
+        }
+        switch (operator) {
+            case GE:
+                return ICriterion.ge(attribute, valL);
+            case GT:
+                return ICriterion.gt(attribute, valL);
+            case LE:
+                return ICriterion.le(attribute, valL);
+            case LT:
+                return ICriterion.lt(attribute, valL);
+            case EQ:
+            default:
+                return ICriterion.eq(attribute, valL);
+        }
+    }
+
+    /**
+     * Build an String {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
+     * @param attribute {@link AttributeModel} to search for
+     * @param value String representation of parameter value
+     * @param operator Operator for search
+     * @return {@link ICriterion}
+     * @throws OpenSearchUnknownParameter
+     */
+    private static ICriterion buildStringCrit(String attribute, String value, ParameterOperator operator)
+            throws OpenSearchUnknownParameter {
+        switch (operator) {
+            case GE:
+            case GT:
+            case LE:
+            case LT:
+                throw new OpenSearchUnknownParameter(
+                        String.format("Invalid operator %s for string parameter %s", operator.toString(), attribute));
+            case EQ:
+            default:
+                return ICriterion.eq(attribute, value);
+        }
+    }
+
+    /**
+     * Build a String {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
+     * @param attribute {@link AttributeModel} to search for
+     * @param value String representation of parameter value
+     * @param operator Operator for search
+     * @return {@link ICriterion}
+     * @throws OpenSearchUnknownParameter
+     */
+    private static ICriterion buildStringArrayCrit(String attribute, String value, ParameterOperator operator)
+            throws OpenSearchUnknownParameter {
+        switch (operator) {
+            case GE:
+            case GT:
+            case LE:
+            case LT:
+                throw new OpenSearchUnknownParameter(
+                        String.format("Invalid operator %s for string parameter %s", operator.toString(), attribute));
+            case EQ:
+            default:
+                return ICriterion.contains(attribute, value);
+        }
+    }
+}
