@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,12 +45,16 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
 
     private static final String ENGINE_TYPE = "legacy";
 
+    private void addCommontMatchers(RequestBuilderCustomizer customizer) {
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.links", Matchers.not(Matchers.emptyArray())));
+    }
+
     @Test
     public void searchAll() {
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-
+        addCommontMatchers(customizer);
         // customizer.customizeHeaders().setContentType(MediaType.APPLICATION_ATOM_XML);
         // customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
         // customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
@@ -64,9 +69,29 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
     public void searchCollections() {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        addCommontMatchers(customizer);
         customizer.customizeRequestParam().param("q", "properties." + STAR + ":Sun");
         performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_COLLECTIONS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
+    @Test
+    public void searchDatasets() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        addCommontMatchers(customizer);
+        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATASETS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
+    public void searchDataobjects() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        addCommontMatchers(customizer);
+        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    // TODO search document, dataobjects in dataset, dataobjects returning datasets
 }

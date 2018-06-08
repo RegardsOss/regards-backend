@@ -89,7 +89,7 @@ public class LegacySearchEngine implements ISearchEngine<FacettedPagedResources<
 
     @Override
     public boolean supports(SearchType searchType) {
-        // Support all search types
+        // Supports all search types
         return true;
     }
 
