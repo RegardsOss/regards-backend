@@ -16,23 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.module;
+package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.gml;
 
-import com.google.gson.Gson;
-
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
+import com.rometools.modules.georss.GeoRSSModule;
+import com.rometools.rome.feed.module.Module;
 
 /**
  * Provides access to Regards information.
  */
-public interface RegardsResponse {
+public interface GmlTimeModule extends Module, GmlTimeResponse {
 
-    Gson getGsonBuilder();
-
-    void setGsonBuilder(Gson gson);
-
-    AbstractEntity getEntity();
-
-    void setEntity(AbstractEntity entity);
+    public final static String URI = GeoRSSModule.GEORSS_GML_URI;
 
 }

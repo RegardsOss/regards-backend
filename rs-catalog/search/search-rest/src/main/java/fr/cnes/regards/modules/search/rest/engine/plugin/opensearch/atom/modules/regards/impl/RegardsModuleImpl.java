@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.module.impl;
+package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.regards.impl;
 
 import java.io.Serializable;
 
@@ -25,7 +25,7 @@ import com.rometools.rome.feed.CopyFrom;
 import com.rometools.rome.feed.module.ModuleImpl;
 
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.module.RegardsModule;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.regards.RegardsModule;
 
 /**
  * com.rometools.rome module implementation to handle specifics regards model attributes.

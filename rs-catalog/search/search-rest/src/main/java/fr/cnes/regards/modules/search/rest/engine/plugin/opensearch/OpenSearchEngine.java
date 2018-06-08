@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -135,7 +136,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, Void> {
                 .buildFeedMetadata(UUID.randomUUID().toString(), searchTitle, searchDescription,
                                    "http://www.regards.com/opensearch-description.xml", context, page);
         feed.setEntries(page.getContent().stream()
-                .map(e -> OpenSearchResponseBuilder.buildFeedAtomEntry(feed, e, gson))
+                .map(e -> OpenSearchResponseBuilder.buildFeedAtomEntry(feed, e, OffsetDateTime.now(),
+                                                                       OffsetDateTime.now(), gson))
                 .collect(Collectors.toList()));
         return feed;
     }

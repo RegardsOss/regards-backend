@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.module.impl;
+package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.regards.impl;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,7 +31,7 @@ import com.rometools.rome.io.ModuleGenerator;
 
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.module.RegardsModule;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.regards.RegardsModule;
 
 /**
  * com.rometools.rome module generator to handle specifics regards model attributes.
@@ -61,8 +61,6 @@ public class RegardsModuleGenerator implements ModuleGenerator {
     private static final String TAGS = "tags";
 
     private static final String TYPE = "type";
-
-    private static final String GEO = "geometry";
 
     static {
         final Set<Namespace> nss = new HashSet<Namespace>();
@@ -97,7 +95,6 @@ public class RegardsModuleGenerator implements ModuleGenerator {
         addStandardElement(element, SIPID, entity.getSipId(), regardsModule.getGsonBuilder());
         addStandardElement(element, TAGS, entity.getTags(), regardsModule.getGsonBuilder());
         addStandardElement(element, TYPE, entity.getType(), regardsModule.getGsonBuilder());
-        addStandardElement(element, GEO, entity.getGeometry(), regardsModule.getGsonBuilder());
         regardsModule.getEntity().getProperties().stream().forEach(property -> element
                 .addContent(generateAttributeElement(property, regardsModule.getGsonBuilder())));
 

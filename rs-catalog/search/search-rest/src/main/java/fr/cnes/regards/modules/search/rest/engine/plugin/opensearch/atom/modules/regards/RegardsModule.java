@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.module;
+package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.regards;
 
 import com.rometools.rome.feed.module.Module;
 
