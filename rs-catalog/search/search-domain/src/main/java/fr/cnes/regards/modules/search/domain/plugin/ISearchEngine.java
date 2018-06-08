@@ -27,8 +27,12 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 /**
  * Search engine plugin contract
  * @author Marc Sordi
+ *
+ * @param R search result type
+ * @param E extra result type
+ * @param T single entity type
  */
-public interface ISearchEngine<T, E> {
+public interface ISearchEngine<R, E, T> {
 
     /**
      * Check if plugin supports the required search type. A plugin may support several search types.
@@ -38,7 +42,7 @@ public interface ISearchEngine<T, E> {
     /**
      * Engine search method
      */
-    ResponseEntity<T> search(SearchContext context) throws ModuleException;
+    ResponseEntity<R> search(SearchContext context) throws ModuleException;
 
     /**
      * Parse query parameters and transform to {@link ICriterion} (available for all search method)<br/>
@@ -55,4 +59,9 @@ public interface ISearchEngine<T, E> {
     default ResponseEntity<E> extra(SearchContext context) throws ModuleException {
         throw new UnsupportedOperationException("Additional path handling not supported");
     }
+
+    /**
+     * Retrieve a single entity from its URN ({@link SearchContext#getUrn()})
+     */
+    ResponseEntity<T> getEntity(SearchContext context) throws ModuleException;
 }

@@ -28,6 +28,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.MultiValueMap;
 
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+
 /**
  * Search context for search engine.<br/>
  * Use {@link #build(SearchType, String, HttpHeaders, MultiValueMap, Pageable)} to initialize a new context.<br/>
@@ -51,6 +53,11 @@ public class SearchContext {
     private String engineType;
 
     /**
+     * Optional path parameter to retrieve a single entity idenfied by this URN
+     */
+    private UniformResourceName urn;
+
+    /**
      * Optional path parameter representing dataset identifier for data object search on this specified dataset
      */
     private String datasetId;
@@ -70,13 +77,11 @@ public class SearchContext {
     /**
      * Request query parameters
      */
-    @NotNull(message = "Query parameters is required")
     private MultiValueMap<String, String> queryParams;
 
     /**
      * Pagination properties
      */
-    @NotNull(message = "Pagination properties is required")
     private Pageable pageable;
 
     public SearchType getSearchType() {
@@ -93,6 +98,14 @@ public class SearchContext {
 
     public void setEngineType(String engineType) {
         this.engineType = engineType;
+    }
+
+    public Optional<UniformResourceName> getUrn() {
+        return Optional.ofNullable(urn);
+    }
+
+    public void setUrn(UniformResourceName urn) {
+        this.urn = urn;
     }
 
     public Optional<String> getDatasetId() {
@@ -147,6 +160,14 @@ public class SearchContext {
         context.setQueryParams(queryParams);
         context.setPageable(pageable);
         return context;
+    }
+
+    /**
+     * Fluent API
+     */
+    public SearchContext withUrn(UniformResourceName urn) {
+        this.setUrn(urn);
+        return this;
     }
 
     /**

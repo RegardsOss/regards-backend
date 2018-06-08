@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
+import java.util.Arrays;
+
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -63,7 +65,8 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
 
         customizer.customizeRequestParam().param("page", "0");
         customizer.customizeRequestParam().param("size", "2");
-        performDefaultGet(SearchEngineController.TYPE_MAPPING, customizer, "Search all error", ENGINE_TYPE);
+        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_ALL_MAPPING, customizer,
+                          "Search all error", ENGINE_TYPE);
     }
 
     @Test

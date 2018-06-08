@@ -81,11 +81,15 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
         // Debugging
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Handling request for engine : {}", context.getEngineType());
+            LOGGER.debug("Search type : {}", context.getSearchType());
             if (context.getDatasetId().isPresent()) {
                 LOGGER.debug("Searching data objects on dataset : {}", context.getDatasetId().get());
             }
             if (context.getExtra().isPresent()) {
                 LOGGER.debug("Handling request extra path : {}", context.getExtra().get());
+            }
+            if (context.getUrn().isPresent()) {
+                LOGGER.debug("Getting entity with URN : {}", context.getUrn().get().toString());
             }
             context.getHeaders().forEach((key, values) -> LOGGER.debug("Header : {} -> {}", key, values.toString()));
             context.getQueryParams()
@@ -94,9 +98,11 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
         }
 
         // Retrieve search engine plugin from search context
-        ISearchEngine<?, ?> engine = getSearchEngine(context);
+        ISearchEngine<?, ?, ?> engine = getSearchEngine(context);
         if (context.getExtra().isPresent()) {
             return (ResponseEntity<T>) engine.extra(context);
+        } else if (context.getUrn().isPresent()) {
+            return (ResponseEntity<T>) engine.getEntity(context);
         } else {
             return (ResponseEntity<T>) engine.search(context);
         }
@@ -104,9 +110,9 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
 
     // FIXME Retrieve search engine plugin from search context
     // This implementation is only for testing purpose
-    private ISearchEngine<?, ?> getSearchEngine(SearchContext context) throws ModuleException {
+    private ISearchEngine<?, ?, ?> getSearchEngine(SearchContext context) throws ModuleException {
 
-        ISearchEngine<?, ?> engine;
+        ISearchEngine<?, ?, ?> engine;
         if ("legacy".equals(context.getEngineType())) {
             engine = new LegacySearchEngine();
         } else if ("opensearch".equals(context.getEngineType())) {

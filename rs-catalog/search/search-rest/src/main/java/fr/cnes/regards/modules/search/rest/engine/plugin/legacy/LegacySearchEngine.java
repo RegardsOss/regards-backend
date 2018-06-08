@@ -26,6 +26,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 
@@ -33,7 +34,9 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
+import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
@@ -52,7 +55,8 @@ import fr.cnes.regards.modules.search.service.ICatalogSearchService;
  */
 @Plugin(id = "legacy", author = "REGARDS Team", contact = "regards@c-s.fr", description = "Legacy search engine",
         licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss", version = "1.0.0")
-public class LegacySearchEngine implements ISearchEngine<FacettedPagedResources<Resource<AbstractEntity>>, Void> {
+public class LegacySearchEngine
+        implements ISearchEngine<FacettedPagedResources<Resource<AbstractEntity>>, Void, Resource<AbstractEntity>> {
 
     /**
      * Query parameter for facets
@@ -106,6 +110,7 @@ public class LegacySearchEngine implements ISearchEngine<FacettedPagedResources<
         // Extract facets
         List<String> facets = context.getQueryParams().get(FACETS);
         // Do business search
+        // TODO manage datasetId path parameter as criterion
         FacetPage<AbstractEntity> facetPage = searchService.search(criterion, context.getSearchType(), facets,
                                                                    context.getPageable());
         // Build and return HATEOAS response
@@ -157,5 +162,20 @@ public class LegacySearchEngine implements ISearchEngine<FacettedPagedResources<
         if (link != null) {
             resource.add(link);
         }
+    }
+
+    @Override
+    public ResponseEntity<Resource<AbstractEntity>> getEntity(SearchContext context) throws ModuleException {
+        // Retrieve entity
+        AbstractEntity entity = searchService.get(context.getUrn().get());
+        // Prepare resource according to its type
+        Resource<AbstractEntity> resource;
+        if (EntityType.DATASET.name().equals(entity.getType())) {
+            // TODO manage dataset links with DatasetLinkAdder
+            resource = resourceService.toResource((Dataset) entity);
+        } else {
+            resource = resourceService.toResource(entity);
+        }
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 }
