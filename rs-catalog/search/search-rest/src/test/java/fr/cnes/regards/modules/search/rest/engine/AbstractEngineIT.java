@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
+import java.net.URI;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,8 +29,11 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MimeType;
 
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.entities.domain.Collection;
@@ -37,6 +42,7 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.attribute.builder.AttributeBuilder;
 import fr.cnes.regards.modules.entities.gson.MultitenantFlattenedAttributeAdapterFactory;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
+import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.models.domain.Model;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
@@ -75,6 +81,10 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     protected static final String PLANET_TYPE_ICE_GIANT = "Ice giant";
 
     protected static final String PLANET_TYPE_TELLURIC = "Telluric";
+
+    private static final String START_DATE = "startDate";
+
+    private static final String STOP_DATE = "stopDate";
 
     @Autowired
     protected ModelService modelService;
@@ -149,6 +159,7 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         sun.addProperty(AttributeBuilder.buildString(STAR, "Sun"));
         sun.addProperty(AttributeBuilder.buildString(ABSTRACT,
                                                      "The Sun is the star at the center of the Solar System."));
+        sun.setGeometry(IGeometry.point(IGeometry.position(50.0, 30.0)));
         return Arrays.asList(sun);
     }
 
@@ -163,6 +174,21 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         DataObject mercury = new DataObject(planetModel, getDefaultTenant(), "Mercury");
         mercury.addProperty(AttributeBuilder.buildString(PLANET, "Mercury"));
         mercury.addProperty(AttributeBuilder.buildString(PLANET_TYPE, PLANET_TYPE_TELLURIC));
+        mercury.addProperty(AttributeBuilder.buildDate(START_DATE, OffsetDateTime.now()));
+        mercury.addProperty(AttributeBuilder.buildDate(STOP_DATE, OffsetDateTime.now().plusMonths(36)));
+        DataFile quicklook = new DataFile();
+        quicklook.setMimeType(MimeType.valueOf("application/jpg"));
+        quicklook.setUri(URI.create("http://regards/le_quicklook.jpg"));
+        quicklook.setImageWidth(100);
+        quicklook.setImageHeight(100);
+        mercury.getFiles().put(DataType.QUICKLOOK_SD, quicklook);
+
+        DataFile thumbnail = new DataFile();
+        thumbnail.setMimeType(MimeType.valueOf("application/png"));
+        thumbnail.setUri(URI.create("http://regards/thumbnail.png"));
+        thumbnail.setImageWidth(250);
+        thumbnail.setImageHeight(250);
+        mercury.getFiles().put(DataType.THUMBNAIL, thumbnail);
 
         return Arrays.asList(mercury);
     }

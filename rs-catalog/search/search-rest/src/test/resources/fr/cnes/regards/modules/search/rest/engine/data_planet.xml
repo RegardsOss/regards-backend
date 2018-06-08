@@ -9,6 +9,16 @@
 		<type>STRING</type>
 	</attribute>
 	<attribute>
+		<label>Start date</label>
+		<name>startDate</name>
+		<type>DATE_ISO8601</type>
+	</attribute>
+	<attribute>
+		<label>Stop date</label>
+		<name>stopDate</name>
+		<type>DATE_ISO8601</type>
+	</attribute>
+	<attribute>
 		<label>Planet type</label>
 		<name>planet_type</name>
 		<type>STRING</type>

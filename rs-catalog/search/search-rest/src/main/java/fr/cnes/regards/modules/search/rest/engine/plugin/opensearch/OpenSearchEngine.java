@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch;
 
-import java.sql.Date;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,17 +35,12 @@ import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import com.rometools.modules.opensearch.OpenSearchModule;
-import com.rometools.modules.opensearch.entity.OSQuery;
-import com.rometools.modules.opensearch.impl.OpenSearchModuleImpl;
-import com.rometools.rome.feed.atom.Link;
-import com.rometools.rome.feed.module.Module;
+import com.rometools.rome.feed.atom.Feed;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
@@ -54,6 +49,7 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownPar
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.OpenSearchResponseBuilder;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 
 /**
@@ -91,6 +87,16 @@ public class OpenSearchEngine implements ISearchEngine<Object, Void, Object> {
     @Autowired
     protected ICatalogSearchService searchService;
 
+    @PluginParameter(name = "searchTitle", label = "Title of responses associated to this search engine",
+            description = "Search title for response metadatas. Used to construct metadatas for atom+xml and geo+json responses.",
+            defaultValue = "Open search engire title")
+    private String searchTitle;
+
+    @PluginParameter(name = "searchDescription", label = "Description of responses associated to this search engine",
+            description = "Description for response metadatas. Used to construct metadatas for atom+xml and geo+json responses.",
+            defaultValue = "Open search engire description")
+    private String searchDescription;
+
     @PluginParameter(name = OpenSearchEngine.PARAMETERS_CONFIGURATION_PARAM, label = "Open search available parameters",
             keylabel = "Parameter name")
     private final List<OpenSearchParameterConfiguration> parameters = Lists.newArrayList();
@@ -119,72 +125,26 @@ public class OpenSearchEngine implements ISearchEngine<Object, Void, Object> {
 
     private Object formatResponse(FacetPage<AbstractEntity> page, SearchContext context) {
         if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_ATOM_XML)) {
-            return formatAtomResponseRome(page);
+            return formatAtomResponseRome(context, page);
         } else {
             return formatGeoJsonResponse(page);
         }
     }
 
-    private Object formatGeoJsonResponse(FacetPage<AbstractEntity> page) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    private Object formatAtomResponseRome(FacetPage<AbstractEntity> page) {
-        com.rometools.rome.feed.atom.Feed feed = new com.rometools.rome.feed.atom.Feed("atom_1.0");
-
-        feed.setId("id1234");
-        feed.setTitle("Concretepage.com");
-        List<Link> links = new ArrayList<>();
-        Link link = new Link();
-        link.setHref("http://www.concretepage.com");
-        links.add(link);
-        feed.setAlternateLinks(links);
-        feed.setEntries(page.getContent().stream().map(this::buildFeedAtomEntry).collect(Collectors.toList()));
-
-        // Add the opensearch module, you would get information like totalResults from the
-        // return results of your search
-        List<Module> mods = feed.getModules();
-        OpenSearchModule osm = new OpenSearchModuleImpl();
-        osm.setItemsPerPage(1);
-        osm.setStartIndex(1);
-        osm.setTotalResults(1024);
-        osm.setItemsPerPage(50);
-
-        OSQuery query = new OSQuery();
-        query.setRole("superset");
-        query.setSearchTerms("Java Syndication");
-        query.setStartPage(1);
-        osm.addQuery(query);
-
-        Link link2 = new Link();
-        link2.setHref("http://www.bargainstriker.com/opensearch-description.xml");
-        link2.setType("application/opensearchdescription+xml");
-        osm.setLink(link2);
-
-        mods.add(osm);
-
-        feed.setModules(mods);
-
+    private Object formatAtomResponseRome(SearchContext context, FacetPage<AbstractEntity> page) {
+        Feed feed = OpenSearchResponseBuilder
+                .buildFeedMetadata(UUID.randomUUID().toString(), searchTitle, searchDescription,
+                                   "http://www.regards.com/opensearch-description.xml", context, page);
+        feed.setEntries(page.getContent().stream()
+                .map(e -> OpenSearchResponseBuilder.buildFeedAtomEntry(feed, e, OffsetDateTime.now(),
+                                                                       OffsetDateTime.now(), gson))
+                .collect(Collectors.toList()));
         return feed;
     }
 
-    private com.rometools.rome.feed.atom.Entry buildFeedAtomEntry(AbstractEntity entity) {
-        com.rometools.rome.feed.atom.Entry entry = new com.rometools.rome.feed.atom.Entry();
-        entry.setId(entity.getIpId().toString());
-        if (entity.getCreationDate() != null) {
-            entry.setPublished(Date.valueOf(entity.getCreationDate().toLocalDate()));
-        }
-        entry.setTitle(entity.getLabel());
-        entry.setForeignMarkup(entity.getProperties().stream().map(this::buildContentAttributeRome)
-                .collect(Collectors.toList()));
-        return entry;
-    }
-
-    private Element buildContentAttributeRome(AbstractAttribute<?> att) {
-        Element element = new Element(att.getName());
-        element.addContent(gson.toJson(att.getValue()));
-        return element;
+    private Object formatGeoJsonResponse(FacetPage<AbstractEntity> page) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @Override

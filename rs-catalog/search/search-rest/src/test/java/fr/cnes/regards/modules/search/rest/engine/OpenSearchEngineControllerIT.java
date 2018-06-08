@@ -52,6 +52,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
 
         // customizer.customizeHeaders().setContentType(MediaType.APPLICATION_ATOM_XML);
         // customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
@@ -59,7 +60,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         // customizer.customizeRequestParam().param("facets", "toto", "titi");
 
         customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "2");
+        customizer.customizeRequestParam().param("size", "10");
         performDefaultGet(SearchEngineController.TYPE_MAPPING, customizer, "Search all error", ENGINE_TYPE);
     }
 
