@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -22,6 +22,11 @@ package fr.cnes.regards.framework.utils.plugins;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.reflections.Reflections;
 
 /**
  *
@@ -30,6 +35,16 @@ import java.lang.reflect.Modifier;
  * @author Christophe Mertz
  */
 public final class ReflectionUtils {
+
+    private static Reflections reflections = new Reflections("fr.cnes.regards");
+
+    public static Reflections getReflections() {
+        return reflections;
+    }
+
+    public static void setReflections(Reflections reflections) {
+        ReflectionUtils.reflections = reflections;
+    }
 
     /**
      * A private constructor
@@ -42,13 +57,13 @@ public final class ReflectionUtils {
      *
      * Make a field accessible
      *
-     * @param pField
+     * @param field
      *            the field to check
      */
-    public static void makeAccessible(final Field pField) {
-        if ((!Modifier.isPublic(pField.getModifiers()) || !Modifier.isPublic(pField.getDeclaringClass().getModifiers())
-                || Modifier.isFinal(pField.getModifiers())) && !pField.isAccessible()) {
-            pField.setAccessible(true);
+    public static void makeAccessible(Field field) {
+        if ((!Modifier.isPublic(field.getModifiers()) || !Modifier.isPublic(field.getDeclaringClass().getModifiers())
+                || Modifier.isFinal(field.getModifiers())) && !field.isAccessible()) {
+            field.setAccessible(true);
         }
     }
 
@@ -56,15 +71,38 @@ public final class ReflectionUtils {
      *
      * Make a method accessible
      *
-     * @param pMethod
+     * @param method
      *            the field to check
      */
-    public static void makeAccessible(final Method pMethod) {
-        if ((!Modifier.isPublic(pMethod.getModifiers())
-                || !Modifier.isPublic(pMethod.getDeclaringClass().getModifiers())
-                || Modifier.isFinal(pMethod.getModifiers())) && !pMethod.isAccessible()) {
-            pMethod.setAccessible(true);
+    public static void makeAccessible(Method method) {
+        if ((!Modifier.isPublic(method.getModifiers()) || !Modifier.isPublic(method.getDeclaringClass().getModifiers())
+                || Modifier.isFinal(method.getModifiers())) && !method.isAccessible()) {
+            method.setAccessible(true);
         }
+    }
+
+    /**
+     * Retrieve all declared fields of the class including inherited ones
+     */
+    public static List<Field> getAllDeclaredFields(Class<?> clazz) {
+        List<Field> fields = new ArrayList<>();
+        fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+        if (clazz.getSuperclass() != null) {
+            fields.addAll(getAllDeclaredFields(clazz.getSuperclass()));
+        }
+        return fields;
+    }
+
+    /**
+     * Retrieve all declared methods of the class including inherited ones
+     */
+    public static List<Method> getAllDeclaredMethods(Class<?> clazz) {
+        List<Method> methods = new ArrayList<>();
+        methods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+        if (clazz.getSuperclass() != null) {
+            methods.addAll(getAllDeclaredMethods(clazz.getSuperclass()));
+        }
+        return methods;
     }
 
 }

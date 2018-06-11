@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -158,7 +158,8 @@ public class CycleDetectionTest {
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_ACTIVE, true)
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_COEF, 12345)
-                .addParameter(SamplePluginWithPojo.FIELD_NAME_POJO, pojoParent).getParameters();
+                .addParameter(SamplePluginWithPojo.FIELD_NAME_POJO, pojoParent)
+                .addParameter(SamplePluginWithPojo.FIELD_NAME_SUFFIX, "suffix").getParameters();
 
         // instantiate plugin
         SamplePluginWithPojoWithSet samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojoWithSet.class,

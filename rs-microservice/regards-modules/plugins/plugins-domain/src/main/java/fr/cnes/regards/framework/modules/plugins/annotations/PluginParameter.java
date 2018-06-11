@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -69,9 +69,23 @@ public @interface PluginParameter {
     String label();
 
     /**
+     * Description may contain a <b>text</b> or a <b>markdown file reference (ending with .md extension)</b>. If so,
+     * file must be
+     * available in the same package as
+     * the plugin.
+     *
      * @return an optional further human readable information if the label is not explicit enough!
      */
     String description() default "";
+
+    /**
+     * Markdown file reference ending with .md extension. If not, information is skipped! If set, file must be available
+     * in the
+     * same package as the plugin.<br/>
+     * The system uses {@link Class#getResourceAsStream(String)} to load the file.
+     * @return
+     */
+    String markdown() default "";
 
     /**
      * Plugin parameter default value.
@@ -86,4 +100,10 @@ public @interface PluginParameter {
      * @return true if the plugin parameter is mandatory.
      */
     boolean optional() default false;
+
+    /**
+     * Is the plugin parameter configurable by the users?
+     * @return true if the plugin parameter is not configurable by users
+     */
+    boolean unconfigurable() default false;
 }

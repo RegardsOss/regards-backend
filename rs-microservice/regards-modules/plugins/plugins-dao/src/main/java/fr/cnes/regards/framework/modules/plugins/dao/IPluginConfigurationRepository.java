@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -45,6 +45,14 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
      */
     List<PluginConfiguration> findByPluginIdOrderByPriorityOrderDesc(String pPluginId);
 
+    /**
+     * Find a {@link List} of active {@link PluginConfiguration} for a plugin
+     *
+     * @param pPluginId the plugin identifier
+     * @return a {@link List} of active {@link PluginConfiguration}
+     */
+    List<PluginConfiguration> findByPluginIdAndActiveTrueOrderByPriorityOrderDesc(String pPluginId);
+
     @Query("from PluginConfiguration pc join fetch pc.parameters where parent_conf_id=:id")
     PluginConfiguration findOneWithPluginParameter(@Param("id") Long pId);
 
@@ -62,6 +70,8 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
      */
     @EntityGraph(attributePaths = { "parameters", "parameters.dynamicsValues" })
     PluginConfiguration findById(Long id);
+
+    List<PluginConfiguration> findByParametersPluginConfiguration(PluginConfiguration plgConf);
 
     @Override
     @Modifying

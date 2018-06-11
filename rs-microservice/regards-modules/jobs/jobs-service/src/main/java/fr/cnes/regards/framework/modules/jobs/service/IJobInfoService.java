@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -57,6 +57,13 @@ public interface IJobInfoService {
     JobInfo save(JobInfo jobInfo);
 
     /**
+     * Unlock job info, make it candidate for cleaning
+     * @param jobInfo
+     * @return the update job info
+     */
+    JobInfo unlock(JobInfo jobInfo);
+
+    /**
      * @return all jobs
      */
     List<JobInfo> retrieveJobs();
@@ -82,4 +89,20 @@ public interface IJobInfoService {
      * Update jobInfos completion ie percentCompleted and estimatedCompletion date
      */
     void updateJobInfosCompletion(Iterable<JobInfo> jobInfos);
+
+    /**
+     * On all tenants, remove out-of-date jobs ie :
+     * - expired jobs
+     * - terminated on success jobs several days ago
+     * - terminated on error jobs several days ago
+     */
+    void cleanOutOfDateJobs();
+
+    /**
+     * On one tenant, remove out-of-date jobs ie :
+     * - expired jobs
+     * - terminated on success jobs several days ago
+     * - terminated on error jobs several days ago
+     */
+    void cleanOutOfDateJobsOnTenant();
 }

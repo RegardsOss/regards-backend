@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,7 +19,7 @@
 package fr.cnes.regards.framework.security.endpoint;
 
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -84,8 +84,7 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
     private List<ResourceMapping> resources = new ArrayList<>();
 
     @Override
-    public List<ResourceMapping> registerEndpoints(String microserviceName, String tenant,
-            final List<ResourceMapping> pLocalEndpoints) {
+    public void registerEndpoints(String microserviceName, String tenant, final List<ResourceMapping> pLocalEndpoints) {
         LOG.warn("No authority provider defined. Default one is used."
                 + " The local endpoints are not registered to administration service. Only the default configuration is available");
         if (authorities != null) {
@@ -106,7 +105,6 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
             }
         });
         resources = pLocalEndpoints;
-        return pLocalEndpoints;
     }
 
     @Override

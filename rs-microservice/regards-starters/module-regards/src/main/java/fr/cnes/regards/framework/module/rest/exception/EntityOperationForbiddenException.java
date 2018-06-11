@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -29,9 +29,9 @@ package fr.cnes.regards.framework.module.rest.exception;
 public class EntityOperationForbiddenException extends EntityException {
 
     public EntityOperationForbiddenException(final String entityIdentifier, final Class<?> entityClass,
-            final String pMessage) {
+            final String message) {
         super(String.format("Operation on entity \"%s\" with id: \"%s\" is forbidden: %s", entityClass.getName(),
-                            entityIdentifier, pMessage));
+                            entityIdentifier, message));
     }
 
     public EntityOperationForbiddenException(String message) {

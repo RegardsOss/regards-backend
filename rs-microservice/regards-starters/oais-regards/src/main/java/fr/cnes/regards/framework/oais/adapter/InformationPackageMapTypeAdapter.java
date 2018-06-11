@@ -23,7 +23,8 @@ import com.google.gson.stream.JsonWriter;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterBean;
 
 /**
- * Hack Gson to deserialize long as longs and not double when no structure is given. {@link InformationPackageMapTypeAdapter#read(JsonReader)} is greatly inspired from {@link com.google.gson.internal.bind.ObjectTypeAdapter}
+ * Hack Gson to deserialize long as longs and not double when no structure is given.
+ * {@link InformationPackageMapTypeAdapter#read(JsonReader)} is greatly inspired from {@link com.google.gson.internal.bind.ObjectTypeAdapter}
  *
  * @author Sylvain VISSIERE-GUERINET
  */

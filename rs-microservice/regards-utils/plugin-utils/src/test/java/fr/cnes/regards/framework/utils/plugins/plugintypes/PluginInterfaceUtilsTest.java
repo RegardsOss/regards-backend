@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginInterfaceUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.ReflectionUtils;
 import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants;
 
 /**
@@ -94,6 +96,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     public void loadPluginsInterfaceEmpty() {
         LOGGER.debug(STARTING + toString());
         // Get all the plugin interfaces
+        ReflectionUtils.setReflections(new Reflections(PLUGIN_EMPTY_PACKAGE));
         final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(PLUGIN_EMPTY_PACKAGE);
         Assert.assertNotNull(pluginInterfaces);
         Assert.assertTrue(pluginInterfaces.isEmpty());
@@ -107,6 +110,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     public void loadPluginsInterfaceSeveralPrefix() {
         LOGGER.debug(STARTING + toString());
         // Get all the plugin interfaces
+        ReflectionUtils.setReflections(new Reflections(PLUGIN_CURRENT_PACKAGE));
         final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(Arrays.asList(PLUGIN_CURRENT_PACKAGE));
         Assert.assertNotNull(pluginInterfaces);
         pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
@@ -121,6 +125,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     public void loadNoPluginsInterfaceSeveralPrefix() {
         LOGGER.debug(STARTING + toString());
         // Get all the plugin interfaces
+        ReflectionUtils.setReflections(new Reflections(PLUGIN_EMPTY_PACKAGES));
         final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(PLUGIN_EMPTY_PACKAGES);
         Assert.assertNotNull(pluginInterfaces);
         Assert.assertTrue(pluginInterfaces.isEmpty());
@@ -136,6 +141,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     public void getComplexPlugin() {
         final ComplexPlugin complexPlugin;
         LOGGER.debug(STARTING + toString());
+        ReflectionUtils.setReflections(new Reflections(PLUGIN_CURRENT_PACKAGE));
         /*
          * Set all parameters
          */

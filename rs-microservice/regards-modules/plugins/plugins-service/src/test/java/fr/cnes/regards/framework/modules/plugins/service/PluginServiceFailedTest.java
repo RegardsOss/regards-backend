@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -35,7 +36,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.plugins.IComplexInterfacePlugin;
 import fr.cnes.regards.framework.plugins.INotInterfacePlugin;
-import fr.cnes.regards.framework.plugins.SamplePlugin;
+import fr.cnes.regards.framework.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
@@ -101,22 +102,9 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      *
      * @throws ModuleException throw if an error occurs
      */
-    @Test(expected = ModuleException.class)
-    public void saveANullPluginConfiguration() throws ModuleException {
+    @Test(expected = EntityInvalidException.class)
+    public void saveANullPluginConfiguration() throws EntityInvalidException {
         pluginServiceMocked.savePluginConfiguration(null);
-        Assert.fail();
-    }
-
-    /**
-     * Save a {@link PluginConfiguration} without pluginId attribute.
-     *
-     * @throws ModuleException throw if an error occurs
-     */
-    @Test(expected = ModuleException.class)
-    public void saveAPluginConfigurationWithoutPluginId() throws ModuleException {
-        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
-        aPluginConfiguration.setPluginId(null);
-        pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);
         Assert.fail();
     }
 
@@ -125,8 +113,8 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      *
      * @throws ModuleException throw if an error occurs
      */
-    @Test(expected = ModuleException.class)
-    public void saveAPluginConfigurationWithoutPriorityOrder() throws ModuleException {
+    @Test(expected = EntityInvalidException.class)
+    public void saveAPluginConfigurationWithoutPriorityOrder() throws EntityInvalidException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setPriorityOrder(null);
         pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);
@@ -138,10 +126,10 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      *
      * @throws ModuleException throw if an error occurs
      */
-    @Test(expected = ModuleException.class)
-    public void saveAPluginConfigurationWithoutVersion() throws ModuleException {
+    @Test(expected = EntityInvalidException.class)
+    public void saveAPluginConfigurationWithoutVersion() throws EntityInvalidException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
-        aPluginConfiguration.setVersion(null);
+        aPluginConfiguration.setVersion("bad");
         pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);
         Assert.fail();
     }
@@ -197,7 +185,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      *
      * @throws ModuleException throw if an error occurs
      */
-    @Test
+    @Test(expected = CannotInstanciatePluginException.class)
     public void getAPluginWithBadVersionConfiguration() throws ModuleException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
@@ -212,10 +200,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId()))
                 .thenReturn(aPluginConfiguration);
 
-        final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
-
-        Assert.assertNotNull(aSamplePlugin);
-        Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(RED));
+        pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
     }
 
     /**

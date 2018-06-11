@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -104,8 +104,6 @@ public class JobControllerIT extends AbstractRegardsIT {
                                                         Matchers.hasToString(aJob.getClassName())));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".status.status",
                                                         Matchers.hasToString(aJob.getStatus().getStatus().name())));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".status.description",
-                                                        Matchers.hasToString(aJob.getDescription())));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS, Matchers.notNullValue()));
 
         performGet(JobController.JOBS + "/{jobId}", token, requestBuilderCustomizer,

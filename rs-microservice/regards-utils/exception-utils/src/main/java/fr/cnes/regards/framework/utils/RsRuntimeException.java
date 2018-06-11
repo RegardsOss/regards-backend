@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -26,5 +26,9 @@ public class RsRuntimeException extends RuntimeException {
 
     public RsRuntimeException(Throwable cause) {
         super(cause);
+    }
+
+    public RsRuntimeException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

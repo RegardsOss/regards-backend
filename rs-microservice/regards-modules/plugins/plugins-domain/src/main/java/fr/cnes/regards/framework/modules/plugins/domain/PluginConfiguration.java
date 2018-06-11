@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,6 +19,11 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
+import java.net.URL;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -35,10 +40,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
-import java.net.URL;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
@@ -46,10 +47,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
+
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
@@ -58,8 +59,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
  * @author oroussel
  */
 @Entity
-@Table(name = "t_plugin_configuration", indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
-        @Index(name = "idx_plugin_configuration_label", columnList = "label") },
+@Table(name = "t_plugin_configuration",
+        indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
+                @Index(name = "idx_plugin_configuration_label", columnList = "label") },
         uniqueConstraints = @UniqueConstraint(name = "uk_plugin_configuration_label", columnNames = { "label" }))
 @SequenceGenerator(name = "pluginConfSequence", initialValue = 1, sequenceName = "seq_plugin_conf")
 public class PluginConfiguration implements IIdentifiable<Long> {
@@ -77,6 +79,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Unique id
      */
+    @ConfigIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pluginConfSequence")
     private Long id;
@@ -84,32 +87,34 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Unique identifier of the plugin. This id is the id defined in the "@Plugin" annotation of the plugin
      * implementation class.
+     * <b>DO NOT SET @NotNull even if pluginId must not be null. Validation is done between front and back but at
+     * creation, pluginId is retrieved from plugin metadata and thus set by back</b>
      */
     @Column(nullable = false)
-    @NotNull
     private String pluginId;
 
     /**
      * Label to identify the configuration.
      */
-    @NotBlank
+    @NotBlank(message = "the label cannot be blank")
     @Column(name = "label", length = MAX_STRING_LENGTH)
     private String label;
 
     /**
      * Version of the plugin configuration. Is set with the plugin version. This attribute is used to check if the saved
      * configuration plugin version differs from the loaded plugin.
+     * <b>DO NOT SET @NotNull even if version must not be null. Validation is done between front and back but at
+     * creation, version is retrieved from plugin metadata and thus set by back</b>
      */
-    @NotNull
     @Column(nullable = false, updatable = true)
     private String version;
 
     /**
      * Priority order of the plugin.
      */
-    @NotNull
+    @NotNull(message = "the priorityOrder cannot be null")
     @Column(nullable = false, updatable = true)
-    private Integer priorityOrder;
+    private Integer priorityOrder = 0;
 
     /**
      * The plugin configuration is active.
@@ -126,14 +131,14 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     @Column(columnDefinition = "text")
     @Convert(converter = SetStringCsvConverter.class)
-    private Set<String> interfaceNames;
+    private Set<String> interfaceNames = Sets.newHashSet();
 
     /**
      * Configuration parameters of the plugin
      */
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "parent_conf_id", foreignKey = @ForeignKey(name = "fk_plg_conf_param_id"))
-    private List<PluginParameter> parameters;
+    private List<PluginParameter> parameters = Lists.newArrayList();
 
     /**
      * Icon of the plugin. It must be an URL to a svg file.
@@ -146,11 +151,6 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public PluginConfiguration() {
         super();
-        pluginId = "undefined";
-        priorityOrder = 0;
-        version = "0.0";
-        interfaceNames = Sets.newHashSet();
-        parameters = Lists.newArrayList();
     }
 
     /**
@@ -243,20 +243,13 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * @return the stripped value (no enclosing quotes)
      */
     public String getStripParameterValue(String parameterName) {
-        // Strip quotes using Gson
-        Gson gson = new Gson();
         String value = null;
         if (parameters != null) {
             Optional<PluginParameter> pluginParameter = parameters.stream()
                     .filter(s -> s.getName().equals(parameterName)).findFirst();
             if (pluginParameter.isPresent()) {
-                String tmp = pluginParameter.get().getValue();
-                if (tmp.startsWith("\"")) {
-                    JsonElement el = gson.fromJson(pluginParameter.get().getValue(), JsonElement.class);
-                    value = (el == null) ? null : el.getAsString();
-                } else {
-                    value = tmp;
-                }
+                // Strip quotes using Gson
+                return pluginParameter.get().getStripParameterValue();
             }
         }
         return value;
@@ -301,15 +294,15 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public void logParams() {
         LOGGER.info("===> parameters <===");
-        LOGGER.info(
-                "  ---> number of dynamic parameters : " + getParameters().stream().filter(p -> p.isDynamic()).count());
+        LOGGER.info("  ---> number of dynamic parameters : "
+                + getParameters().stream().filter(p -> p.isDynamic()).count());
 
         getParameters().stream().filter(p -> p.isDynamic()).forEach(p -> {
             logParam(p, "  ---> dynamic parameter : ");
         });
 
-        LOGGER.info("  ---> number of no dynamic parameters : " + getParameters().stream().filter(p -> !p.isDynamic())
-                .count());
+        LOGGER.info("  ---> number of no dynamic parameters : "
+                + getParameters().stream().filter(p -> !p.isDynamic()).count());
         getParameters().stream().filter(p -> !p.isDynamic()).forEach(p -> {
             logParam(p, "  ---> parameter : ");
         });

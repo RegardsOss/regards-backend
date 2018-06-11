@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -64,6 +64,43 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     void updateCompletion(int percentCompleted, OffsetDateTime estimatedCompletion, UUID id);
 
     Long countByStatusStatusIn(JobStatus... statuses);
+
+    /**
+     * Search jobs expired at given date (only unlocked)
+     */
+    List<JobInfo> findByExpirationDateLessThanAndLockedAndStatusStatusNotIn(OffsetDateTime expireDate, Boolean locked,
+            JobStatus... statuses);
+
+    /**
+     * Search currently expired jobs
+     */
+    default List<JobInfo> findExpiredJobs() {
+        return findByExpirationDateLessThanAndLockedAndStatusStatusNotIn(OffsetDateTime.now(), false, JobStatus.QUEUED,
+                                                                         JobStatus.TO_BE_RUN, JobStatus.RUNNING);
+    }
+
+    /**
+     * Search jobs with given status at given date (only unlocked)
+     */
+    @EntityGraph(attributePaths = { "parameters" })
+    List<JobInfo> findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime stopDate, Boolean locked,
+            JobStatus... statuses);
+
+    /**
+     * Search succeeded jobs since given number of days
+     */
+    default List<JobInfo> findSucceededJobsSince(int days) {
+        return findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime.now().minusDays((long) days),
+                                                                      false, JobStatus.SUCCEEDED);
+    }
+
+    /**
+     * Search failed and aborted jobs since given number of days
+     */
+    default List<JobInfo> findFailedOrAbortedJobsSince(int days) {
+        return findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime.now().minusDays((long) days), false,
+                                                                      JobStatus.FAILED, JobStatus.ABORTED);
+    }
 
     /**
      * Count all jobs that will be launched in the future and jobs that are currently running

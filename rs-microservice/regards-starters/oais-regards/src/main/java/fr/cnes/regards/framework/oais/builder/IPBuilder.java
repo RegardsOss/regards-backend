@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,15 +18,17 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import javax.annotation.Nullable;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
@@ -155,6 +157,15 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
      */
     public void addContentInformation() {
         ipPropertiesBuilder.addContentInformation();
+    }
+
+    /**
+     * Add a new entry in misc informations
+     * @param key
+     * @param value
+     */
+    public void addMiscInformation(String key, Object value) {
+        ipPropertiesBuilder.addMiscInformation(key, value);
     }
 
     /**
@@ -314,15 +325,15 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
     /**
      * Set the data object to the underlying content information builder thanks to the given parameters.
      * @param dataType
-     * @param url
      * @param filename
      * @param algorithm
      * @param checksum
      * @param fileSize
+     * @param urls
      */
-    public void setDataObject(DataType dataType, URL url, String filename, String algorithm, String checksum,
-            Long fileSize) {
-        ipPropertiesBuilder.setDataObject(dataType, url, filename, algorithm, checksum, fileSize);
+    public void setDataObject(DataType dataType, String filename, String algorithm, String checksum, Long fileSize,
+            URL... urls) {
+        ipPropertiesBuilder.setDataObject(dataType, filename, algorithm, checksum, fileSize, urls);
     }
 
     /**
@@ -407,7 +418,7 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
      * @param mimeDescription
      * @param mimeType
      */
-    public void setSyntax(String mimeName, String mimeDescription, String mimeType) {
+    public void setSyntax(String mimeName, String mimeDescription, MimeType mimeType) {
         ipPropertiesBuilder.setSyntax(mimeName, mimeDescription, mimeType);
     }
 
@@ -418,7 +429,7 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
      * @param mimeType
      * @param semanticDescription
      */
-    public void setSyntaxAndSemantic(String mimeName, String mimeDescription, String mimeType,
+    public void setSyntaxAndSemantic(String mimeName, String mimeDescription, MimeType mimeType,
             String semanticDescription) {
         ipPropertiesBuilder.setSyntaxAndSemantic(mimeName, mimeDescription, mimeType, semanticDescription);
     }

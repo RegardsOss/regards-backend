@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Observable;
@@ -28,6 +29,8 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobWorkspaceException;
+import fr.cnes.regards.framework.modules.jobs.domain.function.CheckedSupplier;
 
 /**
  * Abstract job, all jobs must inherit this class
@@ -65,8 +68,12 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
     }
 
     @Override
-    public void setWorkspace(Path pWorkspace) {
-        workspace = pWorkspace;
+    public void setWorkspace(CheckedSupplier<Path, IOException> workspaceSupplier) throws JobWorkspaceException {
+        try {
+            workspace = workspaceSupplier.get();
+        } catch (IOException e) {
+            handleWorkspaceException(e);
+        }
     }
 
     @Override
@@ -79,6 +86,16 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
         this.completion++;
         super.setChanged();
         super.notifyObservers((this.completion * 100) / getCompletionCount());
+    }
+
+    /**
+     * Reject a job because workspace has thrown an IOException
+     * @param e thrown exception while setting workspace
+     * @throws JobWorkspaceException
+     */
+    protected void handleWorkspaceException(IOException e) throws JobWorkspaceException {
+        logger.error("Cannot set workspace", e);
+        throw new JobWorkspaceException(e);
     }
 
     /**
@@ -101,6 +118,19 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
     protected void handleInvalidParameter(String parameterName, String reason) throws JobParameterInvalidException {
         String errorMessage = String.format("Invalid job parameter \"%s\" : \"%s\"", parameterName, reason);
         logger.error(errorMessage);
+        throw new JobParameterInvalidException(errorMessage);
+    }
+
+    /**
+     * Reject a job because <b>a parameter is invalid</b>
+     * @param parameterName related parameter
+     * @param reason reason for invalidity
+     * @throws JobParameterInvalidException the related exception
+     */
+    protected void handleInvalidParameter(String parameterName, Exception reason) throws JobParameterInvalidException {
+        String errorMessage = String
+                .format("Invalid job parameter \"%s\" : \"%s\"", parameterName, reason.getMessage());
+        logger.error(errorMessage, reason);
         throw new JobParameterInvalidException(errorMessage);
     }
 

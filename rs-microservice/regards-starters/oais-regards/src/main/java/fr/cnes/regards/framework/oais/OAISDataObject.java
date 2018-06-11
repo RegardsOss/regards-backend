@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,8 +20,10 @@ package fr.cnes.regards.framework.oais;
 
 import javax.validation.constraints.NotNull;
 import java.net.URL;
+import java.util.Set;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
@@ -45,8 +47,8 @@ public class OAISDataObject {
     /**
      * The url
      */
-    @NotNull(message = "Data file URL is required")
-    private URL url;
+    @NotEmpty(message = "Data file URL is required")
+    private Set<URL> urls;
 
     /**
      * The file name
@@ -104,16 +106,16 @@ public class OAISDataObject {
     /**
      * @return the url
      */
-    public URL getUrl() {
-        return url;
+    public Set<URL> getUrls() {
+        return urls;
     }
 
     /**
      * Set the url
-     * @param url
+     * @param urls
      */
-    public void setUrl(URL url) {
-        this.url = url;
+    public void setUrls(Set<URL> urls) {
+        this.urls = urls;
     }
 
     /**
@@ -175,7 +177,7 @@ public class OAISDataObject {
         if (regardsDataType != that.regardsDataType) {
             return false;
         }
-        if (url != null ? !url.equals(that.url) : that.url != null) {
+        if (urls != null ? !urls.equals(that.urls) : that.urls != null) {
             return false;
         }
         if (algorithm != null ? !algorithm.equals(that.algorithm) : that.algorithm != null) {
@@ -187,7 +189,7 @@ public class OAISDataObject {
     @Override
     public int hashCode() {
         int result = regardsDataType != null ? regardsDataType.hashCode() : 0;
-        result = (31 * result) + (url != null ? url.hashCode() : 0);
+        result = (31 * result) + (urls != null ? urls.hashCode() : 0);
         result = (31 * result) + (algorithm != null ? algorithm.hashCode() : 0);
         result = (31 * result) + (checksum != null ? checksum.hashCode() : 0);
         return result;

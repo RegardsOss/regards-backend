@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
  * @author Marc Sordi
  *
  */
-@Plugin(author = "REGARDS Team", description = "Plugin for plugin paramter type testing", id = "ParamTestPlugin",
+@Plugin(author = "REGARDS Team", description = "Plugin for plugin parameter type testing", id = "ParamTestPlugin",
         version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class ParamTestPlugin implements IParamTestPlugin {
@@ -73,6 +73,9 @@ public class ParamTestPlugin implements IParamTestPlugin {
 
     @PluginParameter(keylabel = "scMapKey", label = "Constraint map")
     private Map<String, Constraint> scMap;
+
+    @PluginParameter(keylabel = "innerPlugin", label = "innerPlugin")
+    private IParamTestPlugin innerPlugin;
 
     @Override
     public void doIt() {
@@ -236,4 +239,11 @@ public class ParamTestPlugin implements IParamTestPlugin {
         this.scMap = scMap;
     }
 
+    public IParamTestPlugin getInnerPlugin() {
+        return innerPlugin;
+    }
+
+    public void setInnerPlugin(IParamTestPlugin innerPlugin) {
+        this.innerPlugin = innerPlugin;
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -22,6 +22,7 @@ package fr.cnes.regards.framework.modules.plugins.service;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -41,11 +42,18 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 public interface IPluginService {
 
     /**
-     * Return all plugin types available.
+     * Return all plugin types detected.
      *
      * @return List<String>
      */
     List<String> getPluginTypes();
+
+    /**
+     * Return available plugin types i.e. all plugin types which at least one implementation is detected.
+     *
+     * @return available plugin types i.e. all plugin types which at least one implementation is detected.
+     */
+    Set<String> getAvailablePluginTypes();
 
     /**
      * Return all {@link PluginMetaData} available
@@ -126,9 +134,9 @@ public interface IPluginService {
      *
      * @param pluginConfiguration the plugin configuration to saved
      * @return the saved {@link PluginConfiguration}
-     * @throws ModuleException thrown if an error occurs
+     * @throws EntityInvalidException thrown if an error occurs
      */
-    PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConfiguration) throws ModuleException;
+    PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConfiguration) throws EntityInvalidException;
 
     /**
      * Delete a {@link PluginConfiguration}.
@@ -200,6 +208,13 @@ public interface IPluginService {
     List<PluginConfiguration> getPluginConfigurations(String pluginId);
 
     /**
+     * Get all active plugin's configurations for a specific plugin Id.
+     * @param pluginId a specific plugin Id
+     * @return all the active {@link PluginConfiguration} for a specific plugin Id
+     */
+    List<PluginConfiguration> getActivePluginConfigurations(final String pPluginId);
+
+    /**
      * Add a package to scan to find the plugins.
      *
      * @param pluginPackage A package name to scan to find the plugins.
@@ -253,6 +268,11 @@ public interface IPluginService {
      * @param confId configuration identifier
      */
     void cleanPluginCache(Long confId);
+
+    /**
+     * Remove all plugin instances from cache
+     */
+    void cleanPluginCache();
 
     /**
      * @return tenant plugin cache

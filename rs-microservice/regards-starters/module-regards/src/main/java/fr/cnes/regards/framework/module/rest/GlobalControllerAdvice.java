@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.framework.module.rest;
 
-import javax.validation.ValidationException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.validation.ValidationException;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -102,7 +103,7 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
  * @since 1.1-SNAPSHOT
  */
 @RestControllerAdvice(annotations = RestController.class)
-@Order(Ordered.LOWEST_PRECEDENCE - 100)
+@Order(Ordered.LOWEST_PRECEDENCE - 300)
 public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 
     /**

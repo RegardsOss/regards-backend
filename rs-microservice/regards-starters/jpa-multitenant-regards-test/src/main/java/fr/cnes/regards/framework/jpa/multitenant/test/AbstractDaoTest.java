@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -53,7 +53,7 @@ public abstract class AbstractDaoTest {
     protected EntityManager entityManager;
 
     @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    protected IRuntimeTenantResolver runtimeTenantResolver;
 
     protected void injectDefaultToken() {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);

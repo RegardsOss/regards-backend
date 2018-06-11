@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,12 +18,18 @@
  */
 package fr.cnes.regards.framework.modules.jobs.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.ImmutableList;
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -33,6 +39,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
  * @author oroussel
@@ -42,7 +50,22 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 public class JobInfoService implements IJobInfoService {
 
     @Autowired
+    private ITenantResolver tenantResolver;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Value("${regards.jobs.succeeded.retention.days:1}")
+    private int succeededJobsRetentionDays;
+
+    @Value("${regards.jobs.failed.retention.days:30}")
+    private int failedJobsRetentionDays;
+
+    @Autowired
     private IPublisher publisher;
+
+    @Autowired
+    private IJobInfoService self;
 
     /**
      * {@link JobInfo} JPA Repository
@@ -78,12 +101,18 @@ public class JobInfoService implements IJobInfoService {
 
     @Override
     public JobInfo createAsPending(JobInfo jobInfo) {
+        if (jobInfo.getId() != null) {
+            throw new IllegalArgumentException("Please use create method for creating, you dumb...");
+        }
         jobInfo.updateStatus(JobStatus.PENDING);
         return jobInfoRepository.save(jobInfo);
     }
 
     @Override
     public JobInfo createAsQueued(JobInfo jobInfo) {
+        if (jobInfo.getId() != null) {
+            throw new IllegalArgumentException("Please use create method for creating, you dumb...");
+        }
         jobInfo.updateStatus(JobStatus.QUEUED);
         return jobInfoRepository.save(jobInfo);
     }
@@ -97,6 +126,12 @@ public class JobInfoService implements IJobInfoService {
     }
 
     @Override
+    public JobInfo unlock(JobInfo jobInfo) {
+        jobInfo.setLocked(false);
+        return save(jobInfo);
+    }
+
+    @Override
     public void stopJob(UUID id) {
         publisher.publish(new StopJobEvent(id));
     }
@@ -105,8 +140,32 @@ public class JobInfoService implements IJobInfoService {
     public void updateJobInfosCompletion(Iterable<JobInfo> jobInfos) {
         for (JobInfo jobInfo : jobInfos) {
             JobStatusInfo status = jobInfo.getStatus();
-            jobInfoRepository
-                    .updateCompletion(status.getPercentCompleted(), status.getEstimatedCompletion(), jobInfo.getId());
+            jobInfoRepository.updateCompletion(status.getPercentCompleted(), status.getEstimatedCompletion(),
+                                               jobInfo.getId());
         }
+    }
+
+    @Override
+    @Scheduled(fixedDelayString = "${regards.jobs.out.of.date.cleaning.rate.ms:3600000}", initialDelay = 0)
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public void cleanOutOfDateJobs() {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            self.cleanOutOfDateJobsOnTenant();
+        }
+        runtimeTenantResolver.clearTenant();
+    }
+
+    @Override
+    public void cleanOutOfDateJobsOnTenant() {
+        Set<JobInfo> jobs = new HashSet<>();
+        // Add expired jobs
+        jobs.addAll(jobInfoRepository.findExpiredJobs());
+        // Add succeeded jobs since configured retention days
+        jobs.addAll(jobInfoRepository.findSucceededJobsSince(succeededJobsRetentionDays));
+        // Add failed or aborted jobs since configured retention days
+        jobs.addAll(jobInfoRepository.findFailedOrAbortedJobsSince(failedJobsRetentionDays));
+        // Remove all these jobs
+        jobInfoRepository.delete(jobs);
     }
 }

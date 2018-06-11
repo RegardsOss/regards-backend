@@ -6,29 +6,20 @@
 
   `{{method}}`
 
-* **Headers**
+* **Headers**:
 
+  `Authorization: Bearer {token}`
   {{#headers}}
-  `{{name}}: {{value}}`\
+  `{{name}}: {{value}}`
   {{/headers}}
 
 * **URL Params**
 
-  {{^urlParams}}
-  None.
-  {{/urlParams}}
-  {{#urlParams}}
-  `{{name}}: {{type}}`
-  {{/urlParams}}
+  urlParams
 
 * **Query Params**
 
-  {{^queryParams}}
-  None.
-  {{/queryParams}}
-  {{#queryParams}}
-  `{{key}}: {{value}}`
-  {{/queryParams}}
+  queryParams
 
 * **Data Params**
 

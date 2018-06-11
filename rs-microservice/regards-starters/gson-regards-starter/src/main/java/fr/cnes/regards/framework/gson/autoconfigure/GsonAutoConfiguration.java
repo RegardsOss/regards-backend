@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -17,8 +17,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.cnes.regards.framework.gson.autoconfigure;
-
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +36,8 @@ import org.springframework.http.converter.json.GsonHttpMessageConverter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
-import fr.cnes.regards.framework.gson.GsonCustomizer;
+
+import fr.cnes.regards.framework.gson.GsonBuilderFactory;
 import fr.cnes.regards.framework.gson.GsonProperties;
 
 /**
@@ -76,9 +75,9 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
      */
     @Bean
     @ConditionalOnClass(name = SPRINGFOX_GSON_FACTORY)
-    public GsonBuilder configureWithSwagger() {
+    public GsonBuilder configureWithSwagger(GsonBuilderFactory gsonBuilderFactory) {
         LOGGER.info("GSON auto configuration enabled with SpringFox support");
-        GsonBuilder builder = GsonCustomizer.gsonBuilder(Optional.of(properties), Optional.of(applicationContext));
+        GsonBuilder builder = gsonBuilderFactory.newBuilder();
         try {
             builder.registerTypeAdapterFactory((TypeAdapterFactory) Class.forName(SPRINGFOX_GSON_FACTORY)
                     .newInstance());
@@ -92,15 +91,21 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
 
     @Bean
     @ConditionalOnMissingClass(SPRINGFOX_GSON_FACTORY)
-    public GsonBuilder configure() {
+    public GsonBuilder configure(GsonBuilderFactory gsonBuilderFactory) {
         LOGGER.info("GSON auto configuration enabled");
-        return GsonCustomizer.gsonBuilder(Optional.of(properties), Optional.of(applicationContext));
+        return gsonBuilderFactory.newBuilder();
     }
 
     @Bean
     @ConditionalOnMissingBean
     public Gson gson(GsonBuilder builder) {
         return builder.create();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public GsonBuilderFactory gsonBuilderFactory() {
+        return new GsonBuilderFactory(properties, applicationContext);
     }
 
     @Bean

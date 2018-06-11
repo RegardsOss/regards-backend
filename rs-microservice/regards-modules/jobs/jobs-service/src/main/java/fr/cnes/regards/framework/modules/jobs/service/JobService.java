@@ -1,7 +1,7 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
+import javax.annotation.PreDestroy;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.OffsetDateTime;
@@ -11,8 +11,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +45,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobWorkspaceException;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -98,12 +101,37 @@ public class JobService implements IJobService {
 
     private ThreadPoolExecutor threadPool;
 
+    // Boolean permitting to determine if method manage() can pull jobs and executing them
+    private boolean canManage = true;
+
     private static void printStackTrace(JobStatusInfo statusInfo, Exception e) {
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
         statusInfo.setStackTrace(sw.toString());
     }
 
+    /**
+     * Destroy or refresh
+     */
+    @PreDestroy
+    public void preDestroy() {
+        subscriber.unsubscribeFrom(StopJobEvent.class);
+        LOGGER.info("Shutting down job thread pool...");
+        // Avoid pulling new jobs
+        canManage = false;
+        threadPool.shutdown();
+        LOGGER.info("Waiting 60s max for jobs to be terminated...");
+        try {
+            threadPool.awaitTermination(60, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.warn("Waiting task interrupted");
+        }
+        threadPool = null;
+    }
+
+    /**
+     * Thread pool is built at postConstruct pĥase to have poolSize filled BUT before manage is called by JobInitializer
+     */
     @PostConstruct
     private void init() {
         threadPool = new JobThreadPoolExecutor(poolSize, jobInfoService, jobsMap, runtimeTenantResolver, publisher);
@@ -115,11 +143,15 @@ public class JobService implements IJobService {
         subscriber.subscribeTo(StopJobEvent.class, new StopJobHandler());
     }
 
+    /**
+     * After a refresh, canManage is automatically reset to true and this method is magically re-executed as soon as
+     * necessary even if JobInitializer isn't @RefreshScope'd
+     */
     @Override
     @Async
     public void manage() {
         // To avoid starvation, loop on each tenant before executing jobs
-        while (true) {
+        while (canManage) {
             boolean noJobAtAll = true;
             for (String tenant : tenantResolver.getAllActiveTenants()) {
                 runtimeTenantResolver.forceTenant(tenant);
@@ -129,7 +161,7 @@ public class JobService implements IJobService {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                                   + "of the end, pray for your soul", e);
+                                             + "of the end, pray for your soul", e);
                     }
                 }
                 // Find highest priority job to execute
@@ -206,13 +238,20 @@ public class JobService implements IJobService {
             beanFactory.autowireBean(job);
             job.setParameters(jobInfo.getParametersAsMap());
             if (job.needWorkspace()) {
-                job.setWorkspace(workspaceService.getPrivateDirectory());
+                job.setWorkspace(workspaceService::getPrivateDirectory);
             }
             jobInfo.setJob(job);
             // Run job (before executing Job, JobThreadPoolExecutor save JobInfo, have a look if you don't believe me)
             jobsMap.put(jobInfo, (RunnableFuture<Void>) threadPool.submit(job));
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException e) {
+        } catch (RejectedExecutionException e) {
+            // ThreadPool has been shutted down (maybe due to a refresh)
+            LOGGER.warn("Job thread pool rejects job {}", jobInfo.getId());
+            resetJob(jobInfo);
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             LOGGER.error("Unable to instantiate job", e);
+            manageJobInstantiationError(jobInfo, e);
+        } catch (JobWorkspaceException e) {
+            LOGGER.error("Unable to set workspace", e);
             manageJobInstantiationError(jobInfo, e);
         } catch (JobParameterMissingException e) {
             LOGGER.error("Missing parameter", e);
@@ -224,6 +263,15 @@ public class JobService implements IJobService {
     }
 
     /**
+     * Job has been rejected by thread pool so reset to its previous state to be taken into account later
+     */
+    private void resetJob(JobInfo jobInfo) {
+        jobInfo.updateStatus(JobStatus.QUEUED);
+        jobInfo.setTenant(null);
+        jobInfoService.save(jobInfo);
+    }
+
+    /**
      * Manage an error while instantiation Job, like invalid parameters, ClassNotFOundException, etc....
      */
     private void manageJobInstantiationError(JobInfo jobInfo, Exception e) {
@@ -231,17 +279,6 @@ public class JobService implements IJobService {
         printStackTrace(jobInfo.getStatus(), e);
         jobInfoService.save(jobInfo);
         publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
-    }
-
-    private class StopJobHandler implements IHandler<StopJobEvent> {
-
-        @Override
-        public void handle(TenantWrapper<StopJobEvent> wrapper) {
-            if (wrapper.getContent() != null) {
-                runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                JobService.this.abort(wrapper.getContent().getJobId());
-            }
-        }
     }
 
     /**
@@ -275,6 +312,17 @@ public class JobService implements IJobService {
                     break;
                 default:
                     break;
+            }
+        }
+    }
+
+    private class StopJobHandler implements IHandler<StopJobEvent> {
+
+        @Override
+        public void handle(TenantWrapper<StopJobEvent> wrapper) {
+            if (wrapper.getContent() != null) {
+                runtimeTenantResolver.forceTenant(wrapper.getTenant());
+                JobService.this.abort(wrapper.getContent().getJobId());
             }
         }
     }

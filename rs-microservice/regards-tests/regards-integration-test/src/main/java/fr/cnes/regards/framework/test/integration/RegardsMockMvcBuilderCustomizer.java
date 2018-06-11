@@ -31,7 +31,7 @@ public class RegardsMockMvcBuilderCustomizer implements MockMvcBuilderCustomizer
     @Override
     public void customize(ConfigurableMockMvcBuilder<?> builder) {
         builder.apply(MockMvcRestDocumentation.documentationConfiguration(this.restDocumentation).snippets()
-                              .withDefaults(HttpDocumentation.httpRequest(), HttpDocumentation.httpResponse())
+                              .withDefaults(new RegardsHttpRequestSnippet(), HttpDocumentation.httpResponse())
                               .withTemplateFormat(TemplateFormats.markdown()));
     }
 }

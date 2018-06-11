@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.module.rest.exception;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -47,7 +48,7 @@ public class EntityInvalidException extends EntityException {
     }
 
     public EntityInvalidException(final List<String> messages) {
-        super("Invalid entity");
+        super(messages.stream().collect(Collectors.joining(" ", "Invalid entity: ", "")));
         this.messages.addAll(messages);
     }
 

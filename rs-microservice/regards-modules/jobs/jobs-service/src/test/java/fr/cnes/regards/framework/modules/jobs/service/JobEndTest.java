@@ -6,11 +6,13 @@ import java.util.Map;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -33,6 +35,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * @author oroussel
  */
 @RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = TestApplication.class)
 @ContextConfiguration(classes = { JobConfiguration.class })
 public class JobEndTest {
 
@@ -68,8 +71,7 @@ public class JobEndTest {
 
     @Test
     public void test() throws InterruptedException {
-        JobInfo longJob = new JobInfo();
-        longJob.setDescription("A long job updating its completion");
+        JobInfo longJob = new JobInfo(false);
         longJob.setClassName(LongJob.class.getName());
         longJob.setPriority(100);
         longJob = jobInfoService.createAsQueued(longJob);
@@ -93,8 +95,7 @@ public class JobEndTest {
 
     @Test
     public void testWithResults1() throws InterruptedException {
-        JobInfo blowJob = new JobInfo();
-        blowJob.setDescription("A job that set a random float as result");
+        JobInfo blowJob = new JobInfo(false);
         blowJob.setClassName(BlowJob.class.getName());
         blowJob = jobInfoService.createAsQueued(blowJob);
 
@@ -113,8 +114,7 @@ public class JobEndTest {
 
     @Test
     public void testWithResults2() throws InterruptedException {
-        JobInfo handJob = new JobInfo();
-        handJob.setDescription("A job that set a complex object result");
+        JobInfo handJob = new JobInfo(false);
         handJob.setClassName(HandJob.class.getName());
         handJob = jobInfoService.createAsQueued(handJob);
 
@@ -139,8 +139,7 @@ public class JobEndTest {
 
     @Test
     public void testWithResults3() throws InterruptedException {
-        JobInfo footJob = new JobInfo();
-        footJob.setDescription("A job that set a complex object result");
+        JobInfo footJob = new JobInfo(false);
         footJob.setClassName(FootJob.class.getName());
         footJob = jobInfoService.createAsQueued(footJob);
 
@@ -167,7 +166,7 @@ public class JobEndTest {
 
     @Test
     public void testExpirationDate() throws InterruptedException {
-        JobInfo jobSnow = new JobInfo();
+        JobInfo jobSnow = new JobInfo(false);
         jobSnow.setExpirationDate(OffsetDateTime.now());
         jobSnow = jobInfoService.createAsQueued(jobSnow);
         Thread.sleep(1_000);

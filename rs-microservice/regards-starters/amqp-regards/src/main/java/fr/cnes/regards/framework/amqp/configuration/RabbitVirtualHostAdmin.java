@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -297,7 +297,8 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitHostAndPort[0],
                 Integer.parseInt(rabbitHostAndPort[1]));
         connectionFactory.setVirtualHost(virtualHost);
-
+        connectionFactory.setUsername(rabbitmqUserName);
+        connectionFactory.setPassword(rabbitmqPassword);
         registerConnectionFactory(virtualHost, connectionFactory);
     }
 

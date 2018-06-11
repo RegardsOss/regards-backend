@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 
 /**
@@ -62,6 +63,11 @@ public class PluginMetaData {
      * The description of the plugin
      */
     private String description;
+
+    /**
+     * The plugin markdown description, an optional detailed human readable description.
+     */
+    private String markdown;
 
     /**
      * An URL link to the web site of the plugin.
@@ -246,7 +252,7 @@ public class PluginMetaData {
             parameters = pParameters;
         }
     }
-    
+
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder(pluginId);
@@ -255,6 +261,14 @@ public class PluginMetaData {
         buf.append(" : ");
         buf.append(version);
         return buf.toString();
+    }
+
+    public String getMarkdown() {
+        return markdown;
+    }
+
+    public void setMarkdown(String markdown) {
+        this.markdown = markdown;
     }
 
 }

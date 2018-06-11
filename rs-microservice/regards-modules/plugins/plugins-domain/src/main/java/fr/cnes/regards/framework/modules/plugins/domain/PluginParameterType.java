@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -54,6 +54,11 @@ public class PluginParameterType {
     private String description;
 
     /**
+     * The parameter markdown description, an optional detailed human readable description.
+     */
+    private String markdown;
+
+    /**
      * The JAVA parameter's type
      */
     private String type;
@@ -83,12 +88,14 @@ public class PluginParameterType {
      */
     private List<PluginParameterType> parameters = new ArrayList<>();
 
+    private Boolean unconfigurable;
+
     /**
      * {@link PluginParameterType} builder.<br/>
      * Additional setter can be used :
      * <ul>
      * <li>{@link #setDefaultValue(String)}</li>
-     * <li>{@link #setParameters(List)}</li>
+     * <li>{@link #addAllParameters(List)}</li>
      * <li>{@link #setParameterizedSubTypes(String...)}</li>
      * <li>{@link #setKeyLabel(String)}</li>
      * </ul>
@@ -101,7 +108,7 @@ public class PluginParameterType {
      * @return {@link PluginParameterType}
      */
     public static PluginParameterType create(String name, String label, String description, Class<?> clazz,
-            ParamType paramType, Boolean optional) {
+            ParamType paramType, Boolean optional, Boolean onlyDynamic) {
         PluginParameterType ppt = new PluginParameterType();
 
         // Validate and set
@@ -121,6 +128,8 @@ public class PluginParameterType {
 
         Assert.notNull(optional, "Optional value is required");
         ppt.setOptional(optional);
+
+        ppt.setUnconfigurable(onlyDynamic);
 
         return ppt;
     }
@@ -210,6 +219,22 @@ public class PluginParameterType {
     public void setKeyLabel(String keyLabel) {
         Assert.hasText(keyLabel, "Key label is required");
         this.keyLabel = keyLabel;
+    }
+
+    public String getMarkdown() {
+        return markdown;
+    }
+
+    public void setMarkdown(String markdown) {
+        this.markdown = markdown;
+    }
+
+    public void setUnconfigurable(Boolean unconfigurable) {
+        this.unconfigurable = unconfigurable;
+    }
+
+    public Boolean getUnconfigurable() {
+        return unconfigurable;
     }
 
     /**

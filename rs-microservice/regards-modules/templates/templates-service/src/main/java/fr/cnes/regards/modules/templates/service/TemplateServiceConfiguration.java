@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -36,11 +36,12 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import fr.cnes.regards.modules.templates.domain.Template;
-import fr.cnes.regards.modules.templates.domain.TemplatePathSubsject;
+import fr.cnes.regards.modules.templates.domain.TemplatePathSubject;
 
 /**
  * @author Xavier-Alexandre Brochard
  * @author Marc Sordi
+ * @author oroussel for dismessness
  */
 @Component
 public class TemplateServiceConfiguration {
@@ -64,6 +65,11 @@ public class TemplateServiceConfiguration {
      * The account refused template code
      */
     public static final String ACCOUNT_REFUSED_TEMPLATE_CODE = "ACCOUNT_REFUSED_TEMPLATE";
+
+    /**
+     * The password refused template code
+     */
+    public static final String PASSWORD_RESET_TEMPLATE_CODE = "PASSWORD_RESET_TEMPLATE_CODE";
 
     /**
      * The project user activated template code
@@ -151,78 +157,36 @@ public class TemplateServiceConfiguration {
      */
     private static final String NOT_SUBSETTED_DATA_FILES_TEMPLATE = "template/not_subsetted_data_files_template.html";
 
-    private static final Map<String, TemplatePathSubsject> templateCodePathMap = Maps.newHashMap();
+    private static final Map<String, TemplatePathSubject> templateCodePathMap = Maps.newHashMap();
 
     private static void addTemplate(String templateCode, String templatePath, String emailSubject) {
-        templateCodePathMap.put(templateCode, new TemplatePathSubsject(templatePath, emailSubject));
+        templateCodePathMap.put(templateCode, new TemplatePathSubject(templatePath, emailSubject));
     }
 
     @PostConstruct
     public void postConstruct() {
         templateCodePathMap.put(EMAIL_ACCOUNT_VALIDATION_TEMPLATE_CODE,
-                                new TemplatePathSubsject(EMAIL_ACCOUNT_VALIDATION_TEMPLATE, "Account Confirmation"));
+                                new TemplatePathSubject(EMAIL_ACCOUNT_VALIDATION_TEMPLATE, "Account Confirmation"));
         templateCodePathMap.put(PROJECT_USER_ACTIVATED_TEMPLATE_CODE,
-                                new TemplatePathSubsject(PROJECT_USER_ACTIVATED_TEMPLATE, "Access re-activated"));
+                                new TemplatePathSubject(PROJECT_USER_ACTIVATED_TEMPLATE, "Access re-activated"));
         templateCodePathMap.put(PROJECT_USER_INACTIVATED_TEMPLATE_CODE,
-                                new TemplatePathSubsject(PROJECT_USER_INACTIVATED_TEMPLATE, "Access deactivated"));
+                                new TemplatePathSubject(PROJECT_USER_INACTIVATED_TEMPLATE, "Access deactivated"));
         templateCodePathMap
-                .put(ORDER_CREATED_TEMPLATE_CODE, new TemplatePathSubsject(ORDER_CREATED_TEMPLATE, "Order created"));
+                .put(ORDER_CREATED_TEMPLATE_CODE, new TemplatePathSubject(ORDER_CREATED_TEMPLATE, "Order created"));
         templateCodePathMap.put(ASIDE_ORDERS_NOTIFICATION_TEMPLATE_CODE,
-                                new TemplatePathSubsject(ASIDE_ORDERS_NOTIFICATION_TEMPLATE, "Orders waiting"));
+                                new TemplatePathSubject(ASIDE_ORDERS_NOTIFICATION_TEMPLATE, "Orders waiting"));
         templateCodePathMap.put(NOT_DISPATCHED_DATA_FILES_CODE,
-                                new TemplatePathSubsject(NOT_DISPATCHED_DATA_FILES_TEMPLATE,
-                                                         "Files not associated to any data storages"));
+                                new TemplatePathSubject(NOT_DISPATCHED_DATA_FILES_TEMPLATE,
+                                                        "Files not associated to any data storages"));
         templateCodePathMap.put(NOT_SUBSETTED_DATA_FILES_CODE,
-                                new TemplatePathSubsject(NOT_SUBSETTED_DATA_FILES_TEMPLATE,
-                                                         "Files could not be handled by their data storage"));
-    }
-
-    /**
-     * Declare the template as bean
-     * @return the template
-     */
-    @Bean
-    public Template passwordResetTemplate() throws IOException {
-        ClassPathResource resource = new ClassPathResource(PASSWORD_RESET_TEMPLATE);
-        try (InputStream is = resource.getInputStream()) {
-            final String text = inputStreamToString(is);
-            final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(MDP_RESET_TEMPLATE_CODE, text, dataStructure, "Password Reset");
-        } catch (FileNotFoundException fnfe) {
-            return null;
-        }
-    }
-
-    /**
-     * Declare the template as bean
-     * @return the template
-     */
-    @Bean
-    public Template accountUnlockTemplate() throws IOException {
-        ClassPathResource resource = new ClassPathResource(ACCOUNT_UNLOCK_TEMPLATE);
-        try (InputStream is = resource.getInputStream()) {
-            final String text = inputStreamToString(is);
-            final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(ACCOUNT_UNLOCK_TEMPLATE_CODE, text, dataStructure, "Account Unlock");
-        } catch (FileNotFoundException fnfe) {
-            return null;
-        }
-    }
-
-    /**
-     * Declare the template as bean
-     * @return the template
-     */
-    @Bean
-    public Template accountRefusedTemplate() throws IOException {
-        ClassPathResource resource = new ClassPathResource(ACCOUNT_REFUSED_TEMPLATE);
-        try (InputStream is = resource.getInputStream()) {
-            final String text = inputStreamToString(is);
-            final Map<String, String> dataStructure = new HashMap<>();
-            return new Template(ACCOUNT_REFUSED_TEMPLATE_CODE, text, dataStructure, "Account refused");
-        } catch (FileNotFoundException fnfe) {
-            return null;
-        }
+                                new TemplatePathSubject(NOT_SUBSETTED_DATA_FILES_TEMPLATE,
+                                                        "Files could not be handled by their data storage"));
+        templateCodePathMap.put(ACCOUNT_UNLOCK_TEMPLATE_CODE,
+                                new TemplatePathSubject(ACCOUNT_UNLOCK_TEMPLATE, "Account Unlock"));
+        templateCodePathMap.put(ACCOUNT_REFUSED_TEMPLATE_CODE,
+                                new TemplatePathSubject(ACCOUNT_REFUSED_TEMPLATE, "Account refused"));
+        templateCodePathMap.put(PASSWORD_RESET_TEMPLATE_CODE,
+                                new TemplatePathSubject(PASSWORD_RESET_TEMPLATE, "Password Reset"));
     }
 
     /**
@@ -232,7 +196,7 @@ public class TemplateServiceConfiguration {
     @Bean(name = TEMPLATES)
     public List<Template> templates() throws IOException {
         List<Template> templates = Lists.newArrayList();
-        for (Map.Entry<String, TemplatePathSubsject> templateCodePathEntry : templateCodePathMap.entrySet()) {
+        for (Map.Entry<String, TemplatePathSubject> templateCodePathEntry : templateCodePathMap.entrySet()) {
             ClassPathResource resource = new ClassPathResource(templateCodePathEntry.getValue().getTemplatePath());
             try (InputStream is = resource.getInputStream()) {
                 final String text = inputStreamToString(is);

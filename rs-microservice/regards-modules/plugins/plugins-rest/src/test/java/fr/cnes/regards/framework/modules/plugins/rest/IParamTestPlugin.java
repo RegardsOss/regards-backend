@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -26,7 +26,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
  * @author Marc Sordi
  *
  */
-@FunctionalInterface
 @PluginInterface(description = "Plugin parameter test")
 public interface IParamTestPlugin {
 
