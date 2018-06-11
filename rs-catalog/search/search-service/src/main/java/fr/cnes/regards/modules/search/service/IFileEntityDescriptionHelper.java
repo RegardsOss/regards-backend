@@ -2,8 +2,6 @@ package fr.cnes.regards.modules.search.service;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletResponse;
-
 import feign.Response;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -19,6 +17,6 @@ public interface IFileEntityDescriptionHelper {
      * @return
      * @throws EntityOperationForbiddenException
      */
-    Response getFile(UniformResourceName datasetIpId, HttpServletResponse response)
+    Response getFile(UniformResourceName datasetIpId)
             throws EntityOperationForbiddenException, IOException, EntityNotFoundException;
 }

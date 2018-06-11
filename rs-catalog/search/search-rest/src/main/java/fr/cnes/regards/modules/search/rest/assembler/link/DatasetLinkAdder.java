@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.search.rest.assembler.FacettedPagedResourcesAssem
  * @author Xavier-Alexandre Brochard
  */
 @Component
+@Deprecated // TODO remove
 public class DatasetLinkAdder implements ILinksAdder {
 
     /**

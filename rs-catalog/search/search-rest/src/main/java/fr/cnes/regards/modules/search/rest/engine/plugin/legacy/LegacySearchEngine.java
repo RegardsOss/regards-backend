@@ -34,9 +34,8 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
@@ -107,10 +106,14 @@ public class LegacySearchEngine
             throws ModuleException {
         // Convert parameters to business criterion
         ICriterion criterion = parse(context.getQueryParams());
+        // Manage dataset URN path parameter as criterion
+        if (context.getDatasetUrn().isPresent()) {
+            criterion = ICriterion.and(criterion,
+                                       ICriterion.eq(StaticProperties.TAGS, context.getDatasetUrn().get().toString()));
+        }
         // Extract facets
         List<String> facets = context.getQueryParams().get(FACETS);
         // Do business search
-        // TODO manage datasetId path parameter as criterion
         FacetPage<AbstractEntity> facetPage = searchService.search(criterion, context.getSearchType(), facets,
                                                                    context.getPageable());
         // Build and return HATEOAS response
@@ -128,7 +131,12 @@ public class LegacySearchEngine
                         facetPage.getNumber(), facetPage.getTotalElements(), facetPage.getTotalPages()),
                       facetPage.getFacets());
 
-        // Adding pagination links
+        // Add entity links
+        for (Resource<AbstractEntity> resource : pagedResource.getContent()) {
+            resource.add(SearchEngineController.buildEntityLinks(resourceService, context, resource.getContent()));
+        }
+
+        // Add pagination links
         if (facetPage.hasPrevious()) {
             addPaginationLink(pagedResource, context, LinkRels.PREVIOUS);
         }
@@ -168,14 +176,9 @@ public class LegacySearchEngine
     public ResponseEntity<Resource<AbstractEntity>> getEntity(SearchContext context) throws ModuleException {
         // Retrieve entity
         AbstractEntity entity = searchService.get(context.getUrn().get());
-        // Prepare resource according to its type
-        Resource<AbstractEntity> resource;
-        if (EntityType.DATASET.name().equals(entity.getType())) {
-            // TODO manage dataset links with DatasetLinkAdder
-            resource = resourceService.toResource((Dataset) entity);
-        } else {
-            resource = resourceService.toResource(entity);
-        }
+        // Prepare resource
+        Resource<AbstractEntity> resource = resourceService.toResource(entity);
+        resource.add(SearchEngineController.buildEntityLinks(resourceService, context, entity));
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 }

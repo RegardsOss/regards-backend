@@ -2,8 +2,6 @@ package fr.cnes.regards.modules.search.service;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -42,14 +40,8 @@ public class FileEntityDescriptionHelper implements IFileEntityDescriptionHelper
 
     /**
      * Return a file in a response
-     * @param datasetIpId
-     * @param response
-     * @return
-     * @throws EntityOperationForbiddenException
-     * @throws IOException
-     * @throws EntityNotFoundException
      */
-    public Response getFile(UniformResourceName datasetIpId, HttpServletResponse response)
+    public Response getFile(UniformResourceName datasetIpId)
             throws EntityOperationForbiddenException, IOException, EntityNotFoundException {
         final String datasetIpIdAsString = datasetIpId.toString();
         // Retrieve current user from security context

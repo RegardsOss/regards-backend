@@ -305,7 +305,7 @@ public class SearchController {
             @RequestParam(name = "origin", required = false) String origin, @PathVariable("urn") String urn,
             HttpServletResponse response)
             throws SearchException, EntityNotFoundException, EntityOperationForbiddenException, IOException {
-        Response fileStream = descHelper.getFile(UniformResourceName.fromString(urn), response);
+        Response fileStream = descHelper.getFile(UniformResourceName.fromString(urn));
         // Return rs-dam headers
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_TYPE,

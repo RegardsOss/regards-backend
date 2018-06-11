@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MimeType;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -48,6 +49,7 @@ import fr.cnes.regards.modules.models.domain.Model;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.service.IAttributeModelService;
 import fr.cnes.regards.modules.models.service.ModelService;
+import fr.cnes.regards.modules.search.rest.SearchEngineController;
 
 /**
  * Engine common methods
@@ -68,8 +70,12 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     // Star properties
     protected static final String STAR = "star";
 
+    protected static final String SUN = "Sun";
+
     // Star system properties
     protected static final String STAR_SYSTEM = "startSystem";
+
+    protected static final String SOLAR_SYSTEM = "Solar system";
 
     // Planet properties
     protected static final String PLANET = "planet";
@@ -114,6 +120,39 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     @Before
     public void prepareData() throws ModuleException {
 
+        // Bypass method access rights
+        List<String> relativeUrlPaths = new ArrayList<>();
+
+        relativeUrlPaths.add(SearchEngineController.SEARCH_ALL_MAPPING);
+        relativeUrlPaths.add(SearchEngineController.SEARCH_ALL_MAPPING_EXTRA);
+        relativeUrlPaths.add(SearchEngineController.GET_ENTITY_MAPPING);
+
+        relativeUrlPaths.add(SearchEngineController.SEARCH_COLLECTIONS_MAPPING);
+        relativeUrlPaths.add(SearchEngineController.SEARCH_COLLECTIONS_MAPPING_EXTRA);
+        relativeUrlPaths.add(SearchEngineController.GET_COLLECTION_MAPPING);
+
+        relativeUrlPaths.add(SearchEngineController.SEARCH_DOCUMENTS_MAPPING);
+        relativeUrlPaths.add(SearchEngineController.SEARCH_DOCUMENTS_MAPPING_EXTRA);
+        relativeUrlPaths.add(SearchEngineController.GET_DOCUMENT_MAPPING);
+
+        relativeUrlPaths.add(SearchEngineController.SEARCH_DATASETS_MAPPING);
+        relativeUrlPaths.add(SearchEngineController.SEARCH_DATASETS_MAPPING_EXTRA);
+        relativeUrlPaths.add(SearchEngineController.GET_DATASET_MAPPING);
+        relativeUrlPaths.add(SearchEngineController.GET_DATASET_DESCRIPTION_MAPPING);
+
+        relativeUrlPaths.add(SearchEngineController.SEARCH_DATAOBJECTS_MAPPING);
+        relativeUrlPaths.add(SearchEngineController.SEARCH_DATAOBJECTS_MAPPING_EXTRA);
+        relativeUrlPaths.add(SearchEngineController.GET_DATAOBJECT_MAPPING);
+
+        relativeUrlPaths.add(SearchEngineController.SEARCH_DATASET_DATAOBJECTS_MAPPING);
+        relativeUrlPaths.add(SearchEngineController.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA);
+
+        relativeUrlPaths.add(SearchEngineController.SEARCH_DATAOBJECTS_DATASETS_MAPPING);
+
+        for (String relativeUrlPath : relativeUrlPaths) {
+            setAuthorities(SearchEngineController.TYPE_MAPPING + relativeUrlPath, RequestMethod.GET, getDefaultRole());
+        }
+
         // Bypass access rights
         Mockito.when(projectUserClientMock.isAdmin(Mockito.anyString())).thenReturn(ResponseEntity.ok(Boolean.TRUE));
 
@@ -155,8 +194,8 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     }
 
     protected List<Collection> createStars(Model starModel) {
-        Collection sun = new Collection(starModel, getDefaultTenant(), "Sun");
-        sun.addProperty(AttributeBuilder.buildString(STAR, "Sun"));
+        Collection sun = new Collection(starModel, getDefaultTenant(), SUN);
+        sun.addProperty(AttributeBuilder.buildString(STAR, SUN));
         sun.addProperty(AttributeBuilder.buildString(ABSTRACT,
                                                      "The Sun is the star at the center of the Solar System."));
         sun.setGeometry(IGeometry.point(IGeometry.position(50.0, 30.0)));
@@ -164,8 +203,8 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     }
 
     protected List<Dataset> createStarSystems(Model starSystemModel) {
-        Dataset solarSystem = new Dataset(starSystemModel, getDefaultTenant(), "Solar system");
-        solarSystem.addProperty(AttributeBuilder.buildString(STAR_SYSTEM, "Solar system"));
+        Dataset solarSystem = new Dataset(starSystemModel, getDefaultTenant(), SOLAR_SYSTEM);
+        solarSystem.addProperty(AttributeBuilder.buildString(STAR_SYSTEM, SOLAR_SYSTEM));
         return Arrays.asList(solarSystem);
     }
 

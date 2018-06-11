@@ -82,8 +82,8 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Handling request for engine : {}", context.getEngineType());
             LOGGER.debug("Search type : {}", context.getSearchType());
-            if (context.getDatasetId().isPresent()) {
-                LOGGER.debug("Searching data objects on dataset : {}", context.getDatasetId().get());
+            if (context.getDatasetUrn().isPresent()) {
+                LOGGER.debug("Searching data objects on dataset : {}", context.getDatasetUrn().get().toString());
             }
             if (context.getExtra().isPresent()) {
                 LOGGER.debug("Handling request extra path : {}", context.getExtra().get());

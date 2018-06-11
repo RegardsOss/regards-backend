@@ -60,7 +60,7 @@ public class SearchContext {
     /**
      * Optional path parameter representing dataset identifier for data object search on this specified dataset
      */
-    private String datasetId;
+    private UniformResourceName datasetUrn;
 
     /**
      * Additional optional path parameter for specific route handling.<br/>
@@ -108,12 +108,12 @@ public class SearchContext {
         this.urn = urn;
     }
 
-    public Optional<String> getDatasetId() {
-        return Optional.ofNullable(datasetId);
+    public Optional<UniformResourceName> getDatasetUrn() {
+        return Optional.ofNullable(datasetUrn);
     }
 
-    public void setDatasetId(String datasetId) {
-        this.datasetId = datasetId;
+    public void setDatasetUrn(UniformResourceName datasetUrn) {
+        this.datasetUrn = datasetUrn;
     }
 
     public Optional<String> getExtra() {
@@ -173,8 +173,8 @@ public class SearchContext {
     /**
      * Fluent API
      */
-    public SearchContext withDatasetId(String datasetId) {
-        this.datasetId = datasetId;
+    public SearchContext withDatasetUrn(UniformResourceName datasetUrn) {
+        this.datasetUrn = datasetUrn;
         return this;
     }
 
