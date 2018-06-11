@@ -32,16 +32,6 @@ public class OpenSearchParameterConfiguration {
     private String name;
 
     /**
-     * Parameter namespace (xml format)
-     */
-    private String namepsace;
-
-    /**
-     * Parameter value
-     */
-    private String value;
-
-    /**
      * Minimum number of occurence of the parameter in search request
      */
     private Integer minimum;
@@ -74,7 +64,7 @@ public class OpenSearchParameterConfiguration {
     /**
      * Regards {@link AttributeModel} identifier.
      */
-    private String attributeModelId;
+    private String attributeModelName;
 
     /**
      * Operator to apply when searching in catalog for this parameter.
@@ -87,22 +77,6 @@ public class OpenSearchParameterConfiguration {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getNamepsace() {
-        return namepsace;
-    }
-
-    public void setNamepsace(String namepsace) {
-        this.namepsace = namepsace;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
     }
 
     public Integer getMinimum() {
@@ -153,12 +127,12 @@ public class OpenSearchParameterConfiguration {
         this.optionsCardinality = optionsCardinality;
     }
 
-    public String getAttributeModelId() {
-        return attributeModelId;
+    public String getAttributeModelName() {
+        return attributeModelName;
     }
 
-    public void setAttributeModelId(String attributeModelId) {
-        this.attributeModelId = attributeModelId;
+    public void setAttributeModelName(String attributeModelName) {
+        this.attributeModelName = attributeModelName;
     }
 
     public ParameterOperator getOperator() {
