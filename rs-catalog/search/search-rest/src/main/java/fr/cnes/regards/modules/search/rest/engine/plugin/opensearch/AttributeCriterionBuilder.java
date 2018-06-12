@@ -36,46 +36,37 @@ public class AttributeCriterionBuilder {
     private AttributeCriterionBuilder() {
     }
 
-    /**
-     * Build a {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a list of search values.
-     * One criterion is created for each search value. The returned criterion is a composed criterion of all values with AND operator between each.
-     * @param openSearchParameter
-     * @param values
-     * @param finder
-     * @return {@link ICriterion} composed criterion of all values with AND operator between each.
-     * @throws OpenSearchUnknownParameter
-     */
-    public static ICriterion build(OpenSearchParameterConfiguration openSearchParameter, List<String> values,
+    public static ICriterion build(String paramName, ParameterOperator operator, List<String> values,
             IAttributeFinder finder) throws OpenSearchUnknownParameter {
         ICriterion criterion = null;
-        AttributeModel attributeModel = finder.findByName(openSearchParameter.getName());
+        AttributeModel attributeModel = finder.findByName(paramName);
         String attributeJsonPath = attributeModel.buildJsonPath(StaticProperties.PROPERTIES);
         for (String value : values) {
             ICriterion valueCriterion = null;
             switch (attributeModel.getType()) {
                 case INTEGER:
                 case INTEGER_ARRAY:
-                    valueCriterion = buildIngetegerCrit(attributeJsonPath, value, openSearchParameter.getOperator());
+                    valueCriterion = buildIngetegerCrit(attributeJsonPath, value, operator);
                     break;
                 case DOUBLE:
                 case DOUBLE_ARRAY:
-                    valueCriterion = buildDoubleCrit(attributeJsonPath, value, openSearchParameter.getOperator());
+                    valueCriterion = buildDoubleCrit(attributeJsonPath, value, operator);
                     break;
                 case LONG:
                 case LONG_ARRAY:
-                    valueCriterion = buildLongCrit(attributeJsonPath, value, openSearchParameter.getOperator());
+                    valueCriterion = buildLongCrit(attributeJsonPath, value, operator);
                     break;
                 case STRING:
-                    valueCriterion = buildStringCrit(attributeJsonPath, value, openSearchParameter.getOperator());
+                    valueCriterion = buildStringCrit(attributeJsonPath, value, operator);
                     break;
                 case STRING_ARRAY:
-                    valueCriterion = buildStringArrayCrit(attributeJsonPath, value, openSearchParameter.getOperator());
+                    valueCriterion = buildStringArrayCrit(attributeJsonPath, value, operator);
                     break;
                 case DATE_ISO8601:
-                    valueCriterion = buildDateCrit(attributeJsonPath, value, openSearchParameter.getOperator());
+                    valueCriterion = buildDateCrit(attributeJsonPath, value, operator);
                     break;
                 case BOOLEAN:
-                    valueCriterion = buildSBooleanCrit(attributeJsonPath, value, openSearchParameter.getOperator());
+                    valueCriterion = buildSBooleanCrit(attributeJsonPath, value, operator);
                     break;
                 default:
                     throw new OpenSearchUnknownParameter("Unknown parameter");
@@ -87,6 +78,20 @@ public class AttributeCriterionBuilder {
             }
         }
         return criterion;
+    }
+
+    /**
+     * Build a {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a list of search values.
+     * One criterion is created for each search value. The returned criterion is a composed criterion of all values with AND operator between each.
+     * @param openSearchParameter
+     * @param values
+     * @param finder
+     * @return {@link ICriterion} composed criterion of all values with AND operator between each.
+     * @throws OpenSearchUnknownParameter
+     */
+    public static ICriterion build(OpenSearchParameterConfiguration openSearchParameter, List<String> values,
+            IAttributeFinder finder) throws OpenSearchUnknownParameter {
+        return build(openSearchParameter.getAttributeModelName(), openSearchParameter.getOperator(), values, finder);
     }
 
     /**

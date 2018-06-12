@@ -18,27 +18,22 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 
-import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.rometools.rome.feed.atom.Feed;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
@@ -49,7 +44,10 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownPar
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.OpenSearchResponseBuilder;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedMediaTypesException;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.media.MediaExtension;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards.RegardsExtension;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 
 /**
@@ -64,7 +62,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, Void, Object> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenSearchEngine.class);
 
-    public static final String PARAMETERS_CONFIGURATION_PARAM = "parameters";
+    public static final String TIME_EXTENSION_PARAMETER = "timeExtension";
+
+    public static final String REGARDS_EXTENSION_PARAMETER = "regardsExtension";
 
     /**
      * Query parser
@@ -79,7 +79,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, Void, Object> {
     protected IOpenSearchService openSearchService;
 
     @Autowired
-    private Gson gson;
+    private List<IOpenSearchResponseBuilder<?>> responseBuilders;
 
     /**
      * Business search service
@@ -97,9 +97,38 @@ public class OpenSearchEngine implements ISearchEngine<Object, Void, Object> {
             defaultValue = "Open search engire description")
     private String searchDescription;
 
-    @PluginParameter(name = OpenSearchEngine.PARAMETERS_CONFIGURATION_PARAM, label = "Open search available parameters",
-            keylabel = "Parameter name")
+    @PluginParameter(name = OpenSearchEngine.TIME_EXTENSION_PARAMETER, label = "Open search time extension")
+    private GeoTimeExtension timeExtension;
+
+    @PluginParameter(name = OpenSearchEngine.REGARDS_EXTENSION_PARAMETER, label = "Open search regards extension")
+    private RegardsExtension regardsExtension;
+
+    @PluginParameter(name = OpenSearchEngine.REGARDS_EXTENSION_PARAMETER, label = "Open search media extension")
+    private MediaExtension mediaExtension;
+
     private final List<OpenSearchParameterConfiguration> parameters = Lists.newArrayList();
+
+    public void init() {
+        timeExtension = new GeoTimeExtension();
+        timeExtension.setActivated(true);
+        timeExtension.setTimeStartAttribute("TimePeriod.startDate");
+        timeExtension.setTimeEndAttribute("TimePeriod.stopDate");
+
+        regardsExtension = new RegardsExtension();
+        regardsExtension.setActivated(true);
+
+        mediaExtension = new MediaExtension();
+        mediaExtension.setActivated(true);
+
+        this.initialize();
+    }
+
+    @PluginInit
+    public void initialize() {
+        responseBuilders.stream().forEach(b -> b.addExtension(timeExtension));
+        responseBuilders.stream().forEach(b -> b.addExtension(regardsExtension));
+        responseBuilders.stream().forEach(b -> b.addExtension(mediaExtension));
+    }
 
     @Override
     public boolean supports(SearchType searchType) {
@@ -118,33 +147,23 @@ public class OpenSearchEngine implements ISearchEngine<Object, Void, Object> {
 
     @Override
     public ResponseEntity<Object> search(SearchContext context) throws ModuleException {
+        init();
         FacetPage<AbstractEntity> facetPage = searchService
                 .search(parse(context.getQueryParams()), context.getSearchType(), null, context.getPageable());
-        return ResponseEntity.ok(formatResponse(facetPage, context));
-    }
-
-    private Object formatResponse(FacetPage<AbstractEntity> page, SearchContext context) {
-        if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_ATOM_XML)) {
-            return formatAtomResponseRome(context, page);
-        } else {
-            return formatGeoJsonResponse(page);
+        try {
+            return ResponseEntity.ok(formatResponse(facetPage, context));
+        } catch (UnsupportedMediaTypesException e) {
+            throw new ModuleException(e);
         }
     }
 
-    private Object formatAtomResponseRome(SearchContext context, FacetPage<AbstractEntity> page) {
-        Feed feed = OpenSearchResponseBuilder
-                .buildFeedMetadata(UUID.randomUUID().toString(), searchTitle, searchDescription,
-                                   "http://www.regards.com/opensearch-description.xml", context, page);
-        feed.setEntries(page.getContent().stream()
-                .map(e -> OpenSearchResponseBuilder.buildFeedAtomEntry(feed, e, OffsetDateTime.now(),
-                                                                       OffsetDateTime.now(), gson))
-                .collect(Collectors.toList()));
-        return feed;
-    }
-
-    private Object formatGeoJsonResponse(FacetPage<AbstractEntity> page) {
-        // TODO Auto-generated method stub
-        return null;
+    private Object formatResponse(FacetPage<AbstractEntity> page, SearchContext context)
+            throws UnsupportedMediaTypesException {
+        IOpenSearchResponseBuilder<?> builder = getBuilder(context);
+        builder.addMetadata(UUID.randomUUID().toString(), searchTitle, searchDescription,
+                            "http://www.regards.com/opensearch-description.xml", context, page);
+        page.getContent().stream().forEach(builder::addEntity);
+        return builder.build();
     }
 
     @Override
@@ -152,7 +171,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, Void, Object> {
         // First parse q parameter for searchTerms if any.
         ICriterion searchTermsCriterion = openSearchService.parse(queryParams);
         // Then parse all parameters (open search parameters extension)
-        return ICriterion.and(searchTermsCriterion, parseParametersExtension(queryParams));
+        return ICriterion.and(searchTermsCriterion, parseParametersExt(queryParams));
     }
 
     /**
@@ -160,7 +179,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, Void, Object> {
      * @param queryParams
      * @return {@link ICriterion}
      */
-    private ICriterion parseParametersExtension(MultiValueMap<String, String> queryParams) {
+    private ICriterion parseParametersExt(MultiValueMap<String, String> queryParams) {
         List<ICriterion> criteria = new ArrayList<>();
         for (Entry<String, List<String>> queryParam : queryParams.entrySet()) {
             // Get couple parameter name/values
@@ -169,17 +188,17 @@ public class OpenSearchEngine implements ISearchEngine<Object, Void, Object> {
             // Find associated attribute configuration from plugin conf
             Optional<OpenSearchParameterConfiguration> oParam = parameters.stream()
                     .filter(p -> p.getName().equals(paramName)).findFirst();
-            if (oParam.isPresent()) {
-                OpenSearchParameterConfiguration conf = oParam.get();
-                try {
+            // TODO handle extensions
+            try {
+                if (oParam.isPresent()) {
+                    OpenSearchParameterConfiguration conf = oParam.get();
                     // Parse attribute value to create associated ICriterion using parameter configuration
                     criteria.add(AttributeCriterionBuilder.build(conf, values, finder));
-                } catch (OpenSearchUnknownParameter e) {
-                    LOGGER.error("Invalid regards attribute {} mapped to OpenSearchEngine parameter : {}",
-                                 conf.getAttributeModelId(), paramName);
+                } else {
+                    criteria.add(AttributeCriterionBuilder.build(paramName, ParameterOperator.EQ, values, finder));
                 }
-            } else {
-                LOGGER.error("No regards attribute found for OpenSearchEngine parameter : {}", paramName);
+            } catch (OpenSearchUnknownParameter e) {
+                LOGGER.error("Invalid public attribute {}. Unknown type.", paramName);
             }
         }
         return criteria.isEmpty() ? ICriterion.all() : ICriterion.and(criteria);
@@ -189,5 +208,15 @@ public class OpenSearchEngine implements ISearchEngine<Object, Void, Object> {
     public ResponseEntity<Object> getEntity(SearchContext context) throws ModuleException {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    private IOpenSearchResponseBuilder<?> getBuilder(SearchContext context) throws UnsupportedMediaTypesException {
+        Optional<IOpenSearchResponseBuilder<?>> builder = responseBuilders.stream()
+                .filter(b -> b.supports(context.getHeaders().getAccept())).findFirst();
+        if (builder.isPresent()) {
+            return builder.get();
+        } else {
+            throw new UnsupportedMediaTypesException(context.getHeaders().getAccept());
+        }
     }
 }

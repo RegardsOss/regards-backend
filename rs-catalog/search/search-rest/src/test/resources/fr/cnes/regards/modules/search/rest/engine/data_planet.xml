@@ -9,16 +9,6 @@
 		<type>STRING</type>
 	</attribute>
 	<attribute>
-		<label>Start date</label>
-		<name>startDate</name>
-		<type>DATE_ISO8601</type>
-	</attribute>
-	<attribute>
-		<label>Stop date</label>
-		<name>stopDate</name>
-		<type>DATE_ISO8601</type>
-	</attribute>
-	<attribute>
 		<label>Planet type</label>
 		<name>planet_type</name>
 		<type>STRING</type>
@@ -30,4 +20,21 @@
 			</enumeration>
 		</restriction>
 	</attribute>
+	<fragment>
+		<name>TimePeriod</name>
+		<description>Période temporelle (date début - date fin) au format YYYY-MM-DDThh:mm:ss</description>
+		<version>1</version>
+		<attribute alterable="true" optional="false">
+			<label>Date et temps début</label>
+			<name>startDate</name>
+			<description>Date et temps début</description>
+			<type unit="unitless">DATE_ISO8601</type>
+		</attribute>
+		<attribute alterable="true" optional="false">
+			<label>Date et temps fin</label>
+			<name>stopDate</name>
+			<description>Date et temps fin</description>
+			<type unit="unitless">DATE_ISO8601</type>
+		</attribute>
+	</fragment>
 </model>

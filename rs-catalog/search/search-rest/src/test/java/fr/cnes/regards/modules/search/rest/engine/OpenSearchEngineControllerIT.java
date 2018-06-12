@@ -48,11 +48,28 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     private static final String ENGINE_TYPE = "opensearch";
 
     @Test
-    public void searchAll() {
+    public void searchAllAtom() {
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
+
+        // customizer.customizeHeaders().setContentType(MediaType.APPLICATION_ATOM_XML);
+        // customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
+        // customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
+        // customizer.customizeRequestParam().param("facets", "toto", "titi");
+
+        customizer.customizeRequestParam().param("page", "0");
+        customizer.customizeRequestParam().param("size", "10");
+        performDefaultGet(SearchEngineController.TYPE_MAPPING, customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
+    public void searchAllJson() {
+
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 
         // customizer.customizeHeaders().setContentType(MediaType.APPLICATION_ATOM_XML);
         // customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));

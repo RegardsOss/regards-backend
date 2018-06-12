@@ -201,6 +201,9 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         sun.addProperty(AttributeBuilder.buildString(ABSTRACT,
                                                      "The Sun is the star at the center of the Solar System."));
         sun.setGeometry(IGeometry.point(IGeometry.position(50.0, 30.0)));
+        sun.addProperty(AttributeBuilder
+                .buildObject("TimePeriod", AttributeBuilder.buildDate(START_DATE, OffsetDateTime.now()),
+                             AttributeBuilder.buildDate(STOP_DATE, OffsetDateTime.now().plusMonths(36))));
         return Arrays.asList(sun);
     }
 
@@ -215,8 +218,6 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         DataObject mercury = new DataObject(planetModel, getDefaultTenant(), "Mercury");
         mercury.addProperty(AttributeBuilder.buildString(PLANET, "Mercury"));
         mercury.addProperty(AttributeBuilder.buildString(PLANET_TYPE, PLANET_TYPE_TELLURIC));
-        mercury.addProperty(AttributeBuilder.buildDate(START_DATE, OffsetDateTime.now()));
-        mercury.addProperty(AttributeBuilder.buildDate(STOP_DATE, OffsetDateTime.now().plusMonths(36)));
         DataFile quicklook = new DataFile();
         quicklook.setMimeType(MimeType.valueOf("application/jpg"));
         quicklook.setUri(URI.create("http://regards/le_quicklook.jpg"));
