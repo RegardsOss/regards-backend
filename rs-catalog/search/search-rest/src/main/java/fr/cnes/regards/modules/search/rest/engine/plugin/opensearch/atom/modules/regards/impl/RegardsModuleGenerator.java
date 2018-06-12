@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.module
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.jdom2.Element;
 import org.jdom2.Namespace;
@@ -31,6 +32,7 @@ import com.rometools.rome.io.ModuleGenerator;
 
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
+import fr.cnes.regards.modules.entities.domain.attribute.ObjectAttribute;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.regards.RegardsModule;
 
 /**
@@ -101,7 +103,15 @@ public class RegardsModuleGenerator implements ModuleGenerator {
     }
 
     protected Element generateAttributeElement(AbstractAttribute<?> attribute, Gson gson) {
-        return generateElement(attribute.getName(), attribute.getValue(), gson);
+        Element elt;
+        if (attribute instanceof ObjectAttribute) {
+            elt = new Element(attribute.getName(), REGARDS_NS);
+            elt.addContent(((ObjectAttribute) attribute).getValue().stream()
+                    .map(a -> this.generateAttributeElement(a, gson)).collect(Collectors.toList()));
+        } else {
+            elt = generateElement(attribute.getName(), attribute.getValue(), gson);
+        }
+        return elt;
     }
 
     protected Element generateElement(String name, Object value, Gson gson) {

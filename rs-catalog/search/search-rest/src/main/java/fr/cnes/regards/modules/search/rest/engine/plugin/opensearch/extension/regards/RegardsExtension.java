@@ -12,6 +12,7 @@ import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.regards.RegardsModule;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.regards.impl.RegardsModuleImpl;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
+import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
 
 public class RegardsExtension implements IOpenSearchExtension {
 
@@ -37,6 +38,11 @@ public class RegardsExtension implements IOpenSearchExtension {
         rm.setGsonBuilder(gson);
         rm.setEntity(entity);
         return rm;
+    }
+
+    @Override
+    public void applyExtensionToDescriptionParameter(OpenSearchParameter parameter) {
+        // Nothing to do
     }
 
     public void setActivated(boolean activated) {
