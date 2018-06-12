@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.project.rest;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +81,8 @@ public class TenantConnectionController {
     @ResourceAccess(description = "Add a project (i.e. tenant) connection", role = DefaultRole.INSTANCE_ADMIN)
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<TenantConnection> addTenantConnection(@PathVariable String microservice,
-            @Valid @RequestBody TenantConnection tenantConnection) throws ModuleException {
+            @Valid @RequestBody TenantConnection tenantConnection)
+            throws ModuleException, BadPaddingException, IllegalBlockSizeException {
 
         Project project = projectService.retrieveProject(tenantConnection.getTenant());
 

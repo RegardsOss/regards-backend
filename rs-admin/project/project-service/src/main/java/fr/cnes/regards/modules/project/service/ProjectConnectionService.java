@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.project.service;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Objects;
@@ -30,6 +32,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
+import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigurationCreated;
 import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionConfigurationDeleted;
@@ -85,6 +88,8 @@ public class ProjectConnectionService implements IProjectConnectionService {
      */
     private final EntityManager em;
 
+    private final IEncryptionService encryptionService;
+
     /**
      * The constructor.
      *
@@ -97,12 +102,13 @@ public class ProjectConnectionService implements IProjectConnectionService {
      */
     public ProjectConnectionService(IProjectRepository projectRepository,
             IProjectConnectionRepository projectConnectionRepository, IInstancePublisher instancePublisher,
-            EntityManager em) {
+            EntityManager em, IEncryptionService encryptionService) {
         super();
         this.projectRepository = projectRepository;
         this.projectConnectionRepository = projectConnectionRepository;
         this.instancePublisher = instancePublisher;
         this.em = em;
+        this.encryptionService = encryptionService;
     }
 
     @Override
@@ -131,7 +137,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
 
     @Override
     public ProjectConnection createProjectConnection(final ProjectConnection projectConnection, final boolean silent)
-            throws ModuleException {
+            throws ModuleException, BadPaddingException, IllegalBlockSizeException {
         final ProjectConnection connection;
         final Project project = projectConnection.getProject();
         // Check referenced project exists
@@ -146,7 +152,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
                 // Multitenant starter is responsible for enabling data source
                 projectConnection.setState(TenantConnectionState.DISABLED);
                 // This service is reponsible for password encryption
-                projectConnection.setPassword(BlowfishUtils.encrypt(projectConnection.getPassword()));
+                projectConnection.setPassword(encryptionService.encrypt(projectConnection.getPassword()));
                 connection = projectConnectionRepository.save(projectConnection);
             } else {
                 throw new EntityAlreadyExistsException(project.getName());
@@ -194,7 +200,8 @@ public class ProjectConnectionService implements IProjectConnectionService {
     }
 
     @Override
-    public ProjectConnection createStaticProjectConnection(ProjectConnection projectConnection) throws ModuleException {
+    public ProjectConnection createStaticProjectConnection(ProjectConnection projectConnection)
+            throws ModuleException, BadPaddingException, IllegalBlockSizeException {
 
         // Only store connection if it's really does not exist
         if (existsProjectConnection(projectConnection.getProject().getName(), projectConnection.getMicroservice())) {
@@ -206,7 +213,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
         }
 
         projectConnection.setState(TenantConnectionState.ENABLED);
-        projectConnection.setPassword(BlowfishUtils.encrypt(projectConnection.getPassword()));
+        projectConnection.setPassword(encryptionService.encrypt(projectConnection.getPassword()));
         return projectConnectionRepository.save(projectConnection);
     }
 
@@ -243,7 +250,8 @@ public class ProjectConnectionService implements IProjectConnectionService {
 
     @Override
     public ProjectConnection updateProjectConnection(final Long projectConnectionId,
-            final ProjectConnection projectConnection) throws ModuleException {
+            final ProjectConnection projectConnection)
+            throws ModuleException, BadPaddingException, IllegalBlockSizeException {
         final ProjectConnection connection;
         // Check that entity to update exists
         if ((projectConnection.getId() != null) && projectConnectionRepository.exists(projectConnection.getId())) {
@@ -257,9 +265,9 @@ public class ProjectConnectionService implements IProjectConnectionService {
                 projectConnection.setState(TenantConnectionState.DISABLED);
                 // lets handle password modifications
                 ProjectConnection fromDb = projectConnectionRepository.findOne(projectConnectionId);
-                //FIXME one of projectConnection or fromDb should be detached
+                em.detach(fromDb);
                 if (!Objects.equals(fromDb, projectConnection.getPassword())) {
-                    projectConnection.setPassword(BlowfishUtils.encrypt(projectConnection.getPassword()));
+                    projectConnection.setPassword(encryptionService.encrypt(projectConnection.getPassword()));
                 }
                 // Update entity
                 connection = projectConnectionRepository.save(projectConnection);

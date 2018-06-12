@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.project.rest;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import javax.validation.Valid;
 
 import org.springframework.data.domain.Page;
@@ -135,7 +137,8 @@ public class ProjectConnectionController implements IResourceController<ProjectC
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Create a new project connection", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(@PathVariable String projectName,
-            @Valid @RequestBody final ProjectConnection pProjectConnection) throws ModuleException {
+            @Valid @RequestBody final ProjectConnection pProjectConnection)
+            throws ModuleException, BadPaddingException, IllegalBlockSizeException {
         ProjectConnection connection = projectConnectionService.createProjectConnection(pProjectConnection, false);
         return ResponseEntity.ok(toResource(connection));
     }
@@ -158,7 +161,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
 
     public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(@PathVariable String projectName,
             @PathVariable Long connectionId, @Valid @RequestBody final ProjectConnection pProjectConnection)
-            throws ModuleException {
+            throws ModuleException, BadPaddingException, IllegalBlockSizeException {
         ProjectConnection connection = projectConnectionService.updateProjectConnection(connectionId,
                                                                                         pProjectConnection);
         return ResponseEntity.ok(toResource(connection));

@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.microservices.administration;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -97,7 +99,7 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
 
     @Override
     public void addTenantConnection(String microserviceName, final TenantConnection pTenantConnection)
-            throws JpaMultitenantException {
+            throws JpaMultitenantException, BadPaddingException, IllegalBlockSizeException {
         try {
             final Project project = projectService.retrieveProject(pTenantConnection.getTenant());
 
@@ -113,6 +115,7 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
             LOG.error("Error adding new tenant. Cause : {}", e.getMessage());
             LOG.debug(e.getMessage(), e);
         }
+
 
     }
 
