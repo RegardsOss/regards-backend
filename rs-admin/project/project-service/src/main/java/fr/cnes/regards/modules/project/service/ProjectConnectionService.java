@@ -265,8 +265,8 @@ public class ProjectConnectionService implements IProjectConnectionService {
                 projectConnection.setState(TenantConnectionState.DISABLED);
                 // lets handle password modifications
                 ProjectConnection fromDb = projectConnectionRepository.findOne(projectConnectionId);
-                em.detach(fromDb);
-                if (!Objects.equals(fromDb, projectConnection.getPassword())) {
+//                FIXME: might not be neccessary em.detach(fromDb);
+                if (!Objects.equals(fromDb.getPassword(), projectConnection.getPassword())) {
                     projectConnection.setPassword(encryptionService.encrypt(projectConnection.getPassword()));
                 }
                 // Update entity
