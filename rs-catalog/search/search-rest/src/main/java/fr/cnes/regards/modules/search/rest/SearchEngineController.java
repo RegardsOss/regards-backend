@@ -30,6 +30,7 @@ import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Link;
@@ -403,30 +404,6 @@ public class SearchEngineController {
         return responseEntity;
     }
 
-    // @RequestMapping(path = DATASETS_URN_FILE, method = RequestMethod.GET)
-    // @ResourceAccess(description = "Return the dataset description file.", role = DefaultRole.PUBLIC)
-    // public ResponseEntity<InputStreamResource> retrieveDatasetDescription(
-    // @RequestParam(name = "origin", required = false) String origin, @PathVariable("urn") String urn,
-    // HttpServletResponse response)
-    // throws SearchException, EntityNotFoundException, EntityOperationForbiddenException, IOException {
-    // Response fileStream = descHelper.getFile(UniformResourceName.fromString(urn), response);
-    // // Return rs-dam headers
-    // HttpHeaders headers = new HttpHeaders();
-    // headers.add(HttpHeaders.CONTENT_TYPE,
-    // fileStream.headers().get(HttpHeaders.CONTENT_TYPE).stream().findFirst().get());
-    // headers.add(HttpHeaders.CONTENT_LENGTH,
-    // fileStream.headers().get(HttpHeaders.CONTENT_LENGTH).stream().findFirst().get());
-    // headers.add(HttpHeaders.CONTENT_DISPOSITION,
-    // fileStream.headers().get(HttpHeaders.CONTENT_DISPOSITION).stream().findFirst().get());
-    //
-    // // set the X-Frame-Options header value to ALLOW-FROM origin
-    // if (origin != null) {
-    // response.setHeader(com.google.common.net.HttpHeaders.X_FRAME_OPTIONS, "ALLOW-FROM " + origin);
-    // }
-    // InputStream inputStream = fileStream.body().asInputStream();
-    // return new ResponseEntity<>(new InputStreamResource(inputStream), headers, HttpStatus.OK);
-    // }
-
     // Dataobject mappings
 
     /**
@@ -471,34 +448,43 @@ public class SearchEngineController {
     // Search dataobjects on a single dataset mapping
 
     /**
-     * Search dataobjects on a single dataset
+     * Search dataobjects on a single dataset<br/>
+     *
+     * This method uses a {@link String} to handle dataset URN because HATEOAS link builder cannot manage complex type
+     * conversion at the moment. It does not consider custom {@link Converter}.
      */
+    // FIXME
     @RequestMapping(method = RequestMethod.GET, value = SEARCH_DATASET_DATAOBJECTS_MAPPING)
     @ResourceAccess(description = "Search engines dispatcher for single dataset search", role = DefaultRole.PUBLIC)
-    public ResponseEntity<?> searchSingleDataset(@PathVariable String engineType,
-            @Valid @PathVariable UniformResourceName datasetUrn, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
+    public ResponseEntity<?> searchSingleDataset(@PathVariable String engineType, @PathVariable String datasetUrn,
+            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
+            Pageable pageable) throws ModuleException {
         LOGGER.debug("Search dataobjects on dataset \"{}\" delegated to engine \"{}\"", datasetUrn.toString(),
                      engineType);
+        UniformResourceName urn = UniformResourceName.fromString(datasetUrn);
         return dispatcher.dispatchRequest(SearchContext
                 .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), pageable)
-                .withDatasetUrn(datasetUrn));
+                .withDatasetUrn(urn));
     }
 
     /**
-     * Extra mapping related to search on a single dataset request
+     * Extra mapping related to search on a single dataset request<br/>
+     *
+     * This method uses a {@link String} to handle dataset URN because HATEOAS link builder cannot manage complex type
+     * conversion at the moment. It does not consider custom {@link Converter}.
      */
+    // FIXME
     @RequestMapping(method = RequestMethod.GET, value = SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA)
     @ResourceAccess(description = "Extra mapping for single dataset search", role = DefaultRole.PUBLIC)
-    public ResponseEntity<?> searchSingleDatasetExtra(@PathVariable String engineType,
-            @Valid @PathVariable UniformResourceName datasetUrn, @PathVariable String extra,
-            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
-            Pageable pageable) throws ModuleException {
+    public ResponseEntity<?> searchSingleDatasetExtra(@PathVariable String engineType, @PathVariable String datasetUrn,
+            @PathVariable String extra, @RequestHeader HttpHeaders headers,
+            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
         LOGGER.debug("Search dataobjects on dataset \"{}\" extra mapping \"{}\" handling delegated to engine \"{}\"",
                      datasetUrn, extra, engineType);
+        UniformResourceName urn = UniformResourceName.fromString(datasetUrn);
         return dispatcher.dispatchRequest(SearchContext
                 .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), pageable)
-                .withDatasetUrn(datasetUrn).withExtra(extra));
+                .withDatasetUrn(urn).withExtra(extra));
     }
 
     // Search on dataobjects returning datasets
@@ -550,8 +536,8 @@ public class SearchEngineController {
                             .buildLinkWithParams(SearchEngineController.class,
                                                  SearchEngineController.SEARCH_ALL_DATAOBJECTS_BY_DATASET, rel,
                                                  MethodParamFactory.build(String.class, context.getEngineType()),
-                                                 MethodParamFactory.build(UniformResourceName.class,
-                                                                          context.getDatasetUrn().get()),
+                                                 MethodParamFactory.build(String.class,
+                                                                          context.getDatasetUrn().get().toString()),
                                                  MethodParamFactory.build(HttpHeaders.class),
                                                  MethodParamFactory.build(MultiValueMap.class,
                                                                           context.getQueryParams()),
@@ -639,7 +625,7 @@ public class SearchEngineController {
             addLink(links, resourceService
                     .buildLink(SearchEngineController.class, SearchEngineController.SEARCH_ALL_DATAOBJECTS_BY_DATASET,
                                LINK_TO_DATAOBJECTS, MethodParamFactory.build(String.class, context.getEngineType()),
-                               MethodParamFactory.build(UniformResourceName.class, entity.getIpId()),
+                               MethodParamFactory.build(String.class, entity.getIpId().toString()),
                                MethodParamFactory.build(HttpHeaders.class),
                                MethodParamFactory.build(MultiValueMap.class),
                                MethodParamFactory.build(Pageable.class)));

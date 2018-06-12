@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.entities.domain.Collection;
@@ -181,8 +182,9 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         // Create data
         esRepository.saveBulk(getDefaultTenant(), createGalaxies(galaxyModel));
         esRepository.saveBulk(getDefaultTenant(), createStars(starModel));
-        esRepository.saveBulk(getDefaultTenant(), createStarSystems(starSystemModel));
-        esRepository.saveBulk(getDefaultTenant(), createPlanets(planetModel));
+        Dataset solarSystem = createSolarSystem(starSystemModel);
+        esRepository.saveBulk(getDefaultTenant(), solarSystem);
+        esRepository.saveBulk(getDefaultTenant(), createPlanets(planetModel, solarSystem.getIpId()));
     }
 
     protected List<Collection> createGalaxies(Model galaxyModel) {
@@ -202,13 +204,13 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         return Arrays.asList(sun);
     }
 
-    protected List<Dataset> createStarSystems(Model starSystemModel) {
+    protected Dataset createSolarSystem(Model starSystemModel) {
         Dataset solarSystem = new Dataset(starSystemModel, getDefaultTenant(), SOLAR_SYSTEM);
         solarSystem.addProperty(AttributeBuilder.buildString(STAR_SYSTEM, SOLAR_SYSTEM));
-        return Arrays.asList(solarSystem);
+        return solarSystem;
     }
 
-    protected List<DataObject> createPlanets(Model planetModel) {
+    protected List<DataObject> createPlanets(Model planetModel, UniformResourceName dataset) {
 
         DataObject mercury = new DataObject(planetModel, getDefaultTenant(), "Mercury");
         mercury.addProperty(AttributeBuilder.buildString(PLANET, "Mercury"));
@@ -228,6 +230,8 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         thumbnail.setImageWidth(250);
         thumbnail.setImageHeight(250);
         mercury.getFiles().put(DataType.THUMBNAIL, thumbnail);
+
+        mercury.getTags().add(dataset.toString());
 
         return Arrays.asList(mercury);
     }
