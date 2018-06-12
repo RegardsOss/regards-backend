@@ -1,5 +1,6 @@
 package fr.cnes.regards.framework.encryption.configuration;
 
+import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
 
 import org.hibernate.validator.constraints.NotBlank;
@@ -16,7 +17,7 @@ public class CipherProperties {
     /**
      * Cipher key location
      */
-    @NotBlank
+    @NotNull
     private Path keyLocation;
 
     /**

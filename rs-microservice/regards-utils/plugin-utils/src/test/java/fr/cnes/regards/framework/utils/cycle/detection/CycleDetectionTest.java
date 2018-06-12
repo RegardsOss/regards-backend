@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -44,6 +45,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
  */
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration(exclude = JpaRepositoriesAutoConfiguration.class)
+@TestPropertySource(locations = "classpath:application-test.properties")
 public class CycleDetectionTest {
 
     private static final String PLUGIN_PACKAGE = "fr.cnes.regards.framework.utils.plugins";
