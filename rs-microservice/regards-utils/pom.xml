@@ -50,6 +50,5 @@
 		<module>plugin-utils</module>
 		<module>file-utils</module>
 		<module>exception-utils</module>
-        <module>encryption-utils</module>
     </modules>
 </project>

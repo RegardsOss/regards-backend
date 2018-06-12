@@ -79,66 +79,66 @@ public class TenantConnection {
      *
      * Constructor
      *
-     * @param pName
+     * @param tenant
      *            tenant name
-     * @param pUrl
+     * @param url
      *            tenant datasource url
-     * @param pUserName
+     * @param userName
      *            tenant datasource username
-     * @param pPassword
+     * @param password
      *            tenant datasource password
-     * @param pDriverClassName
+     * @param driverClassName
      *            tenant datasource driver class name
      * @since 1.0-SNAPSHOT
      */
-    public TenantConnection(final String pName, final String pUrl, final String pUserName, final String pPassword,
-            final String pDriverClassName) {
+    public TenantConnection(final String tenant, final String url, final String userName, final String password,
+            final String driverClassName) {
         super();
-        tenant = pName;
-        url = pUrl;
-        userName = pUserName;
-        password = pPassword;
-        driverClassName = pDriverClassName;
+        this.tenant = tenant;
+        this.url = url;
+        this.userName = userName;
+        this.password = password;
+        this.driverClassName = driverClassName;
     }
 
     public String getTenant() {
         return tenant;
     }
 
-    public void setTenant(final String pName) {
-        tenant = pName;
+    public void setTenant(final String tenant) {
+        this.tenant = tenant;
     }
 
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(final String pUrl) {
-        url = pUrl;
+    public void setUrl(final String url) {
+        this.url = url;
     }
 
     public String getUserName() {
         return userName;
     }
 
-    public void setUserName(final String pUserName) {
-        userName = pUserName;
+    public void setUserName(final String userName) {
+        this.userName = userName;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(final String pPassword) {
-        password = pPassword;
+    public void setPassword(final String password) {
+        this.password = password;
     }
 
     public String getDriverClassName() {
         return driverClassName;
     }
 
-    public void setDriverClassName(final String pDriverClassName) {
-        driverClassName = pDriverClassName;
+    public void setDriverClassName(final String driverClassName) {
+        this.driverClassName = driverClassName;
     }
 
     public TenantConnectionState getState() {

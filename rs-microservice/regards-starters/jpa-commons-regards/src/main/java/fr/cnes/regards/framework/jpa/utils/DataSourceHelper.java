@@ -29,7 +29,6 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.mchange.v2.c3p0.DataSources;
-import fr.cnes.regards.framework.utils.BlowfishUtils;
 
 /**
  *
@@ -84,7 +83,7 @@ public final class DataSourceHelper {
     /**
      *
      * Create an embedded data source. This method should not be used in production in favor of
-     * {@link DataSourceHelper#createPooledDataSource(String, String, String, String, String, Integer, Integer)}
+     * {@link DataSourceHelper#createPooledDataSource(String, String, String, String, String, Integer, Integer, String)}
      *
      * @param pTenant
      *            Project name
@@ -137,7 +136,7 @@ public final class DataSourceHelper {
         ComboPooledDataSource cpds = new ComboPooledDataSource();
         cpds.setJdbcUrl(pUrl);
         cpds.setUser(pUserName);
-        cpds.setPassword(BlowfishUtils.decrypt(pPassword));
+        cpds.setPassword(pPassword);
         cpds.setMinPoolSize(pMinPoolSize);
         cpds.setMaxPoolSize(pMaxPoolSize);
         cpds.setDriverClass(pDriverClassName);

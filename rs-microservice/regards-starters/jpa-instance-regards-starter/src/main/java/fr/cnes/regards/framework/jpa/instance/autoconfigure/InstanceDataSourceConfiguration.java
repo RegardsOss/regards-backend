@@ -22,12 +22,14 @@ import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
+import fr.cnes.regards.framework.encryption.configuration.CipherAutoConf;
 import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 
@@ -70,6 +72,8 @@ public class InstanceDataSourceConfiguration {
             datasource = DataSourceHelper.createEmbeddedDataSource(tenant, daoProperties.getEmbeddedPath());
 
         } else {
+            // this datasource does not need to be encrypted because it doesn't live in any database,
+            // just into the configuration file which is not encrypted but accesses are restricted.
             datasource = DataSourceHelper
                     .createPooledDataSource(tenant, daoProperties.getDatasource().getUrl(),
                                             daoProperties.getDatasource().getDriverClassName(),

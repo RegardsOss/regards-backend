@@ -87,8 +87,8 @@
 			<artifactId>flyway-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework.utils</groupId>
-			<artifactId>encryption-utils</artifactId>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>encryption-starter</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
