@@ -117,12 +117,14 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         addCommontMatchers(customizer);
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.links.length()", Matchers.equalTo(1)));
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content[0].links.length()", Matchers.equalTo(1)));
         performDefaultGet(SearchEngineController.TYPE_MAPPING
                 + SearchEngineController.SEARCH_DATASET_DATAOBJECTS_MAPPING, customizer, "Search all error",
                           ENGINE_TYPE, datasetUrn);
     }
 
-    // TODO search document, dataobjects in dataset, dataobjects returning datasets
+    // TODO search document, dataobjects returning datasets
 
     /**
      * Add query to current request
