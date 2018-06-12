@@ -225,7 +225,8 @@ public class DataSourcesAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     private void initDataSources(Map<String, DataSource> pExistingDataSources,
-            final List<TenantConnection> pConnections, boolean pNeedRegistration) {
+            final List<TenantConnection> pConnections, boolean pNeedRegistration)
+            throws BadPaddingException, IllegalBlockSizeException {
 
         for (final TenantConnection tenantConnection : pConnections) {
 
