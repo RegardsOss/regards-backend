@@ -42,9 +42,9 @@ import fr.cnes.regards.modules.project.service.IProjectConnectionService;
 import fr.cnes.regards.modules.project.service.IProjectService;
 
 /**
- * System API for managing tenant connection lifecycle
+ * System API for managing tenant connection lifecycle. Should only be used by other microservices.
+ * 
  * @author Marc Sordi
- *
  */
 @RestController
 @RequestMapping("/connections/{microservice}")
