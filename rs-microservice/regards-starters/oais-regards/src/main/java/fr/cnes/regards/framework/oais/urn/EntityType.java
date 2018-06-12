@@ -23,6 +23,7 @@ package fr.cnes.regards.framework.oais.urn;
  * List of available entity types
  *
  * @author msordi
+ * @author Christophe Mertz
  *
  */
 public enum EntityType {
@@ -30,5 +31,24 @@ public enum EntityType {
     /**
      * Possible model type
      */
-    COLLECTION, DOCUMENT, DATA, DATASET
+    COLLECTION("collection"),
+    DOCUMENT("document"),
+    DATA("data"),
+    DATASET("dataset");
+
+    private final String value;
+
+    private EntityType(String value) {
+        this.value = value;
+    }
+
+    public static EntityType fromString(String val) {
+        for (EntityType type : values()) {
+            if (type.value.equals(val)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException(String.format("No enum constant for type %s", val));
+    }
+
 }
