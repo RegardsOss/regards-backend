@@ -73,10 +73,12 @@ public class SearchEngineController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngineController.class);
 
+    public static final String ENGINE_TYPE_PARAMETER = "{engineType}";
+
     /**
      * Search main namespace
      */
-    public static final String TYPE_MAPPING = "/engines/{engineType}";
+    public static final String TYPE_MAPPING = "/engines/" + ENGINE_TYPE_PARAMETER;
 
     /**
      * Search route mapping

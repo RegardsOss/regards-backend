@@ -222,10 +222,6 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         sun.addProperty(AttributeBuilder.buildString(STAR, SUN));
         sun.addProperty(AttributeBuilder.buildString(ABSTRACT,
                                                      "The Sun is the star at the center of the Solar System."));
-        sun.setGeometry(IGeometry.point(IGeometry.position(50.0, 30.0)));
-        sun.addProperty(AttributeBuilder
-                .buildObject("TimePeriod", AttributeBuilder.buildDate(START_DATE, OffsetDateTime.now()),
-                             AttributeBuilder.buildDate(STOP_DATE, OffsetDateTime.now().plusMonths(36))));
         return Arrays.asList(sun);
     }
 
@@ -266,7 +262,11 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         thumbnail.setUri(URI.create("http://regards/thumbnail.png"));
         thumbnail.setImageWidth(250);
         thumbnail.setImageHeight(250);
-        planet.getFiles().put(DataType.THUMBNAIL, thumbnail);
+        mercury.getFiles().put(DataType.THUMBNAIL, thumbnail);
+        mercury.setGeometry(IGeometry.point(IGeometry.position(50.0, 30.0)));
+        mercury.addProperty(AttributeBuilder
+                .buildObject("TimePeriod", AttributeBuilder.buildDate(START_DATE, OffsetDateTime.now()),
+                             AttributeBuilder.buildDate(STOP_DATE, OffsetDateTime.now().plusMonths(36))));
 
         return planet;
     }

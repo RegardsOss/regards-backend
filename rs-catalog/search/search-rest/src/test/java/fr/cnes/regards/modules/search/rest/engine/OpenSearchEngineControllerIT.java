@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +32,7 @@ import com.google.common.net.HttpHeaders;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
 
 /**
  * Search engine tests
@@ -48,37 +51,34 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     private static final String ENGINE_TYPE = "opensearch";
 
     @Test
-    public void searchAllAtom() {
-
+    public void searchDataAtom() {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
-
-        // customizer.customizeHeaders().setContentType(MediaType.APPLICATION_ATOM_XML);
-        // customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
-        // customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
-        // customizer.customizeRequestParam().param("facets", "toto", "titi");
-
+        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
         customizer.customizeRequestParam().param("page", "0");
         customizer.customizeRequestParam().param("size", "10");
-        performDefaultGet(SearchEngineController.TYPE_MAPPING, customizer, "Search all error", ENGINE_TYPE);
+        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
     }
 
     @Test
-    public void searchAllJson() {
-
+    public void searchDataJson() {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-
-        // customizer.customizeHeaders().setContentType(MediaType.APPLICATION_ATOM_XML);
-        // customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
-        // customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
-        // customizer.customizeRequestParam().param("facets", "toto", "titi");
-
+        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         customizer.customizeRequestParam().param("page", "0");
         customizer.customizeRequestParam().param("size", "10");
-        performDefaultGet(SearchEngineController.TYPE_MAPPING, customizer, "Search all error", ENGINE_TYPE);
+        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
+    public void getDescription() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
+        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING_EXTRA,
+                          customizer, "open search description error", ENGINE_TYPE, OpenSearchEngine.EXTRA_DESCRIPTION);
     }
 
     @Test

@@ -17,10 +17,12 @@ import com.rometools.rome.feed.module.Module;
 import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
+import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
 import fr.cnes.regards.modules.entities.domain.attribute.ObjectAttribute;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.gml.impl.GmlTimeModuleImpl;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
+import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
 
 public class GeoTimeExtension implements IOpenSearchExtension {
 
@@ -44,8 +46,10 @@ public class GeoTimeExtension implements IOpenSearchExtension {
     public Module getAtomEntityBuilderModule(AbstractEntity entity, Gson gson) {
         // Add GML with time module to handle geo & time extension
         GmlTimeModuleImpl gmlMod = new GmlTimeModuleImpl();
-        Optional<AbstractAttribute<?>> startDate = findAttributeByName(entity.getProperties(), timeStartAttribute);
-        Optional<AbstractAttribute<?>> stopDate = findAttributeByName(entity.getProperties(), timeEndAttribute);
+        Optional<AbstractAttribute<?>> startDate = findAttributeByName(entity.getProperties(), timeStartAttribute
+                .replace(StaticProperties.PROPERTIES + ".", ""));
+        Optional<AbstractAttribute<?>> stopDate = findAttributeByName(entity.getProperties(), timeEndAttribute
+                .replace(StaticProperties.PROPERTIES + ".", ""));
         if (startDate.isPresent() && (startDate.get().getValue() instanceof OffsetDateTime) && stopDate.isPresent()
                 && (stopDate.get().getValue() instanceof OffsetDateTime)) {
             gmlMod.setStartDate((OffsetDateTime) startDate.get().getValue());
@@ -118,6 +122,15 @@ public class GeoTimeExtension implements IOpenSearchExtension {
 
     public void setTimeEndAttribute(String timeEndAttribute) {
         this.timeEndAttribute = timeEndAttribute;
+    }
+
+    @Override
+    public void applyExtensionToDescriptionParameter(OpenSearchParameter parameter) {
+        if (parameter.getName().equals(timeStartAttribute)) {
+            parameter.setValue("{time:start}");
+        } else if (parameter.getName().equals(timeEndAttribute)) {
+            parameter.setValue("{time:end}");
+        }
     }
 
 }

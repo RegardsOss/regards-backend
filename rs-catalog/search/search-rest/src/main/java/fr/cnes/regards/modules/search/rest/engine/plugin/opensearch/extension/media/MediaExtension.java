@@ -20,6 +20,7 @@ import fr.cnes.regards.modules.entities.domain.AbstractDataEntity;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
+import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
 
 public class MediaExtension implements IOpenSearchExtension {
 
@@ -33,7 +34,6 @@ public class MediaExtension implements IOpenSearchExtension {
     @Override
     public void applyExtensionToGeoJsonFeature(AbstractEntity entity, Feature feature) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -82,6 +82,11 @@ public class MediaExtension implements IOpenSearchExtension {
 
     public void setActivated(boolean activated) {
         this.activated = activated;
+    }
+
+    @Override
+    public void applyExtensionToDescriptionParameter(OpenSearchParameter parameter) {
+        // Nothing to do
     }
 
 }
