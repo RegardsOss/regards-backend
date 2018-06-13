@@ -41,6 +41,8 @@ import org.springframework.util.Assert;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.encryption.IEncryptionService;
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -123,11 +125,14 @@ public class PluginService implements IPluginService {
      */
     private Map<String, PluginMetaData> pluginMap;
 
-    public PluginService(final IPluginConfigurationRepository pPluginConfigurationRepository,
-            final IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver) {
-        this.repos = pPluginConfigurationRepository;
+    private IEncryptionService encryptionService;
+
+    public PluginService(final IPluginConfigurationRepository pluginConfigurationRepository, IPublisher publisher,
+            IRuntimeTenantResolver runtimeTenantResolver, IEncryptionService encryptionService) {
+        this.repos = pluginConfigurationRepository;
         this.publisher = publisher;
         this.runtimeTenantResolver = runtimeTenantResolver;
+        this.encryptionService = encryptionService;
     }
 
     private Map<String, PluginMetaData> getLoadedPlugins() {
@@ -172,7 +177,8 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    public PluginConfiguration savePluginConfiguration(PluginConfiguration plgConf) throws EntityInvalidException {
+    public PluginConfiguration savePluginConfiguration(PluginConfiguration plgConf)
+            throws EntityInvalidException, EncryptionException {
         // Check plugin configuration validity
         EntityInvalidException validityException = PluginUtils.validate(plgConf);
         if (validityException != null) {
@@ -194,6 +200,17 @@ public class PluginService implements IPluginService {
             }
         });
         boolean shouldPublishCreation = (plgConf.getId() == null);
+
+        // Now that generic concerns on PluginConfiguration are dealt with, lets encrypt sensitive plugin parameter
+        // only way to know if a plugin parameter is sensitive is via the plugin metadata
+        PluginMetaData pluginMeta = getLoadedPlugins().get(plgConf.getPluginId());
+        for (PluginParameterType paramMeta : pluginMeta.getParameters()) {
+            if (paramMeta.isSensible()) {
+                PluginParameter param = plgConf.getParameter(paramMeta.getName());
+                param.setValue(encryptionService.encrypt(param.getStripParameterValue()));
+            }
+        }
+
         PluginConfiguration newConf = repos.save(plgConf);
         if (shouldPublishCreation) {
             publisher.publish(new BroadcastPluginConfEvent(newConf.getId(),
@@ -240,7 +257,43 @@ public class PluginService implements IPluginService {
             throw new EntityNotFoundException(pluginConf.getId().toString(), PluginConfiguration.class);
         }
         boolean oldConfActive = oldConf.isActive();
-        PluginConfiguration newConf = savePluginConfiguration(pluginConf);
+        // Check plugin configuration validity
+        EntityInvalidException validityException = PluginUtils.validate(pluginConf);
+        if (validityException != null) {
+            throw validityException;
+        }
+
+        StringBuilder msg = new StringBuilder("Cannot save plugin configuration");
+        PluginConfiguration pluginConfInDb = repos.findOneByLabel(pluginConf.getLabel());
+        if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), pluginConf.getId()) && pluginConfInDb
+                .getLabel().equals(pluginConf.getLabel())) {
+            msg.append(String.format(". A plugin configuration with same label (%s) already exists.",
+                                     pluginConf.getLabel()));
+            throw new EntityInvalidException(msg.toString());
+        }
+
+        getLoadedPlugins().forEach((pluginId, metaData) -> {
+            if (metaData.getPluginClassName().equals(pluginConf.getPluginClassName())) {
+                pluginConf.setInterfaceNames(metaData.getInterfaceNames());
+            }
+        });
+
+        // Now that generic concerns on PluginConfiguration are dealt with, lets encrypt updated sensitive plugin parameter
+        // only way to know if a plugin parameter is sensitive is via the plugin metadata
+        PluginMetaData pluginMeta = getLoadedPlugins().get(pluginConf.getPluginId());
+        for (PluginParameterType paramMeta : pluginMeta.getParameters()) {
+            if (paramMeta.isSensible()) {
+                PluginParameter newParam = pluginConf.getParameter(paramMeta.getName());
+                PluginParameter oldParam = oldConf.getParameter(paramMeta.getName());
+                if(!Objects.equals(newParam.getStripParameterValue(), oldParam.getStripParameterValue())) {
+                    if(newParam != null) {
+                        newParam.setValue(encryptionService.encrypt(newParam.getStripParameterValue()));
+                    }
+                }
+            }
+        }
+
+        PluginConfiguration newConf = repos.save(pluginConf);
 
         if (oldConfActive != newConf.isActive()) {
             // For CATALOG
@@ -427,6 +480,10 @@ public class PluginService implements IPluginService {
                         break;
                     }
                 }
+            }
+            if (paramType.isSensible()) {
+                PluginParameter pluginParam = pluginConf.getParameter(paramType.getName());
+                pluginParam.setDecryptedValue(encryptionService.decrypt(pluginParam.getStripParameterValue()));
             }
         }
 

@@ -48,6 +48,7 @@ import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.encryption.configuration.CipherAutoConf;
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.JpaException;
 import fr.cnes.regards.framework.jpa.multitenant.event.MultitenantJpaEventHandler;
@@ -134,8 +135,7 @@ public class DataSourcesAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     @Bean(name = { DATA_SOURCE_BEAN_NAME })
-    public Map<String, DataSource> getDataSources()
-            throws JpaMultitenantException, BadPaddingException, IllegalBlockSizeException {
+    public Map<String, DataSource> getDataSources() throws JpaMultitenantException, EncryptionException {
 
         Map<String, DataSource> datasources = new HashMap<>();
 
@@ -192,7 +192,7 @@ public class DataSourcesAutoConfiguration {
     public MultitenantJpaEventHandler multitenantJpaEventHandler(IInstanceSubscriber instanceSubscriber,
             ITenantConnectionResolver multitenantResolver,
             @Qualifier(DATASOURCE_SCHEMA_HELPER_BEAN_NAME) IDatasourceSchemaHelper datasourceSchemaHelper)
-            throws JpaMultitenantException, BadPaddingException, IllegalBlockSizeException {
+            throws JpaMultitenantException, EncryptionException {
         return new MultitenantJpaEventHandler(microserviceName,
                                               getDataSources(),
                                               daoProperties,
@@ -225,8 +225,7 @@ public class DataSourcesAutoConfiguration {
      * @since 1.0-SNAPSHOT
      */
     private void initDataSources(Map<String, DataSource> pExistingDataSources,
-            final List<TenantConnection> pConnections, boolean pNeedRegistration)
-            throws BadPaddingException, IllegalBlockSizeException {
+            final List<TenantConnection> pConnections, boolean pNeedRegistration) {
 
         for (final TenantConnection tenantConnection : pConnections) {
 
@@ -269,8 +268,7 @@ public class DataSourcesAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(DataSource.class)
-    public DataSource projectsDataSource()
-            throws JpaMultitenantException, BadPaddingException, IllegalBlockSizeException {
+    public DataSource projectsDataSource() throws JpaMultitenantException, EncryptionException {
         final Map<String, DataSource> multitenantsDataSources = getDataSources();
         DataSource datasource = null;
         if ((multitenantsDataSources != null) && !multitenantsDataSources.isEmpty()) {

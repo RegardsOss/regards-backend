@@ -62,7 +62,7 @@ public interface ITenantConnectionResolver {
      *             implementation exception
      */
     void addTenantConnection(String microservice, TenantConnection tenantConnection)
-            throws JpaMultitenantException, BadPaddingException, IllegalBlockSizeException;
+            throws JpaMultitenantException;
 
     /**
      * Update connection state giving optional error cause

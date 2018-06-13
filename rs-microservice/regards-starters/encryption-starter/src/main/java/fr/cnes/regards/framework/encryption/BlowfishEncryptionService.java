@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 
 /**
@@ -37,7 +38,7 @@ public class BlowfishEncryptionService implements IEncryptionService {
     private IvParameterSpec ivParamSpec;
 
     @Override
-    public String encrypt(String toEncrypt) throws BadPaddingException, IllegalBlockSizeException {
+    public String encrypt(String toEncrypt) throws EncryptionException {
         if ((secretKey == null) || (ivParamSpec == null)) {
             throw new IllegalStateException(
                     "You cannot encrypt data before the key and initialization vector has been set.");
@@ -51,11 +52,13 @@ public class BlowfishEncryptionService implements IEncryptionService {
             //those two exception should never occur
             LOG.error("There was an issue with encryption using Blowfish", e);
             throw new RsRuntimeException(e);
+        } catch (BadPaddingException | IllegalBlockSizeException e) {
+            throw new EncryptionException(String.format("\"%s\" could not be encrypted using %s", toEncrypt, BLOWFISH_INSTANCE), e);
         }
     }
 
     @Override
-    public String decrypt(String toDecrypt) throws BadPaddingException, IllegalBlockSizeException {
+    public String decrypt(String toDecrypt) throws EncryptionException {
         if ((secretKey == null) || (ivParamSpec == null)) {
             throw new IllegalStateException(
                     "You cannot decrypt data before the key and initialization vector has been set.");
@@ -68,6 +71,8 @@ public class BlowfishEncryptionService implements IEncryptionService {
             //those two exception should never occur
             LOG.error("There was an issue with encryption using Blowfish", e);
             throw new RsRuntimeException(e);
+        } catch (BadPaddingException | IllegalBlockSizeException e) {
+            throw new EncryptionException(String.format("\"%s\" could not be decrypted using %s", toDecrypt, BLOWFISH_INSTANCE), e);
         }
     }
 

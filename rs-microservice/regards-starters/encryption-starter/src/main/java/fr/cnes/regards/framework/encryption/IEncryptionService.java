@@ -3,6 +3,8 @@ package fr.cnes.regards.framework.encryption;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
+
 /**
  * Encryption service API.
  *
@@ -17,7 +19,7 @@ public interface IEncryptionService {
      * @return encrypted message
      * @throws BadPaddingException
      */
-    String encrypt(String toEncrypt) throws BadPaddingException, IllegalBlockSizeException;
+    String encrypt(String toEncrypt) throws EncryptionException;
 
     /**
      * Decrypt a message
@@ -25,5 +27,5 @@ public interface IEncryptionService {
      * @param toDecrypt message to be decrypted
      * @return decrypted message
      */
-    String decrypt(String toDecrypt) throws BadPaddingException, IllegalBlockSizeException;
+    String decrypt(String toDecrypt) throws EncryptionException;
 }

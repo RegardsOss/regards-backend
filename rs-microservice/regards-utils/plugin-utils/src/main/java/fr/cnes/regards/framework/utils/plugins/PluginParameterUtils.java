@@ -126,10 +126,23 @@ public final class PluginParameterUtils {
         if (pluginParameter == null) {
             // Guess values
             result = PluginParameterType
-                    .create(field.getName(), field.getName(), null, field.getType(), paramType, false, false);
+                    .create(field.getName(), field.getName(), null, field.getType(), paramType, false, false, false);
         } else {
             // Report values from annotation
             String name = getFieldName(field, pluginParameter);
+
+            // Lets restrict @PluginParameter#sensitive() usage to strings.
+            if (pluginParameter.sensitive()) {
+                if (!String.class.isAssignableFrom(field.getType())) {
+                    String msg = String.format(
+                            "Sensible parameters must be of type %s. Faulty parameter: %s in plugin: %s",
+                            String.class.getName(),
+                            field.getName(),
+                            pluginClass.getName());
+                    LOGGER.error(msg);
+                    throw new PluginUtilsRuntimeException(msg);
+                }
+            }
 
             result = PluginParameterType.create(name,
                                                 pluginParameter.label(),
@@ -137,7 +150,8 @@ public final class PluginParameterUtils {
                                                 field.getType(),
                                                 paramType,
                                                 pluginParameter.optional(),
-                                                pluginParameter.unconfigurable());
+                                                pluginParameter.unconfigurable(),
+                                                pluginParameter.sensitive());
 
             // Manage markdown description
             String markdown = AnnotationUtils.loadMarkdown(pluginClass, pluginParameter.markdown());

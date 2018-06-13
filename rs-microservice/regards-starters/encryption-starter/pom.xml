@@ -24,6 +24,10 @@
             <artifactId>exception-utils</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>module-regards</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-test</artifactId>
             <scope>test</scope>

@@ -19,6 +19,10 @@
 
 package fr.cnes.regards.framework.modules.plugins.service;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.encryption.BlowfishEncryptionService;
+import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -70,14 +76,17 @@ public class PluginServiceTest extends PluginServiceUtility {
      * This method is run before all tests
      */
     @Before
-    public void init() {
+    public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn("tenant");
 
         publisherMocked = Mockito.mock(IPublisher.class);
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, publisherMocked, runtimeTenantResolver);
+        BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
+        blowfishEncryptionService
+                .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
+        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, publisherMocked, runtimeTenantResolver, blowfishEncryptionService);
         pluginServiceMocked.addPluginPackage("fr.cnes.regards.plugins");
         pluginServiceMocked.addPluginPackage("fr.cnes.regards.framework.plugins");
         pluginServiceMocked.addPluginPackage("fr.cnes.regards.framework.modules.plugins");

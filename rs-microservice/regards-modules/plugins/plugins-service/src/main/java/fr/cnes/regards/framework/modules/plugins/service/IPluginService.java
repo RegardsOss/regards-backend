@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -136,7 +137,8 @@ public interface IPluginService {
      * @return the saved {@link PluginConfiguration}
      * @throws EntityInvalidException thrown if an error occurs
      */
-    PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConfiguration) throws EntityInvalidException;
+    PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConfiguration)
+            throws EntityInvalidException, EncryptionException;
 
     /**
      * Delete a {@link PluginConfiguration}.
