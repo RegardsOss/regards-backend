@@ -27,12 +27,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.compress.utils.Lists;
-import org.assertj.core.util.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -65,7 +66,7 @@ import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 @Plugin(id = OpenSearchEngine.ENGINE_ID, author = "REGARDS Team", contact = "regards@c-s.fr",
         description = "Native search engine", licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
         version = "1.0.0")
-public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescription, Object> {
+public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescription, Object, List<String>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenSearchEngine.class);
 

@@ -262,9 +262,9 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         thumbnail.setUri(URI.create("http://regards/thumbnail.png"));
         thumbnail.setImageWidth(250);
         thumbnail.setImageHeight(250);
-        mercury.getFiles().put(DataType.THUMBNAIL, thumbnail);
-        mercury.setGeometry(IGeometry.point(IGeometry.position(50.0, 30.0)));
-        mercury.addProperty(AttributeBuilder
+        planet.getFiles().put(DataType.THUMBNAIL, thumbnail);
+        planet.setGeometry(IGeometry.point(IGeometry.position(50.0, 30.0)));
+        planet.addProperty(AttributeBuilder
                 .buildObject("TimePeriod", AttributeBuilder.buildDate(START_DATE, OffsetDateTime.now()),
                              AttributeBuilder.buildDate(STOP_DATE, OffsetDateTime.now().plusMonths(36))));
 

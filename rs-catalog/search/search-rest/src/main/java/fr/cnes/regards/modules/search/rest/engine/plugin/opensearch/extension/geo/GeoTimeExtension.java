@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.assertj.core.util.Lists;
-
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.rometools.modules.georss.geometries.AbstractGeometry;
 import com.rometools.modules.georss.geometries.Point;
