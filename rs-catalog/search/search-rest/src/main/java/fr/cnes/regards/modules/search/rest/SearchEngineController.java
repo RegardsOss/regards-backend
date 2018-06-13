@@ -98,6 +98,11 @@ public class SearchEngineController {
      */
     public static final String DESCRIPTION_MAPPING = "/description";
 
+    /**
+     * To get all values of a property
+     */
+    public static final String PROPERTY_VALUES_MAPPING = "/properties/{propertyName}/values";
+
     // Search on all entities
 
     public static final String ENTITIES_MAPPING = "/entities";
@@ -116,6 +121,9 @@ public class SearchEngineController {
 
     public static final String SEARCH_COLLECTIONS_MAPPING_EXTRA = SEARCH_COLLECTIONS_MAPPING + EXTRA_MAPPING;
 
+    public static final String SEARCH_COLLECTIONS_PROPERTY_VALUES = SEARCH_COLLECTIONS_MAPPING
+            + PROPERTY_VALUES_MAPPING;
+
     public static final String GET_COLLECTION_MAPPING = COLLECTIONS_MAPPING + URN_MAPPING;
 
     // Document mappings
@@ -126,6 +134,8 @@ public class SearchEngineController {
 
     public static final String SEARCH_DOCUMENTS_MAPPING_EXTRA = SEARCH_DOCUMENTS_MAPPING + EXTRA_MAPPING;
 
+    public static final String SEARCH_DOCUMENTS_PROPERTY_VALUES = SEARCH_DOCUMENTS_MAPPING + PROPERTY_VALUES_MAPPING;
+
     public static final String GET_DOCUMENT_MAPPING = DOCUMENTS_MAPPING + URN_MAPPING;
 
     // Dataset mapping
@@ -135,6 +145,8 @@ public class SearchEngineController {
     public static final String SEARCH_DATASETS_MAPPING = DATASETS_MAPPING + SEARCH_MAPPING;
 
     public static final String SEARCH_DATASETS_MAPPING_EXTRA = SEARCH_DATASETS_MAPPING + EXTRA_MAPPING;
+
+    public static final String SEARCH_DATASETS_PROPERTY_VALUES = SEARCH_DATASETS_MAPPING + PROPERTY_VALUES_MAPPING;
 
     public static final String GET_DATASET_MAPPING = DATASETS_MAPPING + URN_MAPPING;
 
@@ -148,6 +160,9 @@ public class SearchEngineController {
 
     public static final String SEARCH_DATAOBJECTS_MAPPING_EXTRA = SEARCH_DATAOBJECTS_MAPPING + EXTRA_MAPPING;
 
+    public static final String SEARCH_DATAOBJECTS_PROPERTY_VALUES = SEARCH_DATAOBJECTS_MAPPING
+            + PROPERTY_VALUES_MAPPING;
+
     public static final String GET_DATAOBJECT_MAPPING = DATAOBJECTS_MAPPING + URN_MAPPING;
 
     // Search dataobjects on a single dataset mapping
@@ -158,6 +173,9 @@ public class SearchEngineController {
 
     public static final String SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA = SEARCH_DATASET_DATAOBJECTS_MAPPING
             + EXTRA_MAPPING;
+
+    public static final String SEARCH_DATASET_DATAOBJECTS_PROPERTY_VALUES = SEARCH_DATASET_DATAOBJECTS_MAPPING
+            + PROPERTY_VALUES_MAPPING;
 
     // Fallback to {@link #GET_DATAOBJECT_MAPPING} for single data object retrieval
 
@@ -282,6 +300,22 @@ public class SearchEngineController {
     }
 
     /**
+     * Search property values on all collections request
+     */
+    @RequestMapping(method = RequestMethod.GET, value = SEARCH_COLLECTIONS_PROPERTY_VALUES)
+    @ResourceAccess(description = "Get collection property values", role = DefaultRole.PUBLIC)
+    public ResponseEntity<?> searchCollectionPropertyValues(@PathVariable String engineType,
+            @PathVariable String propertyName, @RequestHeader HttpHeaders headers,
+            @RequestParam MultiValueMap<String, String> queryParams, @RequestParam int maxCount)
+            throws ModuleException {
+        LOGGER.debug("Search collection property values for \"{}\" delegated to engine \"{}\"", propertyName,
+                     engineType);
+        return dispatcher.dispatchRequest(SearchContext
+                .build(SearchType.COLLECTIONS, engineType, headers, getDecodedParams(queryParams), null)
+                .withPropertyName(propertyName).withMaxCount(maxCount));
+    }
+
+    /**
      * Get a collection from its URN
      */
     @RequestMapping(method = RequestMethod.GET, value = GET_COLLECTION_MAPPING)
@@ -323,6 +357,21 @@ public class SearchEngineController {
     }
 
     /**
+     * Search property values on all documents request
+     */
+    @RequestMapping(method = RequestMethod.GET, value = SEARCH_DOCUMENTS_PROPERTY_VALUES)
+    @ResourceAccess(description = "Get document property values", role = DefaultRole.PUBLIC)
+    public ResponseEntity<?> searchDocumentPropertyValues(@PathVariable String engineType,
+            @PathVariable String propertyName, @RequestHeader HttpHeaders headers,
+            @RequestParam MultiValueMap<String, String> queryParams, @RequestParam int maxCount)
+            throws ModuleException {
+        LOGGER.debug("Search document property values for \"{}\" delegated to engine \"{}\"", propertyName, engineType);
+        return dispatcher.dispatchRequest(SearchContext
+                .build(SearchType.DOCUMENTS, engineType, headers, getDecodedParams(queryParams), null)
+                .withPropertyName(propertyName).withMaxCount(maxCount));
+    }
+
+    /**
      * Get a document from its URN
      */
     @RequestMapping(method = RequestMethod.GET, value = GET_DOCUMENT_MAPPING)
@@ -360,6 +409,21 @@ public class SearchEngineController {
         return dispatcher.dispatchRequest(SearchContext
                 .build(SearchType.DATASETS, engineType, headers, getDecodedParams(queryParams), pageable)
                 .withExtra(extra));
+    }
+
+    /**
+     * Search property values on all datasets request
+     */
+    @RequestMapping(method = RequestMethod.GET, value = SEARCH_DATASETS_PROPERTY_VALUES)
+    @ResourceAccess(description = "Get dataset property values", role = DefaultRole.PUBLIC)
+    public ResponseEntity<?> searchDatasetPropertyValues(@PathVariable String engineType,
+            @PathVariable String propertyName, @RequestHeader HttpHeaders headers,
+            @RequestParam MultiValueMap<String, String> queryParams, @RequestParam int maxCount)
+            throws ModuleException {
+        LOGGER.debug("Search dataset property values for \"{}\" delegated to engine \"{}\"", propertyName, engineType);
+        return dispatcher.dispatchRequest(SearchContext
+                .build(SearchType.DATASETS, engineType, headers, getDecodedParams(queryParams), null)
+                .withPropertyName(propertyName).withMaxCount(maxCount));
     }
 
     /**
@@ -434,6 +498,22 @@ public class SearchEngineController {
     }
 
     /**
+     * Search property values on all dataobjects request
+     */
+    @RequestMapping(method = RequestMethod.GET, value = SEARCH_DATAOBJECTS_PROPERTY_VALUES)
+    @ResourceAccess(description = "Get dataobject property values", role = DefaultRole.PUBLIC)
+    public ResponseEntity<?> searchDataobjectPropertyValues(@PathVariable String engineType,
+            @PathVariable String propertyName, @RequestHeader HttpHeaders headers,
+            @RequestParam MultiValueMap<String, String> queryParams, @RequestParam int maxCount)
+            throws ModuleException {
+        LOGGER.debug("Search dataobject property values for \"{}\" delegated to engine \"{}\"", propertyName,
+                     engineType);
+        return dispatcher.dispatchRequest(SearchContext
+                .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), null)
+                .withPropertyName(propertyName).withMaxCount(maxCount));
+    }
+
+    /**
      * Get a dataobject from its URN
      */
     @RequestMapping(method = RequestMethod.GET, value = GET_DATAOBJECT_MAPPING)
@@ -453,7 +533,6 @@ public class SearchEngineController {
      * This method uses a {@link String} to handle dataset URN because HATEOAS link builder cannot manage complex type
      * conversion at the moment. It does not consider custom {@link Converter}.
      */
-    // FIXME
     @RequestMapping(method = RequestMethod.GET, value = SEARCH_DATASET_DATAOBJECTS_MAPPING)
     @ResourceAccess(description = "Search engines dispatcher for single dataset search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchSingleDataset(@PathVariable String engineType, @PathVariable String datasetUrn,
@@ -473,7 +552,6 @@ public class SearchEngineController {
      * This method uses a {@link String} to handle dataset URN because HATEOAS link builder cannot manage complex type
      * conversion at the moment. It does not consider custom {@link Converter}.
      */
-    // FIXME
     @RequestMapping(method = RequestMethod.GET, value = SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA)
     @ResourceAccess(description = "Extra mapping for single dataset search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchSingleDatasetExtra(@PathVariable String engineType, @PathVariable String datasetUrn,
@@ -485,6 +563,23 @@ public class SearchEngineController {
         return dispatcher.dispatchRequest(SearchContext
                 .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), pageable)
                 .withDatasetUrn(urn).withExtra(extra));
+    }
+
+    /**
+     * Search property values on dataobjects of a single dataset request
+     */
+    @RequestMapping(method = RequestMethod.GET, value = SEARCH_DATASET_DATAOBJECTS_PROPERTY_VALUES)
+    @ResourceAccess(description = "Get dataobject property values within a dataset ", role = DefaultRole.PUBLIC)
+    public ResponseEntity<?> searchDataobjectPropertyValuesOnDataset(@PathVariable String engineType,
+            @PathVariable String datasetUrn, @PathVariable String propertyName, @RequestHeader HttpHeaders headers,
+            @RequestParam MultiValueMap<String, String> queryParams, @RequestParam int maxCount)
+            throws ModuleException {
+        LOGGER.debug("Search dataobject property values for \"{}\" on dataset \"{}\" delegated to engine \"{}\"",
+                     propertyName, datasetUrn, engineType);
+        UniformResourceName urn = UniformResourceName.fromString(datasetUrn);
+        return dispatcher.dispatchRequest(SearchContext
+                .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), null)
+                .withDatasetUrn(urn).withPropertyName(propertyName).withMaxCount(maxCount));
     }
 
     // Search on dataobjects returning datasets

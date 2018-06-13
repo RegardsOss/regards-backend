@@ -54,23 +54,28 @@ import fr.cnes.regards.modules.search.service.ICatalogSearchService;
  */
 @Plugin(id = "legacy", author = "REGARDS Team", contact = "regards@c-s.fr", description = "Legacy search engine",
         licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss", version = "1.0.0")
-public class LegacySearchEngine
-        implements ISearchEngine<FacettedPagedResources<Resource<AbstractEntity>>, Void, Resource<AbstractEntity>> {
+public class LegacySearchEngine implements
+        ISearchEngine<FacettedPagedResources<Resource<AbstractEntity>>, Void, Resource<AbstractEntity>, List<String>> {
 
     /**
      * Query parameter for facets
      */
-    protected static final String FACETS = "facets";
+    private static final String FACETS = "facets";
 
     /**
      * Pagination property
      */
-    protected static final String PAGE_NUMBER = "page";
+    private static final String PAGE_NUMBER = "page";
 
     /**
      * Pagination property
      */
-    protected static final String PAGE_SIZE = "size";
+    private static final String PAGE_SIZE = "size";
+
+    /**
+     * Property values request property : text that property should contains
+     */
+    private static final String PARTIAL_TEXT = "partialText";
 
     /**
      * Query parser
@@ -101,9 +106,10 @@ public class LegacySearchEngine
         return openSearchService.parse(queryParams);
     }
 
-    @Override
-    public ResponseEntity<FacettedPagedResources<Resource<AbstractEntity>>> search(SearchContext context)
-            throws ModuleException {
+    /**
+     * Parse request parameters and and add dataset context if necessary
+     */
+    private ICriterion parse(SearchContext context) throws ModuleException {
         // Convert parameters to business criterion
         ICriterion criterion = parse(context.getQueryParams());
         // Manage dataset URN path parameter as criterion
@@ -111,6 +117,14 @@ public class LegacySearchEngine
             criterion = ICriterion.and(criterion,
                                        ICriterion.eq(StaticProperties.TAGS, context.getDatasetUrn().get().toString()));
         }
+        return criterion;
+    }
+
+    @Override
+    public ResponseEntity<FacettedPagedResources<Resource<AbstractEntity>>> search(SearchContext context)
+            throws ModuleException {
+        // Convert parameters to business criterion considering dataset
+        ICriterion criterion = parse(context);
         // Extract facets
         List<String> facets = context.getQueryParams().get(FACETS);
         // Do business search
@@ -180,5 +194,19 @@ public class LegacySearchEngine
         Resource<AbstractEntity> resource = resourceService.toResource(entity);
         resource.add(SearchEngineController.buildEntityLinks(resourceService, context, entity));
         return new ResponseEntity<>(resource, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<List<String>> getPropertyValues(SearchContext context) throws ModuleException {
+        // Convert parameters to business criterion considering dataset
+        ICriterion criterion = parse(context);
+        // Extract optional request parameters
+        String partialText = context.getQueryParams().getFirst(PARTIAL_TEXT);
+        // Do business search
+        List<String> values = searchService.retrieveEnumeratedPropertyValues(criterion, context.getSearchType(),
+                                                                             context.getPropertyName().get(),
+                                                                             context.getMaxCount().get(), partialText);
+        // Build response
+        return ResponseEntity.ok(values);
     }
 }

@@ -33,7 +33,9 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 /**
  * Search context for search engine.<br/>
  * Use {@link #build(SearchType, String, HttpHeaders, MultiValueMap, Pageable)} to initialize a new context.<br/>
- * Additional properties can be set using {@link #withDatasetId(String)} and {@link #withExtra(String)}.
+ * Additional optional properties can be set using {@link #withDatasetUrn(UniformResourceName)},
+ * {@link #withExtra(String)},
+ * {@link #withUrn(UniformResourceName)}, {@link #withPropertyName(String)}.
  *
  * @author Marc Sordi
  *
@@ -67,6 +69,16 @@ public class SearchContext {
      * For example, this parameter is used for OpenSearch description handling.
      */
     private String extra;
+
+    /**
+     * Property name to retrieve its available values
+     */
+    private String propertyName;
+
+    /**
+     * Maximum result count for property values
+     */
+    private Integer maxCount;
 
     /**
      * Request HTTP headers, useful for managing return {@link MediaType}
@@ -122,6 +134,22 @@ public class SearchContext {
 
     public void setExtra(String extra) {
         this.extra = extra;
+    }
+
+    public Optional<String> getPropertyName() {
+        return Optional.ofNullable(propertyName);
+    }
+
+    public void setPropertyName(String propertyName) {
+        this.propertyName = propertyName;
+    }
+
+    public Optional<Integer> getMaxCount() {
+        return Optional.ofNullable(maxCount);
+    }
+
+    public void setMaxCount(Integer maxCount) {
+        this.maxCount = maxCount;
     }
 
     public HttpHeaders getHeaders() {
@@ -183,6 +211,22 @@ public class SearchContext {
      */
     public SearchContext withExtra(String extra) {
         this.extra = extra;
+        return this;
+    }
+
+    /**
+     * Fluent API
+     */
+    public SearchContext withPropertyName(String propertyName) {
+        this.propertyName = propertyName;
+        return this;
+    }
+
+    /**
+     * Fluent API
+     */
+    public SearchContext withMaxCount(Integer maxCount) {
+        this.maxCount = maxCount;
         return this;
     }
 }

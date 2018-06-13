@@ -196,40 +196,10 @@ public class CatalogSearchService implements ICatalogSearchService {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchType searchType, List<String> facets,
             Pageable pageable) throws SearchException {
-        switch (searchType) {
-            case ALL:
-                return (FacetPage<R>) search(criterion, Searches.onAllEntities(tenantResolver.getTenant()), facets,
-                                             pageable);
-            case COLLECTIONS:
-                return (FacetPage<R>) search(criterion,
-                                             Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.COLLECTION),
-                                             facets, pageable);
-            case DATAOBJECTS:
-                return (FacetPage<R>) search(criterion,
-                                             Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA),
-                                             facets, pageable);
-            case DATASETS:
-                return (FacetPage<R>) search(criterion,
-                                             Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATASET),
-                                             facets, pageable);
-            case DOCUMENTS:
-                return (FacetPage<R>) search(criterion,
-                                             Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DOCUMENT),
-                                             facets, pageable);
-
-            case DATAOBJECTS_RETURN_DATASETS:
-                return (FacetPage<R>) search(criterion,
-                                             Searches.onSingleEntityReturningJoinEntity(tenantResolver.getTenant(),
-                                                                                        EntityType.DATA,
-                                                                                        EntityType.DATASET),
-                                             facets, pageable);
-            default:
-                throw new UnsupportedOperationException("Unsupported search type : " + searchType);
-        }
+        return search(criterion, getSearchKey(searchType), facets, pageable);
     }
 
     /**
@@ -363,20 +333,14 @@ public class CatalogSearchService implements ICatalogSearchService {
         }
     }
 
+    @Deprecated // Only use method with ICriterion
     @Override
-    public List<String> retrieveEnumeratedPropertyValues(MultiValueMap<String, String> allParams,
-            SimpleSearchKey<DataObject> searchKey, String propertyPath, int maxCount, String partialText)
-            throws SearchException {
+    public <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(MultiValueMap<String, String> allParams,
+            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText) throws SearchException {
         try {
             // Build criterion from query
             ICriterion criterion = openSearchService.parse(allParams);
-            // Apply security filter (ie user groups)
-            criterion = accessRightFilter.addAccessRights(criterion);
-            // Add partialText contains criterion if not empty
-            if (!Strings.isNullOrEmpty(partialText)) {
-                criterion = ICriterion.and(criterion, ICriterion.contains(propertyPath, partialText));
-            }
-            return searchService.searchUniqueTopValues(searchKey, criterion, propertyPath, maxCount);
+            return retrieveEnumeratedPropertyValues(criterion, searchKey, propertyPath, maxCount, partialText);
         } catch (OpenSearchParseException e) {
             String message = "No query parameter";
             if (allParams != null) {
@@ -385,9 +349,71 @@ public class CatalogSearchService implements ICatalogSearchService {
                 message = sj.toString();
             }
             throw new SearchException(message, e);
+        }
+    }
+
+    @Override
+    public <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(ICriterion criterion,
+            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText) throws SearchException {
+
+        try {
+            // Apply security filter (ie user groups)
+            criterion = accessRightFilter.addAccessRights(criterion);
+            // Add partialText contains criterion if not empty
+            if (!Strings.isNullOrEmpty(partialText)) {
+                criterion = ICriterion.and(criterion, ICriterion.contains(propertyPath, partialText));
+            }
+            return searchService.searchUniqueTopValues(searchKey, criterion, propertyPath, maxCount);
         } catch (AccessRightFilterException e) {
             LOGGER.debug("Falling back to empty list of values", e);
             return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public List<String> retrieveEnumeratedPropertyValues(ICriterion criterion, SearchType searchType,
+            String propertyPath, int maxCount, String partialText) throws SearchException {
+        return retrieveEnumeratedPropertyValues(criterion, getSimpleSearchKey(searchType), propertyPath, maxCount,
+                                                partialText);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends IIndexable> SimpleSearchKey<T> getSimpleSearchKey(SearchType searchType) {
+        switch (searchType) {
+            case ALL:
+                return (SimpleSearchKey<T>) Searches.onAllEntities(tenantResolver.getTenant());
+            case COLLECTIONS:
+                return (SimpleSearchKey<T>) Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.COLLECTION);
+            case DATAOBJECTS:
+                return (SimpleSearchKey<T>) Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
+            case DATASETS:
+                return (SimpleSearchKey<T>) Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATASET);
+            case DOCUMENTS:
+                return (SimpleSearchKey<T>) Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DOCUMENT);
+            default:
+                throw new UnsupportedOperationException("Unsupported search type : " + searchType);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private <S, R extends IIndexable> SearchKey<S, R> getSearchKey(SearchType searchType) {
+        switch (searchType) {
+            case ALL:
+                return (SearchKey<S, R>) Searches.onAllEntities(tenantResolver.getTenant());
+            case COLLECTIONS:
+                return (SearchKey<S, R>) Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.COLLECTION);
+            case DATAOBJECTS:
+                return (SearchKey<S, R>) Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
+            case DATASETS:
+                return (SearchKey<S, R>) Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATASET);
+            case DOCUMENTS:
+                return (SearchKey<S, R>) Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DOCUMENT);
+            case DATAOBJECTS_RETURN_DATASETS:
+                return (SearchKey<S, R>) Searches.onSingleEntityReturningJoinEntity(tenantResolver.getTenant(),
+                                                                                    EntityType.DATA,
+                                                                                    EntityType.DATASET);
+            default:
+                throw new UnsupportedOperationException("Unsupported search type : " + searchType);
         }
     }
 }

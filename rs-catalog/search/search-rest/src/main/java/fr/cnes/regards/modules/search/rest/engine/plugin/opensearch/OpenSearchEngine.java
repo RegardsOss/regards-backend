@@ -58,7 +58,7 @@ import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 @Plugin(id = "OpenSearchEngine", author = "REGARDS Team", contact = "regards@c-s.fr",
         description = "Native search engine", licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
         version = "1.0.0")
-public class OpenSearchEngine implements ISearchEngine<Object, Void, Object> {
+public class OpenSearchEngine implements ISearchEngine<Object, Void, Object, List<String>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenSearchEngine.class);
 

@@ -51,7 +51,7 @@ public interface ICatalogSearchService {
      * @return the page of elements matching the query
      * @throws SearchException when an error occurs while parsing the query
      */
-    @Deprecated
+    @Deprecated // Only use method with ICriterion
     <S, R extends IIndexable> FacetPage<R> search(MultiValueMap<String, String> allParams, SearchKey<S, R> searchKey,
             List<String> facets, Pageable pageable) throws SearchException;
 
@@ -93,14 +93,31 @@ public interface ICatalogSearchService {
             throws EntityOperationForbiddenException, EntityNotFoundException;
 
     /**
-     * Retrieve given STRING property enumerated values (limited by maxCount, partial text contains and dataobjects
+     * Retrieve given STRING property enumerated values (limited by maxCount, partial text contains and
      * openSearch request from allParams (as usual)).
      * @param propertyPath concerned STRING property path
      * @param allParams opensearch request
      * @param partialText text that property should contains (can be null)
      * @param maxCount maximum result count
      */
-    List<String> retrieveEnumeratedPropertyValues(MultiValueMap<String, String> allParams,
-            SimpleSearchKey<DataObject> searchKey, String propertyPath, int maxCount, String partialText)
-            throws SearchException;
+    @Deprecated // Only use method with ICriterion
+    <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(MultiValueMap<String, String> allParams,
+            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText) throws SearchException;
+
+    /**
+     * Retrieve property values for specified property name
+     * @param criterion business criterions
+     * @param searchKey the search key containing the search type and the result type
+     * @param propertyPath target propertu
+     * @param maxCount maximum result count
+     * @param partialText text that property should contains (can be null)
+     */
+    <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(ICriterion criterion,
+            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText) throws SearchException;
+
+    /**
+     * Same as below but using {@link SearchType}
+     */
+    List<String> retrieveEnumeratedPropertyValues(ICriterion criterion, SearchType searchType, String propertyPath,
+            int maxCount, String partialText) throws SearchException;
 }

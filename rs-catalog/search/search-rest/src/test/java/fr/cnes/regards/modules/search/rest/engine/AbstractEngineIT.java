@@ -23,7 +23,9 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.collections4.map.HashedMap;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +40,11 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.Collection;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.entities.domain.Document;
 import fr.cnes.regards.modules.entities.domain.attribute.builder.AttributeBuilder;
 import fr.cnes.regards.modules.entities.gson.MultitenantFlattenedAttributeAdapterFactory;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
@@ -68,6 +72,8 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     // Galaxy properties
     protected static final String GALAXY = "galaxy";
 
+    protected static final String MILKY_WAY = "Milky way";
+
     // Star properties
     protected static final String STAR = "star";
 
@@ -77,6 +83,8 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     protected static final String STAR_SYSTEM = "startSystem";
 
     protected static final String SOLAR_SYSTEM = "Solar system";
+
+    protected static final String KEPLER_90 = "Kepler 90 planetary system";
 
     // Planet properties
     protected static final String PLANET = "planet";
@@ -88,6 +96,10 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     protected static final String PLANET_TYPE_ICE_GIANT = "Ice giant";
 
     protected static final String PLANET_TYPE_TELLURIC = "Telluric";
+
+    protected static final String PLANET_DIAMETER = "diameter";
+
+    protected static final String PLANET_SUN_DISTANCE = "sun_distance";
 
     private static final String START_DATE = "startDate";
 
@@ -110,6 +122,10 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     protected MultitenantFlattenedAttributeAdapterFactory gsonAttributeFactory;
+
+    // Keep reference to astronomical object
+
+    protected Map<String, AbstractEntity> astroObjects = new HashedMap<>();
 
     protected void initIndex(String index) {
         if (esRepository.indexExists(index)) {
@@ -182,21 +198,27 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         // Create data
         esRepository.saveBulk(getDefaultTenant(), createGalaxies(galaxyModel));
         esRepository.saveBulk(getDefaultTenant(), createStars(starModel));
-        Dataset solarSystem = createSolarSystem(starSystemModel);
-        esRepository.saveBulk(getDefaultTenant(), solarSystem);
+
+        Dataset solarSystem = createStelarSystem(starSystemModel, SOLAR_SYSTEM);
+        esRepository.save(getDefaultTenant(), solarSystem);
         esRepository.saveBulk(getDefaultTenant(), createPlanets(planetModel, solarSystem.getIpId()));
+
+        Dataset kepler90System = createStelarSystem(starSystemModel, KEPLER_90);
+        esRepository.save(getDefaultTenant(), kepler90System);
+        DataObject kepler90b = createPlanet(planetModel, "Kepler 90b", PLANET_TYPE_TELLURIC, 1000, 50_000_000L);
+        esRepository.save(getDefaultTenant(), kepler90b);
     }
 
     protected List<Collection> createGalaxies(Model galaxyModel) {
-        Collection milkyWay = new Collection(galaxyModel, getDefaultTenant(), "Milky way");
-        milkyWay.addProperty(AttributeBuilder.buildString(GALAXY, "Milky way"));
+        Collection milkyWay = createEntity(galaxyModel, MILKY_WAY);
+        milkyWay.addProperty(AttributeBuilder.buildString(GALAXY, MILKY_WAY));
         milkyWay.addProperty(AttributeBuilder
                 .buildString(ABSTRACT, "The Milky Way is the galaxy that contains our Solar System."));
         return Arrays.asList(milkyWay);
     }
 
     protected List<Collection> createStars(Model starModel) {
-        Collection sun = new Collection(starModel, getDefaultTenant(), SUN);
+        Collection sun = createEntity(starModel, SUN);
         sun.addProperty(AttributeBuilder.buildString(STAR, SUN));
         sun.addProperty(AttributeBuilder.buildString(ABSTRACT,
                                                      "The Sun is the star at the center of the Solar System."));
@@ -207,33 +229,92 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         return Arrays.asList(sun);
     }
 
-    protected Dataset createSolarSystem(Model starSystemModel) {
-        Dataset solarSystem = new Dataset(starSystemModel, getDefaultTenant(), SOLAR_SYSTEM);
-        solarSystem.addProperty(AttributeBuilder.buildString(STAR_SYSTEM, SOLAR_SYSTEM));
+    protected Dataset createStelarSystem(Model starSystemModel, String label) {
+        Dataset solarSystem = createEntity(starSystemModel, label);
+        solarSystem.addProperty(AttributeBuilder.buildString(STAR_SYSTEM, label));
         return solarSystem;
     }
 
     protected List<DataObject> createPlanets(Model planetModel, UniformResourceName dataset) {
+        // Create planets
+        List<DataObject> planets = new ArrayList<>();
+        planets.add(createMercury(planetModel));
+        planets.add(createPlanet(planetModel, "Venus", PLANET_TYPE_TELLURIC, 12104, 108_000_000L));
+        planets.add(createPlanet(planetModel, "Earth", PLANET_TYPE_TELLURIC, 12756, 150_000_000L));
+        planets.add(createPlanet(planetModel, "Mars", PLANET_TYPE_TELLURIC, 6800, 228_000_000L));
+        planets.add(createPlanet(planetModel, "Jupiter", PLANET_TYPE_GAS_GIANT, 143_000, 778_000_000L));
+        planets.add(createPlanet(planetModel, "Saturn", PLANET_TYPE_GAS_GIANT, 120_536, 1_427_000_000L));
+        planets.add(createPlanet(planetModel, "Uranus", PLANET_TYPE_ICE_GIANT, 51_800, 2_800_000_000L));
+        planets.add(createPlanet(planetModel, "Neptune", PLANET_TYPE_ICE_GIANT, 49_500, 4_489_435_980L));
+        // Attach planets to dataset
+        planets.forEach(planet -> planet.getTags().add(dataset.toString()));
+        return planets;
+    }
 
-        DataObject mercury = new DataObject(planetModel, getDefaultTenant(), "Mercury");
-        mercury.addProperty(AttributeBuilder.buildString(PLANET, "Mercury"));
-        mercury.addProperty(AttributeBuilder.buildString(PLANET_TYPE, PLANET_TYPE_TELLURIC));
+    protected DataObject createMercury(Model planetModel) {
+        DataObject planet = createPlanet(planetModel, "Mercury", PLANET_TYPE_TELLURIC, 4878, 58_000_000L);
+
         DataFile quicklook = new DataFile();
         quicklook.setMimeType(MimeType.valueOf("application/jpg"));
         quicklook.setUri(URI.create("http://regards/le_quicklook.jpg"));
         quicklook.setImageWidth(100);
         quicklook.setImageHeight(100);
-        mercury.getFiles().put(DataType.QUICKLOOK_SD, quicklook);
+        planet.getFiles().put(DataType.QUICKLOOK_SD, quicklook);
 
         DataFile thumbnail = new DataFile();
         thumbnail.setMimeType(MimeType.valueOf("application/png"));
         thumbnail.setUri(URI.create("http://regards/thumbnail.png"));
         thumbnail.setImageWidth(250);
         thumbnail.setImageHeight(250);
-        mercury.getFiles().put(DataType.THUMBNAIL, thumbnail);
+        planet.getFiles().put(DataType.THUMBNAIL, thumbnail);
 
-        mercury.getTags().add(dataset.toString());
+        return planet;
+    }
 
-        return Arrays.asList(mercury);
+    protected DataObject createPlanet(Model planetModel, String name, String type, Integer diameter, Long sunDistance) {
+        DataObject planet = createEntity(planetModel, name);
+        planet.addProperty(AttributeBuilder.buildString(PLANET, name));
+        planet.addProperty(AttributeBuilder.buildString(PLANET_TYPE, type));
+        planet.addProperty(AttributeBuilder.buildInteger(PLANET_DIAMETER, diameter));
+        planet.addProperty(AttributeBuilder.buildLong(PLANET_SUN_DISTANCE, sunDistance));
+        return planet;
+    }
+
+    /**
+     * Init an entity and add it to the local astronomical object map with label as key
+     */
+    @SuppressWarnings("unchecked")
+    protected <T> T createEntity(Model model, String label) {
+        AbstractEntity entity;
+        switch (model.getType()) {
+            case COLLECTION:
+                entity = new Collection(model, getDefaultTenant(), label);
+                break;
+            case DATA:
+                entity = new DataObject(model, getDefaultTenant(), label);
+                break;
+            case DATASET:
+                entity = new Dataset(model, getDefaultTenant(), label);
+                break;
+            case DOCUMENT:
+                entity = new Document(model, getDefaultTenant(), label);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown entity type " + model.getType());
+        }
+        if (astroObjects.containsKey(label)) {
+            throw new UnsupportedOperationException("Label \"" + label
+                    + "\" for astronomical object already exists! Please change it and relaunch test!");
+        }
+        astroObjects.put(label, entity);
+        return (T) entity;
+    }
+
+    /**
+     * Retrieve an astronomical object by its label
+     */
+    @SuppressWarnings("unchecked")
+    protected <T> T getAstroObject(String label) {
+        return (T) astroObjects.get(label);
     }
 }

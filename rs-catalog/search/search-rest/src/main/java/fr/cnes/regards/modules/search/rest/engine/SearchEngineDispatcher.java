@@ -92,27 +92,31 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
                 LOGGER.debug("Getting entity with URN : {}", context.getUrn().get().toString());
             }
             context.getHeaders().forEach((key, values) -> LOGGER.debug("Header : {} -> {}", key, values.toString()));
-            context.getQueryParams()
-                    .forEach((key, values) -> LOGGER.debug("Query param : {} -> {}", key, values.toString()));
-            LOGGER.debug(context.getPageable().toString());
+            if (context.getQueryParams() != null) {
+                context.getQueryParams()
+                        .forEach((key, values) -> LOGGER.debug("Query param : {} -> {}", key, values.toString()));
+            }
+            LOGGER.debug(context.getPageable() == null ? "No pagination" : context.getPageable().toString());
         }
 
         // Retrieve search engine plugin from search context
-        ISearchEngine<?, ?, ?> engine = getSearchEngine(context);
+        ISearchEngine<?, ?, ?, ?> engine = getSearchEngine(context);
         if (context.getExtra().isPresent()) {
             return (ResponseEntity<T>) engine.extra(context);
         } else if (context.getUrn().isPresent()) {
             return (ResponseEntity<T>) engine.getEntity(context);
+        } else if (context.getPropertyName().isPresent()) {
+            return (ResponseEntity<T>) engine.getPropertyValues(context);
         } else {
-            return (ResponseEntity<T>) engine.search(context);
         }
+        return (ResponseEntity<T>) engine.search(context);
     }
 
     // FIXME Retrieve search engine plugin from search context
     // This implementation is only for testing purpose
-    private ISearchEngine<?, ?, ?> getSearchEngine(SearchContext context) throws ModuleException {
+    private ISearchEngine<?, ?, ?, ?> getSearchEngine(SearchContext context) throws ModuleException {
 
-        ISearchEngine<?, ?, ?> engine;
+        ISearchEngine<?, ?, ?, ?> engine;
         if ("legacy".equals(context.getEngineType())) {
             engine = new LegacySearchEngine();
         } else if ("opensearch".equals(context.getEngineType())) {

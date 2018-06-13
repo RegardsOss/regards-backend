@@ -30,8 +30,10 @@ import com.jayway.jsonpath.JsonPath;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
+import io.jsonwebtoken.lang.Assert;
 
 /**
  * Search engine tests
@@ -83,6 +85,16 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
+    public void searchCollectionPropertyValues() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.customizeRequestParam().param("maxCount", "10");
+        performDefaultGet(SearchEngineController.TYPE_MAPPING
+                + SearchEngineController.SEARCH_COLLECTIONS_PROPERTY_VALUES, customizer, "Search all error",
+                          ENGINE_TYPE, StaticProperties.PROPERTIES + "." + GALAXY);
+    }
+
+    @Test
     public void searchDatasets() {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
@@ -98,6 +110,34 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         addCommontMatchers(customizer);
         performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
+    public void searchDataobjectPropertyValues() {
+
+        // Search the 9 planets
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.length()", Matchers.equalTo(9)));
+
+        customizer.customizeRequestParam().param("maxCount", "10");
+        performDefaultGet(SearchEngineController.TYPE_MAPPING
+                + SearchEngineController.SEARCH_DATAOBJECTS_PROPERTY_VALUES, customizer, "Search all error",
+                          ENGINE_TYPE, StaticProperties.PROPERTIES + "." + PLANET);
+
+        // Search only the 8 planets of the solar system
+        customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.length()", Matchers.equalTo(8)));
+
+        // Retrieve dataset URN
+        Dataset solarSystem = getAstroObject(SOLAR_SYSTEM);
+        Assert.notNull(solarSystem);
+
+        customizer.customizeRequestParam().param("maxCount", "10");
+        performDefaultGet(SearchEngineController.TYPE_MAPPING
+                + SearchEngineController.SEARCH_DATASET_DATAOBJECTS_PROPERTY_VALUES, customizer, "Search all error",
+                          ENGINE_TYPE, solarSystem.getIpId().toString(), StaticProperties.PROPERTIES + "." + PLANET);
     }
 
     @Test

@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.search.domain.plugin;
 
+import java.util.Collection;
+import java.util.Optional;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 
@@ -31,8 +34,9 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
  * @param R search result type
  * @param E extra result type
  * @param T single entity type
+ * @param V property values
  */
-public interface ISearchEngine<R, E, T> {
+public interface ISearchEngine<R, E, T, V extends Collection<?>> {
 
     /**
      * Check if plugin supports the required search type. A plugin may support several search types.
@@ -40,7 +44,13 @@ public interface ISearchEngine<R, E, T> {
     boolean supports(SearchType searchType);
 
     /**
-     * Engine search method
+     * Engine search method.<br>
+     * <hr/>
+     * Search context :
+     * <ol>
+     * <li>{@link SearchContext} may contain a dataset URN so you have to consider it using {@link Optional#isPresent()}
+     * method on {@link SearchContext#getDatasetUrn()} and add it to the search criterions.</li>
+     * </ol>
      */
     ResponseEntity<R> search(SearchContext context) throws ModuleException;
 
@@ -54,14 +64,47 @@ public interface ISearchEngine<R, E, T> {
     ICriterion parse(MultiValueMap<String, String> queryParams) throws ModuleException;
 
     /**
-     * Additional extra path handling. Not supported by default
+     * Additional extra path handling. Not supported by default<br/>
+     * <hr/>
+     * Search context :
+     * <ol>
+     * <li>{@link SearchContext} contains extra path parameter, get it using {@link Optional#get()} on
+     * {@link SearchContext#getExtra()}</li>
+     * <li>{@link SearchContext} may contain a dataset URN so you have to consider it using {@link Optional#isPresent()}
+     * method on {@link SearchContext#getDatasetUrn()} and add it to the search criterions.</li>
+     * </ol>
      */
     default ResponseEntity<E> extra(SearchContext context) throws ModuleException {
-        throw new UnsupportedOperationException("Additional path handling not supported");
+        throw new UnsupportedOperationException(
+                "Additional path handling not supported for engine " + context.getEngineType());
     }
 
     /**
      * Retrieve a single entity from its URN ({@link SearchContext#getUrn()})
+     * <hr/>
+     * Search context :
+     * <ol>
+     * <li>{@link SearchContext} contains entity URN path parameter, get it using {@link Optional#get()} on
+     * {@link SearchContext#getUrn()}</li>
+     * </ol>
      */
     ResponseEntity<T> getEntity(SearchContext context) throws ModuleException;
+
+    /**
+     * Get contextual property values<br/>
+     * <hr/>
+     * Search context :
+     * <ol>
+     * <li>{@link SearchContext} contains property name path parameter, get it using {@link Optional#get()} on
+     * {@link SearchContext#getPropertyName()}</li>
+     * <li>{@link SearchContext} contains max count result, get it using {@link Optional#get()} on
+     * {@link SearchContext#getMaxCount()}</li>
+     * <li>{@link SearchContext} may contain a dataset URN so you have to consider it using {@link Optional#isPresent()}
+     * method on {@link SearchContext#getDatasetUrn()} and add it to the search criterions.</li>
+     * </ol>
+     */
+    default ResponseEntity<V> getPropertyValues(SearchContext context) throws ModuleException {
+        throw new UnsupportedOperationException(
+                "Retrieving property values not supported for engine " + context.getEngineType());
+    }
 }

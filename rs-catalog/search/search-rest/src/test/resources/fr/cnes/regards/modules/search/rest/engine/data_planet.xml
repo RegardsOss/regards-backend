@@ -20,6 +20,16 @@
 			</enumeration>
 		</restriction>
 	</attribute>
+	<attribute>
+		<label>Diameter</label>
+		<name>diameter</name>
+		<type unit="km">INTEGER</type>
+	</attribute>
+	<attribute>
+		<label>Sun distance</label>
+		<name>sun_distance</name>
+		<type unit="km">LONG</type>
+	</attribute>
 	<fragment>
 		<name>TimePeriod</name>
 		<description>Période temporelle (date début - date fin) au format YYYY-MM-DDThh:mm:ss</description>
