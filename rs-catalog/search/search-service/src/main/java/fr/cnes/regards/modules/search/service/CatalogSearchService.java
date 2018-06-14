@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 
 import com.google.common.base.Strings;
@@ -45,6 +46,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
@@ -252,19 +254,15 @@ public class CatalogSearchService implements ICatalogSearchService {
                 "You do not have access to this " + entity.getClass().getSimpleName());
     }
 
+    @Deprecated // Only use method with ICriterion
     @Override
     public DocFilesSummary computeDatasetsSummary(MultiValueMap<String, String> allParams,
-            SimpleSearchKey<DataObject> searchKey, String datasetIpId, String[] fileTypes) throws SearchException {
+            SimpleSearchKey<DataObject> searchKey, UniformResourceName dataset, List<DataType> dataTypes)
+            throws SearchException {
         try {
             // Build criterion from query
             ICriterion criterion = openSearchService.parse(allParams);
-            // Apply security filter (ie user groups)
-            criterion = accessRightFilter.addDataAccessRights(criterion);
-            // Perform compute
-            DocFilesSummary summary = searchService.computeDataFilesSummary(searchKey, criterion, "tags", fileTypes);
-            keepOnlyDatasetsWithGrantedAccess(searchKey, datasetIpId, summary);
-
-            return summary;
+            return this.computeDatasetsSummary(criterion, searchKey, dataset, dataTypes);
         } catch (OpenSearchParseException e) {
             String message = "No query parameter";
             if (allParams != null) {
@@ -273,13 +271,34 @@ public class CatalogSearchService implements ICatalogSearchService {
                 message = sj.toString();
             }
             throw new SearchException(message, e);
+        }
+    }
+
+    @Override
+    public DocFilesSummary computeDatasetsSummary(ICriterion criterion, SimpleSearchKey<DataObject> searchKey,
+            UniformResourceName dataset, List<DataType> dataTypes) throws SearchException {
+        try {
+            // Apply security filter (ie user groups)
+            criterion = accessRightFilter.addDataAccessRights(criterion);
+            // Perform compute
+            DocFilesSummary summary = searchService.computeDataFilesSummary(searchKey, criterion, "tags", dataTypes);
+            keepOnlyDatasetsWithGrantedAccess(searchKey, dataset, summary);
+
+            return summary;
         } catch (AccessRightFilterException e) {
             LOGGER.debug("Falling back to empty summary", e);
             return new DocFilesSummary();
         }
     }
 
-    private void keepOnlyDatasetsWithGrantedAccess(SimpleSearchKey<DataObject> searchKey, String datasetIpId,
+    @Override
+    public DocFilesSummary computeDatasetsSummary(ICriterion criterion, SearchType searchType,
+            UniformResourceName dataset, List<DataType> dataTypes) throws SearchException {
+        Assert.isTrue(SearchType.DATAOBJECTS.equals(searchType), "Only dataobject target is supported.");
+        return computeDatasetsSummary(criterion, getSimpleSearchKey(searchType), dataset, dataTypes);
+    }
+
+    private void keepOnlyDatasetsWithGrantedAccess(SimpleSearchKey<DataObject> searchKey, UniformResourceName dataset,
             DocFilesSummary summary) throws AccessRightFilterException {
         // Be careful ! "tags" is used to discriminate docFiles summaries because dataset URN is set into it BUT
         // all tags are used.
@@ -314,9 +333,9 @@ public class CatalogSearchService implements ICatalogSearchService {
             Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId)
                     .map(UniformResourceName::toString).collect(Collectors.toSet());
             // If summary is restricted to a specified datasetIpId, it must be taken into account
-            if (datasetIpId != null) {
-                if (datasetIpids.contains(datasetIpId)) {
-                    datasetIpids = Collections.singleton(datasetIpId);
+            if (dataset != null) {
+                if (datasetIpids.contains(dataset.toString())) {
+                    datasetIpids = Collections.singleton(dataset.toString());
                 } else { // no dataset => summary contains normaly only 0 values as total
                     // we just need to clear map of sub summaries
                     summary.getSubSummariesMap().clear();

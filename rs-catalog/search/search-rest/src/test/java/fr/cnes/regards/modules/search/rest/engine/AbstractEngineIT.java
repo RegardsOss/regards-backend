@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -50,10 +51,13 @@ import fr.cnes.regards.modules.entities.gson.MultitenantFlattenedAttributeAdapte
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
+import fr.cnes.regards.modules.models.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.models.domain.Model;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.service.IAttributeModelService;
 import fr.cnes.regards.modules.models.service.ModelService;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
 
 /**
@@ -121,6 +125,12 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     protected IAttributeModelClient attributeModelClientMock;
 
     @Autowired
+    protected IProjectsClient projectsClientMock;
+
+    @Autowired
+    protected IModelAttrAssocClient modelAttrAssocClientMock;
+
+    @Autowired
     protected MultitenantFlattenedAttributeAdapterFactory gsonAttributeFactory;
 
     // Keep reference to astronomical object
@@ -135,7 +145,13 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     }
 
     @Before
-    public void prepareData() throws ModuleException {
+    public void prepareData() throws ModuleException, InterruptedException {
+
+        // Manage project
+        Project project = new Project(1L, "Solar system project", "http://plop/icon.png", true, "SolarSystem");
+        project.setHost("http://regards/solarsystem");
+        ResponseEntity<Resource<Project>> response = ResponseEntity.ok(new Resource<>(project));
+        Mockito.when(projectsClientMock.retrieveProject(Mockito.anyString())).thenReturn(response);
 
         // Bypass method access rights
         List<String> relativeUrlPaths = new ArrayList<>();
@@ -186,6 +202,12 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         // DATA : Planet
         Model planetModel = modelService.importModel(this.getClass().getResourceAsStream("data_planet.xml"));
 
+        // - Manage attribute model retrieval
+        Mockito.when(modelAttrAssocClientMock.getModelAttrAssocsFor(Mockito.any())).thenAnswer(invocation -> {
+            EntityType type = invocation.getArgumentAt(0, EntityType.class);
+            return ResponseEntity.ok(modelService.getModelAttrAssocsFor(type));
+        });
+
         // - Refresh attribute factory
         List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
         gsonAttributeFactory.refresh(getDefaultTenant(), atts);
@@ -207,6 +229,9 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         esRepository.save(getDefaultTenant(), kepler90System);
         DataObject kepler90b = createPlanet(planetModel, "Kepler 90b", PLANET_TYPE_TELLURIC, 1000, 50_000_000L);
         esRepository.save(getDefaultTenant(), kepler90b);
+
+        // Wait until index is really up to date!
+        Thread.sleep(1000L);
     }
 
     protected List<Collection> createGalaxies(Model galaxyModel) {

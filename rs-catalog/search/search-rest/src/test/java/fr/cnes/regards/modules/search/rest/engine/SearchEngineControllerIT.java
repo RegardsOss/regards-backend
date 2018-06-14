@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.search.rest.engine;
 
 import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,6 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
-import io.jsonwebtoken.lang.Assert;
 
 /**
  * Search engine tests
@@ -132,7 +132,7 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
 
         // Retrieve dataset URN
         Dataset solarSystem = getAstroObject(SOLAR_SYSTEM);
-        Assert.notNull(solarSystem);
+        Assert.assertNotNull(solarSystem);
 
         customizer.customizeRequestParam().param("maxCount", "10");
         performDefaultGet(SearchEngineController.TYPE_MAPPING

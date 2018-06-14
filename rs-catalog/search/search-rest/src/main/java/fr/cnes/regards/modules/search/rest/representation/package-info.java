@@ -19,5 +19,9 @@
 /**
  * @author Sylvain Vissiere-Guerinet
  *
+ *         {@link fr.cnes.regards.modules.search.rest.representation.IRepresentation} plugins should be replaced by
+ *         search engine ones.<br/>
+ *         This package should be deleted in next version.
+ *
  */
 package fr.cnes.regards.modules.search.rest.representation;

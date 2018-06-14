@@ -26,6 +26,7 @@ import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 
 /**
  * Search engine plugin contract
@@ -76,7 +77,7 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      */
     default ResponseEntity<E> extra(SearchContext context) throws ModuleException {
         throw new UnsupportedOperationException(
-                "Additional path handling not supported for engine " + context.getEngineType());
+                "Additional path handling not implemented for engine " + context.getEngineType());
     }
 
     /**
@@ -105,6 +106,23 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      */
     default ResponseEntity<V> getPropertyValues(SearchContext context) throws ModuleException {
         throw new UnsupportedOperationException(
-                "Retrieving property values not supported for engine " + context.getEngineType());
+                "Retrieving property values not implemented for engine " + context.getEngineType());
+    }
+
+    /**
+     * Compute a DocFileSummary for current user, for specified opensearch request, for asked file types (see DataType)
+     * and eventualy restricted to a given dataset.<br/>
+     * <hr/>
+     * Search context :
+     * <ol>
+     * <li>{@link SearchContext} contains data types, get it using {@link Optional#get()} on
+     * {@link SearchContext#getDateTypes()}</li>
+     * <li>{@link SearchContext} may contain a dataset URN so you have to consider it using {@link Optional#isPresent()}
+     * method on {@link SearchContext#getDatasetUrn()} and add it to the search criterions.</li>
+     * </ol>
+     */
+    default ResponseEntity<DocFilesSummary> getSummary(SearchContext context) throws ModuleException {
+        throw new UnsupportedOperationException(
+                "Computing file summary not implemented for engine " + context.getEngineType());
     }
 }

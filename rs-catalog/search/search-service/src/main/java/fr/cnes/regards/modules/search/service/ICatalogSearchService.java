@@ -25,6 +25,7 @@ import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.DataObject;
@@ -76,12 +77,31 @@ public interface ICatalogSearchService {
      * Compute summary for given request
      * @param allParams OpenSearch request
      * @param searchKey search key
-     * @param datasetIpId dataset ipId concerned by the request
-     * @param fileTypes File types on which to compute summary
+     * @param dataset dataset concerned by the request
+     * @param dataTypes file types on which to compute summary
      * @return summary
      */
+    @Deprecated // Only use method with ICriterion
     DocFilesSummary computeDatasetsSummary(MultiValueMap<String, String> allParams,
-            SimpleSearchKey<DataObject> searchKey, String datasetIpId, String[] fileTypes) throws SearchException;
+            SimpleSearchKey<DataObject> searchKey, UniformResourceName dataset, List<DataType> dataTypes)
+            throws SearchException;
+
+    /**
+     * Compute summary for given request
+     * @param criterion business criterions
+     * @param searchKey search key
+     * @param dataset restriction to a specified dataset
+     * @param dataTypes file types on which to compute summary
+     * @return summary
+     */
+    DocFilesSummary computeDatasetsSummary(ICriterion criterion, SimpleSearchKey<DataObject> searchKey,
+            UniformResourceName dataset, List<DataType> dataTypes) throws SearchException;
+
+    /**
+     * Same as below but using {@link SearchType}
+     */
+    DocFilesSummary computeDatasetsSummary(ICriterion criterion, SearchType searchType, UniformResourceName dataset,
+            List<DataType> dataTypes) throws SearchException;
 
     /**
      * Retrieve entity

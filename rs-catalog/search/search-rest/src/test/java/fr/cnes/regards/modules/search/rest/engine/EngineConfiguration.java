@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest;
+package fr.cnes.regards.modules.search.rest.engine;
 
 import fr.cnes.regards.modules.dataaccess.client.IAccessRightClient;
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
@@ -48,7 +48,7 @@ import java.util.ArrayList;
  * @author Xavier-Alexandre Brochard
  */
 @Configuration
-public class CatalogITConfiguration {
+public class EngineConfiguration {
 
     @Bean
     public IDatasetClient datasetClient() {

@@ -38,12 +38,12 @@ import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
-import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 
 /**
@@ -76,6 +76,11 @@ public class LegacySearchEngine implements
      * Property values request property : text that property should contains
      */
     private static final String PARTIAL_TEXT = "partialText";
+
+    /**
+     * To handle legacy feature for order!
+     */
+    private static final String COMPUTE_FILE_SUM_EXTRA_PATH = "computefilessummary";
 
     /**
      * Query parser
@@ -187,6 +192,14 @@ public class LegacySearchEngine implements
     }
 
     @Override
+    public ResponseEntity<Void> extra(SearchContext context) throws ModuleException {
+        if (context.getExtra().isPresent() && COMPUTE_FILE_SUM_EXTRA_PATH.equals(context.getExtra().get())) {
+            // TODO
+        }
+        return ISearchEngine.super.extra(context);
+    }
+
+    @Override
     public ResponseEntity<Resource<AbstractEntity>> getEntity(SearchContext context) throws ModuleException {
         // Retrieve entity
         AbstractEntity entity = searchService.get(context.getUrn().get());
@@ -208,5 +221,17 @@ public class LegacySearchEngine implements
                                                                              context.getMaxCount().get(), partialText);
         // Build response
         return ResponseEntity.ok(values);
+    }
+
+    @Override
+    public ResponseEntity<DocFilesSummary> getSummary(SearchContext context) throws ModuleException {
+        // Convert parameters to business criterion considering dataset
+        ICriterion criterion = parse(context);
+        // Compute summary
+        DocFilesSummary summary = searchService.computeDatasetsSummary(criterion, context.getSearchType(),
+                                                                       context.getDatasetUrn().orElseGet(null),
+                                                                       context.getDateTypes().get());
+        // Build response
+        return ResponseEntity.ok(summary);
     }
 }

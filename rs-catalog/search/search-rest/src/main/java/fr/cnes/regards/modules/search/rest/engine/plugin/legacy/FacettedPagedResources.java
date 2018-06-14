@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest.assembler.resource;
+package fr.cnes.regards.modules.search.rest.engine.plugin.legacy;
 
 import java.util.ArrayList;
 import java.util.Arrays;

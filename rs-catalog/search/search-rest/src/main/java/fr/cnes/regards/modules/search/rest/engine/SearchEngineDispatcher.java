@@ -91,6 +91,15 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
             if (context.getUrn().isPresent()) {
                 LOGGER.debug("Getting entity with URN : {}", context.getUrn().get().toString());
             }
+            if (context.getPropertyName().isPresent()) {
+                LOGGER.debug("Search values for property : {}", context.getPropertyName().get());
+            }
+            if (context.getMaxCount().isPresent()) {
+                LOGGER.debug("Maximum result count for property values : {}", context.getMaxCount().get());
+            }
+            if (context.getDateTypes().isPresent()) {
+                context.getDateTypes().get().forEach(dataType -> LOGGER.debug("Summary data type : {}", dataType));
+            }
             context.getHeaders().forEach((key, values) -> LOGGER.debug("Header : {} -> {}", key, values.toString()));
             if (context.getQueryParams() != null) {
                 context.getQueryParams()
@@ -107,9 +116,11 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
             return (ResponseEntity<T>) engine.getEntity(context);
         } else if (context.getPropertyName().isPresent()) {
             return (ResponseEntity<T>) engine.getPropertyValues(context);
+        } else if (context.getDateTypes().isPresent()) {
+            return (ResponseEntity<T>) engine.getSummary(context);
         } else {
+            return (ResponseEntity<T>) engine.search(context);
         }
-        return (ResponseEntity<T>) engine.search(context);
     }
 
     // FIXME Retrieve search engine plugin from search context

@@ -50,11 +50,13 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
+import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.engine.ISearchEngineDispatcher;
@@ -83,31 +85,36 @@ public class SearchEngineController {
     /**
      * Search route mapping
      */
-    public static final String SEARCH_MAPPING = "/search";
+    private static final String SEARCH_MAPPING = "/search";
 
     /**
      * Additional route mapping
      */
-    public static final String EXTRA_MAPPING = "/{extra}";
+    private static final String EXTRA_MAPPING = "/{extra}";
 
     /**
      * To retrieve a single entity
      */
-    public static final String URN_MAPPING = "/{urn}";
+    private static final String URN_MAPPING = "/{urn}";
 
     /**
      * For entities with description
      */
-    public static final String DESCRIPTION_MAPPING = "/description";
+    private static final String DESCRIPTION_MAPPING = "/description";
 
     /**
      * To get all values of a property
      */
-    public static final String PROPERTY_VALUES_MAPPING = "/properties/{propertyName}/values";
+    private static final String PROPERTY_VALUES_MAPPING = "/properties/{propertyName}/values";
+
+    /**
+     * To get a file summary on a given request, only available for dataobject queries
+     */
+    private static final String FILE_SUMMARY_MAPPING = "/summary";
 
     // Search on all entities
 
-    public static final String ENTITIES_MAPPING = "/entities";
+    private static final String ENTITIES_MAPPING = "/entities";
 
     public static final String SEARCH_ALL_MAPPING = ENTITIES_MAPPING + SEARCH_MAPPING;
 
@@ -117,7 +124,7 @@ public class SearchEngineController {
 
     // Collection mappings
 
-    public static final String COLLECTIONS_MAPPING = "/collections";
+    private static final String COLLECTIONS_MAPPING = "/collections";
 
     public static final String SEARCH_COLLECTIONS_MAPPING = COLLECTIONS_MAPPING + SEARCH_MAPPING;
 
@@ -130,7 +137,7 @@ public class SearchEngineController {
 
     // Document mappings
 
-    public static final String DOCUMENTS_MAPPING = "/documents";
+    private static final String DOCUMENTS_MAPPING = "/documents";
 
     public static final String SEARCH_DOCUMENTS_MAPPING = DOCUMENTS_MAPPING + SEARCH_MAPPING;
 
@@ -142,7 +149,7 @@ public class SearchEngineController {
 
     // Dataset mapping
 
-    public static final String DATASETS_MAPPING = "/datasets";
+    private static final String DATASETS_MAPPING = "/datasets";
 
     public static final String SEARCH_DATASETS_MAPPING = DATASETS_MAPPING + SEARCH_MAPPING;
 
@@ -156,7 +163,7 @@ public class SearchEngineController {
 
     // Dataobject mapping
 
-    public static final String DATAOBJECTS_MAPPING = "/dataobjects";
+    private static final String DATAOBJECTS_MAPPING = "/dataobjects";
 
     public static final String SEARCH_DATAOBJECTS_MAPPING = DATAOBJECTS_MAPPING + SEARCH_MAPPING;
 
@@ -167,9 +174,11 @@ public class SearchEngineController {
 
     public static final String GET_DATAOBJECT_MAPPING = DATAOBJECTS_MAPPING + URN_MAPPING;
 
+    public static final String DATAOBJECTS_SUMMARY_MAPPING = DATAOBJECTS_MAPPING + FILE_SUMMARY_MAPPING;
+
     // Search dataobjects on a single dataset mapping
 
-    public static final String DATASET_DATAOBJECTS_MAPPING = "/datasets/{datasetUrn}/dataobjects";
+    private static final String DATASET_DATAOBJECTS_MAPPING = "/datasets/{datasetUrn}/dataobjects";
 
     public static final String SEARCH_DATASET_DATAOBJECTS_MAPPING = DATASET_DATAOBJECTS_MAPPING + SEARCH_MAPPING;
 
@@ -178,6 +187,8 @@ public class SearchEngineController {
 
     public static final String SEARCH_DATASET_DATAOBJECTS_PROPERTY_VALUES = SEARCH_DATASET_DATAOBJECTS_MAPPING
             + PROPERTY_VALUES_MAPPING;
+
+    public static final String DATASET_DATAOBJECTS_SUMMARY_MAPPING = DATASET_DATAOBJECTS_MAPPING + FILE_SUMMARY_MAPPING;
 
     // Fallback to {@link #GET_DATAOBJECT_MAPPING} for single data object retrieval
 
@@ -527,6 +538,26 @@ public class SearchEngineController {
                 .withUrn(urn));
     }
 
+    /**
+     * Compute a DocFileSummary for current user, for specified request context, for asked file types (see
+     * {@link DataType})
+     */
+    @RequestMapping(method = RequestMethod.GET, value = DATAOBJECTS_SUMMARY_MAPPING)
+    @ResourceAccess(description = "Compute dataset(s) summary", role = DefaultRole.REGISTERED_USER)
+    public ResponseEntity<DocFilesSummary> computeDatasetsSummary(@PathVariable String engineType,
+            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
+            @RequestParam String[] fileTypes) throws ModuleException {
+        LOGGER.debug("Get dataobject summary delegated to engine \"{}\"", engineType);
+        List<DataType> dataTypes = new ArrayList<>();
+        if (fileTypes != null) {
+            for (String fileType : fileTypes) {
+                dataTypes.add(Enum.valueOf(DataType.class, fileType));
+            }
+        }
+        return dispatcher.dispatchRequest(SearchContext
+                .build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null).withDataTypes(dataTypes));
+    }
+
     // Search dataobjects on a single dataset mapping
 
     /**
@@ -582,6 +613,29 @@ public class SearchEngineController {
         return dispatcher.dispatchRequest(SearchContext
                 .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), null)
                 .withDatasetUrn(urn).withPropertyName(propertyName).withMaxCount(maxCount));
+    }
+
+    /**
+     * Compute a DocFileSummary for current user, for specified request context, for asked file types (see
+     * {@link DataType}) on a single dataset
+     */
+    @RequestMapping(method = RequestMethod.GET, value = DATASET_DATAOBJECTS_SUMMARY_MAPPING)
+    @ResourceAccess(description = "Compute single dataset summary", role = DefaultRole.REGISTERED_USER)
+    public ResponseEntity<DocFilesSummary> computeDatasetsSummary(@PathVariable String engineType,
+            @PathVariable String datasetUrn, @RequestHeader HttpHeaders headers,
+            @RequestParam MultiValueMap<String, String> queryParams, @RequestParam String[] fileTypes)
+            throws ModuleException {
+        LOGGER.debug("Get dataobject summary for dataset \"{}\" delegated to engine \"{}\"", datasetUrn, engineType);
+        UniformResourceName urn = UniformResourceName.fromString(datasetUrn);
+        List<DataType> dataTypes = new ArrayList<>();
+        if (fileTypes != null) {
+            for (String fileType : fileTypes) {
+                dataTypes.add(Enum.valueOf(DataType.class, fileType));
+            }
+        }
+        return dispatcher
+                .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
+                        .withDatasetUrn(urn).withDataTypes(dataTypes));
     }
 
     // Search on dataobjects returning datasets

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.search.domain.plugin;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.validation.constraints.NotNull;
@@ -28,6 +29,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.MultiValueMap;
 
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
 /**
@@ -35,7 +37,8 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
  * Use {@link #build(SearchType, String, HttpHeaders, MultiValueMap, Pageable)} to initialize a new context.<br/>
  * Additional optional properties can be set using {@link #withDatasetUrn(UniformResourceName)},
  * {@link #withExtra(String)},
- * {@link #withUrn(UniformResourceName)}, {@link #withPropertyName(String)}.
+ * {@link #withUrn(UniformResourceName)}, {@link #withPropertyName(String)}, {@link #withMaxCount(Integer)},
+ * {@link #withDataTypes(List)}.
  *
  * @author Marc Sordi
  *
@@ -79,6 +82,11 @@ public class SearchContext {
      * Maximum result count for property values
      */
     private Integer maxCount;
+
+    /**
+     * List of file type to consider when computing summary
+     */
+    private List<DataType> dateTypes;
 
     /**
      * Request HTTP headers, useful for managing return {@link MediaType}
@@ -150,6 +158,14 @@ public class SearchContext {
 
     public void setMaxCount(Integer maxCount) {
         this.maxCount = maxCount;
+    }
+
+    public Optional<List<DataType>> getDateTypes() {
+        return Optional.ofNullable(dateTypes);
+    }
+
+    public void setDateTypes(List<DataType> dateTypes) {
+        this.dateTypes = dateTypes;
     }
 
     public HttpHeaders getHeaders() {
@@ -227,6 +243,14 @@ public class SearchContext {
      */
     public SearchContext withMaxCount(Integer maxCount) {
         this.maxCount = maxCount;
+        return this;
+    }
+
+    /**
+     * Fluent API
+     */
+    public SearchContext withDataTypes(List<DataType> dataTypes) {
+        this.dateTypes = dataTypes;
         return this;
     }
 }
