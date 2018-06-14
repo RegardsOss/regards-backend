@@ -99,7 +99,7 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
 
     @Override
     public void addTenantConnection(String microserviceName, final TenantConnection pTenantConnection)
-            throws JpaMultitenantException, BadPaddingException, IllegalBlockSizeException {
+            throws JpaMultitenantException {
         try {
             final Project project = projectService.retrieveProject(pTenantConnection.getTenant());
 

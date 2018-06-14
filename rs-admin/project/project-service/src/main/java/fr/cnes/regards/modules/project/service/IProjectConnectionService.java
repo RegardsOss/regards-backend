@@ -92,7 +92,7 @@ public interface IProjectConnectionService {
      * @since 1.0-SNAPSHOT
      */
     ProjectConnection createProjectConnection(ProjectConnection pProjectConnection, boolean silent)
-            throws ModuleException, BadPaddingException, IllegalBlockSizeException;
+            throws ModuleException;
 
     /**
      * Create static project connection and activate it if and only if it doesn't exist! Else do nothing! Only useful
@@ -102,7 +102,7 @@ public interface IProjectConnectionService {
      * @throws ModuleException if error occurs!
      */
     ProjectConnection createStaticProjectConnection(ProjectConnection projectConnection)
-            throws ModuleException, BadPaddingException, IllegalBlockSizeException;
+            throws ModuleException;
 
     /**
      *
@@ -130,7 +130,7 @@ public interface IProjectConnectionService {
      * @since 1.0-SNAPSHOT
      */
     ProjectConnection updateProjectConnection(Long pProjectConnectionId, ProjectConnection pProjectConnection)
-            throws ModuleException, BadPaddingException, IllegalBlockSizeException;
+            throws ModuleException;
 
     /**
      *

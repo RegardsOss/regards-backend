@@ -137,7 +137,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
 
     @Override
     public ProjectConnection createProjectConnection(final ProjectConnection projectConnection, final boolean silent)
-            throws ModuleException, BadPaddingException, IllegalBlockSizeException {
+            throws ModuleException {
         final ProjectConnection connection;
         final Project project = projectConnection.getProject();
         // Check referenced project exists
@@ -201,7 +201,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
 
     @Override
     public ProjectConnection createStaticProjectConnection(ProjectConnection projectConnection)
-            throws ModuleException, BadPaddingException, IllegalBlockSizeException {
+            throws ModuleException {
 
         // Only store connection if it's really does not exist
         if (existsProjectConnection(projectConnection.getProject().getName(), projectConnection.getMicroservice())) {
@@ -251,7 +251,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
     @Override
     public ProjectConnection updateProjectConnection(final Long projectConnectionId,
             final ProjectConnection projectConnection)
-            throws ModuleException, BadPaddingException, IllegalBlockSizeException {
+            throws ModuleException {
         final ProjectConnection connection;
         // Check that entity to update exists
         if ((projectConnection.getId() != null) && projectConnectionRepository.exists(projectConnection.getId())) {
