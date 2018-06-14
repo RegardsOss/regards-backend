@@ -104,7 +104,6 @@ public class AccessRightController {
         if (inUrns.isEmpty()) {
             return ResponseEntity.ok(Collections.emptySet());
         }
-        String index = inUrns.iterator().next().getTenant();
         Set<UniformResourceName> urnsWithAccess = new HashSet<>();
         // ElasticSearch cannot manage more than 1024 criterions clauses at once. There is one clause per IP_ID plus
         // or clauses plus some depending on user access => create partitions of 1 000
@@ -112,8 +111,7 @@ public class AccessRightController {
         for (List<UniformResourceName> urns : urnLists) {
             ICriterion criterion = ICriterion.or(urns.stream().map(urn -> ICriterion.eq("ipId", urn.toString()))
                     .toArray(n -> new ICriterion[n]));
-            FacetPage<DataObject> page = searchService.search(criterion,
-                                                              Searches.onSingleEntity(index, EntityType.DATA), null,
+            FacetPage<DataObject> page = searchService.search(criterion, Searches.onSingleEntity(EntityType.DATA), null,
                                                               new PageRequest(0, urns.size()));
             urnsWithAccess.addAll(page.getContent().parallelStream().filter(DataObject::getAllowingDownload)
                     .map(DataObject::getIpId).collect(Collectors.toSet()));
