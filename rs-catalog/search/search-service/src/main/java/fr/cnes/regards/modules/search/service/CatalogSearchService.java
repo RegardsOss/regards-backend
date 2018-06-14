@@ -155,8 +155,7 @@ public class CatalogSearchService implements ICatalogSearchService {
             // This is correct because all
             if ((criterion == null) && (searchKey instanceof JoinEntitySearchKey)
                     && (TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)) {
-                searchKey = Searches.onSingleEntity(searchKey.getSearchIndex(),
-                                                    Searches.fromClass(searchKey.getResultClass()));
+                searchKey = Searches.onSingleEntity(Searches.fromClass(searchKey.getResultClass()));
             }
 
             // Perform search
@@ -327,9 +326,8 @@ public class CatalogSearchService implements ICatalogSearchService {
             ICriterion dataObjectsGrantedCrit = ICriterion
                     .or(accessGroups.stream().map(group -> ICriterion.eq("metadata.dataObjectsGroups." + group, true))
                             .collect(Collectors.toSet()));
-            Page<Dataset> page = searchService
-                    .search(Searches.onSingleEntity(searchKey.getSearchIndex(), EntityType.DATASET),
-                            ISearchService.MAX_PAGE_SIZE, dataObjectsGrantedCrit);
+            Page<Dataset> page = searchService.search(Searches.onSingleEntity(EntityType.DATASET),
+                                                      ISearchService.MAX_PAGE_SIZE, dataObjectsGrantedCrit);
             Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId)
                     .map(UniformResourceName::toString).collect(Collectors.toSet());
             // If summary is restricted to a specified datasetIpId, it must be taken into account
@@ -400,15 +398,15 @@ public class CatalogSearchService implements ICatalogSearchService {
     private <T extends IIndexable> SimpleSearchKey<T> getSimpleSearchKey(SearchType searchType) {
         switch (searchType) {
             case ALL:
-                return (SimpleSearchKey<T>) Searches.onAllEntities(tenantResolver.getTenant());
+                return (SimpleSearchKey<T>) Searches.onAllEntities();
             case COLLECTIONS:
-                return (SimpleSearchKey<T>) Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.COLLECTION);
+                return (SimpleSearchKey<T>) Searches.onSingleEntity(EntityType.COLLECTION);
             case DATAOBJECTS:
-                return (SimpleSearchKey<T>) Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
+                return (SimpleSearchKey<T>) Searches.onSingleEntity(EntityType.DATA);
             case DATASETS:
-                return (SimpleSearchKey<T>) Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATASET);
+                return (SimpleSearchKey<T>) Searches.onSingleEntity(EntityType.DATASET);
             case DOCUMENTS:
-                return (SimpleSearchKey<T>) Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DOCUMENT);
+                return (SimpleSearchKey<T>) Searches.onSingleEntity(EntityType.DOCUMENT);
             default:
                 throw new UnsupportedOperationException("Unsupported search type : " + searchType);
         }
@@ -418,18 +416,17 @@ public class CatalogSearchService implements ICatalogSearchService {
     private <S, R extends IIndexable> SearchKey<S, R> getSearchKey(SearchType searchType) {
         switch (searchType) {
             case ALL:
-                return (SearchKey<S, R>) Searches.onAllEntities(tenantResolver.getTenant());
+                return (SearchKey<S, R>) Searches.onAllEntities();
             case COLLECTIONS:
-                return (SearchKey<S, R>) Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.COLLECTION);
+                return (SearchKey<S, R>) Searches.onSingleEntity(EntityType.COLLECTION);
             case DATAOBJECTS:
-                return (SearchKey<S, R>) Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATA);
+                return (SearchKey<S, R>) Searches.onSingleEntity(EntityType.DATA);
             case DATASETS:
-                return (SearchKey<S, R>) Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DATASET);
+                return (SearchKey<S, R>) Searches.onSingleEntity(EntityType.DATASET);
             case DOCUMENTS:
-                return (SearchKey<S, R>) Searches.onSingleEntity(tenantResolver.getTenant(), EntityType.DOCUMENT);
+                return (SearchKey<S, R>) Searches.onSingleEntity(EntityType.DOCUMENT);
             case DATAOBJECTS_RETURN_DATASETS:
-                return (SearchKey<S, R>) Searches.onSingleEntityReturningJoinEntity(tenantResolver.getTenant(),
-                                                                                    EntityType.DATA,
+                return (SearchKey<S, R>) Searches.onSingleEntityReturningJoinEntity(EntityType.DATA,
                                                                                     EntityType.DATASET);
             default:
                 throw new UnsupportedOperationException("Unsupported search type : " + searchType);
