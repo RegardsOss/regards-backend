@@ -147,6 +147,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         parameters.clear();
         OpenSearchParameterConfiguration planetParameter = new OpenSearchParameterConfiguration();
         planetParameter.setAttributeModelName("properties.planet");
+        planetParameter.setName("planet");
         planetParameter.setOptionsEnabled(true);
         planetParameter.setOptionsCardinality(10);
         parameters.add(planetParameter);
