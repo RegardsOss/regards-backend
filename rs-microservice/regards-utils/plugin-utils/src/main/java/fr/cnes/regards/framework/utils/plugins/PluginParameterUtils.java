@@ -629,16 +629,20 @@ public final class PluginParameterUtils {
         try {
             Object effectiveVal;
             if (typeWrapper.get().getType().equals(PrimitiveObject.STRING.getType())) {
-                // Strip quotes using Gson
-                JsonElement el = gson.fromJson(paramValue, JsonElement.class);
-                // FIXME : Handle datasource plugin configurations
-                if ((el != null) && el.isJsonPrimitive()) {
-                    effectiveVal = el.getAsString();
+                if(plgParamAnnotation.sensitive()) {
+                    effectiveVal = plgConf.getParameter(parameterName).getDecryptedValue();
                 } else {
-                    if (paramValue.startsWith("\"") && paramValue.endsWith("\"") && (paramValue.length() > 2)) {
-                        effectiveVal = paramValue.substring(1, paramValue.length() - 1);
+                    // Strip quotes using Gson
+                    JsonElement el = gson.fromJson(paramValue, JsonElement.class);
+                    // FIXME : Handle datasource plugin configurations
+                    if ((el != null) && el.isJsonPrimitive()) {
+                        effectiveVal = el.getAsString();
                     } else {
-                        effectiveVal = paramValue;
+                        if (paramValue.startsWith("\"") && paramValue.endsWith("\"") && (paramValue.length() > 2)) {
+                            effectiveVal = paramValue.substring(1, paramValue.length() - 1);
+                        } else {
+                            effectiveVal = paramValue;
+                        }
                     }
                 }
             } else {

@@ -34,6 +34,7 @@ import org.mockito.Mockito;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.encryption.BlowfishEncryptionService;
 import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -114,7 +115,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * @throws ModuleException throw if an error occurs
      */
     @Test(expected = EntityInvalidException.class)
-    public void saveANullPluginConfiguration() throws EntityInvalidException {
+    public void saveANullPluginConfiguration() throws EntityInvalidException,EncryptionException {
         pluginServiceMocked.savePluginConfiguration(null);
         Assert.fail();
     }
@@ -125,7 +126,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * @throws ModuleException throw if an error occurs
      */
     @Test(expected = EntityInvalidException.class)
-    public void saveAPluginConfigurationWithoutPriorityOrder() throws EntityInvalidException {
+    public void saveAPluginConfigurationWithoutPriorityOrder() throws EntityInvalidException, EncryptionException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setPriorityOrder(null);
         pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);
@@ -138,7 +139,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * @throws ModuleException throw if an error occurs
      */
     @Test(expected = EntityInvalidException.class)
-    public void saveAPluginConfigurationWithoutVersion() throws EntityInvalidException {
+    public void saveAPluginConfigurationWithoutVersion() throws EntityInvalidException, EncryptionException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setVersion("bad");
         pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);

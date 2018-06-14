@@ -72,6 +72,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                                                 Mockito.mock(IPublisher.class),
                                                 runtimeTenantResolver,
                                                 blowfishEncryptionService);
+        pluginServiceMocked.addPluginPackage("fr.cnes.regards");
     }
 
     /**
