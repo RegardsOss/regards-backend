@@ -77,30 +77,35 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
     /**
      * TypeToken used to recognize AbstractEntity
      */
+    @SuppressWarnings("serial")
     private static final TypeToken<? extends AbstractEntity> ABSTRACT_ENTITY_TYPE_TOKEN = new TypeToken<AbstractEntity>() {
     };
 
     /**
      * TypeToken used to recognize Collection&#60;AbstractEntity&#62;
      */
+    @SuppressWarnings("serial")
     private static final TypeToken<Collection<? extends AbstractEntity>> COLLECTION_ABSTRACT_ENTITY_TYPE_TOKEN = new TypeToken<Collection<? extends AbstractEntity>>() {
     };
 
     /**
      * TypeToken used to recognize Resource&#60;AbstractEntity&#62;
      */
+    @SuppressWarnings("serial")
     private static final TypeToken<Resource<? extends AbstractEntity>> RESOURCE_ABSTRACT_ENTITY_TYPE_TOKEN = new TypeToken<Resource<? extends AbstractEntity>>() {
     };
 
     /**
      * TypeToken used to recognize PagedResources&#60;Resource&#60;AbstractEntity&#62;&#62;
      */
+    @SuppressWarnings("serial")
     private static final TypeToken<PagedResources<Resource<? extends AbstractEntity>>> PAGED_RESOURCES_RESOURCE_ABSTRACT_ENTITY_TYPE_TOKEN = new TypeToken<PagedResources<Resource<? extends AbstractEntity>>>() {
     };
 
     /**
      * TypeToken used to recognize FacettedPagedResources&#60;Resource&#60;AbstractEntity&#62;&#62;
      */
+    @SuppressWarnings("serial")
     private static final TypeToken<FacettedPagedResources<Resource<? extends AbstractEntity>>> FACETTED_PAGED_RESOURCES_RESOURCE_ABSTRACT_ENTITY_TYPE_TOKEN = new TypeToken<FacettedPagedResources<Resource<? extends AbstractEntity>>>() {
     };
 

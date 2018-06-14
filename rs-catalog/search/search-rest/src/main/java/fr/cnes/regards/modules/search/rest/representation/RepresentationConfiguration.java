@@ -63,6 +63,7 @@ public class RepresentationConfiguration implements BeanFactoryAware, Applicatio
     /**
      * Bean factory
      */
+    @SuppressWarnings("unused")
     private BeanFactory beanFactory;
 
     /**
@@ -96,6 +97,7 @@ public class RepresentationConfiguration implements BeanFactoryAware, Applicatio
      * @throws ClassNotFoundException
      * @throws InstantiationException
      */
+    @SuppressWarnings({ "unused", "deprecation" })
     private void configureRepresentationMessageConverter(
             RepresentationHttpMessageConverter representationHttpMessageConverter)
             throws IllegalAccessException, ClassNotFoundException, InstantiationException {

@@ -78,11 +78,6 @@ public class LegacySearchEngine implements
     private static final String PARTIAL_TEXT = "partialText";
 
     /**
-     * To handle legacy feature for order!
-     */
-    private static final String COMPUTE_FILE_SUM_EXTRA_PATH = "computefilessummary";
-
-    /**
      * Query parser
      */
     @Autowired
@@ -189,14 +184,6 @@ public class LegacySearchEngine implements
         if (link != null) {
             resource.add(link);
         }
-    }
-
-    @Override
-    public ResponseEntity<Void> extra(SearchContext context) throws ModuleException {
-        if (context.getExtra().isPresent() && COMPUTE_FILE_SUM_EXTRA_PATH.equals(context.getExtra().get())) {
-            // TODO
-        }
-        return ISearchEngine.super.extra(context);
     }
 
     @Override

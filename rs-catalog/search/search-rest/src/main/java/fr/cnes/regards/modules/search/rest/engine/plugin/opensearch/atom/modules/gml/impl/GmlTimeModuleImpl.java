@@ -6,7 +6,6 @@ import java.time.OffsetDateTime;
 import com.google.gson.Gson;
 import com.rometools.modules.georss.GeoRSSModule;
 import com.rometools.rome.feed.CopyFrom;
-import com.rometools.rome.feed.module.ModuleImpl;
 
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.gml.GmlTimeModule;
 
