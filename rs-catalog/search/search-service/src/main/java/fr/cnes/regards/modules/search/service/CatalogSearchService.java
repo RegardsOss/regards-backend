@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.search.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.StringJoiner;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.elasticsearch.search.aggregations.Aggregation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +59,7 @@ import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
@@ -392,6 +395,22 @@ public class CatalogSearchService implements ICatalogSearchService {
             String propertyPath, int maxCount, String partialText) throws SearchException {
         return retrieveEnumeratedPropertyValues(criterion, getSimpleSearchKey(searchType), propertyPath, maxCount,
                                                 partialText);
+    }
+
+    @Override
+    public List<Aggregation> retrievePropertiesStats(ICriterion criterion, SearchType searchType,
+            Collection<QueryableAttribute> attributes) throws SearchException {
+        try {
+            // Apply security filter (ie user groups)
+            criterion = accessRightFilter.addAccessRights(criterion);
+            // Run search
+            List<Aggregation> aggregations = searchService
+                    .getAggregations(getSimpleSearchKey(searchType), criterion, attributes).asList();
+            return aggregations;
+        } catch (AccessRightFilterException e) {
+            LOGGER.debug("Falling back to empty list of values", e);
+            return Collections.emptyList();
+        }
     }
 
     @SuppressWarnings("unchecked")

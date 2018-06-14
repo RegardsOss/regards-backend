@@ -39,7 +39,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -49,7 +48,6 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownPar
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
-import fr.cnes.regards.modules.search.rest.SearchEngineController;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.OpenSearchDescBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedMediaTypesException;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
@@ -145,6 +143,13 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         responseBuilders.stream().forEach(b -> b.addExtension(timeExtension));
         responseBuilders.stream().forEach(b -> b.addExtension(regardsExtension));
         responseBuilders.stream().forEach(b -> b.addExtension(mediaExtension));
+
+        parameters.clear();
+        OpenSearchParameterConfiguration planetParameter = new OpenSearchParameterConfiguration();
+        planetParameter.setAttributeModelName("properties.planet");
+        planetParameter.setOptionsEnabled(true);
+        planetParameter.setOptionsCardinality(10);
+        parameters.add(planetParameter);
     }
 
     @Override
@@ -208,52 +213,14 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
         if (context.getExtra().isPresent() && context.getExtra().get().equals(EXTRA_DESCRIPTION)) {
             try {
-                return ResponseEntity
-                        .ok(descriptionBuilder.build(getEntityType(context), getEndpoint(context),
-                                                     Arrays.asList(mediaExtension, regardsExtension, timeExtension)));
+                return ResponseEntity.ok(descriptionBuilder
+                        .build(context, parseParametersExt(context.getQueryParams()),
+                               Arrays.asList(mediaExtension, regardsExtension, timeExtension), parameters));
             } catch (UnsupportedEncodingException e) {
                 throw new ModuleException(e);
             }
         } else {
             return ISearchEngine.super.extra(context);
-        }
-    }
-
-    private EntityType getEntityType(SearchContext context) {
-        switch (context.getSearchType()) {
-            case COLLECTIONS:
-                return EntityType.COLLECTION;
-            case DATAOBJECTS:
-                return EntityType.DATA;
-            case DATASETS:
-                return EntityType.DATASET;
-            case DOCUMENTS:
-                return EntityType.DOCUMENT;
-            case ALL:
-            case DATAOBJECTS_RETURN_DATASETS:
-            default:
-                throw new UnsupportedOperationException(String.format("Unsupproted entity type for open search. %s",
-                                                                      context.getSearchType().toString()));
-        }
-    }
-
-    private String getEndpoint(SearchContext context) {
-        String engineMapping = SearchEngineController.TYPE_MAPPING.replace(SearchEngineController.ENGINE_TYPE_PARAMETER,
-                                                                           ENGINE_ID);
-        switch (context.getSearchType()) {
-            case COLLECTIONS:
-                return engineMapping + SearchEngineController.SEARCH_COLLECTIONS_MAPPING;
-            case DATAOBJECTS:
-                return engineMapping + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING;
-            case DATASETS:
-                return engineMapping + SearchEngineController.SEARCH_DATASETS_MAPPING;
-            case DOCUMENTS:
-                return engineMapping + SearchEngineController.SEARCH_DOCUMENTS_MAPPING;
-            case ALL:
-            case DATAOBJECTS_RETURN_DATASETS:
-            default:
-                throw new UnsupportedOperationException(String.format("Unsupproted entity type for open search. %s",
-                                                                      context.getSearchType().toString()));
         }
     }
 
@@ -267,6 +234,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     private Object formatResponse(FacetPage<AbstractEntity> page, SearchContext context)
             throws UnsupportedMediaTypesException {
         IOpenSearchResponseBuilder<?> builder = getBuilder(context);
+        // TODO : Replace with real url
         builder.addMetadata(UUID.randomUUID().toString(), searchTitle, searchDescription,
                             "http://www.regards.com/opensearch-description.xml", context, page);
         page.getContent().stream().forEach(builder::addEntity);
@@ -318,4 +286,11 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             throw new UnsupportedMediaTypesException(context.getHeaders().getAccept());
         }
     }
+
+    @Override
+    public ResponseEntity<List<String>> getPropertyValues(SearchContext context) throws ModuleException {
+        // TODO Auto-generated method stub
+        return ISearchEngine.super.getPropertyValues(context);
+    }
+
 }

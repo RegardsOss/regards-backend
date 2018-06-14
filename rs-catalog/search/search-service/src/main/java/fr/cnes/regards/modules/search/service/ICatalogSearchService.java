@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.modules.search.service;
 
+import java.util.Collection;
 import java.util.List;
 
+import org.elasticsearch.search.aggregations.Aggregation;
 import org.springframework.data.domain.Pageable;
 import org.springframework.util.MultiValueMap;
 
@@ -33,8 +35,10 @@ import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 
 /**
@@ -136,8 +140,24 @@ public interface ICatalogSearchService {
             SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText) throws SearchException;
 
     /**
-     * Same as below but using {@link SearchType}
+     * Retrieve property values for specified property name
+     * @param criterion business criterions
+     * @param SearchType the search type containing the search type and the result type
+     * @param propertyPath target propertu
+     * @param maxCount maximum result count
+     * @param partialText text that property should contains (can be null)
      */
     List<String> retrieveEnumeratedPropertyValues(ICriterion criterion, SearchType searchType, String propertyPath,
             int maxCount, String partialText) throws SearchException;
+
+    /**
+     * Retrieve statistics for given attribute from a search context with search criterions and searcType.
+     * @param criterion {@link ICriterion}s for search context
+     * @param searchType {@link SearchType} for searc context
+     * @param attributes {@link AttributeModel}s to retrieve statistics on.
+     * @return {@link QueryableAttribute}s for each attribute
+     * @throws SearchException
+     */
+    List<Aggregation> retrievePropertiesStats(ICriterion criterion, SearchType searchType,
+            Collection<QueryableAttribute> attributes) throws SearchException;
 }
