@@ -16,26 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception;
+package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.gml;
 
-import java.util.List;
+import java.time.OffsetDateTime;
 
-import org.springframework.http.MediaType;
+import com.google.gson.Gson;
 
-@SuppressWarnings("serial")
-public class UnsupportedMediaTypesException extends Exception {
+/**
+ * Provides access to GML Time&Geo information.
+ * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
+ * @author Sébastien Binda
+ */
+public interface GmlTimeResponse {
 
-    private final List<MediaType> mediaTypes;
+    OffsetDateTime getStartDate();
 
-    public UnsupportedMediaTypesException(List<MediaType> mediaTypes) {
-        this.mediaTypes = mediaTypes;
-    }
+    void setStartDate(OffsetDateTime startDate);
 
-    @Override
-    public String getMessage() {
-        String mediaTypesStr = mediaTypes.stream().reduce("", (r, m) -> String.format("%s, %s", r, m.getType()),
-                                                          (s1, s2) -> String.format("%s, %s", s1, s2));
-        return String.format("Unsupported media type %s", mediaTypesStr);
-    }
+    OffsetDateTime getStopDate();
+
+    void setStopDate(OffsetDateTime stopDate);
+
+    Gson getGsonBuilder();
+
+    void setGsonBuilder(Gson gson);
 
 }

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.compress.utils.Lists;
+import org.springframework.util.MultiValueMap;
 
 import com.google.gson.Gson;
 import com.rometools.modules.mediarss.MediaEntryModuleImpl;
@@ -19,9 +20,20 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.entities.domain.AbstractDataEntity;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
+import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
 
+/**
+ * Geo&Time parameter extension for Opensearch standard.
+ * @see <a href="https://github.com/dewitt/opensearch/blob/master/opensearch-1-1-draft-6.md">Opensearch</a>
+ * @see <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Parameter/1.0/Draft_2">Opensearch parameter extension</a>
+ *
+ * @author Sébastien Binda
+ */
 public class MediaExtension implements IOpenSearchExtension {
 
     private boolean activated = false;
@@ -87,6 +99,17 @@ public class MediaExtension implements IOpenSearchExtension {
     @Override
     public void applyExtensionToDescriptionParameter(OpenSearchParameter parameter) {
         // Nothing to do
+    }
+
+    @Override
+    public void applyExtensionToDescription(OpenSearchDescription openSearchDescription) {
+        // Nothing to do
+    }
+
+    @Override
+    public ICriterion buildCriterion(MultiValueMap<String, String> queryParams,
+            List<OpenSearchParameterConfiguration> configurations, IAttributeFinder finder) {
+        return ICriterion.all();
     }
 
 }

@@ -62,12 +62,36 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
+    public void searchDataAtomWithParams() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
+        customizer.customizeRequestParam().param("page", "0");
+        customizer.customizeRequestParam().param("size", "10");
+        customizer.customizeRequestParam().param("properties.planet", "Mercury");
+        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
     public void searchDataJson() {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         customizer.customizeRequestParam().param("page", "0");
         customizer.customizeRequestParam().param("size", "10");
+        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
+    public void searchDataJsonWithParams() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        customizer.customizeRequestParam().param("page", "0");
+        customizer.customizeRequestParam().param("size", "10");
+        customizer.customizeRequestParam().param("properties.planet", "Mercury");
         performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }

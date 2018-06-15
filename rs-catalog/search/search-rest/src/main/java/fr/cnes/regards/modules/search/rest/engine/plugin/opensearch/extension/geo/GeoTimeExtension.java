@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.geo;
 
 import java.time.OffsetDateTime;
@@ -5,6 +23,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
@@ -19,10 +39,21 @@ import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
 import fr.cnes.regards.modules.entities.domain.attribute.ObjectAttribute;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.gml.impl.GmlTimeModuleImpl;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.gml.impl.GmlTimeModuleImpl;
+import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
 
+/**
+ * Geo&Time parameter extension for Opensearch standard.
+ * @see <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Parameter/1.0/Draft_2">Opensearch parameter extension</a>
+ * @see <a href="http://www.opengeospatial.org/standards/opensearchgeo">Opensearch Geo&Time extension</a>
+ *
+ * @author Sébastien Binda
+ */
 public class GeoTimeExtension implements IOpenSearchExtension {
 
     private boolean activated = false;
@@ -130,6 +161,18 @@ public class GeoTimeExtension implements IOpenSearchExtension {
         } else if (parameter.getName().equals(timeEndAttribute)) {
             parameter.setValue("{time:end}");
         }
+    }
+
+    @Override
+    public void applyExtensionToDescription(OpenSearchDescription openSearchDescription) {
+        // Nothing to do
+    }
+
+    @Override
+    public ICriterion buildCriterion(MultiValueMap<String, String> queryParams,
+            List<OpenSearchParameterConfiguration> configurations, IAttributeFinder finder) {
+        // TODO Handle criterion
+        return ICriterion.all();
     }
 
 }

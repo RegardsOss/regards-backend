@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
@@ -35,15 +34,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriUtils;
 
 import com.google.common.collect.Maps;
 
+import feign.FeignException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -60,7 +61,7 @@ import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
@@ -72,14 +73,16 @@ import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 import fr.cnes.regards.modules.search.service.SearchException;
 
 /**
- * base class allowing to build a description for our OpenSearch endpoints
- *
- * @author Sylvain Vissiere-Guerinet
+ * Opensearch description.xml builder.
+ * @author Sébastien Binda
  */
 @Component
-public class OpenSearchDescBuilder {
+public class OpenSearchDescriptionBuilder {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OpenSearchDescBuilder.class);
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenSearchDescriptionBuilder.class);
 
     /**
      * microservice name
@@ -102,83 +105,98 @@ public class OpenSearchDescBuilder {
     @Autowired
     private ICatalogSearchService searchService;
 
+    @Autowired
+    private IResourceService resourceService;
+
     /**
      * {@link IModelAttrAssocClient} instance
      */
     @Autowired
     private IModelAttrAssocClient modelAttrAssocClient;
 
+    /**
+     * Global configuration for description metadatas
+     */
     @Autowired
-    public OpenSearchDescriptionConf configuration;
+    public OpenSearchConfiguration configuration;
 
     /**
-     * build an OpenSearch descriptor for the current tenant(i.e. project) on the given path and entity type
-     * @param context
-     * @param extensions
-     * @return
+     * Build an OpenSearch descriptor for the current tenant(i.e. project) on the given path and entity type
+     * @param context {@link SearchContext}
+     * @param extensions {@link IOpenSearchExtension} extensions to use
+     * @param parameterConfs {@link OpenSearchParameterConfiguration}s parameters configuration.
+     * @return {@link OpenSearchDescription}
      * @throws UnsupportedEncodingException
      */
     public OpenSearchDescription build(SearchContext context, ICriterion criterion,
-            List<IOpenSearchExtension> extensions, List<OpenSearchParameterConfiguration> parameterConfs)
-            throws UnsupportedEncodingException {
+            List<IOpenSearchExtension> extensions, List<OpenSearchParameterConfiguration> parameterConfs) {
+
+        // Retrieve informations about current projet
         String currentTenant = tenantResolver.getTenant();
         Project project = getProject(currentTenant);
-        Map<AttributeModel, QueryableAttribute> attributes = getAttributesFor(criterion, context.getSearchType(),
-                                                                              parameterConfs, currentTenant);
+
+        // Get all attributes for the given search type.
+        Map<AttributeModel, QueryableAttribute> attributes = retreiveSearchContextAttributes(criterion,
+                                                                                             context.getSearchType(),
+                                                                                             parameterConfs,
+                                                                                             currentTenant);
 
         // Build descriptor generic metadatas
-        OpenSearchDescription desc = buildMetadata(project, attributes.keySet());
+        OpenSearchDescription desc = buildMetadata(project);
+
+        // Build query
+        desc.getQuery().add(buildQuery(attributes.keySet()));
 
         // Build open search parameters to handle parameters extension
         List<OpenSearchParameter> parameters = buildParameters(attributes, extensions);
 
         // Build urls
-        String endpointPath = getEndpoint(context.getSearchType());
-        desc.getUrl().add(buildUrl(project, parameters, endpointPath, MediaType.APPLICATION_ATOM_XML_VALUE));
-        desc.getUrl().add(buildUrl(project, parameters, endpointPath, MediaType.APPLICATION_JSON_VALUE));
+        Link searchLink = SearchEngineController.buildPaginationLink(resourceService, context, "search");
+        desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(), MediaType.APPLICATION_ATOM_XML_VALUE));
+        desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(), MediaType.APPLICATION_JSON_VALUE));
+
+        // Apply active extensions to global description
+        extensions.stream().filter(IOpenSearchExtension::isActivated)
+                .forEach(ext -> ext.applyExtensionToDescription(desc));
 
         return desc;
     }
 
-    private OpenSearchDescription buildMetadata(Project project, Collection<AttributeModel> attributes) {
+    /**
+     * Build metadata of the {@link OpenSearchDescription}
+     * @param project {@link Project}
+     * @param attributes {@link AttributeModel}s attributes
+     * @return
+     */
+    private OpenSearchDescription buildMetadata(Project project) {
         OpenSearchDescription desc = new OpenSearchDescription();
         desc.setDescription(String.format(project.getDescription()));
         desc.setShortName(String.format(project.getName()));
         desc.setLongName(String.format(project.getName()));
-        desc.getQuery().add(buildQuery(attributes));
         desc.setDeveloper(configuration.getDeveloper());
         desc.setAttribution(configuration.getAttribution());
-        desc.setAdultContent("false");
-        desc.setLanguage("en");
+        desc.setAdultContent(Boolean.toString(configuration.isAdultContent()));
+        desc.setLanguage(configuration.getLanguage());
+        desc.setContact(configuration.getContactEmail());
         desc.setInputEncoding(StandardCharsets.UTF_8.displayName());
         desc.setOutputEncoding(StandardCharsets.UTF_8.displayName());
         return desc;
     }
 
-    private UrlType buildUrl(Project project, List<OpenSearchParameter> parameters, String endpoint, String mediaType)
-            throws UnsupportedEncodingException {
+    /**
+     * Build an {@link UrlType} to add into the {@link OpenSearchDescription}
+     * @param project {@link Project}
+     * @param parameters {@link OpenSearchParameter}s parameters of the url
+     * @param endpoint {@link String} endpoint of the search request
+     * @param mediaType {@link String} MediaType of the search request response
+     * @return {@link UrlType}
+     */
+    private UrlType buildUrl(Project project, List<OpenSearchParameter> parameters, String endpoint, String mediaType) {
         UrlType url = new UrlType();
         url.getParameter().addAll(parameters);
-        url.setRel("results");
+        url.setRel(configuration.getUrlsRel());
         url.setType(mediaType);
-        StringJoiner sj = new StringJoiner("/");
-        sj.add(project.getHost());
-        //FIXME: do not fix the gateway prefix with a constant, we should find a way to retrieve it
-        sj.add("api/v1");
-        // UriUtils.encode give back the string in US-ASCII encoding, so let create a new String that will then reencode
-        // the string however the jvm wants
-        sj.add(new String(UriUtils.encode(microserviceName, Charset.defaultCharset().name()).getBytes(),
-                StandardCharsets.US_ASCII));
-        sj.add(endpoint);
-        String urlTemplate = sj.toString();
-        // urlTemplate can contain double slashes on the part which is valid but ugly so let make the world a bit
-        // prettier. We choose project.getHost().length()-1 because Project.getHost() can finish by a "/" so we would
-        // have a double "/" with the joiner and we admit that what the administrator entered as host is valid
-        int incorrectDoubleSlashIndex = project.getHost().length() - 1;
-        String correctPart = urlTemplate.substring(0, incorrectDoubleSlashIndex);
-        String incorrectPart = urlTemplate.substring(incorrectDoubleSlashIndex);
-        StringBuilder urlTemplateBuilder = new StringBuilder(correctPart);
-        urlTemplateBuilder.append(incorrectPart.replaceAll("//", "/"));
+        StringBuilder urlTemplateBuilder = new StringBuilder(endpoint);
         urlTemplateBuilder.append(String.format("?%s={%s}", configuration.getQueryParameterName(),
                                                 configuration.getQueryParameterValue()));
         parameters.stream().forEach(p -> urlTemplateBuilder.append(String.format("&%s=%s", p.getName(), p.getValue())));
@@ -186,6 +204,12 @@ public class OpenSearchDescBuilder {
         return url;
     }
 
+    /**
+     * Build a {@link QueryType} for the given {@link AttributeModel}s.
+     * The generate query is an example to shox syntax of the global searchTerms
+     * @param attributes {@link AttributeModel}s to handle in the query
+     * @return {@link QueryType}
+     */
     private QueryType buildQuery(Collection<AttributeModel> attributes) {
         QueryType query = new QueryType();
         query.setRole("example");
@@ -193,6 +217,12 @@ public class OpenSearchDescBuilder {
         return query;
     }
 
+    /**
+     * Build {@link OpenSearchParameter}s to add for the parameter extension in each {@link UrlType} of the {@link OpenSearchDescription}
+     * @param attributes {@link Map} {@link AttributeModel} / {@link QueryableAttribute}
+     * @param extensions {@link IOpenSearchExtension}s to apply on parameters
+     * @return generated {@link OpenSearchParameter}s
+     */
     private List<OpenSearchParameter> buildParameters(Map<AttributeModel, QueryableAttribute> attributes,
             List<IOpenSearchExtension> extensions) {
         List<OpenSearchParameter> parameters = Lists.newArrayList();
@@ -210,6 +240,13 @@ public class OpenSearchDescBuilder {
         return parameters;
     }
 
+    /**
+     * Build a {@link OpenSearchParameter} for a given {@link AttributeModel}
+     * @param attribute {@link AttributeModel} to build parameter from.
+     * @param queryableAtt {@link QueryableAttribute} attribute query informations.
+     * @param extensions {@link IOpenSearchExtension} opensearch extensions to handle.
+     * @return
+     */
     private OpenSearchParameter buildParameter(AttributeModel attribute, QueryableAttribute queryableAtt,
             List<IOpenSearchExtension> extensions) {
         OpenSearchParameter parameter = new OpenSearchParameter();
@@ -251,118 +288,61 @@ public class OpenSearchDescBuilder {
         return parameter;
     }
 
-    private String getSearchTermExample(Collection<AttributeModel> pAttrs) {
-        StringJoiner sj = new StringJoiner(" AND ");
-        for (AttributeModel attr : pAttrs) {
-            // result has the following format: "fullAttrName:value", except for arrays. Arrays are represented thanks
-            // to multiple values: attr:val1 OR attr:val2 ...
-            StringBuilder result = new StringBuilder();
-            result.append(getAttributeFullName(attr)).append(":");
-            switch (attr.getType()) {
-                case BOOLEAN:
-                    result.append("{boolean}");
-                    break;
-                case DATE_ARRAY:
-                    result.append("{ISO-8601 date} OR ").append(getAttributeFullName(attr)).append(":")
-                            .append("{ISO-8601 date}");
-                    break;
-                case DATE_INTERVAL:
-                    result.append("[* TO  {ISO-8601 date} ]");
-                    break;
-                case DATE_ISO8601:
-                    result.append("{ISO-8601 date}");
-                    break;
-                case DOUBLE:
-                    result.append("{double value}");
-                    break;
-                case DOUBLE_ARRAY:
-                    result.append("{double value} OR ").append(getAttributeFullName(attr)).append(":")
-                            .append("{double value}");
-                    break;
-                case DOUBLE_INTERVAL:
-                    result.append("[{double value} TO  {double value}]");
-                    break;
-                case LONG:
-                    result.append("{long value}");
-                    break;
-                case INTEGER:
-                    result.append("{integer value}");
-                    break;
-                case LONG_ARRAY:
-                    result.append("{long value} OR ").append(getAttributeFullName(attr)).append(":")
-                            .append("{long value}");
-                    break;
-                case INTEGER_ARRAY:
-                    result.append("{integer value} OR ").append(getAttributeFullName(attr)).append(":")
-                            .append("{integer value}");
-                    break;
-                case LONG_INTERVAL:
-                    result.append("[{long value} TO  {long value}]");
-                    break;
-                case INTEGER_INTERVAL:
-                    result.append("[{integer value} TO  {integer value}]");
-                    break;
-                case STRING:
-                    result.append("{string}");
-                    break;
-                case STRING_ARRAY:
-                    result.append("{string} OR ").append(getAttributeFullName(attr)).append(":").append("{string}");
-                    break;
-                case URL:
-                    result.append("{url}");
-                    break;
-                default:
-                    throw new IllegalArgumentException(
-                            attr.getType() + " is not handled for open search descriptor generation");
-            }
-            sj.add(result.toString());
-        }
-        return sj.toString();
-    }
+    /**
+     * Retrieve all queryable attributes for the current search context.
+     * For each attribute, this method return a couple {@link AttributeModel}/{@link QueryableAttribute}.
+     * {@link AttributeModel} is the attribute definition (metadatas)
+     * {@link QueryableAttribute} is the attribute available informations for query as boundaries for example.
+     * @param criterion {@link ICriterion} search criterion
+     * @param searchType {@link SearchType}
+     * @param parameterConfs {@link OpenSearchParameterConfiguration} configured parameters.
+     * @param pCurrentTenant {@link String} tenant or project.
+     * @return {@link Map}<{@link AttributeModel}, {@link QueryableAttribute}>
+     */
+    private Map<AttributeModel, QueryableAttribute> retreiveSearchContextAttributes(ICriterion criterion,
+            SearchType searchType, List<OpenSearchParameterConfiguration> parameterConfs, String pCurrentTenant) {
 
-    private String getAttributeFullName(AttributeModel attr) {
-        if (attr.getFragment().isDefaultFragment()) {
-            return StaticProperties.PROPERTIES + "." + attr.getName();
-        } else {
-            return StaticProperties.PROPERTIES + "." + attr.getFragment().getName() + "." + attr.getName();
-        }
-    }
-
-    private Map<AttributeModel, QueryableAttribute> getAttributesFor(ICriterion criterion, SearchType searchType,
-            List<OpenSearchParameterConfiguration> parameterConfs, String pCurrentTenant) {
+        Map<AttributeModel, QueryableAttribute> attributes = Maps.newHashMap();
 
         tenantResolver.forceTenant(pCurrentTenant);
         FeignSecurityManager.asSystem();
-        ResponseEntity<Collection<ModelAttrAssoc>> assocsResponse = modelAttrAssocClient
-                .getModelAttrAssocsFor(getEntityType(searchType));
-        FeignSecurityManager.reset();
-        if (!HttpUtils.isSuccess(assocsResponse.getStatusCode())) {
-            // it mainly means 404: which would mean route not found as we are retrieving the current project
-            throw new IllegalStateException(
-                    "Trying to contact microservice responsible for Model but couldn't contact it");
-        }
-
-        Map<AttributeModel, QueryableAttribute> attributes = Maps.newHashMap();
-        for (ModelAttrAssoc maa : assocsResponse.getBody()) {
-            maa.getAttribute().buildJsonPath(StaticProperties.PROPERTIES);
-            Optional<OpenSearchParameterConfiguration> conf = parameterConfs.stream()
-                    .filter(pc -> pc.getAttributeModelName().equals(maa.getAttribute().getJsonPath())).findFirst();
-            attributes.put(maa.getAttribute(), createEmptyQueryableAttribute(maa.getAttribute(), conf));
-        }
-
-        // Run search to get statistics on each parameters
         try {
-            searchService.retrievePropertiesStats(criterion, searchType, attributes.values());
-            LOGGER.info("PLOP");
+            // Retrieve all AttributeModel fot the given searchType
+            ResponseEntity<Collection<ModelAttrAssoc>> assocsResponse = modelAttrAssocClient
+                    .getModelAttrAssocsFor(getEntityType(searchType));
+            FeignSecurityManager.reset();
+            if (!HttpUtils.isSuccess(assocsResponse.getStatusCode())) {
+                LOGGER.error("Trying to contact microservice responsible for Model but couldn't contact it");
+            }
 
-        } catch (SearchException e) {
-            LOGGER.error("Error retrieving properties for each parameters of the OpenSearchDescription (parameter extension",
-                         e);
+            // For each attribute retrieve the QueryableAttribute informations
+            for (ModelAttrAssoc maa : assocsResponse.getBody()) {
+                maa.getAttribute().buildJsonPath(StaticProperties.PROPERTIES);
+                Optional<OpenSearchParameterConfiguration> conf = parameterConfs.stream()
+                        .filter(pc -> pc.getAttributeModelName().equals(maa.getAttribute().getJsonPath())).findFirst();
+                attributes.put(maa.getAttribute(), createEmptyQueryableAttribute(maa.getAttribute(), conf));
+            }
+            try {
+                // Run statistic search on each attributes. Results are set back into the QueryableAttributes parameter.
+                searchService.retrievePropertiesStats(criterion, searchType, attributes.values());
+            } catch (SearchException e) {
+                LOGGER.error("Error retrieving properties for each parameters of the OpenSearchDescription (parameter extension",
+                             e);
+            }
+        } catch (FeignException e) {
+            LOGGER.error("Error retrieving attributes from IModelAttrAssocClient", e);
         }
 
         return attributes;
     }
 
+    /**
+     * Create an new empty {@link QueryableAttribute} object for the given {@link AttributeModel}
+     * and the associated {@link OpenSearchParameterConfiguration}
+     * @param att {@link AttributeModel}
+     * @param conf {@link OpenSearchParameterConfiguration}
+     * @return {@link QueryableAttribute}
+     */
     private QueryableAttribute createEmptyQueryableAttribute(AttributeModel att,
             Optional<OpenSearchParameterConfiguration> conf) {
         if (conf.isPresent()) {
@@ -373,20 +353,36 @@ public class OpenSearchDescBuilder {
         }
     }
 
+    /**
+     * Retrieve {@link Project} information
+     * @param currentTenant {@link String} project name
+     * @return {@link Project}
+     */
     private Project getProject(String currentTenant) {
-        tenantResolver.forceTenant(currentTenant);
-        FeignSecurityManager.asSystem();
-        ResponseEntity<Resource<Project>> projectResponse = projectClient.retrieveProject(currentTenant);
-        FeignSecurityManager.reset();
-        // in case of a problem there is already a RuntimeException which is launch by feign
-        if (!HttpUtils.isSuccess(projectResponse.getStatusCode())) {
-            // it mainly means 404: which would mean route not found as we are retrieving the current project
-            throw new IllegalStateException(
-                    "Trying to contact microservice responsible for project but couldn't contact it");
+        Project project = new Project("Undefined", null, false, "Undefined");
+        try {
+            tenantResolver.forceTenant(currentTenant);
+            FeignSecurityManager.asSystem();
+            ResponseEntity<Resource<Project>> projectResponse = projectClient.retrieveProject(currentTenant);
+            FeignSecurityManager.reset();
+            // in case of a problem there is already a RuntimeException which is launch by feign
+            if (!HttpUtils.isSuccess(projectResponse.getStatusCode())) {
+                LOGGER.error("Error retrieve project from IProjectClient. response status : {}",
+                             projectResponse.getStatusCode());
+            } else {
+                project = projectResponse.getBody().getContent();
+            }
+        } catch (FeignException e) {
+            LOGGER.error("Error retrieve project from IProjectClient. response status :", e);
         }
-        return projectResponse.getBody().getContent();
+        return project;
     }
 
+    /**
+     * Convert {@link SearchType} to {@link EntityType}
+     * @param searchType {@link SearchType}
+     * @return {@link EntityType}
+     */
     private EntityType getEntityType(SearchType searchType) {
         switch (searchType) {
             case COLLECTIONS:
@@ -405,24 +401,75 @@ public class OpenSearchDescBuilder {
         }
     }
 
-    private String getEndpoint(SearchType searchType) {
-        String engineMapping = SearchEngineController.TYPE_MAPPING.replace(SearchEngineController.ENGINE_TYPE_PARAMETER,
-                                                                           OpenSearchEngine.ENGINE_ID);
-        switch (searchType) {
-            case COLLECTIONS:
-                return engineMapping + SearchEngineController.SEARCH_COLLECTIONS_MAPPING;
-            case DATAOBJECTS:
-                return engineMapping + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING;
-            case DATASETS:
-                return engineMapping + SearchEngineController.SEARCH_DATASETS_MAPPING;
-            case DOCUMENTS:
-                return engineMapping + SearchEngineController.SEARCH_DOCUMENTS_MAPPING;
-            case ALL:
-            case DATAOBJECTS_RETURN_DATASETS:
-            default:
-                throw new UnsupportedOperationException(
-                        String.format("Unsupproted entity type for open search. %s", searchType.toString()));
+    /**
+     * Generate an example search query for searchTerms standard opensearch parameter.
+     * @param pAttrs {@link AttributeModel}s to handle in query
+     * @return {@link String} example query
+     */
+    private String getSearchTermExample(Collection<AttributeModel> pAttrs) {
+        StringJoiner sj = new StringJoiner(" AND ");
+        for (AttributeModel attr : pAttrs) {
+            // result has the following format: "fullAttrName:value", except for arrays. Arrays are represented thanks
+            // to multiple values: attr:val1 OR attr:val2 ...
+            StringBuilder result = new StringBuilder();
+            result.append(attr.getJsonPath()).append(":");
+            switch (attr.getType()) {
+                case BOOLEAN:
+                    result.append("{boolean}");
+                    break;
+                case DATE_ARRAY:
+                    result.append("{ISO-8601 date} OR ").append(attr.getJsonPath()).append(":")
+                            .append("{ISO-8601 date}");
+                    break;
+                case DATE_INTERVAL:
+                    result.append("[* TO  {ISO-8601 date} ]");
+                    break;
+                case DATE_ISO8601:
+                    result.append("{ISO-8601 date}");
+                    break;
+                case DOUBLE:
+                    result.append("{double value}");
+                    break;
+                case DOUBLE_ARRAY:
+                    result.append("{double value} OR ").append(attr.getJsonPath()).append(":").append("{double value}");
+                    break;
+                case DOUBLE_INTERVAL:
+                    result.append("[{double value} TO  {double value}]");
+                    break;
+                case LONG:
+                    result.append("{long value}");
+                    break;
+                case INTEGER:
+                    result.append("{integer value}");
+                    break;
+                case LONG_ARRAY:
+                    result.append("{long value} OR ").append(attr.getJsonPath()).append(":").append("{long value}");
+                    break;
+                case INTEGER_ARRAY:
+                    result.append("{integer value} OR ").append(attr.getJsonPath()).append(":")
+                            .append("{integer value}");
+                    break;
+                case LONG_INTERVAL:
+                    result.append("[{long value} TO  {long value}]");
+                    break;
+                case INTEGER_INTERVAL:
+                    result.append("[{integer value} TO  {integer value}]");
+                    break;
+                case STRING:
+                    result.append("{string}");
+                    break;
+                case STRING_ARRAY:
+                    result.append("{string} OR ").append(attr.getJsonPath()).append(":").append("{string}");
+                    break;
+                case URL:
+                    result.append("{url}");
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            attr.getType() + " is not handled for open search descriptor generation");
+            }
+            sj.add(result.toString());
         }
+        return sj.toString();
     }
-
 }

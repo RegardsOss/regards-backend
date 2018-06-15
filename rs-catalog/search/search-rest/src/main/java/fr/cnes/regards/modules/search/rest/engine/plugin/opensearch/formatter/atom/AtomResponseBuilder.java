@@ -16,13 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom;
+package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom;
 
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
-
-import javax.annotation.PostConstruct;
 
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,14 +42,19 @@ import com.rometools.rome.feed.synd.SyndPersonImpl;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.IOpenSearchResponseBuilder;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IOpenSearchResponseBuilder;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.gml.impl.GmlTimeModuleGenerator;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.impl.RegardsModuleGenerator;
 
 /**
- * Build open search responses in ATOM format handling :
- * - parameters extension
- * - time & geo extension
- * - regards extension
+ * Build open search responses in ATOM format throught rome library handling :<ul>
+ * <li>parameters extension</li>
+ * <li>time & geo extension {@link GmlTimeModuleGenerator}</li>
+ * <li>regards extension {@link RegardsModuleGenerator}</li>
+ * </ul>
+ * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
  */
 @Component
@@ -59,6 +62,11 @@ public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
 
     public static final String ATOM_VERSION = "atom_1.0";
 
+    public static final String OPENSEARCH_DESC_MEDIATYPE_VALUE = "application/opensearchdescription+xml";
+
+    /**
+     * List of {@link IOpenSearchExtension} to handle for ATOM format.
+     */
     private final List<IOpenSearchExtension> extensions = Lists.newArrayList();
 
     @Autowired
@@ -66,14 +74,10 @@ public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
 
     private final Feed feed = new Feed(ATOM_VERSION);
 
-    @PostConstruct
-    public void init() {
-        System.out.printf("init AtomResponseBuilder");
-    }
-
     @Override
     public void addMetadata(String searchId, String searchTitle, String searchDescription,
-            String openSearchDescriptionUrl, SearchContext context, FacetPage<AbstractEntity> page) {
+            String openSearchDescriptionUrl, SearchContext context, OpenSearchConfiguration configuration,
+            FacetPage<AbstractEntity> page) {
         // Fee general informations
         feed.setId(searchId);
         feed.setTitle(searchTitle);
@@ -86,16 +90,15 @@ public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
 
         // Create feed author.
         SyndPerson author = new SyndPersonImpl();
-        author.setEmail("regards@cnes.fr");
-        author.setName("CNES - Centre national d'études spatiales");
-        author.setUri("https://regardsoss.github.io/");
+        author.setEmail(configuration.getContactEmail());
+        author.setName(configuration.getAttribution());
         feed.getAuthors().add(author);
 
         // Add search date
         feed.setUpdated(Date.valueOf(LocalDate.now()));
 
         // Add search language
-        feed.setLanguage("en-US");
+        feed.setLanguage(configuration.getLanguage());
 
         // Add the opensearch module, you would get information like totalResults from the
         // return results of your search
@@ -111,12 +114,12 @@ public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
             query.setSearchTerms(context.getQueryParams().get("q").get(0));
         }
         query.setStartPage(context.getPageable().getPageNumber());
-        query.setRole("request");
+        query.setRole(configuration.getUrlsRel());
         osm.addQuery(query);
         // Add opensearch description link
         Link osDescLink = new Link();
         osDescLink.setHref(openSearchDescriptionUrl);
-        osDescLink.setType("application/opensearchdescription+xml");
+        osDescLink.setType(OPENSEARCH_DESC_MEDIATYPE_VALUE);
         osm.setLink(osDescLink);
         mods.add(osm);
         feed.setModules(mods);

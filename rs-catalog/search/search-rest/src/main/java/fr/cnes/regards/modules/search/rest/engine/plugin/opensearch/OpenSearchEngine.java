@@ -18,11 +18,8 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch;
 
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,15 +41,15 @@ import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.OpenSearchDescBuilder;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.OpenSearchDescriptionBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedMediaTypesException;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.media.MediaExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards.RegardsExtension;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IOpenSearchResponseBuilder;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 
@@ -91,7 +88,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     private IOpenSearchService openSearchService;
 
     @Autowired
-    private OpenSearchDescBuilder descriptionBuilder;
+    private OpenSearchDescriptionBuilder descriptionBuilder;
 
     @Autowired
     private List<IOpenSearchResponseBuilder<?>> responseBuilders;
@@ -102,15 +99,18 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @Autowired
     protected ICatalogSearchService searchService;
 
+    @Autowired
+    private OpenSearchConfiguration configuration;
+
     @PluginParameter(name = "searchTitle", label = "Title of responses associated to this search engine",
             description = "Search title for response metadatas. Used to construct metadatas for atom+xml and geo+json responses.",
-            defaultValue = "Open search engire title")
-    private String searchTitle;
+            defaultValue = "Open search engine title")
+    private final String searchTitle = "Open search engine title";
 
     @PluginParameter(name = "searchDescription", label = "Description of responses associated to this search engine",
             description = "Description for response metadatas. Used to construct metadatas for atom+xml and geo+json responses.",
-            defaultValue = "Open search engire description")
-    private String searchDescription;
+            defaultValue = "Open search engine description")
+    private final String searchDescription = "Open search engine description";
 
     @PluginParameter(name = OpenSearchEngine.TIME_EXTENSION_PARAMETER, label = "Open search time extension")
     private GeoTimeExtension timeExtension;
@@ -213,13 +213,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         init();
 
         if (context.getExtra().isPresent() && context.getExtra().get().equals(EXTRA_DESCRIPTION)) {
-            try {
-                return ResponseEntity.ok(descriptionBuilder
-                        .build(context, parseParametersExt(context.getQueryParams()),
-                               Arrays.asList(mediaExtension, regardsExtension, timeExtension), parameters));
-            } catch (UnsupportedEncodingException e) {
-                throw new ModuleException(e);
-            }
+            return ResponseEntity.ok(descriptionBuilder
+                    .build(context, parseParametersExt(context.getQueryParams()),
+                           Arrays.asList(mediaExtension, regardsExtension, timeExtension), parameters));
         } else {
             return ISearchEngine.super.extra(context);
         }
@@ -237,7 +233,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         IOpenSearchResponseBuilder<?> builder = getBuilder(context);
         // TODO : Replace with real url
         builder.addMetadata(UUID.randomUUID().toString(), searchTitle, searchDescription,
-                            "http://www.regards.com/opensearch-description.xml", context, page);
+                            "http://www.regards.com/opensearch-description.xml", context, configuration, page);
         page.getContent().stream().forEach(builder::addEntity);
         return builder.build();
     }
@@ -248,28 +244,14 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      * @return {@link ICriterion}
      */
     private ICriterion parseParametersExt(MultiValueMap<String, String> queryParams) {
-        List<ICriterion> criteria = new ArrayList<>();
-        for (Entry<String, List<String>> queryParam : queryParams.entrySet()) {
-            // Get couple parameter name/values
-            String paramName = queryParam.getKey();
-            List<String> values = queryParam.getValue();
-            // Find associated attribute configuration from plugin conf
-            Optional<OpenSearchParameterConfiguration> oParam = parameters.stream()
-                    .filter(p -> p.getName().equals(paramName)).findFirst();
-            // TODO handle extensions
-            try {
-                if (oParam.isPresent()) {
-                    OpenSearchParameterConfiguration conf = oParam.get();
-                    // Parse attribute value to create associated ICriterion using parameter configuration
-                    criteria.add(AttributeCriterionBuilder.build(conf, values, finder));
-                } else {
-                    criteria.add(AttributeCriterionBuilder.build(paramName, ParameterOperator.EQ, values, finder));
-                }
-            } catch (OpenSearchUnknownParameter e) {
-                LOGGER.error("Invalid public attribute {}. Unknown type.", paramName);
-            }
-        }
-        return criteria.isEmpty() ? ICriterion.all() : ICriterion.and(criteria);
+
+        // TODO public names
+
+        // TODO Find AttributeModel for each parameter
+
+        return ICriterion.and(timeExtension.buildCriterion(queryParams, parameters, finder),
+                              mediaExtension.buildCriterion(queryParams, parameters, finder),
+                              regardsExtension.buildCriterion(queryParams, parameters, finder));
     }
 
     /**

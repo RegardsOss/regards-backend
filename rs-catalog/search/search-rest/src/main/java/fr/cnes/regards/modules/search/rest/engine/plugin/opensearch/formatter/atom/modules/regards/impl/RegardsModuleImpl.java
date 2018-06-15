@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.regards.impl;
+package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.impl;
 
 import java.io.Serializable;
 
@@ -25,18 +25,25 @@ import com.rometools.rome.feed.CopyFrom;
 import com.rometools.rome.feed.module.ModuleImpl;
 
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.regards.RegardsModule;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.RegardsModule;
 
 /**
  * com.rometools.rome module implementation to handle specifics regards model attributes.
+ * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
  */
 public class RegardsModuleImpl extends ModuleImpl implements RegardsModule, Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Regards {@link AbstractEntity} to format.
+     */
     private AbstractEntity entity;
 
+    /**
+     * {@link Gson} to serialize attributes values.
+     */
     private Gson gson;
 
     public RegardsModuleImpl() {

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.gml.impl;
+package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.gml.impl;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,10 +31,11 @@ import com.rometools.modules.georss.GeoRSSModule;
 import com.rometools.rome.feed.module.Module;
 import com.rometools.rome.io.ModuleGenerator;
 
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.gml.GmlTimeModule;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.gml.GmlTimeModule;
 
 /**
- * com.rometools.rome module generator to handle specifics regards model attributes.
+ * Module generator to handle specifics regards model attributes.
+ * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
  */
 public class GmlTimeModuleGenerator extends GMLGenerator implements ModuleGenerator {

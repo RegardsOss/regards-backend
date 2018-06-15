@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttribut
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 
 /**
- * Builder class to create {@link ICriterion} for catalog searches.
+ * {@link ICriterion} builder for catalog searches.
  * @author Sébastien Binda
  */
 public class AttributeCriterionBuilder {
@@ -36,10 +36,19 @@ public class AttributeCriterionBuilder {
     private AttributeCriterionBuilder() {
     }
 
-    public static ICriterion build(String paramName, ParameterOperator operator, List<String> values,
+    /**
+     * Build a {@link ICriterion} for catalog search from
+     * @param attributeName {@link AttributeModel#getName()}
+     * @param operator {@link ParameterOperator} to apply for the current attribute search
+     * @param values {@link String}s search values.
+     * @param finder {@link IAttributeFinder}
+     * @return {@link ICriterion}
+     * @throws OpenSearchUnknownParameter
+     */
+    public static ICriterion build(String attributeName, ParameterOperator operator, List<String> values,
             IAttributeFinder finder) throws OpenSearchUnknownParameter {
         ICriterion criterion = null;
-        AttributeModel attributeModel = finder.findByName(paramName);
+        AttributeModel attributeModel = finder.findByName(attributeName);
         String attributeJsonPath = attributeModel.buildJsonPath(StaticProperties.PROPERTIES);
         for (String value : values) {
             ICriterion valueCriterion = null;
@@ -66,7 +75,7 @@ public class AttributeCriterionBuilder {
                     valueCriterion = buildDateCrit(attributeJsonPath, value, operator);
                     break;
                 case BOOLEAN:
-                    valueCriterion = buildSBooleanCrit(attributeJsonPath, value, operator);
+                    valueCriterion = buildBooleanCrit(attributeJsonPath, value, operator);
                     break;
                 default:
                     throw new OpenSearchUnknownParameter("Unknown parameter");
@@ -102,7 +111,7 @@ public class AttributeCriterionBuilder {
      * @return {@link ICriterion}
      * @throws OpenSearchUnknownParameter
      */
-    private static ICriterion buildSBooleanCrit(String attribute, String value, ParameterOperator operator)
+    private static ICriterion buildBooleanCrit(String attribute, String value, ParameterOperator operator)
             throws OpenSearchUnknownParameter {
         switch (operator) {
             case GE:

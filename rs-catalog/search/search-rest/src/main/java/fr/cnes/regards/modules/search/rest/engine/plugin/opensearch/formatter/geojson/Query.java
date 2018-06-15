@@ -16,16 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.gml;
+package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.geojson;
 
-import com.rometools.modules.georss.GeoRSSModule;
-import com.rometools.rome.feed.module.Module;
+import java.util.Map;
+
+import com.google.common.collect.Maps;
 
 /**
- * Provides access to Regards information.
+ * Query for geo+json opensearch meta response.
+ * @author Sébastien Binda
  */
-public interface GmlTimeModule extends Module, GmlTimeResponse {
+public class Query {
 
-    public final static String URI = GeoRSSModule.GEORSS_GML_URI;
+    private final Map<String, String> searchFilters = Maps.newHashMap();
+
+    public Map<String, String> getSearchFilters() {
+        return searchFilters;
+    }
+
+    public void addFilter(String name, String value) {
+        searchFilters.put(name, value);
+    }
 
 }

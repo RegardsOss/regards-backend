@@ -16,23 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.regards;
+package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards;
 
-import com.google.gson.Gson;
-
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
+import com.rometools.rome.feed.module.Module;
 
 /**
  * Provides access to Regards information.
+ * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
+ * @author Sébastien Binda
  */
-public interface RegardsResponse {
+public interface RegardsModule extends Module, RegardsResponse {
 
-    Gson getGsonBuilder();
-
-    void setGsonBuilder(Gson gson);
-
-    AbstractEntity getEntity();
-
-    void setEntity(AbstractEntity entity);
+    /**
+     * REGARDS specifications for opensearch
+     */
+    public final static String URI = "http://regards.com/-/spec/3.0/";
 
 }

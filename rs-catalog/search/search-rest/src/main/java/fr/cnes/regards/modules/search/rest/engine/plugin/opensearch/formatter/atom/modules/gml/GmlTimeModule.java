@@ -16,27 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.atom.modules.gml;
+package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.gml;
 
-import java.time.OffsetDateTime;
-
-import com.google.gson.Gson;
+import com.rometools.modules.georss.GeoRSSModule;
+import com.rometools.rome.feed.module.Module;
 
 /**
- * Provides access to Regards information.
+ * Provides access to GML Time&Geo information.
+ * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
+ * @author Sébastien Binda
  */
-public interface GmlTimeResponse {
+public interface GmlTimeModule extends Module, GmlTimeResponse {
 
-    OffsetDateTime getStartDate();
-
-    void setStartDate(OffsetDateTime startDate);
-
-    OffsetDateTime getStopDate();
-
-    void setStopDate(OffsetDateTime stopDate);
-
-    Gson getGsonBuilder();
-
-    void setGsonBuilder(Gson gson);
+    public final static String URI = GeoRSSModule.GEORSS_GML_URI;
 
 }
