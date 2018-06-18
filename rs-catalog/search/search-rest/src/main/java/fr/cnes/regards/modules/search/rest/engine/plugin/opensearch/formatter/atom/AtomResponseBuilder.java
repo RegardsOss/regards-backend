@@ -23,9 +23,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.apache.commons.compress.utils.Lists;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
 import com.rometools.modules.opensearch.OpenSearchModule;
@@ -57,7 +54,6 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.at
  * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
  */
-@Component
 public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
 
     public static final String ATOM_VERSION = "atom_1.0";
@@ -69,10 +65,13 @@ public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
      */
     private final List<IOpenSearchExtension> extensions = Lists.newArrayList();
 
-    @Autowired
-    private Gson gson;
+    private final Gson gson;
 
     private final Feed feed = new Feed(ATOM_VERSION);
+
+    public AtomResponseBuilder(Gson gson) {
+        this.gson = gson;
+    }
 
     @Override
     public void addMetadata(String searchId, String searchTitle, String searchDescription,
@@ -162,15 +161,6 @@ public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
     @Override
     public Feed build() {
         return this.feed;
-    }
-
-    @Override
-    public boolean supports(List<MediaType> mediaTypes) {
-        if (mediaTypes.contains(MediaType.APPLICATION_ATOM_XML)) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     @Override

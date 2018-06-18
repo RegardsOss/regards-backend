@@ -33,6 +33,7 @@ import com.rometools.rome.io.ModuleGenerator;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
 import fr.cnes.regards.modules.entities.domain.attribute.ObjectAttribute;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards.RegardsExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.RegardsModule;
 
 /**
@@ -42,7 +43,7 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.at
  */
 public class RegardsModuleGenerator implements ModuleGenerator {
 
-    public static final Namespace REGARDS_NS = Namespace.getNamespace("regards", RegardsModule.URI);
+    public static final Namespace REGARDS_NS = Namespace.getNamespace(RegardsExtension.REGARDS_NS, RegardsModule.URI);
 
     @Override
     public String getNamespaceUri() {

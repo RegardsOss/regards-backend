@@ -18,15 +18,8 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
@@ -36,12 +29,13 @@ import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.AttributeCriterionBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterOperator;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionParameter;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.AbstractOpenSearchExtension;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.SearchParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.RegardsModule;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.impl.RegardsModuleImpl;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
@@ -50,26 +44,23 @@ import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
 /**
  * Regards parameter extension for Opensearch standard.
  * Add regards namespace to all parameters from the specific projects models attributes.
+ * This extension handles all parameters not configured, or configured with the REGARDS namespace.
+ *
  * @see <a href="https://github.com/dewitt/opensearch/blob/master/opensearch-1-1-draft-6.md">Opensearch</a>
  * @see <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Parameter/1.0/Draft_2">Opensearch parameter extension</a>
  *
  * @author Sébastien Binda
  */
-public class RegardsExtension implements IOpenSearchExtension {
+public class RegardsExtension extends AbstractOpenSearchExtension {
 
     /**
-     * Class logger
+     * REGARDS namespace for parameters of current extension.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(RegardsExtension.class);
-
-    /**
-     * Does the current extension activated ?
-     */
-    private boolean activated = false;
+    public static final String REGARDS_NS = "regards";
 
     @Override
-    public boolean isActivated() {
-        return activated;
+    public void initialize(List<OpenSearchParameterConfiguration> configurations) {
+        // Nothing to do
     }
 
     @Override
@@ -90,12 +81,9 @@ public class RegardsExtension implements IOpenSearchExtension {
     }
 
     @Override
-    public void applyExtensionToDescriptionParameter(OpenSearchParameter parameter) {
+    public void applyExtensionToDescriptionParameter(OpenSearchParameter parameter,
+            DescriptionParameter descParameter) {
         // Nothing to do
-    }
-
-    public void setActivated(boolean activated) {
-        this.activated = activated;
     }
 
     @Override
@@ -104,30 +92,14 @@ public class RegardsExtension implements IOpenSearchExtension {
     }
 
     @Override
-    public ICriterion buildCriterion(MultiValueMap<String, String> queryParams,
-            List<OpenSearchParameterConfiguration> configurations, IAttributeFinder finder) {
-        List<ICriterion> criteria = new ArrayList<>();
+    protected ICriterion buildCriteria(SearchParameter parameter) throws OpenSearchUnknownParameter {
+        return AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.EQ,
+                                               parameter.getSearchValues());
+    }
 
-        for (Entry<String, List<String>> queryParam : queryParams.entrySet()) {
-            // Get couple parameter name/values
-            String paramName = queryParam.getKey();
-            List<String> values = queryParam.getValue();
-            // Find associated attribute configuration from plugin conf
-            Optional<OpenSearchParameterConfiguration> oParam = configurations.stream()
-                    .filter(p -> p.getName().equals(paramName)).findFirst();
-            try {
-                if (oParam.isPresent()) {
-                    OpenSearchParameterConfiguration conf = oParam.get();
-                    // Parse attribute value to create associated ICriterion using parameter configuration
-                    criteria.add(AttributeCriterionBuilder.build(conf, values, finder));
-                } else {
-                    criteria.add(AttributeCriterionBuilder.build(paramName, ParameterOperator.EQ, values, finder));
-                }
-            } catch (OpenSearchUnknownParameter e) {
-                LOGGER.error("Invalid public attribute {}. Unknown type.", paramName);
-            }
-        }
-        return criteria.isEmpty() ? ICriterion.all() : ICriterion.and(criteria);
+    @Override
+    protected boolean supportsSearchParameter(OpenSearchParameterConfiguration conf) {
+        return (conf == null) || (conf.getNamespace() == null) || REGARDS_NS.equals(conf.getNamespace());
     }
 
 }

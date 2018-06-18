@@ -21,8 +21,6 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.g
 import java.util.List;
 
 import org.apache.commons.compress.utils.Lists;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.framework.geojson.FeatureWithPropertiesCollection;
@@ -43,7 +41,6 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.at
  * </ul>
  * @author Sébastien Binda
  */
-@Component
 public class GeojsonResponseBuilder implements IOpenSearchResponseBuilder<FeatureWithPropertiesCollection> {
 
     private static final String ID = "id";
@@ -104,16 +101,6 @@ public class GeojsonResponseBuilder implements IOpenSearchResponseBuilder<Featur
     @Override
     public FeatureWithPropertiesCollection build() {
         return response;
-    }
-
-    @Override
-    public boolean supports(List<MediaType> mediaTypes) {
-        // TODO Geo json ?
-        if (mediaTypes.contains(MediaType.APPLICATION_JSON)) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     @Override

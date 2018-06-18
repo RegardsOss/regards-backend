@@ -23,9 +23,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.Lists;
 import org.elasticsearch.search.aggregations.bucket.terms.ParsedStringTerms;
@@ -39,8 +39,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-import com.google.common.collect.Maps;
 
 import feign.FeignException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -136,19 +134,17 @@ public class OpenSearchDescriptionBuilder {
         Project project = getProject(currentTenant);
 
         // Get all attributes for the given search type.
-        Map<AttributeModel, QueryableAttribute> attributes = retreiveSearchContextAttributes(criterion,
-                                                                                             context.getSearchType(),
-                                                                                             parameterConfs,
-                                                                                             currentTenant);
+        List<DescriptionParameter> descParameters = retreiveSearchContextAttributes(criterion, context.getSearchType(),
+                                                                                    parameterConfs, currentTenant);
 
         // Build descriptor generic metadatas
         OpenSearchDescription desc = buildMetadata(project);
 
         // Build query
-        desc.getQuery().add(buildQuery(attributes.keySet()));
+        desc.getQuery().add(buildQuery(descParameters));
 
         // Build open search parameters to handle parameters extension
-        List<OpenSearchParameter> parameters = buildParameters(attributes, extensions);
+        List<OpenSearchParameter> parameters = buildParameters(descParameters, extensions);
 
         // Build urls
         Link searchLink = SearchEngineController.buildPaginationLink(resourceService, context, "search");
@@ -210,10 +206,11 @@ public class OpenSearchDescriptionBuilder {
      * @param attributes {@link AttributeModel}s to handle in the query
      * @return {@link QueryType}
      */
-    private QueryType buildQuery(Collection<AttributeModel> attributes) {
+    private QueryType buildQuery(List<DescriptionParameter> descParameters) {
         QueryType query = new QueryType();
         query.setRole("example");
-        query.setSearchTerms(getSearchTermExample(attributes));
+        query.setSearchTerms(getSearchTermExample(descParameters.stream().map(dp -> dp.getAttributeModel())
+                .collect(Collectors.toList())));
         return query;
     }
 
@@ -223,7 +220,7 @@ public class OpenSearchDescriptionBuilder {
      * @param extensions {@link IOpenSearchExtension}s to apply on parameters
      * @return generated {@link OpenSearchParameter}s
      */
-    private List<OpenSearchParameter> buildParameters(Map<AttributeModel, QueryableAttribute> attributes,
+    private List<OpenSearchParameter> buildParameters(List<DescriptionParameter> descParameters,
             List<IOpenSearchExtension> extensions) {
         List<OpenSearchParameter> parameters = Lists.newArrayList();
 
@@ -234,8 +231,8 @@ public class OpenSearchDescriptionBuilder {
         qParameter.setValue(configuration.getQueryParameterValue());
         parameters.add(qParameter);
 
-        for (Entry<AttributeModel, QueryableAttribute> parameter : attributes.entrySet()) {
-            parameters.add(buildParameter(parameter.getKey(), parameter.getValue(), extensions));
+        for (DescriptionParameter descParameter : descParameters) {
+            parameters.add(buildParameter(descParameter, extensions));
         }
         return parameters;
     }
@@ -247,34 +244,34 @@ public class OpenSearchDescriptionBuilder {
      * @param extensions {@link IOpenSearchExtension} opensearch extensions to handle.
      * @return
      */
-    private OpenSearchParameter buildParameter(AttributeModel attribute, QueryableAttribute queryableAtt,
+    private OpenSearchParameter buildParameter(DescriptionParameter descParameter,
             List<IOpenSearchExtension> extensions) {
         OpenSearchParameter parameter = new OpenSearchParameter();
-        parameter.setName(attribute.getJsonPath());
-        if (attribute.isOptional()) {
+        parameter.setName(descParameter.getAttributeModel().getJsonPath());
+        if (descParameter.getAttributeModel().isOptional()) {
             parameter.setMinimum("0");
         } else {
             parameter.setMinimum("1");
         }
         parameter.setMaximum("1");
-        parameter.setValue(String.format("{%s}", attribute.getName()));
-        parameter.setTitle(attribute.getDescription());
-        if ((attribute.getRestriction() != null)
-                && RestrictionType.PATTERN.equals(attribute.getRestriction().getType())) {
-            PatternRestriction restriction = (PatternRestriction) attribute.getRestriction();
+        parameter.setValue(String.format("{%s}", descParameter.getAttributeModel().getName()));
+        parameter.setTitle(descParameter.getAttributeModel().getDescription());
+        if ((descParameter.getAttributeModel().getRestriction() != null)
+                && RestrictionType.PATTERN.equals(descParameter.getAttributeModel().getRestriction().getType())) {
+            PatternRestriction restriction = (PatternRestriction) descParameter.getAttributeModel().getRestriction();
             parameter.setPattern(restriction.getPattern());
         }
 
-        if ((queryableAtt.getAggregation() != null)) {
-            if (queryableAtt.getAggregation() instanceof ParsedStringTerms) {
-                ParsedStringTerms terms = (ParsedStringTerms) queryableAtt.getAggregation();
+        if ((descParameter.getQueryableAttribute().getAggregation() != null)) {
+            if (descParameter.getQueryableAttribute().getAggregation() instanceof ParsedStringTerms) {
+                ParsedStringTerms terms = (ParsedStringTerms) descParameter.getQueryableAttribute().getAggregation();
                 terms.getBuckets().forEach(b -> {
                     OpenSearchParameterOption option = new OpenSearchParameterOption();
                     option.setValue(b.getKeyAsString());
                     parameter.getOption().add(option);
                 });
-            } else if (queryableAtt.getAggregation() instanceof ParsedStats) {
-                ParsedStats stats = (ParsedStats) queryableAtt.getAggregation();
+            } else if (descParameter.getQueryableAttribute().getAggregation() instanceof ParsedStats) {
+                ParsedStats stats = (ParsedStats) descParameter.getQueryableAttribute().getAggregation();
                 parameter.setMinInclusive(stats.getMinAsString());
                 parameter.setMaxInclusive(stats.getMaxAsString());
             }
@@ -282,7 +279,7 @@ public class OpenSearchDescriptionBuilder {
 
         for (IOpenSearchExtension ext : extensions) {
             if (ext.isActivated()) {
-                ext.applyExtensionToDescriptionParameter(parameter);
+                ext.applyExtensionToDescriptionParameter(parameter, descParameter);
             }
         }
         return parameter;
@@ -299,10 +296,10 @@ public class OpenSearchDescriptionBuilder {
      * @param pCurrentTenant {@link String} tenant or project.
      * @return {@link Map}<{@link AttributeModel}, {@link QueryableAttribute}>
      */
-    private Map<AttributeModel, QueryableAttribute> retreiveSearchContextAttributes(ICriterion criterion,
-            SearchType searchType, List<OpenSearchParameterConfiguration> parameterConfs, String pCurrentTenant) {
+    private List<DescriptionParameter> retreiveSearchContextAttributes(ICriterion criterion, SearchType searchType,
+            List<OpenSearchParameterConfiguration> parameterConfs, String pCurrentTenant) {
 
-        Map<AttributeModel, QueryableAttribute> attributes = Maps.newHashMap();
+        List<DescriptionParameter> parameters = Lists.newArrayList();
 
         tenantResolver.forceTenant(pCurrentTenant);
         FeignSecurityManager.asSystem();
@@ -316,15 +313,19 @@ public class OpenSearchDescriptionBuilder {
             }
 
             // For each attribute retrieve the QueryableAttribute informations
+            List<QueryableAttribute> queryableAttributes = Lists.newArrayList();
             for (ModelAttrAssoc maa : assocsResponse.getBody()) {
                 maa.getAttribute().buildJsonPath(StaticProperties.PROPERTIES);
                 Optional<OpenSearchParameterConfiguration> conf = parameterConfs.stream()
-                        .filter(pc -> pc.getAttributeModelName().equals(maa.getAttribute().getJsonPath())).findFirst();
-                attributes.put(maa.getAttribute(), createEmptyQueryableAttribute(maa.getAttribute(), conf));
+                        .filter(pc -> pc.getAttributeModelJsonPath().equals(maa.getAttribute().getJsonPath()))
+                        .findFirst();
+                QueryableAttribute queryableAtt = createEmptyQueryableAttribute(maa.getAttribute(), conf);
+                queryableAttributes.add(queryableAtt);
+                parameters.add(new DescriptionParameter(maa.getAttribute(), conf.orElse(null), queryableAtt));
             }
             try {
                 // Run statistic search on each attributes. Results are set back into the QueryableAttributes parameter.
-                searchService.retrievePropertiesStats(criterion, searchType, attributes.values());
+                searchService.retrievePropertiesStats(criterion, searchType, queryableAttributes);
             } catch (SearchException e) {
                 LOGGER.error("Error retrieving properties for each parameters of the OpenSearchDescription (parameter extension",
                              e);
@@ -333,7 +334,7 @@ public class OpenSearchDescriptionBuilder {
             LOGGER.error("Error retrieving attributes from IModelAttrAssocClient", e);
         }
 
-        return attributes;
+        return parameters;
     }
 
     /**

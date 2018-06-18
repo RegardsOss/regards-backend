@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter;
 
-import java.util.List;
-
-import org.springframework.http.MediaType;
-
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
@@ -49,13 +45,13 @@ public interface IOpenSearchResponseBuilder<R> {
             SearchContext context, OpenSearchConfiguration configuration, FacetPage<AbstractEntity> page);
 
     /**
-     * Add a new response entity to the builder. An entity is a formatted {@link AbstractEntity} into the desired format.
-     * @param entity
+     * Add a new response entity to the builder. An entity is a {@link AbstractEntity} from an catalog search response.
+     * @param entity {@link AbstractEntity}
      */
     void addEntity(AbstractEntity entity);
 
     /**
-     * Clear all added entities to the current builder.
+     * Clear all added {@link AbstractEntity}s to the current builder.
      */
     void clear();
 
@@ -64,13 +60,6 @@ public interface IOpenSearchResponseBuilder<R> {
      * @return {@link R}Search Output result formatted
      */
     R build();
-
-    /**
-     * Does the current builder supports the given {@link MediaType}
-     * @param mediaTypes
-     * @return {@link boolean}
-     */
-    boolean supports(List<MediaType> mediaTypes);
 
     /**
      * Add a new {@link IOpenSearchExtension} to the current builder.

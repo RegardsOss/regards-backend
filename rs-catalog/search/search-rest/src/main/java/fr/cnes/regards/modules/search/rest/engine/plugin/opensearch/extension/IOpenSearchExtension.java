@@ -20,16 +20,14 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension;
 
 import java.util.List;
 
-import org.springframework.util.MultiValueMap;
-
 import com.google.gson.Gson;
 import com.rometools.rome.feed.module.Module;
 
 import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionParameter;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
 
@@ -47,19 +45,23 @@ import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
 public interface IOpenSearchExtension {
 
     /**
+     * Initialize extension providing opensearch parameters configurations.
+     */
+    void initialize(List<OpenSearchParameterConfiguration> configurations);
+
+    /**
      * Does the extension actived ?
      * @return {@link boolean}
      */
     boolean isActivated();
 
     /**
-     * Apply extension to the ginve search parameters
-     * @param queryParams TODO
+     * Apply extension to the givne search parameters
+     * @param parameters TODO
      * @param configurations TODO
      * @return {@link ICriterion}
      */
-    ICriterion buildCriterion(MultiValueMap<String, String> queryParams,
-            List<OpenSearchParameterConfiguration> configurations, IAttributeFinder finder);
+    ICriterion buildCriterion(List<SearchParameter> parameters);
 
     /**
      * Create the {@link Module} needed by the rome library to generate the specificity of the extension on each entity of the XML+Atom response.
@@ -80,7 +82,7 @@ public interface IOpenSearchExtension {
      * Apply extension for the given {@link OpenSearchParameter} during opensearch xml descriptor build.
      * @param parameter {@link OpenSearchParameter}
      */
-    void applyExtensionToDescriptionParameter(OpenSearchParameter parameter);
+    void applyExtensionToDescriptionParameter(OpenSearchParameter parameter, DescriptionParameter descParameter);
 
     /**
      * Apply extension to the global openSearch description.

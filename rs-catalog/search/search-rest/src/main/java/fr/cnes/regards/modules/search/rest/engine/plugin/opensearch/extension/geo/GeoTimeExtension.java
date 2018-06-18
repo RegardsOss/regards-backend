@@ -19,14 +19,8 @@
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.geo;
 
 import java.time.OffsetDateTime;
-import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
-import org.springframework.util.MultiValueMap;
-
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.rometools.modules.georss.geometries.AbstractGeometry;
 import com.rometools.modules.georss.geometries.Point;
@@ -38,11 +32,14 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
-import fr.cnes.regards.modules.entities.domain.attribute.ObjectAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.AttributeCriterionBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterOperator;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionParameter;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.AbstractOpenSearchExtension;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.SearchParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.gml.impl.GmlTimeModuleImpl;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
@@ -54,59 +51,55 @@ import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
  *
  * @author Sébastien Binda
  */
-public class GeoTimeExtension implements IOpenSearchExtension {
+public class GeoTimeExtension extends AbstractOpenSearchExtension {
 
-    private boolean activated = false;
+    public static final String TIME_NS = "time";
 
-    private String timeStartAttribute;
+    public static final String TIME_START_PARAMETER = "start";
 
-    private String timeEndAttribute;
+    public static final String TIME_END_PARAMETER = "end";
+
+    private OpenSearchParameterConfiguration timeStartParameterConf;
+
+    private OpenSearchParameterConfiguration timeEndParameterConf;
 
     @Override
-    public boolean isActivated() {
-        return activated;
+    public void initialize(List<OpenSearchParameterConfiguration> configurations) {
+        timeStartParameterConf = configurations.stream()
+                .filter(c -> TIME_NS.equals(c.getNamespace()) && TIME_START_PARAMETER.equals(c.getName())).findFirst()
+                .orElse(null);
+        timeEndParameterConf = configurations.stream()
+                .filter(c -> TIME_NS.equals(c.getNamespace()) && TIME_END_PARAMETER.equals(c.getName())).findFirst()
+                .orElse(null);
     }
 
     @Override
     public void applyExtensionToGeoJsonFeature(AbstractEntity entity, Feature feature) {
         feature.setGeometry(entity.getGeometry());
+        // TODO time
     }
 
     @Override
     public Module getAtomEntityBuilderModule(AbstractEntity entity, Gson gson) {
         // Add GML with time module to handle geo & time extension
         GmlTimeModuleImpl gmlMod = new GmlTimeModuleImpl();
-        Optional<AbstractAttribute<?>> startDate = findAttributeByName(entity.getProperties(), timeStartAttribute
-                .replace(StaticProperties.PROPERTIES + ".", ""));
-        Optional<AbstractAttribute<?>> stopDate = findAttributeByName(entity.getProperties(), timeEndAttribute
-                .replace(StaticProperties.PROPERTIES + ".", ""));
-        if (startDate.isPresent() && (startDate.get().getValue() instanceof OffsetDateTime) && stopDate.isPresent()
-                && (stopDate.get().getValue() instanceof OffsetDateTime)) {
-            gmlMod.setStartDate((OffsetDateTime) startDate.get().getValue());
-            gmlMod.setStopDate((OffsetDateTime) stopDate.get().getValue());
-        }
-        gmlMod.setGsonBuilder(gson);
-        gmlMod.setGeometry(buildGeometry(entity.getGeometry()));
-        return gmlMod;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static Optional<AbstractAttribute<?>> findAttributeByName(Collection<AbstractAttribute<?>> attributes,
-            String timeAttributeName) {
-        Optional<AbstractAttribute<?>> attribute = Optional.empty();
-        String name = timeAttributeName;
-        List<String> names = Lists.newArrayList(timeAttributeName.split("\\."));
-        if (names.size() > 0) {
-            name = names.remove(0);
-        }
-        for (AbstractAttribute<?> att : attributes) {
-            if (name.equals(att.getName()) && (names.size() > 0) && (att instanceof ObjectAttribute)) {
-                attribute = findAttributeByName((Set<AbstractAttribute<?>>) att.getValue(), String.join(".", names));
-            } else if (name.equals(att.getName())) {
-                attribute = Optional.of(att);
+        if ((timeStartParameterConf != null) && (timeEndParameterConf != null)) {
+            // TODO : Handle static properties ?
+            String startDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath()
+                    .replace(StaticProperties.PROPERTIES + ".", "");
+            String endDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath()
+                    .replace(StaticProperties.PROPERTIES + ".", "");
+            AbstractAttribute<?> startDate = entity.getProperty(startDateJsonPath);
+            AbstractAttribute<?> stopDate = entity.getProperty(endDateJsonPath);
+            if ((startDate != null) && (startDate.getValue() instanceof OffsetDateTime) && (stopDate != null)
+                    && (stopDate.getValue() instanceof OffsetDateTime)) {
+                gmlMod.setStartDate((OffsetDateTime) startDate.getValue());
+                gmlMod.setStopDate((OffsetDateTime) stopDate.getValue());
             }
+            gmlMod.setGsonBuilder(gson);
+            gmlMod.setGeometry(buildGeometry(entity.getGeometry()));
         }
-        return attribute;
+        return gmlMod;
     }
 
     private AbstractGeometry buildGeometry(IGeometry geometry) {
@@ -134,33 +127,17 @@ public class GeoTimeExtension implements IOpenSearchExtension {
         }
     }
 
-    public void setActivated(boolean activated) {
-        this.activated = activated;
-    }
-
-    public String getTimeStartAttribute() {
-        return timeStartAttribute;
-    }
-
-    public void setTimeStartAttribute(String timeStartAttribute) {
-        this.timeStartAttribute = timeStartAttribute;
-    }
-
-    public String getTimeEndAttribute() {
-        return timeEndAttribute;
-    }
-
-    public void setTimeEndAttribute(String timeEndAttribute) {
-        this.timeEndAttribute = timeEndAttribute;
-    }
-
     @Override
-    public void applyExtensionToDescriptionParameter(OpenSearchParameter parameter) {
-        if (parameter.getName().equals(timeStartAttribute)) {
-            parameter.setValue("{time:start}");
-        } else if (parameter.getName().equals(timeEndAttribute)) {
-            parameter.setValue("{time:end}");
+    public void applyExtensionToDescriptionParameter(OpenSearchParameter parameter,
+            DescriptionParameter descParameter) {
+        OpenSearchParameterConfiguration conf = descParameter.getConfiguration();
+        if ((conf != null) && TIME_NS.equals(conf.getNamespace()) && TIME_START_PARAMETER.equals(conf.getName())) {
+            parameter.setValue(String.format("{%s:%s}", TIME_NS, TIME_START_PARAMETER));
         }
+        if ((conf != null) && TIME_NS.equals(conf.getNamespace()) && TIME_END_PARAMETER.equals(conf.getName())) {
+            parameter.setValue(String.format("{%s:%s}", TIME_NS, TIME_END_PARAMETER));
+        }
+        // TODO Handle geometry
     }
 
     @Override
@@ -169,10 +146,24 @@ public class GeoTimeExtension implements IOpenSearchExtension {
     }
 
     @Override
-    public ICriterion buildCriterion(MultiValueMap<String, String> queryParams,
-            List<OpenSearchParameterConfiguration> configurations, IAttributeFinder finder) {
-        // TODO Handle criterion
-        return ICriterion.all();
+    protected ICriterion buildCriteria(SearchParameter parameter) throws OpenSearchUnknownParameter {
+        ICriterion criteria = ICriterion.all();
+        if (TIME_NS.equals(parameter.getConfiguration().getNamespace())
+                && TIME_START_PARAMETER.equals(parameter.getConfiguration().getName())) {
+            // Parse attribute value to create associated ICriterion using parameter configuration
+            criteria = AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.GE,
+                                                       parameter.getSearchValues());
+        }
+        if (TIME_NS.equals(parameter.getConfiguration().getNamespace())
+                && TIME_END_PARAMETER.equals(parameter.getConfiguration().getName())) {
+            criteria = AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.LE,
+                                                       parameter.getSearchValues());
+        }
+        return criteria;
     }
 
+    @Override
+    protected boolean supportsSearchParameter(OpenSearchParameterConfiguration conf) {
+        return (conf != null) && TIME_NS.equals(conf.getNamespace());
+    }
 }

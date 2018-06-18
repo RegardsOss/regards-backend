@@ -27,19 +27,24 @@ import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 public class OpenSearchParameterConfiguration {
 
     /**
-     * Parameter name
+     * Opensearch parameter name
      */
     private String name;
 
     /**
+     * Opensearch parameter namespace
+     */
+    private String namespace;
+
+    /**
      * Minimum number of occurence of the parameter in search request
      */
-    private Integer minimum;
+    private int minimum;
 
     /**
      * Maximum number of occurence of the parameter in search request
      */
-    private Integer maximum;
+    private int maximum;
 
     /**
      * Pattern to validate value.
@@ -59,17 +64,12 @@ public class OpenSearchParameterConfiguration {
     /**
      * Maximum number of options or -1 for all values.
      */
-    private Integer optionsCardinality;
+    private int optionsCardinality;
 
     /**
-     * Regards {@link AttributeModel} identifier.
+     * Regards {@link AttributeModel} json path.
      */
-    private String attributeModelName;
-
-    /**
-     * Operator to apply when searching in catalog for this parameter.
-     */
-    private ParameterOperator operator = ParameterOperator.EQ;
+    private String attributeModelJsonPath;
 
     public String getName() {
         return name;
@@ -79,19 +79,19 @@ public class OpenSearchParameterConfiguration {
         this.name = name;
     }
 
-    public Integer getMinimum() {
+    public int getMinimum() {
         return minimum;
     }
 
-    public void setMinimum(Integer minimum) {
+    public void setMinimum(int minimum) {
         this.minimum = minimum;
     }
 
-    public Integer getMaximum() {
+    public int getMaximum() {
         return maximum;
     }
 
-    public void setMaximum(Integer maximum) {
+    public void setMaximum(int maximum) {
         this.maximum = maximum;
     }
 
@@ -119,28 +119,28 @@ public class OpenSearchParameterConfiguration {
         this.optionsEnabled = optionsEnabled;
     }
 
-    public Integer getOptionsCardinality() {
+    public int getOptionsCardinality() {
         return optionsCardinality;
     }
 
-    public void setOptionsCardinality(Integer optionsCardinality) {
+    public void setOptionsCardinality(int optionsCardinality) {
         this.optionsCardinality = optionsCardinality;
     }
 
-    public String getAttributeModelName() {
-        return attributeModelName;
+    public String getAttributeModelJsonPath() {
+        return attributeModelJsonPath;
     }
 
-    public void setAttributeModelName(String attributeModelName) {
-        this.attributeModelName = attributeModelName;
+    public void setAttributeModelJsonPath(String attributeModelJsonPath) {
+        this.attributeModelJsonPath = attributeModelJsonPath;
     }
 
-    public ParameterOperator getOperator() {
-        return operator;
+    public String getNamespace() {
+        return namespace;
     }
 
-    public void setOperator(ParameterOperator operator) {
-        this.operator = operator;
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 
 }

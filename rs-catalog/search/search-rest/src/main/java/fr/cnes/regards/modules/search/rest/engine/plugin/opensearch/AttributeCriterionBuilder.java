@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch;
 import java.util.List;
 
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
@@ -45,11 +44,10 @@ public class AttributeCriterionBuilder {
      * @return {@link ICriterion}
      * @throws OpenSearchUnknownParameter
      */
-    public static ICriterion build(String attributeName, ParameterOperator operator, List<String> values,
-            IAttributeFinder finder) throws OpenSearchUnknownParameter {
+    public static ICriterion build(AttributeModel attributeModel, ParameterOperator operator, List<String> values)
+            throws OpenSearchUnknownParameter {
         ICriterion criterion = null;
-        AttributeModel attributeModel = finder.findByName(attributeName);
-        String attributeJsonPath = attributeModel.buildJsonPath(StaticProperties.PROPERTIES);
+        String attributeJsonPath = attributeModel.getJsonPath();
         for (String value : values) {
             ICriterion valueCriterion = null;
             switch (attributeModel.getType()) {
@@ -87,20 +85,6 @@ public class AttributeCriterionBuilder {
             }
         }
         return criterion;
-    }
-
-    /**
-     * Build a {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a list of search values.
-     * One criterion is created for each search value. The returned criterion is a composed criterion of all values with AND operator between each.
-     * @param openSearchParameter
-     * @param values
-     * @param finder
-     * @return {@link ICriterion} composed criterion of all values with AND operator between each.
-     * @throws OpenSearchUnknownParameter
-     */
-    public static ICriterion build(OpenSearchParameterConfiguration openSearchParameter, List<String> values,
-            IAttributeFinder finder) throws OpenSearchUnknownParameter {
-        return build(openSearchParameter.getAttributeModelName(), openSearchParameter.getOperator(), values, finder);
     }
 
     /**

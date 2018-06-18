@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.compress.utils.Lists;
-import org.springframework.util.MultiValueMap;
 
 import com.google.gson.Gson;
 import com.rometools.modules.mediarss.MediaEntryModuleImpl;
@@ -21,31 +20,41 @@ import fr.cnes.regards.modules.entities.domain.AbstractDataEntity;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionParameter;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.AbstractOpenSearchExtension;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.SearchParameter;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
 
 /**
- * Geo&Time parameter extension for Opensearch standard.
+ * Media extension for Opensearch standard.
  * @see <a href="https://github.com/dewitt/opensearch/blob/master/opensearch-1-1-draft-6.md">Opensearch</a>
  * @see <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Parameter/1.0/Draft_2">Opensearch parameter extension</a>
  *
  * @author Sébastien Binda
  */
-public class MediaExtension implements IOpenSearchExtension {
-
-    private boolean activated = false;
+public class MediaExtension extends AbstractOpenSearchExtension {
 
     @Override
-    public boolean isActivated() {
-        return activated;
+    public void initialize(List<OpenSearchParameterConfiguration> configurations) {
+        // Nothing to do
     }
 
     @Override
     public void applyExtensionToGeoJsonFeature(AbstractEntity entity, Feature feature) {
-        // TODO Auto-generated method stub
+        if (entity instanceof AbstractDataEntity) {
+            // Find quicklook url from entity
+            AbstractDataEntity dataEntity = (AbstractDataEntity) entity;
+            dataEntity.getFiles().get(DataType.QUICKLOOK_SD).forEach(f -> {
+                feature.addProperty("QUICKLOOK", f.getUri());
+            });
+            // Find thumbnail url from entity
+            dataEntity.getFiles().get(DataType.THUMBNAIL).forEach(f -> {
+                feature.addProperty("THUMBNAIL", f.getUri());
+            });
+        }
     }
 
     @Override
@@ -92,12 +101,9 @@ public class MediaExtension implements IOpenSearchExtension {
         return contents;
     }
 
-    public void setActivated(boolean activated) {
-        this.activated = activated;
-    }
-
     @Override
-    public void applyExtensionToDescriptionParameter(OpenSearchParameter parameter) {
+    public void applyExtensionToDescriptionParameter(OpenSearchParameter parameter,
+            DescriptionParameter descParameter) {
         // Nothing to do
     }
 
@@ -107,9 +113,15 @@ public class MediaExtension implements IOpenSearchExtension {
     }
 
     @Override
-    public ICriterion buildCriterion(MultiValueMap<String, String> queryParams,
-            List<OpenSearchParameterConfiguration> configurations, IAttributeFinder finder) {
-        return ICriterion.all();
+    protected ICriterion buildCriteria(SearchParameter parameter) throws OpenSearchUnknownParameter {
+        // Media extension does not handle search queries.
+        return null;
+    }
+
+    @Override
+    protected boolean supportsSearchParameter(OpenSearchParameterConfiguration conf) {
+        // Media extension does not handle search queries.
+        return false;
     }
 
 }

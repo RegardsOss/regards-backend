@@ -20,36 +20,44 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
+import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.OpenSearchDescriptionBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedMediaTypesException;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.SearchParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.media.MediaExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards.RegardsExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IOpenSearchResponseBuilder;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.AtomResponseBuilder;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.geojson.GeojsonResponseBuilder;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 
@@ -75,6 +83,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     public static final String EXTRA_DESCRIPTION = "opensearchDescription.xml";
 
+    private static final String PARAMETERS_CONFIGURATION = "parametersConfiguration";
+
     /**
      * Query parser
      */
@@ -90,14 +100,14 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @Autowired
     private OpenSearchDescriptionBuilder descriptionBuilder;
 
-    @Autowired
-    private List<IOpenSearchResponseBuilder<?>> responseBuilders;
-
     /**
      * Business search service
      */
     @Autowired
     protected ICatalogSearchService searchService;
+
+    @Autowired
+    private Gson gson;
 
     @Autowired
     private OpenSearchConfiguration configuration;
@@ -112,22 +122,49 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             defaultValue = "Open search engine description")
     private final String searchDescription = "Open search engine description";
 
-    @PluginParameter(name = OpenSearchEngine.TIME_EXTENSION_PARAMETER, label = "Open search time extension")
+    // @PluginParameter(name = OpenSearchEngine.TIME_EXTENSION_PARAMETER, label = "Open search time extension")
     private GeoTimeExtension timeExtension;
 
-    @PluginParameter(name = OpenSearchEngine.REGARDS_EXTENSION_PARAMETER, label = "Open search regards extension")
+    // @PluginParameter(name = OpenSearchEngine.REGARDS_EXTENSION_PARAMETER, label = "Open search regards extension")
     private RegardsExtension regardsExtension;
 
-    @PluginParameter(name = OpenSearchEngine.MEDIA_EXTENSION_PARAMETER, label = "Open search media extension")
+    // @PluginParameter(name = OpenSearchEngine.MEDIA_EXTENSION_PARAMETER, label = "Open search media extension")
     private MediaExtension mediaExtension;
 
+    // @PluginParameter(name = OpenSearchEngine.PARAMETERS_CONFIGURATION, label = "Parameters configuration")
     private final List<OpenSearchParameterConfiguration> parameters = Lists.newArrayList();
 
+    @PluginInit
+    public void initialize() {
+        timeExtension.initialize(parameters);
+        mediaExtension.initialize(parameters);
+        regardsExtension.initialize(parameters);
+    }
+
+    /**
+     * TODO : To remove !!!
+     */
     public void init() {
+        parameters.clear();
+        OpenSearchParameterConfiguration planetParameter = new OpenSearchParameterConfiguration();
+        planetParameter.setAttributeModelJsonPath("properties.planet");
+        planetParameter.setName("planet");
+        planetParameter.setOptionsEnabled(true);
+        planetParameter.setOptionsCardinality(10);
+
+        OpenSearchParameterConfiguration startTimeParameter = new OpenSearchParameterConfiguration();
+        startTimeParameter.setAttributeModelJsonPath("properties.TimePeriod.startDate");
+        startTimeParameter.setName("start");
+        startTimeParameter.setNamespace("time");
+        parameters.add(startTimeParameter);
+        OpenSearchParameterConfiguration endTimeParameter = new OpenSearchParameterConfiguration();
+        endTimeParameter.setAttributeModelJsonPath("properties.TimePeriod.stopDate");
+        endTimeParameter.setName("end");
+        endTimeParameter.setNamespace("time");
+        parameters.add(endTimeParameter);
+
         timeExtension = new GeoTimeExtension();
         timeExtension.setActivated(true);
-        timeExtension.setTimeStartAttribute("properties.TimePeriod.startDate");
-        timeExtension.setTimeEndAttribute("properties.TimePeriod.stopDate");
 
         regardsExtension = new RegardsExtension();
         regardsExtension.setActivated(true);
@@ -136,21 +173,6 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         mediaExtension.setActivated(true);
 
         this.initialize();
-    }
-
-    @PluginInit
-    public void initialize() {
-        responseBuilders.stream().forEach(b -> b.addExtension(timeExtension));
-        responseBuilders.stream().forEach(b -> b.addExtension(regardsExtension));
-        responseBuilders.stream().forEach(b -> b.addExtension(mediaExtension));
-
-        parameters.clear();
-        OpenSearchParameterConfiguration planetParameter = new OpenSearchParameterConfiguration();
-        planetParameter.setAttributeModelName("properties.planet");
-        planetParameter.setName("planet");
-        planetParameter.setOptionsEnabled(true);
-        planetParameter.setOptionsCardinality(10);
-        parameters.add(planetParameter);
     }
 
     @Override
@@ -163,7 +185,6 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             case DOCUMENTS:
                 return true;
             case ALL:
-                // TODO handle for all ?
             default:
                 return false;
         }
@@ -171,10 +192,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @Override
     public ResponseEntity<Object> search(SearchContext context) throws ModuleException {
-        // TODO Remove Init when Plugin instanciation is done
-        // ......
         init();
-
         FacetPage<AbstractEntity> facetPage = searchService
                 .search(parse(context.getQueryParams()), context.getSearchType(), null, context.getPageable());
         try {
@@ -207,11 +225,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @Override
     public ResponseEntity<OpenSearchDescription> extra(SearchContext context) throws ModuleException {
-
-        // TODO Remove Init when Plugin instanciation is done
-        // ......
         init();
-
         if (context.getExtra().isPresent() && context.getExtra().get().equals(EXTRA_DESCRIPTION)) {
             return ResponseEntity.ok(descriptionBuilder
                     .build(context, parseParametersExt(context.getQueryParams()),
@@ -244,14 +258,34 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      * @return {@link ICriterion}
      */
     private ICriterion parseParametersExt(MultiValueMap<String, String> queryParams) {
+        // Find AttributeModel for each parameter
+        List<SearchParameter> attributes = buildParameters(queryParams);
 
-        // TODO public names
+        return ICriterion.and(timeExtension.buildCriterion(attributes), mediaExtension.buildCriterion(attributes),
+                              regardsExtension.buildCriterion(attributes));
+    }
 
-        // TODO Find AttributeModel for each parameter
-
-        return ICriterion.and(timeExtension.buildCriterion(queryParams, parameters, finder),
-                              mediaExtension.buildCriterion(queryParams, parameters, finder),
-                              regardsExtension.buildCriterion(queryParams, parameters, finder));
+    private List<SearchParameter> buildParameters(MultiValueMap<String, String> queryParams) {
+        List<SearchParameter> searchParameters = Lists.newArrayList();
+        for (Entry<String, List<String>> queryParam : queryParams.entrySet()) {
+            try {
+                AttributeModel attributeModel = finder.findByName(queryParam.getKey());
+                if (attributeModel.getId() != null) {
+                    attributeModel.buildJsonPath(StaticProperties.PROPERTIES);
+                } else {
+                    // Standard static attributes. Not a real attribute. So jsonPath = name;
+                    attributeModel.setJsonPath(attributeModel.getName());
+                }
+                // Search configuration if any
+                OpenSearchParameterConfiguration conf = parameters.stream()
+                        .filter(p -> p.getAttributeModelJsonPath().equals(attributeModel.getJsonPath())).findFirst()
+                        .orElse(null);
+                searchParameters.add(new SearchParameter(attributeModel, conf, queryParam.getValue()));
+            } catch (OpenSearchUnknownParameter e) {
+                LOGGER.warn("Parameter not found.", e);
+            }
+        }
+        return searchParameters;
     }
 
     /**
@@ -261,13 +295,18 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      * @throws UnsupportedMediaTypesException
      */
     private IOpenSearchResponseBuilder<?> getBuilder(SearchContext context) throws UnsupportedMediaTypesException {
-        Optional<IOpenSearchResponseBuilder<?>> builder = responseBuilders.stream()
-                .filter(b -> b.supports(context.getHeaders().getAccept())).findFirst();
-        if (builder.isPresent()) {
-            return builder.get();
+        IOpenSearchResponseBuilder<?> responseBuilder;
+        if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_ATOM_XML)) {
+            responseBuilder = new AtomResponseBuilder(gson);
+        } else if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_JSON)) {
+            responseBuilder = new GeojsonResponseBuilder();
         } else {
             throw new UnsupportedMediaTypesException(context.getHeaders().getAccept());
         }
+        responseBuilder.addExtension(timeExtension);
+        responseBuilder.addExtension(mediaExtension);
+        responseBuilder.addExtension(regardsExtension);
+        return responseBuilder;
     }
 
     @Override
