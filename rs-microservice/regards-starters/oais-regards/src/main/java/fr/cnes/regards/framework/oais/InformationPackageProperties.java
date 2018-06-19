@@ -6,8 +6,6 @@ import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
@@ -23,8 +21,6 @@ public class InformationPackageProperties {
     /**
      * The content informations
      */
-    @NotEmpty(message = "At least one content information is required")
-    @Valid
     private Set<ContentInformation> contentInformations;
 
     /**
