@@ -16,8 +16,11 @@ public class StorageDataFileUtils {
      * @return one of the accessible urls, for now with protocol file, null otherwise
      */
     public static URL getAccessibleUrl(StorageDataFile file) {
-        Optional<URL> urlOpt = file.getUrls().stream().filter(url->"file".equals(url.getProtocol())).findAny();
-        if(urlOpt.isPresent()) {
+        Optional<URL> urlOpt = file.getUrls().stream().filter(url -> "file".equals(url.getProtocol())).findAny();
+        if (!urlOpt.isPresent()) {
+            urlOpt = file.getUrls().stream().filter(url -> url.getProtocol().startsWith("http")).findAny();
+        }
+        if (urlOpt.isPresent()) {
             return urlOpt.get();
         } else {
             return null;
