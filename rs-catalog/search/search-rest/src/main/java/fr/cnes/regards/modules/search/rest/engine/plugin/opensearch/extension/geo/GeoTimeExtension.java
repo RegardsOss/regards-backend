@@ -243,8 +243,8 @@ public class GeoTimeExtension extends AbstractOpenSearchExtension {
         param.setValue(value);
         param.setTitle(title);
         param.setPattern(pattern);
-        param.setMaxExclusive(maxInc);
-        param.setMinimum(minInc);
+        param.setMaxInclusive(maxInc);
+        param.setMinInclusive(minInc);
         return param;
     }
 }

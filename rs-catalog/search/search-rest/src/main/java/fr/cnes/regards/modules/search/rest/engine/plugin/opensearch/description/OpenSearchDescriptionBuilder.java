@@ -254,11 +254,7 @@ public class OpenSearchDescriptionBuilder {
             List<IOpenSearchExtension> extensions) {
         OpenSearchParameter parameter = new OpenSearchParameter();
         parameter.setName(descParameter.getAttributeModel().getJsonPath());
-        if (descParameter.getAttributeModel().isOptional()) {
-            parameter.setMinimum("0");
-        } else {
-            parameter.setMinimum("1");
-        }
+        parameter.setMinimum("0");
         parameter.setMaximum("1");
         parameter.setValue(String.format("{%s}", descParameter.getAttributeModel().getName()));
         parameter.setTitle(descParameter.getAttributeModel().getDescription());
