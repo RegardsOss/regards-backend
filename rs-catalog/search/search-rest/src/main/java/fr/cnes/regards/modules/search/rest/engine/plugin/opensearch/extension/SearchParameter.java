@@ -35,6 +35,11 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchPa
 public class SearchParameter {
 
     /**
+     * Search parameter nae
+     */
+    private String name;
+
+    /**
      * Define which attribute the parameter is about
      */
     private AttributeModel attributeModel;
@@ -49,9 +54,10 @@ public class SearchParameter {
      */
     private List<String> searchValues;
 
-    public SearchParameter(AttributeModel attributeModel, OpenSearchParameterConfiguration configuration,
+    public SearchParameter(String name, AttributeModel attributeModel, OpenSearchParameterConfiguration configuration,
             List<String> searchValues) {
         super();
+        this.setName(name);
         this.attributeModel = attributeModel;
         this.configuration = configuration;
         this.searchValues = searchValues;
@@ -79,6 +85,14 @@ public class SearchParameter {
 
     public void setSearchValues(List<String> searchValues) {
         this.searchValues = searchValues;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
 }

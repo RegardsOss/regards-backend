@@ -36,11 +36,9 @@ import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
  * Interface to define a new OpenSearch extension.
  * Extension should define method to : <ul>
  *  <li>Generate {@link OpenSearchParameter}s for the given extension</li>
- *  <li>Provide OpenSearch entity response {@link Module} builder for ATOM+XML format</li>
+ *  <li>Generate OpenSearch entity {@link Entry} builder for ATOM+XML format</li>
  *  <li>Generate OpenSearch entity (@link Feature} response in GEO+JSON format</li>
  *  </ul>
- *  {@link Module} builders for ATOM+XML format are provided throught com.rometools.rome module library.
- *  @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
  */
 public interface IOpenSearchExtension {

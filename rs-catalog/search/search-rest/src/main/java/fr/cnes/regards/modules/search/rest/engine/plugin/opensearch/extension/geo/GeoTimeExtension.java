@@ -141,26 +141,31 @@ public class GeoTimeExtension extends AbstractOpenSearchExtension {
     @Override
     protected ICriterion buildCriteria(SearchParameter parameter) throws UnsupportedCriterionOperator {
         ICriterion criteria = ICriterion.all();
-        if (TIME_NS.equals(parameter.getConfiguration().getNamespace())
-                && TIME_START_PARAMETER.equals(parameter.getConfiguration().getName())) {
-            // Parse attribute value to create associated ICriterion using parameter configuration
-            criteria = AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.GE,
-                                                       parameter.getSearchValues());
+        if (parameter.getConfiguration() != null) {
+            if (TIME_NS.equals(parameter.getConfiguration().getNamespace())
+                    && TIME_START_PARAMETER.equals(parameter.getConfiguration().getName())) {
+                // Parse attribute value to create associated ICriterion using parameter configuration
+                criteria = AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.GE,
+                                                           parameter.getSearchValues());
+            }
+            if (TIME_NS.equals(parameter.getConfiguration().getNamespace())
+                    && TIME_END_PARAMETER.equals(parameter.getConfiguration().getName())) {
+                criteria = AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.LE,
+                                                           parameter.getSearchValues());
+            }
+        } else {
+            // TODO : Generate geometry criterion from geometry, box, lon, lat, location and radius.
         }
-        if (TIME_NS.equals(parameter.getConfiguration().getNamespace())
-                && TIME_END_PARAMETER.equals(parameter.getConfiguration().getName())) {
-            criteria = AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.LE,
-                                                       parameter.getSearchValues());
-        }
-
-        // TODO : Generate geometry criterion from geometry, box, lon, lat, location and radius.
 
         return criteria;
     }
 
     @Override
-    protected boolean supportsSearchParameter(OpenSearchParameterConfiguration conf) {
-        return (conf != null) && TIME_NS.equals(conf.getNamespace());
+    protected boolean supportsSearchParameter(SearchParameter parameter) {
+        return parameter.getName().equals(GEO_PARAMETER) || parameter.getName().equals(BOX_PARAMETER)
+                || parameter.getName().equals(LON_PARAMETER) || parameter.getName().equals(LAT_PARAMETER)
+                || parameter.getName().equals(RADIUS_PARAMETER) || ((parameter.getConfiguration() != null)
+                        && TIME_NS.equals(parameter.getConfiguration().getNamespace()));
     }
 
     private Module getAtomEntityResponseBuilder(AbstractEntity entity,

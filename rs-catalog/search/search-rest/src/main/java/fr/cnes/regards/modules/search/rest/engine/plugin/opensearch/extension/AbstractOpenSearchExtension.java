@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
 
 public abstract class AbstractOpenSearchExtension implements IOpenSearchExtension {
@@ -46,7 +45,7 @@ public abstract class AbstractOpenSearchExtension implements IOpenSearchExtensio
         List<ICriterion> criterion = new ArrayList<>();
         for (SearchParameter parameter : parameters) {
             try {
-                if (supportsSearchParameter(parameter.getConfiguration())) {
+                if (supportsSearchParameter(parameter)) {
                     ICriterion crit = buildCriteria(parameter);
                     if (crit != null) {
                         criterion.add(crit);
@@ -79,9 +78,9 @@ public abstract class AbstractOpenSearchExtension implements IOpenSearchExtensio
 
     /**
      * Does the current extension can handle search for the given configured parameter.
-     * @param conf {@link OpenSearchParameterConfiguration}
+     * @param parameter {@link SearchParameter}
      * @return {@link boolean}
      */
-    protected abstract boolean supportsSearchParameter(OpenSearchParameterConfiguration conf);
+    protected abstract boolean supportsSearchParameter(SearchParameter parameter);
 
 }

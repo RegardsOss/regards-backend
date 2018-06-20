@@ -69,6 +69,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.customizeRequestParam().param("page", "0");
         customizer.customizeRequestParam().param("size", "10");
         customizer.customizeRequestParam().param("properties.planet", "Mercury");
+        customizer.customizeRequestParam().param("geometry", "plop");
         performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
@@ -91,6 +92,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         customizer.customizeRequestParam().param("page", "1");
         customizer.customizeRequestParam().param("size", "2");
+        customizer.customizeRequestParam().param("geometry", "plop");
         customizer.customizeRequestParam().param("properties." + PLANET_TYPE, PLANET_TYPE_TELLURIC);
         performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);

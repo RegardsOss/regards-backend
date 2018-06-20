@@ -105,8 +105,9 @@ public class RegardsExtension extends AbstractOpenSearchExtension {
     }
 
     @Override
-    protected boolean supportsSearchParameter(OpenSearchParameterConfiguration conf) {
-        return (conf == null) || (conf.getNamespace() == null) || REGARDS_NS.equals(conf.getNamespace());
+    protected boolean supportsSearchParameter(SearchParameter parameter) {
+        return (parameter.getConfiguration() == null) || (parameter.getConfiguration().getNamespace() == null)
+                || REGARDS_NS.equals(parameter.getConfiguration().getNamespace());
     }
 
 }

@@ -120,7 +120,7 @@ public class MediaExtension extends AbstractOpenSearchExtension {
     }
 
     @Override
-    protected boolean supportsSearchParameter(OpenSearchParameterConfiguration conf) {
+    protected boolean supportsSearchParameter(SearchParameter parameter) {
         // Media extension does not handle search queries.
         return false;
     }

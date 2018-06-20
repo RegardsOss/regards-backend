@@ -282,9 +282,12 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                 OpenSearchParameterConfiguration conf = paramConfigurations.stream()
                         .filter(p -> p.getAttributeModelJsonPath().equals(attributeModel.getJsonPath())).findFirst()
                         .orElse(null);
-                searchParameters.add(new SearchParameter(attributeModel, conf, queryParam.getValue()));
+                searchParameters
+                        .add(new SearchParameter(queryParam.getKey(), attributeModel, conf, queryParam.getValue()));
             } catch (OpenSearchUnknownParameter e) {
-                LOGGER.warn("Parameter not found.", e);
+                LOGGER.debug("Parameter not found in REGARDS models attributes.", e);
+                // Adding unknown parameters in search parameters in case an IOpenSearchExtension can handle it.
+                searchParameters.add(new SearchParameter(queryParam.getKey(), null, null, queryParam.getValue()));
             }
         }
         return searchParameters;
