@@ -25,6 +25,7 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
 
 /**
  * {@link ICriterion} builder for catalog searches.
@@ -42,10 +43,10 @@ public class AttributeCriterionBuilder {
      * @param values {@link String}s search values.
      * @param finder {@link IAttributeFinder}
      * @return {@link ICriterion}
-     * @throws OpenSearchUnknownParameter
+     * @throws UnsupportedCriterionOperator
      */
     public static ICriterion build(AttributeModel attributeModel, ParameterOperator operator, List<String> values)
-            throws OpenSearchUnknownParameter {
+            throws UnsupportedCriterionOperator {
         ICriterion criterion = null;
         String attributeJsonPath = attributeModel.getJsonPath();
         for (String value : values) {
@@ -64,6 +65,7 @@ public class AttributeCriterionBuilder {
                     valueCriterion = buildLongCrit(attributeJsonPath, value, operator);
                     break;
                 case STRING:
+                case URL:
                     valueCriterion = buildStringCrit(attributeJsonPath, value, operator);
                     break;
                 case STRING_ARRAY:
@@ -76,7 +78,8 @@ public class AttributeCriterionBuilder {
                     valueCriterion = buildBooleanCrit(attributeJsonPath, value, operator);
                     break;
                 default:
-                    throw new OpenSearchUnknownParameter("Unknown parameter");
+                    // Nothing to do
+                    break;
             }
             if ((criterion == null) && (valueCriterion != null)) {
                 criterion = valueCriterion;
@@ -93,16 +96,16 @@ public class AttributeCriterionBuilder {
      * @param value String representation of boolean parameter value
      * @param operator Operator for search
      * @return {@link ICriterion}
-     * @throws OpenSearchUnknownParameter
+     * @throws UnsupportedCriterionOperator
      */
     private static ICriterion buildBooleanCrit(String attribute, String value, ParameterOperator operator)
-            throws OpenSearchUnknownParameter {
+            throws UnsupportedCriterionOperator {
         switch (operator) {
             case GE:
             case GT:
             case LE:
             case LT:
-                throw new OpenSearchUnknownParameter(
+                throw new UnsupportedCriterionOperator(
                         String.format("Invalid operator %s for string parameter %s", operator.toString(), attribute));
             case EQ:
             default:
@@ -175,7 +178,6 @@ public class AttributeCriterionBuilder {
      * @param value String representation of double parameter value
      * @param operator Operator for search
      * @return {@link ICriterion}
-     * @throws OpenSearchUnknownParameter
      */
     private static ICriterion buildDoubleCrit(String attribute, String value, ParameterOperator operator) {
         Double asDouble = Double.parseDouble(value);
@@ -200,7 +202,6 @@ public class AttributeCriterionBuilder {
      * @param value String representation of long parameter value
      * @param operator Operator for search
      * @return {@link ICriterion}
-     * @throws OpenSearchUnknownParameter
      */
     private static ICriterion buildLongCrit(String attribute, String value, ParameterOperator operator) {
         // Important :
@@ -235,16 +236,16 @@ public class AttributeCriterionBuilder {
      * @param value String representation of parameter value
      * @param operator Operator for search
      * @return {@link ICriterion}
-     * @throws OpenSearchUnknownParameter
+     * @throws UnsupportedCriterionOperator
      */
     private static ICriterion buildStringCrit(String attribute, String value, ParameterOperator operator)
-            throws OpenSearchUnknownParameter {
+            throws UnsupportedCriterionOperator {
         switch (operator) {
             case GE:
             case GT:
             case LE:
             case LT:
-                throw new OpenSearchUnknownParameter(
+                throw new UnsupportedCriterionOperator(
                         String.format("Invalid operator %s for string parameter %s", operator.toString(), attribute));
             case EQ:
             default:
@@ -258,16 +259,16 @@ public class AttributeCriterionBuilder {
      * @param value String representation of parameter value
      * @param operator Operator for search
      * @return {@link ICriterion}
-     * @throws OpenSearchUnknownParameter
+     * @throws UnsupportedCriterionOperator
      */
     private static ICriterion buildStringArrayCrit(String attribute, String value, ParameterOperator operator)
-            throws OpenSearchUnknownParameter {
+            throws UnsupportedCriterionOperator {
         switch (operator) {
             case GE:
             case GT:
             case LE:
             case LT:
-                throw new OpenSearchUnknownParameter(
+                throw new UnsupportedCriterionOperator(
                         String.format("Invalid operator %s for string parameter %s", operator.toString(), attribute));
             case EQ:
             default:

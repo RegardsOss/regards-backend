@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionParameter;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
-import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
+import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
 
 /**
  * Interface to define a new OpenSearch extension.
@@ -45,48 +45,48 @@ import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
 public interface IOpenSearchExtension {
 
     /**
-     * Initialize extension providing opensearch parameters configurations.
-     */
-    void initialize(List<OpenSearchParameterConfiguration> configurations);
-
-    /**
      * Does the extension actived ?
      * @return {@link boolean}
      */
     boolean isActivated();
 
     /**
-     * Apply extension to the givne search parameters
-     * @param parameters TODO
-     * @param configurations TODO
+     * Creates the {@link ICriterion} for the current extension from the given {@link SearchParameter}s.
+     * Used to run an opensearch search for the current extension.
+     * @param parameters {@link SearchParameter}s to build criterion from
      * @return {@link ICriterion}
      */
     ICriterion buildCriterion(List<SearchParameter> parameters);
 
     /**
      * Create the {@link Module} needed by the rome library to generate the specificity of the extension on each entity of the XML+Atom response.
+     * Used to format opensearch response into ATOM+XML format for the current extension.
      * @param entity {@link AbstractEntity} entity to write in XML+Atom format
+     * @param paramConfigurations {@link OpenSearchParameterConfiguration} opensearch parameters configurations.
      * @param gson {@link Gson} tool to serialize objects.
      * @return {@link Module} from rome library
      */
-    Module getAtomEntityBuilderModule(AbstractEntity entity, Gson gson);
+    Module getAtomEntityResponseBuilder(AbstractEntity entity,
+            List<OpenSearchParameterConfiguration> paramConfigurations, Gson gson);
 
     /**
      * Add parameter into the given {@link Feature} for the {@link AbstractEntity} for Geojson response
      * @param entity {@link AbstractEntity} to write in geojson format.
+     * @param paramConfigurations {@link OpenSearchParameterConfiguration} opensearch parameters configurations.
      * @param feature {@link Feature} from geojson standard
      */
-    void applyExtensionToGeoJsonFeature(AbstractEntity entity, Feature feature);
+    void formatGeoJsonResponseFeature(AbstractEntity entity, List<OpenSearchParameterConfiguration> paramConfigurations,
+            Feature feature);
 
     /**
      * Apply extension for the given {@link OpenSearchParameter} during opensearch xml descriptor build.
      * @param parameter {@link OpenSearchParameter}
      */
-    void applyExtensionToDescriptionParameter(OpenSearchParameter parameter, DescriptionParameter descParameter);
+    void applyToDescriptionParameter(OpenSearchParameter parameter, DescriptionParameter descParameter);
 
     /**
      * Apply extension to the global openSearch description.
      */
-    void applyExtensionToDescription(OpenSearchDescription openSearchDescription);
+    void applyToDescription(OpenSearchDescription openSearchDescription);
 
 }

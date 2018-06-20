@@ -63,10 +63,10 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchCo
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
-import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
-import fr.cnes.regards.modules.search.schema.OpenSearchParameterOption;
 import fr.cnes.regards.modules.search.schema.QueryType;
 import fr.cnes.regards.modules.search.schema.UrlType;
+import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
+import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameterOption;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 import fr.cnes.regards.modules.search.service.SearchException;
 
@@ -134,8 +134,8 @@ public class OpenSearchDescriptionBuilder {
         Project project = getProject(currentTenant);
 
         // Get all attributes for the given search type.
-        List<DescriptionParameter> descParameters = retreiveSearchContextAttributes(criterion, context.getSearchType(),
-                                                                                    parameterConfs, currentTenant);
+        List<DescriptionParameter> descParameters = getDescParameters(criterion, context.getSearchType(),
+                                                                      parameterConfs, currentTenant);
 
         // Build descriptor generic metadatas
         OpenSearchDescription desc = buildMetadata(project);
@@ -152,8 +152,7 @@ public class OpenSearchDescriptionBuilder {
         desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(), MediaType.APPLICATION_JSON_VALUE));
 
         // Apply active extensions to global description
-        extensions.stream().filter(IOpenSearchExtension::isActivated)
-                .forEach(ext -> ext.applyExtensionToDescription(desc));
+        extensions.stream().filter(IOpenSearchExtension::isActivated).forEach(ext -> ext.applyToDescription(desc));
 
         return desc;
     }
@@ -279,7 +278,7 @@ public class OpenSearchDescriptionBuilder {
 
         for (IOpenSearchExtension ext : extensions) {
             if (ext.isActivated()) {
-                ext.applyExtensionToDescriptionParameter(parameter, descParameter);
+                ext.applyToDescriptionParameter(parameter, descParameter);
             }
         }
         return parameter;
@@ -296,7 +295,7 @@ public class OpenSearchDescriptionBuilder {
      * @param pCurrentTenant {@link String} tenant or project.
      * @return {@link Map}<{@link AttributeModel}, {@link QueryableAttribute}>
      */
-    private List<DescriptionParameter> retreiveSearchContextAttributes(ICriterion criterion, SearchType searchType,
+    private List<DescriptionParameter> getDescParameters(ICriterion criterion, SearchType searchType,
             List<OpenSearchParameterConfiguration> parameterConfs, String pCurrentTenant) {
 
         List<DescriptionParameter> parameters = Lists.newArrayList();

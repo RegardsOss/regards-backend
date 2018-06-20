@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchConfiguration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IOpenSearchResponseBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.gml.impl.GmlTimeModuleGenerator;
@@ -128,7 +129,7 @@ public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
     }
 
     @Override
-    public void addEntity(AbstractEntity entity) {
+    public void addEntity(AbstractEntity entity, List<OpenSearchParameterConfiguration> paramConfigurations) {
         Entry entry = new Entry();
         entry.setId(entity.getIpId().toString());
         if (entity.getCreationDate() != null) {
@@ -143,7 +144,7 @@ public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
         // Handle extensions
         for (IOpenSearchExtension extension : extensions) {
             if (extension.isActivated()) {
-                Module mod = extension.getAtomEntityBuilderModule(entity, gson);
+                Module mod = extension.getAtomEntityResponseBuilder(entity, paramConfigurations, gson);
                 if (mod != null) {
                     mods.add(mod);
                 }

@@ -27,6 +27,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -201,7 +202,12 @@ public class SearchContext {
         context.setSearchType(searchType);
         context.setEngineType(engineType);
         context.setHeaders(headers);
-        context.setQueryParams(queryParams);
+        // Filter spring pagination parameters if any
+        MultiValueMap<String, String> queryParamsPaginationLess = new LinkedMultiValueMap<>();
+        queryParamsPaginationLess.putAll(queryParams);
+        queryParamsPaginationLess.remove("page");
+        queryParamsPaginationLess.remove("size");
+        context.setQueryParams(queryParamsPaginationLess);
         context.setPageable(pageable);
         return context;
     }

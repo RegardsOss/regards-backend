@@ -29,17 +29,17 @@ import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.AttributeCriterionBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterOperator;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionParameter;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.AbstractOpenSearchExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.SearchParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.RegardsModule;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.impl.RegardsModuleImpl;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
-import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
+import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
 
 /**
  * Regards parameter extension for Opensearch standard.
@@ -59,12 +59,8 @@ public class RegardsExtension extends AbstractOpenSearchExtension {
     public static final String REGARDS_NS = "regards";
 
     @Override
-    public void initialize(List<OpenSearchParameterConfiguration> configurations) {
-        // Nothing to do
-    }
-
-    @Override
-    public void applyExtensionToGeoJsonFeature(AbstractEntity entity, Feature feature) {
+    public void formatGeoJsonResponseFeature(AbstractEntity entity,
+            List<OpenSearchParameterConfiguration> paramConfigurations, Feature feature) {
         Map<String, Object> properties = Maps.newHashMap();
         for (AbstractAttribute<?> property : entity.getProperties()) {
             properties.put(property.getName(), property.getValue());
@@ -73,7 +69,8 @@ public class RegardsExtension extends AbstractOpenSearchExtension {
     }
 
     @Override
-    public Module getAtomEntityBuilderModule(AbstractEntity entity, Gson gson) {
+    public Module getAtomEntityResponseBuilder(AbstractEntity entity,
+            List<OpenSearchParameterConfiguration> paramConfigurations, Gson gson) {
         RegardsModule rm = new RegardsModuleImpl();
         rm.setGsonBuilder(gson);
         rm.setEntity(entity);
@@ -81,18 +78,17 @@ public class RegardsExtension extends AbstractOpenSearchExtension {
     }
 
     @Override
-    public void applyExtensionToDescriptionParameter(OpenSearchParameter parameter,
-            DescriptionParameter descParameter) {
+    public void applyToDescriptionParameter(OpenSearchParameter parameter, DescriptionParameter descParameter) {
         // Nothing to do
     }
 
     @Override
-    public void applyExtensionToDescription(OpenSearchDescription openSearchDescription) {
+    public void applyToDescription(OpenSearchDescription openSearchDescription) {
         // Nothing to do
     }
 
     @Override
-    protected ICriterion buildCriteria(SearchParameter parameter) throws OpenSearchUnknownParameter {
+    protected ICriterion buildCriteria(SearchParameter parameter) throws UnsupportedCriterionOperator {
         return AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.EQ,
                                                parameter.getSearchValues());
     }

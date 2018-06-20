@@ -37,26 +37,6 @@ public class OpenSearchParameterConfiguration {
     private String namespace;
 
     /**
-     * Minimum number of occurence of the parameter in search request
-     */
-    private int minimum;
-
-    /**
-     * Maximum number of occurence of the parameter in search request
-     */
-    private int maximum;
-
-    /**
-     * Pattern to validate value.
-     */
-    private String pattern;
-
-    /**
-     * Parameter title
-     */
-    private String title;
-
-    /**
      * Does the parameter handle the option values when writting the description xml file.
      */
     private boolean optionsEnabled;
@@ -77,38 +57,6 @@ public class OpenSearchParameterConfiguration {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public int getMinimum() {
-        return minimum;
-    }
-
-    public void setMinimum(int minimum) {
-        this.minimum = minimum;
-    }
-
-    public int getMaximum() {
-        return maximum;
-    }
-
-    public void setMaximum(int maximum) {
-        this.maximum = maximum;
-    }
-
-    public String getPattern() {
-        return pattern;
-    }
-
-    public void setPattern(String pattern) {
-        this.pattern = pattern;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public boolean isOptionsEnabled() {

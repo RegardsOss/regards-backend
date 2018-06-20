@@ -18,10 +18,13 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter;
 
+import java.util.List;
+
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchConfiguration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
 
 /**
@@ -47,8 +50,9 @@ public interface IOpenSearchResponseBuilder<R> {
     /**
      * Add a new response entity to the builder. An entity is a {@link AbstractEntity} from an catalog search response.
      * @param entity {@link AbstractEntity}
+     * @param paramConfigurations {@link OpenSearchParameterConfiguration}s
      */
-    void addEntity(AbstractEntity entity);
+    void addEntity(AbstractEntity entity, List<OpenSearchParameterConfiguration> paramConfigurations);
 
     /**
      * Clear all added {@link AbstractEntity}s to the current builder.

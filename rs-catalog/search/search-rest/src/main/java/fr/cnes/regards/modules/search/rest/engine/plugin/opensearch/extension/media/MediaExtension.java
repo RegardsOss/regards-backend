@@ -20,13 +20,13 @@ import fr.cnes.regards.modules.entities.domain.AbstractDataEntity;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionParameter;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.AbstractOpenSearchExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.SearchParameter;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
-import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
+import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
 
 /**
  * Media extension for Opensearch standard.
@@ -38,12 +38,8 @@ import fr.cnes.regards.modules.search.schema.OpenSearchParameter;
 public class MediaExtension extends AbstractOpenSearchExtension {
 
     @Override
-    public void initialize(List<OpenSearchParameterConfiguration> configurations) {
-        // Nothing to do
-    }
-
-    @Override
-    public void applyExtensionToGeoJsonFeature(AbstractEntity entity, Feature feature) {
+    public void formatGeoJsonResponseFeature(AbstractEntity entity,
+            List<OpenSearchParameterConfiguration> paramConfigurations, Feature feature) {
         if (entity instanceof AbstractDataEntity) {
             // Find quicklook url from entity
             AbstractDataEntity dataEntity = (AbstractDataEntity) entity;
@@ -58,7 +54,8 @@ public class MediaExtension extends AbstractOpenSearchExtension {
     }
 
     @Override
-    public Module getAtomEntityBuilderModule(AbstractEntity entity, Gson gson) {
+    public Module getAtomEntityResponseBuilder(AbstractEntity entity,
+            List<OpenSearchParameterConfiguration> paramConfigurations, Gson gson) {
         if (entity instanceof AbstractDataEntity) {
             // Find quicklook url from entity
             AbstractDataEntity dataEntity = (AbstractDataEntity) entity;
@@ -102,18 +99,17 @@ public class MediaExtension extends AbstractOpenSearchExtension {
     }
 
     @Override
-    public void applyExtensionToDescriptionParameter(OpenSearchParameter parameter,
-            DescriptionParameter descParameter) {
+    public void applyToDescriptionParameter(OpenSearchParameter parameter, DescriptionParameter descParameter) {
         // Nothing to do
     }
 
     @Override
-    public void applyExtensionToDescription(OpenSearchDescription openSearchDescription) {
+    public void applyToDescription(OpenSearchDescription openSearchDescription) {
         // Nothing to do
     }
 
     @Override
-    protected ICriterion buildCriteria(SearchParameter parameter) throws OpenSearchUnknownParameter {
+    protected ICriterion buildCriteria(SearchParameter parameter) throws UnsupportedCriterionOperator {
         // Media extension does not handle search queries.
         return null;
     }
