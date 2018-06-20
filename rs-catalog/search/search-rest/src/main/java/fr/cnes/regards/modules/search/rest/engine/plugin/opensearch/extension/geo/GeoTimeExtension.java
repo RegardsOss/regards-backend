@@ -21,15 +21,19 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.g
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import org.apache.commons.compress.utils.Lists;
+
 import com.google.gson.Gson;
 import com.rometools.modules.georss.geometries.AbstractGeometry;
 import com.rometools.modules.georss.geometries.Point;
 import com.rometools.modules.georss.geometries.Position;
+import com.rometools.modules.georss.geometries.PositionList;
 import com.rometools.rome.feed.atom.Entry;
 import com.rometools.rome.feed.module.Module;
 
 import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.geojson.geometry.LineString;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
@@ -60,11 +64,26 @@ public class GeoTimeExtension extends AbstractOpenSearchExtension {
 
     public static final String TIME_END_PARAMETER = "end";
 
+    public static final String GEO_NS = "geo";
+
+    public static final String GEO_PARAMETER = "geometry";
+
+    public static final String BOX_PARAMETER = "box";
+
+    public static final String BOX_PATTERN = "^[0-9\\.\\,\\-]*$";
+
+    public static final String LOCATION_PARAMETER = "location";
+
+    public static final String LON_PARAMETER = "lon";
+
+    public static final String LAT_PARAMETER = "lat";
+
+    public static final String RADIUS_PARAMETER = "radius";
+
     @Override
     public void formatGeoJsonResponseFeature(AbstractEntity entity,
             List<OpenSearchParameterConfiguration> paramConfigurations, Feature feature) {
         feature.setGeometry(entity.getGeometry());
-        // TODO time
     }
 
     @Override
@@ -84,7 +103,34 @@ public class GeoTimeExtension extends AbstractOpenSearchExtension {
         if ((conf != null) && TIME_NS.equals(conf.getNamespace()) && TIME_END_PARAMETER.equals(conf.getName())) {
             parameter.setValue(String.format("{%s:%s}", TIME_NS, TIME_END_PARAMETER));
         }
-        // TODO Handle geometry
+    }
+
+    @Override
+    public List<OpenSearchParameter> addParametersToDescription() {
+        List<OpenSearchParameter> geoParameters = Lists.newArrayList();
+        geoParameters
+                .add(builderParameter(GEO_PARAMETER, String.format("{%s:%s}", GEO_NS, GEO_PARAMETER),
+                                      "Defined in Well Known Text standard (WKT) with coordinates in decimal degrees (EPSG:4326)",
+                                      null));
+        geoParameters
+                .add(builderParameter(BOX_PARAMETER, String.format("{%s:%s}", GEO_NS, BOX_PARAMETER),
+                                      "Defined by 'west, south, east, north' coordinates of longitude, latitude, in decimal degrees (EPSG:4326)",
+                                      BOX_PATTERN));
+        geoParameters.add(builderParameter(LOCATION_PARAMETER, String.format("{%s:%s}", GEO_NS, LOCATION_PARAMETER),
+                                           "Location string e.g. Paris, France", null));
+        geoParameters
+                .add(builderParameter(LON_PARAMETER, String.format("{%s:%s}", GEO_NS, LON_PARAMETER),
+                                      "Longitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lat",
+                                      null, "180", "-180"));
+        geoParameters
+                .add(builderParameter(LAT_PARAMETER, String.format("{%s:%s}", GEO_NS, LAT_PARAMETER),
+                                      "Latitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lon",
+                                      null, "90", "-90"));
+        geoParameters
+                .add(builderParameter(RADIUS_PARAMETER, String.format("{%s:%s}", GEO_NS, RADIUS_PARAMETER),
+                                      "Latitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lon",
+                                      null, null, "1"));
+        return geoParameters;
     }
 
     @Override
@@ -106,6 +152,9 @@ public class GeoTimeExtension extends AbstractOpenSearchExtension {
             criteria = AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.LE,
                                                        parameter.getSearchValues());
         }
+
+        // TODO : Generate geometry criterion from geometry, box, lon, lat, location and radius.
+
         return criteria;
     }
 
@@ -125,7 +174,6 @@ public class GeoTimeExtension extends AbstractOpenSearchExtension {
                 .filter(c -> TIME_NS.equals(c.getNamespace()) && TIME_END_PARAMETER.equals(c.getName())).findFirst()
                 .orElse(null);
         if ((timeStartParameterConf != null) && (timeEndParameterConf != null)) {
-            // TODO : Handle static properties ?
             String startDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath()
                     .replace(StaticProperties.PROPERTIES + ".", "");
             String endDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath()
@@ -148,23 +196,55 @@ public class GeoTimeExtension extends AbstractOpenSearchExtension {
             return null;
         }
         switch (geometry.getType()) {
+            // TODO : GEO Translation from IGEometry to rome module geometry
             case POINT:
                 fr.cnes.regards.framework.geojson.geometry.Point rp = (fr.cnes.regards.framework.geojson.geometry.Point) geometry;
                 Point point = new Point();
                 point.setPosition(new Position(rp.getCoordinates().getLatitude(), rp.getCoordinates().getLongitude()));
                 return point;
-            case FEATURE:
-            case FEATURE_COLLECTION:
-            case GEOMETRY_COLLECTION:
             case LINESTRING:
+                LineString ls = (LineString) geometry;
+                com.rometools.modules.georss.geometries.LineString lineString = new com.rometools.modules.georss.geometries.LineString();
+                PositionList positionList = new PositionList();
+                ls.getCoordinates().forEach(c -> positionList.add(c.getLatitude(), c.getLongitude()));
+                lineString.setPositionList(positionList);
+                return lineString;
+            case POLYGON:
+                // TODO : GEO Translation from IGEometry:POLYGON to rome module geometry POLYGON
+                return null;
             case MULTILINESTRING:
             case MULTIPOINT:
             case MULTIPOLYGON:
-            case POLYGON:
+                // TODO : Do we have to handle this kind of geometry ?
+                return null;
+            case FEATURE:
+            case FEATURE_COLLECTION:
+            case GEOMETRY_COLLECTION:
             case UNLOCATED:
             default:
-                // TODO implement builders.
+                // Nothing to do
                 return null;
         }
+    }
+
+    private OpenSearchParameter builderParameter(String name, String value, String title, String pattern) {
+        OpenSearchParameter param = new OpenSearchParameter();
+        param.setName(name);
+        param.setValue(value);
+        param.setTitle(title);
+        param.setPattern(pattern);
+        return param;
+    }
+
+    private OpenSearchParameter builderParameter(String name, String value, String title, String pattern, String maxInc,
+            String minInc) {
+        OpenSearchParameter param = new OpenSearchParameter();
+        param.setName(name);
+        param.setValue(value);
+        param.setTitle(title);
+        param.setPattern(pattern);
+        param.setMaxExclusive(maxInc);
+        param.setMinimum(minInc);
+        return param;
     }
 }

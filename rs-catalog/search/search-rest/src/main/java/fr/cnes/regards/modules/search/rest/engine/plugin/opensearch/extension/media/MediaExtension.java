@@ -104,6 +104,11 @@ public class MediaExtension extends AbstractOpenSearchExtension {
     }
 
     @Override
+    public List<OpenSearchParameter> addParametersToDescription() {
+        return Lists.newArrayList();
+    }
+
+    @Override
     public void applyToDescription(OpenSearchDescription openSearchDescription) {
         // This extension does not apply any modification to global opensearch descritor information
     }

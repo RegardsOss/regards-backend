@@ -91,4 +91,10 @@ public interface IOpenSearchExtension {
      */
     void applyToDescription(OpenSearchDescription openSearchDescription);
 
+    /**
+     * Generates new parameters handled exlusivly by the current extesion.
+     * @return {@link OpenSearchParameter}s
+     */
+    List<OpenSearchParameter> addParametersToDescription();
+
 }

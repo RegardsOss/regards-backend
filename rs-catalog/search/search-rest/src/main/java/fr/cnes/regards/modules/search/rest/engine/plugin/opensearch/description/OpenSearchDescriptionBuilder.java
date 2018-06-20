@@ -233,6 +233,13 @@ public class OpenSearchDescriptionBuilder {
         for (DescriptionParameter descParameter : descParameters) {
             parameters.add(buildParameter(descParameter, extensions));
         }
+
+        for (IOpenSearchExtension ext : extensions) {
+            if (ext.isActivated()) {
+                parameters.addAll(ext.addParametersToDescription());
+            }
+        }
+
         return parameters;
     }
 

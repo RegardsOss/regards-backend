@@ -313,7 +313,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @Override
     public ResponseEntity<List<String>> getPropertyValues(SearchContext context) throws ModuleException {
-        // TODO Auto-generated method stub
+        // TODO return values for a given properties
         return ISearchEngine.super.getPropertyValues(context);
     }
 

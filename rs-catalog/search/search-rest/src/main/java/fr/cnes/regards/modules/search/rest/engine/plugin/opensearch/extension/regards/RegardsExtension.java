@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.r
 
 import java.util.List;
 
+import org.apache.commons.compress.utils.Lists;
+
 import com.google.gson.Gson;
 import com.rometools.rome.feed.atom.Entry;
 import com.rometools.rome.feed.module.Module;
@@ -84,6 +86,11 @@ public class RegardsExtension extends AbstractOpenSearchExtension {
     @Override
     public void applyToDescriptionParameter(OpenSearchParameter parameter, DescriptionParameter descParameter) {
         // Nothing to do
+    }
+
+    @Override
+    public List<OpenSearchParameter> addParametersToDescription() {
+        return Lists.newArrayList();
     }
 
     @Override
