@@ -74,12 +74,12 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    public void searchDataJson() {
+    public void searchAllDataJson() {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "10");
+        customizer.customizeRequestParam().param("size", "100");
         performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
@@ -89,9 +89,9 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "10");
-        customizer.customizeRequestParam().param("properties.planet", "Mercury");
+        customizer.customizeRequestParam().param("page", "1");
+        customizer.customizeRequestParam().param("size", "2");
+        customizer.customizeRequestParam().param("properties." + PLANET_TYPE, PLANET_TYPE_TELLURIC);
         performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }

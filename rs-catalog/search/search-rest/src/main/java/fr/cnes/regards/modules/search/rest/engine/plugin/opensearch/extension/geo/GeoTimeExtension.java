@@ -25,6 +25,7 @@ import com.google.gson.Gson;
 import com.rometools.modules.georss.geometries.AbstractGeometry;
 import com.rometools.modules.georss.geometries.Point;
 import com.rometools.modules.georss.geometries.Position;
+import com.rometools.rome.feed.atom.Entry;
 import com.rometools.rome.feed.module.Module;
 
 import fr.cnes.regards.framework.geojson.Feature;
@@ -67,7 +68,53 @@ public class GeoTimeExtension extends AbstractOpenSearchExtension {
     }
 
     @Override
-    public Module getAtomEntityResponseBuilder(AbstractEntity entity,
+    public void formatAtomResponseEntry(AbstractEntity entity,
+            List<OpenSearchParameterConfiguration> paramConfigurations, Entry entry, Gson gson) {
+        // Add module generator
+        entry.getModules().add(getAtomEntityResponseBuilder(entity, paramConfigurations, gson));
+
+    }
+
+    @Override
+    public void applyToDescriptionParameter(OpenSearchParameter parameter, DescriptionParameter descParameter) {
+        OpenSearchParameterConfiguration conf = descParameter.getConfiguration();
+        if ((conf != null) && TIME_NS.equals(conf.getNamespace()) && TIME_START_PARAMETER.equals(conf.getName())) {
+            parameter.setValue(String.format("{%s:%s}", TIME_NS, TIME_START_PARAMETER));
+        }
+        if ((conf != null) && TIME_NS.equals(conf.getNamespace()) && TIME_END_PARAMETER.equals(conf.getName())) {
+            parameter.setValue(String.format("{%s:%s}", TIME_NS, TIME_END_PARAMETER));
+        }
+        // TODO Handle geometry
+    }
+
+    @Override
+    public void applyToDescription(OpenSearchDescription openSearchDescription) {
+        // Nothing to do
+    }
+
+    @Override
+    protected ICriterion buildCriteria(SearchParameter parameter) throws UnsupportedCriterionOperator {
+        ICriterion criteria = ICriterion.all();
+        if (TIME_NS.equals(parameter.getConfiguration().getNamespace())
+                && TIME_START_PARAMETER.equals(parameter.getConfiguration().getName())) {
+            // Parse attribute value to create associated ICriterion using parameter configuration
+            criteria = AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.GE,
+                                                       parameter.getSearchValues());
+        }
+        if (TIME_NS.equals(parameter.getConfiguration().getNamespace())
+                && TIME_END_PARAMETER.equals(parameter.getConfiguration().getName())) {
+            criteria = AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.LE,
+                                                       parameter.getSearchValues());
+        }
+        return criteria;
+    }
+
+    @Override
+    protected boolean supportsSearchParameter(OpenSearchParameterConfiguration conf) {
+        return (conf != null) && TIME_NS.equals(conf.getNamespace());
+    }
+
+    private Module getAtomEntityResponseBuilder(AbstractEntity entity,
             List<OpenSearchParameterConfiguration> paramConfigurations, Gson gson) {
         // Add GML with time module to handle geo & time extension
         GmlTimeModuleImpl gmlMod = new GmlTimeModuleImpl();
@@ -119,44 +166,5 @@ public class GeoTimeExtension extends AbstractOpenSearchExtension {
                 // TODO implement builders.
                 return null;
         }
-    }
-
-    @Override
-    public void applyToDescriptionParameter(OpenSearchParameter parameter, DescriptionParameter descParameter) {
-        OpenSearchParameterConfiguration conf = descParameter.getConfiguration();
-        if ((conf != null) && TIME_NS.equals(conf.getNamespace()) && TIME_START_PARAMETER.equals(conf.getName())) {
-            parameter.setValue(String.format("{%s:%s}", TIME_NS, TIME_START_PARAMETER));
-        }
-        if ((conf != null) && TIME_NS.equals(conf.getNamespace()) && TIME_END_PARAMETER.equals(conf.getName())) {
-            parameter.setValue(String.format("{%s:%s}", TIME_NS, TIME_END_PARAMETER));
-        }
-        // TODO Handle geometry
-    }
-
-    @Override
-    public void applyToDescription(OpenSearchDescription openSearchDescription) {
-        // Nothing to do
-    }
-
-    @Override
-    protected ICriterion buildCriteria(SearchParameter parameter) throws UnsupportedCriterionOperator {
-        ICriterion criteria = ICriterion.all();
-        if (TIME_NS.equals(parameter.getConfiguration().getNamespace())
-                && TIME_START_PARAMETER.equals(parameter.getConfiguration().getName())) {
-            // Parse attribute value to create associated ICriterion using parameter configuration
-            criteria = AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.GE,
-                                                       parameter.getSearchValues());
-        }
-        if (TIME_NS.equals(parameter.getConfiguration().getNamespace())
-                && TIME_END_PARAMETER.equals(parameter.getConfiguration().getName())) {
-            criteria = AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.LE,
-                                                       parameter.getSearchValues());
-        }
-        return criteria;
-    }
-
-    @Override
-    protected boolean supportsSearchParameter(OpenSearchParameterConfiguration conf) {
-        return (conf != null) && TIME_NS.equals(conf.getNamespace());
     }
 }

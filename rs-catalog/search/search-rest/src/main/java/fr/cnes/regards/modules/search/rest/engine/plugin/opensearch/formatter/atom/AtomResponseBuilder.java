@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.apache.commons.compress.utils.Lists;
+import org.springframework.http.MediaType;
 
 import com.google.gson.Gson;
 import com.rometools.modules.opensearch.OpenSearchModule;
@@ -77,7 +78,7 @@ public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
     @Override
     public void addMetadata(String searchId, String searchTitle, String searchDescription,
             String openSearchDescriptionUrl, SearchContext context, OpenSearchConfiguration configuration,
-            FacetPage<AbstractEntity> page) {
+            FacetPage<AbstractEntity> page, List<org.springframework.hateoas.Link> links) {
         // Fee general informations
         feed.setId(searchId);
         feed.setTitle(searchTitle);
@@ -129,7 +130,23 @@ public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
     }
 
     @Override
-    public void addEntity(AbstractEntity entity, List<OpenSearchParameterConfiguration> paramConfigurations) {
+    public void clear() {
+        feed.getEntries().clear();
+    }
+
+    @Override
+    public Feed build() {
+        return this.feed;
+    }
+
+    @Override
+    public void addExtension(IOpenSearchExtension configuration) {
+        extensions.add(configuration);
+    }
+
+    @Override
+    public void addEntity(AbstractEntity entity, List<OpenSearchParameterConfiguration> paramConfigurations,
+            List<org.springframework.hateoas.Link> entityLinks) {
         Entry entry = new Entry();
         entry.setId(entity.getIpId().toString());
         if (entity.getCreationDate() != null) {
@@ -144,29 +161,22 @@ public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
         // Handle extensions
         for (IOpenSearchExtension extension : extensions) {
             if (extension.isActivated()) {
-                Module mod = extension.getAtomEntityResponseBuilder(entity, paramConfigurations, gson);
-                if (mod != null) {
-                    mods.add(mod);
-                }
+                extension.formatAtomResponseEntry(entity, paramConfigurations, entry, gson);
             }
         }
         entry.setModules(mods);
+
+        entityLinks.forEach(link -> {
+            Link feedEntityLink = new Link();
+            feedEntityLink.setHref(link.getHref());
+            feedEntityLink.setType(MediaType.APPLICATION_ATOM_XML_VALUE);
+            if (link.getRel().equals(org.springframework.hateoas.Link.REL_SELF)) {
+                feedEntityLink.setTitle(String.format("ATOM link for %s", entity.getIpId().toString()));
+            }
+            entry.getAlternateLinks().add(feedEntityLink);
+        });
+
         feed.getEntries().add(entry);
-    }
-
-    @Override
-    public void clear() {
-        feed.getEntries().clear();
-    }
-
-    @Override
-    public Feed build() {
-        return this.feed;
-    }
-
-    @Override
-    public void addExtension(IOpenSearchExtension configuration) {
-        extensions.add(configuration);
     }
 
 }

@@ -34,6 +34,7 @@ import org.springframework.util.MultiValueMap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -48,6 +49,7 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownPar
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
+import fr.cnes.regards.modules.search.rest.SearchEngineController;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.OpenSearchDescriptionBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedMediaTypesException;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.SearchParameter;
@@ -110,6 +112,12 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @Autowired
     private OpenSearchConfiguration configuration;
+
+    /**
+     * To build resource links
+     */
+    @Autowired
+    private IResourceService resourceService;
 
     @PluginParameter(name = "searchTitle", label = "Title of responses associated to this search engine",
             description = "Search title for response metadatas. Used to construct metadatas for atom+xml and geo+json responses.",
@@ -238,8 +246,11 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         IOpenSearchResponseBuilder<?> builder = getBuilder(context);
         // TODO : Replace with real url
         builder.addMetadata(UUID.randomUUID().toString(), searchTitle, searchDescription,
-                            "http://www.regards.com/opensearch-description.xml", context, configuration, page);
-        page.getContent().stream().forEach(e -> builder.addEntity(e, paramConfigurations));
+                            "http://www.regards.com/opensearch-description.xml", context, configuration, page,
+                            SearchEngineController.buildPaginationLinks(resourceService, page, context));
+        page.getContent().stream()
+                .forEach(e -> builder.addEntity(e, paramConfigurations,
+                                                SearchEngineController.buildEntityLinks(resourceService, context, e)));
         return builder.build();
     }
 

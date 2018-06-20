@@ -19,8 +19,10 @@
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.geojson;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.Lists;
+import org.springframework.hateoas.Link;
 
 import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.framework.geojson.FeatureWithPropertiesCollection;
@@ -44,19 +46,23 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.at
  */
 public class GeojsonResponseBuilder implements IOpenSearchResponseBuilder<FeatureWithPropertiesCollection> {
 
-    private static final String ID = "id";
+    public static final String ID = "id";
 
-    private static final String TITLE = "title";
+    public static final String TITLE = "title";
 
-    private static final String TOTAL_RESULTS = "totalResults";
+    public static final String TOTAL_RESULTS = "totalResults";
 
-    private static final String START_INDEX = "startIndex";
+    public static final String START_INDEX = "startIndex";
 
-    private static final String ITEMS_PER_PAGE = "itemsPerPage";
+    public static final String ITEMS_PER_PAGE = "itemsPerPage";
 
-    private static final String DESCRIPTION = "description";
+    public static final String DESCRIPTION = "description";
 
-    private static final String QUERY = "query";
+    public static final String QUERY = "query";
+
+    public static final String LINKS = "links";
+
+    public static final String APPLICATION_GEO_JSON_VALUE = "application/geo+json";
 
     private final List<IOpenSearchExtension> extensions = Lists.newArrayList();
 
@@ -65,7 +71,7 @@ public class GeojsonResponseBuilder implements IOpenSearchResponseBuilder<Featur
     @Override
     public void addMetadata(String searchId, String searchTitle, String searchDescription,
             String openSearchDescriptionUrl, SearchContext context, OpenSearchConfiguration configuration,
-            FacetPage<AbstractEntity> page) {
+            FacetPage<AbstractEntity> page, List<Link> links) {
         response.addProperty(ID, searchId);
         response.addProperty(TITLE, searchTitle);
         response.addProperty(DESCRIPTION, searchDescription);
@@ -76,15 +82,28 @@ public class GeojsonResponseBuilder implements IOpenSearchResponseBuilder<Featur
         Query query = new Query();
         context.getQueryParams().forEach((name, values) -> values.forEach(value -> query.addFilter(name, value)));
         response.addProperty(QUERY, query);
-
-        // TODO handle links
+        response.addProperty(LINKS, links.stream().map(l -> GeoJsonLink.build(l, APPLICATION_GEO_JSON_VALUE))
+                .collect(Collectors.toList()));
     }
 
     @Override
-    public void addEntity(AbstractEntity entity, List<OpenSearchParameterConfiguration> paramConfigurations) {
+    public void addEntity(AbstractEntity entity, List<OpenSearchParameterConfiguration> paramConfigurations,
+            List<Link> entityLinks) {
         Feature feature = new Feature();
         feature.setId(entity.getIpId().toString());
-
+        // All links are alternate links here in geo json format
+        // Other types like icon or enclosure are handle in extensions (example : media)
+        String title = String.format("GeoJson link for %s", entity.getIpId());
+        feature.addProperty(LINKS,
+                            entityLinks.stream()
+                                    .map(l -> GeoJsonLink.build(l, "alternate", title, APPLICATION_GEO_JSON_VALUE))
+                                    .collect(Collectors.toList()));
+        feature.addProperty(TITLE, entity.getLabel());
+        if (entity.getLastUpdate() != null) {
+            feature.addProperty("updated", entity.getLastUpdate());
+        } else {
+            feature.addProperty("updated", entity.getCreationDate());
+        }
         // Handle extensions
         for (IOpenSearchExtension extension : extensions) {
             if (extension.isActivated()) {

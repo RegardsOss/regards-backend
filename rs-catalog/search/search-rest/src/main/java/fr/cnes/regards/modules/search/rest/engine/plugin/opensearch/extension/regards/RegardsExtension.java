@@ -19,10 +19,9 @@
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards;
 
 import java.util.List;
-import java.util.Map;
 
-import com.google.common.collect.Maps;
 import com.google.gson.Gson;
+import com.rometools.rome.feed.atom.Entry;
 import com.rometools.rome.feed.module.Module;
 
 import fr.cnes.regards.framework.geojson.Feature;
@@ -61,14 +60,19 @@ public class RegardsExtension extends AbstractOpenSearchExtension {
     @Override
     public void formatGeoJsonResponseFeature(AbstractEntity entity,
             List<OpenSearchParameterConfiguration> paramConfigurations, Feature feature) {
-        Map<String, Object> properties = Maps.newHashMap();
         for (AbstractAttribute<?> property : entity.getProperties()) {
-            properties.put(property.getName(), property.getValue());
+            feature.addProperty(property.getName(), property.getValue());
         }
-        feature.setProperties(properties);
     }
 
     @Override
+    public void formatAtomResponseEntry(AbstractEntity entity,
+            List<OpenSearchParameterConfiguration> paramConfigurations, Entry entry, Gson gson) {
+        // Add module generator
+        entry.getModules().add(getAtomEntityResponseBuilder(entity, paramConfigurations, gson));
+
+    }
+
     public Module getAtomEntityResponseBuilder(AbstractEntity entity,
             List<OpenSearchParameterConfiguration> paramConfigurations, Gson gson) {
         RegardsModule rm = new RegardsModuleImpl();

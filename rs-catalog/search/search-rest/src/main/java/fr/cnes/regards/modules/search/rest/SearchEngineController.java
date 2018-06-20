@@ -22,16 +22,19 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 
 import javax.validation.Valid;
 
+import org.assertj.core.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpHeaders;
@@ -231,6 +234,16 @@ public class SearchEngineController {
      * HATEOAS link to reach dataset description
      */
     private static final String LINK_TO_DATASET_DESCRIPTION = "description";
+
+    /**
+     * Pagination property
+     */
+    private static final String PAGE_NUMBER = "page";
+
+    /**
+     * Pagination property
+     */
+    private static final String PAGE_SIZE = "size";
 
     /**
      * Engine request dispatcher
@@ -652,6 +665,48 @@ public class SearchEngineController {
         LOGGER.debug("Search datasets with dataobject criterions delegated to engine \"{}\"", engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS_RETURN_DATASETS, engineType,
                                                               headers, getDecodedParams(queryParams), pageable));
+    }
+
+    /**
+     * Build all pagination links from the ginve page results.
+     * Can generate previous, current and next page links.
+     * @param resourceService
+     * @param page
+     * @param context
+     * @return {@link Link}s
+     */
+    public static List<Link> buildPaginationLinks(IResourceService resourceService, PageImpl<?> page,
+            SearchContext context) {
+        List<Link> links = Lists.newArrayList();
+        // Build previous link
+        if (page.hasPrevious()) {
+            int pageNumber = context.getPageable().getPageNumber() - 1;
+            links.add(buildPaginationLink(resourceService, context, page.getSize(), pageNumber, Link.REL_PREVIOUS));
+        }
+        // Build current page link
+        links.add(buildPaginationLink(resourceService, context, page.getSize(), page.getNumber(), Link.REL_SELF));
+        // Build next link
+        if (page.hasNext()) {
+            int pageNumber = context.getPageable().getPageNumber() - 1;
+            links.add(buildPaginationLink(resourceService, context, page.getSize(), pageNumber, Link.REL_NEXT));
+        }
+        return links;
+    }
+
+    /**
+     *
+     * Return a contextual link
+     * @return {@link Link}, may be null.
+     */
+    public static Link buildPaginationLink(IResourceService resourceService, SearchContext context, int pageSize,
+            int pageNumber, String rel) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.putAll(context.getQueryParams());
+        SearchContext newContext = SearchContext.build(context.getSearchType(), context.getEngineType(),
+                                                       context.getHeaders(), params, context.getPageable());
+        newContext.getQueryParams().put(PAGE_NUMBER, Arrays.asList(String.valueOf(pageNumber)));
+        newContext.getQueryParams().put(PAGE_SIZE, Arrays.asList(String.valueOf(pageSize)));
+        return buildPaginationLink(resourceService, newContext, rel);
     }
 
     /**

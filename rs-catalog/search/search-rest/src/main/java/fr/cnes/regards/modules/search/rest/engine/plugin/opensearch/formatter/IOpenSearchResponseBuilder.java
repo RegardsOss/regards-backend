@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter;
 
 import java.util.List;
 
+import org.springframework.hateoas.Link;
+
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
@@ -45,14 +47,16 @@ public interface IOpenSearchResponseBuilder<R> {
      * @param page {@link FacetPage} results of the search
      */
     void addMetadata(String searchId, String searchTitle, String searchDescription, String openSearchDescriptionUrl,
-            SearchContext context, OpenSearchConfiguration configuration, FacetPage<AbstractEntity> page);
+            SearchContext context, OpenSearchConfiguration configuration, FacetPage<AbstractEntity> page,
+            List<Link> links);
 
     /**
      * Add a new response entity to the builder. An entity is a {@link AbstractEntity} from an catalog search response.
      * @param entity {@link AbstractEntity}
      * @param paramConfigurations {@link OpenSearchParameterConfiguration}s
      */
-    void addEntity(AbstractEntity entity, List<OpenSearchParameterConfiguration> paramConfigurations);
+    void addEntity(AbstractEntity entity, List<OpenSearchParameterConfiguration> paramConfigurations,
+            List<Link> entityLinks);
 
     /**
      * Clear all added {@link AbstractEntity}s to the current builder.

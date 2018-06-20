@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension;
 import java.util.List;
 
 import com.google.gson.Gson;
+import com.rometools.rome.feed.atom.Entry;
 import com.rometools.rome.feed.module.Module;
 
 import fr.cnes.regards.framework.geojson.Feature;
@@ -63,11 +64,12 @@ public interface IOpenSearchExtension {
      * Used to format opensearch response into ATOM+XML format for the current extension.
      * @param entity {@link AbstractEntity} entity to write in XML+Atom format
      * @param paramConfigurations {@link OpenSearchParameterConfiguration} opensearch parameters configurations.
+     * @param entry {@link Entry} ATOM feed entry in which add the extension format
      * @param gson {@link Gson} tool to serialize objects.
      * @return {@link Module} from rome library
      */
-    Module getAtomEntityResponseBuilder(AbstractEntity entity,
-            List<OpenSearchParameterConfiguration> paramConfigurations, Gson gson);
+    void formatAtomResponseEntry(AbstractEntity entity, List<OpenSearchParameterConfiguration> paramConfigurations,
+            Entry entry, Gson gson);
 
     /**
      * Add parameter into the given {@link Feature} for the {@link AbstractEntity} for Geojson response
