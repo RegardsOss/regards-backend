@@ -28,6 +28,7 @@ import com.rometools.rome.feed.CopyFrom;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.gml.GmlTimeModule;
 
 /**
+ * Module to handle TIME & GEO opensearch parameters into ATOM format responses.
  * com.rometools.rome module implementation to handle specifics GML Time&Geo attributes.
  * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
@@ -36,8 +37,14 @@ public class GmlTimeModuleImpl extends GeoRSSModule implements GmlTimeModule, Se
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Geo time start
+     */
     private OffsetDateTime startDate;
 
+    /**
+     * Geo time stop
+     */
     private OffsetDateTime stopDate;
 
     private Gson gson;

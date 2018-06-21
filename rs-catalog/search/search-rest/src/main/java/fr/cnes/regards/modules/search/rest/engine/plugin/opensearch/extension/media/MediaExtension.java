@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.media;
 
 import java.net.MalformedURLException;
@@ -64,8 +82,8 @@ public class MediaExtension extends AbstractExtension {
     public static final String ATOM_MEDIA_CAT_REF = "http://www.opengis.net/spec/EOMPOM/1.0";
 
     @Override
-    public void formatGeoJsonResponseFeature(AbstractEntity entity,
-            List<ParameterConfiguration> paramConfigurations, Feature feature) {
+    public void formatGeoJsonResponseFeature(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+            Feature feature) {
         Multimap<DataType, DataFile> medias = getMedias(entity);
         Object obj = feature.getProperties().get("links");
         if (obj instanceof List<?>) {
@@ -86,8 +104,8 @@ public class MediaExtension extends AbstractExtension {
     }
 
     @Override
-    public void formatAtomResponseEntry(AbstractEntity entity,
-            List<ParameterConfiguration> paramConfigurations, Entry entry, Gson gson) {
+    public void formatAtomResponseEntry(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+            Entry entry, Gson gson) {
         Multimap<DataType, DataFile> medias = getMedias(entity);
         // Add module generator
         Module mediaMod = getAtomEntityResponseBuilder(medias);

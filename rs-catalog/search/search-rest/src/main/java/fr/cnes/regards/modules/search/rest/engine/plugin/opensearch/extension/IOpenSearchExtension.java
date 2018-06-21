@@ -35,9 +35,10 @@ import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
 /**
  * Interface to define a new OpenSearch extension.
  * Extension should define method to : <ul>
- *  <li>Generate {@link OpenSearchParameter}s for the given extension</li>
- *  <li>Generate OpenSearch entity {@link Entry} builder for ATOM+XML format</li>
- *  <li>Generate OpenSearch entity (@link Feature} response in GEO+JSON format</li>
+ *  <li>Handle activation of the extension.</li>
+ *  <li>Generate {@link OpenSearchParameter}s for the given extension. Used to write the Opensearch descriptor xml file.</li>
+ *  <li>Generate OpenSearch entity {@link Entry} builder for ATOM+XML format. Used to format Opensearch search responses in ATOM.</li>
+ *  <li>Generate OpenSearch entity (@link Feature} response in GEO+JSON format. Used to format Opensearch search responses in GEOJson.</li>
  *  </ul>
  * @author Sébastien Binda
  */
@@ -66,8 +67,8 @@ public interface IOpenSearchExtension {
      * @param gson {@link Gson} tool to serialize objects.
      * @return {@link Module} from rome library
      */
-    void formatAtomResponseEntry(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
-            Entry entry, Gson gson);
+    void formatAtomResponseEntry(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations, Entry entry,
+            Gson gson);
 
     /**
      * Add parameter into the given {@link Feature} for the {@link AbstractEntity} for Geojson response

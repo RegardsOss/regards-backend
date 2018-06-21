@@ -45,15 +45,14 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.Configuratio
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IResponseBuilder;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.gml.impl.GmlTimeModuleGenerator;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.impl.RegardsModuleGenerator;
 
 /**
- * Build open search responses in ATOM format throught rome library handling :<ul>
- * <li>parameters extension</li>
- * <li>time & geo extension {@link GmlTimeModuleGenerator}</li>
- * <li>regards extension {@link RegardsModuleGenerator}</li>
+ * Build open search responses in ATOM format through rome library handling :
+ * <ul>
+ * <li>Opensearch parameters extension</li>
+ * <li>{@link IOpenSearchExtension}s for additional extensions like geo+time or media.</li>
  * </ul>
+ *
  * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
  */

@@ -37,12 +37,16 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.re
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.RegardsModule;
 
 /**
+ * Module generator to handle specific REGARDS models opensearch parameters into ATOM format responses.
  * com.rometools.rome module generator to handle specifics regards model attributes.
  * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
  */
 public class RegardsModuleGenerator implements ModuleGenerator {
 
+    /**
+     * REGARDS namespace for opensearch parameters
+     */
     public static final Namespace REGARDS_NS = Namespace.getNamespace(RegardsExtension.REGARDS_NS, RegardsModule.URI);
 
     @Override
@@ -91,6 +95,7 @@ public class RegardsModuleGenerator implements ModuleGenerator {
         final RegardsModule regardsModule = (RegardsModule) module;
 
         // Add standard attributs
+        // Geometry is not added here. This standard attribute should be handled by the Time&Geo extension
         AbstractEntity entity = regardsModule.getEntity();
         addStandardElement(element, LABEL, entity.getLabel(), regardsModule.getGsonBuilder());
         addStandardElement(element, IPID, entity.getIpId(), regardsModule.getGsonBuilder());

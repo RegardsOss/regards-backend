@@ -22,6 +22,10 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 
+/**
+ * UnsupportedMediaTypesException
+ * @author Sébastien Binda
+ */
 @SuppressWarnings("serial")
 public class UnsupportedMediaTypesException extends Exception {
 

@@ -28,7 +28,10 @@ import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.RegardsModule;
 
 /**
+ * Module to handle specific REGARDS models opensearch parameters into ATOM format responses.
  * com.rometools.rome module implementation to handle specifics regards model attributes.
+ * This module handles all Opensearch parameters with regards namespace or not configured.
+ *
  * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
  */

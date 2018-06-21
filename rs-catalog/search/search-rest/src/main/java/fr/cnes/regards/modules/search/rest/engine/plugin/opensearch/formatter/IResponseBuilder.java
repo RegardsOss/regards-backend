@@ -45,18 +45,18 @@ public interface IResponseBuilder<R> {
      * @param openSearchDescriptionUrl {@link String}
      * @param context {@link SearchContext}
      * @param page {@link FacetPage} results of the search
+     * @param links {@link Link}s of the entities collection
      */
     void addMetadata(String searchId, String searchTitle, String searchDescription, String openSearchDescriptionUrl,
-            SearchContext context, Configuration configuration, FacetPage<AbstractEntity> page,
-            List<Link> links);
+            SearchContext context, Configuration configuration, FacetPage<AbstractEntity> page, List<Link> links);
 
     /**
      * Add a new response entity to the builder. An entity is a {@link AbstractEntity} from an catalog search response.
      * @param entity {@link AbstractEntity}
      * @param paramConfigurations {@link ParameterConfiguration}s
+     * @parma entityLinks {@link Link}s of the entity
      */
-    void addEntity(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
-            List<Link> entityLinks);
+    void addEntity(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations, List<Link> entityLinks);
 
     /**
      * Clear all added {@link AbstractEntity}s to the current builder.

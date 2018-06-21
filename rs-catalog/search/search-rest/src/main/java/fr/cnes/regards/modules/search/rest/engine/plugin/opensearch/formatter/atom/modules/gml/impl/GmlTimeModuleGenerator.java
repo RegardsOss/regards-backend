@@ -34,7 +34,7 @@ import com.rometools.rome.io.ModuleGenerator;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.gml.GmlTimeModule;
 
 /**
- * Module generator to handle specifics regards model attributes.
+ * Module generator to handle TIME & GEO opensearch parameters into ATOM format responses.
  * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
  */

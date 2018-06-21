@@ -23,7 +23,6 @@ import java.util.List;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
 
@@ -41,7 +40,6 @@ public class AttributeCriterionBuilder {
      * @param attributeName {@link AttributeModel#getName()}
      * @param operator {@link ParameterOperator} to apply for the current attribute search
      * @param values {@link String}s search values.
-     * @param finder {@link IAttributeFinder}
      * @return {@link ICriterion}
      * @throws UnsupportedCriterionOperator
      */
@@ -94,7 +92,7 @@ public class AttributeCriterionBuilder {
      * Build an Boolean {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of boolean parameter value
-     * @param operator Operator for search
+     * @param operator {@link ParameterOperator} for search
      * @return {@link ICriterion}
      * @throws UnsupportedCriterionOperator
      */
@@ -117,7 +115,7 @@ public class AttributeCriterionBuilder {
      * Build an Date {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of date parameter value
-     * @param operator Operator for search
+     * @param operator {@link ParameterOperator} for search
      * @return {@link ICriterion}
      * @throws OpenSearchUnknownParameter
      */
@@ -141,7 +139,7 @@ public class AttributeCriterionBuilder {
      * Build an Integer {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of integer parameter value
-     * @param operator Operator for search
+     * @param operator {@link ParameterOperator} for search
      * @return {@link ICriterion}
      * @throws OpenSearchUnknownParameter
      */
@@ -176,7 +174,7 @@ public class AttributeCriterionBuilder {
      * Build an Double {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of double parameter value
-     * @param operator Operator for search
+     * @param operator {@link ParameterOperator} for search
      * @return {@link ICriterion}
      */
     private static ICriterion buildDoubleCrit(String attribute, String value, ParameterOperator operator) {
@@ -200,7 +198,7 @@ public class AttributeCriterionBuilder {
      * Build an Long {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of long parameter value
-     * @param operator Operator for search
+     * @param operator {@link ParameterOperator} for search
      * @return {@link ICriterion}
      */
     private static ICriterion buildLongCrit(String attribute, String value, ParameterOperator operator) {
@@ -234,7 +232,7 @@ public class AttributeCriterionBuilder {
      * Build an String {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of parameter value
-     * @param operator Operator for search
+     * @param operator {@link ParameterOperator} for search
      * @return {@link ICriterion}
      * @throws UnsupportedCriterionOperator
      */
@@ -257,7 +255,7 @@ public class AttributeCriterionBuilder {
      * Build a String {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of parameter value
-     * @param operator Operator for search
+     * @param operator {@link ParameterOperator} for search
      * @return {@link ICriterion}
      * @throws UnsupportedCriterionOperator
      */

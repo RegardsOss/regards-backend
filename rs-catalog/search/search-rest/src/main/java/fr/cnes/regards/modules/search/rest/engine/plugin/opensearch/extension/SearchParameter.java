@@ -30,7 +30,6 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterCon
  * {@link ParameterConfiguration} is used to get the opensearch configuration for the attribute
  * {@link String}s are the values to apply to the attribute in {@link ICriterion} to run search.
  * @author Sébastien Binda
- *
  */
 public class SearchParameter {
 

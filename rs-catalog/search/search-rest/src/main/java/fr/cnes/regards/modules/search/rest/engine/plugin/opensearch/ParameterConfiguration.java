@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 
 /**
- * OpenSearchParameterConfiguration
+ * Configuration of an opensearch parameter.
  * @author Sébastien Binda
  */
 public class ParameterConfiguration {

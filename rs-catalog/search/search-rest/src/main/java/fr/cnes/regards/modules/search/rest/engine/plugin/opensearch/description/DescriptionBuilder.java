@@ -33,7 +33,6 @@ import org.elasticsearch.search.aggregations.metrics.stats.ParsedStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
@@ -81,12 +80,6 @@ public class DescriptionBuilder {
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(DescriptionBuilder.class);
-
-    /**
-     * microservice name
-     */
-    @Value("${spring.application.name}")
-    private String microserviceName;
 
     /**
      * {@link IProjectsClient} instance

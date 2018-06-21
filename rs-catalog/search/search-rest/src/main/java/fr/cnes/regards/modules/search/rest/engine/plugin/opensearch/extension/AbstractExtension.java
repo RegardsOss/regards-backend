@@ -28,6 +28,14 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
 
+/**
+ * Abstract class for Opensearch parameters extensions.
+ * This class handles :<ul>
+ * <li> The activation of the extension</li>
+ * <li> The support of search parameters for the extension.</li>
+ * </ul>
+ * @author Sébastien Binda
+ */
 public abstract class AbstractExtension implements IOpenSearchExtension {
 
     /**
