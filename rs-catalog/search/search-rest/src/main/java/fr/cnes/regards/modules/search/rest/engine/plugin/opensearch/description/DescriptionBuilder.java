@@ -59,8 +59,8 @@ import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchConfiguration;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.Configuration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.schema.QueryType;
@@ -75,12 +75,12 @@ import fr.cnes.regards.modules.search.service.SearchException;
  * @author Sébastien Binda
  */
 @Component
-public class OpenSearchDescriptionBuilder {
+public class DescriptionBuilder {
 
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(OpenSearchDescriptionBuilder.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DescriptionBuilder.class);
 
     /**
      * microservice name
@@ -116,18 +116,18 @@ public class OpenSearchDescriptionBuilder {
      * Global configuration for description metadatas
      */
     @Autowired
-    public OpenSearchConfiguration configuration;
+    public Configuration configuration;
 
     /**
      * Build an OpenSearch descriptor for the current tenant(i.e. project) on the given path and entity type
      * @param context {@link SearchContext}
      * @param extensions {@link IOpenSearchExtension} extensions to use
-     * @param parameterConfs {@link OpenSearchParameterConfiguration}s parameters configuration.
+     * @param parameterConfs {@link ParameterConfiguration}s parameters configuration.
      * @return {@link OpenSearchDescription}
      * @throws UnsupportedEncodingException
      */
     public OpenSearchDescription build(SearchContext context, ICriterion criterion,
-            List<IOpenSearchExtension> extensions, List<OpenSearchParameterConfiguration> parameterConfs) {
+            List<IOpenSearchExtension> extensions, List<ParameterConfiguration> parameterConfs) {
 
         // Retrieve informations about current projet
         String currentTenant = tenantResolver.getTenant();
@@ -294,12 +294,12 @@ public class OpenSearchDescriptionBuilder {
      * {@link QueryableAttribute} is the attribute available informations for query as boundaries for example.
      * @param criterion {@link ICriterion} search criterion
      * @param searchType {@link SearchType}
-     * @param parameterConfs {@link OpenSearchParameterConfiguration} configured parameters.
+     * @param parameterConfs {@link ParameterConfiguration} configured parameters.
      * @param pCurrentTenant {@link String} tenant or project.
      * @return {@link Map}<{@link AttributeModel}, {@link QueryableAttribute}>
      */
     private List<DescriptionParameter> getDescParameters(ICriterion criterion, SearchType searchType,
-            List<OpenSearchParameterConfiguration> parameterConfs, String pCurrentTenant) {
+            List<ParameterConfiguration> parameterConfs, String pCurrentTenant) {
 
         List<DescriptionParameter> parameters = Lists.newArrayList();
 
@@ -318,7 +318,7 @@ public class OpenSearchDescriptionBuilder {
             List<QueryableAttribute> queryableAttributes = Lists.newArrayList();
             for (ModelAttrAssoc maa : assocsResponse.getBody()) {
                 maa.getAttribute().buildJsonPath(StaticProperties.PROPERTIES);
-                Optional<OpenSearchParameterConfiguration> conf = parameterConfs.stream()
+                Optional<ParameterConfiguration> conf = parameterConfs.stream()
                         .filter(pc -> pc.getAttributeModelJsonPath().equals(maa.getAttribute().getJsonPath()))
                         .findFirst();
                 QueryableAttribute queryableAtt = createEmptyQueryableAttribute(maa.getAttribute(), conf);
@@ -341,13 +341,13 @@ public class OpenSearchDescriptionBuilder {
 
     /**
      * Create an new empty {@link QueryableAttribute} object for the given {@link AttributeModel}
-     * and the associated {@link OpenSearchParameterConfiguration}
+     * and the associated {@link ParameterConfiguration}
      * @param att {@link AttributeModel}
-     * @param conf {@link OpenSearchParameterConfiguration}
+     * @param conf {@link ParameterConfiguration}
      * @return {@link QueryableAttribute}
      */
     private QueryableAttribute createEmptyQueryableAttribute(AttributeModel att,
-            Optional<OpenSearchParameterConfiguration> conf) {
+            Optional<ParameterConfiguration> conf) {
         if (conf.isPresent()) {
             return new QueryableAttribute(att.getJsonPath(), null, att.isTextAttribute(),
                     conf.get().getOptionsCardinality());

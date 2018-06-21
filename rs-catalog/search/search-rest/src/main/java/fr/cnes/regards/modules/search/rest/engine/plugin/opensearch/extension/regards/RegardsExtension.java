@@ -31,11 +31,11 @@ import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.AttributeCriterionBuilder;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterOperator;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.AbstractOpenSearchExtension;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.AbstractExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.SearchParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.RegardsModule;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.impl.RegardsModuleImpl;
@@ -52,7 +52,7 @@ import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
  *
  * @author Sébastien Binda
  */
-public class RegardsExtension extends AbstractOpenSearchExtension {
+public class RegardsExtension extends AbstractExtension {
 
     /**
      * REGARDS namespace for parameters of current extension.
@@ -61,7 +61,7 @@ public class RegardsExtension extends AbstractOpenSearchExtension {
 
     @Override
     public void formatGeoJsonResponseFeature(AbstractEntity entity,
-            List<OpenSearchParameterConfiguration> paramConfigurations, Feature feature) {
+            List<ParameterConfiguration> paramConfigurations, Feature feature) {
         for (AbstractAttribute<?> property : entity.getProperties()) {
             feature.addProperty(property.getName(), property.getValue());
         }
@@ -69,14 +69,14 @@ public class RegardsExtension extends AbstractOpenSearchExtension {
 
     @Override
     public void formatAtomResponseEntry(AbstractEntity entity,
-            List<OpenSearchParameterConfiguration> paramConfigurations, Entry entry, Gson gson) {
+            List<ParameterConfiguration> paramConfigurations, Entry entry, Gson gson) {
         // Add module generator
         entry.getModules().add(getAtomEntityResponseBuilder(entity, paramConfigurations, gson));
 
     }
 
     public Module getAtomEntityResponseBuilder(AbstractEntity entity,
-            List<OpenSearchParameterConfiguration> paramConfigurations, Gson gson) {
+            List<ParameterConfiguration> paramConfigurations, Gson gson) {
         RegardsModule rm = new RegardsModuleImpl();
         rm.setGsonBuilder(gson);
         rm.setEntity(entity);

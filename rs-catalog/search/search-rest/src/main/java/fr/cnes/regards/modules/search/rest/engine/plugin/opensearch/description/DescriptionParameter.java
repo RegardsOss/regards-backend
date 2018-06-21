@@ -2,17 +2,17 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description
 
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 
 public class DescriptionParameter {
 
     private AttributeModel attributeModel;
 
-    private OpenSearchParameterConfiguration configuration;
+    private ParameterConfiguration configuration;
 
     private QueryableAttribute queryableAttribute;
 
-    public DescriptionParameter(AttributeModel attributeModel, OpenSearchParameterConfiguration configuration,
+    public DescriptionParameter(AttributeModel attributeModel, ParameterConfiguration configuration,
             QueryableAttribute queryableAttribute) {
         super();
         this.attributeModel = attributeModel;
@@ -28,11 +28,11 @@ public class DescriptionParameter {
         this.attributeModel = attributeModel;
     }
 
-    public OpenSearchParameterConfiguration getConfiguration() {
+    public ParameterConfiguration getConfiguration() {
         return configuration;
     }
 
-    public void setConfiguration(OpenSearchParameterConfiguration configuration) {
+    public void setConfiguration(ParameterConfiguration configuration) {
         this.configuration = configuration;
     }
 

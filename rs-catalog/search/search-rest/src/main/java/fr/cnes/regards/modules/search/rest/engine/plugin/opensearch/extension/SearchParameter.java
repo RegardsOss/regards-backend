@@ -22,12 +22,12 @@ import java.util.List;
 
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 
 /**
  * Search parameter for an opensearch standard request.
  * {@link AttributeModel} is used to define which attribute the parameter is about
- * {@link OpenSearchParameterConfiguration} is used to get the opensearch configuration for the attribute
+ * {@link ParameterConfiguration} is used to get the opensearch configuration for the attribute
  * {@link String}s are the values to apply to the attribute in {@link ICriterion} to run search.
  * @author Sébastien Binda
  *
@@ -47,14 +47,14 @@ public class SearchParameter {
     /**
      * Define opensearch configuration for the attribute
      */
-    private OpenSearchParameterConfiguration configuration;
+    private ParameterConfiguration configuration;
 
     /**
      * Values to apply to the attribute in {@link ICriterion} to run search.
      */
     private List<String> searchValues;
 
-    public SearchParameter(String name, AttributeModel attributeModel, OpenSearchParameterConfiguration configuration,
+    public SearchParameter(String name, AttributeModel attributeModel, ParameterConfiguration configuration,
             List<String> searchValues) {
         super();
         this.setName(name);
@@ -71,11 +71,11 @@ public class SearchParameter {
         this.attributeModel = attributeModel;
     }
 
-    public OpenSearchParameterConfiguration getConfiguration() {
+    public ParameterConfiguration getConfiguration() {
         return configuration;
     }
 
-    public void setConfiguration(OpenSearchParameterConfiguration configuration) {
+    public void setConfiguration(ParameterConfiguration configuration) {
         this.configuration = configuration;
     }
 

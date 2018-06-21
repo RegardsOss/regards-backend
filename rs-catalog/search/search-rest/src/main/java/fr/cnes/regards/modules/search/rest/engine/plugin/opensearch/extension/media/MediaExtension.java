@@ -30,10 +30,10 @@ import fr.cnes.regards.modules.entities.domain.AbstractDataEntity;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.AbstractOpenSearchExtension;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.AbstractExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.SearchParameter;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
  *
  * @author Sébastien Binda
  */
-public class MediaExtension extends AbstractOpenSearchExtension {
+public class MediaExtension extends AbstractExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MediaExtension.class);
 
@@ -65,7 +65,7 @@ public class MediaExtension extends AbstractOpenSearchExtension {
 
     @Override
     public void formatGeoJsonResponseFeature(AbstractEntity entity,
-            List<OpenSearchParameterConfiguration> paramConfigurations, Feature feature) {
+            List<ParameterConfiguration> paramConfigurations, Feature feature) {
         Multimap<DataType, DataFile> medias = getMedias(entity);
         Object obj = feature.getProperties().get("links");
         if (obj instanceof List<?>) {
@@ -87,7 +87,7 @@ public class MediaExtension extends AbstractOpenSearchExtension {
 
     @Override
     public void formatAtomResponseEntry(AbstractEntity entity,
-            List<OpenSearchParameterConfiguration> paramConfigurations, Entry entry, Gson gson) {
+            List<ParameterConfiguration> paramConfigurations, Entry entry, Gson gson) {
         Multimap<DataType, DataFile> medias = getMedias(entity);
         // Add module generator
         Module mediaMod = getAtomEntityResponseBuilder(medias);

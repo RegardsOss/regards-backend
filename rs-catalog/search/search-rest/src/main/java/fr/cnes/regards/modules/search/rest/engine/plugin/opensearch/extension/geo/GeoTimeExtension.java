@@ -43,11 +43,11 @@ import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.AttributeCriterionBuilder;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterOperator;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.AbstractOpenSearchExtension;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.AbstractExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.SearchParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.gml.impl.GmlTimeModuleImpl;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
@@ -60,7 +60,7 @@ import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
  *
  * @author Sébastien Binda
  */
-public class GeoTimeExtension extends AbstractOpenSearchExtension {
+public class GeoTimeExtension extends AbstractExtension {
 
     public static final String TIME_NS = "time";
 
@@ -86,13 +86,13 @@ public class GeoTimeExtension extends AbstractOpenSearchExtension {
 
     @Override
     public void formatGeoJsonResponseFeature(AbstractEntity entity,
-            List<OpenSearchParameterConfiguration> paramConfigurations, Feature feature) {
+            List<ParameterConfiguration> paramConfigurations, Feature feature) {
         feature.setGeometry(entity.getGeometry());
     }
 
     @Override
     public void formatAtomResponseEntry(AbstractEntity entity,
-            List<OpenSearchParameterConfiguration> paramConfigurations, Entry entry, Gson gson) {
+            List<ParameterConfiguration> paramConfigurations, Entry entry, Gson gson) {
         // Add module generator
         entry.getModules().add(getAtomEntityResponseBuilder(entity, paramConfigurations, gson));
 
@@ -100,7 +100,7 @@ public class GeoTimeExtension extends AbstractOpenSearchExtension {
 
     @Override
     public void applyToDescriptionParameter(OpenSearchParameter parameter, DescriptionParameter descParameter) {
-        OpenSearchParameterConfiguration conf = descParameter.getConfiguration();
+        ParameterConfiguration conf = descParameter.getConfiguration();
         if ((conf != null) && TIME_NS.equals(conf.getNamespace()) && TIME_START_PARAMETER.equals(conf.getName())) {
             parameter.setValue(String.format("{%s:%s}", TIME_NS, TIME_START_PARAMETER));
         }
@@ -189,13 +189,13 @@ public class GeoTimeExtension extends AbstractOpenSearchExtension {
     }
 
     private Module getAtomEntityResponseBuilder(AbstractEntity entity,
-            List<OpenSearchParameterConfiguration> paramConfigurations, Gson gson) {
+            List<ParameterConfiguration> paramConfigurations, Gson gson) {
         // Add GML with time module to handle geo & time extension
         GmlTimeModuleImpl gmlMod = new GmlTimeModuleImpl();
-        OpenSearchParameterConfiguration timeStartParameterConf = paramConfigurations.stream()
+        ParameterConfiguration timeStartParameterConf = paramConfigurations.stream()
                 .filter(c -> TIME_NS.equals(c.getNamespace()) && TIME_START_PARAMETER.equals(c.getName())).findFirst()
                 .orElse(null);
-        OpenSearchParameterConfiguration timeEndParameterConf = paramConfigurations.stream()
+        ParameterConfiguration timeEndParameterConf = paramConfigurations.stream()
                 .filter(c -> TIME_NS.equals(c.getNamespace()) && TIME_END_PARAMETER.equals(c.getName())).findFirst()
                 .orElse(null);
         if ((timeStartParameterConf != null) && (timeEndParameterConf != null)) {

@@ -28,12 +28,12 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
 
-public abstract class AbstractOpenSearchExtension implements IOpenSearchExtension {
+public abstract class AbstractExtension implements IOpenSearchExtension {
 
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractOpenSearchExtension.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractExtension.class);
 
     /**
      * Does the current extension activated ?

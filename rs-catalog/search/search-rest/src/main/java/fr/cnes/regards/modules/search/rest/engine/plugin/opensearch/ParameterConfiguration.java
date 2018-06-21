@@ -18,37 +18,48 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 
 /**
  * OpenSearchParameterConfiguration
  * @author Sébastien Binda
  */
-public class OpenSearchParameterConfiguration {
+public class ParameterConfiguration {
 
     /**
      * Opensearch parameter name
      */
+    @PluginParameter(name = "name", label = "Opensearch name of the parameter",
+            description = "Name that will be handled by opensearch parameters extensions. Example in time extension the parameter {time:start} name is start")
     private String name;
 
     /**
      * Opensearch parameter namespace
      */
+    @PluginParameter(name = "namespace", label = "Opensearch namespace of the parameter",
+            description = "Namespace that will be handled by opensearch parameters extensions. Example in time extension the parameter {time:start} namespace is time")
     private String namespace;
 
     /**
      * Does the parameter handle the option values when writting the description xml file.
      */
+    @PluginParameter(name = "optionsEnabled", label = "Enable generation of possible values.",
+            description = "Enable the generation of possible values of the parameter in the opensearch descriptor xml file. Be carful, this option can rise the generation time of the opensearch descriptor xml file.")
     private boolean optionsEnabled;
 
     /**
      * Maximum number of options or -1 for all values.
      */
+    @PluginParameter(name = "optionsEnabled", label = "",
+            description = "Only used if the optionsEnabled parameter is set to TRUE. Limit the number of possbile values of the parameter in the opensearch descriptor xml file.")
     private int optionsCardinality;
 
     /**
      * Regards {@link AttributeModel} json path.
      */
+    @PluginParameter(name = "attributeModelJsonPath", label = "Full json path of associated REGARDS attribute",
+            description = "Full jsonpath is  : properties.<optional fragment name>.<attribute name>")
     private String attributeModelJsonPath;
 
     public String getName() {

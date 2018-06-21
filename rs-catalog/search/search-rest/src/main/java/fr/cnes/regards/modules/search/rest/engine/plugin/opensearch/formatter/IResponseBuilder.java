@@ -25,8 +25,8 @@ import org.springframework.hateoas.Link;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchConfiguration;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.Configuration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
 
 /**
@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IO
  *
  * @param <R> Search Output result format.
  */
-public interface IOpenSearchResponseBuilder<R> {
+public interface IResponseBuilder<R> {
 
     /**
      * Add metadatas to the global search results collection.
@@ -47,15 +47,15 @@ public interface IOpenSearchResponseBuilder<R> {
      * @param page {@link FacetPage} results of the search
      */
     void addMetadata(String searchId, String searchTitle, String searchDescription, String openSearchDescriptionUrl,
-            SearchContext context, OpenSearchConfiguration configuration, FacetPage<AbstractEntity> page,
+            SearchContext context, Configuration configuration, FacetPage<AbstractEntity> page,
             List<Link> links);
 
     /**
      * Add a new response entity to the builder. An entity is a {@link AbstractEntity} from an catalog search response.
      * @param entity {@link AbstractEntity}
-     * @param paramConfigurations {@link OpenSearchParameterConfiguration}s
+     * @param paramConfigurations {@link ParameterConfiguration}s
      */
-    void addEntity(AbstractEntity entity, List<OpenSearchParameterConfiguration> paramConfigurations,
+    void addEntity(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
             List<Link> entityLinks);
 
     /**

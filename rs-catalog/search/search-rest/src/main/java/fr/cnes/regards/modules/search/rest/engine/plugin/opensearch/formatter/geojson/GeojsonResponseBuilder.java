@@ -32,10 +32,10 @@ import fr.cnes.regards.framework.geojson.Query;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchConfiguration;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.Configuration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IOpenSearchResponseBuilder;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IResponseBuilder;
 
 /**
  * Build open search responses in GEO+Json format by creating a {@link FeatureWithPropertiesCollection} handling :<ul>
@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IO
  * </ul>
  * @author Sébastien Binda
  */
-public class GeojsonResponseBuilder implements IOpenSearchResponseBuilder<FeatureWithPropertiesCollection> {
+public class GeojsonResponseBuilder implements IResponseBuilder<FeatureWithPropertiesCollection> {
 
     /**
      * List of opensearch extensions to apply to the current geojson response FeatureCollection builder
@@ -58,7 +58,7 @@ public class GeojsonResponseBuilder implements IOpenSearchResponseBuilder<Featur
 
     @Override
     public void addMetadata(String searchId, String searchTitle, String searchDescription,
-            String openSearchDescriptionUrl, SearchContext context, OpenSearchConfiguration configuration,
+            String openSearchDescriptionUrl, SearchContext context, Configuration configuration,
             FacetPage<AbstractEntity> page, List<Link> links) {
         response.setId(searchId);
         response.setTitle(searchTitle);
@@ -74,7 +74,7 @@ public class GeojsonResponseBuilder implements IOpenSearchResponseBuilder<Featur
     }
 
     @Override
-    public void addEntity(AbstractEntity entity, List<OpenSearchParameterConfiguration> paramConfigurations,
+    public void addEntity(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
             List<Link> entityLinks) {
         Feature feature = new Feature();
         feature.setId(entity.getIpId().toString());

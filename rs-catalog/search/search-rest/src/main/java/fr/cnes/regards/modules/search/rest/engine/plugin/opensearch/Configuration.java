@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConfigurationProperties(prefix = "opensearch")
-public class OpenSearchConfiguration {
+public class Configuration {
 
     private String queryParameterName = "q";
 
@@ -47,7 +47,7 @@ public class OpenSearchConfiguration {
 
     private String language = "en";
 
-    public OpenSearchConfiguration() {
+    public Configuration() {
     }
 
     public String getQueryParameterName() {

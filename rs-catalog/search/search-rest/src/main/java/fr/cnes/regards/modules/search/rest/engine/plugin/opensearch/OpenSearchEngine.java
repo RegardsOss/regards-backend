@@ -51,13 +51,13 @@ import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.OpenSearchDescriptionBuilder;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedMediaTypesException;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.SearchParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.media.MediaExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards.RegardsExtension;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IOpenSearchResponseBuilder;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IResponseBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.AtomResponseBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.geojson.GeojsonResponseBuilder;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
@@ -100,7 +100,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     private IOpenSearchService openSearchService;
 
     @Autowired
-    private OpenSearchDescriptionBuilder descriptionBuilder;
+    private DescriptionBuilder descriptionBuilder;
 
     /**
      * Business search service
@@ -112,7 +112,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     private Gson gson;
 
     @Autowired
-    private OpenSearchConfiguration configuration;
+    private Configuration configuration;
 
     /**
      * To build resource links
@@ -140,26 +140,26 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     private MediaExtension mediaExtension;
 
     @PluginParameter(name = OpenSearchEngine.PARAMETERS_CONFIGURATION, label = "Parameters configuration")
-    private final List<OpenSearchParameterConfiguration> paramConfigurations = Lists.newArrayList();
+    private final List<ParameterConfiguration> paramConfigurations = Lists.newArrayList();
 
     /**
      * TODO : To remove !!!
      */
     public void init() {
         paramConfigurations.clear();
-        OpenSearchParameterConfiguration planetParameter = new OpenSearchParameterConfiguration();
+        ParameterConfiguration planetParameter = new ParameterConfiguration();
         planetParameter.setAttributeModelJsonPath("properties.planet");
         planetParameter.setName("planet");
         planetParameter.setOptionsEnabled(true);
         planetParameter.setOptionsCardinality(10);
         paramConfigurations.add(planetParameter);
 
-        OpenSearchParameterConfiguration startTimeParameter = new OpenSearchParameterConfiguration();
+        ParameterConfiguration startTimeParameter = new ParameterConfiguration();
         startTimeParameter.setAttributeModelJsonPath("properties.TimePeriod.startDate");
         startTimeParameter.setName("start");
         startTimeParameter.setNamespace("time");
         paramConfigurations.add(startTimeParameter);
-        OpenSearchParameterConfiguration endTimeParameter = new OpenSearchParameterConfiguration();
+        ParameterConfiguration endTimeParameter = new ParameterConfiguration();
         endTimeParameter.setAttributeModelJsonPath("properties.TimePeriod.stopDate");
         endTimeParameter.setName("end");
         endTimeParameter.setNamespace("time");
@@ -248,7 +248,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      */
     private Object formatResponse(FacetPage<AbstractEntity> page, SearchContext context)
             throws UnsupportedMediaTypesException {
-        IOpenSearchResponseBuilder<?> builder = getBuilder(context);
+        IResponseBuilder<?> builder = getBuilder(context);
         // TODO : Replace with real url
         builder.addMetadata(UUID.randomUUID().toString(), searchTitle, searchDescription,
                             "http://www.regards.com/opensearch-description.xml", context, configuration, page,
@@ -284,7 +284,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                     attributeModel.setJsonPath(attributeModel.getName());
                 }
                 // Search configuration if any
-                OpenSearchParameterConfiguration conf = paramConfigurations.stream()
+                ParameterConfiguration conf = paramConfigurations.stream()
                         .filter(p -> p.getAttributeModelJsonPath().equals(attributeModel.getJsonPath())).findFirst()
                         .orElse(null);
                 searchParameters
@@ -301,11 +301,11 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     /**
      * Retrieve a response builder from existing ones matching the {@link MediaType} from the {@link SearchContext}
      * @param context {@link SearchContext}
-     * @return {@link IOpenSearchResponseBuilder}
+     * @return {@link IResponseBuilder}
      * @throws UnsupportedMediaTypesException
      */
-    private IOpenSearchResponseBuilder<?> getBuilder(SearchContext context) throws UnsupportedMediaTypesException {
-        IOpenSearchResponseBuilder<?> responseBuilder;
+    private IResponseBuilder<?> getBuilder(SearchContext context) throws UnsupportedMediaTypesException {
+        IResponseBuilder<?> responseBuilder;
         if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_ATOM_XML)) {
             responseBuilder = new AtomResponseBuilder(gson);
         } else if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_JSON)) {

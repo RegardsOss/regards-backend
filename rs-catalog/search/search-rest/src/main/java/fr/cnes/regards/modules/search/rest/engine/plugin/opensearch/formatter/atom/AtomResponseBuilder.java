@@ -41,10 +41,10 @@ import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.OpenSearchMediaType;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchConfiguration;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.Configuration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IOpenSearchResponseBuilder;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IResponseBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.gml.impl.GmlTimeModuleGenerator;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.impl.RegardsModuleGenerator;
 
@@ -57,7 +57,7 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.at
  * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
  */
-public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
+public class AtomResponseBuilder implements IResponseBuilder<Feed> {
 
     /**
      * ATOM format version
@@ -79,7 +79,7 @@ public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
 
     @Override
     public void addMetadata(String searchId, String searchTitle, String searchDescription,
-            String openSearchDescriptionUrl, SearchContext context, OpenSearchConfiguration configuration,
+            String openSearchDescriptionUrl, SearchContext context, Configuration configuration,
             FacetPage<AbstractEntity> page, List<org.springframework.hateoas.Link> links) {
         // Fee general informations
         feed.setId(searchId);
@@ -147,7 +147,7 @@ public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
     }
 
     @Override
-    public void addEntity(AbstractEntity entity, List<OpenSearchParameterConfiguration> paramConfigurations,
+    public void addEntity(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
             List<org.springframework.hateoas.Link> entityLinks) {
         Entry entry = new Entry();
         entry.setId(entity.getIpId().toString());
