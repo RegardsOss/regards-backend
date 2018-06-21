@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.search.rest.engine;
 
 import java.util.Arrays;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,7 @@ import com.google.common.net.HttpHeaders;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
 
@@ -105,6 +107,22 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
         performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING_EXTRA,
                           customizer, "open search description error", ENGINE_TYPE, OpenSearchEngine.EXTRA_DESCRIPTION);
+    }
+
+    @Test
+    public void getDatasetDescription() {
+
+        // Retrieve dataset URN
+        Dataset solarSystem = getAstroObject(SOLAR_SYSTEM);
+        Assert.assertNotNull(solarSystem);
+
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
+        performDefaultGet(SearchEngineController.TYPE_MAPPING
+                + SearchEngineController.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA, customizer,
+                          "open search description error", ENGINE_TYPE, solarSystem.getIpId().toString(),
+                          OpenSearchEngine.EXTRA_DESCRIPTION);
     }
 
     @Test

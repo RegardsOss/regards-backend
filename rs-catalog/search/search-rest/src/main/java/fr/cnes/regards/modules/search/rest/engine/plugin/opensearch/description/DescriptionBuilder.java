@@ -45,6 +45,7 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -123,7 +124,7 @@ public class DescriptionBuilder {
      */
     public OpenSearchDescription build(SearchContext context, ICriterion criterion,
             List<IOpenSearchExtension> extensions, List<ParameterConfiguration> parameterConfs,
-            EngineConfiguration engineConf) {
+            EngineConfiguration engineConf, Optional<AbstractEntity> dataset) {
 
         // Retrieve informations about current projet
         String currentTenant = tenantResolver.getTenant();
@@ -134,7 +135,7 @@ public class DescriptionBuilder {
                                                                       parameterConfs, currentTenant);
 
         // Build descriptor generic metadatas
-        OpenSearchDescription desc = buildMetadata(project, engineConf);
+        OpenSearchDescription desc = buildMetadata(project, engineConf, dataset);
 
         // Build query
         desc.getQuery().add(buildQuery(descParameters));
@@ -156,14 +157,24 @@ public class DescriptionBuilder {
     /**
      * Build metadata of the {@link OpenSearchDescription}
      * @param project {@link Project}
+     * @param dataset
      * @param attributes {@link AttributeModel}s attributes
      * @return
      */
-    private OpenSearchDescription buildMetadata(Project project, EngineConfiguration engineConf) {
+    private OpenSearchDescription buildMetadata(Project project, EngineConfiguration engineConf,
+            Optional<AbstractEntity> dataset) {
         OpenSearchDescription desc = new OpenSearchDescription();
-        desc.setDescription(engineConf.getSearchDescription());
-        desc.setShortName(engineConf.getShortName());
-        desc.setLongName(engineConf.getLongName());
+        if (dataset.isPresent()) {
+            desc.setDescription(dataset.get().getLabel());
+            desc.setShortName(dataset.get().getLabel());
+            desc.setLongName(dataset.get().getLabel());
+            desc.setTags(String.join(" ", dataset.get().getTags()));
+        } else {
+            desc.setDescription(engineConf.getSearchDescription());
+            desc.setShortName(engineConf.getShortName());
+            desc.setLongName(engineConf.getLongName());
+            desc.setTags(engineConf.getTags());
+        }
         desc.setDeveloper(configuration.getDeveloper());
         desc.setAttribution(engineConf.getAttribution());
         desc.setAdultContent(Boolean.toString(configuration.isAdultContent()));
@@ -171,7 +182,7 @@ public class DescriptionBuilder {
         desc.setContact(engineConf.getContact());
         desc.setInputEncoding(StandardCharsets.UTF_8.displayName());
         desc.setOutputEncoding(StandardCharsets.UTF_8.displayName());
-        desc.setTags(engineConf.getTags());
+
         if (engineConf.getImage() != null) {
             ImageType image = new ImageType();
             image.setValue(engineConf.getImage());

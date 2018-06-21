@@ -253,6 +253,9 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     protected Dataset createStelarSystem(Model starSystemModel, String label) {
         Dataset solarSystem = createEntity(starSystemModel, label);
         solarSystem.addProperty(AttributeBuilder.buildString(STAR_SYSTEM, label));
+        solarSystem.getTags().add("REGARDS");
+        solarSystem.getTags().add("CNES");
+        solarSystem.getTags().add("CS-SI");
         return solarSystem;
     }
 

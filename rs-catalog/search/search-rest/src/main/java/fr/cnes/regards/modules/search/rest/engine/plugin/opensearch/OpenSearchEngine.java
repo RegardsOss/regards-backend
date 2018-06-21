@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.compress.utils.Lists;
@@ -217,10 +218,16 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     public ResponseEntity<OpenSearchDescription> extra(SearchContext context) throws ModuleException {
         init();
         if (context.getExtra().isPresent() && context.getExtra().get().equals(EXTRA_DESCRIPTION)) {
-            return ResponseEntity
-                    .ok(descriptionBuilder.build(context, parseParametersExt(context.getQueryParams()),
-                                                 Arrays.asList(mediaExtension, regardsExtension, timeExtension),
-                                                 paramConfigurations, engineConfiguration));
+
+            Optional<AbstractEntity> dataset = Optional.empty();
+            if (context.getDatasetUrn().isPresent()) {
+                // Search dataset entity
+                dataset = Optional.of(searchService.get(context.getDatasetUrn().get()));
+            }
+
+            return ResponseEntity.ok(descriptionBuilder
+                    .build(context, parse(context), Arrays.asList(mediaExtension, regardsExtension, timeExtension),
+                           paramConfigurations, engineConfiguration, dataset));
         } else {
             return ISearchEngine.super.extra(context);
         }
