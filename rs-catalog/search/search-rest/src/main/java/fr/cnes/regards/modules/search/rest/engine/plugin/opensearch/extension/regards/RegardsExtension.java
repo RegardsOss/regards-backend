@@ -60,23 +60,23 @@ public class RegardsExtension extends AbstractExtension {
     public static final String REGARDS_NS = "regards";
 
     @Override
-    public void formatGeoJsonResponseFeature(AbstractEntity entity,
-            List<ParameterConfiguration> paramConfigurations, Feature feature) {
+    public void formatGeoJsonResponseFeature(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+            Feature feature) {
         for (AbstractAttribute<?> property : entity.getProperties()) {
             feature.addProperty(property.getName(), property.getValue());
         }
     }
 
     @Override
-    public void formatAtomResponseEntry(AbstractEntity entity,
-            List<ParameterConfiguration> paramConfigurations, Entry entry, Gson gson) {
+    public void formatAtomResponseEntry(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+            Entry entry, Gson gson) {
         // Add module generator
         entry.getModules().add(getAtomEntityResponseBuilder(entity, paramConfigurations, gson));
 
     }
 
-    public Module getAtomEntityResponseBuilder(AbstractEntity entity,
-            List<ParameterConfiguration> paramConfigurations, Gson gson) {
+    public Module getAtomEntityResponseBuilder(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+            Gson gson) {
         RegardsModule rm = new RegardsModuleImpl();
         rm.setGsonBuilder(gson);
         rm.setEntity(entity);

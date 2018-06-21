@@ -75,7 +75,7 @@ public class LegacySearchEngine implements
     /**
      * Property values request property : text that property should contains
      */
-    private static final String PARTIAL_TEXT = "partialText";
+    public static final String PARTIAL_TEXT = "partialText";
 
     /**
      * Query parser

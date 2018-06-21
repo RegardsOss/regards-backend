@@ -147,6 +147,23 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
+    public void searchFomDatasetAtom() {
+
+        // Retrieve dataset URN
+        Dataset solarSystem = getAstroObject(SOLAR_SYSTEM);
+        Assert.assertNotNull(solarSystem);
+
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.customizeRequestParam().param("page", "0");
+        customizer.customizeRequestParam().param("size", "100");
+        performDefaultGet(SearchEngineController.TYPE_MAPPING
+                + SearchEngineController.SEARCH_DATASET_DATAOBJECTS_MAPPING, customizer, "Search all error",
+                          ENGINE_TYPE, solarSystem.getIpId().toString());
+    }
+
+    @Test
     public void searchAllGeojson() {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
