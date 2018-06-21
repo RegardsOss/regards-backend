@@ -135,7 +135,7 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     // Keep reference to astronomical object
 
-    protected Map<String, AbstractEntity> astroObjects = new HashedMap<>();
+    protected Map<String, AbstractEntity<?>> astroObjects = new HashedMap<>();
 
     protected void initIndex(String index) {
         if (esRepository.indexExists(index)) {
@@ -253,9 +253,9 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     protected Dataset createStelarSystem(Model starSystemModel, String label) {
         Dataset solarSystem = createEntity(starSystemModel, label);
         solarSystem.addProperty(AttributeBuilder.buildString(STAR_SYSTEM, label));
-        solarSystem.getTags().add("REGARDS");
-        solarSystem.getTags().add("CNES");
-        solarSystem.getTags().add("CS-SI");
+        solarSystem.addTags("REGARDS");
+        solarSystem.addTags("CNES");
+        solarSystem.addTags("CS-SI");
         return solarSystem;
     }
 
@@ -271,7 +271,7 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         planets.add(createPlanet(planetModel, "Uranus", PLANET_TYPE_ICE_GIANT, 51_800, 2_800_000_000L));
         planets.add(createPlanet(planetModel, "Neptune", PLANET_TYPE_ICE_GIANT, 49_500, 4_489_435_980L));
         // Attach planets to dataset
-        planets.forEach(planet -> planet.getTags().add(dataset.toString()));
+        planets.forEach(planet -> planet.addTags(dataset.toString()));
         return planets;
     }
 
@@ -313,7 +313,7 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
      */
     @SuppressWarnings("unchecked")
     protected <T> T createEntity(Model model, String label) {
-        AbstractEntity entity;
+        AbstractEntity<?> entity;
         switch (model.getType()) {
             case COLLECTION:
                 entity = new Collection(model, getDefaultTenant(), label);

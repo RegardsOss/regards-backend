@@ -147,7 +147,9 @@ public class LegacySearchEngine implements
 
         // Add entity links
         for (Resource<EntityFeature> resource : pagedResource.getContent()) {
-            resource.add(SearchEngineController.buildEntityLinks(resourceService, context, resource.getContent()));
+            resource.add(SearchEngineController.buildEntityLinks(resourceService, context,
+                                                                 resource.getContent().getEntityType(),
+                                                                 resource.getContent().getId()));
         }
 
         // Add pagination links
@@ -192,7 +194,8 @@ public class LegacySearchEngine implements
         EntityFeature entity = searchService.get(context.getUrn().get());
         // Prepare resource
         Resource<EntityFeature> resource = resourceService.toResource(entity);
-        resource.add(SearchEngineController.buildEntityLinks(resourceService, context, entity));
+        resource.add(SearchEngineController.buildEntityLinks(resourceService, context, entity.getEntityType(),
+                                                             entity.getId()));
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 

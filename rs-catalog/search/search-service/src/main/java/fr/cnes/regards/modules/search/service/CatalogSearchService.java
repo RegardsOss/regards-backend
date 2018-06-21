@@ -52,6 +52,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
@@ -376,9 +377,11 @@ public class CatalogSearchService implements ICatalogSearchService {
             criterion = accessRightFilter.addAccessRights(criterion);
             // Add partialText contains criterion if not empty
             if (!Strings.isNullOrEmpty(partialText)) {
-                criterion = ICriterion.and(criterion, ICriterion.contains(propertyPath, partialText));
+                criterion = ICriterion.and(criterion,
+                                           ICriterion.contains(addFeatureNamespace(propertyPath), partialText));
             }
-            return searchService.searchUniqueTopValues(searchKey, criterion, propertyPath, maxCount);
+            return searchService.searchUniqueTopValues(searchKey, criterion, addFeatureNamespace(propertyPath),
+                                                       maxCount);
         } catch (AccessRightFilterException e) {
             LOGGER.debug("Falling back to empty list of values", e);
             return Collections.emptyList();
@@ -445,5 +448,14 @@ public class CatalogSearchService implements ICatalogSearchService {
             default:
                 throw new UnsupportedOperationException("Unsupported search type : " + searchType);
         }
+    }
+
+    private String addFeatureNamespace(String propertyPath) {
+        Assert.notNull(propertyPath, "JSON proerty path must not be null");
+        if (propertyPath.startsWith(StaticProperties.FEATURE_NS)) {
+            return propertyPath;
+        }
+        return StaticProperties.FEATURE_NS + "." + propertyPath;
+
     }
 }

@@ -78,6 +78,7 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
     public void searchCollections() {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
         addCommontMatchers(customizer);
         addSearchTermQuery(customizer, STAR, SUN);
         performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_COLLECTIONS_MAPPING,
