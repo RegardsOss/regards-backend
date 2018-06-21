@@ -117,4 +117,26 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
+    @Test
+    public void searchAllAtom() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.customizeRequestParam().param("page", "0");
+        customizer.customizeRequestParam().param("size", "100");
+        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_ALL_MAPPING, customizer,
+                          "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
+    public void searchAllGeojson() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.customizeRequestParam().param("page", "0");
+        customizer.customizeRequestParam().param("size", "100");
+        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_ALL_MAPPING, customizer,
+                          "Search all error", ENGINE_TYPE);
+    }
+
 }

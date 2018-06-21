@@ -68,7 +68,8 @@ public class GeojsonResponseBuilder implements IOpenSearchResponseBuilder<Featur
         Query query = new Query();
         context.getQueryParams().forEach((name, values) -> values.forEach(value -> query.addFilter(name, value)));
         response.setQuery(query);
-        response.setLinks(links.stream().map(l -> GeoJsonLink.build(l, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
+        response.setLinks(links.stream()
+                .map(l -> GeoJsonLinkBuilder.build(l, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
                 .collect(Collectors.toList()));
     }
 
@@ -80,9 +81,9 @@ public class GeojsonResponseBuilder implements IOpenSearchResponseBuilder<Featur
         // All links are alternate links here in geo json format
         // Other types like icon or enclosure are handle in extensions (example : media)
         String title = String.format("GeoJson link for %s", entity.getIpId());
-        feature.setLinks(entityLinks
-                .stream().map(l -> GeoJsonLink.build(l, GeoJsonLink.LINK_ALTERNATE_REL, title,
-                                                     GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
+        feature.setLinks(entityLinks.stream()
+                .map(l -> GeoJsonLinkBuilder.build(l, GeoJsonLink.LINK_ALTERNATE_REL, title,
+                                                   GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
                 .collect(Collectors.toList()));
         feature.setTitle(entity.getLabel());
         if (entity.getLastUpdate() != null) {

@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
@@ -176,24 +177,14 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @Override
     public boolean supports(SearchType searchType) {
-        switch (searchType) {
-            case COLLECTIONS:
-            case DATAOBJECTS:
-            case DATAOBJECTS_RETURN_DATASETS:
-            case DATASETS:
-            case DOCUMENTS:
-                return true;
-            case ALL:
-            default:
-                return false;
-        }
+        return true;
     }
 
     @Override
     public ResponseEntity<Object> search(SearchContext context) throws ModuleException {
         init();
-        FacetPage<AbstractEntity> facetPage = searchService
-                .search(parse(context.getQueryParams()), context.getSearchType(), null, context.getPageable());
+        FacetPage<AbstractEntity> facetPage = searchService.search(parse(context), context.getSearchType(), null,
+                                                                   context.getPageable());
         try {
             return ResponseEntity.ok(formatResponse(facetPage, context));
         } catch (UnsupportedMediaTypesException e) {
@@ -232,6 +223,20 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         } else {
             return ISearchEngine.super.extra(context);
         }
+    }
+
+    /**
+     * Parse request parameters and and add dataset context if necessary
+     */
+    private ICriterion parse(SearchContext context) throws ModuleException {
+        // Convert parameters to business criterion
+        ICriterion criterion = parse(context.getQueryParams());
+        // Manage dataset URN path parameter as criterion
+        if (context.getDatasetUrn().isPresent()) {
+            criterion = ICriterion.and(criterion,
+                                       ICriterion.eq(StaticProperties.TAGS, context.getDatasetUrn().get().toString()));
+        }
+        return criterion;
     }
 
     /**
@@ -318,6 +323,18 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     public ResponseEntity<List<String>> getPropertyValues(SearchContext context) throws ModuleException {
         // TODO return values for a given properties
         return ISearchEngine.super.getPropertyValues(context);
+    }
+
+    @Override
+    public ResponseEntity<DocFilesSummary> getSummary(SearchContext context) throws ModuleException {
+        // Convert parameters to business criterion considering dataset
+        ICriterion criterion = parse(context);
+        // Compute summary
+        DocFilesSummary summary = searchService.computeDatasetsSummary(criterion, context.getSearchType(),
+                                                                       context.getDatasetUrn().orElseGet(null),
+                                                                       context.getDateTypes().get());
+        // Build response
+        return ResponseEntity.ok(summary);
     }
 
 }

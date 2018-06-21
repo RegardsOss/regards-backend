@@ -25,6 +25,8 @@ import org.apache.commons.compress.utils.Lists;
 
 import com.google.gson.Gson;
 import com.rometools.modules.georss.geometries.AbstractGeometry;
+import com.rometools.modules.georss.geometries.AbstractRing;
+import com.rometools.modules.georss.geometries.LinearRing;
 import com.rometools.modules.georss.geometries.Point;
 import com.rometools.modules.georss.geometries.Position;
 import com.rometools.modules.georss.geometries.PositionList;
@@ -32,8 +34,10 @@ import com.rometools.rome.feed.atom.Entry;
 import com.rometools.rome.feed.module.Module;
 
 import fr.cnes.regards.framework.geojson.Feature;
+import fr.cnes.regards.framework.geojson.coordinates.Positions;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.LineString;
+import fr.cnes.regards.framework.geojson.geometry.Polygon;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
@@ -116,8 +120,9 @@ public class GeoTimeExtension extends AbstractOpenSearchExtension {
                 .add(builderParameter(BOX_PARAMETER, String.format("{%s:%s}", GEO_NS, BOX_PARAMETER),
                                       "Defined by 'west, south, east, north' coordinates of longitude, latitude, in decimal degrees (EPSG:4326)",
                                       BOX_PATTERN));
-        geoParameters.add(builderParameter(LOCATION_PARAMETER, String.format("{%s:%s}", GEO_NS, LOCATION_PARAMETER),
-                                           "Location string e.g. Paris, France", null));
+        // To implement
+        //        geoParameters.add(builderParameter(LOCATION_PARAMETER, String.format("{%s:%s}", GEO_NS, LOCATION_PARAMETER),
+        //                                           "Location string e.g. Paris, France", null));
         geoParameters
                 .add(builderParameter(LON_PARAMETER, String.format("{%s:%s}", GEO_NS, LON_PARAMETER),
                                       "Longitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lat",
@@ -157,14 +162,15 @@ public class GeoTimeExtension extends AbstractOpenSearchExtension {
             // TODO : Generate geometry criterion from geometry, box, lon, lat, location and radius.
             switch (parameter.getName()) {
                 case GEO_PARAMETER:
+                    // WKT Transformation
                     break;
                 case BOX_PARAMETER:
+                    // Polygon criterion
                     break;
                 case LON_PARAMETER:
-                    break;
                 case LAT_PARAMETER:
-                    break;
                 case RADIUS_PARAMETER:
+                    // Circle criterion
                 default:
                     // Unknown parameter
                     break;
@@ -229,16 +235,33 @@ public class GeoTimeExtension extends AbstractOpenSearchExtension {
                 lineString.setPositionList(positionList);
                 return lineString;
             case POLYGON:
-                // TODO : GEO Translation from IGEometry:POLYGON to rome module geometry POLYGON
-                return null;
+                Polygon p = (Polygon) geometry;
+                com.rometools.modules.georss.geometries.Polygon polygon = new com.rometools.modules.georss.geometries.Polygon();
+
+                Positions exteriorRings = p.getCoordinates().getExteriorRing();
+                PositionList polygonPosList = new PositionList();
+                exteriorRings.forEach(pos -> polygonPosList.add(pos.getLatitude(), pos.getLongitude()));
+                LinearRing linearRing = new LinearRing(polygonPosList);
+                polygon.setExterior(linearRing);
+
+                List<Positions> interiorRings = p.getCoordinates().getHoles();
+                List<AbstractRing> irs = Lists.newArrayList();
+                for (Positions interiorRing : interiorRings) {
+                    PositionList posList = new PositionList();
+                    interiorRing.forEach(pos -> posList.add(pos.getLatitude(), pos.getLongitude()));
+                    LinearRing lr = new LinearRing(posList);
+                    irs.add(lr);
+                }
+                polygon.setInterior(irs);
+                return polygon;
             case MULTILINESTRING:
             case MULTIPOINT:
             case MULTIPOLYGON:
+            case GEOMETRY_COLLECTION:
                 // TODO : Do we have to handle this kind of geometry ?
                 return null;
             case FEATURE:
             case FEATURE_COLLECTION:
-            case GEOMETRY_COLLECTION:
             case UNLOCATED:
             default:
                 // Nothing to do
