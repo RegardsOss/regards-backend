@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.Configuration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.EngineConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IResponseBuilder;
@@ -57,12 +58,11 @@ public class GeojsonResponseBuilder implements IResponseBuilder<FeatureWithPrope
     private final FeatureWithPropertiesCollection response = new FeatureWithPropertiesCollection();
 
     @Override
-    public void addMetadata(String searchId, String searchTitle, String searchDescription,
-            String openSearchDescriptionUrl, SearchContext context, Configuration configuration,
-            FacetPage<AbstractEntity> page, List<Link> links) {
+    public void addMetadata(String searchId, EngineConfiguration engineConf, String openSearchDescriptionUrl,
+            SearchContext context, Configuration configuration, FacetPage<AbstractEntity> page, List<Link> links) {
         response.setId(searchId);
-        response.setTitle(searchTitle);
-        response.setDescription(searchDescription);
+        response.setTitle(engineConf.getSearchTitle());
+        response.setDescription(engineConf.getSearchDescription());
         response.setPaginationInfos(page.getTotalElements(), page.getNumber() * page.getSize(),
                                     context.getPageable().getPageSize());
         Query query = new Query();

@@ -59,8 +59,10 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.Configuration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.EngineConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
+import fr.cnes.regards.modules.search.schema.ImageType;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.schema.QueryType;
 import fr.cnes.regards.modules.search.schema.UrlType;
@@ -120,7 +122,8 @@ public class DescriptionBuilder {
      * @throws UnsupportedEncodingException
      */
     public OpenSearchDescription build(SearchContext context, ICriterion criterion,
-            List<IOpenSearchExtension> extensions, List<ParameterConfiguration> parameterConfs) {
+            List<IOpenSearchExtension> extensions, List<ParameterConfiguration> parameterConfs,
+            EngineConfiguration engineConf) {
 
         // Retrieve informations about current projet
         String currentTenant = tenantResolver.getTenant();
@@ -131,7 +134,7 @@ public class DescriptionBuilder {
                                                                       parameterConfs, currentTenant);
 
         // Build descriptor generic metadatas
-        OpenSearchDescription desc = buildMetadata(project);
+        OpenSearchDescription desc = buildMetadata(project, engineConf);
 
         // Build query
         desc.getQuery().add(buildQuery(descParameters));
@@ -156,18 +159,24 @@ public class DescriptionBuilder {
      * @param attributes {@link AttributeModel}s attributes
      * @return
      */
-    private OpenSearchDescription buildMetadata(Project project) {
+    private OpenSearchDescription buildMetadata(Project project, EngineConfiguration engineConf) {
         OpenSearchDescription desc = new OpenSearchDescription();
-        desc.setDescription(String.format(project.getDescription()));
-        desc.setShortName(String.format(project.getName()));
-        desc.setLongName(String.format(project.getName()));
+        desc.setDescription(engineConf.getSearchDescription());
+        desc.setShortName(engineConf.getShortName());
+        desc.setLongName(engineConf.getLongName());
         desc.setDeveloper(configuration.getDeveloper());
-        desc.setAttribution(configuration.getAttribution());
+        desc.setAttribution(engineConf.getAttribution());
         desc.setAdultContent(Boolean.toString(configuration.isAdultContent()));
         desc.setLanguage(configuration.getLanguage());
-        desc.setContact(configuration.getContactEmail());
+        desc.setContact(engineConf.getContact());
         desc.setInputEncoding(StandardCharsets.UTF_8.displayName());
         desc.setOutputEncoding(StandardCharsets.UTF_8.displayName());
+        desc.setTags(engineConf.getTags());
+        if (engineConf.getImage() != null) {
+            ImageType image = new ImageType();
+            image.setValue(engineConf.getImage());
+            desc.setImage(image);
+        }
         return desc;
     }
 

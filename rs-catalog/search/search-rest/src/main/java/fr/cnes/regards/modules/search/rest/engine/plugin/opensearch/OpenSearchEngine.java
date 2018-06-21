@@ -114,21 +114,14 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @Autowired
     private Configuration configuration;
 
+    @PluginParameter(name = "engineConfiguration", label = "Search engine global configuration")
+    private EngineConfiguration engineConfiguration;
+
     /**
      * To build resource links
      */
     @Autowired
     private IResourceService resourceService;
-
-    @PluginParameter(name = "searchTitle", label = "Title of responses associated to this search engine",
-            description = "Search title for response metadatas. Used to construct metadatas for atom+xml and geo+json responses.",
-            defaultValue = "Open search engine title")
-    private final String searchTitle = "Open search engine title";
-
-    @PluginParameter(name = "searchDescription", label = "Description of responses associated to this search engine",
-            description = "Description for response metadatas. Used to construct metadatas for atom+xml and geo+json responses.",
-            defaultValue = "Open search engine description")
-    private final String searchDescription = "Open search engine description";
 
     @PluginParameter(name = OpenSearchEngine.TIME_EXTENSION_PARAMETER, label = "Open search time extension")
     private GeoTimeExtension timeExtension;
@@ -173,6 +166,13 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
         mediaExtension = new MediaExtension();
         mediaExtension.setActivated(true);
+
+        engineConfiguration = new EngineConfiguration();
+        engineConfiguration.setAttribution("Plop");
+        engineConfiguration.setSearchDescription("desc");
+        engineConfiguration.setSearchTitle("search");
+        engineConfiguration.setContact("regards@c-s.fr");
+        engineConfiguration.setImage("http://plop/image.png");
     }
 
     @Override
@@ -217,9 +217,10 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     public ResponseEntity<OpenSearchDescription> extra(SearchContext context) throws ModuleException {
         init();
         if (context.getExtra().isPresent() && context.getExtra().get().equals(EXTRA_DESCRIPTION)) {
-            return ResponseEntity.ok(descriptionBuilder
-                    .build(context, parseParametersExt(context.getQueryParams()),
-                           Arrays.asList(mediaExtension, regardsExtension, timeExtension), paramConfigurations));
+            return ResponseEntity
+                    .ok(descriptionBuilder.build(context, parseParametersExt(context.getQueryParams()),
+                                                 Arrays.asList(mediaExtension, regardsExtension, timeExtension),
+                                                 paramConfigurations, engineConfiguration));
         } else {
             return ISearchEngine.super.extra(context);
         }
@@ -250,7 +251,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             throws UnsupportedMediaTypesException {
         IResponseBuilder<?> builder = getBuilder(context);
         // TODO : Replace with real url
-        builder.addMetadata(UUID.randomUUID().toString(), searchTitle, searchDescription,
+        builder.addMetadata(UUID.randomUUID().toString(), engineConfiguration,
                             "http://www.regards.com/opensearch-description.xml", context, configuration, page,
                             SearchEngineController.buildPaginationLinks(resourceService, page, context));
         page.getContent().stream()

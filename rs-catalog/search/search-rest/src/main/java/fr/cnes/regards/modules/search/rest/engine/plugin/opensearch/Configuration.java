@@ -37,11 +37,7 @@ public class Configuration {
 
     private String developer = "http://www.c-s.fr CS-SI Team";
 
-    private String attribution = "http://www.cnes.fr CNES Centre National d'Etudes Spatiales - Copyright 2017-2018, All Rigts reserved";
-
     private String urlsRel = "results";
-
-    private String contactEmail = "regards@c-s.fr";
 
     private boolean adultContent = false;
 
@@ -82,28 +78,12 @@ public class Configuration {
         this.developer = developer;
     }
 
-    public String getAttribution() {
-        return attribution;
-    }
-
-    public void setAttribution(String attribution) {
-        this.attribution = attribution;
-    }
-
     public String getUrlsRel() {
         return urlsRel;
     }
 
     public void setUrlsRel(String urlsRel) {
         this.urlsRel = urlsRel;
-    }
-
-    public String getContactEmail() {
-        return contactEmail;
-    }
-
-    public void setContactEmail(String contactEmail) {
-        this.contactEmail = contactEmail;
     }
 
     public boolean isAdultContent() {

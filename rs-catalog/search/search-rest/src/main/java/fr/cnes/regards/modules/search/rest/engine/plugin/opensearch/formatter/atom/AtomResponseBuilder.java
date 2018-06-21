@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.OpenSearchMediaType;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.Configuration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.EngineConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IResponseBuilder;
@@ -77,23 +78,23 @@ public class AtomResponseBuilder implements IResponseBuilder<Feed> {
     }
 
     @Override
-    public void addMetadata(String searchId, String searchTitle, String searchDescription,
-            String openSearchDescriptionUrl, SearchContext context, Configuration configuration,
-            FacetPage<AbstractEntity> page, List<org.springframework.hateoas.Link> links) {
+    public void addMetadata(String searchId, EngineConfiguration engineConf, String openSearchDescriptionUrl,
+            SearchContext context, Configuration configuration, FacetPage<AbstractEntity> page,
+            List<org.springframework.hateoas.Link> links) {
         // Fee general informations
         feed.setId(searchId);
-        feed.setTitle(searchTitle);
+        feed.setTitle(engineConf.getSearchTitle());
 
         // Feed description
         Content content = new Content();
         content.setType(Content.TEXT);
-        content.setValue(searchDescription);
+        content.setValue(engineConf.getSearchDescription());
         feed.setSubtitle(content);
 
         // Create feed author.
         SyndPerson author = new SyndPersonImpl();
-        author.setEmail(configuration.getContactEmail());
-        author.setName(configuration.getAttribution());
+        author.setEmail(engineConf.getContact());
+        author.setName(engineConf.getAttribution());
         feed.getAuthors().add(author);
 
         // Add search date

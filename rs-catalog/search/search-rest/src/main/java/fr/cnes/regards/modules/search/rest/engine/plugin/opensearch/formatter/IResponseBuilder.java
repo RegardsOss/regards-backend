@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.Configuration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.EngineConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
 
@@ -40,14 +41,13 @@ public interface IResponseBuilder<R> {
     /**
      * Add metadatas to the global search results collection.
      * @param searchId {@link String}
-     * @param searchTitle {@link String}
-     * @param searchDescription {@link String}
+     * @param engineConf {@link EngineConfiguration}
      * @param openSearchDescriptionUrl {@link String}
      * @param context {@link SearchContext}
      * @param page {@link FacetPage} results of the search
      * @param links {@link Link}s of the entities collection
      */
-    void addMetadata(String searchId, String searchTitle, String searchDescription, String openSearchDescriptionUrl,
+    void addMetadata(String searchId, EngineConfiguration engineConf, String openSearchDescriptionUrl,
             SearchContext context, Configuration configuration, FacetPage<AbstractEntity> page, List<Link> links);
 
     /**
