@@ -85,14 +85,14 @@ public class GeoTimeExtension extends AbstractExtension {
     public static final String RADIUS_PARAMETER = "radius";
 
     @Override
-    public void formatGeoJsonResponseFeature(AbstractEntity entity,
-            List<ParameterConfiguration> paramConfigurations, Feature feature) {
+    public void formatGeoJsonResponseFeature(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+            Feature feature) {
         feature.setGeometry(entity.getGeometry());
     }
 
     @Override
-    public void formatAtomResponseEntry(AbstractEntity entity,
-            List<ParameterConfiguration> paramConfigurations, Entry entry, Gson gson) {
+    public void formatAtomResponseEntry(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+            Entry entry, Gson gson) {
         // Add module generator
         entry.getModules().add(getAtomEntityResponseBuilder(entity, paramConfigurations, gson));
 
@@ -188,8 +188,8 @@ public class GeoTimeExtension extends AbstractExtension {
                         && TIME_NS.equals(parameter.getConfiguration().getNamespace()));
     }
 
-    private Module getAtomEntityResponseBuilder(AbstractEntity entity,
-            List<ParameterConfiguration> paramConfigurations, Gson gson) {
+    private Module getAtomEntityResponseBuilder(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+            Gson gson) {
         // Add GML with time module to handle geo & time extension
         GmlTimeModuleImpl gmlMod = new GmlTimeModuleImpl();
         ParameterConfiguration timeStartParameterConf = paramConfigurations.stream()
@@ -221,7 +221,6 @@ public class GeoTimeExtension extends AbstractExtension {
             return null;
         }
         switch (geometry.getType()) {
-            // TODO : GEO Translation from IGEometry to rome module geometry
             case POINT:
                 fr.cnes.regards.framework.geojson.geometry.Point rp = (fr.cnes.regards.framework.geojson.geometry.Point) geometry;
                 Point point = new Point();
@@ -258,7 +257,7 @@ public class GeoTimeExtension extends AbstractExtension {
             case MULTIPOINT:
             case MULTIPOLYGON:
             case GEOMETRY_COLLECTION:
-                // TODO : Do we have to handle this kind of geometry ?
+                // TODO : GEO Translation from IGEometry to rome module geometry
                 return null;
             case FEATURE:
             case FEATURE_COLLECTION:

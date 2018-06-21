@@ -28,6 +28,7 @@ import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
@@ -52,6 +53,7 @@ import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
+import fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchEngine;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedMediaTypesException;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.SearchParameter;
@@ -219,6 +221,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         init();
         if (context.getExtra().isPresent() && context.getExtra().get().equals(EXTRA_DESCRIPTION)) {
 
+            // If the descriptor is asked for a specific dataset, first get the dataset.
+            // The dataset will be used to set specific metadatas into the descriptor like title, tags, ...
             Optional<AbstractEntity> dataset = Optional.empty();
             if (context.getDatasetUrn().isPresent()) {
                 // Search dataset entity
@@ -257,9 +261,11 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     private Object formatResponse(FacetPage<AbstractEntity> page, SearchContext context)
             throws UnsupportedMediaTypesException {
         IResponseBuilder<?> builder = getBuilder(context);
-        // TODO : Replace with real url
         builder.addMetadata(UUID.randomUUID().toString(), engineConfiguration,
-                            "http://www.regards.com/opensearch-description.xml", context, configuration, page,
+                            SearchEngineController
+                                    .buildExtraLink(resourceService, context, Link.REL_SELF, EXTRA_DESCRIPTION)
+                                    .getHref(),
+                            context, configuration, page,
                             SearchEngineController.buildPaginationLinks(resourceService, page, context));
         page.getContent().stream()
                 .forEach(e -> builder.addEntity(e, paramConfigurations,
@@ -284,19 +290,22 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         List<SearchParameter> searchParameters = Lists.newArrayList();
         for (Entry<String, List<String>> queryParam : queryParams.entrySet()) {
             try {
-                AttributeModel attributeModel = finder.findByName(queryParam.getKey());
-                if (attributeModel.getId() != null) {
-                    attributeModel.buildJsonPath(StaticProperties.PROPERTIES);
-                } else {
-                    // Standard static attributes. Not a real attribute. So jsonPath = name;
-                    attributeModel.setJsonPath(attributeModel.getName());
+                // Do not handle special query parameter (q) here.
+                if (!queryParam.getKey().equals(configuration.getQueryParameterName())) {
+                    AttributeModel attributeModel = finder.findByName(queryParam.getKey());
+                    if (attributeModel.getId() != null) {
+                        attributeModel.buildJsonPath(StaticProperties.PROPERTIES);
+                    } else {
+                        // Standard static attributes. Not a real attribute. So jsonPath = name;
+                        attributeModel.setJsonPath(attributeModel.getName());
+                    }
+                    // Search configuration if any
+                    ParameterConfiguration conf = paramConfigurations.stream()
+                            .filter(p -> p.getAttributeModelJsonPath().equals(attributeModel.getJsonPath())).findFirst()
+                            .orElse(null);
+                    searchParameters
+                            .add(new SearchParameter(queryParam.getKey(), attributeModel, conf, queryParam.getValue()));
                 }
-                // Search configuration if any
-                ParameterConfiguration conf = paramConfigurations.stream()
-                        .filter(p -> p.getAttributeModelJsonPath().equals(attributeModel.getJsonPath())).findFirst()
-                        .orElse(null);
-                searchParameters
-                        .add(new SearchParameter(queryParam.getKey(), attributeModel, conf, queryParam.getValue()));
             } catch (OpenSearchUnknownParameter e) {
                 LOGGER.debug("Parameter not found in REGARDS models attributes.", e);
                 // Adding unknown parameters in search parameters in case an IOpenSearchExtension can handle it.
@@ -329,8 +338,16 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @Override
     public ResponseEntity<List<String>> getPropertyValues(SearchContext context) throws ModuleException {
-        // TODO return values for a given properties
-        return ISearchEngine.super.getPropertyValues(context);
+        // Convert parameters to business criterion considering dataset
+        ICriterion criterion = parse(context);
+        // Extract optional request parameters
+        String partialText = context.getQueryParams().getFirst(LegacySearchEngine.PARTIAL_TEXT);
+        // Do business search
+        List<String> values = searchService.retrieveEnumeratedPropertyValues(criterion, context.getSearchType(),
+                                                                             context.getPropertyName().get(),
+                                                                             context.getMaxCount().get(), partialText);
+        // Build response
+        return ResponseEntity.ok(values);
     }
 
     @Override
