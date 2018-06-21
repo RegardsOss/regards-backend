@@ -113,7 +113,7 @@ public interface ICatalogSearchService {
      * @param <E> concrete type of AbstractEntity
      * @return the entity
      */
-    <E extends AbstractEntity> E get(UniformResourceName urn)
+    <E extends AbstractEntity<?>> E get(UniformResourceName urn)
             throws EntityOperationForbiddenException, EntityNotFoundException;
 
     /**

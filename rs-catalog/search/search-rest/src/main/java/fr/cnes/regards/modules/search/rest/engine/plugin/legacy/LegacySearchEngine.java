@@ -34,8 +34,8 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.StaticProperties;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
-import fr.cnes.regards.modules.search.service.ICatalogSearchService;
+import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 
 /**
  * Legacy search engine for compatibility with legacy system
@@ -55,7 +55,7 @@ import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 @Plugin(id = "legacy", author = "REGARDS Team", contact = "regards@c-s.fr", description = "Legacy search engine",
         licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss", version = "1.0.0")
 public class LegacySearchEngine implements
-        ISearchEngine<FacettedPagedResources<Resource<AbstractEntity>>, Void, Resource<AbstractEntity>, List<String>> {
+        ISearchEngine<FacettedPagedResources<Resource<EntityFeature>>, Void, Resource<EntityFeature>, List<String>> {
 
     /**
      * Query parameter for facets
@@ -87,7 +87,7 @@ public class LegacySearchEngine implements
      * Business search service
      */
     @Autowired
-    protected ICatalogSearchService searchService;
+    protected IBusinessSearchService searchService;
 
     /**
      * To build resource links
@@ -121,15 +121,15 @@ public class LegacySearchEngine implements
     }
 
     @Override
-    public ResponseEntity<FacettedPagedResources<Resource<AbstractEntity>>> search(SearchContext context)
+    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> search(SearchContext context)
             throws ModuleException {
         // Convert parameters to business criterion considering dataset
         ICriterion criterion = parse(context);
         // Extract facets
         List<String> facets = context.getQueryParams().get(FACETS);
         // Do business search
-        FacetPage<AbstractEntity> facetPage = searchService.search(criterion, context.getSearchType(), facets,
-                                                                   context.getPageable());
+        FacetPage<EntityFeature> facetPage = searchService.search(criterion, context.getSearchType(), facets,
+                                                                  context.getPageable());
         // Build and return HATEOAS response
         return ResponseEntity.ok(toResources(context, facetPage));
     }
@@ -137,16 +137,16 @@ public class LegacySearchEngine implements
     /**
      * Format response with HATEOAS
      */
-    private FacettedPagedResources<Resource<AbstractEntity>> toResources(SearchContext context,
-            FacetPage<AbstractEntity> facetPage) {
+    private FacettedPagedResources<Resource<EntityFeature>> toResources(SearchContext context,
+            FacetPage<EntityFeature> facetPage) {
 
-        FacettedPagedResources<Resource<AbstractEntity>> pagedResource = FacettedPagedResources
+        FacettedPagedResources<Resource<EntityFeature>> pagedResource = FacettedPagedResources
                 .wrap(facetPage.getContent(), new PagedResources.PageMetadata(facetPage.getSize(),
                         facetPage.getNumber(), facetPage.getTotalElements(), facetPage.getTotalPages()),
                       facetPage.getFacets());
 
         // Add entity links
-        for (Resource<AbstractEntity> resource : pagedResource.getContent()) {
+        for (Resource<EntityFeature> resource : pagedResource.getContent()) {
             resource.add(SearchEngineController.buildEntityLinks(resourceService, context, resource.getContent()));
         }
 
@@ -187,11 +187,11 @@ public class LegacySearchEngine implements
     }
 
     @Override
-    public ResponseEntity<Resource<AbstractEntity>> getEntity(SearchContext context) throws ModuleException {
+    public ResponseEntity<Resource<EntityFeature>> getEntity(SearchContext context) throws ModuleException {
         // Retrieve entity
-        AbstractEntity entity = searchService.get(context.getUrn().get());
+        EntityFeature entity = searchService.get(context.getUrn().get());
         // Prepare resource
-        Resource<AbstractEntity> resource = resourceService.toResource(entity);
+        Resource<EntityFeature> resource = resourceService.toResource(entity);
         resource.add(SearchEngineController.buildEntityLinks(resourceService, context, entity));
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }

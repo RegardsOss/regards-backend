@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -47,7 +46,6 @@ import com.google.common.reflect.TypeToken;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -81,9 +79,6 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 public class CatalogSearchService implements ICatalogSearchService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CatalogSearchService.class);
-
-    @Autowired
-    private IRuntimeTenantResolver tenantResolver;
 
     /**
      * Service perfoming the ElasticSearch search from criterions. Autowired.
@@ -225,7 +220,7 @@ public class CatalogSearchService implements ICatalogSearchService {
     }
 
     @Override
-    public <E extends AbstractEntity> E get(UniformResourceName urn)
+    public <E extends AbstractEntity<?>> E get(UniformResourceName urn)
             throws EntityOperationForbiddenException, EntityNotFoundException {
         E entity = searchService.get(urn);
         if (entity == null) {
