@@ -26,6 +26,9 @@ import org.springframework.hateoas.Link;
 
 import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.framework.geojson.FeatureWithPropertiesCollection;
+import fr.cnes.regards.framework.geojson.GeoJsonLink;
+import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
+import fr.cnes.regards.framework.geojson.Query;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
@@ -33,56 +36,39 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchCo
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IOpenSearchResponseBuilder;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.gml.impl.GmlTimeModuleGenerator;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.impl.RegardsModuleGenerator;
 
 /**
- * Build open search responses in GEO+Json format handling :<ul>
- * <li>parameters extension</li>
- * <li>time & geo extension {@link GmlTimeModuleGenerator}</li>
- * <li>regards extension {@link RegardsModuleGenerator}</li>
+ * Build open search responses in GEO+Json format by creating a {@link FeatureWithPropertiesCollection} handling :<ul>
+ * <li>Opensearch parameters extension</li>
+ * <li>{@link IOpenSearchExtension}s for additional extensions like geo+time or media.</li>
  * </ul>
  * @author Sébastien Binda
  */
 public class GeojsonResponseBuilder implements IOpenSearchResponseBuilder<FeatureWithPropertiesCollection> {
 
-    public static final String ID = "id";
-
-    public static final String TITLE = "title";
-
-    public static final String TOTAL_RESULTS = "totalResults";
-
-    public static final String START_INDEX = "startIndex";
-
-    public static final String ITEMS_PER_PAGE = "itemsPerPage";
-
-    public static final String DESCRIPTION = "description";
-
-    public static final String QUERY = "query";
-
-    public static final String LINKS = "links";
-
-    public static final String APPLICATION_GEO_JSON_VALUE = "application/geo+json";
-
+    /**
+     * List of opensearch extensions to apply to the current geojson response FeatureCollection builder
+     */
     private final List<IOpenSearchExtension> extensions = Lists.newArrayList();
 
+    /**
+     * {@link FeatureWithPropertiesCollection} GEO+Json response
+     */
     private final FeatureWithPropertiesCollection response = new FeatureWithPropertiesCollection();
 
     @Override
     public void addMetadata(String searchId, String searchTitle, String searchDescription,
             String openSearchDescriptionUrl, SearchContext context, OpenSearchConfiguration configuration,
             FacetPage<AbstractEntity> page, List<Link> links) {
-        response.addProperty(ID, searchId);
-        response.addProperty(TITLE, searchTitle);
-        response.addProperty(DESCRIPTION, searchDescription);
-        response.addProperty(TOTAL_RESULTS, page.getTotalElements());
-        response.addProperty(START_INDEX, page.getNumber() * page.getSize());
-        response.addProperty(ITEMS_PER_PAGE, context.getPageable().getPageSize());
-
+        response.setId(searchId);
+        response.setTitle(searchTitle);
+        response.setDescription(searchDescription);
+        response.setPaginationInfos(page.getTotalElements(), page.getNumber() * page.getSize(),
+                                    context.getPageable().getPageSize());
         Query query = new Query();
         context.getQueryParams().forEach((name, values) -> values.forEach(value -> query.addFilter(name, value)));
-        response.addProperty(QUERY, query);
-        response.addProperty(LINKS, links.stream().map(l -> GeoJsonLink.build(l, APPLICATION_GEO_JSON_VALUE))
+        response.setQuery(query);
+        response.setLinks(links.stream().map(l -> GeoJsonLink.build(l, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
                 .collect(Collectors.toList()));
     }
 
@@ -94,15 +80,15 @@ public class GeojsonResponseBuilder implements IOpenSearchResponseBuilder<Featur
         // All links are alternate links here in geo json format
         // Other types like icon or enclosure are handle in extensions (example : media)
         String title = String.format("GeoJson link for %s", entity.getIpId());
-        feature.addProperty(LINKS,
-                            entityLinks.stream()
-                                    .map(l -> GeoJsonLink.build(l, "alternate", title, APPLICATION_GEO_JSON_VALUE))
-                                    .collect(Collectors.toList()));
-        feature.addProperty(TITLE, entity.getLabel());
+        feature.setLinks(entityLinks
+                .stream().map(l -> GeoJsonLink.build(l, GeoJsonLink.LINK_ALTERNATE_REL, title,
+                                                     GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
+                .collect(Collectors.toList()));
+        feature.setTitle(entity.getLabel());
         if (entity.getLastUpdate() != null) {
-            feature.addProperty("updated", entity.getLastUpdate());
+            feature.setUpdated(entity.getLastUpdate());
         } else {
-            feature.addProperty("updated", entity.getCreationDate());
+            feature.setUpdated(entity.getCreationDate());
         }
         // Handle extensions
         for (IOpenSearchExtension extension : extensions) {

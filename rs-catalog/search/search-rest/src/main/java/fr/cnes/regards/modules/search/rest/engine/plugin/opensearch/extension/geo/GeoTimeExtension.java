@@ -155,6 +155,20 @@ public class GeoTimeExtension extends AbstractOpenSearchExtension {
             }
         } else {
             // TODO : Generate geometry criterion from geometry, box, lon, lat, location and radius.
+            switch (parameter.getName()) {
+                case GEO_PARAMETER:
+                    break;
+                case BOX_PARAMETER:
+                    break;
+                case LON_PARAMETER:
+                    break;
+                case LAT_PARAMETER:
+                    break;
+                case RADIUS_PARAMETER:
+                default:
+                    // Unknown parameter
+                    break;
+            }
         }
 
         return criteria;

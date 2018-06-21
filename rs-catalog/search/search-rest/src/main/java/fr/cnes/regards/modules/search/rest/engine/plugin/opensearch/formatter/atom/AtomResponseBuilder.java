@@ -39,6 +39,7 @@ import com.rometools.rome.feed.synd.SyndPersonImpl;
 
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
+import fr.cnes.regards.modules.search.OpenSearchMediaType;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchParameterConfiguration;
@@ -58,9 +59,10 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.at
  */
 public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
 
+    /**
+     * ATOM format version
+     */
     public static final String ATOM_VERSION = "atom_1.0";
-
-    public static final String OPENSEARCH_DESC_MEDIATYPE_VALUE = "application/opensearchdescription+xml";
 
     /**
      * List of {@link IOpenSearchExtension} to handle for ATOM format.
@@ -120,7 +122,7 @@ public class AtomResponseBuilder implements IOpenSearchResponseBuilder<Feed> {
         // Add opensearch description link
         Link osDescLink = new Link();
         osDescLink.setHref(openSearchDescriptionUrl);
-        osDescLink.setType(OPENSEARCH_DESC_MEDIATYPE_VALUE);
+        osDescLink.setType(OpenSearchMediaType.APPLICATION_OPENSEARCH_DESC_VALUE);
         osm.setLink(osDescLink);
         mods.add(osm);
         feed.setModules(mods);
