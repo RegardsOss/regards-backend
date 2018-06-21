@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.geojson;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +33,22 @@ import java.util.Map;
  */
 public class FeatureWithPropertiesCollection extends FeatureCollection {
 
+    public static final String ID_FIELD = "id";
+
+    public static final String TITLE_FIELD = "title";
+
+    public static final String TOTAL_RESULTS_FIELD = "totalResults";
+
+    public static final String START_IDX_FIELD = "startIndex";
+
+    public static final String ITEMS_PER_PAGE_FIELD = "itemsPerPage";
+
+    public static final String DESCRIPTION_FIELD = "description";
+
+    public static final String QUERY_FIELD = "query";
+
+    public static final String LINKS_FIELD = "links";
+
     protected Map<String, Object> properties;
 
     public FeatureWithPropertiesCollection() {
@@ -40,5 +57,31 @@ public class FeatureWithPropertiesCollection extends FeatureCollection {
 
     public void addProperty(String key, Object value) {
         properties.put(key, value);
+    }
+
+    public void setId(String value) {
+        properties.put(ID_FIELD, value);
+    }
+
+    public void setTitle(String value) {
+        properties.put(TITLE_FIELD, value);
+    }
+
+    public void setPaginationInfos(long totalResults, long startIndex, int itemsPerPage) {
+        properties.put(TOTAL_RESULTS_FIELD, totalResults);
+        properties.put(START_IDX_FIELD, startIndex);
+        properties.put(ITEMS_PER_PAGE_FIELD, itemsPerPage);
+    }
+
+    public void setDescription(String description) {
+        properties.put(DESCRIPTION_FIELD, description);
+    }
+
+    public void setQuery(Query query) {
+        properties.put(QUERY_FIELD, query);
+    }
+
+    public void setLinks(Collection<GeoJsonLink> links) {
+        properties.put(LINKS_FIELD, links);
     }
 }
