@@ -245,8 +245,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         ICriterion criterion = parse(context.getQueryParams());
         // Manage dataset URN path parameter as criterion
         if (context.getDatasetUrn().isPresent()) {
-            criterion = ICriterion.and(criterion,
-                                       ICriterion.eq(StaticProperties.TAGS, context.getDatasetUrn().get().toString()));
+            criterion = ICriterion
+                    .and(criterion,
+                         ICriterion.eq(StaticProperties.FEATURE_TAGS_PATH, context.getDatasetUrn().get().toString()));
         }
         return criterion;
     }
@@ -294,7 +295,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                 if (!queryParam.getKey().equals(configuration.getQueryParameterName())) {
                     AttributeModel attributeModel = finder.findByName(queryParam.getKey());
                     if (attributeModel.getId() != null) {
-                        attributeModel.buildJsonPath(StaticProperties.PROPERTIES);
+                        attributeModel.buildJsonPath(StaticProperties.FEATURE_PROPERTIES);
                     } else {
                         // Standard static attributes. Not a real attribute. So jsonPath = name;
                         attributeModel.setJsonPath(attributeModel.getName());

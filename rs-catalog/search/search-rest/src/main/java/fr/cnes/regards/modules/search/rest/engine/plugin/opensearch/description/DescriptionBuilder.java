@@ -227,7 +227,8 @@ public class DescriptionBuilder {
     }
 
     /**
-     * Build {@link OpenSearchParameter}s to add for the parameter extension in each {@link UrlType} of the {@link OpenSearchDescription}
+     * Build {@link OpenSearchParameter}s to add for the parameter extension in each {@link UrlType} of the
+     * {@link OpenSearchDescription}
      * @param attributes {@link Map} {@link AttributeModel} / {@link QueryableAttribute}
      * @param extensions {@link IOpenSearchExtension}s to apply on parameters
      * @return generated {@link OpenSearchParameter}s
@@ -330,7 +331,7 @@ public class DescriptionBuilder {
             // For each attribute retrieve the QueryableAttribute informations
             List<QueryableAttribute> queryableAttributes = Lists.newArrayList();
             for (ModelAttrAssoc maa : assocsResponse.getBody()) {
-                maa.getAttribute().buildJsonPath(StaticProperties.PROPERTIES);
+                maa.getAttribute().buildJsonPath(StaticProperties.FEATURE_PROPERTIES);
                 Optional<ParameterConfiguration> conf = parameterConfs.stream()
                         .filter(pc -> pc.getAttributeModelJsonPath().equals(maa.getAttribute().getJsonPath()))
                         .findFirst();

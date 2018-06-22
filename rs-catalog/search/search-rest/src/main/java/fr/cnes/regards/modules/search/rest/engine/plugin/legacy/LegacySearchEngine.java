@@ -114,8 +114,9 @@ public class LegacySearchEngine implements
         ICriterion criterion = parse(context.getQueryParams());
         // Manage dataset URN path parameter as criterion
         if (context.getDatasetUrn().isPresent()) {
-            criterion = ICriterion.and(criterion,
-                                       ICriterion.eq(StaticProperties.TAGS, context.getDatasetUrn().get().toString()));
+            criterion = ICriterion
+                    .and(criterion,
+                         ICriterion.eq(StaticProperties.FEATURE_TAGS_PATH, context.getDatasetUrn().get().toString()));
         }
         return criterion;
     }

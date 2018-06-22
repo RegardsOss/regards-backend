@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 
 /**
@@ -79,5 +80,5 @@ public interface IBusinessSearchService {
      * @param partialText text that property should contains (can be null)
      */
     List<String> retrieveEnumeratedPropertyValues(ICriterion criterion, SearchType searchType, String propertyPath,
-            int maxCount, String partialText) throws SearchException;
+            int maxCount, String partialText) throws SearchException, OpenSearchUnknownParameter;
 }

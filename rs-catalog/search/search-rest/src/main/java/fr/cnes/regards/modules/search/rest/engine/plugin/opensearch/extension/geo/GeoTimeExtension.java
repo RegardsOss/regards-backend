@@ -55,7 +55,8 @@ import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
 
 /**
  * Geo&Time parameter extension for Opensearch standard.
- * @see <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Parameter/1.0/Draft_2">Opensearch parameter extension</a>
+ * @see <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Parameter/1.0/Draft_2">Opensearch
+ *      parameter extension</a>
  * @see <a href="http://www.opengeospatial.org/standards/opensearchgeo">Opensearch Geo&Time extension</a>
  *
  * @author Sébastien Binda
@@ -121,8 +122,8 @@ public class GeoTimeExtension extends AbstractExtension {
                                       "Defined by 'west, south, east, north' coordinates of longitude, latitude, in decimal degrees (EPSG:4326)",
                                       BOX_PATTERN));
         // To implement
-        //        geoParameters.add(builderParameter(LOCATION_PARAMETER, String.format("{%s:%s}", GEO_NS, LOCATION_PARAMETER),
-        //                                           "Location string e.g. Paris, France", null));
+        // geoParameters.add(builderParameter(LOCATION_PARAMETER, String.format("{%s:%s}", GEO_NS, LOCATION_PARAMETER),
+        // "Location string e.g. Paris, France", null));
         geoParameters
                 .add(builderParameter(LON_PARAMETER, String.format("{%s:%s}", GEO_NS, LON_PARAMETER),
                                       "Longitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lat",
@@ -200,9 +201,9 @@ public class GeoTimeExtension extends AbstractExtension {
                 .orElse(null);
         if ((timeStartParameterConf != null) && (timeEndParameterConf != null)) {
             String startDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath()
-                    .replace(StaticProperties.PROPERTIES + ".", "");
+                    .replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
             String endDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath()
-                    .replace(StaticProperties.PROPERTIES + ".", "");
+                    .replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
             AbstractAttribute<?> startDate = entity.getProperty(startDateJsonPath);
             AbstractAttribute<?> stopDate = entity.getProperty(endDateJsonPath);
             if ((startDate != null) && (startDate.getValue() instanceof OffsetDateTime) && (stopDate != null)

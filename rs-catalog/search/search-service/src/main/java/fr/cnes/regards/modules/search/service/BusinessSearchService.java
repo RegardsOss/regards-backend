@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 
 /**
@@ -83,7 +84,7 @@ public class BusinessSearchService implements IBusinessSearchService {
 
     @Override
     public List<String> retrieveEnumeratedPropertyValues(ICriterion criterion, SearchType searchType,
-            String propertyPath, int maxCount, String partialText) throws SearchException {
+            String propertyPath, int maxCount, String partialText) throws SearchException, OpenSearchUnknownParameter {
         // Just delegate to entity search service
         return searchService.retrieveEnumeratedPropertyValues(criterion, searchType, propertyPath, maxCount,
                                                               partialText);

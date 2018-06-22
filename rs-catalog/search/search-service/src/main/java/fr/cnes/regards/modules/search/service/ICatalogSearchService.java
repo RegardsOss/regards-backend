@@ -39,6 +39,7 @@ import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 
 /**
@@ -126,7 +127,8 @@ public interface ICatalogSearchService {
      */
     @Deprecated // Only use method with ICriterion
     <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(MultiValueMap<String, String> allParams,
-            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText) throws SearchException;
+            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText)
+            throws SearchException, OpenSearchUnknownParameter;
 
     /**
      * Retrieve property values for specified property name
@@ -137,7 +139,8 @@ public interface ICatalogSearchService {
      * @param partialText text that property should contains (can be null)
      */
     <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(ICriterion criterion,
-            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText) throws SearchException;
+            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText)
+            throws SearchException, OpenSearchUnknownParameter;
 
     /**
      * Retrieve property values for specified property name
@@ -148,7 +151,7 @@ public interface ICatalogSearchService {
      * @param partialText text that property should contains (can be null)
      */
     List<String> retrieveEnumeratedPropertyValues(ICriterion criterion, SearchType searchType, String propertyPath,
-            int maxCount, String partialText) throws SearchException;
+            int maxCount, String partialText) throws SearchException, OpenSearchUnknownParameter;
 
     /**
      * Retrieve statistics for given attribute from a search context with search criterions and searcType.
