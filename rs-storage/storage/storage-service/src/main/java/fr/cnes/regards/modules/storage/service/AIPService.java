@@ -935,6 +935,10 @@ public class AIPService implements IAIPService {
         updatingBuilder.getPDIBuilder().setProposal(updatedPdi.getProvenanceInformation().getProposal());
         // Context Information
         // first tags
+        // remove all existing tags
+        updatingBuilder.getPDIBuilder().removeTags(updatingBuilder.getPDIBuilder().build().getTags()
+                .toArray(new String[updatingBuilder.getPDIBuilder().build().getTags().size()]));
+        // add the new tags
         if (updated.getTags().size() > 0) {
             updatingBuilder.getPDIBuilder().addTags(updated.getTags().toArray(new String[updated.getTags().size()]));
         }
