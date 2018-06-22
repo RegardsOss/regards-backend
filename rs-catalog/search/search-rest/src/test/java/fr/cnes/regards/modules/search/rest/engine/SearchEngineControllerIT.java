@@ -153,7 +153,7 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         ResultActions result = performDefaultGet(SearchEngineController.TYPE_MAPPING
                 + SearchEngineController.SEARCH_DATASETS_MAPPING, customizer, "Search all error", ENGINE_TYPE);
 
-        String datasetUrn = JsonPath.read(payload(result), "$.content[0].content.ipId");
+        String datasetUrn = JsonPath.read(payload(result), "$.content[0].content.id");
 
         customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());

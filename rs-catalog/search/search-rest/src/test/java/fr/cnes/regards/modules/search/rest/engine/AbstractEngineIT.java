@@ -50,6 +50,7 @@ import fr.cnes.regards.modules.entities.domain.attribute.builder.AttributeBuilde
 import fr.cnes.regards.modules.entities.gson.MultitenantFlattenedAttributeAdapterFactory;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.indexer.service.IIndexerService;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.models.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.models.domain.Model;
@@ -133,15 +134,18 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     @Autowired
     protected MultitenantFlattenedAttributeAdapterFactory gsonAttributeFactory;
 
+    @Autowired
+    protected IIndexerService indexerService;
+
     // Keep reference to astronomical object
 
     protected Map<String, AbstractEntity<?>> astroObjects = new HashedMap<>();
 
     protected void initIndex(String index) {
-        if (esRepository.indexExists(index)) {
-            esRepository.deleteIndex(index);
+        if (indexerService.indexExists(index)) {
+            indexerService.deleteIndex(index);
         }
-        esRepository.createIndex(index);
+        indexerService.createIndex(index);
     }
 
     @Before
@@ -218,17 +222,17 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         Mockito.when(attributeModelClientMock.getAttributes(null, null)).thenReturn(ResponseEntity.ok(resAtts));
 
         // Create data
-        esRepository.saveBulk(getDefaultTenant(), createGalaxies(galaxyModel));
-        esRepository.saveBulk(getDefaultTenant(), createStars(starModel));
+        indexerService.saveBulkEntities(getDefaultTenant(), createGalaxies(galaxyModel));
+        indexerService.saveBulkEntities(getDefaultTenant(), createStars(starModel));
 
         Dataset solarSystem = createStelarSystem(starSystemModel, SOLAR_SYSTEM);
-        esRepository.save(getDefaultTenant(), solarSystem);
-        esRepository.saveBulk(getDefaultTenant(), createPlanets(planetModel, solarSystem.getIpId()));
+        indexerService.saveEntity(getDefaultTenant(), solarSystem);
+        indexerService.saveBulkEntities(getDefaultTenant(), createPlanets(planetModel, solarSystem.getIpId()));
 
         Dataset kepler90System = createStelarSystem(starSystemModel, KEPLER_90);
-        esRepository.save(getDefaultTenant(), kepler90System);
+        indexerService.saveEntity(getDefaultTenant(), kepler90System);
         DataObject kepler90b = createPlanet(planetModel, "Kepler 90b", PLANET_TYPE_TELLURIC, 1000, 50_000_000L);
-        esRepository.save(getDefaultTenant(), kepler90b);
+        indexerService.saveEntity(getDefaultTenant(), kepler90b);
 
         // Wait until index is really up to date!
         Thread.sleep(1000L);
