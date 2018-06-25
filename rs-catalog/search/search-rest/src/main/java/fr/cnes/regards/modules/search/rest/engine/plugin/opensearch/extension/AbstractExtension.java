@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.ExtensionException;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
 
 /**
  * Abstract class for Opensearch parameters extensions.
@@ -69,7 +68,7 @@ public abstract class AbstractExtension implements IOpenSearchExtension {
                 if (crit != null) {
                     criterion.add(crit);
                 }
-            } catch (UnsupportedCriterionOperator e) {
+            } catch (ExtensionException e) {
                 LOGGER.warn(e.getMessage(), e);
             }
         }
@@ -92,7 +91,7 @@ public abstract class AbstractExtension implements IOpenSearchExtension {
      * @return {@link ICriterion}
      * @throws OpenSearchUnknownParameter
      */
-    protected abstract ICriterion buildCriteria(SearchParameter parameter) throws UnsupportedCriterionOperator;
+    protected abstract ICriterion buildCriteria(SearchParameter parameter) throws ExtensionException;
 
     /**
      * Does the current extension can handle search for the given configured parameter.

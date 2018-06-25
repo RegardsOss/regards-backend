@@ -25,7 +25,7 @@ import com.rometools.rome.feed.atom.Entry;
 import com.rometools.rome.feed.module.Module;
 
 import fr.cnes.regards.framework.geojson.Feature;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionParameter;
@@ -62,22 +62,22 @@ public interface IOpenSearchExtension {
     /**
      * Create the {@link Module} needed by the rome library to generate the specificity of the extension on each entity of the XML+Atom response.
      * Used to format opensearch response into ATOM+XML format for the current extension.
-     * @param entity {@link AbstractEntity} entity to write in XML+Atom format
+     * @param entity {@link EntityFeature} entity to write in XML+Atom format
      * @param paramConfigurations {@link ParameterConfiguration} opensearch parameters configurations.
      * @param entry {@link Entry} ATOM feed entry in which add the extension format
      * @param gson {@link Gson} tool to serialize objects.
      * @return {@link Module} from rome library
      */
-    void formatAtomResponseEntry(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations, Entry entry,
+    void formatAtomResponseEntry(EntityFeature entity, List<ParameterConfiguration> paramConfigurations, Entry entry,
             Gson gson);
 
     /**
-     * Add parameter into the given {@link Feature} for the {@link AbstractEntity} for Geojson response
-     * @param entity {@link AbstractEntity} to write in geojson format.
+     * Add parameter into the given {@link Feature} for the {@link EntityFeature} for Geojson response
+     * @param entity {@link EntityFeature} to write in geojson format.
      * @param paramConfigurations {@link ParameterConfiguration} opensearch parameters configurations.
      * @param feature {@link Feature} from geojson standard
      */
-    void formatGeoJsonResponseFeature(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+    void formatGeoJsonResponseFeature(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
             Feature feature);
 
     /**

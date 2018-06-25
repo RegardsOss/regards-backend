@@ -47,13 +47,13 @@ import com.google.common.reflect.TypeToken;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.entities.domain.criterion.IFeatureCriterion;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
@@ -66,8 +66,11 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
+import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
@@ -81,9 +84,6 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 public class CatalogSearchService implements ICatalogSearchService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CatalogSearchService.class);
-
-    @Autowired
-    private IRuntimeTenantResolver tenantResolver;
 
     /**
      * Service perfoming the ElasticSearch search from criterions. Autowired.
@@ -104,6 +104,9 @@ public class CatalogSearchService implements ICatalogSearchService {
      * Facet converter
      */
     private final IFacetConverter facetConverter;
+
+    @Autowired
+    private IAttributeFinder finder;
 
     /**
      * @param searchService Service perfoming the ElasticSearch search from criterions. Autowired by Spring. Must not be
@@ -225,7 +228,7 @@ public class CatalogSearchService implements ICatalogSearchService {
     }
 
     @Override
-    public <E extends AbstractEntity> E get(UniformResourceName urn)
+    public <E extends AbstractEntity<?>> E get(UniformResourceName urn)
             throws EntityOperationForbiddenException, EntityNotFoundException {
         E entity = searchService.get(urn);
         if (entity == null) {
@@ -356,7 +359,8 @@ public class CatalogSearchService implements ICatalogSearchService {
     @Deprecated // Only use method with ICriterion
     @Override
     public <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(MultiValueMap<String, String> allParams,
-            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText) throws SearchException {
+            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText)
+            throws SearchException, OpenSearchUnknownParameter {
         try {
             // Build criterion from query
             ICriterion criterion = openSearchService.parse(allParams);
@@ -374,16 +378,20 @@ public class CatalogSearchService implements ICatalogSearchService {
 
     @Override
     public <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(ICriterion criterion,
-            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText) throws SearchException {
+            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText)
+            throws SearchException, OpenSearchUnknownParameter {
+
+        AttributeModel attModel = finder.findByName(propertyPath);
 
         try {
             // Apply security filter (ie user groups)
             criterion = accessRightFilter.addAccessRights(criterion);
             // Add partialText contains criterion if not empty
             if (!Strings.isNullOrEmpty(partialText)) {
-                criterion = ICriterion.and(criterion, ICriterion.contains(propertyPath, partialText));
+                criterion = ICriterion.and(criterion, IFeatureCriterion.contains(attModel, partialText));
             }
-            return searchService.searchUniqueTopValues(searchKey, criterion, propertyPath, maxCount);
+            return searchService.searchUniqueTopValues(searchKey, criterion,
+                                                       IFeatureCriterion.buildFeaturePath(attModel), maxCount);
         } catch (AccessRightFilterException e) {
             LOGGER.debug("Falling back to empty list of values", e);
             return Collections.emptyList();
@@ -392,7 +400,7 @@ public class CatalogSearchService implements ICatalogSearchService {
 
     @Override
     public List<String> retrieveEnumeratedPropertyValues(ICriterion criterion, SearchType searchType,
-            String propertyPath, int maxCount, String partialText) throws SearchException {
+            String propertyPath, int maxCount, String partialText) throws SearchException, OpenSearchUnknownParameter {
         return retrieveEnumeratedPropertyValues(criterion, getSimpleSearchKey(searchType), propertyPath, maxCount,
                                                 partialText);
     }

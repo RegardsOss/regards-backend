@@ -23,6 +23,7 @@ import java.util.List;
 import org.springframework.hateoas.Link;
 
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.Configuration;
@@ -48,7 +49,7 @@ public interface IResponseBuilder<R> {
      * @param links {@link Link}s of the entities collection
      */
     void addMetadata(String searchId, EngineConfiguration engineConf, String openSearchDescriptionUrl,
-            SearchContext context, Configuration configuration, FacetPage<AbstractEntity> page, List<Link> links);
+            SearchContext context, Configuration configuration, FacetPage<EntityFeature> page, List<Link> links);
 
     /**
      * Add a new response entity to the builder. An entity is a {@link AbstractEntity} from an catalog search response.
@@ -56,7 +57,7 @@ public interface IResponseBuilder<R> {
      * @param paramConfigurations {@link ParameterConfiguration}s
      * @parma entityLinks {@link Link}s of the entity
      */
-    void addEntity(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations, List<Link> entityLinks);
+    void addEntity(EntityFeature entity, List<ParameterConfiguration> paramConfigurations, List<Link> entityLinks);
 
     /**
      * Clear all added {@link AbstractEntity}s to the current builder.

@@ -100,7 +100,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         customizer.customizeRequestParam().param("page", "0");
         customizer.customizeRequestParam().param("size", "100");
-        customizer.customizeRequestParam().param("properties.planet", "Mercury");
+        customizer.customizeRequestParam().param("planet", "Mercury");
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.features.length()", Matchers.equalTo(1)));
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.features[0].properties.planet",

@@ -30,9 +30,9 @@ import com.google.gson.Gson;
 import com.rometools.rome.feed.module.Module;
 import com.rometools.rome.io.ModuleGenerator;
 
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
 import fr.cnes.regards.modules.entities.domain.attribute.ObjectAttribute;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards.RegardsExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.RegardsModule;
 
@@ -59,10 +59,6 @@ public class RegardsModuleGenerator implements ModuleGenerator {
     private static final String LABEL = "label";
 
     private static final String IPID = "ipId";
-
-    private static final String CREATIONDATE = "creationDate";
-
-    private static final String LASTUPDATE = "lastUpdate";
 
     private static final String SIPID = "sipId";
 
@@ -96,11 +92,9 @@ public class RegardsModuleGenerator implements ModuleGenerator {
 
         // Add standard attributs
         // Geometry is not added here. This standard attribute should be handled by the Time&Geo extension
-        AbstractEntity entity = regardsModule.getEntity();
+        EntityFeature entity = regardsModule.getEntity();
         addStandardElement(element, LABEL, entity.getLabel(), regardsModule.getGsonBuilder());
-        addStandardElement(element, IPID, entity.getIpId(), regardsModule.getGsonBuilder());
-        addStandardElement(element, CREATIONDATE, entity.getCreationDate(), regardsModule.getGsonBuilder());
-        addStandardElement(element, LASTUPDATE, entity.getLastUpdate(), regardsModule.getGsonBuilder());
+        addStandardElement(element, IPID, entity.getId(), regardsModule.getGsonBuilder());
         addStandardElement(element, SIPID, entity.getSipId(), regardsModule.getGsonBuilder());
         addStandardElement(element, TAGS, entity.getTags(), regardsModule.getGsonBuilder());
         addStandardElement(element, TYPE, entity.getType(), regardsModule.getGsonBuilder());

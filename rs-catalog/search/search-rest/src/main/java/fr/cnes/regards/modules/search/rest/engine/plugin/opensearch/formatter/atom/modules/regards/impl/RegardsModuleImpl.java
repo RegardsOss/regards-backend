@@ -24,7 +24,7 @@ import com.google.gson.Gson;
 import com.rometools.rome.feed.CopyFrom;
 import com.rometools.rome.feed.module.ModuleImpl;
 
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.RegardsModule;
 
 /**
@@ -40,9 +40,9 @@ public class RegardsModuleImpl extends ModuleImpl implements RegardsModule, Seri
     private static final long serialVersionUID = 1L;
 
     /**
-     * Regards {@link AbstractEntity} to format.
+     * Regards {@link EntityFeature} to format.
      */
-    private AbstractEntity entity;
+    private EntityFeature entity;
 
     /**
      * {@link Gson} to serialize attributes values.
@@ -76,12 +76,12 @@ public class RegardsModuleImpl extends ModuleImpl implements RegardsModule, Seri
     }
 
     @Override
-    public AbstractEntity getEntity() {
+    public EntityFeature getEntity() {
         return this.entity;
     }
 
     @Override
-    public void setEntity(AbstractEntity entity) {
+    public void setEntity(EntityFeature entity) {
         this.entity = entity;
     }
 

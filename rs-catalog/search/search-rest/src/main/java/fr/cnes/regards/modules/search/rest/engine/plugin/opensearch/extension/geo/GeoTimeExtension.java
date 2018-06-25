@@ -41,9 +41,9 @@ import fr.cnes.regards.framework.geojson.coordinates.Positions;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.LineString;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.AttributeCriterionBuilder;
@@ -60,7 +60,8 @@ import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
 
 /**
  * Geo&Time parameter extension for Opensearch standard.
- * @see <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Parameter/1.0/Draft_2">Opensearch parameter extension</a>
+ * @see <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Parameter/1.0/Draft_2">Opensearch
+ *      parameter extension</a>
  * @see <a href="http://www.opengeospatial.org/standards/opensearchgeo">Opensearch Geo&Time extension</a>
  *
  * @author Sébastien Binda
@@ -92,13 +93,13 @@ public class GeoTimeExtension extends AbstractExtension {
     public static final String RADIUS_PARAMETER = "radius";
 
     @Override
-    public void formatGeoJsonResponseFeature(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+    public void formatGeoJsonResponseFeature(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
             Feature feature) {
         feature.setGeometry(entity.getGeometry());
     }
 
     @Override
-    public void formatAtomResponseEntry(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+    public void formatAtomResponseEntry(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
             Entry entry, Gson gson) {
         // Add module generator
         entry.getModules().add(getAtomEntityResponseBuilder(entity, paramConfigurations, gson));
@@ -128,8 +129,8 @@ public class GeoTimeExtension extends AbstractExtension {
                                       "Defined by 'west, south, east, north' coordinates of longitude, latitude, in decimal degrees (EPSG:4326)",
                                       BOX_PATTERN));
         // To implement
-        //        geoParameters.add(builderParameter(LOCATION_PARAMETER, String.format("{%s:%s}", GEO_NS, LOCATION_PARAMETER),
-        //                                           "Location string e.g. Paris, France", null));
+        // geoParameters.add(builderParameter(LOCATION_PARAMETER, String.format("{%s:%s}", GEO_NS, LOCATION_PARAMETER),
+        // "Location string e.g. Paris, France", null));
         geoParameters
                 .add(builderParameter(LON_PARAMETER, String.format("{%s:%s}", GEO_NS, LON_PARAMETER),
                                       "Longitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lat",
@@ -151,15 +152,8 @@ public class GeoTimeExtension extends AbstractExtension {
     }
 
     @Override
-    protected ICriterion buildCriteria(SearchParameter parameter) throws UnsupportedCriterionOperator {
-        ICriterion criteria = ICriterion.all();
-        if (parameter.getConfiguration() != null) {
-
-        } else {
-
-        }
-
-        return criteria;
+    protected ICriterion buildCriteria(SearchParameter parameter) throws ExtensionException {
+        throw new ExtensionException("Geo & Time criterion cannot be build individually for each parameter.");
     }
 
     @Override
@@ -262,7 +256,7 @@ public class GeoTimeExtension extends AbstractExtension {
                         && TIME_NS.equals(parameter.getConfiguration().getNamespace()));
     }
 
-    private Module getAtomEntityResponseBuilder(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+    private Module getAtomEntityResponseBuilder(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
             Gson gson) {
         // Add GML with time module to handle geo & time extension
         GmlTimeModuleImpl gmlMod = new GmlTimeModuleImpl();
@@ -274,9 +268,9 @@ public class GeoTimeExtension extends AbstractExtension {
                 .orElse(null);
         if ((timeStartParameterConf != null) && (timeEndParameterConf != null)) {
             String startDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath()
-                    .replace(StaticProperties.PROPERTIES + ".", "");
+                    .replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
             String endDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath()
-                    .replace(StaticProperties.PROPERTIES + ".", "");
+                    .replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
             AbstractAttribute<?> startDate = entity.getProperty(startDateJsonPath);
             AbstractAttribute<?> stopDate = entity.getProperty(endDateJsonPath);
             if ((startDate != null) && (startDate.getValue() instanceof OffsetDateTime) && (stopDate != null)

@@ -78,8 +78,20 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
     public void searchCollections() {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
         addCommontMatchers(customizer);
         addSearchTermQuery(customizer, STAR, SUN);
+        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_COLLECTIONS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
+    public void searchCollectionsWithShortName() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
+        addCommontMatchers(customizer);
+        customizer.customizeRequestParam().param(SEARCH_TERMS_QUERY, STAR + ":" + SUN);
         performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_COLLECTIONS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
@@ -91,7 +103,7 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         customizer.customizeRequestParam().param("maxCount", "10");
         performDefaultGet(SearchEngineController.TYPE_MAPPING
                 + SearchEngineController.SEARCH_COLLECTIONS_PROPERTY_VALUES, customizer, "Search all error",
-                          ENGINE_TYPE, StaticProperties.PROPERTIES + "." + GALAXY);
+                          ENGINE_TYPE, StaticProperties.FEATURE_PROPERTIES + "." + GALAXY);
     }
 
     @Test
@@ -123,7 +135,7 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         customizer.customizeRequestParam().param("maxCount", "10");
         performDefaultGet(SearchEngineController.TYPE_MAPPING
                 + SearchEngineController.SEARCH_DATAOBJECTS_PROPERTY_VALUES, customizer, "Search all error",
-                          ENGINE_TYPE, StaticProperties.PROPERTIES + "." + PLANET);
+                          ENGINE_TYPE, StaticProperties.FEATURE_PROPERTIES + "." + PLANET);
 
         // Search only the 8 planets of the solar system
         customizer = getNewRequestBuilderCustomizer();
@@ -137,7 +149,8 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         customizer.customizeRequestParam().param("maxCount", "10");
         performDefaultGet(SearchEngineController.TYPE_MAPPING
                 + SearchEngineController.SEARCH_DATASET_DATAOBJECTS_PROPERTY_VALUES, customizer, "Search all error",
-                          ENGINE_TYPE, solarSystem.getIpId().toString(), StaticProperties.PROPERTIES + "." + PLANET);
+                          ENGINE_TYPE, solarSystem.getIpId().toString(),
+                          StaticProperties.FEATURE_PROPERTIES + "." + PLANET);
     }
 
     @Test
@@ -152,7 +165,7 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         ResultActions result = performDefaultGet(SearchEngineController.TYPE_MAPPING
                 + SearchEngineController.SEARCH_DATASETS_MAPPING, customizer, "Search all error", ENGINE_TYPE);
 
-        String datasetUrn = JsonPath.read(payload(result), "$.content[0].content.ipId");
+        String datasetUrn = JsonPath.read(payload(result), "$.content[0].content.id");
 
         customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
@@ -174,6 +187,7 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
      */
     private void addSearchTermQuery(RequestBuilderCustomizer customizer, String relativePropertyName, String value) {
         customizer.customizeRequestParam()
-                .param(SEARCH_TERMS_QUERY, StaticProperties.PROPERTIES + "." + relativePropertyName + ":" + value);
+                .param(SEARCH_TERMS_QUERY,
+                       StaticProperties.FEATURE_PROPERTIES + "." + relativePropertyName + ":" + value);
     }
 }

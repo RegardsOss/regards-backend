@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.a
 import com.google.gson.Gson;
 
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 
 /**
  * Provides access to Regards information.
@@ -41,8 +42,8 @@ public interface RegardsResponse {
      * Getter Regards entity to format.
      * @return {@link AbstractEntity}
      */
-    AbstractEntity getEntity();
+    EntityFeature getEntity();
 
-    void setEntity(AbstractEntity entity);
+    void setEntity(EntityFeature entity);
 
 }

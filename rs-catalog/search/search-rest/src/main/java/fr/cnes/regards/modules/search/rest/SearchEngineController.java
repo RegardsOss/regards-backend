@@ -58,7 +58,7 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
@@ -790,58 +790,74 @@ public class SearchEngineController {
      * Build contextual entity links according to search context and entity type
      */
     public static List<Link> buildEntityLinks(IResourceService resourceService, SearchContext context,
-            AbstractEntity entity) {
+            EntityFeature entity) {
+        return buildEntityLinks(resourceService, context, entity.getEntityType(), entity.getId());
+    }
+
+    /**
+     * Build contextual entity links according to search context and entity type
+     */
+    public static List<Link> buildEntityLinks(IResourceService resourceService, SearchContext context,
+            EntityType entityType, UniformResourceName id) {
         List<Link> links = new ArrayList<>();
 
-        // Build links
-        if (EntityType.COLLECTION.name().equals(entity.getType())) {
-            addLink(links,
-                    resourceService.buildLink(SearchEngineController.class,
-                                              SearchEngineController.GET_COLLECTION_METHOD, LinkRels.SELF,
-                                              MethodParamFactory.build(String.class, context.getEngineType()),
-                                              MethodParamFactory.build(UniformResourceName.class, entity.getIpId()),
-                                              MethodParamFactory.build(HttpHeaders.class)));
-        } else if (EntityType.DATA.name().equals(entity.getType())) {
-            addLink(links,
-                    resourceService.buildLink(SearchEngineController.class,
-                                              SearchEngineController.GET_DATAOBJECT_METHOD, LinkRels.SELF,
-                                              MethodParamFactory.build(String.class, context.getEngineType()),
-                                              MethodParamFactory.build(UniformResourceName.class, entity.getIpId()),
-                                              MethodParamFactory.build(HttpHeaders.class)));
-        } else if (EntityType.DATASET.name().equals(entity.getType())) {
-            addLink(links,
-                    resourceService.buildLink(SearchEngineController.class, SearchEngineController.GET_DATASET_METHOD,
-                                              LinkRels.SELF,
-                                              MethodParamFactory.build(String.class, context.getEngineType()),
-                                              MethodParamFactory.build(UniformResourceName.class, entity.getIpId()),
-                                              MethodParamFactory.build(HttpHeaders.class)));
-            // Add link to DATA OBJECTS
-            addLink(links, resourceService
-                    .buildLink(SearchEngineController.class, SearchEngineController.SEARCH_ALL_DATAOBJECTS_BY_DATASET,
-                               LINK_TO_DATAOBJECTS, MethodParamFactory.build(String.class, context.getEngineType()),
-                               MethodParamFactory.build(String.class, entity.getIpId().toString()),
-                               MethodParamFactory.build(HttpHeaders.class),
-                               MethodParamFactory.build(MultiValueMap.class),
-                               MethodParamFactory.build(Pageable.class)));
-            // Add link to DATASET description
-            addLink(links, resourceService
-                    .buildLink(SearchEngineController.class, SearchEngineController.GET_DATASET_DESCRIPTION_METHOD,
-                               LINK_TO_DATASET_DESCRIPTION,
-                               MethodParamFactory.build(String.class, context.getEngineType()),
-                               MethodParamFactory.build(UniformResourceName.class, entity.getIpId()),
-                               MethodParamFactory.build(String.class), MethodParamFactory.build(HttpHeaders.class)));
-        } else if (EntityType.DOCUMENT.name().equals(entity.getType())) {
-            addLink(links,
-                    resourceService.buildLink(SearchEngineController.class, SearchEngineController.GET_DOCUMENT_METHOD,
-                                              LinkRels.SELF,
-                                              MethodParamFactory.build(String.class, context.getEngineType()),
-                                              MethodParamFactory.build(UniformResourceName.class, entity.getIpId()),
-                                              MethodParamFactory.build(HttpHeaders.class)));
-        } else {
-            // Nothing to do
-            LOGGER.warn("Unknown entity type \"{}\"", entity.getType());
+        switch (entityType) {
+            case COLLECTION:
+                addLink(links,
+                        resourceService.buildLink(SearchEngineController.class,
+                                                  SearchEngineController.GET_COLLECTION_METHOD, LinkRels.SELF,
+                                                  MethodParamFactory.build(String.class, context.getEngineType()),
+                                                  MethodParamFactory.build(UniformResourceName.class, id),
+                                                  MethodParamFactory.build(HttpHeaders.class)));
+                break;
+            case DATA:
+                addLink(links,
+                        resourceService.buildLink(SearchEngineController.class,
+                                                  SearchEngineController.GET_DATAOBJECT_METHOD, LinkRels.SELF,
+                                                  MethodParamFactory.build(String.class, context.getEngineType()),
+                                                  MethodParamFactory.build(UniformResourceName.class, id),
+                                                  MethodParamFactory.build(HttpHeaders.class)));
+                break;
+            case DATASET:
+                addLink(links,
+                        resourceService.buildLink(SearchEngineController.class,
+                                                  SearchEngineController.GET_DATASET_METHOD, LinkRels.SELF,
+                                                  MethodParamFactory.build(String.class, context.getEngineType()),
+                                                  MethodParamFactory.build(UniformResourceName.class, id),
+                                                  MethodParamFactory.build(HttpHeaders.class)));
+                // Add link to DATA OBJECTS
+                addLink(links,
+                        resourceService.buildLink(SearchEngineController.class,
+                                                  SearchEngineController.SEARCH_ALL_DATAOBJECTS_BY_DATASET,
+                                                  LINK_TO_DATAOBJECTS,
+                                                  MethodParamFactory.build(String.class, context.getEngineType()),
+                                                  MethodParamFactory.build(String.class, id.toString()),
+                                                  MethodParamFactory.build(HttpHeaders.class),
+                                                  MethodParamFactory.build(MultiValueMap.class),
+                                                  MethodParamFactory.build(Pageable.class)));
+                // Add link to DATASET description
+                addLink(links,
+                        resourceService.buildLink(SearchEngineController.class,
+                                                  SearchEngineController.GET_DATASET_DESCRIPTION_METHOD,
+                                                  LINK_TO_DATASET_DESCRIPTION,
+                                                  MethodParamFactory.build(String.class, context.getEngineType()),
+                                                  MethodParamFactory.build(UniformResourceName.class, id),
+                                                  MethodParamFactory.build(String.class),
+                                                  MethodParamFactory.build(HttpHeaders.class)));
+                break;
+            case DOCUMENT:
+                addLink(links,
+                        resourceService.buildLink(SearchEngineController.class,
+                                                  SearchEngineController.GET_DOCUMENT_METHOD, LinkRels.SELF,
+                                                  MethodParamFactory.build(String.class, context.getEngineType()),
+                                                  MethodParamFactory.build(UniformResourceName.class, id),
+                                                  MethodParamFactory.build(HttpHeaders.class)));
+                break;
+            default:
+                // Nothing to do
+                LOGGER.warn("Unknown entity type \"{}\"", entityType);
+                break;
         }
-
         return links;
     }
 

@@ -23,6 +23,7 @@ import java.util.List;
 import org.assertj.core.util.Lists;
 
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.modules.entities.domain.criterion.IFeatureCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
@@ -50,34 +51,33 @@ public class AttributeCriterionBuilder {
     public static ICriterion build(AttributeModel attributeModel, ParameterOperator operator, List<String> values)
             throws UnsupportedCriterionOperator {
         ICriterion criterion = null;
-        String attributeJsonPath = attributeModel.getJsonPath();
         for (String value : values) {
             ICriterion valueCriterion = null;
             switch (attributeModel.getType()) {
                 case INTEGER:
                 case INTEGER_ARRAY:
-                    valueCriterion = buildIngetegerCrit(attributeJsonPath, value, operator);
+                    valueCriterion = buildIngetegerCrit(attributeModel, value, operator);
                     break;
                 case DOUBLE:
                 case DOUBLE_ARRAY:
-                    valueCriterion = buildDoubleCrit(attributeJsonPath, value, operator);
+                    valueCriterion = buildDoubleCrit(attributeModel, value, operator);
                     break;
                 case LONG:
                 case LONG_ARRAY:
-                    valueCriterion = buildLongCrit(attributeJsonPath, value, operator);
+                    valueCriterion = buildLongCrit(attributeModel, value, operator);
                     break;
                 case STRING:
                 case URL:
-                    valueCriterion = buildStringCrit(attributeJsonPath, value, operator);
+                    valueCriterion = buildStringCrit(attributeModel, value, operator);
                     break;
                 case STRING_ARRAY:
-                    valueCriterion = buildStringArrayCrit(attributeJsonPath, value, operator);
+                    valueCriterion = buildStringArrayCrit(attributeModel, value, operator);
                     break;
                 case DATE_ISO8601:
-                    valueCriterion = buildDateCrit(attributeJsonPath, value, operator);
+                    valueCriterion = buildDateCrit(attributeModel, value, operator);
                     break;
                 case BOOLEAN:
-                    valueCriterion = buildBooleanCrit(attributeJsonPath, value, operator);
+                    valueCriterion = buildBooleanCrit(attributeModel, value, operator);
                     break;
                 default:
                     // Nothing to do
@@ -100,7 +100,7 @@ public class AttributeCriterionBuilder {
      * @return {@link ICriterion}
      * @throws UnsupportedCriterionOperator
      */
-    private static ICriterion buildBooleanCrit(String attribute, String value, ParameterOperator operator)
+    private static ICriterion buildBooleanCrit(AttributeModel attribute, String value, ParameterOperator operator)
             throws UnsupportedCriterionOperator {
         switch (operator) {
             case GE:
@@ -111,7 +111,7 @@ public class AttributeCriterionBuilder {
                         String.format("Invalid operator %s for string parameter %s", operator.toString(), attribute));
             case EQ:
             default:
-                return ICriterion.eq(attribute, Boolean.valueOf(value));
+                return IFeatureCriterion.eq(attribute, Boolean.valueOf(value));
         }
     }
 
@@ -123,19 +123,19 @@ public class AttributeCriterionBuilder {
      * @return {@link ICriterion}
      * @throws OpenSearchUnknownParameter
      */
-    private static ICriterion buildDateCrit(String attribute, String value, ParameterOperator operator) {
+    private static ICriterion buildDateCrit(AttributeModel attribute, String value, ParameterOperator operator) {
         switch (operator) {
             case GE:
-                return ICriterion.ge(attribute, OffsetDateTimeAdapter.parse(value));
+                return IFeatureCriterion.ge(attribute, OffsetDateTimeAdapter.parse(value));
             case GT:
-                return ICriterion.gt(attribute, OffsetDateTimeAdapter.parse(value));
+                return IFeatureCriterion.gt(attribute, OffsetDateTimeAdapter.parse(value));
             case LE:
-                return ICriterion.le(attribute, OffsetDateTimeAdapter.parse(value));
+                return IFeatureCriterion.le(attribute, OffsetDateTimeAdapter.parse(value));
             case LT:
-                return ICriterion.lt(attribute, OffsetDateTimeAdapter.parse(value));
+                return IFeatureCriterion.lt(attribute, OffsetDateTimeAdapter.parse(value));
             case EQ:
             default:
-                return ICriterion.eq(attribute, OffsetDateTimeAdapter.parse(value));
+                return IFeatureCriterion.eq(attribute, OffsetDateTimeAdapter.parse(value));
         }
     }
 
@@ -147,7 +147,7 @@ public class AttributeCriterionBuilder {
      * @return {@link ICriterion}
      * @throws OpenSearchUnknownParameter
      */
-    private static ICriterion buildIngetegerCrit(String attribute, String value, ParameterOperator operator) {
+    private static ICriterion buildIngetegerCrit(AttributeModel attribute, String value, ParameterOperator operator) {
         // Important :
         // We have to do it because the value of the criterion returned by Elasticsearch is always a double value,
         // even if the value is an integer value.
@@ -161,16 +161,16 @@ public class AttributeCriterionBuilder {
         }
         switch (operator) {
             case GE:
-                return ICriterion.ge(attribute, val);
+                return IFeatureCriterion.ge(attribute, val);
             case GT:
-                return ICriterion.gt(attribute, val);
+                return IFeatureCriterion.gt(attribute, val);
             case LE:
-                return ICriterion.le(attribute, val);
+                return IFeatureCriterion.le(attribute, val);
             case LT:
-                return ICriterion.lt(attribute, val);
+                return IFeatureCriterion.lt(attribute, val);
             case EQ:
             default:
-                return ICriterion.eq(attribute, val);
+                return IFeatureCriterion.eq(attribute, val);
         }
     }
 
@@ -181,20 +181,20 @@ public class AttributeCriterionBuilder {
      * @param operator {@link ParameterOperator} for search
      * @return {@link ICriterion}
      */
-    private static ICriterion buildDoubleCrit(String attribute, String value, ParameterOperator operator) {
+    private static ICriterion buildDoubleCrit(AttributeModel attribute, String value, ParameterOperator operator) {
         Double asDouble = Double.parseDouble(value);
         switch (operator) {
             case GE:
-                return ICriterion.ge(attribute, asDouble);
+                return IFeatureCriterion.ge(attribute, asDouble);
             case GT:
-                return ICriterion.gt(attribute, asDouble);
+                return IFeatureCriterion.gt(attribute, asDouble);
             case LE:
-                return ICriterion.le(attribute, asDouble);
+                return IFeatureCriterion.le(attribute, asDouble);
             case LT:
-                return ICriterion.lt(attribute, asDouble);
+                return IFeatureCriterion.lt(attribute, asDouble);
             case EQ:
             default:
-                return ICriterion.eq(attribute, asDouble, asDouble - Math.nextDown(asDouble));
+                return IFeatureCriterion.eq(attribute, asDouble, asDouble - Math.nextDown(asDouble));
         }
     }
 
@@ -205,7 +205,7 @@ public class AttributeCriterionBuilder {
      * @param operator {@link ParameterOperator} for search
      * @return {@link ICriterion}
      */
-    private static ICriterion buildLongCrit(String attribute, String value, ParameterOperator operator) {
+    private static ICriterion buildLongCrit(AttributeModel attribute, String value, ParameterOperator operator) {
         // Important :
         // We have to do it because the value of the criterion returned by Elasticsearch is always a double value,
         // even if the value is a long value.
@@ -219,16 +219,16 @@ public class AttributeCriterionBuilder {
         }
         switch (operator) {
             case GE:
-                return ICriterion.ge(attribute, valL);
+                return IFeatureCriterion.ge(attribute, valL);
             case GT:
-                return ICriterion.gt(attribute, valL);
+                return IFeatureCriterion.gt(attribute, valL);
             case LE:
-                return ICriterion.le(attribute, valL);
+                return IFeatureCriterion.le(attribute, valL);
             case LT:
-                return ICriterion.lt(attribute, valL);
+                return IFeatureCriterion.lt(attribute, valL);
             case EQ:
             default:
-                return ICriterion.eq(attribute, valL);
+                return IFeatureCriterion.eq(attribute, valL);
         }
     }
 
@@ -240,7 +240,7 @@ public class AttributeCriterionBuilder {
      * @return {@link ICriterion}
      * @throws UnsupportedCriterionOperator
      */
-    private static ICriterion buildStringCrit(String attribute, String value, ParameterOperator operator)
+    private static ICriterion buildStringCrit(AttributeModel attribute, String value, ParameterOperator operator)
             throws UnsupportedCriterionOperator {
         switch (operator) {
             case GE:
@@ -251,7 +251,7 @@ public class AttributeCriterionBuilder {
                         String.format("Invalid operator %s for string parameter %s", operator.toString(), attribute));
             case EQ:
             default:
-                return ICriterion.eq(attribute, value);
+                return IFeatureCriterion.eq(attribute, value);
         }
     }
 
@@ -263,7 +263,7 @@ public class AttributeCriterionBuilder {
      * @return {@link ICriterion}
      * @throws UnsupportedCriterionOperator
      */
-    private static ICriterion buildStringArrayCrit(String attribute, String value, ParameterOperator operator)
+    private static ICriterion buildStringArrayCrit(AttributeModel attribute, String value, ParameterOperator operator)
             throws UnsupportedCriterionOperator {
         switch (operator) {
             case GE:
@@ -274,7 +274,7 @@ public class AttributeCriterionBuilder {
                         String.format("Invalid operator %s for string parameter %s", operator.toString(), attribute));
             case EQ:
             default:
-                return ICriterion.contains(attribute, value);
+                return IFeatureCriterion.contains(attribute, value);
         }
     }
 

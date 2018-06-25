@@ -40,13 +40,12 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.StaticProperties;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
@@ -66,7 +65,7 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IR
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.AtomResponseBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.geojson.GeojsonResponseBuilder;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
-import fr.cnes.regards.modules.search.service.ICatalogSearchService;
+import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 
 /**
  * OpenSearch engine plugin
@@ -98,12 +97,6 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @Autowired
     protected IAttributeFinder finder;
 
-    /**
-     * Query parser
-     */
-    @Autowired
-    private IOpenSearchService openSearchService;
-
     @Autowired
     private DescriptionBuilder descriptionBuilder;
 
@@ -111,7 +104,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      * Business search service
      */
     @Autowired
-    protected ICatalogSearchService searchService;
+    protected IBusinessSearchService searchService;
 
     @Autowired
     private Gson gson;
@@ -188,8 +181,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @Override
     public ResponseEntity<Object> search(SearchContext context) throws ModuleException {
         init();
-        FacetPage<AbstractEntity> facetPage = searchService.search(parse(context), context.getSearchType(), null,
-                                                                   context.getPageable());
+        FacetPage<EntityFeature> facetPage = searchService.search(parse(context), context.getSearchType(), null,
+                                                                  context.getPageable());
         try {
             return ResponseEntity.ok(formatResponse(facetPage, context));
         } catch (UnsupportedMediaTypesException e) {
@@ -200,8 +193,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @Override
     public ResponseEntity<Object> getEntity(SearchContext context) throws ModuleException {
         // Retrieve entity
-        AbstractEntity entity = searchService.get(context.getUrn().get());
-        FacetPage<AbstractEntity> facetPage = new FacetPage<>(Arrays.asList(entity), Sets.newHashSet(),
+        EntityFeature entity = searchService.get(context.getUrn().get());
+        FacetPage<EntityFeature> facetPage = new FacetPage<>(Arrays.asList(entity), Sets.newHashSet(),
                 context.getPageable(), 1);
         try {
             return ResponseEntity.ok(formatResponse(facetPage, context));
@@ -230,7 +223,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
             // If the descriptor is asked for a specific dataset, first get the dataset.
             // The dataset will be used to set specific metadatas into the descriptor like title, tags, ...
-            Optional<AbstractEntity> dataset = Optional.empty();
+            Optional<EntityFeature> dataset = Optional.empty();
             if (context.getDatasetUrn().isPresent()) {
                 // Search dataset entity
                 dataset = Optional.of(searchService.get(context.getDatasetUrn().get()));
@@ -252,8 +245,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         ICriterion criterion = parse(context.getQueryParams());
         // Manage dataset URN path parameter as criterion
         if (context.getDatasetUrn().isPresent()) {
-            criterion = ICriterion.and(criterion,
-                                       ICriterion.eq(StaticProperties.TAGS, context.getDatasetUrn().get().toString()));
+            criterion = ICriterion
+                    .and(criterion,
+                         ICriterion.eq(StaticProperties.FEATURE_TAGS_PATH, context.getDatasetUrn().get().toString()));
         }
         return criterion;
     }
@@ -265,7 +259,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      * @return formated response
      * @throws UnsupportedMediaTypesException
      */
-    private Object formatResponse(FacetPage<AbstractEntity> page, SearchContext context)
+    private Object formatResponse(FacetPage<EntityFeature> page, SearchContext context)
             throws UnsupportedMediaTypesException {
         IResponseBuilder<?> builder = getBuilder(context);
         builder.addMetadata(UUID.randomUUID().toString(), engineConfiguration,
@@ -302,7 +296,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                 if (!queryParam.getKey().equals(configuration.getQueryParameterName())) {
                     AttributeModel attributeModel = finder.findByName(queryParam.getKey());
                     if (attributeModel.isDynamic()) {
-                        attributeModel.buildJsonPath(StaticProperties.PROPERTIES);
+                        attributeModel.buildJsonPath(StaticProperties.FEATURE_PROPERTIES);
                     } else {
                         // Standard static attributes. Not a real attribute. So jsonPath = name;
                         attributeModel.setJsonPath(attributeModel.getName());

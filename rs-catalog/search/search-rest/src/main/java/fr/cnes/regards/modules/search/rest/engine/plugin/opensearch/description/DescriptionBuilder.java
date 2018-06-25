@@ -45,8 +45,8 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.StaticProperties;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.models.client.IModelAttrAssocClient;
@@ -124,7 +124,7 @@ public class DescriptionBuilder {
      */
     public OpenSearchDescription build(SearchContext context, ICriterion criterion,
             List<IOpenSearchExtension> extensions, List<ParameterConfiguration> parameterConfs,
-            EngineConfiguration engineConf, Optional<AbstractEntity> dataset) {
+            EngineConfiguration engineConf, Optional<EntityFeature> dataset) {
 
         // Retrieve informations about current projet
         String currentTenant = tenantResolver.getTenant();
@@ -162,7 +162,7 @@ public class DescriptionBuilder {
      * @return
      */
     private OpenSearchDescription buildMetadata(Project project, EngineConfiguration engineConf,
-            Optional<AbstractEntity> dataset) {
+            Optional<EntityFeature> dataset) {
         OpenSearchDescription desc = new OpenSearchDescription();
         if (dataset.isPresent()) {
             desc.setDescription(dataset.get().getLabel());
@@ -227,7 +227,8 @@ public class DescriptionBuilder {
     }
 
     /**
-     * Build {@link OpenSearchParameter}s to add for the parameter extension in each {@link UrlType} of the {@link OpenSearchDescription}
+     * Build {@link OpenSearchParameter}s to add for the parameter extension in each {@link UrlType} of the
+     * {@link OpenSearchDescription}
      * @param attributes {@link Map} {@link AttributeModel} / {@link QueryableAttribute}
      * @param extensions {@link IOpenSearchExtension}s to apply on parameters
      * @return generated {@link OpenSearchParameter}s
@@ -330,7 +331,7 @@ public class DescriptionBuilder {
             // For each attribute retrieve the QueryableAttribute informations
             List<QueryableAttribute> queryableAttributes = Lists.newArrayList();
             for (ModelAttrAssoc maa : assocsResponse.getBody()) {
-                maa.getAttribute().buildJsonPath(StaticProperties.PROPERTIES);
+                maa.getAttribute().buildJsonPath(StaticProperties.FEATURE_PROPERTIES);
                 Optional<ParameterConfiguration> conf = parameterConfs.stream()
                         .filter(pc -> pc.getAttributeModelJsonPath().equals(maa.getAttribute().getJsonPath()))
                         .findFirst();

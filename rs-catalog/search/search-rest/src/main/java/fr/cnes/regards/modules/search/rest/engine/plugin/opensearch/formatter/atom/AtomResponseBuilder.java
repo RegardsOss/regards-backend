@@ -37,7 +37,7 @@ import com.rometools.rome.feed.module.Module;
 import com.rometools.rome.feed.synd.SyndPerson;
 import com.rometools.rome.feed.synd.SyndPersonImpl;
 
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.OpenSearchMediaType;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
@@ -79,7 +79,7 @@ public class AtomResponseBuilder implements IResponseBuilder<Feed> {
 
     @Override
     public void addMetadata(String searchId, EngineConfiguration engineConf, String openSearchDescriptionUrl,
-            SearchContext context, Configuration configuration, FacetPage<AbstractEntity> page,
+            SearchContext context, Configuration configuration, FacetPage<EntityFeature> page,
             List<org.springframework.hateoas.Link> links) {
         // Fee general informations
         feed.setId(searchId);
@@ -147,16 +147,12 @@ public class AtomResponseBuilder implements IResponseBuilder<Feed> {
     }
 
     @Override
-    public void addEntity(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+    public void addEntity(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
             List<org.springframework.hateoas.Link> entityLinks) {
         Entry entry = new Entry();
-        entry.setId(entity.getIpId().toString());
-        if (entity.getCreationDate() != null) {
-            entry.setPublished(Date.valueOf(entity.getCreationDate().toLocalDate()));
-        }
-        if (entity.getLastUpdate() != null) {
-            entry.setUpdated(Date.valueOf(entity.getLastUpdate().toLocalDate()));
-        }
+        entry.setId(entity.getId().toString());
+        // TODO : Handle updated date
+        // entry.setUpdated();
         entry.setTitle(entity.getLabel());
         List<Module> mods = entry.getModules();
 
@@ -173,7 +169,7 @@ public class AtomResponseBuilder implements IResponseBuilder<Feed> {
             feedEntityLink.setHref(link.getHref());
             feedEntityLink.setType(MediaType.APPLICATION_ATOM_XML_VALUE);
             if (link.getRel().equals(org.springframework.hateoas.Link.REL_SELF)) {
-                feedEntityLink.setTitle(String.format("ATOM link for %s", entity.getIpId().toString()));
+                feedEntityLink.setTitle(String.format("ATOM link for %s", entity.getId().toString()));
             }
             entry.getAlternateLinks().add(feedEntityLink);
         });

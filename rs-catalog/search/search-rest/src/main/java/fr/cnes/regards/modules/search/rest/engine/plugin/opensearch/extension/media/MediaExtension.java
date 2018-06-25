@@ -44,13 +44,13 @@ import com.rometools.rome.feed.module.Module;
 import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.framework.geojson.GeoJsonLink;
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.modules.entities.domain.AbstractDataEntity;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionParameter;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.ExtensionException;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.AbstractExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.SearchParameter;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
@@ -82,7 +82,7 @@ public class MediaExtension extends AbstractExtension {
     public static final String ATOM_MEDIA_CAT_REF = "http://www.opengis.net/spec/EOMPOM/1.0";
 
     @Override
-    public void formatGeoJsonResponseFeature(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+    public void formatGeoJsonResponseFeature(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
             Feature feature) {
         Multimap<DataType, DataFile> medias = getMedias(entity);
         Object obj = feature.getProperties().get("links");
@@ -104,7 +104,7 @@ public class MediaExtension extends AbstractExtension {
     }
 
     @Override
-    public void formatAtomResponseEntry(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+    public void formatAtomResponseEntry(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
             Entry entry, Gson gson) {
         Multimap<DataType, DataFile> medias = getMedias(entity);
         // Add module generator
@@ -132,7 +132,7 @@ public class MediaExtension extends AbstractExtension {
     }
 
     @Override
-    protected ICriterion buildCriteria(SearchParameter parameter) throws UnsupportedCriterionOperator {
+    protected ICriterion buildCriteria(SearchParameter parameter) throws ExtensionException {
         // Media extension does not handle search queries.
         return ICriterion.all();
     }
@@ -148,13 +148,9 @@ public class MediaExtension extends AbstractExtension {
      * @param entity {@link AbstractEntity}
      * @return medias by type (Quicklook or Thumbnail)
      */
-    private Multimap<DataType, DataFile> getMedias(AbstractEntity entity) {
+    private Multimap<DataType, DataFile> getMedias(EntityFeature entity) {
         Multimap<DataType, DataFile> medias = HashMultimap.create();
-        if (entity instanceof AbstractDataEntity) {
-            // Find quicklook url from entity
-            AbstractDataEntity dataEntity = (AbstractDataEntity) entity;
-            medias.putAll(dataEntity.getFiles());
-        }
+        medias.putAll(entity.getFiles());
         return medias;
     }
 

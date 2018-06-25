@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.geojson.FeatureWithPropertiesCollection;
 import fr.cnes.regards.framework.geojson.GeoJsonLink;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.geojson.Query;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.Configuration;
@@ -59,7 +59,7 @@ public class GeojsonResponseBuilder implements IResponseBuilder<FeatureWithPrope
 
     @Override
     public void addMetadata(String searchId, EngineConfiguration engineConf, String openSearchDescriptionUrl,
-            SearchContext context, Configuration configuration, FacetPage<AbstractEntity> page, List<Link> links) {
+            SearchContext context, Configuration configuration, FacetPage<EntityFeature> page, List<Link> links) {
         response.setId(searchId);
         response.setTitle(engineConf.getSearchTitle());
         response.setDescription(engineConf.getSearchDescription());
@@ -74,23 +74,20 @@ public class GeojsonResponseBuilder implements IResponseBuilder<FeatureWithPrope
     }
 
     @Override
-    public void addEntity(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+    public void addEntity(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
             List<Link> entityLinks) {
         Feature feature = new Feature();
-        feature.setId(entity.getIpId().toString());
+        feature.setId(entity.getId().toString());
         // All links are alternate links here in geo json format
         // Other types like icon or enclosure are handle in extensions (example : media)
-        String title = String.format("GeoJson link for %s", entity.getIpId());
+        String title = String.format("GeoJson link for %s", entity.getId());
         feature.setLinks(entityLinks.stream()
                 .map(l -> GeoJsonLinkBuilder.build(l, GeoJsonLink.LINK_ALTERNATE_REL, title,
                                                    GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
                 .collect(Collectors.toList()));
         feature.setTitle(entity.getLabel());
-        if (entity.getLastUpdate() != null) {
-            feature.setUpdated(entity.getLastUpdate());
-        } else {
-            feature.setUpdated(entity.getCreationDate());
-        }
+        // TODO : Handle updated date
+        // feature.setUpdated();
         // Handle extensions
         for (IOpenSearchExtension extension : extensions) {
             if (extension.isActivated()) {

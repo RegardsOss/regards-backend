@@ -26,13 +26,14 @@ import com.google.gson.Gson;
 import com.rometools.rome.feed.atom.Entry;
 
 import fr.cnes.regards.framework.geojson.Feature;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.AttributeCriterionBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterOperator;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionParameter;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.ExtensionException;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.AbstractExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.SearchParameter;
@@ -59,7 +60,7 @@ public class RegardsExtension extends AbstractExtension {
     public static final String REGARDS_NS = "regards";
 
     @Override
-    public void formatGeoJsonResponseFeature(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+    public void formatGeoJsonResponseFeature(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
             Feature feature) {
         for (AbstractAttribute<?> property : entity.getProperties()) {
             feature.addProperty(property.getName(), property.getValue());
@@ -67,7 +68,7 @@ public class RegardsExtension extends AbstractExtension {
     }
 
     @Override
-    public void formatAtomResponseEntry(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
+    public void formatAtomResponseEntry(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
             Entry entry, Gson gson) {
         RegardsModule rm = new RegardsModuleImpl();
         rm.setGsonBuilder(gson);
@@ -91,9 +92,13 @@ public class RegardsExtension extends AbstractExtension {
     }
 
     @Override
-    protected ICriterion buildCriteria(SearchParameter parameter) throws UnsupportedCriterionOperator {
-        return AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.EQ,
-                                               parameter.getSearchValues());
+    protected ICriterion buildCriteria(SearchParameter parameter) throws ExtensionException {
+        try {
+            return AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.EQ,
+                                                   parameter.getSearchValues());
+        } catch (UnsupportedCriterionOperator e) {
+            throw new ExtensionException(e);
+        }
     }
 
     @Override
