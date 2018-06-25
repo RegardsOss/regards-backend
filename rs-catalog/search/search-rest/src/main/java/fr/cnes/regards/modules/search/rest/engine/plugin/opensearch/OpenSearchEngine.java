@@ -49,12 +49,14 @@ import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
 import fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchEngine;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionBuilder;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.ExtensionException;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedMediaTypesException;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.SearchParameter;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
@@ -211,9 +213,14 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @Override
     public ICriterion parse(MultiValueMap<String, String> queryParams) throws ModuleException {
         // First parse q parameter for searchTerms if any.
-        ICriterion searchTermsCriterion = openSearchService.parse(queryParams);
+        QueryParser queryParser = new QueryParser(finder);
+        ICriterion searchTermsCriterion = queryParser.parse(queryParams);
         // Then parse all parameters (open search parameters extension)
-        return ICriterion.and(searchTermsCriterion, parseParametersExt(queryParams));
+        try {
+            return ICriterion.and(searchTermsCriterion, parseParametersExt(queryParams));
+        } catch (ExtensionException e) {
+            throw new ModuleException(e);
+        }
     }
 
     @Override
@@ -277,8 +284,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      * Parse openSearch query to find all parameters from standard open search parameters extension.
      * @param queryParams
      * @return {@link ICriterion}
+     * @throws ExtensionException
      */
-    private ICriterion parseParametersExt(MultiValueMap<String, String> queryParams) {
+    private ICriterion parseParametersExt(MultiValueMap<String, String> queryParams) throws ExtensionException {
         // Find AttributeModel for each parameter
         List<SearchParameter> attributes = buildParameters(queryParams);
 
@@ -293,7 +301,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                 // Do not handle special query parameter (q) here.
                 if (!queryParam.getKey().equals(configuration.getQueryParameterName())) {
                     AttributeModel attributeModel = finder.findByName(queryParam.getKey());
-                    if (attributeModel.getId() != null) {
+                    if (attributeModel.isDynamic()) {
                         attributeModel.buildJsonPath(StaticProperties.PROPERTIES);
                     } else {
                         // Standard static attributes. Not a real attribute. So jsonPath = name;
@@ -307,7 +315,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                             .add(new SearchParameter(queryParam.getKey(), attributeModel, conf, queryParam.getValue()));
                 }
             } catch (OpenSearchUnknownParameter e) {
-                LOGGER.debug("Parameter not found in REGARDS models attributes.", e);
+                LOGGER.warn("Parameter not found in REGARDS models attributes.");
                 // Adding unknown parameters in search parameters in case an IOpenSearchExtension can handle it.
                 searchParameters.add(new SearchParameter(queryParam.getKey(), null, null, queryParam.getValue()));
             }

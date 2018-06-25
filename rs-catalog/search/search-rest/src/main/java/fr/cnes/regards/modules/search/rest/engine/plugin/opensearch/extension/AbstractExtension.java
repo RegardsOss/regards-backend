@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.assertj.core.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.ExtensionException;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
 
 /**
@@ -49,15 +50,24 @@ public abstract class AbstractExtension implements IOpenSearchExtension {
     private boolean activated = false;
 
     @Override
-    public ICriterion buildCriterion(List<SearchParameter> parameters) {
-        List<ICriterion> criterion = new ArrayList<>();
+    public ICriterion buildCriterion(List<SearchParameter> parameters) throws ExtensionException {
+
+        List<SearchParameter> supportedParameters = Lists.newArrayList();
+        for (SearchParameter parameter : parameters) {
+            if (supportsSearchParameter(parameter)) {
+                supportedParameters.add(parameter);
+            }
+        }
+        return buildSupportedParametersCriterion(supportedParameters);
+    }
+
+    protected ICriterion buildSupportedParametersCriterion(List<SearchParameter> parameters) throws ExtensionException {
+        List<ICriterion> criterion = Lists.newArrayList();
         for (SearchParameter parameter : parameters) {
             try {
-                if (supportsSearchParameter(parameter)) {
-                    ICriterion crit = buildCriteria(parameter);
-                    if (crit != null) {
-                        criterion.add(crit);
-                    }
+                ICriterion crit = buildCriteria(parameter);
+                if (crit != null) {
+                    criterion.add(crit);
                 }
             } catch (UnsupportedCriterionOperator e) {
                 LOGGER.warn(e.getMessage(), e);

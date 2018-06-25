@@ -20,8 +20,11 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.g
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.compress.utils.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.rometools.modules.georss.geometries.AbstractGeometry;
@@ -42,10 +45,12 @@ import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.StaticProperties;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.AttributeCriterionBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterOperator;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionParameter;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.ExtensionException;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.AbstractExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.SearchParameter;
@@ -61,6 +66,8 @@ import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
  * @author Sébastien Binda
  */
 public class GeoTimeExtension extends AbstractExtension {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeoTimeExtension.class);
 
     public static final String TIME_NS = "time";
 
@@ -147,37 +154,104 @@ public class GeoTimeExtension extends AbstractExtension {
     protected ICriterion buildCriteria(SearchParameter parameter) throws UnsupportedCriterionOperator {
         ICriterion criteria = ICriterion.all();
         if (parameter.getConfiguration() != null) {
-            if (TIME_NS.equals(parameter.getConfiguration().getNamespace())
-                    && TIME_START_PARAMETER.equals(parameter.getConfiguration().getName())) {
-                // Parse attribute value to create associated ICriterion using parameter configuration
-                criteria = AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.GE,
-                                                           parameter.getSearchValues());
-            }
-            if (TIME_NS.equals(parameter.getConfiguration().getNamespace())
-                    && TIME_END_PARAMETER.equals(parameter.getConfiguration().getName())) {
-                criteria = AttributeCriterionBuilder.build(parameter.getAttributeModel(), ParameterOperator.LE,
-                                                           parameter.getSearchValues());
-            }
+
         } else {
-            // TODO : Generate geometry criterion from geometry, box, lon, lat, location and radius.
-            switch (parameter.getName()) {
-                case GEO_PARAMETER:
-                    // WKT Transformation
-                    break;
-                case BOX_PARAMETER:
-                    // Polygon criterion
-                    break;
-                case LON_PARAMETER:
-                case LAT_PARAMETER:
-                case RADIUS_PARAMETER:
-                    // Circle criterion
-                default:
-                    // Unknown parameter
-                    break;
-            }
+
         }
 
         return criteria;
+    }
+
+    @Override
+    protected ICriterion buildSupportedParametersCriterion(List<SearchParameter> parameters) throws ExtensionException {
+        List<SearchParameter> geoParameters = Lists.newArrayList();
+        List<SearchParameter> timeParameters = Lists.newArrayList();
+        for (SearchParameter parameter : parameters) {
+            if (parameter.getConfiguration() != null) {
+                switch (parameter.getConfiguration().getNamespace()) {
+                    case GEO_NS:
+                        geoParameters.add(parameter);
+                        break;
+                    case TIME_NS:
+                        timeParameters.add(parameter);
+                        break;
+                }
+            } else {
+                switch (parameter.getName()) {
+                    case GEO_PARAMETER:
+                    case BOX_PARAMETER:
+                    case LAT_PARAMETER:
+                    case LON_PARAMETER:
+                    case RADIUS_PARAMETER:
+                        geoParameters.add(parameter);
+                        break;
+                    default:
+                        //nothing to do
+                        break;
+                }
+            }
+        }
+        return ICriterion.and(buildGeoCriterion(geoParameters), buildTimeCriterion(timeParameters));
+    }
+
+    private ICriterion buildTimeCriterion(List<SearchParameter> timeParameters) {
+        List<ICriterion> criterion = Lists.newArrayList();
+        Optional<SearchParameter> startParam = timeParameters.stream()
+                .filter(p -> p.getName().equals(TIME_START_PARAMETER)).findFirst();
+        Optional<SearchParameter> endParam = timeParameters.stream().filter(p -> p.getName().equals(TIME_END_PARAMETER))
+                .findFirst();
+        if (startParam.isPresent()) {
+            try {
+                criterion
+                        .add(AttributeCriterionBuilder.build(startParam.get().getAttributeModel(), ParameterOperator.GE,
+                                                             startParam.get().getSearchValues()));
+            } catch (UnsupportedCriterionOperator e) {
+                LOGGER.warn(e.getMessage(), e);
+            }
+        }
+        if (endParam.isPresent()) {
+            try {
+                criterion.add(AttributeCriterionBuilder.build(endParam.get().getAttributeModel(), ParameterOperator.LE,
+                                                              endParam.get().getSearchValues()));
+            } catch (UnsupportedCriterionOperator e) {
+                LOGGER.warn(e.getMessage(), e);
+            }
+        }
+        return criterion.isEmpty() ? ICriterion.all() : ICriterion.and(criterion);
+    }
+
+    private ICriterion buildGeoCriterion(List<SearchParameter> geoParameters) throws ExtensionException {
+        List<ICriterion> criterion = Lists.newArrayList();
+        Optional<SearchParameter> geometryParameter = geoParameters.stream()
+                .filter(p -> p.getName().equals(GEO_PARAMETER)).findFirst();
+        Optional<SearchParameter> lonParameter = geoParameters.stream().filter(p -> p.getName().equals(LON_PARAMETER))
+                .findFirst();
+        Optional<SearchParameter> latParameter = geoParameters.stream().filter(p -> p.getName().equals(LAT_PARAMETER))
+                .findFirst();
+        Optional<SearchParameter> radiusParameter = geoParameters.stream()
+                .filter(p -> p.getName().equals(RADIUS_PARAMETER)).findFirst();
+        Optional<SearchParameter> boxParameter = geoParameters.stream().filter(p -> p.getName().equals(BOX_PARAMETER))
+                .findFirst();
+
+        try {
+            if (geometryParameter.isPresent()) {
+                criterion.add(AttributeCriterionBuilder.buildGeometryWKT(geometryParameter.get().getSearchValues()));
+            }
+
+            if (boxParameter.isPresent()) {
+                criterion.add(AttributeCriterionBuilder.buildGeometryBbox(boxParameter.get().getSearchValues()));
+            }
+
+            if (lonParameter.isPresent() && latParameter.isPresent() && radiusParameter.isPresent()) {
+                criterion.add(AttributeCriterionBuilder.buildGeometryCircle(lonParameter.get().getSearchValues(),
+                                                                            latParameter.get().getSearchValues(),
+                                                                            radiusParameter.get().getSearchValues()));
+            }
+        } catch (InvalidGeometryException e) {
+            throw new ExtensionException(e);
+        }
+
+        return criterion.isEmpty() ? ICriterion.all() : ICriterion.and(criterion);
     }
 
     @Override
@@ -257,7 +331,7 @@ public class GeoTimeExtension extends AbstractExtension {
             case MULTIPOINT:
             case MULTIPOLYGON:
             case GEOMETRY_COLLECTION:
-                // TODO : GEO Translation from IGEometry to rome module geometry
+                LOGGER.warn("Geometry type {} is not handled for Georss format", geometry.getType());
                 return null;
             case FEATURE:
             case FEATURE_COLLECTION:

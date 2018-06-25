@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionParameter;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.ExtensionException;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
 
@@ -56,7 +57,7 @@ public interface IOpenSearchExtension {
      * @param parameters {@link SearchParameter}s to build criterion from
      * @return {@link ICriterion}
      */
-    ICriterion buildCriterion(List<SearchParameter> parameters);
+    ICriterion buildCriterion(List<SearchParameter> parameters) throws ExtensionException;
 
     /**
      * Create the {@link Module} needed by the rome library to generate the specificity of the extension on each entity of the XML+Atom response.

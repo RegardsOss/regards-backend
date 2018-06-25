@@ -20,10 +20,14 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch;
 
 import java.util.List;
 
+import org.assertj.core.util.Lists;
+
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import fr.cnes.regards.modules.opensearch.service.parser.GeometryCriterionBuilder;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
 
 /**
@@ -272,5 +276,56 @@ public class AttributeCriterionBuilder {
             default:
                 return ICriterion.contains(attribute, value);
         }
+    }
+
+    /**
+     * Build a {@link ICriterion} to search for the lists of geometry given in WKT format.
+     * @param wkts geometry to search for
+     * @return {@link ICriterion}
+     * @throws InvalidGeometryException
+     * @throws UnsupportedCriterionOperator
+     */
+    public static ICriterion buildGeometryWKT(List<String> wkts) throws InvalidGeometryException {
+        List<ICriterion> criterion = Lists.newArrayList();
+        for (String wktGeometry : wkts) {
+            criterion.add(GeometryCriterionBuilder.build(wktGeometry));
+        }
+        return criterion.isEmpty() ? ICriterion.all() : ICriterion.and(criterion);
+    }
+
+    /**
+     * Build a {@link ICriterion} to search for the lists of geometry bbox given.
+     * @param bboxs {@link String}s
+     * @return {@link ICriterion}
+     * @throws InvalidGeometryException
+     */
+    public static ICriterion buildGeometryBbox(List<String> bboxs) throws InvalidGeometryException {
+        List<ICriterion> criterion = Lists.newArrayList();
+        for (String bbox : bboxs) {
+            criterion.add(GeometryCriterionBuilder.buildBbox(bbox));
+        }
+        return criterion.isEmpty() ? ICriterion.all() : ICriterion.and(criterion);
+    }
+
+    /**
+     * Build a {@link ICriterion} to search for the lists of geometry circle given. A circle is a longitude, latitude and radius.
+     * @param longitude {@link String}
+     * @param latitude {@link String}
+     * @param radius {@link String}
+     * @return {@link ICriterion}
+     * @throws InvalidGeometryException
+     */
+    public static ICriterion buildGeometryCircle(List<String> longitude, List<String> latitude, List<String> radius)
+            throws InvalidGeometryException {
+        List<ICriterion> criterion = Lists.newArrayList();
+        if ((longitude.size() == latitude.size()) && (latitude.size() == radius.size())) {
+            for (int i = 0; i < longitude.size(); i++) {
+                criterion.add(GeometryCriterionBuilder.build(longitude.get(i), latitude.get(i), radius.get(i)));
+            }
+        } else {
+            throw new InvalidGeometryException(
+                    "Missing one of latitude, longitude or radius to create circle geometry");
+        }
+        return criterion.isEmpty() ? ICriterion.all() : ICriterion.and(criterion);
     }
 }

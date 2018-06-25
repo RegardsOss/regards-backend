@@ -106,8 +106,12 @@ public class RegardsExtension extends AbstractExtension {
 
     @Override
     protected boolean supportsSearchParameter(SearchParameter parameter) {
-        return (parameter.getConfiguration() == null) || (parameter.getConfiguration().getNamespace() == null)
-                || REGARDS_NS.equals(parameter.getConfiguration().getNamespace());
+        // REGARDS extension supports parameter if :
+        // Parameter is an attribute from the AttributeModel class of models.
+        // There is no configuration for this parameter in the opensearch parameters configuration or if the configuration namespace is regards
+        return (parameter.getAttributeModel() != null)
+                && ((parameter.getConfiguration() == null) || (parameter.getConfiguration().getNamespace() == null)
+                        || REGARDS_NS.equals(parameter.getConfiguration().getNamespace()));
     }
 
 }

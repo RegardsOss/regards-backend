@@ -35,6 +35,7 @@ import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.geojson.geometry.Polygon;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -142,6 +143,9 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
             esRepository.deleteIndex(index);
         }
         esRepository.createIndex(index);
+        String[] types = Arrays.stream(EntityType.values()).map(EntityType::toString)
+                .toArray(length -> new String[length]);
+        esRepository.setGeometryMapping(index, types);
     }
 
     @Before
@@ -291,12 +295,21 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         thumbnail.setImageWidth(250);
         thumbnail.setImageHeight(250);
         planet.getFiles().put(DataType.THUMBNAIL, thumbnail);
-        planet.setGeometry(IGeometry.point(IGeometry.position(50.0, 30.0)));
+
+        planet.setGeometry(createPolygon());
         planet.addProperty(AttributeBuilder
                 .buildObject("TimePeriod", AttributeBuilder.buildDate(START_DATE, OffsetDateTime.now()),
                              AttributeBuilder.buildDate(STOP_DATE, OffsetDateTime.now().plusMonths(36))));
 
         return planet;
+    }
+
+    private Polygon createPolygon() {
+        Polygon polygon = IGeometry.polygon(IGeometry.toPolygonCoordinates(IGeometry
+                .toLinearRingCoordinates(IGeometry.position(10.0, 10.0), IGeometry.position(10.0, 30.0),
+                                         IGeometry.position(30.0, 30.0), IGeometry.position(30.0, 10.0),
+                                         IGeometry.position(10.0, 10.0)), null));
+        return polygon;
     }
 
     protected DataObject createPlanet(Model planetModel, String name, String type, Integer diameter, Long sunDistance) {

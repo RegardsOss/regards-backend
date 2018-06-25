@@ -108,8 +108,8 @@ public class AtomResponseBuilder implements IResponseBuilder<Feed> {
         List<Module> mods = feed.getModules();
         OpenSearchModule osm = new OpenSearchModuleImpl();
         osm.setItemsPerPage(page.getSize());
-        osm.setStartIndex(page.getNumber());
-        osm.setTotalResults(page.getNumberOfElements());
+        osm.setStartIndex((page.getNumber() * page.getSize()) + 1);
+        osm.setTotalResults((int) page.getTotalElements());
 
         // Add the query from opensearch module
         OSQuery query = new OSQuery();
