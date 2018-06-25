@@ -24,7 +24,6 @@ import org.apache.commons.compress.utils.Lists;
 
 import com.google.gson.Gson;
 import com.rometools.rome.feed.atom.Entry;
-import com.rometools.rome.feed.module.Module;
 
 import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
@@ -70,17 +69,10 @@ public class RegardsExtension extends AbstractExtension {
     @Override
     public void formatAtomResponseEntry(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
             Entry entry, Gson gson) {
-        // Add module generator
-        entry.getModules().add(getAtomEntityResponseBuilder(entity, paramConfigurations, gson));
-
-    }
-
-    public Module getAtomEntityResponseBuilder(AbstractEntity entity, List<ParameterConfiguration> paramConfigurations,
-            Gson gson) {
         RegardsModule rm = new RegardsModuleImpl();
         rm.setGsonBuilder(gson);
         rm.setEntity(entity);
-        return rm;
+        entry.getModules().add(rm);
     }
 
     @Override
