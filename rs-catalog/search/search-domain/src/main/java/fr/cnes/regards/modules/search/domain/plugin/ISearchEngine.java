@@ -29,13 +29,19 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 
 /**
- * Search engine plugin contract
+ * Search engine plugin contract<br/>
+ *
+ * To call business search layer, please use IBusinessSearchService.<br/>
+ * To build custom criterion for a given AttributeModel, use IFeatureCriterion<br/>
+ * To find an AttributeModel from a parameter name, use IAttributeFinder.
+ *
  * @author Marc Sordi
  *
  * @param R search result type
  * @param E extra result type
  * @param T single entity type
  * @param V property values
+ *
  */
 public interface ISearchEngine<R, E, T, V extends Collection<?>> {
 
