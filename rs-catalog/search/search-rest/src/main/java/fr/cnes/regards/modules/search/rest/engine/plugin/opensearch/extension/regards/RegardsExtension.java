@@ -78,7 +78,7 @@ public class RegardsExtension extends AbstractExtension {
 
     @Override
     public void applyToDescriptionParameter(OpenSearchParameter parameter, DescriptionParameter descParameter) {
-        // Nothing to do
+        parameter.setValue(String.format("{%s:%s}", REGARDS_NS, descParameter.getName()));
     }
 
     @Override

@@ -288,6 +288,11 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                               regardsExtension.buildCriterion(attributes));
     }
 
+    /**
+     * Build {@link SearchParameter}s by reading given queryParams.
+     * @param queryParams Map key=parameter name value=parameter value.
+     * @return {@link SearchParameter}s
+     */
     private List<SearchParameter> buildParameters(MultiValueMap<String, String> queryParams) {
         List<SearchParameter> searchParameters = Lists.newArrayList();
         for (Entry<String, List<String>> queryParam : queryParams.entrySet()) {

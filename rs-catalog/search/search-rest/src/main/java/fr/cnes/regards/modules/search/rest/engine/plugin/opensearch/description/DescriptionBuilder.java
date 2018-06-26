@@ -41,6 +41,7 @@ import org.springframework.stereotype.Component;
 
 import feign.FeignException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -54,6 +55,7 @@ import fr.cnes.regards.modules.models.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.restriction.PatternRestriction;
 import fr.cnes.regards.modules.models.domain.attributes.restriction.RestrictionType;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
@@ -108,6 +110,9 @@ public class DescriptionBuilder {
     @Autowired
     private IModelAttrAssocClient modelAttrAssocClient;
 
+    @Autowired
+    private IAttributeFinder finder;
+
     /**
      * Global configuration for description metadatas
      */
@@ -146,7 +151,8 @@ public class DescriptionBuilder {
         // Build urls
         Link searchLink = SearchEngineController.buildPaginationLink(resourceService, context, "search");
         desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(), MediaType.APPLICATION_ATOM_XML_VALUE));
-        desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(), MediaType.APPLICATION_JSON_VALUE));
+        desc.getUrl()
+                .add(buildUrl(project, parameters, searchLink.getHref(), GeoJsonMediaType.APPLICATION_GEOJSON_VALUE));
 
         // Apply active extensions to global description
         extensions.stream().filter(IOpenSearchExtension::isActivated).forEach(ext -> ext.applyToDescription(desc));
@@ -241,7 +247,7 @@ public class DescriptionBuilder {
         OpenSearchParameter qParameter = new OpenSearchParameter();
         qParameter.setTitle(configuration.getQueryParameterTitle());
         qParameter.setName(configuration.getQueryParameterName());
-        qParameter.setValue(configuration.getQueryParameterValue());
+        qParameter.setValue(String.format("{%s}", configuration.getQueryParameterValue()));
         parameters.add(qParameter);
 
         for (DescriptionParameter descParameter : descParameters) {
@@ -267,7 +273,7 @@ public class DescriptionBuilder {
     private OpenSearchParameter buildParameter(DescriptionParameter descParameter,
             List<IOpenSearchExtension> extensions) {
         OpenSearchParameter parameter = new OpenSearchParameter();
-        parameter.setName(descParameter.getAttributeModel().getJsonPath());
+        parameter.setName(descParameter.getName());
         parameter.setMinimum("0");
         parameter.setMaximum("1");
         parameter.setValue(String.format("{%s}", descParameter.getAttributeModel().getName()));
@@ -323,7 +329,6 @@ public class DescriptionBuilder {
             // Retrieve all AttributeModel fot the given searchType
             ResponseEntity<Collection<ModelAttrAssoc>> assocsResponse = modelAttrAssocClient
                     .getModelAttrAssocsFor(getEntityType(searchType));
-            FeignSecurityManager.reset();
             if (!HttpUtils.isSuccess(assocsResponse.getStatusCode())) {
                 LOGGER.error("Trying to contact microservice responsible for Model but couldn't contact it");
             }
@@ -337,7 +342,8 @@ public class DescriptionBuilder {
                         .findFirst();
                 QueryableAttribute queryableAtt = createEmptyQueryableAttribute(maa.getAttribute(), conf);
                 queryableAttributes.add(queryableAtt);
-                parameters.add(new DescriptionParameter(maa.getAttribute(), conf.orElse(null), queryableAtt));
+                parameters.add(new DescriptionParameter(finder.findName(maa.getAttribute()), maa.getAttribute(),
+                        conf.orElse(null), queryableAtt));
             }
             try {
                 // Run statistic search on each attributes. Results are set back into the QueryableAttributes parameter.
@@ -348,6 +354,8 @@ public class DescriptionBuilder {
             }
         } catch (FeignException e) {
             LOGGER.error("Error retrieving attributes from IModelAttrAssocClient", e);
+        } finally {
+            FeignSecurityManager.reset();
         }
 
         return parameters;
@@ -362,11 +370,18 @@ public class DescriptionBuilder {
      */
     private QueryableAttribute createEmptyQueryableAttribute(AttributeModel att,
             Optional<ParameterConfiguration> conf) {
+
+        // Build full real path for the attribute in index.
+        String name = att.getJsonPath();
+        if (att.isDynamic()) {
+            name = StaticProperties.FEATURE_NS + name;
+        }
+
+        // Set aggregation stats conf if present
         if (conf.isPresent()) {
-            return new QueryableAttribute(att.getJsonPath(), null, att.isTextAttribute(),
-                    conf.get().getOptionsCardinality());
+            return new QueryableAttribute(name, null, att.isTextAttribute(), conf.get().getOptionsCardinality());
         } else {
-            return new QueryableAttribute(att.getJsonPath(), null, att.isTextAttribute(), 0);
+            return new QueryableAttribute(name, null, att.isTextAttribute(), 0);
         }
     }
 

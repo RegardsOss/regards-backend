@@ -6,15 +6,18 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterCon
 
 public class DescriptionParameter {
 
+    private String name;
+
     private AttributeModel attributeModel;
 
     private ParameterConfiguration configuration;
 
     private QueryableAttribute queryableAttribute;
 
-    public DescriptionParameter(AttributeModel attributeModel, ParameterConfiguration configuration,
+    public DescriptionParameter(String name, AttributeModel attributeModel, ParameterConfiguration configuration,
             QueryableAttribute queryableAttribute) {
         super();
+        this.name = name;
         this.attributeModel = attributeModel;
         this.configuration = configuration;
         this.queryableAttribute = queryableAttribute;
@@ -42,6 +45,14 @@ public class DescriptionParameter {
 
     public void setQueryableAttribute(QueryableAttribute queryableAttribute) {
         this.queryableAttribute = queryableAttribute;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
 }

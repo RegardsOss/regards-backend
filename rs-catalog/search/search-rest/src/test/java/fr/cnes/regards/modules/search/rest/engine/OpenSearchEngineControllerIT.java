@@ -33,9 +33,13 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.net.HttpHeaders;
 
+import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
 
@@ -166,10 +170,75 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    public void getDescription() {
+    public void getDescription() throws XPathExpressionException {
+
+        AbstractEntity<EntityFeature> mercury = getAstroObject("Mercury");
+
+        String atomUrl = "OpenSearchDescription/Url[@type='" + MediaType.APPLICATION_ATOM_XML_VALUE + "']";
+        String geoJsonUrl = "OpenSearchDescription/Url[@type='" + GeoJsonMediaType.APPLICATION_GEOJSON_VALUE + "']";
+
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
+
+        // Check metadatas
+        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription").exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/Description").exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/Contact").exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/Image").exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/Developer").exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/Attribution").exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/AdultContent").exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/Language").exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/InputEncoding").exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/OutputEncoding").exists());
+
+        // Check urls
+        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl).exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath(geoJsonUrl).exists());
+
+        // Check url parameters
+        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=12]").exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='q']").exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet']").exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet_type']").exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='diameter']").exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='sun_distance']").exists());
+        customizer.addExpectation(MockMvcResultMatchers
+                .xpath(atomUrl + "/Parameter[@name='startDate' and @value='{time:start}']").exists());
+        customizer.addExpectation(MockMvcResultMatchers
+                .xpath(atomUrl + "/Parameter[@name='stopDate' and @value='{time:end}']").exists());
+        customizer.addExpectation(MockMvcResultMatchers
+                .xpath(atomUrl + "/Parameter[@name='geometry' and @value='{geo:geometry}']").exists());
+        customizer.addExpectation(MockMvcResultMatchers
+                .xpath(atomUrl + "/Parameter[@name='box' and @value='{geo:box}']").exists());
+        customizer.addExpectation(MockMvcResultMatchers
+                .xpath(atomUrl + "/Parameter[@name='lon' and @value='{geo:lon}']").exists());
+        customizer.addExpectation(MockMvcResultMatchers
+                .xpath(atomUrl + "/Parameter[@name='lat' and @value='{geo:lat}']").exists());
+        customizer.addExpectation(MockMvcResultMatchers
+                .xpath(atomUrl + "/Parameter[@name='radius' and @value='{geo:radius}']").exists());
+
+        // Check options
+        customizer.addExpectation(MockMvcResultMatchers
+                .xpath(atomUrl + "/Parameter[@name='planet' and count(Option)=9]").exists());
+
+        // Check double boundaries
+        customizer.addExpectation(MockMvcResultMatchers
+                .xpath(atomUrl + "/Parameter[@name='sun_distance' and @minInclusive='5.0E7']").exists());
+        customizer.addExpectation(MockMvcResultMatchers
+                .xpath(atomUrl + "/Parameter[@name='sun_distance' and @maxInclusive='4.48943598E9']").exists());
+
+        // Check date boundaries
+        AbstractAttribute<?> startDate = mercury.getProperty("TimePeriod.startDate");
+        Assert.assertNotNull(startDate);
+        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + String
+                .format("/Parameter[@name='startDate' and @minInclusive='%s']", startDate.getValue().toString()))
+                .exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + String
+                .format("/Parameter[@name='startDate' and @maxInclusive='%s']", startDate.getValue().toString()))
+                .exists());
+
         performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING_EXTRA,
                           customizer, "open search description error", ENGINE_TYPE, OpenSearchEngine.EXTRA_DESCRIPTION);
     }
