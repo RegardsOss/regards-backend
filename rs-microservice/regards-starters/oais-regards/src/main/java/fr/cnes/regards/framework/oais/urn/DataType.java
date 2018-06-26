@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.oais.urn;
 
-import org.dom4j.tree.AbstractEntity;
 
 /**
  * {@link AbstractEntity} types
