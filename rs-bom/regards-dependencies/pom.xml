@@ -48,6 +48,7 @@
         <amqp.monitoring.starter.version>2.1.0-SNAPSHOT</amqp.monitoring.starter.version>
         <authentication.starter.version>2.1.0-SNAPSHOT</authentication.starter.version>
         <cloud.starter.version>2.1.0-SNAPSHOT</cloud.starter.version>
+        <encryption.starter.version>2.1.0-SNAPSHOT</encryption.starter.version>
         <feign.starter.version>2.1.0-SNAPSHOT</feign.starter.version>
         <geojson.starter.version>2.1.0-SNAPSHOT</geojson.starter.version>
         <gson.starter.version>2.1.0-SNAPSHOT</gson.starter.version>
@@ -227,6 +228,11 @@
                 <groupId>fr.cnes.regards.framework</groupId>
                 <artifactId>cloud-regards-starter</artifactId>
                 <version>${cloud.starter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework</groupId>
+                <artifactId>encryption-starter</artifactId>
+                <version>${encryption.starter.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework</groupId>
