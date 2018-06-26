@@ -33,12 +33,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import feign.Response;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
@@ -156,6 +160,12 @@ public interface IAipClient {
      */
     @RequestMapping(value = AIP_BULK_DELETE, method = RequestMethod.POST)
     public ResponseEntity<List<RejectedSip>> deleteAipFromSips(@RequestBody Set<String> sipIpIds);
+
+    /**
+     * Delete an aip, represented by its ip id
+     */
+    @RequestMapping(value = ID_PATH, method = RequestMethod.DELETE)
+    public ResponseEntity<String> deleteAip(@PathVariable(name = "ip_id") String ipId);
 
     /**
      * Retrieve the meta data of files associated to an aip, represented by its ip id

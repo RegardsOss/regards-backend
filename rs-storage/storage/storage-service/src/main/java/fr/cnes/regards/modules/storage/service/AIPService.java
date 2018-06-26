@@ -64,7 +64,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 
@@ -927,6 +926,7 @@ public class AIPService implements IAIPService {
                                                             additionalProvenanceEntry.getValue());
             }
         }
+
         // third lets handle those "special" provenance information
         updatingBuilder.getPDIBuilder().setFacility(updatedPdi.getProvenanceInformation().getFacility());
         updatingBuilder.getPDIBuilder().setDetector(updatedPdi.getProvenanceInformation().getDetector());
@@ -978,6 +978,7 @@ public class AIPService implements IAIPService {
         }
 
         // descriptive information
+        updatingBuilder.build().getProperties().getDescriptiveInformation().clear();
         Map<String, Object> descriptiveInformationMap;
         if ((descriptiveInformationMap = updated.getProperties().getDescriptiveInformation()) != null) {
             for (Map.Entry<String, Object> descriptiveEntry : descriptiveInformationMap.entrySet()) {
