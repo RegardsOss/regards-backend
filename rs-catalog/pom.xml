@@ -24,7 +24,6 @@
 	<version>2.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>REGARDS Catalog</name>
 	<description>Microservice providing data to the users through a searchable catalog</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

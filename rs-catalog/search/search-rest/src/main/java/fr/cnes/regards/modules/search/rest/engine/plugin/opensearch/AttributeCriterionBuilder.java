@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import org.assertj.core.util.Lists;
 
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.modules.entities.domain.criterion.IFeatureCriterion;
@@ -93,7 +92,8 @@ public class AttributeCriterionBuilder {
     }
 
     /**
-     * Build an Boolean {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
+     * Build an Boolean {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search
+     * value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of boolean parameter value
      * @param operator {@link ParameterOperator} for search
@@ -116,7 +116,8 @@ public class AttributeCriterionBuilder {
     }
 
     /**
-     * Build an Date {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
+     * Build an Date {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search
+     * value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of date parameter value
      * @param operator {@link ParameterOperator} for search
@@ -140,7 +141,8 @@ public class AttributeCriterionBuilder {
     }
 
     /**
-     * Build an Integer {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
+     * Build an Integer {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search
+     * value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of integer parameter value
      * @param operator {@link ParameterOperator} for search
@@ -175,7 +177,8 @@ public class AttributeCriterionBuilder {
     }
 
     /**
-     * Build an Double {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
+     * Build an Double {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search
+     * value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of double parameter value
      * @param operator {@link ParameterOperator} for search
@@ -199,7 +202,8 @@ public class AttributeCriterionBuilder {
     }
 
     /**
-     * Build an Long {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
+     * Build an Long {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search
+     * value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of long parameter value
      * @param operator {@link ParameterOperator} for search
@@ -233,7 +237,8 @@ public class AttributeCriterionBuilder {
     }
 
     /**
-     * Build an String {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
+     * Build an String {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search
+     * value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of parameter value
      * @param operator {@link ParameterOperator} for search
@@ -256,7 +261,8 @@ public class AttributeCriterionBuilder {
     }
 
     /**
-     * Build a String {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search value.
+     * Build a String {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search
+     * value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of parameter value
      * @param operator {@link ParameterOperator} for search
@@ -286,7 +292,7 @@ public class AttributeCriterionBuilder {
      * @throws UnsupportedCriterionOperator
      */
     public static ICriterion buildGeometryWKT(List<String> wkts) throws InvalidGeometryException {
-        List<ICriterion> criterion = Lists.newArrayList();
+        List<ICriterion> criterion = new ArrayList<>();
         for (String wktGeometry : wkts) {
             criterion.add(GeometryCriterionBuilder.build(wktGeometry));
         }
@@ -300,7 +306,7 @@ public class AttributeCriterionBuilder {
      * @throws InvalidGeometryException
      */
     public static ICriterion buildGeometryBbox(List<String> bboxs) throws InvalidGeometryException {
-        List<ICriterion> criterion = Lists.newArrayList();
+        List<ICriterion> criterion = new ArrayList<>();
         for (String bbox : bboxs) {
             criterion.add(GeometryCriterionBuilder.buildBbox(bbox));
         }
@@ -308,7 +314,8 @@ public class AttributeCriterionBuilder {
     }
 
     /**
-     * Build a {@link ICriterion} to search for the lists of geometry circle given. A circle is a longitude, latitude and radius.
+     * Build a {@link ICriterion} to search for the lists of geometry circle given. A circle is a longitude, latitude
+     * and radius.
      * @param longitude {@link String}
      * @param latitude {@link String}
      * @param radius {@link String}
@@ -317,7 +324,7 @@ public class AttributeCriterionBuilder {
      */
     public static ICriterion buildGeometryCircle(List<String> longitude, List<String> latitude, List<String> radius)
             throws InvalidGeometryException {
-        List<ICriterion> criterion = Lists.newArrayList();
+        List<ICriterion> criterion = new ArrayList<>();
         if ((longitude.size() == latitude.size()) && (latitude.size() == radius.size())) {
             for (int i = 0; i < longitude.size(); i++) {
                 criterion.add(GeometryCriterionBuilder.build(longitude.get(i), latitude.get(i), radius.get(i)));

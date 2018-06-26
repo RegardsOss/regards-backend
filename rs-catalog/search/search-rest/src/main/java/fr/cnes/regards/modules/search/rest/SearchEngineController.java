@@ -28,7 +28,6 @@ import java.util.Map.Entry;
 
 import javax.validation.Valid;
 
-import org.assertj.core.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -679,7 +678,7 @@ public class SearchEngineController {
      */
     public static List<Link> buildPaginationLinks(IResourceService resourceService, PageImpl<?> page,
             SearchContext context) {
-        List<Link> links = Lists.newArrayList();
+        List<Link> links = new ArrayList<>();
         // Build previous link
         if (page.hasPrevious()) {
             int pageNumber = context.getPageable().getPageNumber() - 1;

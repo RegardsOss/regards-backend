@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.assertj.core.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,9 +30,10 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.Ex
 
 /**
  * Abstract class for Opensearch parameters extensions.
- * This class handles :<ul>
- * <li> The activation of the extension</li>
- * <li> The support of search parameters for the extension.</li>
+ * This class handles :
+ * <ul>
+ * <li>The activation of the extension</li>
+ * <li>The support of search parameters for the extension.</li>
  * </ul>
  * @author Sébastien Binda
  */
@@ -51,7 +52,7 @@ public abstract class AbstractExtension implements IOpenSearchExtension {
     @Override
     public ICriterion buildCriterion(List<SearchParameter> parameters) throws ExtensionException {
 
-        List<SearchParameter> supportedParameters = Lists.newArrayList();
+        List<SearchParameter> supportedParameters = new ArrayList<>();
         for (SearchParameter parameter : parameters) {
             if (supportsSearchParameter(parameter)) {
                 supportedParameters.add(parameter);
@@ -61,7 +62,7 @@ public abstract class AbstractExtension implements IOpenSearchExtension {
     }
 
     protected ICriterion buildSupportedParametersCriterion(List<SearchParameter> parameters) throws ExtensionException {
-        List<ICriterion> criterion = Lists.newArrayList();
+        List<ICriterion> criterion = new ArrayList<>();
         for (SearchParameter parameter : parameters) {
             try {
                 ICriterion crit = buildCriteria(parameter);

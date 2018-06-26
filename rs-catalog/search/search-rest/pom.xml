@@ -17,7 +17,6 @@
 	<artifactId>search-rest</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Search REST</name>
 	<description>Controller layer of the Search module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
