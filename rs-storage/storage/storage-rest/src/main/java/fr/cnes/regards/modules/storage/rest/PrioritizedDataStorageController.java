@@ -122,15 +122,17 @@ public class PrioritizedDataStorageController implements IResourceController<Pri
                                 MethodParamFactory.build(Long.class, prioritizedDataStorage.getId()));
         resourceService.addLink(resource,
                                 this.getClass(),
-                                "deletePrioritizedDataStorage",
-                                LinkRels.DELETE,
-                                MethodParamFactory.build(Long.class, prioritizedDataStorage.getId()));
-        resourceService.addLink(resource,
-                                this.getClass(),
                                 "updatePrioritizedDataStorage",
                                 LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, prioritizedDataStorage.getId()),
                                 MethodParamFactory.build(PrioritizedDataStorage.class));
+        if(prioritizedDataStorageService.canDelete(prioritizedDataStorage)) {
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "deletePrioritizedDataStorage",
+                                    LinkRels.DELETE,
+                                    MethodParamFactory.build(Long.class, prioritizedDataStorage.getId()));
+        }
         if (!prioritizedDataStorage.getPriority().equals(PrioritizedDataStorage.HIGHEST_PRIORITY)) {
             resourceService.addLink(resource,
                                     this.getClass(),
