@@ -61,7 +61,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
         Long actualLowestPriority = getLowestPriority(dataStorageType);
         return prioritizedDataStorageRepository.save(new PrioritizedDataStorage(dataStorageConf,
                                                                                 actualLowestPriority == null ?
-                                                                                        0 :
+                                                                                        PrioritizedDataStorage.HIGHEST_PRIORITY :
                                                                                         actualLowestPriority + 1,
                                                                                 dataStorageType));
     }

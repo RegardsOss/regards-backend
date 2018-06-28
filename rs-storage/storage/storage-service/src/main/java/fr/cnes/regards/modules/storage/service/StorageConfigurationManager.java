@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.bouncycastle.openssl.EncryptionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +41,11 @@ import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 
 /**
- * Configuration manager for current module
+ * Configuration manager for current module.
+ * {@link PrioritizedDataStorage} are exported as simple plugin configuration so priority will be lost.
+ *
  * @author Marc Sordi
+ * @author Sylvain Vissiere-Guerinet
  */
 @Component
 public class StorageConfigurationManager extends AbstractModuleConfigurationManager {
@@ -59,63 +61,33 @@ public class StorageConfigurationManager extends AbstractModuleConfigurationMana
     @Autowired
     private IPluginService pluginService;
 
+    @Autowired
     private IPrioritizedDataStorageService prioritizedDataStorageService;
 
     @Override
     public void importConfiguration(ModuleConfiguration configuration) throws ModuleException {
         for (ModuleConfigurationItem<?> item : configuration.getConfiguration()) {
-            // first, is it a PrioritizedDataStorage?
-            if (PrioritizedDataStorage.class.isAssignableFrom(item.getKey())) {
-                importPrioritizedDataStorage(item);
-            }
+            // We only exported PluginConfiguration so lets handle validation issues first
+            // and then check if it is a DataStorage configuration
             if (PluginConfiguration.class.isAssignableFrom(item.getKey())) {
-                importPluginConf(item);
-            }
-        }
-    }
-
-    protected void importPluginConf(ModuleConfigurationItem<?> item)
-            throws EntityInvalidException {
-        PluginConfiguration plgConf = item.getTypedValue();
-        if (pluginService.findPluginConfigurationByLabel(plgConf.getLabel()).isPresent()) {
-            LOGGER.warn("A plugin configuration already exists with same label, skipping import of {}.",
-                        plgConf.getLabel());
-        } else {
-            EntityInvalidException validationIssues = PluginUtils.validate(plgConf);
-            if (validationIssues == null) {
-                pluginService.savePluginConfiguration(plgConf);
-            } else {
-                LOGGER.warn("Skipping import of {} for these reasons: {}",
-                            plgConf.getLabel(),
-                            validationIssues.getMessages().stream().collect(Collectors.joining(",", "", ".")));
-            }
-        }
-    }
-
-    protected void importPrioritizedDataStorage(ModuleConfigurationItem<?> item) throws ModuleException {
-        PrioritizedDataStorage pds = item.getTypedValue();
-        PluginConfiguration dataStorageConf = pds.getDataStorageConfiguration();
-        if (pluginService.findPluginConfigurationByLabel(dataStorageConf.getLabel()).isPresent()) {
-            LOGGER.warn("A plugin configuration already exists with same label, skipping import of {}.",
-                        dataStorageConf.getLabel());
-        } else {
-            EntityInvalidException validationIssues = PluginUtils.validate(dataStorageConf);
-            if (validationIssues != null) {
-                LOGGER.warn("Skipping import of {} for these reasons: {}",
-                            dataStorageConf.getLabel(),
-                            validationIssues.getMessages().stream().collect(Collectors.joining(",", "", ".")));
-            } else {
-                if (prioritizedDataStorageRepository
-                        .findOneByDataStorageTypeAndPriority(pds.getDataStorageType(), pds.getPriority())
-                        != null) {
-                    LOGGER.warn(
-                            "A prioritized data storage with same priority already exists, skipping import of {}.",
-                            dataStorageConf.getLabel());
+                PluginConfiguration plgConf = item.getTypedValue();
+                if (pluginService.findPluginConfigurationByLabel(plgConf.getLabel()).isPresent()) {
+                    LOGGER.warn("A plugin configuration already exists with same label, skipping import of {}.",
+                                plgConf.getLabel());
                 } else {
-                    Long oldPriority = pds.getPriority();
-                    PrioritizedDataStorage imported = prioritizedDataStorageService.create(dataStorageConf);
-                    imported.setPriority(oldPriority);
-                    prioritizedDataStorageRepository.save(imported);
+                    EntityInvalidException validationIssues = PluginUtils.validate(plgConf);
+                    if (validationIssues == null) {
+                        // Now that we are about to create the plugin configuration, lets check for IDataStorage
+                        if(plgConf.getInterfaceNames().contains(IDataStorage.class.getName())) {
+                            prioritizedDataStorageService.create(plgConf);
+                        } else {
+                            pluginService.savePluginConfiguration(plgConf);
+                        }
+                    } else {
+                        LOGGER.warn("Skipping import of {} for these reasons: {}",
+                                    plgConf.getLabel(),
+                                    validationIssues.getMessages().stream().collect(Collectors.joining(",", "", ".")));
+                    }
                 }
             }
         }
@@ -126,7 +98,8 @@ public class StorageConfigurationManager extends AbstractModuleConfigurationMana
         List<ModuleConfigurationItem<?>> configurations = new ArrayList<>();
         // Fill list using ModuleConfigurationItem#build
         for (PrioritizedDataStorage pds : prioritizedDataStorageRepository.findAll()) {
-            configurations.add(ModuleConfigurationItem.build(pds));
+            // Lets export pds as plugin configuration as we don't take into account the exported priority
+            configurations.add(ModuleConfigurationItem.build(pds.getDataStorageConfiguration()));
         }
         for (PluginConfiguration plgConf : pluginConfigurationRepository.findAll()) {
             if (!plgConf.getInterfaceNames().contains(IDataStorage.class.getName())) {
