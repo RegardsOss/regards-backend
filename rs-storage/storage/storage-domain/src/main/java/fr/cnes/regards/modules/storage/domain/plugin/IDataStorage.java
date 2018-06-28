@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.storage.domain.plugin;
 
 import java.util.Collection;
-import java.util.Set;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
@@ -36,10 +35,10 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 public interface IDataStorage<T extends IWorkingSubset> {
 
     /**
-     * Allow plugins to prepare data before actually doing the storage action
-     * @param dataFiles {@link StorageDataFile}s to transfer
-     * @param {@link DataStorageAccessModeEnum} STORE or RESTORE
-     * @return {@link Set} of Workingset containing plugin information needed for each file to transfert
+     * Generate all working subsets divided by archiving mode {@link DataStorageAccessModeEnum}
+     * @param dataFiles {@link Collection} of {@link StorageDataFile} to dispatch
+     * @param pMode {@link DataStorageAccessModeEnum}
+     * @return {@link WorkingSubsetWrapper} containing all working subsets
      */
     WorkingSubsetWrapper<T> prepare(Collection<StorageDataFile> dataFiles, DataStorageAccessModeEnum mode);
 
