@@ -1024,6 +1024,11 @@
                 <artifactId>common-storages</artifactId>
                 <version>${fr.cnes.regards.storages.version}</version>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.storages</groupId>
+                <artifactId>common-plugins</artifactId>
+                <version>${fr.cnes.regards.storages.version}</version>
+            </dependency>
         	<dependency>
                 <groupId>fr.cnes.regards.storages.staf</groupId>
                 <artifactId>staf</artifactId>
