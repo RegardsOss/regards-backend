@@ -99,4 +99,11 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
     @Query("select pds.id as dataStorageUsedId, sum(df.fileSize) as usedSize from StorageDataFile df join df.prioritizedDataStorages pds"
             + " where df.state = 'STORED' group by pds.id")
     Collection<MonitoringAggregation> getMonitoringAggregation();
+
+    /**
+     * Get one StorageDataFile stored by given prioritized data storage
+     * @param pdsId prioritized data storage id
+     * @return a StorageDataFile
+     */
+    StorageDataFile findTopByPrioritizedDataStoragesId(Long pdsId);
 }

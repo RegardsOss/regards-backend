@@ -73,6 +73,8 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 
     private Long dataStorage3UsedSize = 0L;
 
+    private AIP aip3;
+
     @Before
     public void init() throws MalformedURLException, NoSuchAlgorithmException {
         aipDao = new AIPDao(aipEntityRepository);
@@ -128,7 +130,7 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
             dataStorage2UsedSize += df.getFileSize();
         }
         dataFiles.addAll(dataFilesAip);
-        AIP aip3 = generateRandomAIP();
+        aip3 = generateRandomAIP();
         aip3 = aipDao.save(aip3);
         dataFilesAip = StorageDataFile.extractDataFiles(aip3);
         for (StorageDataFile df : dataFilesAip) {
@@ -166,6 +168,14 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
                 Assert.assertTrue(agg.getUsedSize().equals(dataStorage3UsedSize));
             }
         }
+    }
+
+    @Test
+    public void testFindTopByPDS() {
+        Set<StorageDataFile> possibleResults = StorageDataFile.extractDataFiles(aip3);
+        StorageDataFile result = dataFileRepository.findTopByPrioritizedDataStoragesId(dataStorage3Id);
+        Assert.assertNotNull("There should be a data file stored by dataStorage3", result);
+        Assert.assertTrue("Result should be one of aip3 data files", possibleResults.contains(result));
     }
 
     public AIP generateRandomAIP() throws NoSuchAlgorithmException, MalformedURLException {

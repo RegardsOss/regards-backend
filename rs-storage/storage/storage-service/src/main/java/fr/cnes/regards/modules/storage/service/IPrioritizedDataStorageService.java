@@ -51,7 +51,7 @@ public interface IPrioritizedDataStorageService {
      * Deletes the given
      * @param pluginConfId
      */
-    void delete(Long pluginConfId);
+    void delete(Long pluginConfId) throws ModuleException;
 
     /**
      * Increase the given data storage priority
@@ -83,4 +83,11 @@ public interface IPrioritizedDataStorageService {
      * @throws ModuleException
      */
     PrioritizedDataStorage update(Long id, PrioritizedDataStorage updated) throws ModuleException;
+
+    /**
+     * Determine whether a prioritized data storage can be deleted or not
+     * @param prioritizedDataStorage prioritized data storage to be checked
+     * @return if it can be deleted
+     */
+    boolean canDelete(PrioritizedDataStorage prioritizedDataStorage);
 }
