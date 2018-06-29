@@ -72,11 +72,11 @@ public class MonitoringController implements IResourceController<AcquisitionProc
     @ResourceAccess(description = "Search for acquisition processing chain summaries", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedResources<Resource<AcquisitionProcessingChainMonitor>>> search(
             @RequestParam(name = "mode", required = false) AcquisitionProcessingChainMode mode,
-            @RequestParam(name = "locked", required = false) Boolean locked,
+            @RequestParam(name = "running", required = false) Boolean running,
             @RequestParam(name = "label", required = false) String label, Pageable pageable,
             PagedResourcesAssembler<AcquisitionProcessingChainMonitor> assembler) throws ModuleException {
         Page<AcquisitionProcessingChainMonitor> results = service
-                .buildAcquisitionProcessingChainSummaries(label, locked, mode, pageable);
+                .buildAcquisitionProcessingChainSummaries(label, running, mode, pageable);
         return new ResponseEntity<>(toPagedResources(results, assembler), HttpStatus.OK);
     }
 

@@ -652,9 +652,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Override
     public Page<AcquisitionProcessingChainMonitor> buildAcquisitionProcessingChainSummaries(String label,
-            Boolean locked, AcquisitionProcessingChainMode mode, Pageable pageable) throws ModuleException {
+            Boolean running, AcquisitionProcessingChainMode mode, Pageable pageable) throws ModuleException {
         Page<AcquisitionProcessingChain> acqChains = acqChainRepository
-                .findAll(AcquisitionProcessingChainSpecifications.search(label, locked, mode), pageable);
+                .findAll(AcquisitionProcessingChainSpecifications.search(label, running, mode), pageable);
         List<AcquisitionProcessingChainMonitor> summaries = acqChains.getContent().stream()
                 .map(this::buildAcquisitionProcessingChainSummary).collect(Collectors.toList());
         return new PageImpl<>(summaries, pageable, acqChains.getTotalElements());
