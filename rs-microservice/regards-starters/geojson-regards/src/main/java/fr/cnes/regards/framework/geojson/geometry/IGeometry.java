@@ -73,7 +73,6 @@ public interface IGeometry { // NOSONAR
     /**
      * Create a new {@link Point} geometry
      * @param single single position required
-     * @param crs Coordinate Reference Systems
      * @return {@link Point}
      */
     static Point point(Position single) {
@@ -250,4 +249,6 @@ public interface IGeometry { // NOSONAR
     }
 
     <T extends IGeometry> T withCrs(String crs);
+
+    <T> T accept(IGeometryVisitor<T> visitor);
 }

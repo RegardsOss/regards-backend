@@ -44,4 +44,9 @@ public class Unlocated extends AbstractGeoJsonObject implements IGeometry {
     public String toString() {
         return "Unlocated";
     }
+
+    @Override
+    public <T> T accept(IGeometryVisitor<T> visitor) {
+        return visitor.visitUnlocated(this);
+    }
 }

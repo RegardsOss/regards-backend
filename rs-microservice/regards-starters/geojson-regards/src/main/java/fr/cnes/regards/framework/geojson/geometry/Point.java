@@ -33,4 +33,9 @@ public class Point extends AbstractGeometry<Position> {
     public Point() {
         super(GeoJsonType.POINT);
     }
+
+    @Override
+    public <T> T accept(IGeometryVisitor<T> visitor) {
+        return visitor.visitPoint(this);
+    }
 }

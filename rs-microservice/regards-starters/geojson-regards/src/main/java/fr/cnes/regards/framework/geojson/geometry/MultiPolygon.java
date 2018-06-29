@@ -37,4 +37,9 @@ public class MultiPolygon extends AbstractGeometry<List<PolygonPositions>> {
         super(GeoJsonType.MULTIPOLYGON);
         coordinates = new ArrayList<>();
     }
+
+    @Override
+    public <T> T accept(IGeometryVisitor<T> visitor) {
+        return visitor.visitMultiPolygon(this);
+    }
 }
