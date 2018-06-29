@@ -268,7 +268,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
         // Create new AIP
         AIPBuilder builder = new AIPBuilder(
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                "clientAipTest", EntityType.DATA);
+                "clientAipTest", EntityType.DATA, "Session 1");
         // Init a test file to add with the new AIP.
         Path file = initTestFile();
 

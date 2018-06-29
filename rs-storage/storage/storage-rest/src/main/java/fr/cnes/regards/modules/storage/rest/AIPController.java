@@ -18,47 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
-
-import javax.validation.Valid;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.util.Pair;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.MimeType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
@@ -88,7 +50,45 @@ import fr.cnes.regards.modules.storage.domain.DataFileDto;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
+import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
+import fr.cnes.regards.modules.storage.domain.job.AddAIPTagsFilters;
+import fr.cnes.regards.modules.storage.domain.job.RemoveAIPTagsFilters;
 import fr.cnes.regards.modules.storage.service.IAIPService;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.OffsetDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
+import javax.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.util.Pair;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.MimeType;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * REST controller handling request about {@link AIP}s
@@ -172,6 +172,21 @@ public class AIPController implements IResourceController<AIP> {
     public static final String DOWNLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
 
     /**
+     * Controller path to manage tags of multiple AIPs
+     */
+    public static final String TAG_MANAGEMENT_PATH = "/tags";
+
+    /**
+     * Endpoint path to delete tags of multiple AIPs
+     */
+    public static final String TAG_DELETION_PATH = "/delete";
+
+    /**
+     * Controller path to search used tags by multiple AIPs
+     */
+    public static final String TAG_SEARCH_PATH = TAG_MANAGEMENT_PATH + "/search";
+
+    /**
      * {@link IResourceService} instance
      */
     @Autowired
@@ -207,9 +222,10 @@ public class AIPController implements IResourceController<AIP> {
 
     /**
      * Retrieve a page of aip metadata according to the given parameters
-     * @param pState state the aips should be in
-     * @param from date(UTC) after which the aip should have been added to the system
-     * @param to date(UTC) before which the aip should have been added to the system
+     * @param pState  state the aips should be in
+     * @param from    date(UTC) after which the aip should have been added to the system
+     * @param to      date(UTC) before which the aip should have been added to the system
+     * @param session {@link String}
      * @return page of aip metadata respecting the constraints
      */
     @RequestMapping(method = RequestMethod.GET)
@@ -217,10 +233,12 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "send a page of aips")
     public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState pState,
-            @RequestParam(name = "from", required = false) OffsetDateTime from,
-            @RequestParam(name = "to", required = false) OffsetDateTime to, final Pageable pPageable,
+            @RequestParam(name = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @RequestParam(name = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
+            @RequestParam(name = "session", required = false) String session,
+            final Pageable pPageable,
             final PagedResourcesAssembler<AIP> pAssembler) throws ModuleException {
-        Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, pPageable);
+        Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, session, pPageable);
         return new ResponseEntity<>(toPagedResources(aips, pAssembler), HttpStatus.OK);
     }
 
@@ -417,6 +435,17 @@ public class AIPController implements IResourceController<AIP> {
     }
 
     /**
+     * Add tags to a list of aips
+     */
+    @RequestMapping(value = TAG_MANAGEMENT_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "allow to add multiple tags to several aips")
+    @ResponseBody
+    public ResponseEntity<Void> addTagsByQuery(@RequestBody AddAIPTagsFilters request) {
+        aipService.addTagsByQuery(request);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
      * Remove tags from a given aip, represented by its ip id
      */
     @RequestMapping(value = TAG_PATH, method = RequestMethod.DELETE)
@@ -426,8 +455,32 @@ public class AIPController implements IResourceController<AIP> {
             @RequestBody Set<String> tagsToRemove)
             throws EntityNotFoundException, EntityOperationForbiddenException, EntityInconsistentIdentifierException {
         aipService.removeTags(ipId, tagsToRemove);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+
+    /**
+     * Remove tags from a list of aips
+     */
+    @RequestMapping(value = TAG_DELETION_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "allow to remove multiple tags to several aips")
+    @ResponseBody
+    public ResponseEntity<Void> removeTagsByQuery(@RequestBody RemoveAIPTagsFilters request) {
+        aipService.removeTagsByQuery(request);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+
+    /**
+     * Retrieve common tags from a list of aips
+     */
+    @RequestMapping(value = TAG_SEARCH_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "allow to search tags used by aips")
+    public ResponseEntity<List<String>> retrieveAIPTags(@RequestBody AIPQueryFilters request) {
+        List<String> aipTags = aipService.retrieveAIPTagsByQuery(request);
+        return new ResponseEntity<>(aipTags, HttpStatus.OK);
+    }
+
 
     /**
      * Update an aip, represented by its ip id, thanks to the provided pojo
@@ -522,18 +575,22 @@ public class AIPController implements IResourceController<AIP> {
         }
     }
 
+    
     @Override
     public Resource<AIP> toResource(AIP pElement, Object... pExtras) {
         Resource<AIP> resource = resourceService.toResource(pElement);
         resourceService
                 .addLink(resource, this.getClass(), "retrieveAIPs", LinkRels.LIST,
-                         MethodParamFactory.build(AIPState.class), MethodParamFactory.build(OffsetDateTime.class),
-                         MethodParamFactory.build(OffsetDateTime.class), MethodParamFactory.build(Pageable.class),
-                         MethodParamFactory.build(PagedResourcesAssembler.class));
+                        MethodParamFactory.build(AIPState.class),
+                        MethodParamFactory.build(OffsetDateTime.class),
+                        MethodParamFactory.build(OffsetDateTime.class),
+                        MethodParamFactory.build(String.class),
+                        MethodParamFactory.build(Pageable.class),
+                        MethodParamFactory.build(PagedResourcesAssembler.class));
         resourceService.addLink(resource, this.getClass(), "retrieveAip", LinkRels.SELF,
-                                MethodParamFactory.build(String.class, pElement.getId().toString()));
+                MethodParamFactory.build(String.class, pElement.getId().toString()));
         resourceService.addLink(resource, this.getClass(), "storeRetryUnit", "retry",
-                                MethodParamFactory.build(String.class, pElement.getId().toString()));
+                MethodParamFactory.build(String.class, pElement.getId().toString()));
         return resource;
     }
 

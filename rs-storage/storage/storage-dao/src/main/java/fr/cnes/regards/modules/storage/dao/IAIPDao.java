@@ -1,23 +1,39 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 /**
  * DAO to access {@link AIP} entities by requesting {@link AIPEntity}.
  * The {@link AIP} are built from the {@link AIPEntity} with json deserialization.
- *
  * @author Sylvain VISSIERE-GUERINET
  * @author Sébastien Binda
  */
@@ -25,21 +41,15 @@ public interface IAIPDao {
 
     /**
      * Create or update an {@link AIP}
-     * @param toSave {@link AIP}
+     * @param toSave     {@link AIP}
+     * @param aipSession {@link AIPSession} related AIPSession to this AIP
      * @return saved {@link AIP}
      */
-    AIP save(AIP toSave);
-
-    /**
-     * Retrieve all existing {@link AIP}s.
-     * @param pageable {@link Pageable} pagination parameters.
-     * @return {@link AIP}s
-     */
-    Page<AIP> findAll(Pageable pageable);
+    AIP save(AIP toSave, AIPSession aipSession);
 
     /**
      * Retrieve all existing {@link AIP}s with given {@link AIPState} state.
-     * @param state {@link AIPState} state requested.
+     * @param state    {@link AIPState} state requested.
      * @param pageable {@link Pageable} pagination parameters.
      * @return {@link AIP}s
      */
@@ -52,65 +62,6 @@ public interface IAIPDao {
     Page<AIP> findAllWithLockByState(AIPState state, Pageable pageable);
 
     /**
-     * Retrieve all existing {@link AIP}s with submission date after the given {@link OffsetDateTime}
-     * @param submissionAfter {@link OffsetDateTime} submission date.
-     * @param pageable {@link Pageable} pagination parameters.
-     * @return {@link AIP}s
-     */
-    Page<AIP> findAllBySubmissionDateAfter(OffsetDateTime submissionAfter, Pageable pageable);
-
-    /**
-     * Retrieve all existing {@link AIP}s with last event date before the given {@link OffsetDateTime}
-     * @param lastEventBefore {@link OffsetDateTime} last event date.
-     * @param pageable {@link Pageable} pagination parameters.
-     * @return {@link AIP}s
-     */
-    Page<AIP> findAllByLastEventDateBefore(OffsetDateTime lastEventBefore, Pageable pageable);
-
-    /**
-     * Retrieve all existing {@link AIP}s with last event date before the given {@link OffsetDateTime} and
-     * with given {@link AIPState} state.
-     * @param state {@link AIPState} state requested.
-     * @param lastEventBefore {@link OffsetDateTime} last event date.
-     * @param pageable {@link Pageable} pagination parameters.
-     * @return {@link AIP}s
-     */
-    Page<AIP> findAllByStateAndLastEventDateBefore(AIPState state, OffsetDateTime lastEventBefore, Pageable pageable);
-
-    /**
-     * Retrieve all existing {@link AIP}s with submission date after the given {@link OffsetDateTime},
-     * last event date before the given {@link OffsetDateTime} and with given {@link AIPState} state.
-     * @param state {@link AIPState} state requested.
-     * @param submissionAfter {@link OffsetDateTime} submission date.
-     * @param lastEventBefore {@link OffsetDateTime} last event date.
-     * @param pageable {@link Pageable} pagination parameters.
-     * @return {@link AIP}s
-     */
-    Page<AIP> findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(AIPState state, OffsetDateTime submissionAfter,
-            OffsetDateTime lastEventBefore, Pageable pageable);
-
-    /**
-     * Retrieve all existing {@link AIP}s with submission date after the given {@link OffsetDateTime} and
-     * with given {@link AIPState} state.
-     * @param state {@link AIPState} state requested.
-     * @param submissionAfter {@link OffsetDateTime} submission date.
-     * @param pageable {@link Pageable} pagination parameters.
-     * @return {@link AIP}s
-     */
-    Page<AIP> findAllByStateAndSubmissionDateAfter(AIPState state, OffsetDateTime submissionAfter, Pageable pageable);
-
-    /**
-     * Retrieve all existing {@link AIP}s with submission date after the given {@link OffsetDateTime}
-     * and last event date before the given {@link OffsetDateTime}.
-     * @param submissionAfter {@link OffsetDateTime} submission date.
-     * @param lastEventBefore {@link OffsetDateTime} last event date.
-     * @param pageable {@link Pageable} pagination parameters.
-     * @return {@link AIP}s
-     */
-    Page<AIP> findAllBySubmissionDateAfterAndLastEventDateBefore(OffsetDateTime submissionAfter,
-            OffsetDateTime lastEventBefore, Pageable pageable);
-
-    /**
      * Retrieve a page of aip which state is the one provided and contains at least one of the provided tags and which
      * last event occurred after the given date
      * @param state
@@ -118,7 +69,7 @@ public interface IAIPDao {
      * @param fromLastUpdateDate
      * @param pageable
      * @return a page of aip which state is the one provided and contains at least one of the provided tags and which
-     *         last event occurred after the given date
+     * last event occurred after the given date
      */
     Page<AIP> findAllByStateAndTagsInAndLastEventDateAfter(AIPState state, Set<String> tags,
             OffsetDateTime fromLastUpdateDate, Pageable pageable);
@@ -179,11 +130,6 @@ public interface IAIPDao {
     Set<AIP> findAllByIpIdIn(Collection<String> ipIds);
 
     /**
-     * Retrieve all existing IpId from given list
-     */
-    Stream<UniformResourceName> findUrnsByIpIdIn(Collection<String> ipIds);
-
-    /**
      * Retrieve all aips which are tagged with the given tag
      * @param tag
      * @return aip tagged by tag
@@ -197,5 +143,48 @@ public interface IAIPDao {
      */
     Set<AIP> findAllBySipId(String sipIpId);
 
+    /**
+     * Retrieve all aips which state is the one given with lastEventDate above fromLastUpdateDate provided
+     * @param state AIP state
+     * @param fromLastUpdateDate AIP last update
+     * @param pageable
+     * @return
+     */
     Page<AIP> findAllByStateAndLastEventDateAfter(AIPState state, OffsetDateTime fromLastUpdateDate, Pageable pageable);
+
+    /**
+     * Allow to make a research
+     * @param query     A query specification
+     * @param pPageable
+     * @return
+     */
+    Page<AIP> findAll(Specification<AIPEntity> query, Pageable pPageable);
+
+    /**
+     * Retrieve all aips
+     * @return aips
+     */
+    Set<AIP> findAll(Specification<AIPEntity> query);
+
+    /**
+     * Count number of {@link AIP} associated to a given session
+     * @param sessionId
+     * @return number of {@link AIP}
+     */
+    long countBySessionId(String sessionId);
+
+    /**
+     * Count number of {@link AIP} associated to a given session and in a specific given {@link AIPState}
+     * @param sessionId session id
+     * @return number of {@link AIP}
+     */
+    long countBySessionIdAndStateIn(String sessionId, Collection<AIPState> states);
+
+    /**
+     * Allows to execute some SQL and return a list of string.
+     * Used to retrieve entities tags
+     * @param query SQL query
+     * @return list of string
+     */
+    List<String> findAllByCustomQuery(String query);
 }

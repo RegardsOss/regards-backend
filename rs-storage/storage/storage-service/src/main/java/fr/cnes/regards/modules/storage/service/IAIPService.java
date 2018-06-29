@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.util.Pair;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -42,11 +32,23 @@ import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
+import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
+import fr.cnes.regards.modules.storage.domain.job.AddAIPTagsFilters;
+import fr.cnes.regards.modules.storage.domain.job.RemoveAIPTagsFilters;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.util.Pair;
 
 /**
  * Service Interface to handle {@link AIP} entities.
@@ -117,10 +119,11 @@ public interface IAIPService {
      * @param pState {@link AIPState} State of AIP wanted
      * @param pFrom {@link OffsetDateTime} start date of AIP to retrieve
      * @param pTo {@link OffsetDateTime} stop date of AIP to retrieve
+     * @param sessionId
      * @param pPageable {@link Pageable} Pagination information
      * @return {@link AIP}s corresponding to parameters given.
      */
-    Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, Pageable pPageable)
+    Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, String sessionId, Pageable pPageable)
             throws ModuleException;
 
     /**
@@ -217,6 +220,13 @@ public interface IAIPService {
     Set<StorageDataFile> deleteAip(String ipId) throws ModuleException;
 
     /**
+     * Remove an aip from the system. Its file are deleted if and only if no other aip point to them.
+     * @return not suppressible files because they are in state
+     *         {@link fr.cnes.regards.modules.storage.domain.database.DataFileState#PENDING}
+     */
+    Set<StorageDataFile> deleteAip(AIP aip) throws ModuleException;
+
+    /**
      * Remove {@link AIP}s associated the given sip, through its ip id
      * @param sipIpId
      */
@@ -231,12 +241,84 @@ public interface IAIPService {
             throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
 
     /**
+     * Add tags to the specified AIP entity, using the entity
+     * @param toUpdate
+     * @param tagsToAdd
+     * @throws EntityNotFoundException
+     * @throws EntityInconsistentIdentifierException
+     * @throws EntityOperationForbiddenException
+     */
+    void addTags(AIP toUpdate, Set<String> tagsToAdd) throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
+
+    /**
+     * Add tags to several AIPs, using query filters
+     * This method returns before tags are updated, as this method just launch a job
+     * @param filters REST query
+     */
+    void addTagsByQuery(AddAIPTagsFilters filters);
+
+    /**
      * Removes tags from a specified aip, through its ip id
      * @param ipId
      * @param tagsToRemove
      */
     void removeTags(String ipId, Set<String> tagsToRemove)
             throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
+
+    /**
+     * Remove a list of tags to the provided AIP
+     * @param toUpdate
+     * @param tagsToRemove
+     * @throws EntityNotFoundException
+     * @throws EntityInconsistentIdentifierException
+     * @throws EntityOperationForbiddenException
+     */
+    void removeTags(AIP toUpdate, Set<String> tagsToRemove) throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
+
+    /**
+     * Remove a set of tags from several AIPS, using query filters
+     * This method returns before tags are updated, as this method just launch a job
+     * @param request the request object
+     */
+    void removeTagsByQuery(RemoveAIPTagsFilters request);
+
+    /**
+     * Retrieve one {@link AIPSession} by id.
+     * This method returns the AIPSession store in the DAO, so there is no stats computed. See getSessionWithStats for sesion for stats
+     * @param sessionId {@link String}
+     * @param createIfNotExists if true, the session with sessionId is created is it does not exists.
+     * @return {@link AIPSession}
+     */
+    AIPSession getSession(String sessionId, Boolean createIfNotExists);
+
+    /**
+     * Retrieve one {@link AIPSession} by id, and compute its stats.
+     * @param sessionId {@link String}
+     * @return {@link AIPSession}
+     */
+    AIPSession getSessionWithStats(String sessionId);
+
+    /**
+     * Retrieve all {@link AIPSession} that match provided filters
+     * @return {@link AIPSession}s
+     */
+    Page<AIPSession> searchSessions(String id, OffsetDateTime from, OffsetDateTime to, Pageable pageable);
+
+    /**
+     * Delete several {@link AIP}s using query filters
+     * This method returns before AIPs are deleted, as this method just launch a job
+     */
+    void deleteAIPsByQuery(AIPQueryFilters request);
+
+
+
+    /**
+     * Retrieve all tags used by a set of AIPS, using query filters or a list of AIP id
+     * @param filters REST query
+     */
+    List<String> retrieveAIPTagsByQuery(AIPQueryFilters filters);
+
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     ////////////////// These methods should only be called by IAIPServices
@@ -272,4 +354,5 @@ public interface IAIPService {
      * StorageDataFile. This state is reached when all locations of all DataObject are deleted for an AIP metadata.
      */
     void removeDeletedAIPMetadatas();
+
 }

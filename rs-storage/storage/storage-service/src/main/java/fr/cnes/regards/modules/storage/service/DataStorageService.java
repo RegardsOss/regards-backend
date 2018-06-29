@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.storage.service;
 
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -132,6 +133,9 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
 
     @Autowired
     private IPrioritizedDataStorageService prioritizedDataStorageService;
+
+    @Autowired
+    private IAIPService aipService;
 
     /**
      * Spring application name ~= microservice type
@@ -350,7 +354,7 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
                 LOGGER.debug("[DELETE FILE SUCCESS] AIP metadata file replaced.",
                              dataFileDeleted.getAip().getId().toString());
                 associatedAIP.addEvent(EventType.UPDATE.name(), METADATA_UPDATED_SUCCESSFULLY);
-                aipDao.save(associatedAIP);
+                aipService.save(associatedAIP, false);
             }
         } else {
             LOGGER.warn("Deleted file checksum {}, does not match StorageDataFile {} checksum {}",
@@ -385,7 +389,7 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
                 associatedAIP.getProperties().getContentInformations().removeAll(cisToRemove);
                 associatedAIP.addEvent(EventType.DELETION.name(),
                                        String.format(DATAFILE_DELETED_SUCCESSFULLY, urlToRemove));
-                associatedAIP = aipDao.save(associatedAIP);
+                associatedAIP = aipService.save(associatedAIP, false);
                 LOGGER.debug("[DELETE FILE SUCCESS] AIP {} is in UPDATED state",
                              dataFileDeleted.getAip().getId().toString());
                 LOGGER.debug("Deleted location {} is the only one location of the StorageDataFile {}. So we can completly remove the StorageDataFile.",
@@ -399,7 +403,7 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
                         .forEach(ci -> ci.getDataObject().getUrls().remove(urlToRemove));
                 associatedAIP.addEvent(EventType.DELETION.name(),
                                        String.format(DATAFILE_DELETED_SUCCESSFULLY, urlToRemove));
-                aipDao.save(associatedAIP);
+                aipService.save(associatedAIP, false);
                 dataFileDeleted.getUrls().remove(urlToRemove);
                 dataFileDao.save(dataFileDeleted);
             }
@@ -491,7 +495,7 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
                 }
                 associatedAIP.setState(AIPState.STORED);
                 associatedAIP.addEvent(EventType.STORAGE.name(), METADATA_STORED_SUCCESSFULLY);
-                aipDao.save(associatedAIP);
+                aipService.save(associatedAIP, false);
                 LOGGER.debug("[STORE FILE SUCCESS] AIP {} is in STORED state",
                              storedDataFile.getAip().getId().toString());
                 publisher.publish(new AIPEvent(associatedAIP));
@@ -515,7 +519,7 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
                     ci.get().getDataObject().setFilename(storedDataFile.getName());
                     associatedAIP.addEvent(EventType.STORAGE.name(),
                                            String.format(DATAFILE_STORED_SUCCESSFULLY, storedDataFile.getName()));
-                    aipDao.save(associatedAIP);
+                    aipService.save(associatedAIP, false);
                 }
             }
         } else {
@@ -535,7 +539,7 @@ public class DataStorageService implements IDataStorageService, ApplicationListe
         dataFileDao.save(storeFailFile);
         // Update associated AIP in db
         associatedAIP.setState(AIPState.STORAGE_ERROR);
-        aipDao.save(associatedAIP);
+        aipService.save(associatedAIP, false);
         notifyAdmins("Storage of file " + storeFailFile.getChecksum() + " failed", failureCause, NotificationType.INFO);
         publisher.publish(new AIPEvent(associatedAIP));
     }

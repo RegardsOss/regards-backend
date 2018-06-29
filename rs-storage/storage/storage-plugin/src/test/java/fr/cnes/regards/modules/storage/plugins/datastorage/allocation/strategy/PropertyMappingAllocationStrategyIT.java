@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.plugins.datastorage.allocation.strategy;
 
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -82,6 +83,8 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
 
     private static final String LOCAL_STORAGE_LABEL = "LOCAL_DATA_STORAGE_LABEL";
 
+    private static final String SESSION = "Session 1";
+
     private Long mappedDataStorageConfId;
 
     private Collection<StorageDataFile> dataFiles;
@@ -107,20 +110,24 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
         dataFiles = Sets.newHashSet();
         // lets get an aip and add it the proper property
         AIP aipWithProperty = getAIP();
+        AIPSession aipSession = new AIPSession();
+        aipSession.setId(SESSION);
+        aipSession.setLastActivationDate(OffsetDateTime.now());
+
         AIPBuilder builder = new AIPBuilder(aipWithProperty);
         builder.getPDIBuilder().addAdditionalProvenanceInformation("property", PROPERTY_VALUE);
         propertyDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "truc.json")), "checksum", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aipWithProperty, "truc", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aipWithProperty, aipSession, "truc", null);
         dataFiles.add(propertyDataFile);
         AIP aipWithoutProperty = getAIP();
         otherDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "local.json")), "checksum2", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aipWithoutProperty, "local", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aipWithoutProperty, aipSession, "local", null);
         dataFiles.add(otherDataFile);
         AIP aipWithPropertyWrongVal = getAIP();
         builder = new AIPBuilder(aipWithPropertyWrongVal);
         builder.getPDIBuilder().addAdditionalProvenanceInformation("property", PROPERTY_VALUE + 3);
         propertyWrongValDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "truc.json")), "checksum3",
-                "MD5", DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aipWithPropertyWrongVal, "truc", null);
+                "MD5", DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aipWithPropertyWrongVal, aipSession, "truc", null);
         dataFiles.add(propertyWrongValDataFile);
     }
 
@@ -128,7 +135,7 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
 
         AIPBuilder aipBuilder = new AIPBuilder(
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                null, EntityType.DATA);
+                null, EntityType.DATA, SESSION);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
         aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",

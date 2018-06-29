@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.plugins.datastorage.local;
 
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -83,6 +84,8 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
     private static final Logger LOG = LoggerFactory.getLogger(LocalDataStorageIT.class);
 
     private static final String LOCAL_STORAGE_LABEL = "LocalDataStorageIT";
+
+    private static final String SESSION = "SESSION 1";
 
     @Autowired
     private IPluginService pluginService;
@@ -176,28 +179,31 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
     public void testStore() throws ModuleException, IOException {
         IProgressManager progressManager = Mockito.mock(IProgressManager.class);
         AIP aip = getAipFromFile();
+        AIPSession aipSession = new AIPSession();
+        aipSession.setId(SESSION);
+        aipSession.setLastActivationDate(OffsetDateTime.now());
         aip.addEvent(EventType.SUBMISSION.name(), "just for fun", OffsetDateTime.now());
         LocalDataStorage storagePlugin = pluginService.getPlugin(localStorageConf.getId());
         // valid file to get a call to progressManager.storageSucceed
         StorageDataFile validDF = new StorageDataFile(
                 Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt")),
-                "538b3f98063b77e50f78b51f1a6acd8c", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip,
+                "538b3f98063b77e50f78b51f1a6acd8c", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip, aipSession,
                 "data.txt", null);
         // valid file to get a call to progressManager.storageSucceed
         StorageDataFile validDFWithProvidedDirectory = new StorageDataFile(
                 Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data2.txt")),
-                "36fc2e44e266cd50f1f9dbc5b9767138", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip,
+                "36fc2e44e266cd50f1f9dbc5b9767138", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip, aipSession,
                 "data2.txt", "/provided/directory");
         // file that does not exist to get a call to progressManager.storageFailed
         StorageDataFile ghostDF = new StorageDataFile(
                 Sets.newHashSet(new URL("file", "",
                         System.getProperty("user.dir") + "/src/test/resources/data_do_not_exist.txt")),
-                "unknown", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip, "data_do_not_exist.txt",
+                "unknown", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip, aipSession, "data_do_not_exist.txt",
                 null);
         // invalid checksum to check call to progressManager.storageFailed
         StorageDataFile invalidDF = new StorageDataFile(
                 Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt")),
-                "01234567890123456789012345678901", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip,
+                "01234567890123456789012345678901", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip, aipSession,
                 "data.txt", null);
         Set<StorageDataFile> dataFiles = Sets.newHashSet(validDF, validDFWithProvidedDirectory, ghostDF, invalidDF);
         LocalWorkingSubset workingSubSet = new LocalWorkingSubset(dataFiles);

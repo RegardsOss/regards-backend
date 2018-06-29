@@ -1,25 +1,5 @@
 package fr.cnes.regards.modules.storage.dao;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-
-import org.assertj.core.util.Lists;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.MimeType;
-
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -33,16 +13,36 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
+import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
-import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
+import org.assertj.core.util.Lists;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=storage", "spring.application.name=storage", "spring.jmx.enabled=false" })
+        properties = {"spring.jpa.properties.hibernate.default_schema=storage", "spring.application.name=storage", "spring.jmx.enabled=false"})
+@ContextConfiguration(classes = {DAOTestConfiguration.class})
 public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 
     @Autowired
@@ -50,6 +50,12 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 
     @Autowired
     private IAIPEntityRepository aipEntityRepository;
+
+    @Autowired
+    private IAIPSessionRepository aipSessionRepo;
+
+    @Autowired
+    private ICustomizedAIPEntityRepository customAIPEntityRepo;
 
     private IAIPDao aipDao;
 
@@ -73,10 +79,17 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 
     private Long dataStorage3UsedSize = 0L;
 
+    private static final String SESSION = "SESSION_1";
+
     @Before
     public void init() throws MalformedURLException, NoSuchAlgorithmException {
-        aipDao = new AIPDao(aipEntityRepository);
+        aipDao = new AIPDao(aipEntityRepository, customAIPEntityRepo);
         dataFileDao = new DataFileDao(dataFileRepository, aipEntityRepository);
+
+        AIPSession aipSession = new AIPSession();
+        aipSession.setId(SESSION);
+        aipSession.setLastActivationDate(OffsetDateTime.now());
+        aipSession = aipSessionRepo.save(aipSession);
         // lets get some data storage configurations
         PluginConfiguration dataStorage1 = new PluginConfiguration();
         dataStorage1.setPluginId("LocalDataStorage");
@@ -110,9 +123,9 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         pds3 = prioritizedDataStorageRepository.save(pds3);
         // lets get some aips and dataFiles
         AIP aip1 = generateRandomAIP();
-        aip1 = aipDao.save(aip1);
+        aip1 = aipDao.save(aip1, aipSession);
         List<StorageDataFile> dataFiles = Lists.newArrayList();
-        Set<StorageDataFile> dataFilesAip = StorageDataFile.extractDataFiles(aip1);
+        Set<StorageDataFile> dataFilesAip = StorageDataFile.extractDataFiles(aip1, aipSession);
         for (StorageDataFile df : dataFilesAip) {
             df.addDataStorageUsed(pds1);
             dataStorage1Id = pds1.getId();
@@ -120,8 +133,8 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         }
         dataFiles.addAll(dataFilesAip);
         AIP aip2 = generateRandomAIP();
-        aip2 = aipDao.save(aip2);
-        dataFilesAip = StorageDataFile.extractDataFiles(aip2);
+        aip2 = aipDao.save(aip2, aipSession);
+        dataFilesAip = StorageDataFile.extractDataFiles(aip2, aipSession);
         for (StorageDataFile df : dataFilesAip) {
             df.addDataStorageUsed(pds2);
             dataStorage2Id = pds2.getId();
@@ -129,8 +142,8 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         }
         dataFiles.addAll(dataFilesAip);
         AIP aip3 = generateRandomAIP();
-        aip3 = aipDao.save(aip3);
-        dataFilesAip = StorageDataFile.extractDataFiles(aip3);
+        aip3 = aipDao.save(aip3, aipSession);
+        dataFilesAip = StorageDataFile.extractDataFiles(aip3, aipSession);
         for (StorageDataFile df : dataFilesAip) {
             df.addDataStorageUsed(pds3);
             dataStorage3Id = pds3.getId();
@@ -140,8 +153,8 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         dataFileDao.save(dataFiles);
         //lets test with a file stored into two archives ( 1 and 2 )
         AIP aip12 = generateRandomAIP();
-        aip12 = aipDao.save(aip12);
-        dataFilesAip = StorageDataFile.extractDataFiles(aip12);
+        aip12 = aipDao.save(aip12, aipSession);
+        dataFilesAip = StorageDataFile.extractDataFiles(aip12, aipSession);
         for (StorageDataFile df : dataFilesAip) {
             df.addDataStorageUsed(pds1);
             dataStorage1UsedSize += df.getFileSize();
@@ -155,14 +168,14 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
     @Test
     public void testMonitoringAggregation() {
         Collection<MonitoringAggregation> monitoringAggregations = dataFileRepository.getMonitoringAggregation();
-        for(MonitoringAggregation agg: monitoringAggregations) {
-            if(agg.getDataStorageUsedId().equals(dataStorage1Id)) {
+        for (MonitoringAggregation agg : monitoringAggregations) {
+            if (agg.getDataStorageUsedId().equals(dataStorage1Id)) {
                 Assert.assertTrue(agg.getUsedSize().equals(dataStorage1UsedSize));
             }
-            if(agg.getDataStorageUsedId().equals(dataStorage2Id)) {
+            if (agg.getDataStorageUsedId().equals(dataStorage2Id)) {
                 Assert.assertTrue(agg.getUsedSize().equals(dataStorage2UsedSize));
             }
-            if(agg.getDataStorageUsedId().equals(dataStorage3Id)) {
+            if (agg.getDataStorageUsedId().equals(dataStorage3Id)) {
                 Assert.assertTrue(agg.getUsedSize().equals(dataStorage3UsedSize));
             }
         }
@@ -171,14 +184,14 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
     public AIP generateRandomAIP() throws NoSuchAlgorithmException, MalformedURLException {
 
         UniformResourceName ipId = new UniformResourceName(OAISIdentifier.AIP,
-                                                           EntityType.COLLECTION,
-                                                           "tenant",
-                                                           UUID.randomUUID(),
-                                                           1);
+                EntityType.COLLECTION,
+                "tenant",
+                UUID.randomUUID(),
+                1);
         String sipId = String.valueOf(generateRandomString(new Random(), 40));
 
         // Init AIP builder
-        AIPBuilder aipBuilder = new AIPBuilder(ipId, sipId, EntityType.DATA);
+        AIPBuilder aipBuilder = new AIPBuilder(ipId, sipId, EntityType.DATA, SESSION);
 
         return aipBuilder.build(generateRandomInformationPackageProperties(ipId));
     }
@@ -192,8 +205,8 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         generateRandomContentInformations(ippBuilder);
         // PDI
         ippBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(),
-                                                                 "addition of this aip into our beautiful system!",
-                                                                 OffsetDateTime.now());
+                "addition of this aip into our beautiful system!",
+                OffsetDateTime.now());
         // - ContextInformation
         ippBuilder.getPDIBuilder().addTags(generateRandomTags(ipId));
         // - Provenance
@@ -213,11 +226,11 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         int listSize = random.nextInt(listMaxSize) + 1;
         for (int i = 0; i < listSize; i++) {
             ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER,
-                                                                    null,
-                                                                    "SHA1",
-                                                                    sha1("blahblah"),
-                                                                    new Long((new Random()).nextInt(10000000)),
-                                                                    new URL("ftp://bla"));
+                    null,
+                    "SHA1",
+                    sha1("blahblah"),
+                    new Long((new Random()).nextInt(10000000)),
+                    new URL("ftp://bla"));
             ippBuilder.getContentInformationBuilder()
                     .setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION", MimeType.valueOf("application/name"), "DESCRIPTION");
             ippBuilder.addContentInformation();
