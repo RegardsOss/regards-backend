@@ -213,6 +213,13 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
     }
 
     /**
+     * Set Regards session identifier
+     */
+    public void setSession(String session) {
+        pdi.getProvenanceInformation().setSession(session);
+    }
+
+    /**
      * Add information object events
      * @param events events to add
      */

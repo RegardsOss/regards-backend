@@ -66,6 +66,11 @@ public class ProvenanceInformation {
      */
     private String proposal;
 
+    /**
+     * The Regards session id
+     */
+    private String session;
+
     private Map<String, Object> additional;
 
     public String getFacility() {
@@ -145,6 +150,21 @@ public class ProvenanceInformation {
      */
     public void setProposal(String proposal) {
         this.proposal = proposal;
+    }
+
+    /**
+     * @return the Regards session id
+     */
+    public String getSession() {
+        return session;
+    }
+
+    /**
+     * Set the Regards session id linked to this IP
+     * @param session
+     */
+    public void setSession(String session) {
+        this.session = session;
     }
 
     public void addEvent(@Nullable String type, String comment, OffsetDateTime date) {
