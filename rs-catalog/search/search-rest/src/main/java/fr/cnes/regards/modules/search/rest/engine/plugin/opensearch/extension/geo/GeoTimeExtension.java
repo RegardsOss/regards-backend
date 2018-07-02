@@ -268,15 +268,9 @@ public class GeoTimeExtension extends AbstractExtension {
                 .orElse(null);
         if ((timeStartParameterConf != null) && (timeEndParameterConf != null)) {
             String startDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath()
-<<<<<<< Updated upstream
                     .replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
             String endDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath()
                     .replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
-=======
-                    .replace(StaticProperties.FEATURE_GEOMETRY + ".", "");
-            String endDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath()
-                    .replace(StaticProperties.FEATURE_GEOMETRY + ".", "");
->>>>>>> Stashed changes
             AbstractAttribute<?> startDate = entity.getProperty(startDateJsonPath);
             AbstractAttribute<?> stopDate = entity.getProperty(endDateJsonPath);
             if ((startDate != null) && (startDate.getValue() instanceof OffsetDateTime) && (stopDate != null)
