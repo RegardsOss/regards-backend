@@ -145,7 +145,7 @@ public interface ICatalogSearchService {
     /**
      * Retrieve property values for specified property name
      * @param criterion business criterions
-     * @param SearchType the search type containing the search type and the result type
+     * @param searchType the search type containing the search type and the result type
      * @param propertyPath target propertu
      * @param maxCount maximum result count
      * @param partialText text that property should contains (can be null)
