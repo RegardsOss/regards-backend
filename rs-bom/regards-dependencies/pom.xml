@@ -167,6 +167,7 @@
         <org.locationtech.spatial4j.version>0.6</org.locationtech.spatial4j.version>
         <com.google.guava.version>21.0</com.google.guava.version>
         <com.mchange.c3p0.version>0.9.5.2</com.mchange.c3p0.version>
+        <org.mockftpserver.version>2.7.1</org.mockftpserver.version>
         <!-- Permit to use same Hibernate version as which spring use -->
         <spring.hibernate.version>${hibernate.version}</spring.hibernate.version>
         <logback-ext-spring.version>0.1.4</logback-ext-spring.version>
@@ -1293,6 +1294,13 @@
                 <artifactId>gt-metadata</artifactId>
                 <version>${org.geotools.version}</version>
             </dependency>
+            <!-- FTP Mock server (for tests) -->
+			<dependency>
+    			<groupId>org.mockftpserver</groupId>
+    			<artifactId>MockFtpServer</artifactId>
+    			<version>${org.mockftpserver.version}</version>
+    			<scope>test</scope>
+			</dependency>
             <!-- Services -->
             <dependency>
                 <groupId>fr.cnes.regards.cloud</groupId>
