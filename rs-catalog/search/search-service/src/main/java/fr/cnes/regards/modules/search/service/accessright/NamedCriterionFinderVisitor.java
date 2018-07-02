@@ -140,11 +140,6 @@ public class NamedCriterionFinderVisitor implements ICriterionVisitor<Collection
     }
 
     @Override
-    public Collection<ICriterion> visitBoundaryBoxCriterion(BoundaryBoxCriterion criterion) {
-        return searchedName.equals(IMapping.GEO_SHAPE_ATTRIBUTE) ? Lists.newArrayList(criterion) : new ArrayList<>();
-    }
-
-    @Override
     public Collection<ICriterion> visitCircleCriterion(CircleCriterion criterion) {
         return searchedName.equals(IMapping.GEO_SHAPE_ATTRIBUTE) ? Lists.newArrayList(criterion) : new ArrayList<>();
     }
@@ -156,7 +151,7 @@ public class NamedCriterionFinderVisitor implements ICriterionVisitor<Collection
 
     @Override
     public Collection<ICriterion> visitBoundaryBoxCriterion(BoundaryBoxCriterion criterion) {
-        return searchedName.equals(IMapping.GEOMETRY) ? Lists.newArrayList(criterion) : new ArrayList<>();
+        return searchedName.equals(IMapping.GEO_SHAPE_ATTRIBUTE) ? Lists.newArrayList(criterion) : new ArrayList<>();
     }
 
 }

@@ -207,13 +207,8 @@ public class SampleDataUtils {
     /**
      * Dummy OpenSearch request
      */
-<<<<<<< Updated upstream
     public static final String QUERY = INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.FEATURE_PROPERTIES)
             + ":(2 AND 3) OR " + STRING_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.FEATURE_PROPERTIES) + ":hello";
-=======
-    public static final String QUERY = INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.FEATURE_GEOMETRY)
-            + ":(2 AND 3) OR " + STRING_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.FEATURE_GEOMETRY) + ":hello";
->>>>>>> Stashed changes
 
     /**
      * A query with no "groups" term
@@ -223,13 +218,8 @@ public class SampleDataUtils {
     /**
      * A query with a term "groups"
      */
-<<<<<<< Updated upstream
     public static final String QUERY_WITH_GROUPS = INTEGER_ATTRIBUTE_MODEL
             .buildJsonPath(StaticProperties.FEATURE_PROPERTIES) + ":(2 AND 3) OR " + Terms.GROUPS + ":admin";
-=======
-    public static final String QUERY_WITH_GROUPS = INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.FEATURE_GEOMETRY)
-            + ":(2 AND 3) OR " + Terms.GROUPS + ":admin";
->>>>>>> Stashed changes
 
     /**
      * A dummy assembler for collections
