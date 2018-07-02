@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,17 +24,17 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
 /**
- * Implement the type conversion logic for a String to a {@link UrnConverter}.<br>
+ * Implement the type conversion logic for a {@link UniformResourceName} to a {@link String}.<br>
  * This is automatically used by Spring if need be.
  *
- * @author Xavier-Alexandre Brochard
+ * @author Marc Sordi
  */
 @Component
-public class StringToUrn implements Converter<String, UniformResourceName> {
+public class UrnToString implements Converter<UniformResourceName, String> {
 
     @Override
-    public UniformResourceName convert(String pSource) {
-        return UniformResourceName.fromString(pSource);
+    public String convert(UniformResourceName source) {
+        return source.toString();
     }
 
 }

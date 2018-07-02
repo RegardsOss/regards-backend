@@ -247,4 +247,8 @@ public interface IGeometry { // NOSONAR
             throw new IllegalArgumentException(errorMessage);
         }
     }
+
+    <T extends IGeometry> T withCrs(String crs);
+
+    <T> T accept(IGeometryVisitor<T> visitor);
 }

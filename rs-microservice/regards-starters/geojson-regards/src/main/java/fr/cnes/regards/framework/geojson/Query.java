@@ -16,34 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.test.integration;
+package fr.cnes.regards.framework.geojson;
 
-import org.springframework.test.context.transaction.BeforeTransaction;
+import java.util.Map;
+
+import com.google.common.collect.Maps;
 
 /**
- * Add default transactional initialization
- *
- * @author Marc Sordi
- *
+ * Query for geo+json opensearch meta response.
+ * @author Sébastien Binda
  */
-public abstract class AbstractRegardsTransactionalIT extends AbstractRegardsIT {
+public class Query {
 
-    @BeforeTransaction
-    protected void beforeTransaction() {
-        injectToken(getDefaultTenant(), getDefaultRole());
+    private final Map<String, String> searchFilters = Maps.newHashMap();
+
+    public Map<String, String> getSearchFilters() {
+        return searchFilters;
     }
 
-    /**
-     * Inject token in the security context.<br>
-     * Override this method to manage your tenant and role in transaction
-     *
-     * @param pTenant
-     *            tenant
-     * @param pRole
-     *            role
-     */
-    protected void injectToken(String pTenant, String pRole) {
-        jwtService.injectMockToken(pTenant, pRole);
+    public void addFilter(String name, String value) {
+        searchFilters.put(name, value);
     }
 
 }

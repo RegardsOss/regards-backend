@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,24 +18,26 @@
  */
 package fr.cnes.regards.framework.geojson.geometry;
 
-import fr.cnes.regards.framework.geojson.GeoJsonType;
-import fr.cnes.regards.framework.geojson.coordinates.Position;
-
 /**
- * RFC 7946 -August 2016<br/>
- * GeoJson Point representation
- *
- * @author Marc Sordi
- *
+ * IGeometry visitor
+ * @param <T> return type of all methods
+ * @author oroussel
  */
-public class Point extends AbstractGeometry<Position> {
+public interface IGeometryVisitor<T> {
 
-    public Point() {
-        super(GeoJsonType.POINT);
-    }
+    T visitGeometryCollection(GeometryCollection geometry);
 
-    @Override
-    public <T> T accept(IGeometryVisitor<T> visitor) {
-        return visitor.visitPoint(this);
-    }
+    T visitLineString(LineString geometry);
+
+    T visitMultiLineString(MultiLineString geometry);
+
+    T visitMultiPoint(MultiPoint geometry);
+
+    T visitMultiPolygon(MultiPolygon geometry);
+
+    T visitPoint(Point geometry);
+
+    T visitPolygon(Polygon geometry);
+
+    T visitUnlocated(Unlocated geometry);
 }
