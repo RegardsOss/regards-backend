@@ -71,7 +71,7 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
     public void run() {
         AIPQueryFilters tagFilter = parameters.get(FILTER_PARAMETER_NAME).getValue();
         AIPSession aipSession = aipService.getSession(tagFilter.getSession(), false);
-        Set<AIP> aips = aipDao.findAll(AIPSpecification.search(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(), aipSession, tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()));
+        Set<AIP> aips = aipDao.findAll(AIPSpecification.search(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(), tagFilter.getTags(), aipSession, tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()));
         nbError = new AtomicInteger(0);
         nbEntityRemoved = new AtomicInteger(0);
         nbEntity = aips.size();

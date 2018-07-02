@@ -526,13 +526,13 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Page<AIP> retrieveAIPs(AIPState state, OffsetDateTime from, OffsetDateTime to, String session, Pageable pageable)
+    public Page<AIP> retrieveAIPs(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags, String session, Pageable pageable)
             throws ModuleException {
         if (!getSecurityDelegationPlugin().hasAccessToListFeature()) {
             throw new EntityOperationForbiddenException("Only Admins can access this feature.");
         }
         AIPSession aipSession = getSession(session, false);
-        return aipDao.findAll(AIPSpecification.search(state, from, to, aipSession, null, null), pageable);
+        return aipDao.findAll(AIPSpecification.search(state, from, to, tags, aipSession, null, null), pageable);
     }
 
     @Override
@@ -1369,6 +1369,10 @@ public class AIPService implements IAIPService {
 
     @Override
     public void deleteAIPsByQuery(AIPQueryFilters filters) {
+        // prevent the job to remove entities created after this call
+        if (filters.getTo() == null) {
+            filters.setTo(OffsetDateTime.now());
+        }
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(DeleteAIPsJob.FILTER_PARAMETER_NAME, filters));
         JobInfo jobInfo = new JobInfo(false, 0, parameters, authResolver.getUser(), DeleteAIPsJob.class.getName());
@@ -1378,16 +1382,24 @@ public class AIPService implements IAIPService {
 
     @Override
     public void removeTagsByQuery(RemoveAIPTagsFilters filters) {
+        // prevent the job to remove tags to entities created after this call
+        if (filters.getTo() == null) {
+            filters.setTo(OffsetDateTime.now());
+        }
         UpdateAIPsTagJobType updateType = UpdateAIPsTagJobType.REMOVE;
         JobParameter filterParameter = new JobParameter(UpdateAIPsTagJob.FILTER_PARAMETER_NAME, filters);
-        runJobToUpdateTags(updateType, filterParameter);
+        scheduleJobToUpdateTags(updateType, filterParameter);
     }
 
     @Override
     public void addTagsByQuery(AddAIPTagsFilters filters) {
+        // prevent the job to add tags to entities created after this call
+        if (filters.getTo() == null) {
+            filters.setTo(OffsetDateTime.now());
+        }
         UpdateAIPsTagJobType updateType = UpdateAIPsTagJobType.ADD;
         JobParameter filterParameter = new JobParameter(UpdateAIPsTagJob.FILTER_PARAMETER_NAME, filters);
-        runJobToUpdateTags(updateType, filterParameter);
+        scheduleJobToUpdateTags(updateType, filterParameter);
     }
 
     /**
@@ -1395,7 +1407,7 @@ public class AIPService implements IAIPService {
      * @param updateType type of update (add/remove)
      * @param filterParameter user query filters
      */
-    private void runJobToUpdateTags(UpdateAIPsTagJobType updateType, JobParameter filterParameter) {
+    private void scheduleJobToUpdateTags(UpdateAIPsTagJobType updateType, JobParameter filterParameter) {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(filterParameter);
         parameters.add(new JobParameter(UpdateAIPsTagJob.UPDATE_TYPE_PARAMETER_NAME, updateType));
@@ -1408,7 +1420,7 @@ public class AIPService implements IAIPService {
     public List<String> retrieveAIPTagsByQuery(AIPQueryFilters request) {
         AIPSession aipSession = getSession(request.getSession(), false);
         return aipDao.findAllByCustomQuery(
-            AIPSpecification.searchAipTagsUsingSQL(request.getState(), request.getFrom(), request.getTo(), aipSession, request.getAipIds(), request.getAipIdsExcluded())
+            AIPSpecification.searchAipTagsUsingSQL(request.getState(), request.getFrom(), request.getTo(), request.getTags(), aipSession, request.getAipIds(), request.getAipIdsExcluded())
         );
     }
 

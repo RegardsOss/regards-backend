@@ -27,7 +27,9 @@ import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Set;
+import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -44,7 +46,7 @@ public class AIPSpecification {
     /**
      * Filter on given attributes and return a Specification that contains all query filters
      */
-    public static Specification<AIPEntity> search(AIPState state, OffsetDateTime from, OffsetDateTime to, AIPSession session, Set<String> aipIds, Set<String> aipIdsExcluded) {
+    public static Specification<AIPEntity> search(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags, AIPSession session, Set<String> aipIds, Set<String> aipIdsExcluded) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (state != null) {
@@ -65,6 +67,12 @@ public class AIPSpecification {
             if (aipIdsExcluded != null && !aipIdsExcluded.isEmpty()) {
                 predicates.add(root.get("ipId").in(aipIdsExcluded.toArray()).not());
             }
+            if (tags != null && !tags.isEmpty()) {
+                Expression<Set<String>> tagsExpr = root.get("tags");
+                for (String tag : tags) {
+                    predicates.add(cb.isMember(tag, tagsExpr));
+                }
+            }
 
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
@@ -74,7 +82,7 @@ public class AIPSpecification {
     /**
      * Return an SQL query that retrieve all tags used by a set of entities
      */
-    public static String searchAipTagsUsingSQL(AIPState state, OffsetDateTime from, OffsetDateTime to, AIPSession session, Set<String> aipIds, Set<String> aipIdsExcluded) {
+    public static String searchAipTagsUsingSQL(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags, AIPSession session, Set<String> aipIds, Set<String> aipIdsExcluded) {
         Set<String> predicates = Sets.newHashSet();
         StringBuilder request = new StringBuilder("select distinct t_aip_tag.value from storage.t_aip left outer join " +
                 "storage.t_aip_tag on t_aip.id=t_aip_tag.aip_id ");
@@ -105,6 +113,14 @@ public class AIPSpecification {
                 aipExcludedPredicates.add("'" + aipId + "'");
             }
             predicates.add("(ip_id not in (" + String.join(" , ", aipExcludedPredicates) + "))");
+        }
+        if (tags != null && !tags.isEmpty()) {
+            int i = 0;
+            for (String tag : tags) {
+                predicates.add("('" + tag + "' in (select tags" + i + ".value " +
+                        "from storage.t_aip_tag tags" + i + " where t_aip.id=tags" + i + ".aip_id))");
+                i++;
+            }
         }
         if (!predicates.isEmpty()) {
             request.append("WHERE ");

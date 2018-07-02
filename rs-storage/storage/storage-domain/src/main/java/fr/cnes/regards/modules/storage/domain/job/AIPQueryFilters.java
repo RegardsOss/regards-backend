@@ -20,7 +20,9 @@ package fr.cnes.regards.modules.storage.domain.job;
 
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.validation.constraints.NotNull;
 
@@ -56,6 +58,11 @@ public class AIPQueryFilters {
     private Set<String> aipIdsExcluded = new HashSet<>();
 
     /**
+     * list of tags already set up on entities (optional)
+     */
+    private List<String> tags = new ArrayList<>();
+
+    /**
      * Regards session id
      */
     @NotNull
@@ -88,6 +95,10 @@ public class AIPQueryFilters {
         return session;
     }
 
+    public List<String> getTags() {
+        return tags;
+    }
+
     public void setState(AIPState state) {
         this.state = state;
     }
@@ -110,5 +121,9 @@ public class AIPQueryFilters {
 
     public void setSession(String session) {
         this.session = session;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
     }
 }

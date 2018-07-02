@@ -235,10 +235,11 @@ public class AIPController implements IResourceController<AIP> {
             @RequestParam(name = "state", required = false) AIPState pState,
             @RequestParam(name = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
             @RequestParam(name = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
+            @RequestParam(name = "tags", required = false) List<String> tags,
             @RequestParam(name = "session", required = false) String session,
             final Pageable pPageable,
             final PagedResourcesAssembler<AIP> pAssembler) throws ModuleException {
-        Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, session, pPageable);
+        Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, tags, session, pPageable);
         return new ResponseEntity<>(toPagedResources(aips, pAssembler), HttpStatus.OK);
     }
 
@@ -575,7 +576,7 @@ public class AIPController implements IResourceController<AIP> {
         }
     }
 
-    
+
     @Override
     public Resource<AIP> toResource(AIP pElement, Object... pExtras) {
         Resource<AIP> resource = resourceService.toResource(pElement);
@@ -584,6 +585,7 @@ public class AIPController implements IResourceController<AIP> {
                         MethodParamFactory.build(AIPState.class),
                         MethodParamFactory.build(OffsetDateTime.class),
                         MethodParamFactory.build(OffsetDateTime.class),
+                        MethodParamFactory.build(List.class),
                         MethodParamFactory.build(String.class),
                         MethodParamFactory.build(Pageable.class),
                         MethodParamFactory.build(PagedResourcesAssembler.class));

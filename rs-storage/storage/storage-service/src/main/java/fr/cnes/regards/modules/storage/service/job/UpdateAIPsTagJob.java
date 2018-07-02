@@ -80,7 +80,7 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
         UpdateAIPsTagJobType updateType = parameters.get(UPDATE_TYPE_PARAMETER_NAME).getValue();
         AIPQueryFilters tagFilter = getFilter(updateType);
         AIPSession aipSession = aipService.getSession(tagFilter.getSession(), false);
-        Set<AIP> aips = aipDao.findAll(AIPSpecification.search(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(), aipSession, tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()));
+        Set<AIP> aips = aipDao.findAll(AIPSpecification.search(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(), tagFilter.getTags(), aipSession, tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()));
         nbError = new AtomicInteger(0);
         nbEntityUpdated = new AtomicInteger(0);
         nbEntity = aips.size();
