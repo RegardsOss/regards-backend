@@ -29,6 +29,7 @@ import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequ
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 
 /**
@@ -80,7 +81,7 @@ public class RequestBuilderCustomizer {
     private final GsonBuilder gsonBuilder;
 
     static {
-        //lets initiate the default headers!
+        // lets initiate the default headers!
         DEFAULT_HEADERS.add(HttpConstants.CONTENT_TYPE, "application/json");
         DEFAULT_HEADERS.add(HttpConstants.ACCEPT, "application/json");
     }
@@ -114,8 +115,7 @@ public class RequestBuilderCustomizer {
      */
     protected ResultActions performDelete(MockMvc mvc, String urlTemplate, String authToken, String errorMsg,
             Object... urlVariables) {
-        return performRequest(mvc,
-                              getRequestBuilder(authToken, HttpMethod.DELETE, urlTemplate, urlVariables),
+        return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.DELETE, urlTemplate, urlVariables),
                               errorMsg);
     }
 
@@ -124,8 +124,7 @@ public class RequestBuilderCustomizer {
      */
     protected ResultActions performPost(MockMvc mvc, String urlTemplate, String authToken, Object content,
             String errorMsg, Object... urlVariables) {
-        return performRequest(mvc,
-                              getRequestBuilder(authToken, HttpMethod.POST, content, urlTemplate, urlVariables),
+        return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.POST, content, urlTemplate, urlVariables),
                               errorMsg);
     }
 
@@ -134,8 +133,7 @@ public class RequestBuilderCustomizer {
      */
     protected ResultActions performPut(MockMvc mvc, String urlTemplate, String authToken, Object content,
             String errorMsg, Object... urlVariables) {
-        return performRequest(mvc,
-                              getRequestBuilder(authToken, HttpMethod.PUT, content, urlTemplate, urlVariables),
+        return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.PUT, content, urlTemplate, urlVariables),
                               errorMsg);
     }
 
@@ -152,13 +150,13 @@ public class RequestBuilderCustomizer {
      */
     protected ResultActions performFileUpload(MockMvc mvc, String urlTemplate, String authToken, Path filePath,
             String errorMsg, Object... urlVariables) {
-        return performRequest(mvc,
-                              getMultipartRequestBuilder(authToken, filePath, urlTemplate, urlVariables),
+        return performRequest(mvc, getMultipartRequestBuilder(authToken, filePath, urlTemplate, urlVariables),
                               errorMsg);
     }
 
     /**
-     * @return {@link MockHttpServletRequestBuilder} customized with RequestBuilderCustomizer#headers or default ones if none has been specified
+     * @return {@link MockHttpServletRequestBuilder} customized with RequestBuilderCustomizer#headers or default ones if
+     *         none has been specified
      */
     private MockHttpServletRequestBuilder getRequestBuilder(String authToken, HttpMethod method, Object content,
             String urlTemplate, Object... urlVariables) {
@@ -169,13 +167,14 @@ public class RequestBuilderCustomizer {
     }
 
     /**
-     * @return {@link MockHttpServletRequestBuilder} customized with RequestBuilderCustomizer#headers or default ones if none has been specified
+     * @return {@link MockHttpServletRequestBuilder} customized with RequestBuilderCustomizer#headers or default ones if
+     *         none has been specified
      */
     protected MockHttpServletRequestBuilder getRequestBuilder(String authToken, HttpMethod httpMethod,
             String urlTemplate, Object... urlVars) {
         checkCustomizationCoherence(httpMethod);
-        MockHttpServletRequestBuilder requestBuilder = RestDocumentationRequestBuilders
-                .request(httpMethod, urlTemplate, urlVars);
+        MockHttpServletRequestBuilder requestBuilder = RestDocumentationRequestBuilders.request(httpMethod, urlTemplate,
+                                                                                                urlVars);
         addSecurityHeader(requestBuilder, authToken);
 
         requestBuilder.headers(getHeaders());
@@ -212,7 +211,8 @@ public class RequestBuilderCustomizer {
     }
 
     /**
-     * Add a whole list of ResultMatcher to be matched. Mainly here for easier refactor. We strongly advise to use {@link RequestBuilderCustomizer#addExpectation(ResultMatcher)}.
+     * Add a whole list of ResultMatcher to be matched. Mainly here for easier refactor. We strongly advise to use
+     * {@link RequestBuilderCustomizer#addExpectation(ResultMatcher)}.
      * @param matchers list of matcher to be matched after by the server response
      */
     public void addExpectations(List<ResultMatcher> matchers) {
@@ -229,9 +229,12 @@ public class RequestBuilderCustomizer {
 
     /**
      * Add snippets to be used to generate specific documentation.
-     * For exemple, request parameters and path parameters require too much specific information to be generalized. <br/>
-     * Request parameters can be documented thanks to {@link org.springframework.restdocs.request.RequestParametersSnippet} <br/>
-     * Path parameters cna be documented thanks to {@link org.springframework.restdocs.request.PathParametersSnippet} <br/>
+     * For exemple, request parameters and path parameters require too much specific information to be generalized.
+     * <br/>
+     * Request parameters can be documented thanks to
+     * {@link org.springframework.restdocs.request.RequestParametersSnippet} <br/>
+     * Path parameters cna be documented thanks to {@link org.springframework.restdocs.request.PathParametersSnippet}
+     * <br/>
      * @param snippet documentation snippet to be added.
      */
     public void addDocumentationSnippet(Snippet snippet) {
@@ -263,16 +266,14 @@ public class RequestBuilderCustomizer {
                 request = request.andExpect(matcher);
             }
             if (!skipDocumentation) {
-                request.andDo(MockMvcRestDocumentation.document("{ClassName}/{methodName}",
-                                                                Preprocessors.preprocessRequest(Preprocessors.prettyPrint(),
-                                                                                                Preprocessors.removeHeaders("Authorization",
-                                                                                                "Host",
-                                                                                                "Content-Length")),
-                                                                Preprocessors.preprocessResponse(Preprocessors.prettyPrint(),
-                                                                                   Preprocessors.removeHeaders("Content-Length")),
-                                                                documentationSnippets
-                                                                        .toArray(new Snippet[documentationSnippets
-                                                                                .size()])));
+                request.andDo(MockMvcRestDocumentation
+                        .document("{ClassName}/{methodName}",
+                                  Preprocessors.preprocessRequest(Preprocessors.prettyPrint(),
+                                                                  Preprocessors.removeHeaders("Authorization", "Host",
+                                                                                              "Content-Length")),
+                                  Preprocessors.preprocessResponse(Preprocessors.prettyPrint(),
+                                                                   Preprocessors.removeHeaders("Content-Length")),
+                                  documentationSnippets.toArray(new Snippet[documentationSnippets.size()])));
             }
             return request;
             // CHECKSTYLE:OFF
