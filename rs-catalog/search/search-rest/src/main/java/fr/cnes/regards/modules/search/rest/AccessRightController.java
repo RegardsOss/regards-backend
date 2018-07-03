@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.collect.Iterables;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -90,9 +91,9 @@ public class AccessRightController {
     @RequestMapping(method = RequestMethod.GET, value = ENTITY_HAS_ACCESS_MAPPING)
     @ResourceAccess(description = "Allows to know if the user can download an entity", role = DefaultRole.PUBLIC)
     public ResponseEntity<Boolean> hasAccess(@Valid @PathVariable UniformResourceName urn) throws ModuleException {
-        AbstractEntity entity = searchService.get(urn);
+        AbstractEntity<?> entity = searchService.get(urn);
         if (entity instanceof DataObject) {
-            return ResponseEntity.ok(((DataObject) entity).getAllowingDownload());
+            return ResponseEntity.ok(((DataObject) entity).getFiles().containsKey(DataType.RAWDATA));
         }
         return ResponseEntity.ok(true);
     }
@@ -113,8 +114,9 @@ public class AccessRightController {
                     .toArray(n -> new ICriterion[n]));
             FacetPage<DataObject> page = searchService.search(criterion, Searches.onSingleEntity(EntityType.DATA), null,
                                                               new PageRequest(0, urns.size()));
-            urnsWithAccess.addAll(page.getContent().parallelStream().filter(DataObject::getAllowingDownload)
-                    .map(DataObject::getIpId).collect(Collectors.toSet()));
+            urnsWithAccess.addAll(page.getContent().parallelStream()
+                    .filter(dataObject -> dataObject.getFiles().containsKey(DataType.RAWDATA)).map(DataObject::getIpId)
+                    .collect(Collectors.toSet()));
         }
         return ResponseEntity.ok(urnsWithAccess);
     }

@@ -59,7 +59,8 @@ import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
 /**
  * Media extension for Opensearch standard.
  * @see <a href="https://github.com/dewitt/opensearch/blob/master/opensearch-1-1-draft-6.md">Opensearch</a>
- * @see <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Parameter/1.0/Draft_2">Opensearch parameter extension</a>
+ * @see <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Parameter/1.0/Draft_2">Opensearch
+ *      parameter extension</a>
  *
  * @author Sébastien Binda
  */
@@ -215,7 +216,7 @@ public class MediaExtension extends AbstractExtension {
     private List<MediaContent> generateMediaContents(Collection<DataFile> files, Category cat) {
         List<MediaContent> contents = Lists.newArrayList();
         for (DataFile file : files) {
-            MediaContent content = new MediaContent(new UrlReference(file.getUri()));
+            MediaContent content = new MediaContent(new UrlReference(file.asUri()));
             content.setMedium("image");
             content.setType(file.getMimeType().toString());
             content.setHeight(file.getImageHeight());
@@ -230,7 +231,7 @@ public class MediaExtension extends AbstractExtension {
     }
 
     private GeoJsonLink getGeoJsonLink(DataFile file) {
-        URI href = file.getUri();
+        URI href = file.asUri();
         String fileName = href.toString();
         try {
             fileName = Paths.get(href.toURL().getFile()).getFileName().toString();

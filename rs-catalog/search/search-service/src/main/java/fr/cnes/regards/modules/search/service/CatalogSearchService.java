@@ -192,7 +192,7 @@ public class CatalogSearchService implements ICatalogSearchService {
                 Set<String> userGroups = accessRightFilter.getUserAccessGroups();
                 for (R entity : facetPage.getContent()) {
                     if (entity instanceof DataObject) {
-                        manageDownloadable(userGroups, (DataObject) entity);
+                        filterDataFiles(userGroups, ((DataObject) entity));
                     }
                 }
             }
@@ -210,21 +210,21 @@ public class CatalogSearchService implements ICatalogSearchService {
     }
 
     /**
-     * Update downloadable property on given DataObject depending on current user groups and DataObject data access
-     * rights i.e. determine wether or not user has the right to download data object associate files.<br/>
-     * BE CAREFUL : this doesn't mean files exist (see containsPhysicalData property)
-     * @param userGroups current user groups (or null if user is ADMIN)
-     * @param entity entity to update
+     * Filter data files according to data access rights
      */
-    private void manageDownloadable(Set<String> userGroups, DataObject entity) {
-        DataObject dataObject = entity;
+    private void filterDataFiles(Set<String> userGroups, DataObject dataObject) {
+        // Get data access rights
         // Map of { group -> data access right }
         Map<String, Boolean> groupsAccessRightMap = dataObject.getMetadata().getGroupsAccessRightsMap();
 
-        // Looking for ONE user group that permits access to data
-        dataObject.setAllowingDownload((userGroups == null)
-                || userGroups.stream().anyMatch(userGroup -> (groupsAccessRightMap.containsKey(userGroup)
-                        && groupsAccessRightMap.get(userGroup))));
+        // If user groups is null, it's an ADMIN request (Look at AccessRightFilter#getUserAccessGroups)
+        // so do not filter data
+        if (userGroups != null) {
+            if (userGroups.stream().anyMatch(userGroup -> (groupsAccessRightMap.containsKey(userGroup)
+                    && groupsAccessRightMap.get(userGroup)))) {
+                dataObject.getFiles().removeAll(DataType.RAWDATA);
+            }
+        }
     }
 
     @Override
@@ -244,7 +244,7 @@ public class CatalogSearchService implements ICatalogSearchService {
         }
         // Fill downloadable property if entity is a DataObject
         if (entity instanceof DataObject) {
-            manageDownloadable(userGroups, (DataObject) entity);
+            filterDataFiles(userGroups, (DataObject) entity);
         }
         if (userGroups == null) {
             // According to the doc it means that current user is an admin, admins always has rights to access entities!

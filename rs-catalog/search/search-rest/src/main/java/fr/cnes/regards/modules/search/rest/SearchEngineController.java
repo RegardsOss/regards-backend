@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -32,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Link;
@@ -47,7 +45,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import feign.Response;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
@@ -62,7 +59,6 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.engine.ISearchEngineDispatcher;
-import fr.cnes.regards.modules.search.service.IFileEntityDescriptionHelper;
 import fr.cnes.regards.modules.search.service.SearchException;
 
 /**
@@ -251,12 +247,6 @@ public class SearchEngineController {
      */
     @Autowired
     private ISearchEngineDispatcher dispatcher;
-
-    /**
-     * Specific service for dataset description streaming. Not delegated to an engine.
-     */
-    @Autowired
-    private IFileEntityDescriptionHelper descHelper;
 
     // Search on all entities
 
@@ -463,36 +453,6 @@ public class SearchEngineController {
         LOGGER.debug("Get dataset \"{}\" delegated to engine \"{}\"", urn.toString(), engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATASETS, engineType, headers, null, null)
                 .withUrn(urn));
-    }
-
-    /**
-     * Get a dataset description from its URN
-     */
-    @RequestMapping(method = RequestMethod.GET, value = GET_DATASET_DESCRIPTION_MAPPING)
-    @ResourceAccess(description = "Allows to retrieve a dataset", role = DefaultRole.PUBLIC)
-    public ResponseEntity<InputStreamResource> getDatasetDescription(@PathVariable String engineType,
-            @Valid @PathVariable UniformResourceName urn,
-            @RequestParam(name = "origin", required = false) String origin, @RequestHeader HttpHeaders headers)
-            throws ModuleException, IOException {
-        LOGGER.debug("Get description for dataset \"{}\" NOT delegated to engine", urn.toString());
-
-        Response fileStream = descHelper.getFile(urn);
-        ResponseEntity<InputStreamResource> responseEntity = ResponseEntity
-                .ok(new InputStreamResource(fileStream.body().asInputStream()));
-        responseEntity.getHeaders().add(HttpHeaders.CONTENT_TYPE,
-                                        fileStream.headers().get(HttpHeaders.CONTENT_TYPE).stream().findFirst().get());
-        responseEntity.getHeaders()
-                .add(HttpHeaders.CONTENT_LENGTH,
-                     fileStream.headers().get(HttpHeaders.CONTENT_LENGTH).stream().findFirst().get());
-        responseEntity.getHeaders()
-                .add(HttpHeaders.CONTENT_DISPOSITION,
-                     fileStream.headers().get(HttpHeaders.CONTENT_DISPOSITION).stream().findFirst().get());
-
-        // set the X-Frame-Options header value to ALLOW-FROM origin
-        if (origin != null) {
-            responseEntity.getHeaders().add(com.google.common.net.HttpHeaders.X_FRAME_OPTIONS, "ALLOW-FROM " + origin);
-        }
-        return responseEntity;
     }
 
     // Dataobject mappings
