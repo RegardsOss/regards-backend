@@ -1032,6 +1032,11 @@
                 <artifactId>common-plugins</artifactId>
                 <version>${fr.cnes.regards.storages.version}</version>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.storages</groupId>
+                <artifactId>cnes-url-protocol-handler</artifactId>
+                <version>${fr.cnes.regards.storages.version}</version>
+            </dependency>
         	<dependency>
                 <groupId>fr.cnes.regards.storages.staf</groupId>
                 <artifactId>staf</artifactId>
@@ -1039,17 +1044,12 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.storages.staf</groupId>
-                <artifactId>staf-plugins</artifactId>
+                <artifactId>staf-data-storage-plugin</artifactId>
                 <version>${fr.cnes.regards.storages.staf.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.storages.staf</groupId>
                 <artifactId>staf-standalone</artifactId>
-                <version>${fr.cnes.regards.storages.staf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.storages.staf</groupId>
-                <artifactId>staf-url-protocol-handler</artifactId>
                 <version>${fr.cnes.regards.storages.staf.version}</version>
             </dependency>
             <dependency>
