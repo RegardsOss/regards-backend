@@ -59,6 +59,9 @@ public class SIPSession {
     @Transient
     private long errorSipsCount = 0;
 
+    @Transient
+    private long deletedSipsCount = 0;
+
     public String getId() {
         return id;
     }
@@ -105,6 +108,14 @@ public class SIPSession {
 
     public void setErrorSipsCount(long errorSipsCount) {
         this.errorSipsCount = errorSipsCount;
+    }
+
+    public long getDeletedSipsCount() {
+        return deletedSipsCount;
+    }
+
+    public void setDeletedSipsCount(long deletedSipsCount) {
+        this.deletedSipsCount = deletedSipsCount;
     }
 
     public OffsetDateTime getLastActivationDate() {

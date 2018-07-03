@@ -137,6 +137,9 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
 
     public static final String PROCESSING_CHAIN_TEST = "fullProcessingChain";
 
+    public static final String SESSION_ID = "sessionId";
+
+
     @Before
     public void init() throws ModuleException {
 
@@ -148,7 +151,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         initDefaultProcessingChain();
 
         // Init a SIP in database with state CREATED and managed with default chain
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(DEFAULT_PROCESSING_CHAIN_TEST, "sessionId");
+        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(DEFAULT_PROCESSING_CHAIN_TEST, SESSION_ID);
         SIPCollection collection = colBuilder.build();
 
         SIPBuilder builder = new SIPBuilder(SIP_DEFAULT_CHAIN_ID_TEST);
@@ -165,7 +168,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         sipIdDefaultChainTest = resultSip.get().getId();
 
         // Init a SIP in database with state CREATED
-        colBuilder = new SIPCollectionBuilder(PROCESSING_CHAIN_TEST, "sessionId");
+        colBuilder = new SIPCollectionBuilder(PROCESSING_CHAIN_TEST, SESSION_ID);
         collection = colBuilder.build();
 
         builder = new SIPBuilder(SIP_ID_TEST);
@@ -181,7 +184,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         sipIdTest = resultSip.get().getId();
 
         // Init a SIP with reference in database with state CREATED
-        colBuilder = new SIPCollectionBuilder(PROCESSING_CHAIN_TEST, "sessionId");
+        colBuilder = new SIPCollectionBuilder(PROCESSING_CHAIN_TEST, SESSION_ID);
         collection = colBuilder.build();
 
         builder = new SIPBuilder(SIP_REF_ID_TEST);
@@ -355,6 +358,8 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         Assert.assertTrue("There should be one AIP generated associated to the entry sip", aips.size() == 1);
         Assert.assertTrue("The AIP generated should be in CREATED state",
                           SipAIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
+        Assert.assertEquals("AIP should contain the session ID",
+                aips.stream().findFirst().get().getAip().getProperties().getPdi().getProvenanceInformation().getSession(), SESSION_ID);
 
     }
 
@@ -379,6 +384,8 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         Assert.assertTrue("There should be one AIP generated associated to the entry sip", aips.size() == 1);
         Assert.assertTrue("The AIP generated should be in CREATED state",
                           SipAIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
+        Assert.assertEquals("AIP should contain the session ID",
+                aips.stream().findFirst().get().getAip().getProperties().getPdi().getProvenanceInformation().getSession(), SESSION_ID);
 
     }
 
