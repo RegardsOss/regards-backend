@@ -343,7 +343,9 @@ public class SIPServiceTest extends AbstractSIPTest {
         Assert.assertTrue(session.getIndexedSipsCount() == 2);
         Assert.assertTrue(session.getStoredSipsCount() == 4);
         Assert.assertTrue(session.getGeneratedSipsCount() == 10);
-        Assert.assertTrue(session.getErrorSipsCount() == 6);
+        Assert.assertTrue(session.getErrorSipsCount() == 8);
+        Assert.assertTrue(session.getDeletedSipsCount() == 2);
+
     }
 
     @SuppressWarnings("unchecked")
