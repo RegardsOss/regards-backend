@@ -79,13 +79,16 @@
 		<module>microservice-regards-test</module>
 		<module>jpa-multitenant-regards-test</module>
 		<module>plugins-regards-starter</module>
+		<module>plugins-docs</module>
 		<module>gson-regards-starter</module>
 		<module>gson-regards</module>
 		<module>feign-regards-starter</module>
 		<module>security-config</module>
 		<module>oais-starter</module>
 		<module>oais-regards</module>
+		<module>oais-docs</module>
 		<module>geojson-starter</module>
+		<module>geojson-docs</module>
 		<module>geojson-regards</module>
 		<module>microservice-core-starter</module>
 		<module>authentication-regards</module>

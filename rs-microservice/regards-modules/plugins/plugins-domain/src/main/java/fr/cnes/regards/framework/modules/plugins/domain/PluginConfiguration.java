@@ -185,6 +185,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         this.parameters = parameters;
         priorityOrder = order;
         this.label = label;
+        
         active = Boolean.TRUE;
     }
 

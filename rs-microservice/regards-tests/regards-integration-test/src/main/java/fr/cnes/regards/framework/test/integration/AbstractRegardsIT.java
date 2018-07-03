@@ -96,6 +96,23 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     protected static final Path CONTRACT_REPOSITORY = Paths.get("src", "test", "resources", "contracts");
 
     /**
+     * JSON type for API documentation
+     */
+    protected static final String JSON_ARRAY_TYPE = "Array";
+
+    protected static final String JSON_BOOLEAN_TYPE = "Boolean";
+
+    protected static final String JSON_OBJECT_TYPE = "Object";
+
+    protected static final String JSON_NUMBER_TYPE = "Number";
+
+    protected static final String JSON_NULL_TYPE = "Null";
+
+    protected static final String JSON_STRING_TYPE = "String";
+
+    protected static final String JSON_VARIES_TYPE = "Varies";
+
+    /**
      * Authorization service method
      */
     @Autowired
