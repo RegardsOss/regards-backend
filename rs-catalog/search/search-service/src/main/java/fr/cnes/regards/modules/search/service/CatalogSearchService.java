@@ -220,7 +220,7 @@ public class CatalogSearchService implements ICatalogSearchService {
         // If user groups is null, it's an ADMIN request (Look at AccessRightFilter#getUserAccessGroups)
         // so do not filter data
         if (userGroups != null) {
-            if (userGroups.stream().anyMatch(userGroup -> (groupsAccessRightMap.containsKey(userGroup)
+            if (!userGroups.stream().anyMatch(userGroup -> (groupsAccessRightMap.containsKey(userGroup)
                     && groupsAccessRightMap.get(userGroup)))) {
                 dataObject.getFiles().removeAll(DataType.RAWDATA);
             }

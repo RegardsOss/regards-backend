@@ -24,12 +24,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections4.map.HashedMap;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -106,9 +108,11 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     protected static final String PLANET_SUN_DISTANCE = "sun_distance";
 
-    private static final String START_DATE = "startDate";
+    protected static final String START_DATE = "startDate";
 
-    private static final String STOP_DATE = "stopDate";
+    protected static final String STOP_DATE = "stopDate";
+
+    protected static final String MERCURY = "Mercury";
 
     @Autowired
     protected ModelService modelService;
@@ -193,8 +197,7 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
             setAuthorities(SearchEngineController.TYPE_MAPPING + relativeUrlPath, RequestMethod.GET, getDefaultRole());
         }
 
-        // Bypass access rights
-        Mockito.when(projectUserClientMock.isAdmin(Mockito.anyString())).thenReturn(ResponseEntity.ok(Boolean.TRUE));
+        manageAccessRights();
 
         initIndex(getDefaultTenant());
 
@@ -241,6 +244,14 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         Thread.sleep(1000L);
     }
 
+    /**
+     * Default implementation
+     */
+    protected void manageAccessRights() {
+        // Bypass access rights
+        Mockito.when(projectUserClientMock.isAdmin(Mockito.anyString())).thenReturn(ResponseEntity.ok(Boolean.TRUE));
+    }
+
     protected List<Collection> createGalaxies(Model galaxyModel) {
         Collection milkyWay = createEntity(galaxyModel, MILKY_WAY);
         milkyWay.addProperty(AttributeBuilder.buildString(GALAXY, MILKY_WAY));
@@ -283,7 +294,7 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     }
 
     protected DataObject createMercury(Model planetModel) {
-        DataObject planet = createPlanet(planetModel, "Mercury", PLANET_TYPE_TELLURIC, 4878, 58_000_000L);
+        DataObject planet = createPlanet(planetModel, MERCURY, PLANET_TYPE_TELLURIC, 4878, 58_000_000L);
 
         DataFile quicklook = new DataFile();
         quicklook.setMimeType(MimeType.valueOf("application/jpg"));
@@ -299,6 +310,10 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         thumbnail.setImageHeight(250);
         planet.getFiles().put(DataType.THUMBNAIL, thumbnail);
 
+        DataFile rawdata = DataFile.build(DataType.RAWDATA, "test.nc", "http://regards/test.nc",
+                                          MediaType.APPLICATION_OCTET_STREAM, Boolean.TRUE);
+        planet.getFiles().put(rawdata.getDataType(), rawdata);
+
         planet.setGeometry(IGeometry.polygon(IGeometry.toPolygonCoordinates(IGeometry
                 .toLinearRingCoordinates(IGeometry.position(10.0, 10.0), IGeometry.position(10.0, 30.0),
                                          IGeometry.position(30.0, 30.0), IGeometry.position(30.0, 10.0),
@@ -310,8 +325,16 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         return planet;
     }
 
+    /**
+     * Default implementation : no group on data object
+     */
+    protected Set<String> getAccessGroups() {
+        return null;
+    }
+
     protected DataObject createPlanet(Model planetModel, String name, String type, Integer diameter, Long sunDistance) {
         DataObject planet = createEntity(planetModel, name);
+        planet.setGroups(getAccessGroups());
         planet.addProperty(AttributeBuilder.buildString(PLANET, name));
         planet.addProperty(AttributeBuilder.buildString(PLANET_TYPE, type));
         planet.addProperty(AttributeBuilder.buildInteger(PLANET_DIAMETER, diameter));
