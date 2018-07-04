@@ -97,6 +97,7 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>plugins-docs</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	
