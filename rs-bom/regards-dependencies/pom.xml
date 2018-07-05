@@ -136,6 +136,9 @@
         <!-- CNES remote storages -->
         <fr.cnes.regards.storages.version>1.0.0</fr.cnes.regards.storages.version>
         <fr.cnes.regards.storages.staf.version>1.0.0</fr.cnes.regards.storages.staf.version>
+        <fr.cnes.regards.storages.hpss.version>1.0.0</fr.cnes.regards.storages.hpss.version>
+        <fr.cnes.regards.storages.mission.version>1.0.0</fr.cnes.regards.storages.mission.version>
+        <fr.cnes.regards.storages.noop.version>1.0.0</fr.cnes.regards.storages.noop.version>
 
         <!-- COTS -->
         <flyway.version>4.2.0</flyway.version>
@@ -1032,6 +1035,11 @@
                 <artifactId>common-plugins</artifactId>
                 <version>${fr.cnes.regards.storages.version}</version>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.storages</groupId>
+                <artifactId>cnes-url-protocols-handler</artifactId>
+                <version>${fr.cnes.regards.storages.version}</version>
+            </dependency>
         	<dependency>
                 <groupId>fr.cnes.regards.storages.staf</groupId>
                 <artifactId>staf</artifactId>
@@ -1039,7 +1047,7 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.storages.staf</groupId>
-                <artifactId>staf-plugins</artifactId>
+                <artifactId>staf-data-storage-plugin</artifactId>
                 <version>${fr.cnes.regards.storages.staf.version}</version>
             </dependency>
             <dependency>
@@ -1047,15 +1055,35 @@
                 <artifactId>staf-standalone</artifactId>
                 <version>${fr.cnes.regards.storages.staf.version}</version>
             </dependency>
+            <!-- CNES REMOTE STORAGES - Shaded-->
             <dependency>
+                <groupId>fr.cnes.regards.storages</groupId>
+                <artifactId>cnes-url-protocols-handler</artifactId>
+                <version>${fr.cnes.regards.storages.version}</version>
+                <classifier>shaded</classifier>
+            </dependency>
+             <dependency>
                 <groupId>fr.cnes.regards.storages.staf</groupId>
-                <artifactId>staf-url-protocol-handler</artifactId>
+                <artifactId>staf-data-storage-plugin</artifactId>
                 <version>${fr.cnes.regards.storages.staf.version}</version>
+                <classifier>shaded</classifier>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.storages.staf</groupId>
-                <artifactId>staf-url-protocol-handler</artifactId>
-                <version>${fr.cnes.regards.storages.staf.version}</version>
+                <groupId>fr.cnes.regards.storages.hpss</groupId>
+                <artifactId>hpss-data-storage-plugin</artifactId>
+                <version>${fr.cnes.regards.storages.hpss.version}</version>
+                <classifier>shaded</classifier>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.storages</groupId>
+                <artifactId>mission-allocation-strategy-plugin</artifactId>
+                <version>${fr.cnes.regards.storages.mission.version}</version>
+                <classifier>shaded</classifier>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.storages</groupId>
+                <artifactId>noop-allocation-strategy-plugin</artifactId>
+                <version>${fr.cnes.regards.storages.noop.version}</version>
                 <classifier>shaded</classifier>
             </dependency>
             <!-- COTS -->
