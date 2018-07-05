@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,34 +18,30 @@
  */
 package fr.cnes.regards.modules.search.client;
 
-import java.util.Map;
-
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
-
-import com.google.common.collect.Maps;
-import com.google.gson.JsonObject;
+import org.springframework.util.LinkedMultiValueMap;
 
 /**
- * Integration Test for {@link IJsonSearchClient#searchCollections(Map)}.
+ * @author Marc Sordi
  *
- * @author Xavier-Alexandre Brochard
  */
 @TestPropertySource("classpath:test.properties")
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
-public class ISearchCollectionsClientIT extends AbstractSearchClientIT<IJsonSearchClient> {
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
+public class SearchEngineClientIT extends AbstractSearchClientIT<ISearchEngineClient> {
 
-    /**
-     * Check that the Feign Client responds with a 200
-     */
     @Test
-    public void searchCollections() {
-        ResponseEntity<JsonObject> result = client.searchCollections(Maps.newHashMap());
+    public void search() {
+        ResponseEntity<?> result = client.searchAllDataobjects("legacy", new HttpHeaders(), new LinkedMultiValueMap<>(),
+                                                               0, 10000);
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
+
+        // ResponseEntity<Set<UniformResourceName>> response = client.hasAccess(Collections.emptyList());
+        // Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
     }
 }

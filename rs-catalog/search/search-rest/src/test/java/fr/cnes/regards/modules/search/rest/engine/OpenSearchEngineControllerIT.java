@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
 import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
-import fr.cnes.regards.modules.search.rest.SearchEngineController;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
 
 /**
@@ -69,7 +69,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addExpectation(MockMvcResultMatchers.xpath("feed/itemsPerPage").string(Matchers.is("3")));
         customizer.addExpectation(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("9")));
         customizer.addExpectation(MockMvcResultMatchers.xpath("feed/startIndex").string(Matchers.is("4")));
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
@@ -81,7 +81,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.customizeRequestParam().param("page", "0");
         customizer.customizeRequestParam().param("size", "10");
         customizer.customizeRequestParam().param("properties.planet", "Mercury");
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
@@ -93,7 +93,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.customizeRequestParam().param("page", "0");
         customizer.customizeRequestParam().param("size", "100");
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(9)));
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
@@ -109,7 +109,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.features.length()", Matchers.equalTo(1)));
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.features[0].properties.planet",
                                                                  Matchers.equalTo("Mercury")));
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
@@ -137,7 +137,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                 .string(Matchers.is("QUICKLOOK")));
         customizer.addExpectation(MockMvcResultMatchers.xpath("feed/entry[1]/group/content[2]/category")
                 .string(Matchers.is("THUMBNAIL")));
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
@@ -150,7 +150,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.customizeRequestParam().param("size", "100");
         customizer.customizeRequestParam().param("box", "15.0,15.0,20.0,20.0");
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
@@ -165,7 +165,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.customizeRequestParam().param("lat", "20.0");
         customizer.customizeRequestParam().param("radius", "5.0");
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
@@ -239,7 +239,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                 .format("/Parameter[@name='startDate' and @maxInclusive='%s']", startDate.getValue().toString()))
                 .exists());
 
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING_EXTRA,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING_EXTRA,
                           customizer, "open search description error", ENGINE_TYPE, OpenSearchEngine.EXTRA_DESCRIPTION);
     }
 
@@ -253,8 +253,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
-        performDefaultGet(SearchEngineController.TYPE_MAPPING
-                + SearchEngineController.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA, customizer,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING
+                + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA, customizer,
                           "open search description error", ENGINE_TYPE, solarSystem.getIpId().toString(),
                           OpenSearchEngine.EXTRA_DESCRIPTION);
     }
@@ -266,7 +266,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeRequestParam().param("q", "properties." + STAR + ":Sun");
         customizer.addExpectation(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("1")));
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_COLLECTIONS_MAPPING,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
@@ -278,7 +278,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.customizeRequestParam().param("page", "0");
         customizer.customizeRequestParam().param("size", "100");
         customizer.addExpectation(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("13")));
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_ALL_MAPPING, customizer,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_ALL_MAPPING, customizer,
                           "Search all error", ENGINE_TYPE);
     }
 
@@ -290,7 +290,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.customizeRequestParam().param("page", "0");
         customizer.customizeRequestParam().param("size", "100");
         customizer.addExpectation(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("9")));
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
@@ -307,9 +307,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.customizeRequestParam().param("page", "0");
         customizer.customizeRequestParam().param("size", "100");
         customizer.addExpectation(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("8")));
-        performDefaultGet(SearchEngineController.TYPE_MAPPING
-                + SearchEngineController.SEARCH_DATASET_DATAOBJECTS_MAPPING, customizer, "Search all error",
-                          ENGINE_TYPE, solarSystem.getIpId().toString());
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE, solarSystem.getIpId().toString());
     }
 
     @Test
@@ -320,7 +319,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.customizeRequestParam().param("page", "0");
         customizer.customizeRequestParam().param("size", "100");
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(13)));
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_ALL_MAPPING, customizer,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_ALL_MAPPING, customizer,
                           "Search all error", ENGINE_TYPE);
     }
 

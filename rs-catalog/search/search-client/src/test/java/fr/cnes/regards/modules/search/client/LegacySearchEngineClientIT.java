@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,34 +18,34 @@
  */
 package fr.cnes.regards.modules.search.client;
 
-import java.util.Map;
-
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.LinkedMultiValueMap;
 
-import com.google.common.collect.Maps;
-import com.google.gson.JsonObject;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
+import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
 
 /**
- * Integration tests for {@link IJsonSearchClient#searchAll(Map, String[])}.
+ * @author Marc Sordi
  *
- * @author Xavier-Alexandre Brochard
  */
 @TestPropertySource("classpath:test.properties")
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
-public class ISearchAllWithFacetsClientIT extends AbstractSearchClientIT<IJsonSearchClient> {
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
+public class LegacySearchEngineClientIT extends AbstractSearchClientIT<ILegacySearchEngineClient> {
 
-    /**
-     * Check that the Feign Client responds with a 200
-     */
     @Test
-    public void searchAllWithFacets() {
-        ResponseEntity<JsonObject> result = client.searchAll(Maps.newHashMap(), new String[] {});
+    public void search() {
+        ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> result = client
+                .searchAllDataobjects(new HttpHeaders(), new LinkedMultiValueMap<>(), 0, 10000);
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
+
+        // ResponseEntity<Set<UniformResourceName>> response = client.hasAccess(Collections.emptyList());
+        // Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
     }
 }

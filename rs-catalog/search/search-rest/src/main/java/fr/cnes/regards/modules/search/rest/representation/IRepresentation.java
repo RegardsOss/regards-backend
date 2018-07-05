@@ -27,7 +27,7 @@ import org.springframework.http.MediaType;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.search.rest.engine.plugin.legacy.FacettedPagedResources;
+import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
 
 /**
  * IRepresentation are used in a HttpMessageConverter so we can transform http outputs to different MIME Type. Each

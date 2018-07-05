@@ -33,7 +33,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.StaticProperties;
-import fr.cnes.regards.modules.search.rest.SearchEngineController;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 
 /**
  * Search engine tests
@@ -70,7 +70,7 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
 
         // customizer.customizeRequestParam().param("page", "0");
         // customizer.customizeRequestParam().param("size", "2");
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_ALL_MAPPING, customizer,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_ALL_MAPPING, customizer,
                           "Search all error", ENGINE_TYPE);
     }
 
@@ -81,7 +81,7 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
         addCommontMatchers(customizer);
         addSearchTermQuery(customizer, STAR, SUN);
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_COLLECTIONS_MAPPING,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
@@ -92,7 +92,7 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
         addCommontMatchers(customizer);
         customizer.customizeRequestParam().param(SEARCH_TERMS_QUERY, STAR + ":" + SUN);
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_COLLECTIONS_MAPPING,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
@@ -101,9 +101,9 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeRequestParam().param("maxCount", "10");
-        performDefaultGet(SearchEngineController.TYPE_MAPPING
-                + SearchEngineController.SEARCH_COLLECTIONS_PROPERTY_VALUES, customizer, "Search all error",
-                          ENGINE_TYPE, StaticProperties.FEATURE_PROPERTIES + "." + GALAXY);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_COLLECTIONS_PROPERTY_VALUES,
+                          customizer, "Search all error", ENGINE_TYPE,
+                          StaticProperties.FEATURE_PROPERTIES + "." + GALAXY);
     }
 
     @Test
@@ -111,8 +111,8 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         addCommontMatchers(customizer);
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATASETS_MAPPING,
-                          customizer, "Search all error", ENGINE_TYPE);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATASETS_MAPPING, customizer,
+                          "Search all error", ENGINE_TYPE);
     }
 
     @Test
@@ -120,7 +120,7 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         addCommontMatchers(customizer);
-        performDefaultGet(SearchEngineController.TYPE_MAPPING + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING,
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
@@ -133,9 +133,9 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.length()", Matchers.equalTo(9)));
 
         customizer.customizeRequestParam().param("maxCount", "10");
-        performDefaultGet(SearchEngineController.TYPE_MAPPING
-                + SearchEngineController.SEARCH_DATAOBJECTS_PROPERTY_VALUES, customizer, "Search all error",
-                          ENGINE_TYPE, StaticProperties.FEATURE_PROPERTIES + "." + PLANET);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_PROPERTY_VALUES,
+                          customizer, "Search all error", ENGINE_TYPE,
+                          StaticProperties.FEATURE_PROPERTIES + "." + PLANET);
 
         // Search only the 8 planets of the solar system
         customizer = getNewRequestBuilderCustomizer();
@@ -147,8 +147,8 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         Assert.assertNotNull(solarSystem);
 
         customizer.customizeRequestParam().param("maxCount", "10");
-        performDefaultGet(SearchEngineController.TYPE_MAPPING
-                + SearchEngineController.SEARCH_DATASET_DATAOBJECTS_PROPERTY_VALUES, customizer, "Search all error",
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING
+                + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_PROPERTY_VALUES, customizer, "Search all error",
                           ENGINE_TYPE, solarSystem.getIpId().toString(),
                           StaticProperties.FEATURE_PROPERTIES + "." + PLANET);
     }
@@ -162,8 +162,8 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         addCommontMatchers(customizer);
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
         addSearchTermQuery(customizer, STAR_SYSTEM, SOLAR_SYSTEM);
-        ResultActions result = performDefaultGet(SearchEngineController.TYPE_MAPPING
-                + SearchEngineController.SEARCH_DATASETS_MAPPING, customizer, "Search all error", ENGINE_TYPE);
+        ResultActions result = performDefaultGet(SearchEngineMappings.TYPE_MAPPING
+                + SearchEngineMappings.SEARCH_DATASETS_MAPPING, customizer, "Search all error", ENGINE_TYPE);
 
         String datasetUrn = JsonPath.read(payload(result), "$.content[0].content.id");
 
@@ -172,9 +172,8 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
         addCommontMatchers(customizer);
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.links.length()", Matchers.equalTo(1)));
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content[0].links.length()", Matchers.equalTo(1)));
-        performDefaultGet(SearchEngineController.TYPE_MAPPING
-                + SearchEngineController.SEARCH_DATASET_DATAOBJECTS_MAPPING, customizer, "Search all error",
-                          ENGINE_TYPE, datasetUrn);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE, datasetUrn);
     }
 
     // TODO search document, dataobjects returning datasets

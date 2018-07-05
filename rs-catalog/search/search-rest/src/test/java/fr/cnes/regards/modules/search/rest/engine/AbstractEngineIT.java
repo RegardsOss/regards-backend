@@ -61,7 +61,7 @@ import fr.cnes.regards.modules.models.service.IAttributeModelService;
 import fr.cnes.regards.modules.models.service.ModelService;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.search.rest.SearchEngineController;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 
 /**
  * Engine common methods
@@ -167,34 +167,34 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         // Bypass method access rights
         List<String> relativeUrlPaths = new ArrayList<>();
 
-        relativeUrlPaths.add(SearchEngineController.SEARCH_ALL_MAPPING);
-        relativeUrlPaths.add(SearchEngineController.SEARCH_ALL_MAPPING_EXTRA);
-        relativeUrlPaths.add(SearchEngineController.GET_ENTITY_MAPPING);
+        relativeUrlPaths.add(SearchEngineMappings.SEARCH_ALL_MAPPING);
+        relativeUrlPaths.add(SearchEngineMappings.SEARCH_ALL_MAPPING_EXTRA);
+        relativeUrlPaths.add(SearchEngineMappings.GET_ENTITY_MAPPING);
 
-        relativeUrlPaths.add(SearchEngineController.SEARCH_COLLECTIONS_MAPPING);
-        relativeUrlPaths.add(SearchEngineController.SEARCH_COLLECTIONS_MAPPING_EXTRA);
-        relativeUrlPaths.add(SearchEngineController.GET_COLLECTION_MAPPING);
+        relativeUrlPaths.add(SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING);
+        relativeUrlPaths.add(SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING_EXTRA);
+        relativeUrlPaths.add(SearchEngineMappings.GET_COLLECTION_MAPPING);
 
-        relativeUrlPaths.add(SearchEngineController.SEARCH_DOCUMENTS_MAPPING);
-        relativeUrlPaths.add(SearchEngineController.SEARCH_DOCUMENTS_MAPPING_EXTRA);
-        relativeUrlPaths.add(SearchEngineController.GET_DOCUMENT_MAPPING);
+        relativeUrlPaths.add(SearchEngineMappings.SEARCH_DOCUMENTS_MAPPING);
+        relativeUrlPaths.add(SearchEngineMappings.SEARCH_DOCUMENTS_MAPPING_EXTRA);
+        relativeUrlPaths.add(SearchEngineMappings.GET_DOCUMENT_MAPPING);
 
-        relativeUrlPaths.add(SearchEngineController.SEARCH_DATASETS_MAPPING);
-        relativeUrlPaths.add(SearchEngineController.SEARCH_DATASETS_MAPPING_EXTRA);
-        relativeUrlPaths.add(SearchEngineController.GET_DATASET_MAPPING);
-        relativeUrlPaths.add(SearchEngineController.GET_DATASET_DESCRIPTION_MAPPING);
+        relativeUrlPaths.add(SearchEngineMappings.SEARCH_DATASETS_MAPPING);
+        relativeUrlPaths.add(SearchEngineMappings.SEARCH_DATASETS_MAPPING_EXTRA);
+        relativeUrlPaths.add(SearchEngineMappings.GET_DATASET_MAPPING);
+        relativeUrlPaths.add(SearchEngineMappings.GET_DATASET_DESCRIPTION_MAPPING);
 
-        relativeUrlPaths.add(SearchEngineController.SEARCH_DATAOBJECTS_MAPPING);
-        relativeUrlPaths.add(SearchEngineController.SEARCH_DATAOBJECTS_MAPPING_EXTRA);
-        relativeUrlPaths.add(SearchEngineController.GET_DATAOBJECT_MAPPING);
+        relativeUrlPaths.add(SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING);
+        relativeUrlPaths.add(SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING_EXTRA);
+        relativeUrlPaths.add(SearchEngineMappings.GET_DATAOBJECT_MAPPING);
 
-        relativeUrlPaths.add(SearchEngineController.SEARCH_DATASET_DATAOBJECTS_MAPPING);
-        relativeUrlPaths.add(SearchEngineController.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA);
+        relativeUrlPaths.add(SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING);
+        relativeUrlPaths.add(SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA);
 
-        relativeUrlPaths.add(SearchEngineController.SEARCH_DATAOBJECTS_DATASETS_MAPPING);
+        relativeUrlPaths.add(SearchEngineMappings.SEARCH_DATAOBJECTS_DATASETS_MAPPING);
 
         for (String relativeUrlPath : relativeUrlPaths) {
-            setAuthorities(SearchEngineController.TYPE_MAPPING + relativeUrlPath, RequestMethod.GET, getDefaultRole());
+            setAuthorities(SearchEngineMappings.TYPE_MAPPING + relativeUrlPath, RequestMethod.GET, getDefaultRole());
         }
 
         manageAccessRights();

@@ -18,25 +18,24 @@
  */
 package fr.cnes.regards.modules.search.client;
 
-import fr.cnes.regards.modules.dataaccess.client.IAccessRightClient;
-import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.entities.client.IDatasetClient;
-import org.mockito.Mock;
+import java.util.ArrayList;
+
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.dataaccess.client.IAccessGroupClient;
-import fr.cnes.regards.modules.dataaccess.client.IUserClient;
-import fr.cnes.regards.modules.models.client.IAttributeModelClient;
-import fr.cnes.regards.modules.models.client.IModelAttrAssocClient;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 
-import java.util.ArrayList;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.dataaccess.client.IAccessGroupClient;
+import fr.cnes.regards.modules.dataaccess.client.IAccessRightClient;
+import fr.cnes.regards.modules.dataaccess.client.IUserClient;
+import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.entities.client.IDatasetClient;
+import fr.cnes.regards.modules.models.client.IAttributeModelClient;
+import fr.cnes.regards.modules.models.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
  * Module-wide configuration for integration tests.
@@ -75,17 +74,16 @@ public class SearchClientITConfiguration {
                 new ArrayList<>());
         final ResponseEntity<PagedResources<Resource<AccessGroup>>> pageResponseEntity = ResponseEntity
                 .ok(pagedResources);
-        Mockito.when(accessGroupClient.retrieveAccessGroupsList(Mockito.anyBoolean(), Mockito.anyInt(), Mockito.anyInt()))
+        Mockito.when(accessGroupClient.retrieveAccessGroupsList(Mockito.anyBoolean(), Mockito.anyInt(),
+                                                                Mockito.anyInt()))
                 .thenReturn(pageResponseEntity);
         return accessGroupClient;
     }
-
 
     @Bean
     public IAccessRightClient accessRightClient() {
         return Mockito.mock(IAccessRightClient.class);
     }
-
 
     @Bean
     public IDatasetClient datasetClient() {

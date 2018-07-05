@@ -45,7 +45,7 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.search.rest.SearchEngineController;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 
 /**
  * Search engine tests
@@ -95,8 +95,8 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(9)));
-        return performDefaultGet(SearchEngineController.TYPE_MAPPING
-                + SearchEngineController.SEARCH_DATAOBJECTS_MAPPING, customizer, "Search all error", ENGINE_TYPE);
+        return performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                                 customizer, "Search all error", ENGINE_TYPE);
     }
 
     @Test
