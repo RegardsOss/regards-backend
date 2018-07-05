@@ -17,6 +17,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -27,16 +29,18 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransact
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
+import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
-import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
+import fr.cnes.regards.modules.storage.service.plugins.SimpleOnlineDataStorage;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
 @ContextConfiguration(classes = { TestConfig.class, PrioritizedDataStorageServiceIT.Config.class })
 @TestPropertySource(locations = "classpath:test.properties")
+@RegardsTransactional
 public class PrioritizedDataStorageServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final String PDS_LABEL = "PrioritizedDataStorageServiceIT";
@@ -60,21 +64,53 @@ public class PrioritizedDataStorageServiceIT extends AbstractRegardsServiceTrans
                            optConf.isPresent());
     }
 
-    private PrioritizedDataStorage createPrioritizedDataStorage(String label)
-            throws IOException, URISyntaxException, ModuleException {
-        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
+    @Test
+    public void testUpdate() throws ModuleException, IOException, URISyntaxException {
+        String label = "updateConf label";
+        PrioritizedDataStorage pds = createPrioritizedDataStorage(label);
+        PluginConfiguration updatedConf = getPluginConf(label);
+        updatedConf.setId(pds.getDataStorageConfiguration().getId());
+        PrioritizedDataStorage upds = new PrioritizedDataStorage(updatedConf, 0L, DataStorageType.ONLINE);
+        upds.setId(pds.getId());
+        prioritizedDataStorageService.update(upds.getId(), upds);
+    }
+
+    @Test(expected = EntityOperationForbiddenException.class)
+    public void testUpdateForbidden() throws ModuleException, IOException, URISyntaxException {
+        String label = "updateConf label";
+
+        URL newbaseStorageLocation = new URL("file", "", Paths.get("target/update/conf").toFile().getAbsolutePath());
+
+        PrioritizedDataStorage pds = createPrioritizedDataStorage(label);
+        PluginConfiguration updatedConf = getPluginConf(label);
+        updatedConf.getParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME)
+                .setValue(newbaseStorageLocation.toString());
+        updatedConf.setId(pds.getDataStorageConfiguration().getId());
+        PrioritizedDataStorage upds = new PrioritizedDataStorage(updatedConf, 0L, DataStorageType.ONLINE);
+        upds.setId(pds.getId());
+        prioritizedDataStorageService.update(upds.getId(), upds);
+    }
+
+    private PluginConfiguration getPluginConf(String label) throws IOException, URISyntaxException {
+        URL baseStorageLocation = new URL("file", "",
+                Paths.get("target/PrioritizedDataStorageServiceIT").toFile().getAbsolutePath());
+
+        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class,
                                                                       IDataStorage.class.getPackage().getName(),
                                                                       IOnlineDataStorage.class.getPackage().getName());
-        URL baseStorageLocation = new URL("file",
-                                          "",
-                                          Paths.get("target/PrioritizedDataStorageServiceIT").toFile()
-                                                  .getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000000L)
-                .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
+                .addParameter(SimpleOnlineDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000000L)
+                .addParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                              baseStorageLocation.toString())
                 .getParameters();
-        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
+        return new PluginConfiguration(dataStoMeta, label, parameters, 0);
+    }
+
+    private PrioritizedDataStorage createPrioritizedDataStorage(String label)
+            throws IOException, URISyntaxException, ModuleException {
+
+        PluginConfiguration dataStorageConf = getPluginConf(label);
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         return prioritizedDataStorageService.create(dataStorageConf);
     }
