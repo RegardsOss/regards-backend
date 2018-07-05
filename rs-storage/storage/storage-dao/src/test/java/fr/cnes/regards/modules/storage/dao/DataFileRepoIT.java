@@ -185,7 +185,7 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindTopByPDS() {
-        Set<StorageDataFile> possibleResults = StorageDataFile.extractDataFiles(aip3);
+        Set<StorageDataFile> possibleResults = StorageDataFile.extractDataFiles(aip3, aipSessionRepo.findOne(SESSION));
         StorageDataFile result = dataFileRepository.findTopByPrioritizedDataStoragesId(dataStorage3Id);
         Assert.assertNotNull("There should be a data file stored by dataStorage3", result);
         Assert.assertTrue("Result should be one of aip3 data files", possibleResults.contains(result));
