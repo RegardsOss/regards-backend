@@ -15,6 +15,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
+import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
@@ -48,7 +49,6 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
      */
     @EntityGraph(value = "graph.datafile.full")
     Set<StorageDataFile> findAllByAipEntityIn(Collection<AIPEntity> aipEntities);
-
 
     /**
      * Find the data file associated to the given aip entity and which type the provided one
@@ -106,4 +106,10 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
      * @return a StorageDataFile
      */
     StorageDataFile findTopByPrioritizedDataStoragesId(Long pdsId);
+
+    /**
+     * Count number of files stored for the given plugin conf
+     * @param pdsId {@link PrioritizedDataStorage} identifier
+     */
+    long countByPrioritizedDataStoragesId(Long pdsId);
 }
