@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.plugins.datastorage.allocation.strategy;
 
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -93,6 +94,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
 
     private StorageDataFile dataFile2;
 
+    private static final String SESSION = "Session 1";
+
     @Before
     public void init() throws ModuleException, MalformedURLException {
         initPlugins();
@@ -139,11 +142,16 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
     private void initDataFiles() throws MalformedURLException {
         dataFiles = Sets.newHashSet();
         AIP aip = getAIP();
+
+        AIPSession aipSession = new AIPSession();
+        aipSession.setId(SESSION);
+        aipSession.setLastActivationDate(OffsetDateTime.now());
+
         dataFile1 = new StorageDataFile(Sets.newHashSet(new URL("file", "", "fichier1.json")), "checksum", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, "fichier1", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, aipSession, "fichier1", null);
         dataFiles.add(dataFile1);
         dataFile2 = new StorageDataFile(Sets.newHashSet(new URL("file", "", "fichier2.json")), "checksum2", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, "fichier2", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, aipSession, "fichier2", null);
         dataFiles.add(dataFile2);
     }
 
@@ -151,7 +159,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
 
         AIPBuilder aipBuilder = new AIPBuilder(
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                null, EntityType.DATA);
+                null, EntityType.DATA, SESSION);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
         aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",

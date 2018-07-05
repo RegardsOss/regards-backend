@@ -40,7 +40,6 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
     /**
      * State determined through different storage steps
      */
-    @GsonIgnore
     private AIPState state;
 
     @GsonIgnore
@@ -89,5 +88,12 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
 
     public void setRetry(boolean retry) {
         this.retry = retry;
+    }
+
+    /**
+     * @return the session identifier linked to this AIP
+     */
+    public String getSession() {
+        return this.getProperties().getPdi().getProvenanceInformation().getSession();
     }
 }

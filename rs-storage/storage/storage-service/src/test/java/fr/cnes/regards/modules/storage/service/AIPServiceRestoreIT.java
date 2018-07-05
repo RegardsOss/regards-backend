@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -120,6 +121,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     private static TestDataStorageEventHandler dataHandler = new TestDataStorageEventHandler();
 
     private static Path cacheDir = Paths.get("target/cache");
+
+    private static final String SESSION = "Session 1";
 
     @Autowired
     private IAIPService aipService;
@@ -501,15 +504,17 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         // -> 3 files already in cache : dataFile4, dataFile5, dataFile6
         // The 3 files in cache have to simulate that the cache is full
         AIP aip = fillNearlineDataFileDb(50L, 6, "dataFile");
+        AIPSession aipSession = aipService.getSession(aip.getSession(), true);
+
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
                           cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).isEmpty());
         // Simulate cache size full by adding files with big size.
         Long fileSize = ((this.cacheSizeLimitKo * 1024) / 3);
-        fillCache(aip, "dataFile4", "dataFile4", fileSize, OffsetDateTime.now().plusDays(10), OffsetDateTime.now(),
+        fillCache(aip, aipSession, "dataFile4", "dataFile4", fileSize, OffsetDateTime.now().plusDays(10), OffsetDateTime.now(),
                   "target/cache");
-        fillCache(aip, "dataFile5", "dataFile5", fileSize, OffsetDateTime.now().plusDays(10), OffsetDateTime.now(),
+        fillCache(aip, aipSession, "dataFile5", "dataFile5", fileSize, OffsetDateTime.now().plusDays(10), OffsetDateTime.now(),
                   "target/cache");
-        fillCache(aip, "dataFile6", "dataFile6", fileSize, OffsetDateTime.now().plusDays(10), OffsetDateTime.now(),
+        fillCache(aip, aipSession, "dataFile6", "dataFile6", fileSize, OffsetDateTime.now().plusDays(10), OffsetDateTime.now(),
                   "target/cache");
 
         // All files to restore should be initialized in QUEUED state waiting for available size into cache
@@ -585,19 +590,21 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         LOG.info("Start test testCleanCacheDeleteExpiredFiles ...");
         Long fileSize = (this.cacheSizeLimitKo * 1024) / 2;
         AIP aip = fillNearlineDataFileDb(fileSize, 3, "dataFile");
+        AIPSession aipSession = aipService.getSession(aip.getSession(), true);
+
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
                           cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).isEmpty());
         Path file1 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile1"));
-        fillCache(aip, file1.getFileName().toString(), file1.getFileName().toString(), fileSize,
+        fillCache(aip, aipSession, file1.getFileName().toString(), file1.getFileName().toString(), fileSize,
                   OffsetDateTime.now().minusDays(1), OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
         Path file2 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile2"));
-        fillCache(aip, file2.getFileName().toString(), file2.getFileName().toString(), fileSize,
+        fillCache(aip, aipSession, file2.getFileName().toString(), file2.getFileName().toString(), fileSize,
                   OffsetDateTime.now().minusDays(2), OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
         Path file3 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile3"));
-        fillCache(aip, file3.getFileName().toString(), file3.getFileName().toString(), fileSize, OffsetDateTime.now(),
+        fillCache(aip, aipSession, file3.getFileName().toString(), file3.getFileName().toString(), fileSize, OffsetDateTime.now(),
                   OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
         Path file4 = Paths.get(cacheDir.toString(), "dataFile4");
-        fillCache(aip, file4.getFileName().toString(), file4.getFileName().toString(), fileSize,
+        fillCache(aip, aipSession, file4.getFileName().toString(), file4.getFileName().toString(), fileSize,
                   OffsetDateTime.now().plusDays(1), OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
 
         Assert.assertTrue("Init error. File does not exists", file1.toFile().exists());
@@ -634,27 +641,29 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         // Simulate each file size as the cache is full with 4 files and fill it.
         Long fileSize = (this.cacheSizeLimitKo * 1024) / 4;
         AIP aip = fillNearlineDataFileDb(fileSize, 5, "dataFile");
+        AIPSession aipSession = aipService.getSession(aip.getSession(), true);
+
         Assert.assertTrue("Initialization error. The test shouldn't start with cache files in AVAILABLE status.",
                           cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).isEmpty());
         // Simulate files in cache
         // 1. expirationDate: now+1day    requestDate : now-2days
         Path file1 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile1"));
-        fillCache(aip, file1.getFileName().toString(), file1.getFileName().toString(), fileSize,
+        fillCache(aip, aipSession, file1.getFileName().toString(), file1.getFileName().toString(), fileSize,
                   OffsetDateTime.now().plusDays(1), OffsetDateTime.now().minusDays(2),
                   cacheDir.toFile().getAbsolutePath());
         // 2. expirationDate: now+2day    requestDate : now-5days
         Path file2 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile2"));
-        fillCache(aip, file2.getFileName().toString(), file2.getFileName().toString(), fileSize,
+        fillCache(aip, aipSession, file2.getFileName().toString(), file2.getFileName().toString(), fileSize,
                   OffsetDateTime.now().plusDays(2), OffsetDateTime.now().minusDays(5),
                   cacheDir.toFile().getAbsolutePath());
         // 3. expirationDate: now+3day    requestDate : now-4days
         Path file3 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile3"));
-        fillCache(aip, file3.getFileName().toString(), file3.getFileName().toString(), fileSize,
+        fillCache(aip, aipSession, file3.getFileName().toString(), file3.getFileName().toString(), fileSize,
                   OffsetDateTime.now().plusDays(3), OffsetDateTime.now().minusDays(4),
                   cacheDir.toFile().getAbsolutePath());
         // 3. expirationDate: now+4day    requestDate : now-3days
         Path file4 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile4"));
-        fillCache(aip, file4.getFileName().toString(), file4.getFileName().toString(), fileSize,
+        fillCache(aip, aipSession, file4.getFileName().toString(), file4.getFileName().toString(), fileSize,
                   OffsetDateTime.now().plusDays(4), OffsetDateTime.now().minusDays(3),
                   cacheDir.toFile().getAbsolutePath());
 
@@ -814,14 +823,16 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         Long fileSize = 100L;
         // Simulate 3 dataFiles already restored in cached
         AIP aip = fillNearlineDataFileDb(fileSize, 3, "dataFile");
+        AIPSession aipSession = new AIPSession();
+        aipSession.setId(aip.getSession());
         Path file1 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile1"));
-        fillCache(aip, file1.getFileName().toString(), file1.getFileName().toString(), fileSize,
+        fillCache(aip, aipSession, file1.getFileName().toString(), file1.getFileName().toString(), fileSize,
                   OffsetDateTime.now().plusDays(5), OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
         Path file2 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile2"));
-        fillCache(aip, file2.getFileName().toString(), file2.getFileName().toString(), fileSize,
+        fillCache(aip, aipSession, file2.getFileName().toString(), file2.getFileName().toString(), fileSize,
                   OffsetDateTime.now().plusDays(5), OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
         Path file3 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile3"));
-        fillCache(aip, file3.getFileName().toString(), file3.getFileName().toString(), fileSize,
+        fillCache(aip, aipSession, file3.getFileName().toString(), file3.getFileName().toString(), fileSize,
                   OffsetDateTime.now().plusDays(5), OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
 
         // Now request to restore the same 3 files.
@@ -844,6 +855,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     /**
      * Test method to simulate file in cache
      * @param aip Associated {@link AIP}
+     * @param aipSession
      * @param fileName
      * @param checksum
      * @param fileSize
@@ -852,12 +864,12 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      * @param location
      * @throws MalformedURLException
      */
-    private void fillCache(AIP aip, String fileName, String checksum, Long fileSize, OffsetDateTime expiration,
-            OffsetDateTime lastRequestDate, String location) throws MalformedURLException {
+    private void fillCache(AIP aip, AIPSession aipSession, String fileName, String checksum, Long fileSize, OffsetDateTime expiration,
+                           OffsetDateTime lastRequestDate, String location) throws MalformedURLException {
         // Simulate cache files to force cache limit size reached before restoring new files.
         // First create StorageDataFile
         StorageDataFile df = new StorageDataFile(Sets.newHashSet(new URL("file://test/" + fileName)), checksum, "MD5",
-                DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip, fileName, null);
+                DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip, aipSession, fileName, null);
         df.addDataStorageUsed(nearlineDataStorageConf);
         dataFileDao.save(df);
         // Then create cached file associated
@@ -882,23 +894,24 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      */
     private void fillOnlineDataFileDb(Long fileSize) throws MalformedURLException {
         AIP aip = getAIP();
-        aipDao.save(aip);
+        AIPSession aipSession = aipService.getSession(aip.getSession(), true);
+        aipDao.save(aip, aipSession);
         Set<StorageDataFile> datafiles = Sets.newHashSet();
         URL url = new URL(Paths.get(baseStorageLocation.toString(), "file1.test").toString());
         StorageDataFile df = new StorageDataFile(Sets.newHashSet(url), "1", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), aip, "file1.test", null);
+                MimeType.valueOf("application/text"), aip, aipSession, "file1.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
         df = new StorageDataFile(Sets.newHashSet(url), "2", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), aip, "file2.test", null);
+                MimeType.valueOf("application/text"), aip, aipSession, "file2.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
         df = new StorageDataFile(Sets.newHashSet(url), "3", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), aip, "file3.test", null);
+                MimeType.valueOf("application/text"), aip, aipSession, "file3.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
@@ -914,26 +927,27 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      */
     private void fillOnlineNNearlineDataFileDb(Long fileSize) throws MalformedURLException {
         AIP aip = getAIP();
-        aipDao.save(aip);
+        AIPSession aipSession = aipService.getSession(aip.getSession(), true);
+        aipDao.save(aip, aipSession);
         Set<StorageDataFile> datafiles = Sets.newHashSet();
         URL url = new URL(Paths.get(baseStorageLocation.toString(), "file1.test").toString());
         URL urlNearline = new URL("file://PLOP/Node/file1.test");
         StorageDataFile df = new StorageDataFile(Sets.newHashSet(url, urlNearline), "1", "MD5", DataType.RAWDATA,
-                fileSize, MimeType.valueOf("application/text"), aip, "file1.test", null);
+                fileSize, MimeType.valueOf("application/text"), aip, aipSession, "file1.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(nearlineDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
         urlNearline = new URL("file://PLOP/Node/file2.test");
         df = new StorageDataFile(Sets.newHashSet(url, urlNearline), "2", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), aip, "file2.test", null);
+                MimeType.valueOf("application/text"), aip, aipSession, "file2.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(nearlineDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
         urlNearline = new URL("file://PLOP/Node/file3.test");
         df = new StorageDataFile(Sets.newHashSet(url, urlNearline), "3", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), aip, "file3.test", null);
+                MimeType.valueOf("application/text"), aip, aipSession, "file3.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(nearlineDataStorageConf);
         datafiles.add(df);
@@ -950,13 +964,14 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     private AIP fillNearlineDataFileDb(Long fileSize, int nbFilesToFill, String checksumPrefix)
             throws MalformedURLException {
         AIP aip = getAIP();
-        aipDao.save(aip);
+        AIPSession aipSession = aipService.getSession(aip.getSession(), true);
+        aipDao.save(aip, aipSession);
         Set<StorageDataFile> datafiles = Sets.newHashSet();
         for (int i = 0; i < nbFilesToFill; i++) {
             String fileName = String.format("file%d.txt", i + 1);
             URL url = Paths.get("src/test/resources/income/" + fileName).toUri().toURL();
             StorageDataFile df = new StorageDataFile(Sets.newHashSet(url), String.format("%s%d", checksumPrefix, i + 1),
-                    "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip, fileName, null);
+                    "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip, aipSession, fileName, null);
             df.addDataStorageUsed(nearlineDataStorageConf);
             df.addDataStorageUsed(nearlineNoRetrieveDataStorageConf);
             datafiles.add(df);
@@ -973,7 +988,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
 
         AIPBuilder aipBuilder = new AIPBuilder(
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                null, EntityType.DATA);
+                null, EntityType.DATA, SESSION);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
         aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",

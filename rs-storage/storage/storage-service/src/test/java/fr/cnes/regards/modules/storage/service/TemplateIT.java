@@ -1,5 +1,7 @@
 package fr.cnes.regards.modules.storage.service;
 
+import fr.cnes.regards.modules.storage.dao.IAIPSessionRepository;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -76,6 +78,8 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final String ALLO_CONF_LABEL = "Allo_TemplateIT";
 
+    private static final String SESSION = "Session 1";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(TemplateIT.class);
 
     @Autowired
@@ -97,11 +101,15 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
     private IAIPDao aipDao;
 
     @Autowired
+    private IAIPSessionRepository aipSessionRepo;
+
+    @Autowired
     private IDataFileDao dataFileDao;
 
     @Test
     public void testNotSubsetted() throws ModuleException, MalformedURLException {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+
         Map<String, Object> dataMap = new HashMap<>();
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
                                                                       IDataStorage.class.getPackage().getName(),
@@ -119,8 +127,15 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
 
         //lets simulate as in the code, so lets create a workingSubsetWrapper full of rejected data files
         WorkingSubsetWrapper<LocalWorkingSubset> workingSubsetWrapper = new WorkingSubsetWrapper<>();
-        AIP aip = aipDao.save(getAIP());
-        Set<StorageDataFile> dataFiles = StorageDataFile.extractDataFiles(aip);
+
+        aipSessionRepo.deleteAll();
+        AIPSession aipSession = new AIPSession();
+        aipSession.setId(SESSION);
+        aipSession.setLastActivationDate(OffsetDateTime.now());
+        aipSession = aipSessionRepo.save(aipSession);
+
+        AIP aip = aipDao.save(getAIP(), aipSession);
+        Set<StorageDataFile> dataFiles = StorageDataFile.extractDataFiles(aip, aipSession);
         dataFiles = Sets.newHashSet(dataFileDao.save(dataFiles));
         Iterator<StorageDataFile> dataFilesIter = dataFiles.iterator();
         int i = 0;
@@ -149,8 +164,14 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
         alloConf.setIsActive(true);
         alloConf = pluginService.savePluginConfiguration(alloConf);
 
-        AIP aip = aipDao.save(getAIP());
-        Set<StorageDataFile> dataFiles = StorageDataFile.extractDataFiles(aip);
+        aipSessionRepo.deleteAll();
+        AIPSession aipSession = new AIPSession();
+        aipSession.setId(SESSION);
+        aipSession.setLastActivationDate(OffsetDateTime.now());
+        aipSession = aipSessionRepo.save(aipSession);
+
+        AIP aip = aipDao.save(getAIP(), aipSession);
+        Set<StorageDataFile> dataFiles = StorageDataFile.extractDataFiles(aip, aipSession);
         dataFiles = Sets.newHashSet(dataFileDao.save(dataFiles));
         dataMap.put("dataFiles", dataFiles);
         dataMap.put("allocationStrategy", alloConf);
@@ -167,7 +188,7 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
 
         AIPBuilder aipBuilder = new AIPBuilder(
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                null, EntityType.DATA);
+                null, EntityType.DATA, SESSION);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
         aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",

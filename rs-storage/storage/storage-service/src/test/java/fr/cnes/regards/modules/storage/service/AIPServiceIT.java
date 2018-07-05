@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -116,6 +117,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
     private static final String DATA_STORAGE_2_CONF_LABEL = "AIPServiceIT_DATA_STORAGE_LOCAL2";
 
     private static final int WAITING_TIME_MS = 1000;
+
+    private static final String SESSION = "Session 1";
 
     @Autowired
     private IAIPService aipService;
@@ -387,7 +390,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_100") })
+    @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_100"), @Requirement("REGARDS_DSL_STO_AIP_310") })
     public void testPartialDeleteAip() throws InterruptedException, ModuleException, URISyntaxException {
         createSuccessTest();
         String aipIpId = aip.getId().toString();
@@ -499,7 +502,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
             EntityOperationForbiddenException, EntityInconsistentIdentifierException {
         AIP aip = getAIP();
         aip.setState(AIPState.STORED);
-        aip = aipDao.save(aip);
+        AIPSession aipSession = aipService.getSession(aip.getSession(), true);
+        aip = aipDao.save(aip, aipSession);
         // we are going to add an update event, so lets get the old event
         int oldHistorySize = aip.getHistory().size();
         AIPBuilder updated = new AIPBuilder(aip);
@@ -514,7 +518,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
         AIPBuilder aipBuilder = new AIPBuilder(
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                null, EntityType.DATA);
+                null, EntityType.DATA, SESSION);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
         aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
