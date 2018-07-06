@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.List;
@@ -134,9 +133,9 @@ public interface IPluginService {
      *
      * @param pluginConfiguration the plugin configuration to saved
      * @return the saved {@link PluginConfiguration}
-     * @throws EntityInvalidException thrown if an error occurs
+     * @throws ModuleException thrown if an error occurs
      */
-    PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConfiguration) throws EntityInvalidException;
+    PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConfiguration) throws ModuleException;
 
     /**
      * Delete a {@link PluginConfiguration}.
