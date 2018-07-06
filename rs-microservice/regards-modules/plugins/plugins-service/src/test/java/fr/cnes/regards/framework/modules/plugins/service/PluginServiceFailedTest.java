@@ -103,7 +103,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * @throws ModuleException throw if an error occurs
      */
     @Test(expected = EntityInvalidException.class)
-    public void saveANullPluginConfiguration() throws EntityInvalidException {
+    public void saveANullPluginConfiguration() throws ModuleException {
         pluginServiceMocked.savePluginConfiguration(null);
         Assert.fail();
     }
@@ -114,7 +114,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * @throws ModuleException throw if an error occurs
      */
     @Test(expected = EntityInvalidException.class)
-    public void saveAPluginConfigurationWithoutPriorityOrder() throws EntityInvalidException {
+    public void saveAPluginConfigurationWithoutPriorityOrder() throws ModuleException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setPriorityOrder(null);
         pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);
@@ -127,7 +127,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * @throws ModuleException throw if an error occurs
      */
     @Test(expected = EntityInvalidException.class)
-    public void saveAPluginConfigurationWithoutVersion() throws EntityInvalidException {
+    public void saveAPluginConfigurationWithoutVersion() throws ModuleException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setVersion("bad");
         pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);
