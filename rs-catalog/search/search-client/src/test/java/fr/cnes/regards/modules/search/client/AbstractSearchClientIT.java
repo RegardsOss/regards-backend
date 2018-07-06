@@ -31,7 +31,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.reflect.TypeToken;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -77,13 +76,13 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
     public void setUp() {
         client = FeignClientBuilder.build(new TokenClientProvider<>(getClazz(),
                 "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // Init required index in the ElasticSearch repository
-        if (!esRepository.indexExists(DEFAULT_TENANT)) {
-            esRepository.createIndex(DEFAULT_TENANT);
+        if (!esRepository.indexExists(getDefaultTenant())) {
+            esRepository.createIndex(getDefaultTenant());
         } else {
-            esRepository.deleteAll(DEFAULT_TENANT);
+            esRepository.deleteAll(getDefaultTenant());
         }
 
         FeignSecurityManager.asSystem();
@@ -92,7 +91,7 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
     @After
     public void tearDown() {
         try {
-            esRepository.deleteIndex(DEFAULT_TENANT);
+            esRepository.deleteIndex(getDefaultTenant());
         } catch (IndexNotFoundException e) {
             // Who cares ?
         }
@@ -103,7 +102,8 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
         return LOG;
     }
 
+    @SuppressWarnings("unchecked")
     protected Class<T> getClazz() {
-        return (Class<T>)((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        return (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
     }
 }

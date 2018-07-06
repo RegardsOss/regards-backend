@@ -25,7 +25,6 @@
 	<artifactId>search-domain</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Search Domain</name>
 	<description>Model layer of the Search module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
@@ -78,6 +77,14 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.indexer</groupId>
 			<artifactId>indexer-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.indexer</groupId>
+			<artifactId>indexer-dao</artifactId>
+		</dependency>		
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>hateoas-regards</artifactId>
 		</dependency>
 	</dependencies>
 </project>

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.search.service;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.configuration.ConversionException;
@@ -71,7 +72,7 @@ public class FacetConverter implements IFacetConverter {
     }
 
     @Override
-    public Map<String, FacetType> convert(String[] propertyNames) {
+    public Map<String, FacetType> convert(List<String> propertyNames) {
         if (propertyNames == null) {
             return null;
         }

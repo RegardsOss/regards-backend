@@ -22,7 +22,12 @@ import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,10 +41,10 @@ import org.springframework.http.converter.AbstractGenericHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -51,7 +56,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
+import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
 
 /**
  * HttpMessageConverter implementation allowing us to use the IRepresentation plugins. Declared as an
@@ -60,7 +65,8 @@ import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResou
  *
  * @author Sylvain Vissiere-Guerinet
  */
-@Component
+@Deprecated // Use search engine plugin instead
+// @Component
 public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessageConverter<Object> {
 
     /**
@@ -71,30 +77,35 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
     /**
      * TypeToken used to recognize AbstractEntity
      */
+    @SuppressWarnings("serial")
     private static final TypeToken<? extends AbstractEntity> ABSTRACT_ENTITY_TYPE_TOKEN = new TypeToken<AbstractEntity>() {
     };
 
     /**
      * TypeToken used to recognize Collection&#60;AbstractEntity&#62;
      */
+    @SuppressWarnings("serial")
     private static final TypeToken<Collection<? extends AbstractEntity>> COLLECTION_ABSTRACT_ENTITY_TYPE_TOKEN = new TypeToken<Collection<? extends AbstractEntity>>() {
     };
 
     /**
      * TypeToken used to recognize Resource&#60;AbstractEntity&#62;
      */
+    @SuppressWarnings("serial")
     private static final TypeToken<Resource<? extends AbstractEntity>> RESOURCE_ABSTRACT_ENTITY_TYPE_TOKEN = new TypeToken<Resource<? extends AbstractEntity>>() {
     };
 
     /**
      * TypeToken used to recognize PagedResources&#60;Resource&#60;AbstractEntity&#62;&#62;
      */
+    @SuppressWarnings("serial")
     private static final TypeToken<PagedResources<Resource<? extends AbstractEntity>>> PAGED_RESOURCES_RESOURCE_ABSTRACT_ENTITY_TYPE_TOKEN = new TypeToken<PagedResources<Resource<? extends AbstractEntity>>>() {
     };
 
     /**
      * TypeToken used to recognize FacettedPagedResources&#60;Resource&#60;AbstractEntity&#62;&#62;
      */
+    @SuppressWarnings("serial")
     private static final TypeToken<FacettedPagedResources<Resource<? extends AbstractEntity>>> FACETTED_PAGED_RESOURCES_RESOURCE_ABSTRACT_ENTITY_TYPE_TOKEN = new TypeToken<FacettedPagedResources<Resource<? extends AbstractEntity>>>() {
     };
 
@@ -168,14 +179,15 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
     @Override
     public List<MediaType> getSupportedMediaTypes() {
         // if no map then we handle nothing so we support nothing
-        if(enabledRepresentationPluginMapByTenant==null) {
+        if (enabledRepresentationPluginMapByTenant == null) {
             return Lists.newArrayList();
         }
-        //if no map for the required tenant, then we do not handle anything for this tenant, so we do not support anything for this tenant
-        if(enabledRepresentationPluginMapByTenant.get(tenantResolver.getTenant())==null) {
+        // if no map for the required tenant, then we do not handle anything for this tenant, so we do not support
+        // anything for this tenant
+        if (enabledRepresentationPluginMapByTenant.get(tenantResolver.getTenant()) == null) {
             return Lists.newArrayList();
         }
-        //otherwise we shoudl eb handling something which is the keyset
+        // otherwise we shoudl eb handling something which is the keyset
         return new ArrayList<>(enabledRepresentationPluginMapByTenant.get(tenantResolver.getTenant()).keySet());
     }
 
@@ -200,7 +212,7 @@ public class RepresentationHttpMessageConverter extends AbstractGenericHttpMessa
     private Long getCurrentTenantPluginConfigurationFor(MediaType pMediaType) {
         Map<MediaType, Long> tenantEnabledRepresentationPluginMapByMediaType = enabledRepresentationPluginMapByTenant
                 .get(tenantResolver.getTenant());
-        if(tenantEnabledRepresentationPluginMapByMediaType!=null) {
+        if (tenantEnabledRepresentationPluginMapByMediaType != null) {
             return tenantEnabledRepresentationPluginMapByMediaType.get(pMediaType);
         }
         return null;

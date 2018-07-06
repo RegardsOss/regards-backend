@@ -25,7 +25,6 @@
 	<artifactId>search-dao</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Search DAO</name>
 	<description>DAO layer of the Search module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

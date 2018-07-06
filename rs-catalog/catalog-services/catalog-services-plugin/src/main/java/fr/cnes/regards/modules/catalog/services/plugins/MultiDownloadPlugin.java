@@ -118,7 +118,8 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
     }
 
     /**
-     * Global application for DataObjects datafiles download. A ZIPStream is created containing all onlines {@link DataFile}
+     * Global application for DataObjects datafiles download. A ZIPStream is created containing all onlines
+     * {@link DataFile}
      * for each fiven {@link DataObject}
      * @param dataObjects
      * @param response
@@ -136,14 +137,16 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
         // If files number exceed maximum configured, return a JSON message with the error.
         LOGGER.debug(String.format("Number of files to download : %d", nbFiles));
         if (nbFiles > maxFilesToDownload) {
-            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
-                                                                      String.format("Number of files to download %d exceed maximum allowed of %d",
-                                                                                    nbFiles, maxFilesToDownload));
+            return CatalogPluginResponseFactory
+                    .createSuccessResponse(response, CatalogPluginResponseType.JSON,
+                                           String.format("Number of files to download %d exceed maximum allowed of %d",
+                                                         nbFiles, maxFilesToDownload));
         }
 
         // Check for maximum file size limit
         long filesSizeInBytes = toDownloadFilesMap.values().stream()
-                .mapToLong(list -> list.stream().mapToLong(d -> d.getSize() != null ? d.getSize() : 0).sum()).sum();
+                .mapToLong(list -> list.stream().mapToLong(d -> d.getFilesize() != null ? d.getFilesize() : 0).sum())
+                .sum();
         LOGGER.debug(String.format("Total size of files to download : %d", filesSizeInBytes));
         // If size exceed maximum configured, return a JSON message with the error.
         if (filesSizeInBytes > (maxFilesSizeToDownload * 1024 * 1024)) {
@@ -245,14 +248,15 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
     }
 
     /**
-     * File name for download is : <dataobjectName/dataFileName>. The dataFile name is the name of {@link DataFile} or name of URI if name is null.
+     * File name for download is : <dataobjectName/dataFileName>. The dataFile name is the name of {@link DataFile} or
+     * name of URI if name is null.
      * @param dataobject {@link DataObject}
      * @param datafile {@link DataFile}
      * @return String fileName
      */
     private String getDataObjectFileNameForDownload(DataObject dataobject, DataFile datafile) {
-        String fileName = datafile.getName() != null ? datafile.getName()
-                : FilenameUtils.getName(datafile.getUri().getPath());
+        String fileName = datafile.getFilename() != null ? datafile.getFilename()
+                : FilenameUtils.getName(datafile.asUri().getPath());
         String dataObjectName = dataobject.getLabel() != null ? dataobject.getLabel().replaceAll(" ", "") : "files";
         return String.format("%s/%s", dataObjectName, fileName);
     }
@@ -264,7 +268,7 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
      * @throws MalformedURLException
      */
     private URL getDataFileURL(DataFile file) throws MalformedURLException {
-        URI fileUri = file.getUri();
+        URI fileUri = file.asUri();
         try {
             fileUri = new URIBuilder(fileUri).addParameter("token", jwtService.getCurrentToken().getJwt()).build();
             LOGGER.debug(String.format("File url is : %s", fileUri.toString()));
