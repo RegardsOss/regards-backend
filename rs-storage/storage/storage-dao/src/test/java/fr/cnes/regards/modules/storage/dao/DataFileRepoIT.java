@@ -1,6 +1,27 @@
 package fr.cnes.regards.modules.storage.dao;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
+
+import org.assertj.core.util.Lists;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -18,31 +39,13 @@ import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
 import fr.cnes.regards.modules.storage.domain.database.MonitoringAggregation;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-import org.assertj.core.util.Lists;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.MimeType;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@TestPropertySource(
-        properties = {"spring.jpa.properties.hibernate.default_schema=storage", "spring.application.name=storage", "spring.jmx.enabled=false"})
-@ContextConfiguration(classes = {DAOTestConfiguration.class})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage",
+        "spring.application.name=storage", "spring.jmx.enabled=false" })
+@ContextConfiguration(classes = { DAOTestConfiguration.class })
 public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 
     @Autowired
@@ -153,7 +156,7 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         }
         dataFiles.addAll(dataFilesAip);
         dataFileDao.save(dataFiles);
-        //lets test with a file stored into two archives ( 1 and 2 )
+        // lets test with a file stored into two archives ( 1 and 2 )
         AIP aip12 = generateRandomAIP();
         aip12 = aipDao.save(aip12, aipSession);
         dataFilesAip = StorageDataFile.extractDataFiles(aip12, aipSession);
@@ -185,7 +188,7 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindTopByPDS() {
-        Set<StorageDataFile> possibleResults = StorageDataFile.extractDataFiles(aip3);
+        Set<StorageDataFile> possibleResults = StorageDataFile.extractDataFiles(aip3, aipSessionRepo.findOne(SESSION));
         StorageDataFile result = dataFileRepository.findTopByPrioritizedDataStoragesId(dataStorage3Id);
         Assert.assertNotNull("There should be a data file stored by dataStorage3", result);
         Assert.assertTrue("Result should be one of aip3 data files", possibleResults.contains(result));
@@ -193,11 +196,8 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 
     public AIP generateRandomAIP() throws NoSuchAlgorithmException, MalformedURLException {
 
-        UniformResourceName ipId = new UniformResourceName(OAISIdentifier.AIP,
-                EntityType.COLLECTION,
-                "tenant",
-                UUID.randomUUID(),
-                1);
+        UniformResourceName ipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, "tenant",
+                UUID.randomUUID(), 1);
         String sipId = String.valueOf(generateRandomString(new Random(), 40));
 
         // Init AIP builder
@@ -215,8 +215,8 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         generateRandomContentInformations(ippBuilder);
         // PDI
         ippBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(),
-                "addition of this aip into our beautiful system!",
-                OffsetDateTime.now());
+                                                                 "addition of this aip into our beautiful system!",
+                                                                 OffsetDateTime.now());
         // - ContextInformation
         ippBuilder.getPDIBuilder().addTags(generateRandomTags(ipId));
         // - Provenance
@@ -235,14 +235,12 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         Random random = new Random();
         int listSize = random.nextInt(listMaxSize) + 1;
         for (int i = 0; i < listSize; i++) {
-            ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER,
-                    null,
-                    "SHA1",
-                    sha1("blahblah"),
-                    new Long((new Random()).nextInt(10000000)),
-                    new URL("ftp://bla"));
-            ippBuilder.getContentInformationBuilder()
-                    .setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION", MimeType.valueOf("application/name"), "DESCRIPTION");
+            ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER, null, "SHA1", sha1("blahblah"),
+                                                                    new Long((new Random()).nextInt(10000000)),
+                                                                    new URL("ftp://bla"));
+            ippBuilder.getContentInformationBuilder().setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION",
+                                                                           MimeType.valueOf("application/name"),
+                                                                           "DESCRIPTION");
             ippBuilder.addContentInformation();
         }
     }
