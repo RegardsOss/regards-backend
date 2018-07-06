@@ -328,15 +328,17 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath("$.content", Matchers.not(Matchers.empty())));
         requestBuilderCustomizer
-                .addDocumentationSnippet(RequestDocumentation.requestParameters(RequestDocumentation
-                        .parameterWithName("state").description("state the aips should be in")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                .value(String.class.getSimpleName()),
-                                    Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                            .value("Available values: " + Arrays.stream(AIPState.values())
-                                                    .map(aipState -> aipState.name())
-                                                    .reduce((first, second) -> first + ", " + second).get()))
-                        .optional(), RequestDocumentation.parameterWithName("from").description("date after which the aip should have been added to the system").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should respect UTC format")).optional(), RequestDocumentation.parameterWithName("to").description("date before which the aip should have been added to the system").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should respect UTC format")).optional()));
+                .addDocumentationSnippet(
+                    RequestDocumentation.requestParameters(
+                        RequestDocumentation.parameterWithName("state").description("state the aips should be in").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Available values: " + Arrays.stream(AIPState.values()).map(aipState -> aipState.name()).reduce((first, second) -> first + ", " + second).get())).optional(),
+                        RequestDocumentation.parameterWithName("from").description("date after which the aip should have been added to the system").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should respect UTC format")).optional(),
+                        RequestDocumentation.parameterWithName("to").description("date before which the aip should have been added to the system").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should respect UTC format")).optional(),
+                        RequestDocumentation.parameterWithName("session").description("search aips contained in the provided session").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName())),
+                        RequestDocumentation.parameterWithName("tags").description("search aips tagged with one of provided tags").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName())).optional()
+                    )
+                );
+
+
         performDefaultGet(AIPController.AIP_PATH, requestBuilderCustomizer, "There should be some AIP to show");
     }
 
