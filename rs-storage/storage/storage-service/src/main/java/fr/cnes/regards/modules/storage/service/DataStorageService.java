@@ -215,11 +215,11 @@ public class DataStorageService implements IDataStorageService {
                                 dataStorageTotalSpace, monitoringAggregationMap.get(activeDataStorageConfId));
                         Double ratio = dataStorageInfo.getRatio();
                         if (ratio >= criticalThreshold) {
-                            String message = String
-                                    .format("Data storage(configuration id: %s, configuration label: %s) has reach its "
-                                            + "disk usage critical threshold. Actual occupation: %.2f%%, critical threshold: %s%%",
-                                            activeDataStorageConf.getId().toString(), activeDataStorageConf.getLabel(),
-                                            ratio, criticalThreshold);
+                            String message = String.format(
+                                                           "Data storage(configuration id: %s, configuration label: %s) has reach its "
+                                                                   + "disk usage critical threshold. Actual occupation: %.2f%%, critical threshold: %s%%",
+                                                           activeDataStorageConf.getId().toString(),
+                                                           activeDataStorageConf.getLabel(), ratio, criticalThreshold);
                             LOGGER.error(message);
                             notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
                                          message, NotificationType.ERROR);
@@ -227,11 +227,11 @@ public class DataStorageService implements IDataStorageService {
                             return;
                         }
                         if (ratio >= threshold) {
-                            String message = String
-                                    .format("Data storage(configuration id: %s, configuration label: %s) has reach its "
-                                            + "disk usage threshold. Actual occupation: %.2f%%, threshold: %s%%",
-                                            activeDataStorageConf.getId().toString(), activeDataStorageConf.getLabel(),
-                                            ratio, threshold);
+                            String message = String.format(
+                                                           "Data storage(configuration id: %s, configuration label: %s) has reach its "
+                                                                   + "disk usage threshold. Actual occupation: %.2f%%, threshold: %s%%",
+                                                           activeDataStorageConf.getId().toString(),
+                                                           activeDataStorageConf.getLabel(), ratio, threshold);
                             LOGGER.warn(message);
                             notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
                                          message, NotificationType.WARNING);
@@ -338,7 +338,7 @@ public class DataStorageService implements IDataStorageService {
                 // stored previously to replace the deleted one. This is a special case for AIP metadata file
                 // because,
                 // at any time we want to ensure that there is only one StorageDataFile of AIP type for a given AIP.
-                LOGGER.debug("[DELETE FILE SUCCESS] AIP metadata file replaced.",
+                LOGGER.info("[DELETE FILE SUCCESS] AIP metadata file replaced.",
                              dataFileDeleted.getAip().getId().toString());
                 associatedAIP.addEvent(EventType.UPDATE.name(), METADATA_UPDATED_SUCCESSFULLY);
                 aipDao.save(associatedAIP);
@@ -355,14 +355,15 @@ public class DataStorageService implements IDataStorageService {
      * @param urlToRemove location deleted.
      * @param associatedAIP {@link AIP} associated to the given {@link StorageDataFile}
      */
-    private void removeDeletedUrlFromDataFile(StorageDataFile dataFileDeleted, URL urlToRemove, AIP associatedAIP) {
+    public void removeDeletedUrlFromDataFile(StorageDataFile dataFileDeleted, URL urlToRemove, AIP associatedAIP) {
         if (dataFileDeleted.getUrls().isEmpty()) {
-            LOGGER.debug("Datafile to delete does not contains any location url. Deletion of the dataFile {}",
+            LOGGER.info("Datafile to delete does not contains any location url. Deletion of the dataFile {}",
                          dataFileDeleted.getName());
             dataFileDao.remove(dataFileDeleted);
         }
-        if (dataFileDeleted.getUrls().contains(urlToRemove)) {
-            if (dataFileDeleted.getUrls().size() == 1) {
+
+        if (urlToRemove == null || dataFileDeleted.getUrls().contains(urlToRemove)) {
+            if (urlToRemove == null || dataFileDeleted.getUrls().size() == 1) {
                 // Get from the AIP all the content informations to remove. All content informations to remove are the
                 // content informations with the same checksum that
                 // the deleted StorageDataFile.
@@ -377,11 +378,15 @@ public class DataStorageService implements IDataStorageService {
                 associatedAIP.addEvent(EventType.DELETION.name(),
                                        String.format(DATAFILE_DELETED_SUCCESSFULLY, urlToRemove));
                 associatedAIP = aipDao.save(associatedAIP);
-                LOGGER.debug("[DELETE FILE SUCCESS] AIP {} is in UPDATED state",
+                LOGGER.info("[DELETE FILE SUCCESS] AIP {} is in UPDATED state",
                              dataFileDeleted.getAip().getId().toString());
-                LOGGER.debug("Deleted location {} is the only one location of the StorageDataFile {}. So we can completly remove the StorageDataFile.",
-                             urlToRemove, dataFileDeleted.getName());
-                dataFileDao.remove(dataFileDeleted);
+                if (urlToRemove != null) {
+                    LOGGER.info("Deleted location {} is the only one location of the StorageDataFile {}. So we can completly remove the StorageDataFile.",
+                                 urlToRemove, dataFileDeleted.getName());
+                }
+                if (dataFileDeleted.getUrls().size() == 1) {
+                    dataFileDao.remove(dataFileDeleted);
+                }
             } else {
                 LOGGER.info("Partial deletion of StorageDataFile {}. One of the location has been removed {}.",
                             dataFileDeleted.getName(), urlToRemove);
