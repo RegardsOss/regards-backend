@@ -14,6 +14,7 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
 /**
@@ -37,6 +38,7 @@ public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage
     public static final long HIGHEST_PRIORITY = 0L;
 
     @Id
+    @ConfigIgnore
     private Long id;
 
     @Valid
