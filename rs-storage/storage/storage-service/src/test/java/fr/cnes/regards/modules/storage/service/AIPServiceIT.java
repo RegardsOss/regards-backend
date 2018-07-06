@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -89,6 +88,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
@@ -165,7 +165,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
-        tenantResolver.forceTenant(DEFAULT_TENANT);
+        tenantResolver.forceTenant(getDefaultTenant());
         cleanUp();
         mockEventHandler.clear();
         subscriber.subscribeTo(AIPEvent.class, mockEventHandler);
@@ -176,7 +176,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         Set<AIPEvent> events = mockEventHandler.getReceivedEvents().stream().filter(e -> e.getAipState().equals(state))
                 .collect(Collectors.toSet());
         int waitCount = 0;
-        while ((events.size() < nbExpectedEvents) && (waitCount < 5)) {
+        while ((events.size() < nbExpectedEvents) && (waitCount < 10)) {
             Thread.sleep(WAITING_TIME_MS);
             mockEventHandler.log();
             events = mockEventHandler.getReceivedEvents().stream().filter(e -> e.getAipState().equals(state))
@@ -517,7 +517,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
     private AIP getAIP() throws MalformedURLException {
 
         AIPBuilder aipBuilder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(), UUID.randomUUID(), 1),
                 null, EntityType.DATA, SESSION);
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";

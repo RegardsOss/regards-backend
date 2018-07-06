@@ -18,7 +18,29 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.EventType;
@@ -34,34 +56,16 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.MimeType;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  */
-@TestPropertySource(properties = {"spring.jpa.properties.hibernate.default_schema=projectdb",
-        "spring.application.name=storage", "spring.jmx.enabled=false"})
-@ContextConfiguration(classes = {DAOTestConfiguration.class})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=projectdb",
+        "spring.application.name=storage", "spring.jmx.enabled=false" })
+@ContextConfiguration(classes = { DAOTestConfiguration.class })
 public class DaoIT extends AbstractDaoTransactionalTest {
 
+    @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(DaoIT.class);
 
     @Autowired
@@ -187,8 +191,8 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         generateRandomContentInformations(ippBuilder);
         // PDI
         ippBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(),
-                "addition of this aip into our beautiful system!",
-                OffsetDateTime.now());
+                                                                 "addition of this aip into our beautiful system!",
+                                                                 OffsetDateTime.now());
         // - ContextInformation
         ippBuilder.getPDIBuilder().addTags(generateRandomTags(ipId));
         // - Provenance
@@ -207,11 +211,12 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Random random = new Random();
         int listSize = random.nextInt(listMaxSize) + 1;
         for (int i = 0; i < listSize; i++) {
-            ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER, null, "SHA1",
-                    sha1("blahblah"),
-                    new Long((new Random()).nextInt(10000000)), new URL("ftp://bla"));
+            ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER, null, "SHA1", sha1("blahblah"),
+                                                                    new Long((new Random()).nextInt(10000000)),
+                                                                    new URL("ftp://bla"));
             ippBuilder.getContentInformationBuilder().setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION",
-                    MimeType.valueOf("application/name"), "DESCRIPTION");
+                                                                           MimeType.valueOf("application/name"),
+                                                                           "DESCRIPTION");
             ippBuilder.addContentInformation();
         }
     }
@@ -315,7 +320,8 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindAllByTags() {
-        //aips have been generated with there own ipId as tag(except for aip12 which is tagged by aip1 ipId), lets retrieve them according to there ipId
+        // aips have been generated with there own ipId as tag(except for aip12 which is tagged by aip1 ipId), lets
+        // retrieve them according to there ipId
         Set<AIP> aips = dao.findAllByTags(aip1.getId().toString());
         Assert.assertTrue(aips.contains(aip1));
         Assert.assertTrue(aips.contains(aip12));
@@ -359,8 +365,10 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindAllByStateAndTagsInAndLastEventDateAfter() {
-        Page<AIP> aips = dao.findAllByStateAndTagsInAndLastEventDateAfter(AIPState.VALID, Sets.newHashSet("aip", "aip1"), aip1.getLastEvent().getDate().minusHours(1),
-                new PageRequest(0, 10));
+        Page<AIP> aips = dao.findAllByStateAndTagsInAndLastEventDateAfter(AIPState.VALID,
+                                                                          Sets.newHashSet("aip", "aip1"),
+                                                                          aip1.getLastEvent().getDate().minusHours(1),
+                                                                          new PageRequest(0, 10));
         Assert.assertTrue(aips.getContent().contains(aip1));
         Assert.assertTrue(aips.getContent().contains(aip12));
         Assert.assertFalse(aips.getContent().contains(aip2));
