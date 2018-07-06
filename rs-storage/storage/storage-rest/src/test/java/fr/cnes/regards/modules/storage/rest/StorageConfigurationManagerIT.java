@@ -119,7 +119,7 @@ public class StorageConfigurationManagerIT extends AbstractRegardsTransactionalI
         return prioritizedDataStorageService.create(dataStorageConf);
     }
 
-    private PluginConfiguration createAllocationStrategy(String label) throws EntityInvalidException {
+    private PluginConfiguration createAllocationStrategy(String label) throws ModuleException {
         PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class,
                                                                          DefaultAllocationStrategyPlugin.class
                                                                                  .getPackage().getName(),
@@ -134,7 +134,7 @@ public class StorageConfigurationManagerIT extends AbstractRegardsTransactionalI
         return pluginService.savePluginConfiguration(allocationConfiguration);
     }
 
-    private PluginConfiguration createSecurityDelegation(String label) throws EntityInvalidException {
+    private PluginConfiguration createSecurityDelegation(String label) throws ModuleException {
         PluginMetaData catalogSecuDelegMeta = PluginUtils.createPluginMetaData(FakeSecurityDelegation.class,
                                                                                FakeSecurityDelegation.class.getPackage()
                                                                                        .getName(),
