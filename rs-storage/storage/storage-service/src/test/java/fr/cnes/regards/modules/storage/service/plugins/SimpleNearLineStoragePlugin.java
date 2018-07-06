@@ -34,10 +34,12 @@ import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
+import fr.cnes.regards.modules.storage.domain.plugin.PluginConfUpdatable;
 import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubset;
 
@@ -98,5 +100,11 @@ public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWo
             }
 
         }
+    }
+
+    @Override
+    public PluginConfUpdatable allowConfigurationUpdate(PluginConfiguration newConfiguration,
+            PluginConfiguration currentConfiguration, boolean filesAlreadyStored) {
+        return PluginConfUpdatable.allowUpdate();
     }
 }
