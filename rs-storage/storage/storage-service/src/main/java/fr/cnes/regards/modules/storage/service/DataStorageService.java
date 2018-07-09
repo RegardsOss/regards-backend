@@ -82,7 +82,7 @@ public class DataStorageService implements IDataStorageService {
     /**
      * Metadata updated successfully message
      */
-    private static final String METADATA_UPDATED_SUCCESSFULLY = "AIP metadata has been successfully updated";
+    public static final String METADATA_UPDATED_SUCCESSFULLY = "AIP metadata has been successfully updated";
 
     /**
      * {@link IPluginService} instance
@@ -267,9 +267,6 @@ public class DataStorageService implements IDataStorageService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.storage.service.IPlop#handleRestorationAction(fr.cnes.regards.modules.storage.domain.event.StorageEventType, fr.cnes.regards.modules.storage.domain.event.DataStorageEvent)
-     */
     @Override
     public void handleRestorationAction(StorageEventType type, DataStorageEvent event) {
         Optional<StorageDataFile> data = dataFileDao.findOneById(event.getDataFileId());
@@ -291,9 +288,6 @@ public class DataStorageService implements IDataStorageService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.storage.service.IPlop#handleDeletionAction(fr.cnes.regards.modules.storage.domain.event.StorageEventType, fr.cnes.regards.modules.storage.domain.event.DataStorageEvent)
-     */
     @Override
     public void handleDeletionAction(StorageEventType type, DataStorageEvent event) {
         // Check that the given StorageDataFile id is associated to an existing StorageDataFile from db.
@@ -319,9 +313,6 @@ public class DataStorageService implements IDataStorageService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.storage.service.IPlop#handleDeletionSuccess(fr.cnes.regards.modules.storage.domain.database.StorageDataFile, java.lang.String)
-     */
     @Override
     public void handleDeletionSuccess(StorageDataFile dataFileDeleted, URL deletedUrl, String checksumOfDeletedFile) {
         // Get the associated AIP of the deleted StorageDataFile from db
@@ -339,7 +330,7 @@ public class DataStorageService implements IDataStorageService {
                 // because,
                 // at any time we want to ensure that there is only one StorageDataFile of AIP type for a given AIP.
                 LOGGER.info("[DELETE FILE SUCCESS] AIP metadata file replaced.",
-                             dataFileDeleted.getAip().getId().toString());
+                            dataFileDeleted.getAip().getId().toString());
                 associatedAIP.addEvent(EventType.UPDATE.name(), METADATA_UPDATED_SUCCESSFULLY);
                 aipDao.save(associatedAIP);
             }
@@ -355,10 +346,10 @@ public class DataStorageService implements IDataStorageService {
      * @param urlToRemove location deleted.
      * @param associatedAIP {@link AIP} associated to the given {@link StorageDataFile}
      */
-    public void removeDeletedUrlFromDataFile(StorageDataFile dataFileDeleted, URL urlToRemove, AIP associatedAIP) {
+    private void removeDeletedUrlFromDataFile(StorageDataFile dataFileDeleted, URL urlToRemove, AIP associatedAIP) {
         if (dataFileDeleted.getUrls().isEmpty()) {
             LOGGER.info("Datafile to delete does not contains any location url. Deletion of the dataFile {}",
-                         dataFileDeleted.getName());
+                        dataFileDeleted.getName());
             dataFileDao.remove(dataFileDeleted);
         }
 
@@ -379,10 +370,10 @@ public class DataStorageService implements IDataStorageService {
                                        String.format(DATAFILE_DELETED_SUCCESSFULLY, urlToRemove));
                 associatedAIP = aipDao.save(associatedAIP);
                 LOGGER.info("[DELETE FILE SUCCESS] AIP {} is in UPDATED state",
-                             dataFileDeleted.getAip().getId().toString());
+                            dataFileDeleted.getAip().getId().toString());
                 if (urlToRemove != null) {
                     LOGGER.info("Deleted location {} is the only one location of the StorageDataFile {}. So we can completly remove the StorageDataFile.",
-                                 urlToRemove, dataFileDeleted.getName());
+                                urlToRemove, dataFileDeleted.getName());
                 }
                 if (dataFileDeleted.getUrls().size() == 1) {
                     dataFileDao.remove(dataFileDeleted);
@@ -411,9 +402,6 @@ public class DataStorageService implements IDataStorageService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.storage.service.IPlop#handleStoreAction(fr.cnes.regards.modules.storage.domain.event.StorageEventType, fr.cnes.regards.modules.storage.domain.event.DataStorageEvent)
-     */
     @Override
     public void handleStoreAction(StorageEventType type, DataStorageEvent event) {
         Optional<StorageDataFile> optionalData = dataFileDao.findLockedOneById(event.getDataFileId());
@@ -444,9 +432,6 @@ public class DataStorageService implements IDataStorageService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.storage.service.IPlop#handleStoreSuccess(fr.cnes.regards.modules.storage.domain.database.StorageDataFile, java.lang.String, java.net.URL, java.lang.Long, java.lang.Long, java.lang.Integer, java.lang.Integer, fr.cnes.regards.modules.storage.domain.AIP)
-     */
     @Override
     public void handleStoreSuccess(StorageDataFile storedDataFile, String storedFileChecksum, URL storedFileNewURL,
             Long storedFileSize, Long dataStoragePluginConfId, Integer dataWidth, Integer dataHeight,
@@ -520,9 +505,6 @@ public class DataStorageService implements IDataStorageService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.storage.service.IPlop#handleStoreFailed(fr.cnes.regards.modules.storage.domain.database.StorageDataFile, fr.cnes.regards.modules.storage.domain.AIP, java.lang.String)
-     */
     @Override
     public void handleStoreFailed(StorageDataFile storeFailFile, AIP associatedAIP, String failureCause) {
         // update data status

@@ -228,7 +228,7 @@ public class AIPService implements IAIPService {
      */
     @Autowired
     private ICachedFileService cachedFileService;
-    
+
     @Autowired
     private IDataStorageService datastorageService;
 
@@ -1031,14 +1031,8 @@ public class AIPService implements IAIPService {
                                         dataFile.getAip().getId(), dataFile.getName());
                             dataFile.getUrls()
                                     .forEach(u -> LOGGER.info("[{}] url : {}", dataFile.getAip().getId(), u.getFile()));
-                            // if other datafiles are referencing a file, we just remove the data file from the database.
-                            // we do not do remove immediately because the aip metadata has to be updated first
-                            // and the logic is already implemented into DataStorageEventHandler
-                            publisher.publish(new DataStorageEvent(dataFile, StorageAction.DELETION,
-                                    StorageEventType.SUCCESSFULL, null, null));
-                            
-                            
-                            datastorageService.removeDeletedUrlFromDataFile(dataFile, null, AIP associatedAIP);
+
+                            datastorageService.handleDeletionSuccess(dataFile, null, dataFile.getChecksum());
                         }
                     }
                 }
