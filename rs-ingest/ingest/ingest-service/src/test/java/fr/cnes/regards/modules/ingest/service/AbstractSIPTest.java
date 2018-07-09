@@ -124,7 +124,7 @@ public abstract class AbstractSIPTest extends AbstractRegardsServiceTransactiona
 
     protected AIPEntity createAIP(UniformResourceName aipId, SIPEntity sip, SipAIPState state) {
         AIPEntity aip = new AIPEntity();
-        aip.setAip(new AIPBuilder(aipId, sip.getIpId(), EntityType.DATA).build());
+        aip.setAip(new AIPBuilder(aipId, sip.getIpId(), EntityType.DATA, sip.getSession().toString()).build());
         aip.setCreationDate(OffsetDateTime.now());
         aip.setIpId(aipId.toString());
         aip.setSip(sip);
