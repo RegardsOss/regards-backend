@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
@@ -27,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -187,4 +189,10 @@ public interface IAIPDao {
      * @return list of string
      */
     List<String> findAllByCustomQuery(String query);
+
+    /**
+     * Retrieve all existing IpId from given list
+     */
+    Stream<UniformResourceName> findUrnsByIpIdIn(Collection<String> ipIds);
+
 }
