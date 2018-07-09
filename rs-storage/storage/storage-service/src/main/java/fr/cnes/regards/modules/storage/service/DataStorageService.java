@@ -492,6 +492,7 @@ public class DataStorageService implements IDataStorageService {
                             .addEvent(EventType.STORAGE.name(),
                                       "File " + storedDataFile.getName() + " stored into REGARDS");
                     ci.get().getDataObject().setFileSize(storedDataFile.getFileSize());
+                    ci.get().getDataObject().getUrls().clear();
                     ci.get().getDataObject().getUrls().addAll(storedDataFile.getUrls());
                     ci.get().getDataObject().setFilename(storedDataFile.getName());
                     associatedAIP.addEvent(EventType.STORAGE.name(),
