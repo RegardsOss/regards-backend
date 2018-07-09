@@ -24,6 +24,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 import javax.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -98,6 +99,13 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      */
     @EntityGraph("graph.aip.tags")
     Set<AIPEntity> findAllByIpIdIn(Collection<String> ipIds);
+
+    /**
+     * Retrieve all aips which ip id is one of the provided ones
+     * No entity graph specified
+     * @return a Stream
+     */
+    Stream<AIPEntity> findByIpIdIn(Collection<String> ipIds);
 
     /**
      * Retrieve all aips which are tagged by the provided tag
