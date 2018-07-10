@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
@@ -35,13 +36,14 @@ import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
@@ -57,7 +59,7 @@ import fr.cnes.regards.modules.storage.service.plugins.SimpleOnlineDataStorage;
         locations = "classpath:storage.properties")
 @ActiveProfiles({ "disableStorageTasks" })
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.AFTER_CLASS)
-public class PrioritizedDataStorageServiceIT extends AbstractMultitenantServiceTest {
+public class PrioritizedDataStorageServiceIT extends AbstractRegardsTransactionalIT {
 
     private static final String PDS_LABEL = "PrioritizedDataStorageServiceIT";
 
@@ -67,7 +69,15 @@ public class PrioritizedDataStorageServiceIT extends AbstractMultitenantServiceT
     @Autowired
     private IPluginService pluginService;
 
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
+
     private final String targetPath = "target/PrioritizedDataStorageServiceIT";
+
+    @Before
+    public void init() {
+        tenantResolver.forceTenant(DEFAULT_TENANT);
+    }
 
     @Test
     public void testDelete() throws ModuleException, IOException, URISyntaxException {
