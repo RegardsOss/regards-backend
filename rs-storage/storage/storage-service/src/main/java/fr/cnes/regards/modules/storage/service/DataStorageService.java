@@ -375,9 +375,7 @@ public class DataStorageService implements IDataStorageService {
                     LOGGER.info("Deleted location {} is the only one location of the StorageDataFile {}. So we can completly remove the StorageDataFile.",
                                 urlToRemove, dataFileDeleted.getName());
                 }
-                if (dataFileDeleted.getUrls().size() == 1) {
-                    dataFileDao.remove(dataFileDeleted);
-                }
+                dataFileDao.remove(dataFileDeleted);
             } else {
                 LOGGER.info("Partial deletion of StorageDataFile {}. One of the location has been removed {}.",
                             dataFileDeleted.getName(), urlToRemove);
