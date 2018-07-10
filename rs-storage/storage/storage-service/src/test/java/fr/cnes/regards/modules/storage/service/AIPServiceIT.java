@@ -35,22 +35,26 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.apache.commons.compress.utils.Lists;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
@@ -61,6 +65,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -102,10 +109,12 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { TestConfig.class, AIPServiceIT.Config.class })
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles({ "testAmqp", "disableStorageTasks" })
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_CLASS)
+@EnableAsync
 public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(AIPServiceIT.class);
@@ -153,6 +162,9 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IPrioritizedDataStorageRepository prioritizedDataStorageRepository;
 
+    @Autowired
+    private IJobInfoService jobInfoService;
+
     private AIP aip;
 
     private URL baseStorage1Location;
@@ -170,6 +182,16 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         mockEventHandler.clear();
         subscriber.subscribeTo(AIPEvent.class, mockEventHandler);
         initDb();
+        if (baseStorage1Location != null) {
+            LOG.info("Deleting dir {}", baseStorage1Location.toString());
+            Files.walk(Paths.get(baseStorage1Location.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
+                    .forEach(File::delete);
+        }
+        if (baseStorage2Location != null) {
+            LOG.info("Deleting dir {}", baseStorage2Location.toString());
+            Files.walk(Paths.get(baseStorage2Location.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
+                    .forEach(File::delete);
+        }
     }
 
     private Set<AIPEvent> waitForEventsReceived(AIPState state, int nbExpectedEvents) throws InterruptedException {
@@ -230,20 +252,38 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         pluginService.savePluginConfiguration(allocationConfiguration);
     }
 
+    private void waitForJobsFinished() throws InterruptedException {
+        LOG.info("Waiting jobs succeed ....");
+        List<JobInfo> jobs = Lists.newArrayList();
+        long nbUnsucceedJobs = 0;
+        do {
+            Thread.sleep(WAITING_TIME_MS);
+            jobs = jobInfoService.retrieveJobs();
+            LOG.info("#############################");
+            LOG.info("Nb jobs : {}", jobs.size());
+            LOG.info("-----------------------------");
+            jobs.stream().forEach(f -> LOG.info("JOB -> {}", f.getStatus().getStatus()));
+            LOG.info("#############################");
+            nbUnsucceedJobs = jobs.stream().filter(f -> !f.getStatus().getStatus().equals(JobStatus.SUCCEEDED)
+                    && !f.getStatus().getStatus().equals(JobStatus.FAILED)).count();
+        } while (jobs.isEmpty() || (nbUnsucceedJobs > 0));
+        LOG.info("Waiting jobs succeed ok");
+    }
+
     private void storeAIP(AIP aipToStore, Boolean storeMeta) throws ModuleException, InterruptedException {
         aipService.validateAndStore(new AIPCollection(aipToStore));
         aipService.store();
-        Thread.sleep(2000);
+        waitForJobsFinished();
         if (storeMeta) {
             aipService.storeMetadata();
-            Thread.sleep(2000);
+            waitForJobsFinished();
         }
     }
 
     private void updateAIP(AIP aipToUpdate) throws InterruptedException, ModuleException {
         aipService.updateAip(aip.getId().toString(), aip);
         aipService.updateAipMetadata();
-        Thread.sleep(3000);
+        waitForJobsFinished();
     }
 
     @Test
@@ -323,13 +363,12 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
             // Run AIP storage
             aipService.validateAndStore(new AIPCollection(aip));
             aipService.store();
-            LOG.info("Waiting for storage jobs ends ...");
-            Thread.sleep(2000);
+            waitForJobsFinished();
             LOG.info("Waiting for storage jobs ends OK");
             // to make the process fail just on metadata storage, lets remove permissions from the workspace
             Files.setPosixFilePermissions(workspacePath, Sets.newHashSet());
             aipService.storeMetadata();
-            Thread.sleep(2000);
+            waitForJobsFinished();
             // Wait for error event
             Set<AIPEvent> events = waitForEventsReceived(AIPState.STORAGE_ERROR, 1);
             Assert.assertEquals("There should be one storage error event", 1, events.size());
@@ -396,9 +435,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         String aipIpId = aip.getId().toString();
         // lets get all the dataFile before deleting them for further verification
         Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(aip);
-        aipService.deleteAip(aipIpId);
-
-        Thread.sleep(1000);
+        Assert.assertEquals(0, aipService.deleteAip(aipIpId).size());
+        waitForJobsFinished();
 
         aipService.removeDeletedAIPMetadatas();
 
@@ -441,9 +479,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         String aipIpId = aip.getId().toString();
         // lets get all the dataFile before deleting them for further verification
         Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(aip);
-        aipService.deleteAip(aipIpId);
-
-        Thread.sleep(5000);
+        Assert.assertEquals(0, aipService.deleteAip(aipIpId).size());
+        waitForJobsFinished();
 
         aipService.removeDeletedAIPMetadatas();
 
@@ -460,15 +497,17 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         }
     }
 
-    @Test
+    @Test(timeout = 30000)
     public void testDeleteErrorAip() throws InterruptedException, ModuleException, URISyntaxException {
 
         dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
                 .setValue(Boolean.TRUE.toString());
         pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
 
-        // Store a new AIP withou metadata
+        // Store a new AIP
         storeAIP(aip, false);
+
+        aip = aipService.retrieveAip(aip.getId().toString());
         // Simulate aip state to STORE_ERROR
         aip.setState(AIPState.STORAGE_ERROR);
         aip = aipService.save(aip, false);
@@ -478,9 +517,10 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(aip);
 
         // Delete AIP
-        aipService.deleteAip(aipIpId);
-        Thread.sleep(5000);
+        Assert.assertEquals(0, aipService.deleteAip(aipIpId).size());
+        waitForJobsFinished();
         aipService.removeDeletedAIPMetadatas();
+        waitForJobsFinished();
 
         // Wait for AIP deletion
         Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 1);
@@ -539,14 +579,6 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         subscriber.unsubscribeFrom(AIPEvent.class);
         subscriber.purgeQueue(AIPEvent.class, mockEventHandler.getClass());
         clearDb();
-        if (baseStorage1Location != null) {
-            Files.walk(Paths.get(baseStorage1Location.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
-                    .forEach(File::delete);
-        }
-        if (baseStorage2Location != null) {
-            Files.walk(Paths.get(baseStorage2Location.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
-                    .forEach(File::delete);
-        }
     }
 
     private void clearDb() {
