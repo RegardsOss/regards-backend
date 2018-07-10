@@ -60,6 +60,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -372,10 +373,13 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "send the list of files metadata of a specified aip")
-    public ResponseEntity<Set<OAISDataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId)
+    public ResponseEntity<Set<Resource<OAISDataObject>>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId)
             throws ModuleException {
         Set<OAISDataObject> files = aipService.retrieveAIPFiles(UniformResourceName.fromString(pIpId));
-        return new ResponseEntity<>(files, HttpStatus.OK);
+        // Adapt the result to match front expectations
+        Set<Resource<OAISDataObject>> result = new HashSet<>(files.size());
+        files.forEach(f -> result.add(new Resource<>(f)));
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     /**
