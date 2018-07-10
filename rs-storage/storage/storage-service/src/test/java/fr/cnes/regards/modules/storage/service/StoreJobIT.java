@@ -41,6 +41,8 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -90,9 +92,10 @@ import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
  * @author Sylvain VISSIERE-GUERINET
  */
 @ContextConfiguration(classes = { TestConfig.class, StoreJobIT.Config.class })
-@TestPropertySource(locations = "classpath:test.properties")
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_store_test",
+        "regards.amqp.enabled=true" }, locations = { "classpath:storage.properties" })
 @ActiveProfiles({ "testAmqp", "disableStorageTasks" })
-@DirtiesContext
+@DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_CLASS)
 public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final String LOCAL_STORAGE_LABEL = "StoreJobIT";
