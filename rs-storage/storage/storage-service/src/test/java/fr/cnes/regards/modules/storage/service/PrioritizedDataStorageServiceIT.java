@@ -29,13 +29,18 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -46,6 +51,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
@@ -55,10 +61,12 @@ import fr.cnes.regards.modules.storage.service.plugins.SimpleOnlineDataStorage;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
+@ContextConfiguration(classes = { TestConfig.class, PrioritizedDataStorageServiceIT.Config.class })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_prioritizedconfs_test" },
         locations = "classpath:storage.properties")
 @ActiveProfiles({ "disableStorageTasks" })
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.AFTER_CLASS)
+@RegardsTransactional
 public class PrioritizedDataStorageServiceIT extends AbstractRegardsTransactionalIT {
 
     private static final String PDS_LABEL = "PrioritizedDataStorageServiceIT";
@@ -137,5 +145,15 @@ public class PrioritizedDataStorageServiceIT extends AbstractRegardsTransactiona
 
         PluginConfiguration dataStorageConf = getPluginConf(label);
         return prioritizedDataStorageService.create(dataStorageConf);
+    }
+
+    @Configuration
+    static class Config {
+
+        @Bean
+        public INotificationClient notificationClient() {
+            return Mockito.mock(INotificationClient.class);
+        }
+
     }
 }
