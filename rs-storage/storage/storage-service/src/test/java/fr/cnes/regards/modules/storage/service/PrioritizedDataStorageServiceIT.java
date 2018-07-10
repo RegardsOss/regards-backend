@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.storage.service;
 
 import java.io.IOException;
@@ -10,25 +28,22 @@ import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
@@ -38,10 +53,11 @@ import fr.cnes.regards.modules.storage.service.plugins.SimpleOnlineDataStorage;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@ContextConfiguration(classes = { TestConfig.class, PrioritizedDataStorageServiceIT.Config.class })
-@TestPropertySource(locations = "classpath:test.properties")
-@RegardsTransactional
-public class PrioritizedDataStorageServiceIT extends AbstractRegardsServiceTransactionalIT {
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_prioritizedconfs_test" },
+        locations = "classpath:storage.properties")
+@ActiveProfiles({ "disableStorageTasks" })
+@DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.AFTER_CLASS)
+public class PrioritizedDataStorageServiceIT extends AbstractMultitenantServiceTest {
 
     private static final String PDS_LABEL = "PrioritizedDataStorageServiceIT";
 
@@ -51,8 +67,7 @@ public class PrioritizedDataStorageServiceIT extends AbstractRegardsServiceTrans
     @Autowired
     private IPluginService pluginService;
 
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    private final String targetPath = "target/PrioritizedDataStorageServiceIT";
 
     @Test
     public void testDelete() throws ModuleException, IOException, URISyntaxException {
@@ -79,7 +94,8 @@ public class PrioritizedDataStorageServiceIT extends AbstractRegardsServiceTrans
     public void testUpdateForbidden() throws ModuleException, IOException, URISyntaxException {
         String label = "updateConf label";
 
-        URL newbaseStorageLocation = new URL("file", "", Paths.get("target/update/conf").toFile().getAbsolutePath());
+        URL newbaseStorageLocation = new URL("file", "",
+                Paths.get(targetPath, "/update/conf").toFile().getAbsolutePath());
 
         PrioritizedDataStorage pds = createPrioritizedDataStorage(label);
         PluginConfiguration updatedConf = getPluginConf(label);
@@ -92,8 +108,7 @@ public class PrioritizedDataStorageServiceIT extends AbstractRegardsServiceTrans
     }
 
     private PluginConfiguration getPluginConf(String label) throws IOException, URISyntaxException {
-        URL baseStorageLocation = new URL("file", "",
-                Paths.get("target/PrioritizedDataStorageServiceIT").toFile().getAbsolutePath());
+        URL baseStorageLocation = new URL("file", "", Paths.get(targetPath).toFile().getAbsolutePath());
 
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class,
                                                                       IDataStorage.class.getPackage().getName(),
@@ -111,16 +126,6 @@ public class PrioritizedDataStorageServiceIT extends AbstractRegardsServiceTrans
             throws IOException, URISyntaxException, ModuleException {
 
         PluginConfiguration dataStorageConf = getPluginConf(label);
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         return prioritizedDataStorageService.create(dataStorageConf);
-    }
-
-    @Configuration
-    static class Config {
-
-        @Bean
-        public INotificationClient notificationClient() {
-            return Mockito.mock(INotificationClient.class);
-        }
     }
 }

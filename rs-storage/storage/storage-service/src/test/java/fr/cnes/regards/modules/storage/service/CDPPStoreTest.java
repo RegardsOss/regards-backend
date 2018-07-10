@@ -36,6 +36,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -72,6 +75,7 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage
         "regards.storage.check.aip.metadata.delay=5000", "spring.jpa.show-sql=false" })
 // Storage uses AMQP to synchronize storage
 @ActiveProfiles({ "testAmqp" })
+@DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_CLASS)
 public class CDPPStoreTest extends AbstractMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CDPPStoreTest.class);

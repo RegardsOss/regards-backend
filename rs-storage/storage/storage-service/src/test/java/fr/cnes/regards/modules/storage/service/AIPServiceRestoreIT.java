@@ -46,6 +46,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -73,7 +76,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
@@ -108,15 +111,15 @@ import fr.cnes.regards.modules.storage.service.plugins.SimpleNearLineStoragePlug
  * @author Sébastien Binda
  */
 @ContextConfiguration(classes = AIPServiceRestoreIT.Config.class)
-@TestPropertySource(locations = "classpath:test.properties")
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_restore_test",
+        "regards.amqp.enabled=true" }, locations = { "classpath:storage.properties" })
 @ActiveProfiles({ "testAmqp", "disableStorageTasks" })
-public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
+@DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_CLASS)
+public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(AIPServiceRestoreIT.class);
 
     private static final String CATALOG_SECURITY_DELEGATION_LABEL = "AIPServiceRestoreIT";
-
-    // private static RestoreJobEventHandler handler = new RestoreJobEventHandler();
 
     private static TestDataStorageEventHandler dataHandler = new TestDataStorageEventHandler();
 
@@ -177,15 +180,6 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
     @Value("${regards.storage.cache.minimum.time.to.live.hours}")
     private Long minTtl;
 
-    @Value("${regards.storage.cache.purge.lower.threshold.ko.per.tenant}")
-    private Long lowerCacheLimit;
-
-    @Value("${regards.cache.restore.queued.rate.ms}")
-    private Long restoreQueuedRate;
-
-    @Value("${regards.cache.cleanup.rate.ms}")
-    private Long cleanCacheRate;
-
     private PluginConfiguration catalogSecuDelegConf;
 
     private PrioritizedDataStorage onlineDataStorageConf;
@@ -212,9 +206,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         tenantResolver.forceTenant(DEFAULT_TENANT);
         initCacheDir();
         this.cleanUp();
-
-        // subscriber.subscribeTo(JobEvent.class, handler);
-        subscriber.subscribeTo(DataFileEvent.class, dataHandler);
+        subscriber.subscribeTo(DataFileEvent.class, dataHandler, true);
         initDb();
     }
 
@@ -238,7 +230,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
      */
     private void initDb() throws Exception {
         nearlineFiles.clear();
-        baseStorageLocation = new URL("file", "", Paths.get("target/AIPServiceIT/normal").toFile().getAbsolutePath());
+        baseStorageLocation = new URL("file", "",
+                Paths.get("target/AIPServiceRestoreIT/normal").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
 
         // second, lets storeAndCreate a plugin configuration for IAllocationStrategy
@@ -1012,12 +1005,12 @@ public class AIPServiceRestoreIT extends AbstractRegardsServiceTransactionalIT {
         } catch (Exception e) {
             // Nothing to do
         }
-        //handler.reset();
         dataHandler.reset();
     }
 
     @After
     public void cleanUp() throws URISyntaxException, IOException {
+        pluginService.cleanPluginCache();
         subscriber.purgeQueue(DataFileEvent.class, TestDataStorageEventHandler.class);
         subscriber.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class);
         unsubscribeAMQPEvents();

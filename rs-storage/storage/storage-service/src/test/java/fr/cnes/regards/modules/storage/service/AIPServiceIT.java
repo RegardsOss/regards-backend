@@ -100,6 +100,7 @@ import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
+import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
@@ -111,7 +112,8 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { TestConfig.class, AIPServiceIT.Config.class })
-@TestPropertySource(locations = "classpath:test.properties")
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_service_test",
+        "regards.amqp.enabled=true" }, locations = { "classpath:storage.properties" })
 @ActiveProfiles({ "testAmqp", "disableStorageTasks" })
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_CLASS)
 @EnableAsync
@@ -180,7 +182,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         tenantResolver.forceTenant(getDefaultTenant());
         cleanUp();
         mockEventHandler.clear();
-        subscriber.subscribeTo(AIPEvent.class, mockEventHandler);
+        subscriber.subscribeTo(AIPEvent.class, mockEventHandler, true);
         initDb();
         if (baseStorage1Location != null) {
             LOG.info("Deleting dir {}", baseStorage1Location.toString());
@@ -390,7 +392,6 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         }
     }
 
-    //
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_030"), @Requirement("REGARDS_DSL_STO_AIP_040") })
     public void testUpdate() throws InterruptedException, ModuleException, URISyntaxException {
@@ -499,7 +500,6 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     @Test(timeout = 30000)
     public void testDeleteErrorAip() throws InterruptedException, ModuleException, URISyntaxException {
-
         dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
                 .setValue(Boolean.TRUE.toString());
         pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
@@ -576,8 +576,10 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     @After
     public void cleanUp() throws URISyntaxException, IOException {
+        pluginService.cleanPluginCache();
         subscriber.unsubscribeFrom(AIPEvent.class);
         subscriber.purgeQueue(AIPEvent.class, mockEventHandler.getClass());
+        subscriber.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class);
         clearDb();
     }
 
