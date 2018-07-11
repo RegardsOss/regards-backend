@@ -139,13 +139,24 @@ public interface IAIPService {
     Page<AipDataFiles> retrieveAipDataFiles(AIPState state, Set<String> tags, OffsetDateTime fromLastUpdateDate,
             Pageable pageable);
 
+
     /**
-     * Retrieve the files metadata associated to an aip
+     * Retrieve the public files metadata associated to an aip
      * @param pIpId
      * @return the files metadata
      * @throws EntityNotFoundException
      */
     Set<OAISDataObject> retrieveAIPFiles(UniformResourceName pIpId) throws ModuleException;
+
+
+
+    /**
+     * Retrieve storage data files metadata associated to an aip
+     * @param pIpId
+     * @return the files metadata
+     * @throws EntityNotFoundException
+     */
+    Set<StorageDataFile> retrieveAIPDataFiles(UniformResourceName pIpId) throws ModuleException;
 
     /**
      * Retrieve the versions of an aip
@@ -355,5 +366,4 @@ public interface IAIPService {
      * StorageDataFile. This state is reached when all locations of all DataObject are deleted for an AIP metadata.
      */
     void removeDeletedAIPMetadatas();
-
 }

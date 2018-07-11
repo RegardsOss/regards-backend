@@ -568,22 +568,28 @@ public class AIPService implements IAIPService {
 
     @Override
     public Set<OAISDataObject> retrieveAIPFiles(UniformResourceName pIpId) throws ModuleException {
+        Set<StorageDataFile> storageDataFiles = retrieveAIPDataFiles(pIpId);
+        return storageDataFiles.stream().map(df -> {
+            OAISDataObject dataObject = new OAISDataObject();
+            dataObject.setRegardsDataType(df.getDataType());
+            dataObject.setUrls(df.getUrls());
+            dataObject.setFilename(df.getName());
+            dataObject.setFileSize(df.getFileSize());
+            dataObject.setChecksum(df.getChecksum());
+            dataObject.setAlgorithm(df.getAlgorithm());
+            return dataObject;
+        }).collect(Collectors.toSet());
+    }
+
+
+    @Override
+    public Set<StorageDataFile> retrieveAIPDataFiles(UniformResourceName pIpId) throws ModuleException {
         Optional<AIP> aip = aipDao.findOneByIpId(pIpId.toString());
         if (aip.isPresent()) {
             if (!getSecurityDelegationPlugin().hasAccess(pIpId.toString())) {
                 throw new EntityOperationForbiddenException(pIpId.toString(), AIP.class, AIP_ACCESS_FORBIDDEN);
             }
-            Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(aip.get());
-            return dataFiles.stream().map(df -> {
-                OAISDataObject dataObject = new OAISDataObject();
-                dataObject.setRegardsDataType(df.getDataType());
-                dataObject.setUrls(df.getUrls());
-                dataObject.setFilename(df.getName());
-                dataObject.setFileSize(df.getFileSize());
-                dataObject.setChecksum(df.getChecksum());
-                dataObject.setAlgorithm(df.getAlgorithm());
-                return dataObject;
-            }).collect(Collectors.toSet());
+            return dataFileDao.findAllByAip(aip.get());
         } else {
             throw new EntityNotFoundException(pIpId.toString(), AIP.class);
         }

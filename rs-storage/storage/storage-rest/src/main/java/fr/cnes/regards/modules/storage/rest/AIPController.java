@@ -373,14 +373,13 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "send the list of files metadata of a specified aip")
-    public ResponseEntity<Set<Resource<OAISDataObject>>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId)
+    public ResponseEntity<Set<OAISDataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId)
             throws ModuleException {
         Set<OAISDataObject> files = aipService.retrieveAIPFiles(UniformResourceName.fromString(pIpId));
-        // Adapt the result to match front expectations
-        Set<Resource<OAISDataObject>> result = new HashSet<>(files.size());
-        files.forEach(f -> result.add(new Resource<>(f)));
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        return new ResponseEntity<>(files, HttpStatus.OK);
     }
+
+
 
     /**
      * Ask for the files into the availability request to be set into the cache
