@@ -69,7 +69,7 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage
  * @author Marc Sordi
  *
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=cdpp_it",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_test",
         "regards.storage.cache.path=target/cache", "regards.storage.cache.minimum.time.to.live.hours=1",
         "regards.tenants=PROJECT", "regards.tenant=PROJECT", "regards.amqp.enabled=true",
         "regards.storage.check.aip.metadata.delay=5000", "spring.jpa.show-sql=false" })
