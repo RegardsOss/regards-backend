@@ -3,7 +3,6 @@ package fr.cnes.regards.modules.storage.domain.plugin;
 import java.util.Collection;
 import java.util.Set;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
@@ -11,7 +10,8 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
  * Plugin interface for all security delegation plugins
  * @author Sylvain VISSIERE-GUERINET
  */
-@PluginInterface(description = "Contract to respect by any security delegation plugin")
+@PluginInterface(description = "Contract to respect by any security delegation plugin",
+        allowMultipleConfigurationActive = false)
 public interface ISecurityDelegation {
 
     /**
