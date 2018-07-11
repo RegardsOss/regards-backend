@@ -110,8 +110,9 @@ import fr.cnes.regards.modules.storage.service.plugins.SimpleNearLineStoragePlug
  * @author Sébastien Binda
  */
 @ContextConfiguration(classes = AIPServiceRestoreIT.Config.class)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_restore_test",
-        "regards.amqp.enabled=true" }, locations = { "classpath:storage.properties" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=storage_test", "regards.amqp.enabled=true" },
+        locations = { "classpath:storage.properties" })
 @ActiveProfiles({ "testAmqp", "disableStorageTasks" })
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_CLASS)
 public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {

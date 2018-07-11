@@ -111,8 +111,9 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { TestConfig.class, AIPServiceIT.Config.class })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_service_test",
-        "regards.amqp.enabled=true" }, locations = { "classpath:storage.properties" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=storage_test", "regards.amqp.enabled=true" },
+        locations = { "classpath:storage.properties" })
 @ActiveProfiles({ "testAmqp", "disableStorageTasks" })
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_CLASS)
 @EnableAsync

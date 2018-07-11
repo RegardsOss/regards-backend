@@ -88,8 +88,9 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
  * @author Sylvain VISSIERE-GUERINET
  */
 @ContextConfiguration(classes = { TestConfig.class, TemplateIT.Config.class })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_template_test",
-        "regards.amqp.enabled=true" }, locations = { "classpath:storage.properties" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=storage_test", "regards.amqp.enabled=true" },
+        locations = { "classpath:storage.properties" })
 @RegardsTransactional
 @ActiveProfiles({ "testAmqp", "disableStorageTasks" })
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_CLASS)

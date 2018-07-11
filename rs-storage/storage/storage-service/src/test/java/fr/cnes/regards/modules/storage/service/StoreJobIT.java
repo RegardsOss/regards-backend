@@ -92,8 +92,9 @@ import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
  * @author Sylvain VISSIERE-GUERINET
  */
 @ContextConfiguration(classes = { TestConfig.class, StoreJobIT.Config.class })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_store_test",
-        "regards.amqp.enabled=true" }, locations = { "classpath:storage.properties" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=storage_test", "regards.amqp.enabled=true" },
+        locations = { "classpath:storage.properties" })
 @ActiveProfiles({ "testAmqp", "disableStorageTasks" })
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_CLASS)
 public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
