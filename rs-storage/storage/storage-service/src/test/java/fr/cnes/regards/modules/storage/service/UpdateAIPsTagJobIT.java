@@ -21,7 +21,9 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author Léo Mieulet
  */
 @ContextConfiguration(classes = {TestConfig.class, AIPServiceIT.Config.class})
-@TestPropertySource(locations = "classpath:test.properties")
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=storage_test", "regards.amqp.enabled=true" },
+        locations = { "classpath:storage.properties" })
 @ActiveProfiles({"testAmqp", "disableStorageTasks"})
 @EnableAsync
 @RunWith(SpringRunner.class)
