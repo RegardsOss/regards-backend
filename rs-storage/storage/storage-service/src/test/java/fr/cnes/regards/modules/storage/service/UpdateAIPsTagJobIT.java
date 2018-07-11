@@ -10,23 +10,10 @@ import java.util.HashSet;
 import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author Léo Mieulet
  */
-@ContextConfiguration(classes = {TestConfig.class, AIPServiceIT.Config.class})
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=storage_test", "regards.amqp.enabled=true" },
-        locations = { "classpath:storage.properties" })
-@ActiveProfiles({"testAmqp", "disableStorageTasks"})
-@EnableAsync
-@RunWith(SpringRunner.class)
 public class UpdateAIPsTagJobIT  extends AbstractJobIT {
 
     @Test
