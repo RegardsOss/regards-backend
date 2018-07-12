@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.search.dao;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
@@ -31,5 +33,7 @@ public interface ISearchEngineConfRepository extends JpaRepository<SearchEngineC
     SearchEngineConfiguration findByDatasetUrnAndConfigurationPluginId(String datasetUrn, String pluginId);
 
     SearchEngineConfiguration findByDatasetUrnIsNullAndConfigurationPluginId(String string);
+
+    List<SearchEngineConfiguration> findByDatasetUrn(String datasetUrn);
 
 }

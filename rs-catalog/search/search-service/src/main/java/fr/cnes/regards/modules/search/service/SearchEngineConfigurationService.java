@@ -18,16 +18,25 @@
  */
 package fr.cnes.regards.modules.search.service;
 
+import java.util.List;
 import java.util.Optional;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
+import fr.cnes.regards.modules.entities.domain.event.EventType;
 import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 
@@ -42,6 +51,18 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
     @Autowired
     private ISearchEngineConfRepository repository;
+
+    @Autowired
+    private ISubscriber subscriber;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @PostConstruct
+    public void listenForDatasetEvents() {
+        // Subscribe to entity events in order to delete links to deleted dataset.
+        subscriber.subscribeTo(BroadcastEntityEvent.class, new DeleteEntityEventHandler());
+    }
 
     @Override
     public SearchEngineConfiguration createConf(SearchEngineConfiguration conf) {
@@ -94,4 +115,24 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
         return conf;
     }
 
+    /**
+    * Class DeleteEntityEventHandler
+    * Handler to delete {@link SearchEngineConfiguration} for deleted datasets.
+    * @author Sébastien Binda
+    */
+    private class DeleteEntityEventHandler implements IHandler<BroadcastEntityEvent> {
+
+        @Override
+        public void handle(final TenantWrapper<BroadcastEntityEvent> pWrapper) {
+            if ((pWrapper.getContent() != null) && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
+                runtimeTenantResolver.forceTenant(pWrapper.getTenant());
+                for (final UniformResourceName ipId : pWrapper.getContent().getIpIds()) {
+                    List<SearchEngineConfiguration> confs = repository.findByDatasetUrn(ipId.toString());
+                    if ((confs != null) && !confs.isEmpty()) {
+                        confs.forEach(repository::delete);
+                    }
+                }
+            }
+        }
+    }
 }
