@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,25 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.search.rest.engine;
+package fr.cnes.regards.modules.search.dao;
 
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 
 /**
- * Search engine service contract<br/>
- * The service dispatches request to right search engine.
- *
- * @author Marc Sordi
- *
+ * JPA repository for {@link SearchEngineConfiguration} entities.
+ * @author Sébastien Binda
  */
-public interface ISearchEngineDispatcher {
+public interface ISearchEngineConfRepository extends JpaRepository<SearchEngineConfiguration, Long> {
 
-    /**
-     * Dispatch request to the right search engine according to specified search context
-     */
-    <T> ResponseEntity<T> dispatchRequest(SearchContext context) throws ModuleException;
+    SearchEngineConfiguration findByDatasetUrnAndConfigurationPluginId(String datasetUrn, String pluginId);
+
+    SearchEngineConfiguration findByDatasetUrnIsNullAndConfigurationPluginId(String string);
 
 }

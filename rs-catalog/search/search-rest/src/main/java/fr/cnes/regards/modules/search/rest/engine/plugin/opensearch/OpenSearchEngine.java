@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch;
 
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
@@ -41,6 +42,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.entities.domain.StaticProperties;
+import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
+import fr.cnes.regards.modules.entities.domain.attribute.DateAttribute;
 import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -89,7 +92,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     public static final String EXTRA_DESCRIPTION = "opensearchDescription.xml";
 
-    private static final String PARAMETERS_CONFIGURATION = "parametersConfiguration";
+    public static final String PARAMETERS_CONFIGURATION = "parametersConfiguration";
+
+    public static final String ENGINE_PARAMETERS = "engineConfiguration";
 
     /**
      * Query parser
@@ -112,7 +117,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @Autowired
     private Configuration configuration;
 
-    @PluginParameter(name = "engineConfiguration", label = "Search engine global configuration")
+    @PluginParameter(name = ENGINE_PARAMETERS, label = "Search engine global configuration")
     private EngineConfiguration engineConfiguration;
 
     /**
@@ -121,57 +126,17 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @Autowired
     private IResourceService resourceService;
 
-    @PluginParameter(name = OpenSearchEngine.TIME_EXTENSION_PARAMETER, label = "Open search time extension")
+    @PluginParameter(name = TIME_EXTENSION_PARAMETER, label = "Open search time extension")
     private GeoTimeExtension timeExtension;
 
-    @PluginParameter(name = OpenSearchEngine.REGARDS_EXTENSION_PARAMETER, label = "Open search regards extension")
+    @PluginParameter(name = REGARDS_EXTENSION_PARAMETER, label = "Open search regards extension")
     private RegardsExtension regardsExtension;
 
-    @PluginParameter(name = OpenSearchEngine.MEDIA_EXTENSION_PARAMETER, label = "Open search media extension")
+    @PluginParameter(name = MEDIA_EXTENSION_PARAMETER, label = "Open search media extension")
     private MediaExtension mediaExtension;
 
-    @PluginParameter(name = OpenSearchEngine.PARAMETERS_CONFIGURATION, label = "Parameters configuration")
+    @PluginParameter(name = PARAMETERS_CONFIGURATION, label = "Parameters configuration")
     private final List<ParameterConfiguration> paramConfigurations = Lists.newArrayList();
-
-    /**
-     * TODO : To remove !!!
-     */
-    public void init() {
-        paramConfigurations.clear();
-        ParameterConfiguration planetParameter = new ParameterConfiguration();
-        planetParameter.setAttributeModelJsonPath("properties.planet");
-        planetParameter.setName("planet");
-        planetParameter.setOptionsEnabled(true);
-        planetParameter.setOptionsCardinality(10);
-        paramConfigurations.add(planetParameter);
-
-        ParameterConfiguration startTimeParameter = new ParameterConfiguration();
-        startTimeParameter.setAttributeModelJsonPath("properties.TimePeriod.startDate");
-        startTimeParameter.setName("start");
-        startTimeParameter.setNamespace("time");
-        paramConfigurations.add(startTimeParameter);
-        ParameterConfiguration endTimeParameter = new ParameterConfiguration();
-        endTimeParameter.setAttributeModelJsonPath("properties.TimePeriod.stopDate");
-        endTimeParameter.setName("end");
-        endTimeParameter.setNamespace("time");
-        paramConfigurations.add(endTimeParameter);
-
-        timeExtension = new GeoTimeExtension();
-        timeExtension.setActivated(true);
-
-        regardsExtension = new RegardsExtension();
-        regardsExtension.setActivated(true);
-
-        mediaExtension = new MediaExtension();
-        mediaExtension.setActivated(true);
-
-        engineConfiguration = new EngineConfiguration();
-        engineConfiguration.setAttribution("Plop");
-        engineConfiguration.setSearchDescription("desc");
-        engineConfiguration.setSearchTitle("search");
-        engineConfiguration.setContact("regards@c-s.fr");
-        engineConfiguration.setImage("http://plop/image.png");
-    }
 
     @Override
     public boolean supports(SearchType searchType) {
@@ -180,7 +145,6 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @Override
     public ResponseEntity<Object> search(SearchContext context) throws ModuleException {
-        init();
         FacetPage<EntityFeature> facetPage = searchService.search(parse(context), context.getSearchType(), null,
                                                                   context.getPageable());
         try {
@@ -218,7 +182,6 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @Override
     public ResponseEntity<OpenSearchDescription> extra(SearchContext context) throws ModuleException {
-        init();
         if (context.getExtra().isPresent() && context.getExtra().get().equals(EXTRA_DESCRIPTION)) {
 
             // If the descriptor is asked for a specific dataset, first get the dataset.
@@ -269,9 +232,27 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                             context, configuration, page,
                             SearchEngineController.buildPaginationLinks(resourceService, page, context));
         page.getContent().stream()
-                .forEach(e -> builder.addEntity(e, paramConfigurations,
+                .forEach(e -> builder.addEntity(e, getEntityLastUpdateDate(e), paramConfigurations,
                                                 SearchEngineController.buildEntityLinks(resourceService, context, e)));
         return builder.build();
+    }
+
+    /**
+     * Retrieve the last update date of the given entity.
+     * @param entity {@link EntityFeature}
+     * @return Optional<OffsetDateTime>
+     */
+    private Optional<OffsetDateTime> getEntityLastUpdateDate(EntityFeature entity) {
+        Optional<OffsetDateTime> date = Optional.empty();
+        if (engineConfiguration.getEntityLastUpdateDatePropertyPath() != null) {
+            AbstractAttribute<?> dateAttribute = entity
+                    .getProperty(engineConfiguration.getEntityLastUpdateDatePropertyPath());
+            if (dateAttribute instanceof DateAttribute) {
+                DateAttribute dateAttr = (DateAttribute) dateAttribute;
+                return Optional.ofNullable(dateAttr.getValue());
+            }
+        }
+        return date;
     }
 
     /**

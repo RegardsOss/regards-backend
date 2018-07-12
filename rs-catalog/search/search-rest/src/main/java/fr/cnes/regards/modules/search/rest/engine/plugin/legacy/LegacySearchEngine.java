@@ -53,10 +53,13 @@ import fr.cnes.regards.modules.search.service.IBusinessSearchService;
  * @author Marc Sordi
  *
  */
-@Plugin(id = "legacy", author = "REGARDS Team", contact = "regards@c-s.fr", description = "Legacy search engine",
-        licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss", version = "1.0.0")
+@Plugin(id = LegacySearchEngine.PLUGIN_ID, author = "REGARDS Team", contact = "regards@c-s.fr",
+        description = "Legacy search engine", licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
+        version = "1.0.0")
 public class LegacySearchEngine implements
         ISearchEngine<FacettedPagedResources<Resource<EntityFeature>>, Void, Resource<EntityFeature>, List<String>> {
+
+    public static final String PLUGIN_ID = "legacy";
 
     /**
      * Query parameter for facets

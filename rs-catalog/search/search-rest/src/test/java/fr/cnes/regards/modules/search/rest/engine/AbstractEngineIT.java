@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections4.map.HashedMap;
+import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,11 +38,17 @@ import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.Collection;
@@ -61,13 +68,22 @@ import fr.cnes.regards.modules.models.service.IAttributeModelService;
 import fr.cnes.regards.modules.models.service.ModelService;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
+import fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchEngine;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.EngineConfiguration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.media.MediaExtension;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards.RegardsExtension;
+import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
 
 /**
  * Engine common methods
  * @author Marc Sordi
  */
-public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
+public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Model properties
@@ -140,6 +156,12 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     protected IIndexerService indexerService;
+
+    @Autowired
+    protected IPluginService pluginService;
+
+    @Autowired
+    protected ISearchEngineConfigurationService searchEngineService;
 
     // Keep reference to astronomical object
 
@@ -242,6 +264,67 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
         // Wait until index is really up to date!
         Thread.sleep(1000L);
+
+        initPlugins();
+    }
+
+    private void initPlugins() throws EntityInvalidException {
+        pluginService.addPluginPackage("fr.cnes.regards.modules.search.rest.engine.plugin.legacy");
+        PluginConfiguration legacyConf = PluginUtils
+                .getPluginConfiguration(PluginParametersFactory.build().getParameters(), LegacySearchEngine.class,
+                                        Lists.newArrayList());
+        legacyConf = pluginService.savePluginConfiguration(legacyConf);
+        SearchEngineConfiguration seConf = new SearchEngineConfiguration();
+        seConf.setConfiguration(legacyConf);
+        searchEngineService.createConf(seConf);
+
+        pluginService.addPluginPackage("fr.cnes.regards.modules.search.rest.engine.plugin.opensearch");
+        GeoTimeExtension geoTime = new GeoTimeExtension();
+        geoTime.setActivated(true);
+        RegardsExtension regardsExt = new RegardsExtension();
+        regardsExt.setActivated(true);
+        MediaExtension mediaExt = new MediaExtension();
+        mediaExt.setActivated(true);
+
+        List<ParameterConfiguration> paramConfigurations = Lists.newArrayList();
+        ParameterConfiguration planetParameter = new ParameterConfiguration();
+        planetParameter.setAttributeModelJsonPath("properties.planet");
+        planetParameter.setName("planet");
+        planetParameter.setOptionsEnabled(true);
+        planetParameter.setOptionsCardinality(10);
+        paramConfigurations.add(planetParameter);
+
+        ParameterConfiguration startTimeParameter = new ParameterConfiguration();
+        startTimeParameter.setAttributeModelJsonPath("properties.TimePeriod.startDate");
+        startTimeParameter.setName("start");
+        startTimeParameter.setNamespace("time");
+        paramConfigurations.add(startTimeParameter);
+        ParameterConfiguration endTimeParameter = new ParameterConfiguration();
+        endTimeParameter.setAttributeModelJsonPath("properties.TimePeriod.stopDate");
+        endTimeParameter.setName("end");
+        endTimeParameter.setNamespace("time");
+        paramConfigurations.add(endTimeParameter);
+
+        EngineConfiguration engineConfiguration = new EngineConfiguration();
+        engineConfiguration.setAttribution("Plop");
+        engineConfiguration.setSearchDescription("desc");
+        engineConfiguration.setSearchTitle("search");
+        engineConfiguration.setContact("regards@c-s.fr");
+        engineConfiguration.setImage("http://plop/image.png");
+        engineConfiguration.setEntityLastUpdateDatePropertyPath("TimePeriod.startDate");
+
+        List<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(OpenSearchEngine.TIME_EXTENSION_PARAMETER, geoTime)
+                .addParameter(OpenSearchEngine.REGARDS_EXTENSION_PARAMETER, regardsExt)
+                .addParameter(OpenSearchEngine.MEDIA_EXTENSION_PARAMETER, mediaExt)
+                .addParameter(OpenSearchEngine.PARAMETERS_CONFIGURATION, paramConfigurations)
+                .addParameter(OpenSearchEngine.ENGINE_PARAMETERS, engineConfiguration).getParameters();
+        PluginConfiguration opensearchConf = PluginUtils.getPluginConfiguration(parameters, OpenSearchEngine.class,
+                                                                                Lists.newArrayList());
+        opensearchConf = pluginService.savePluginConfiguration(opensearchConf);
+        SearchEngineConfiguration seConfOS = new SearchEngineConfiguration();
+        seConfOS.setConfiguration(opensearchConf);
+        searchEngineService.createConf(seConfOS);
     }
 
     /**

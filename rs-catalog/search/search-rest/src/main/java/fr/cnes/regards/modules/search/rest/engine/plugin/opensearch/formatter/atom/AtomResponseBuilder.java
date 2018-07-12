@@ -20,7 +20,9 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.a
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.http.MediaType;
@@ -147,12 +149,13 @@ public class AtomResponseBuilder implements IResponseBuilder<Feed> {
     }
 
     @Override
-    public void addEntity(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
-            List<org.springframework.hateoas.Link> entityLinks) {
+    public void addEntity(EntityFeature entity, Optional<OffsetDateTime> entityLastUpdate,
+            List<ParameterConfiguration> paramConfigurations, List<org.springframework.hateoas.Link> entityLinks) {
         Entry entry = new Entry();
         entry.setId(entity.getId().toString());
-        // TODO : Handle updated date
-        // entry.setUpdated();
+        if (entityLastUpdate.isPresent()) {
+            entry.setUpdated(new Date(entityLastUpdate.get().toEpochSecond()));
+        }
         entry.setTitle(entity.getLabel());
         List<Module> mods = entry.getModules();
 
