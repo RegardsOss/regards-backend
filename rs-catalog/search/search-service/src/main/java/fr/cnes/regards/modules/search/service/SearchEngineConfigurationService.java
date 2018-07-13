@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.entities.domain.event.EventType;
 import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
@@ -57,6 +58,9 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private IDatasetClient datasetClient;
 
     @PostConstruct
     public void listenForDatasetEvents() {
