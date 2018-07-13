@@ -180,7 +180,7 @@ public class AIPController implements IResourceController<AIP> {
     /**
      * Endpoint path to delete tags of multiple AIPs
      */
-    public static final String TAG_DELETION_PATH = "/delete";
+    public static final String TAG_DELETION_PATH = TAG_MANAGEMENT_PATH + "/delete";
 
     /**
      * Controller path to search used tags by multiple AIPs
