@@ -31,6 +31,10 @@ public final class SearchEngineMappings {
      */
     public static final String TYPE_MAPPING = "/engines/{engineType}";
 
+    public static final String LEGACY_PLUGIN_ID = "legacy";
+
+    public static final String TYPE_MAPPING_FOR_LEGACY = "/engines/" + LEGACY_PLUGIN_ID;
+
     /**
      * Search route mapping
      */

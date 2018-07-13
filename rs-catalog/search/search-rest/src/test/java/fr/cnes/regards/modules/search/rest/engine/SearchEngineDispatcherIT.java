@@ -30,7 +30,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -74,7 +73,7 @@ public class SearchEngineDispatcherIT extends AbstractRegardsTransactionalIT {
             + UUID.randomUUID() + ":V3";
 
     @Before
-    public void init() throws EntityInvalidException {
+    public void init() throws ModuleException {
         pluginService.addPluginPackage("fr.cnes.regards.modules.search.rest.engine.plugin");
 
         // First conf for engine associated to dataset1

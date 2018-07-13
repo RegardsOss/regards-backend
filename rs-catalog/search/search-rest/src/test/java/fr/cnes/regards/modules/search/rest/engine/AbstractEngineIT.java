@@ -38,7 +38,6 @@ import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -268,7 +267,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         initPlugins();
     }
 
-    private void initPlugins() throws EntityInvalidException {
+    private void initPlugins() throws ModuleException {
         pluginService.addPluginPackage("fr.cnes.regards.modules.search.rest.engine.plugin.legacy");
         PluginConfiguration legacyConf = PluginUtils
                 .getPluginConfiguration(PluginParametersFactory.build().getParameters(), LegacySearchEngine.class,

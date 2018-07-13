@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
@@ -59,7 +60,7 @@ import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 public class LegacySearchEngine implements
         ISearchEngine<FacettedPagedResources<Resource<EntityFeature>>, Void, Resource<EntityFeature>, List<String>> {
 
-    public static final String PLUGIN_ID = "legacy";
+    public static final String PLUGIN_ID = SearchEngineMappings.LEGACY_PLUGIN_ID;
 
     /**
      * Query parameter for facets
